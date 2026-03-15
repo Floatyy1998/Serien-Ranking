@@ -15,6 +15,13 @@ import { memo, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { staggerContainerFast, staggerItemFast } from '../../lib/motion';
 import { ItemCard } from './DiscoverItemCard';
+import {
+  trackDiscoverCategoryChanged,
+  trackDiscoverSearchToggled,
+  trackDiscoverSearchQuery,
+  trackDiscoverTabSwitched,
+  trackGenreFiltered,
+} from '../../firebase/analytics';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
 import {
@@ -185,8 +192,10 @@ export const DiscoverPage = memo(() => {
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
-                    setShowSearch(!showSearch);
-                    if (!showSearch) {
+                    const newValue = !showSearch;
+                    setShowSearch(newValue);
+                    trackDiscoverSearchToggled(newValue);
+                    if (newValue) {
                       setShowFilters(false);
                     }
                   }}
@@ -221,7 +230,10 @@ export const DiscoverPage = memo(() => {
                   type="text"
                   placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (e.target.value.length > 2) trackDiscoverSearchQuery(e.target.value);
+                  }}
                   autoFocus
                   style={{
                     width: '100%',
@@ -251,6 +263,7 @@ export const DiscoverPage = memo(() => {
             activeTab={activeTab}
             onTabChange={(id) => {
               setActiveTab(id as 'series' | 'movies');
+              trackDiscoverTabSwitched(id);
               setShowSearch(false);
             }}
             style={{ margin: '8px 20px 0 20px' }}
@@ -273,7 +286,10 @@ export const DiscoverPage = memo(() => {
                   <motion.button
                     key={cat.id}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setActiveCategory(cat.id)}
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                      trackDiscoverCategoryChanged(cat.id);
+                    }}
                     style={{
                       padding: '10px 4px',
                       background: isActive
@@ -328,6 +344,7 @@ export const DiscoverPage = memo(() => {
                     onClick={() => {
                       setSelectedGenre(null);
                       setShowFilters(false);
+                      trackGenreFiltered('all');
                     }}
                     style={{
                       padding: '8px 10px',
@@ -354,6 +371,7 @@ export const DiscoverPage = memo(() => {
                       onClick={() => {
                         setSelectedGenre(genre.id);
                         setShowFilters(false);
+                        trackGenreFiltered(genre.name);
                       }}
                       style={{
                         padding: '8px 10px',

@@ -119,6 +119,21 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
 };
 
 /**
+ * Prüft ob mindestens eine Staffel komplett gesehen wurde.
+ * Ermöglicht Rewatch auch wenn die Serie noch nicht komplett durch ist.
+ */
+export const hasAnySeasonFullyWatched = (series: Series): boolean => {
+  if (!series.seasons || series.seasons.length === 0) return false;
+
+  for (const season of series.seasons) {
+    const episodes = toEpisodesArray(season.episodes);
+    if (episodes.length === 0) continue;
+    if (episodes.every((ep) => ep.watched)) return true;
+  }
+  return false;
+};
+
+/**
  * Prüft ob alle Episoden einer Serie gesehen wurden und alle den gleichen watchCount haben.
  * Kein aktiver Rewatch in Arbeit.
  */

@@ -3,6 +3,10 @@ import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import {
+  trackPublicProfileTabSwitched,
+  trackPublicProfileItemClicked,
+} from '../../firebase/analytics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
 /* ------------------------------------------------------------------ */
@@ -525,6 +529,7 @@ export function usePublicProfileData() {
         }
       }
 
+      trackPublicProfileItemClicked(String(item.id), type);
       navigate(type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
     },
     [navigate, publicId, activeTab]
@@ -546,7 +551,10 @@ export function usePublicProfileData() {
     itemsWithRatingCount,
     /* tab */
     activeTab,
-    setActiveTab,
+    setActiveTab: ((tab: 'series' | 'movies') => {
+      setActiveTab(tab);
+      trackPublicProfileTabSwitched(tab);
+    }) as React.Dispatch<React.SetStateAction<'series' | 'movies'>>,
     /* filters */
     filters,
     setFilters,

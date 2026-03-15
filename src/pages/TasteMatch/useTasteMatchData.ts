@@ -7,6 +7,11 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
+import {
+  trackTasteMatchTabSwitched,
+  trackTasteMatchShared,
+  trackTasteMatchViewed,
+} from '../../firebase/analytics';
 import { calculateTasteMatch, TasteMatchResult } from '../../services/tasteMatchService';
 
 export const getScoreColor = (score: number): string => {
@@ -73,6 +78,7 @@ export const useTasteMatchData = (): TasteMatchData => {
 
         const matchResult = await calculateTasteMatch(user.uid, friendId);
         setResult(matchResult);
+        trackTasteMatchViewed(friendData?.displayName?.split(' ')[0] || 'Friend');
       } catch (error) {
         console.error('Error calculating taste match:', error);
       } finally {
@@ -85,6 +91,7 @@ export const useTasteMatchData = (): TasteMatchData => {
 
   const handleShare = async () => {
     if (!result) return;
+    trackTasteMatchShared(friendName);
     const text = `Mein Taste Match mit ${friendName}: ${result.overallMatch}% - ${result.seriesOverlap.sharedSeries.length} gemeinsame Serien und ${result.movieOverlap.sharedMovies.length} gemeinsame Filme!`;
 
     if (navigator.share) {
@@ -106,7 +113,10 @@ export const useTasteMatchData = (): TasteMatchData => {
     userName,
     userPhoto,
     activeTab,
-    setActiveTab,
+    setActiveTab: ((tab: 'overview' | 'series' | 'movies' | 'genres') => {
+      setActiveTab(tab);
+      trackTasteMatchTabSwitched(tab);
+    }) as React.Dispatch<React.SetStateAction<'overview' | 'series' | 'movies' | 'genres'>>,
     handleShare,
   };
 };

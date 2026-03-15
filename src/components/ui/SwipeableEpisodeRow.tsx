@@ -108,7 +108,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
       <motion.div
         key={itemKey}
         data-block-swipe
-        layout
         initial={{ opacity: 0, y: 20 }}
         animate={{
           opacity: isCompleting ? 0.5 : 1,
@@ -156,8 +155,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             gap: '12px',
             background,
             border,
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
             boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)',
             transition: dragOffset ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             borderRadius: '14px',

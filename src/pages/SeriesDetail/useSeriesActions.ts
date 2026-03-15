@@ -7,11 +7,20 @@ import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
+import {
+  trackSeriesAdded,
+  trackSeriesDeleted,
+  trackWatchlistToggled,
+  trackSeriesHiddenToggled,
+  trackRewatchStarted,
+  trackRewatchStopped,
+} from '../../firebase/analytics';
 
 interface DialogState {
   open: boolean;
@@ -74,6 +83,7 @@ export function useSeriesActions(
           series.id,
           posterPath
         );
+        trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
         showSnackbar('Serie erfolgreich hinzugefügt!');
         navigate(`/series/${series.id}`, { replace: true });
       } else {
@@ -101,6 +111,7 @@ export function useSeriesActions(
         setIsDeleting(true);
         try {
           await firebase.database().ref(`${userId}/serien/${series.nmr}`).remove();
+          trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar('Serie erfolgreich gelöscht!');
         } catch {
           setDialog({ open: true, message: 'Fehler beim Löschen der Serie.', type: 'error' });
@@ -119,6 +130,7 @@ export function useSeriesActions(
         .database()
         .ref(`${userId}/serien/${series.nmr}/watchlist`)
         .set(newWatchlistStatus);
+      trackWatchlistToggled(String(series.id), newWatchlistStatus ? 'add' : 'remove');
       if (newWatchlistStatus) {
         const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
         await logWatchlistAdded(userId, series.title, series.id);
@@ -131,6 +143,7 @@ export function useSeriesActions(
   const handleHideToggle = useCallback(async () => {
     if (!series || !userId) return;
     const newHiddenStatus = !series.hidden;
+    trackSeriesHiddenToggled(newHiddenStatus ? 'hide' : 'show');
     try {
       await toggleHideSeries(series.nmr, newHiddenStatus);
       showSnackbar(newHiddenStatus ? 'Nicht weiterschauen' : 'Serie wieder aktiv');
@@ -156,6 +169,9 @@ export function useSeriesActions(
 
         await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
         await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+
+        // Pet XP with genre bonus (rewatches count too)
+        await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
         WatchActivityService.logEpisodeWatch(
@@ -254,6 +270,7 @@ export function useSeriesActions(
           await firebase.database().ref(`${seriesPath}/watchlist`).set(true);
         }
 
+        trackRewatchStarted(series.title || series.name || 'Unbekannte Serie');
         showSnackbar(
           continueExisting ? `Rewatch #${newRound} fortgesetzt!` : `Rewatch #${newRound} gestartet!`
         );
@@ -272,6 +289,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     try {
       await firebase.database().ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+      trackRewatchStopped(series.title || series.name || 'Unbekannte Serie');
       showSnackbar('Rewatch beendet.');
     } catch {
       setDialog({ open: true, message: 'Fehler beim Beenden des Rewatches.', type: 'error' });

@@ -96,9 +96,10 @@ export const SearchPage = memo(() => {
             style={{
               background: currentTheme.background.surface,
               border: `1px solid ${currentTheme.border.default}`,
+              outline: 'none',
             }}
           >
-            <Search style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+            <Search style={{ fontSize: '22px', color: currentTheme.text.muted, flexShrink: 0 }} />
             <input
               type="text"
               value={searchQuery}
@@ -106,23 +107,21 @@ export const SearchPage = memo(() => {
               placeholder="Suche nach Serien & Filmen..."
               autoFocus
               className="search-input"
-              style={{ color: currentTheme.text.primary }}
+              style={{ color: currentTheme.text.primary, outline: 'none' }}
             />
-            {searchQuery && (
-              <motion.button
-                initial={{ scale: 0, borderRadius: '50%' }}
-                animate={{ scale: 1, borderRadius: '50%' }}
-                whileTap={{ scale: 0.9, borderRadius: '50%' }}
-                onClick={() => setSearchQuery('')}
-                className="search-clear-btn"
-                style={{
-                  background: `${currentTheme.text.muted}20`,
-                  color: currentTheme.text.muted,
-                }}
-              >
-                <Close style={{ fontSize: '16px' }} />
-              </motion.button>
-            )}
+            <button
+              onClick={() => searchQuery && setSearchQuery('')}
+              className="search-clear-btn"
+              style={{
+                background: searchQuery ? `${currentTheme.text.muted}20` : 'transparent',
+                color: currentTheme.text.muted,
+                opacity: searchQuery ? 1 : 0,
+                pointerEvents: searchQuery ? 'auto' : 'none',
+                transition: 'opacity 0.15s ease',
+              }}
+            >
+              <Close style={{ fontSize: '16px' }} />
+            </button>
           </div>
         </motion.div>
 

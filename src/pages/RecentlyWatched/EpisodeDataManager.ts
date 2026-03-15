@@ -135,8 +135,13 @@ export class EpisodeDataManager {
 
           let watchedDate: Date;
           let dateSource: 'firstWatched' | 'lastWatched' | 'airDate' | 'estimated';
+          const isRewatch = episode.watchCount && episode.watchCount > 1;
 
-          if (episode.firstWatchedAt) {
+          if (isRewatch && episode.lastWatchedAt) {
+            // Rewatches: use lastWatchedAt so they appear under the rewatch date
+            watchedDate = new Date(episode.lastWatchedAt);
+            dateSource = 'lastWatched';
+          } else if (episode.firstWatchedAt) {
             watchedDate = new Date(episode.firstWatchedAt);
             dateSource = 'firstWatched';
           } else if (episode.lastWatchedAt) {

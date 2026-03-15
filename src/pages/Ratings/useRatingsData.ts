@@ -13,6 +13,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../App';
+import {
+  trackRatingsTabSwitched,
+  trackRatingsFilterChanged,
+  trackRatingsItemClicked,
+} from '../../firebase/analytics';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -213,6 +218,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     (id: string) => {
       setActiveTab(id as 'series' | 'movies');
       updateURL({ tab: id });
+      trackRatingsTabSwitched(id);
     },
     [updateURL]
   );
@@ -269,6 +275,15 @@ export const useRatingsData = (): UseRatingsDataResult => {
         if (newFilters.search !== undefined) setSearchQuery(newFilters.search || '');
       });
 
+      // Track filter changes
+      const changedKey = Object.keys(newFilters).find(
+        (k) => newFilters[k as keyof typeof newFilters] !== undefined
+      );
+      if (changedKey)
+        trackRatingsFilterChanged(
+          `${changedKey}:${newFilters[changedKey as keyof typeof newFilters]}`
+        );
+
       queueMicrotask(() => {
         isUpdatingFromQuickFilter.current = false;
       });
@@ -317,6 +332,9 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // Event delegation: single click handler for the entire grid
   const handleGridClick = useCallback(
     (e: React.MouseEvent) => {
+      // Ignore clicks on provider overflow badge (tooltip trigger)
+      if ((e.target as HTMLElement).closest('.ratings-provider-badges')) return;
+
       const gridItem = (e.target as HTMLElement).closest(
         '.ratings-grid-item'
       ) as HTMLElement | null;
@@ -326,6 +344,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
       const isMovie = gridItem.dataset.movie !== undefined;
       if (!id) return;
 
+      trackRatingsItemClicked(id, isMovie ? 'movie' : 'series');
       saveScrollPosition();
       navigate(isMovie ? `/movie/${id}` : `/series/${id}`);
     },

@@ -13,6 +13,11 @@ import { useAuth } from '../App';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Friend, FriendActivity, FriendRequest } from '../types/Friend';
+import {
+  trackFriendRequestAccepted,
+  trackFriendRequestDeclined,
+  trackFriendRemoved,
+} from '../firebase/analytics';
 
 interface OptimizedFriendsContextType {
   friends: Friend[];
@@ -496,6 +501,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
       // Remove the request from local state immediately
       setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
+      trackFriendRequestAccepted(fromUserData?.username || 'unknown');
 
       // Refresh friends data FIRST to ensure database is updated
       await refetchFriends();
@@ -532,6 +538,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
       // Remove the request from local state immediately
       setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
+      trackFriendRequestDeclined();
     } catch (error) {
       throw error;
     }
@@ -558,6 +565,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       await firebase.database().ref(`users/${user.uid}/friends/${friendId}`).remove();
 
       await firebase.database().ref(`users/${friendId}/friends/${user.uid}`).remove();
+      trackFriendRemoved();
 
       // Refresh friends data
       refetchFriends();

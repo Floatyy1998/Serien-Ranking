@@ -10,6 +10,7 @@ import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Movie as MovieType } from '../../types/Movie';
+import { trackRatingSaved, trackRatingDeleted } from '../../firebase/analytics';
 import { Series } from '../../types/Series';
 
 export interface UseRatingDataResult {
@@ -175,6 +176,7 @@ export const useRatingData = (): UseRatingDataResult => {
           );
         }
 
+        trackRatingSaved(String(item.id), type || 'unknown', overallRating);
         showSnackbar(`Bewertung für "${item.title}" wurde gespeichert!`);
       }
     } catch (error) {
@@ -196,6 +198,7 @@ export const useRatingData = (): UseRatingDataResult => {
         .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
 
       await ratingRef.remove();
+      trackRatingDeleted(String(item.id), type || 'unknown');
       showSnackbar(`Bewertung für "${item.title}" wurde gelöscht!`);
     } catch (error) {
       showSnackbar('Fehler beim Löschen der Bewertung.');

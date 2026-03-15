@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackFriendRequestSent } from '../../firebase/analytics';
 import {
   IconButton,
   EmptyState,
@@ -150,6 +151,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
     try {
       const success = await sendFriendRequest(targetUser.username);
       if (success) {
+        trackFriendRequestSent(targetUser.username);
         setRecentlyAdded([...recentlyAdded, targetUser.uid]);
         setRequestSuccess(true);
 

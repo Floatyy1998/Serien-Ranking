@@ -27,6 +27,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useBadges } from '../../features/badges/BadgeProvider';
+import { trackProfileMenuItemClicked } from '../../firebase/analytics';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
@@ -236,7 +237,10 @@ export const useProfileData = (): UseProfileDataResult => {
     [currentTheme]
   );
 
-  const goTo = (path: string) => navigate(path);
+  const goTo = (path: string) => {
+    trackProfileMenuItemClicked(path);
+    navigate(path);
+  };
 
   return {
     user,

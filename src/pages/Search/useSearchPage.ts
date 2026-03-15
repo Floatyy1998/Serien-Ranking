@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { trackSearch, trackSearchResultClicked } from '../../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie as MovieType } from '../../types/Movie';
 import { Series } from '../../types/Series';
@@ -214,6 +215,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         }
 
         results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        trackSearch(query, results.length);
         setSearchResults(results);
       } catch (error) {
         console.error('Search error:', error);
@@ -245,6 +247,9 @@ export const useSearchPage = (): UseSearchPageResult => {
 
   const handleItemClick = useCallback(
     (item: SearchResult) => {
+      const index = searchResults.findIndex((r) => r.id === item.id && r.type === item.type);
+      trackSearchResultClicked(String(item.id), item.type || 'unknown', index);
+
       window.history.replaceState({ ...window.history.state, usr: { returning: true } }, '');
 
       const container = document.querySelector('.mobile-content') as HTMLElement;
@@ -258,7 +263,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         navigate(`/movie/${item.id}`);
       }
     },
-    [navigate]
+    [navigate, searchResults]
   );
 
   const addToList = useCallback(

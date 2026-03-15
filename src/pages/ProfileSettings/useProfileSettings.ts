@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import {
+  trackProfilePhotoUploaded,
+  trackPublicProfileToggled,
+  trackPublicLinkCopied,
+} from '../../firebase/analytics';
 
 interface UserSettingsData {
   username?: string;
@@ -106,6 +111,7 @@ export const useProfileSettings = (): ProfileSettingsState => {
       await user.reload();
 
       setPhotoURL(downloadURL);
+      trackProfilePhotoUploaded();
       setSuccess('Profilbild erfolgreich hochgeladen');
     } catch (err: unknown) {
       setError(
@@ -197,6 +203,7 @@ export const useProfileSettings = (): ProfileSettingsState => {
     try {
       const newPublicState = !isPublic;
       await firebase.database().ref(`users/${user.uid}/isPublic`).set(newPublicState);
+      trackPublicProfileToggled(newPublicState);
       setIsPublic(newPublicState);
       setSuccess(
         newPublicState ? 'Deine Liste ist jetzt öffentlich!' : 'Deine Liste ist jetzt privat!'
@@ -209,6 +216,7 @@ export const useProfileSettings = (): ProfileSettingsState => {
   const generateMyPublicLink = () => {
     const link = `${window.location.origin}/public/${user?.uid}`;
     navigator.clipboard.writeText(link);
+    trackPublicLinkCopied();
     setSuccess('Dein öffentlicher Link wurde kopiert!');
   };
 

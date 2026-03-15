@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackVideoPlayed } from '../../firebase/analytics';
 
 interface Video {
   id: string;
@@ -370,7 +371,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                     key={video.id}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedVideo(video)}
+                    onClick={() => {
+                      setSelectedVideo(video);
+                      trackVideoPlayed(video.name, video.type);
+                    }}
                     style={{
                       cursor: 'pointer',
                       borderRadius: '12px',

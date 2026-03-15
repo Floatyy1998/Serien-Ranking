@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackCountdownClicked } from '../../firebase/analytics';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { PageHeader, LoadingSpinner, EmptyState, PageLayout } from '../../components/ui';
 import { CountdownHeroCard } from './CountdownHeroCard';
@@ -36,7 +37,13 @@ export const CountdownPage: React.FC = () => {
 
         {!loading && hero && (
           <div className="cd-list">
-            <CountdownHeroCard item={hero} onClick={() => navigate(`/series/${hero.seriesId}`)} />
+            <CountdownHeroCard
+              item={hero}
+              onClick={() => {
+                trackCountdownClicked(hero.title);
+                navigate(`/series/${hero.seriesId}`);
+              }}
+            />
 
             {rest.length > 0 && (
               <>
@@ -48,7 +55,10 @@ export const CountdownPage: React.FC = () => {
                     key={item.seriesId}
                     item={item}
                     index={i}
-                    onClick={() => navigate(`/series/${item.seriesId}`)}
+                    onClick={() => {
+                      trackCountdownClicked(item.title);
+                      navigate(`/series/${item.seriesId}`);
+                    }}
                   />
                 ))}
               </>
