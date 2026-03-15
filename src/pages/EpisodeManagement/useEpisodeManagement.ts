@@ -8,6 +8,13 @@ import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Series } from '../../types/Series';
+import {
+  trackEpisodeWatched,
+  trackEpisodeUnwatched,
+  trackSeasonToggled,
+  trackCatchUpUsed,
+  trackEpisodeClicked,
+} from '../../firebase/analytics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 
@@ -192,7 +199,20 @@ export const useEpisodeManagement = () => {
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
-      // Badge system logging for episode changes
+      // Analytics & badge system logging for episode changes
+      if (newWatched) {
+        trackEpisodeWatched(series.title, season.seasonNumber + 1, episodeIndex + 1, {
+          tmdbId: series.id,
+          genres: series.genre?.genres,
+          runtime: getEpisodeRuntime(series, episode),
+          isRewatch: (episode as Record<string, unknown>).watchCount
+            ? Number((episode as Record<string, unknown>).watchCount) > 0
+            : false,
+          source: 'episode_management',
+        });
+      } else {
+        trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
+      }
       if (!episode.watched && newWatched) {
         const { updateEpisodeCounters } =
           await import('../../features/badges/minimalActivityLogger');
@@ -238,6 +258,9 @@ export const useEpisodeManagement = () => {
   const handleEpisodeClick = (seasonIndex: number, episodeIndex: number) => {
     const episode = series?.seasons[seasonIndex]?.episodes?.[episodeIndex];
     if (!episode) return;
+
+    const seasonNumber = series?.seasons[seasonIndex]?.seasonNumber ?? seasonIndex;
+    trackEpisodeClicked(series?.title || 'Unknown', seasonNumber + 1, episodeIndex + 1);
 
     if (episode.watched) {
       setSelectedEpisode({ seasonIndex, episodeIndex, episode });
@@ -298,6 +321,13 @@ export const useEpisodeManagement = () => {
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
+      const markedCount = updatedSeasons.reduce((acc, s, sIdx) => {
+        if (sIdx > targetSeasonIndex) return acc;
+        const eps = Array.isArray(s.episodes) ? s.episodes : [];
+        return acc + eps.filter((e) => e.watched).length;
+      }, 0);
+      trackCatchUpUsed(series.title, markedCount);
+
       setSelectedSeason(targetSeasonIndex);
     } catch (error) {
       console.error('Failed to catch up episodes:', error);
@@ -353,6 +383,7 @@ export const useEpisodeManagement = () => {
 
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
+      trackSeasonToggled(series.title, seasonIndex + 1, mode);
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
     }

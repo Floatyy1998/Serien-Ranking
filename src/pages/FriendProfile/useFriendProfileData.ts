@@ -2,6 +2,10 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import {
+  trackFriendProfileTabSwitched,
+  trackFriendProfileTasteMatchClicked,
+} from '../../firebase/analytics';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -468,15 +472,19 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   );
 
   const navigateToTasteMatch = useCallback(() => {
+    trackFriendProfileTasteMatchClicked(friendName);
     navigate(`/taste-match/${friendId}`);
-  }, [navigate, friendId]);
+  }, [navigate, friendId, friendName]);
 
   return {
     loading,
     friendId,
     friendName,
     activeTab,
-    setActiveTab,
+    setActiveTab: ((tab: 'series' | 'movies') => {
+      setActiveTab(tab);
+      trackFriendProfileTabSwitched(tab);
+    }) as React.Dispatch<React.SetStateAction<'series' | 'movies'>>,
     filters,
     setFilters,
     ratedSeries,

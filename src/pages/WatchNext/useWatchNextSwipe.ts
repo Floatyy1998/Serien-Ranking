@@ -5,6 +5,7 @@ import { PanInfo } from 'framer-motion';
 import { Series } from '../../types/Series';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
+import { trackEpisodeSwipeCompleted, trackEpisodeWatched } from '../../firebase/analytics';
 import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 
 interface UseWatchNextSwipeOptions {
@@ -62,6 +63,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = getEpisodeKey(episode);
+    trackEpisodeSwipeCompleted(episode.seriesTitle || '', swipeDirection, 'watch_next');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
@@ -99,6 +101,9 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
               `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
             );
           await lastWatchedRef.set(new Date().toISOString());
+
+          // Pet XP with genre bonus (rewatches count too)
+          await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
 
           // Badge-System for Rewatch
           const { updateEpisodeCounters } =
@@ -142,6 +147,20 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
             await import('../../features/badges/minimalActivityLogger');
           await updateEpisodeCounters(user.uid, false, episode.airDate);
         }
+
+        // GA4 Analytics: episode watched with full data
+        trackEpisodeWatched(
+          series.title || series.name || 'Unbekannte Serie',
+          episode.seasonIndex + 1,
+          episode.episodeIndex + 1,
+          {
+            tmdbId: series.id,
+            genres: series.genre?.genres,
+            runtime: episode.runtime || series.episodeRuntime || 45,
+            isRewatch: episode.isRewatch || false,
+            source: 'watch_next_swipe',
+          }
+        );
 
         // Wrapped 2026: Episode-Watch logging
         WatchActivityService.logEpisodeWatch(

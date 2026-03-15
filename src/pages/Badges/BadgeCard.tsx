@@ -9,6 +9,7 @@ import React from 'react';
 import { Badge, BadgeProgress } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { trackBadgeCardClicked } from '../../firebase/analytics';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -72,6 +73,7 @@ export const BadgeCard = React.memo(
         transition={{ duration: 0.3, delay: index * 0.03 }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
+        onClick={() => trackBadgeCardClicked(badge.id)}
         className="badge-card-wrapper"
         style={{
           background: earned

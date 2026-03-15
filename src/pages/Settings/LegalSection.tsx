@@ -4,8 +4,9 @@
 
 import { ChevronRight } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getAnalyticsConsent, setAnalyticsConsent } from '../../firebase/analytics';
 
 const DATA_SOURCES = [
   { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
@@ -22,6 +23,14 @@ interface LegalSectionProps {
 export const LegalSection = memo(
   ({ onNavigatePrivacy, onNavigateImpressum }: LegalSectionProps) => {
     const { currentTheme } = useTheme();
+    const [analyticsEnabled, setAnalyticsEnabled] = useState(() => getAnalyticsConsent() === true);
+
+    const handleAnalyticsToggle = useCallback(() => {
+      const newValue = !analyticsEnabled;
+      setAnalyticsEnabled(newValue);
+      setAnalyticsConsent(newValue);
+      if (navigator.vibrate) navigator.vibrate(50);
+    }, [analyticsEnabled]);
 
     return (
       <motion.div
@@ -64,6 +73,57 @@ export const LegalSection = memo(
             <span>Impressum</span>
             <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
           </motion.button>
+        </div>
+
+        <div
+          className="settings-datasources"
+          style={{
+            background: currentTheme.background.default,
+            marginBottom: '12px',
+          }}
+        >
+          <h3 className="settings-datasources-title" style={{ color: currentTheme.text.primary }}>
+            Analyse & Cookies
+          </h3>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '4px 0',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <div style={{ color: currentTheme.text.primary, fontSize: '14px' }}>
+                Firebase Analytics
+              </div>
+              <div style={{ color: currentTheme.text.muted, fontSize: '12px', marginTop: '2px' }}>
+                Anonymisierte Nutzungsdaten zur Verbesserung der App
+              </div>
+            </div>
+            <label className="settings-toggle-switch" style={{ flexShrink: 0, marginLeft: '12px' }}>
+              <input
+                type="checkbox"
+                checked={analyticsEnabled}
+                onChange={handleAnalyticsToggle}
+                className="settings-toggle-input"
+                aria-label="Firebase Analytics"
+              />
+              <span
+                className="settings-toggle-track"
+                style={{
+                  backgroundColor: analyticsEnabled
+                    ? currentTheme.primary
+                    : `${currentTheme.text.muted}30`,
+                }}
+              >
+                <span
+                  className="settings-toggle-thumb"
+                  style={{ left: analyticsEnabled ? '26px' : '4px' }}
+                />
+              </span>
+            </label>
+          </div>
         </div>
 
         <div

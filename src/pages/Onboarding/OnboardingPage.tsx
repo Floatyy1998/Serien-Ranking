@@ -9,6 +9,12 @@ import { OnboardingItem, useOnboardingSearch } from './hooks/useOnboardingSearch
 import { AddContentStep } from './steps/AddContentStep';
 import { CompletionStep } from './steps/CompletionStep';
 import { WelcomeStep } from './steps/WelcomeStep';
+import {
+  trackOnboardingStarted,
+  trackOnboardingCompleted,
+  trackOnboardingStepChanged,
+  trackOnboardingItemSelected,
+} from '../../firebase/analytics';
 
 type Step = 'welcome' | 'addSeries' | 'addMovies' | 'done';
 
@@ -64,12 +70,14 @@ export const OnboardingPage: React.FC = () => {
   }, []);
 
   const handleWelcomeNext = useCallback(() => {
+    trackOnboardingStarted();
     fetchSuggestions(selectedGenres);
     setStep('addSeries');
   }, [selectedGenres, fetchSuggestions]);
 
   const handleAdd = useCallback(async (item: OnboardingItem): Promise<boolean> => {
     const itemKey = `${item.type}-${item.id}`;
+    trackOnboardingItemSelected(item.type, item.title);
     setAddingId(itemKey);
 
     // Simulate slight delay for better UX
@@ -314,6 +322,9 @@ export const OnboardingPage: React.FC = () => {
       await firebase.database().ref(`users/${user.uid}/onboardingComplete`).set(true);
       setOnboardingComplete?.(true);
 
+      const seriesCount = [...pendingItems.values()].filter((i) => i.type === 'series').length;
+      const movieCount = [...pendingItems.values()].filter((i) => i.type === 'movie').length;
+      trackOnboardingCompleted(seriesCount, movieCount);
       console.log('Onboarding erfolgreich abgeschlossen!');
       navigate('/', { replace: true });
     } catch (error) {
@@ -425,8 +436,14 @@ export const OnboardingPage: React.FC = () => {
               onRemove={handleRemove}
               onSeasonSelect={handleSeasonSelect}
               onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('addMovies')}
-              onSkip={() => setStep('addMovies')}
+              onNext={() => {
+                trackOnboardingStepChanged('addMovies');
+                setStep('addMovies');
+              }}
+              onSkip={() => {
+                trackOnboardingStepChanged('addMovies');
+                setStep('addMovies');
+              }}
             />
           )}
           {step === 'addMovies' && (
@@ -445,8 +462,14 @@ export const OnboardingPage: React.FC = () => {
               onRemove={handleRemove}
               onSeasonSelect={handleSeasonSelect}
               onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('done')}
-              onSkip={() => setStep('done')}
+              onNext={() => {
+                trackOnboardingStepChanged('done');
+                setStep('done');
+              }}
+              onSkip={() => {
+                trackOnboardingStepChanged('done');
+                setStep('done');
+              }}
             />
           )}
           {step === 'done' && (

@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import {
+  trackEpisodeDiscussionNavigated,
+  trackEpisodeDiscussionWatchToggled,
+} from '../../firebase/analytics';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
@@ -199,6 +203,7 @@ export const useEpisodeDiscussion = () => {
   const hasNextEpisode = hasNextInSeason || hasNextSeason;
 
   const goToPrevEpisode = () => {
+    trackEpisodeDiscussionNavigated('prev');
     if (hasPrevInSeason) {
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum - 1}`, {
         replace: true,
@@ -211,6 +216,7 @@ export const useEpisodeDiscussion = () => {
   };
 
   const goToNextEpisode = () => {
+    trackEpisodeDiscussionNavigated('next');
     if (hasNextInSeason) {
       navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${currentEpNum + 1}`, {
         replace: true,
@@ -292,6 +298,11 @@ export const useEpisodeDiscussion = () => {
       });
 
       await firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`).set(updatedSeasons);
+
+      trackEpisodeDiscussionWatchToggled(
+        series.title || series.name || 'Unbekannte Serie',
+        !isCurrentlyWatched
+      );
 
       if (!isCurrentlyWatched) {
         WatchActivityService.logEpisodeWatch(

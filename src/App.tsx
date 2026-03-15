@@ -13,6 +13,8 @@ import { RatingsStateProvider } from './contexts/RatingsStateContext';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { RouteTracker } from './components/RouteTracker';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import './styles/performance.css';
 import { updateTheme } from './theme';
@@ -97,6 +99,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .then((module) => {
         try {
           module.initFirebase();
+          import('./firebase/analytics').then((a) => {
+            a.initAnalyticsIfConsented();
+            a.installGlobalErrorTracking();
+          });
           setFirebaseInitialized(true);
           window.setAppReady?.('firebase', true);
 
@@ -450,6 +456,7 @@ export function App() {
       <AuthProvider>
         <AppContent />
       </AuthProvider>
+      <CookieConsentBanner />
     </Router>
   );
 }
@@ -487,6 +494,7 @@ function AppContent() {
                   <ThemeProvider theme={currentTheme}>
                     <DynamicThemeProvider>
                       <CssBaseline />
+                      <RouteTracker />
                       <div className="w-full">
                         <a href="#main-content" className="skip-to-content">
                           Zum Hauptinhalt springen

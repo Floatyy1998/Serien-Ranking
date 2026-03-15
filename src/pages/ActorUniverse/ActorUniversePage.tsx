@@ -9,6 +9,10 @@ import { ActorDetailModal } from './ActorDetailModal';
 import { LoadingScreen } from './LoadingScreen';
 import { StatsBanner } from './StatsBanner';
 import { useActorUniverseData, TabId } from './useActorUniverseData';
+import {
+  trackActorUniverseTabSwitched,
+  trackActorUniverseVoiceToggled,
+} from '../../firebase/analytics';
 import './ActorUniversePage.css';
 
 // Tab configuration
@@ -108,7 +112,10 @@ export const ActorUniversePage = () => {
             return (
               <motion.button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  trackActorUniverseTabSwitched(tab.id);
+                }}
                 whileTap={{ scale: 0.95 }}
                 className="au-tab-btn"
                 style={{
@@ -129,7 +136,10 @@ export const ActorUniversePage = () => {
 
           {/* Voice Actor Toggle */}
           <motion.button
-            onClick={toggleVoiceActors}
+            onClick={() => {
+              toggleVoiceActors();
+              trackActorUniverseVoiceToggled(!hideVoiceActors);
+            }}
             whileTap={{ scale: 0.95 }}
             title={hideVoiceActors ? 'Voice Actors anzeigen' : 'Voice Actors ausblenden'}
             className="au-voice-toggle"

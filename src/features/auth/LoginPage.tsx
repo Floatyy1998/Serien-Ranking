@@ -17,6 +17,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
+import { trackLogin, trackLoginError } from '../../firebase/analytics';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -33,9 +34,11 @@ export const LoginPage = () => {
 
     try {
       await firebase.auth().signInWithEmailAndPassword(email, password);
+      trackLogin('email');
       navigate('/');
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
+      trackLoginError(firebaseError.code || 'unknown');
       if (firebaseError.code === 'auth/user-not-found') {
         setError('Kein Benutzer mit dieser E-Mail-Adresse gefunden.');
       } else if (firebaseError.code === 'auth/wrong-password') {

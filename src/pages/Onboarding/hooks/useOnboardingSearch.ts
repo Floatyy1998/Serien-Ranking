@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../App';
+import { trackOnboardingSearched } from '../../../firebase/analytics';
 
 export interface OnboardingItem {
   id: number;
@@ -186,6 +187,7 @@ export function useOnboardingSearch() {
     setSearchLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
+        trackOnboardingSearched(query.trim(), 'series');
         const encoded = encodeURIComponent(query.trim());
         const [tvRes, movieRes] = await Promise.all([
           fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then((r) =>

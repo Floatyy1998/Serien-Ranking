@@ -2,6 +2,7 @@ import { Check } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackSeasonSelected } from '../../firebase/analytics';
 import type { SeriesSeason } from './types';
 
 interface SeasonTabsProps {
@@ -31,7 +32,10 @@ export const SeasonTabs = memo<SeasonTabsProps>(
             <motion.button
               key={index}
               whileTap={{ scale: 0.95 }}
-              onClick={() => onSelectSeason(index)}
+              onClick={() => {
+                onSelectSeason(index);
+                trackSeasonSelected(season.seasonNumber?.toString() || '', season.seasonNumber + 1);
+              }}
               className="season-tabs__tab"
               style={{
                 borderColor: isSelected

@@ -11,6 +11,7 @@ import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
 import { ResetSection } from './ResetSection';
 import './ThemePage.css';
+import { trackThemeSelected, trackThemeCustomized } from '../../firebase/analytics';
 
 const presetThemes: PresetTheme[] = [
   {
@@ -94,6 +95,7 @@ export const ThemePage = () => {
   const handleColorChange = useCallback(
     (key: string, value: string) => {
       updateTheme({ [key]: value });
+      trackThemeCustomized();
     },
     [updateTheme]
   );
@@ -101,6 +103,7 @@ export const ThemePage = () => {
   const applyPresetTheme = useCallback(
     (preset: PresetTheme) => {
       if (navigator.vibrate) navigator.vibrate(10);
+      trackThemeSelected(preset.name);
       updateTheme({
         primaryColor: preset.primaryColor,
         backgroundColor: preset.backgroundColor,

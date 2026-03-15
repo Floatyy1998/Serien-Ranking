@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../App';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
+import { trackEpisodeSwipeCompleted, trackEpisodeWatched } from '../firebase/analytics';
 import { useContinueWatching } from './useContinueWatching';
 import { useWebWorkerTodayEpisodes } from './useWebWorkerTodayEpisodes';
 
@@ -40,6 +41,7 @@ export const useEpisodeSwipeHandlers = () => {
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
+    trackEpisodeSwipeCompleted(item.title, swipeDirection, 'continue_watching');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
@@ -74,15 +76,29 @@ export const useEpisodeSwipeHandlers = () => {
           .ref(`${episodeBasePath}/lastWatchedAt`)
           .set(new Date().toISOString());
 
+        // GA4 Analytics: episode watched with full data
+        trackEpisodeWatched(
+          item.title,
+          item.nextEpisode.seasonNumber,
+          item.nextEpisode.episodeNumber,
+          {
+            tmdbId: item.id,
+            genres: item.genre?.genres,
+            runtime: item.episodeRuntime || 45,
+            isRewatch: currentCount > 0,
+            source: 'continue_watching_swipe',
+          }
+        );
+
+        // Pet XP geben mit Genre-Bonus (auch bei Rewatches)
+        await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
           await firebase
             .database()
             .ref(`${episodeBasePath}/firstWatchedAt`)
             .set(new Date().toISOString());
-
-          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
-          await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
 
           // Wrapped 2026: Episode-Watch loggen
           const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
@@ -124,6 +140,7 @@ export const useEpisodeSwipeHandlers = () => {
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
+    trackEpisodeSwipeCompleted(episode.seriesTitle, swipeDirection, 'today_episodes');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
@@ -162,15 +179,24 @@ export const useEpisodeSwipeHandlers = () => {
           .ref(`${episodeBasePath}/lastWatchedAt`)
           .set(new Date().toISOString());
 
+        // GA4 Analytics: episode watched with full data
+        trackEpisodeWatched(episode.seriesTitle, episode.seasonNumber, episode.episodeNumber, {
+          tmdbId: episode.seriesId,
+          genres: episode.seriesGenre,
+          runtime: episode.runtime || 45,
+          isRewatch: currentCount > 0,
+          source: 'today_episodes_swipe',
+        });
+
+        // Pet XP geben mit Genre-Bonus (auch bei Rewatches)
+        await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
+
         // Update firstWatchedAt if this is the first time
         if (currentCount === 0) {
           await firebase
             .database()
             .ref(`${episodeBasePath}/firstWatchedAt`)
             .set(new Date().toISOString());
-
-          // Pet XP geben mit Genre-Bonus (nur beim ersten Schauen)
-          await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
 
           // Wrapped 2026: Episode-Watch loggen
           WatchActivityService.logEpisodeWatch(

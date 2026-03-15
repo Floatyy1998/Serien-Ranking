@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
@@ -471,11 +472,17 @@ export const useDiscoverFetch = (
           setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
           setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
 
-          const title = item.title || item.name;
+          const addedTitle = item.title || item.name;
           setSnackbar({
             open: true,
-            message: `"${title}" wurde erfolgreich hinzugefügt!`,
+            message: `"${addedTitle}" wurde erfolgreich hinzugefügt!`,
           });
+
+          if (item.type === 'series') {
+            trackSeriesAdded(String(item.id), addedTitle || '', 'discover');
+          } else {
+            trackMovieAdded(String(item.id), addedTitle || '', 'discover');
+          }
 
           const posterPath = item.poster_path ?? undefined;
           if (item.type === 'series') {

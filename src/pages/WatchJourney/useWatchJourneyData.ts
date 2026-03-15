@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import {
+  trackWatchJourneyTabSwitched,
+  trackWatchJourneyYearChanged,
+} from '../../firebase/analytics';
+import {
   calculateMultiYearTrends,
   calculateWatchJourney,
   MultiYearTrendsData,
@@ -103,6 +107,7 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
   const selectYear = (year: number) => {
     setSelectedYear(year);
     setShowYearPicker(false);
+    trackWatchJourneyYearChanged(year);
   };
 
   const hasData = !!data && data.totalEpisodes + data.totalMovies > 0;
@@ -112,7 +117,10 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
     data,
     trendsData,
     activeTab,
-    setActiveTab,
+    setActiveTab: (tab: TabType) => {
+      setActiveTab(tab);
+      trackWatchJourneyTabSwitched(tab);
+    },
     selectedYear,
     setSelectedYear,
     showYearPicker,

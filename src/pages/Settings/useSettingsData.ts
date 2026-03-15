@@ -8,6 +8,12 @@ import 'firebase/compat/storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
+import {
+  trackLogout,
+  trackProfilePhotoUploaded,
+  trackPublicProfileToggled,
+  trackPublicLinkCopied,
+} from '../../firebase/analytics';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -73,6 +79,7 @@ export const useSettingsData = () => {
   const handleLogout = useCallback(async () => {
     if (window.confirm('Möchtest du dich wirklich abmelden?')) {
       try {
+        trackLogout();
         await firebase.auth().signOut();
         navigate('/');
       } catch (error) {
@@ -104,6 +111,7 @@ export const useSettingsData = () => {
         await user.reload();
 
         setPhotoURL(downloadURL);
+        trackProfilePhotoUploaded();
         showSnackbar('Profilbild erfolgreich hochgeladen!');
       } catch (error) {
         setDialog({
@@ -184,6 +192,7 @@ export const useSettingsData = () => {
 
         setIsPublicProfile(enabled);
         setPublicProfileId(enabled ? newPublicProfileId : '');
+        trackPublicProfileToggled(enabled);
 
         if (navigator.vibrate) navigator.vibrate(50);
       } catch (error) {
@@ -200,6 +209,7 @@ export const useSettingsData = () => {
 
     const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
     navigator.clipboard.writeText(publicUrl).then(() => {
+      trackPublicLinkCopied();
       if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
       showSnackbar('Link kopiert!');
     });

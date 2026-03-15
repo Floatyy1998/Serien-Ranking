@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getFormattedDate } from '../../lib/date/date.utils';
+import { trackCastMemberClicked } from '../../firebase/analytics';
 import { HorizontalScrollContainer } from '../ui';
 
 interface CastMember {
@@ -323,6 +324,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   };
 
   const handlePersonClick = (personId: number) => {
+    const member = cast.find((m) => m.id === personId) || crew.find((m) => m.id === personId);
+    trackCastMemberClicked(member?.name || String(personId));
     if (onPersonClick) {
       onPersonClick(personId);
     } else {

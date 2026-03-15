@@ -3,6 +3,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import {
+  trackCalendarNavigated,
+  trackCalendarFilterToggled,
+  trackCalendarEpisodeMarked,
+  trackCalendarGroupExpanded,
+  trackEpisodeWatched,
+} from '../../firebase/analytics';
 import { useWeeklyEpisodes, getWeekNumber, WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 
 // ── Utility helpers ──────────────────────────────────────────────
@@ -60,6 +67,7 @@ export const useCalendarData = () => {
   const toggleWatchlistOnly = useCallback((next: boolean) => {
     setWatchlistOnly(next);
     localStorage.setItem('calendarWatchlistOnly', String(next));
+    trackCalendarFilterToggled(next);
   }, []);
 
   // Weekly episodes from shared hook
@@ -79,6 +87,7 @@ export const useCalendarData = () => {
       else next.add(groupKey);
       return next;
     });
+    trackCalendarGroupExpanded(groupKey);
   }, []);
 
   // ── Backdrops ────────────────────────────────────────────────
@@ -163,6 +172,24 @@ export const useCalendarData = () => {
         }
 
         await firebase.database().ref().update(updates);
+        trackCalendarEpisodeMarked(String(seriesNmr));
+
+        // GA4 Analytics: episode watched with full data
+        const series = seriesList.find((s) => s.nmr === seriesNmr);
+        if (series) {
+          trackEpisodeWatched(
+            series.title || series.name || '',
+            seasonIndex + 1,
+            episodeIndex + 1,
+            {
+              tmdbId: series.id,
+              genres: series.genre?.genres,
+              runtime: series.episodeRuntime || 45,
+              isRewatch: !snap.val() ? false : true,
+              source: 'calendar',
+            }
+          );
+        }
       } catch (error) {
         console.error('Failed to mark episode:', error);
       }
@@ -172,9 +199,18 @@ export const useCalendarData = () => {
 
   // ── Week navigation helpers ──────────────────────────────────
 
-  const goToPrevWeek = useCallback(() => setWeekOffset((o) => o - 1), []);
-  const goToNextWeek = useCallback(() => setWeekOffset((o) => o + 1), []);
-  const goToCurrentWeek = useCallback(() => setWeekOffset(0), []);
+  const goToPrevWeek = useCallback(() => {
+    setWeekOffset((o) => o - 1);
+    trackCalendarNavigated('prev');
+  }, []);
+  const goToNextWeek = useCallback(() => {
+    setWeekOffset((o) => o + 1);
+    trackCalendarNavigated('next');
+  }, []);
+  const goToCurrentWeek = useCallback(() => {
+    setWeekOffset(0);
+    trackCalendarNavigated('today');
+  }, []);
 
   return {
     // Week navigation

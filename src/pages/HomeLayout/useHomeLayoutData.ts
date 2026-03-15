@@ -7,6 +7,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../App';
+import { trackHomeLayoutChanged, trackHomeSectionReordered } from '../../firebase/analytics';
 
 // --- Constants ---
 
@@ -249,6 +250,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       const newHidden = hidden.includes(id) ? hidden.filter((s) => s !== id) : [...hidden, id];
       setHidden(newHidden);
       saveConfig({ ...currentConfig(), [configKey]: newHidden });
+      trackHomeLayoutChanged(id, !newHidden.includes(id));
       if (navigator.vibrate) navigator.vibrate(50);
     };
   };
@@ -258,6 +260,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   const handleSectionReorder = (newOrder: string[]) => {
     setSectionOrder(newOrder);
     saveConfig({ ...currentConfig(), sectionOrder: newOrder });
+    trackHomeSectionReordered();
   };
 
   const handleSectionToggle = makeToggle(hiddenSections, setHiddenSections, 'hiddenSections');

@@ -6,6 +6,11 @@ import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie } from '../../types/Movie';
+import {
+  trackMovieAdded,
+  trackMovieDeleted,
+  trackMovieDetailTabSwitched,
+} from '../../firebase/analytics';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -236,6 +241,7 @@ export const useMovieData = () => {
         }
         await logMovieAdded(user.uid, movie.title || 'Unbekannter Film', movie.id, posterPath);
 
+        trackMovieAdded(String(movie.id), movie.title || '', 'detail_page');
         setSnackbar({ open: true, message: 'Film erfolgreich hinzugefügt!' });
         setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
@@ -271,7 +277,7 @@ export const useMovieData = () => {
 
       const movieRef = firebase.database().ref(`${user.uid}/filme/${movie.nmr}`);
       await movieRef.remove();
-
+      trackMovieDeleted(String(movie.id), movie.title || '');
       setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
@@ -315,7 +321,10 @@ export const useMovieData = () => {
 
     // UI state
     activeTab,
-    setActiveTab,
+    setActiveTab: (tab: 'info' | 'cast') => {
+      setActiveTab(tab);
+      trackMovieDetailTabSwitched(tab);
+    },
     isMobile,
     showDeleteConfirm,
     setShowDeleteConfirm,

@@ -2,6 +2,7 @@ import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackScrollToTopUsed } from '../../firebase/analytics';
 
 interface ScrollToTopButtonProps {
   /** CSS selector for the scroll container, or 'window' to use window scroll */
@@ -58,6 +59,8 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
   const scrollToTop = () => {
     const container = getContainer();
     if (!container) return;
+
+    trackScrollToTopUsed(window.location.pathname);
 
     if (container instanceof Window) {
       window.scrollTo({ top: 0, behavior: 'smooth' });

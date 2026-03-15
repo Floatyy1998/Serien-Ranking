@@ -9,6 +9,13 @@ import { petMoodService } from '../../services/petMoodService';
 import { PET_CONFIG } from '../../services/petConstants';
 import { ACCESSORIES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
+import {
+  trackPetCreated,
+  trackPetInteraction,
+  trackPetSelected,
+  trackPetReleased,
+  trackPetCustomized,
+} from '../../firebase/analytics';
 
 export function usePetsData() {
   const authContext = useAuth();
@@ -82,6 +89,7 @@ export function usePetsData() {
     if (!user || !petName.trim()) return;
     try {
       const newPet = await petService.createPet(user.uid, petName.trim(), selectedType);
+      trackPetCreated(selectedType);
       setPets((prev) => [...prev, newPet]);
       setSelectedPetIndex(pets.length); // neues Pet auswählen
       setShowCreateModal(false);
@@ -97,6 +105,7 @@ export function usePetsData() {
     if (!user || !pet) return;
     try {
       const updatedPet = await petService.feedPet(user.uid, pet.id);
+      trackPetInteraction('feed');
       if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
     } catch (error) {
       console.error('Error feeding pet:', error);
@@ -107,6 +116,7 @@ export function usePetsData() {
     if (!user || !pet) return;
     try {
       const updatedPet = await petService.playWithPet(user.uid, pet.id);
+      trackPetInteraction('play');
       if (updatedPet) setPets((prev) => prev.map((p) => (p.id === updatedPet.id ? updatedPet : p)));
     } catch (error) {
       console.error('Error playing with pet:', error);
@@ -126,6 +136,7 @@ export function usePetsData() {
   const releasePet = async () => {
     if (!user || !pet) return;
     try {
+      trackPetReleased(pet.type, pet.level);
       await petService.deletePet(user.uid, pet.id);
       const remaining = pets.filter((p) => p.id !== pet.id);
       setPets(remaining);
@@ -150,6 +161,7 @@ export function usePetsData() {
   const changeColor = async (newColor: string) => {
     if (!user || !pet) return;
     setActiveColorBorder(newColor);
+    trackPetCustomized('color', newColor);
 
     try {
       const updatedPet = await petService.changePetColor(user.uid, pet.id, newColor);
@@ -164,6 +176,7 @@ export function usePetsData() {
 
   const toggleAccessory = async (accessoryId: string) => {
     if (!user || !pet) return;
+    trackPetCustomized('accessory', accessoryId);
 
     const currentAccessories = pet.accessories || [];
     const accessoryIndex = currentAccessories.findIndex((acc) => acc.id === accessoryId);
@@ -206,6 +219,7 @@ export function usePetsData() {
   const selectPet = async (idx: number) => {
     setSelectedPetIndex(idx);
     setActiveColorBorder(pets[idx].color);
+    trackPetSelected(pets[idx].type, pets[idx].name);
     if (user) await petService.setActivePetId(user.uid, pets[idx].id);
   };
 

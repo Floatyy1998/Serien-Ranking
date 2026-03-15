@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackHiddenSeriesUnhidden, trackHiddenSeriesClicked } from '../../firebase/analytics';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -12,9 +13,10 @@ export const HiddenSeriesPage: React.FC = () => {
   const { hiddenSeriesList, toggleHideSeries } = useSeriesList();
   const { currentTheme } = useTheme();
 
-  const handleUnhide = async (nmr: number, e: React.MouseEvent) => {
+  const handleUnhide = async (nmr: number, seriesName: string, e: React.MouseEvent) => {
     e.stopPropagation();
     await toggleHideSeries(nmr, false);
+    trackHiddenSeriesUnhidden(seriesName);
   };
 
   const seriesWithStats = useMemo(() => {
@@ -135,7 +137,10 @@ export const HiddenSeriesPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0, overflow: 'hidden' }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  onClick={() => navigate(`/series/${series.id}`)}
+                  onClick={() => {
+                    trackHiddenSeriesClicked(series.title || series.name || '');
+                    navigate(`/series/${series.id}`);
+                  }}
                   style={{
                     display: 'flex',
                     gap: '14px',
@@ -232,7 +237,7 @@ export const HiddenSeriesPage: React.FC = () => {
                   {/* Unhide button */}
                   <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={(e) => handleUnhide(series.nmr, e)}
+                    onClick={(e) => handleUnhide(series.nmr, series.title || series.name || '', e)}
                     style={{
                       alignSelf: 'center',
                       padding: '10px 14px',

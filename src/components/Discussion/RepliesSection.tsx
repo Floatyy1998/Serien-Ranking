@@ -16,6 +16,7 @@ import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
+import { trackReplyPosted } from '../../firebase/analytics';
 import { ReplyItem } from './ReplyItem';
 
 export const RepliesSection: React.FC<{
@@ -82,6 +83,7 @@ export const RepliesSection: React.FC<{
     const fullContent = [newReply.trim(), ...replyImages].filter(Boolean).join('\n');
     const success = await createReply(fullContent, newReplyIsSpoiler);
     if (success) {
+      trackReplyPosted(discussionId);
       setNewReply('');
       setReplyImages([]);
       setNewReplyIsSpoiler(false);

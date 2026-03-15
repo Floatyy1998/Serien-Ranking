@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackActivityTabSwitched, trackAddFriendDialogOpened } from '../../firebase/analytics';
 import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
@@ -200,7 +201,10 @@ export const ActivityPage = () => {
           <Tooltip title="Freund hinzufügen" arrow>
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setShowAddFriend(true)}
+              onClick={() => {
+                setShowAddFriend(true);
+                trackAddFriendDialogOpened();
+              }}
               style={{
                 width: '44px',
                 height: '44px',
@@ -238,7 +242,10 @@ export const ActivityPage = () => {
           <motion.button
             key={tab.id}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              trackActivityTabSwitched(tab.id);
+            }}
             style={{
               flex: 1,
               display: 'flex',

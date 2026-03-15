@@ -27,6 +27,7 @@ import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
+import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import type { Series } from '../../types/Series';
 import { CatchUpCard } from './CatchUpCard';
@@ -44,6 +45,7 @@ import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
+import { trackHomeCardClicked } from '../../firebase/analytics';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -171,6 +173,9 @@ export const HomePage: React.FC = () => {
 
         await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
         await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+
+        // Pet XP with genre bonus (rewatches count too)
+        await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
 
         if (!item.currentWatchCount) {
           await firebase.database().ref(`${episodePath}/watched`).set(true);
@@ -498,7 +503,10 @@ export const HomePage: React.FC = () => {
                   <motion.div
                     key={id}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate(a.path)}
+                    onClick={() => {
+                      trackHomeCardClicked(id, a.label);
+                      navigate(a.path);
+                    }}
                     style={{
                       background: a.bg,
                       border: a.border,
@@ -592,7 +600,10 @@ export const HomePage: React.FC = () => {
                 <motion.button
                   key={id}
                   whileTap={{ scale: 0.93 }}
-                  onClick={() => navigate(a.path)}
+                  onClick={() => {
+                    trackHomeCardClicked(id, a.label);
+                    navigate(a.path);
+                  }}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -696,7 +707,10 @@ export const HomePage: React.FC = () => {
                 <motion.button
                   key={id}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => navigate(a.path)}
+                  onClick={() => {
+                    trackHomeCardClicked(id, a.label);
+                    navigate(a.path);
+                  }}
                   style={{
                     padding: '10px',
                     background: a.bg,

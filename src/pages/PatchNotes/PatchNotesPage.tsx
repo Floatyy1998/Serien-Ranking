@@ -13,6 +13,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackPatchNotesViewed } from '../../firebase/analytics';
 import './PatchNotesPage.css';
 
 interface Feature {
@@ -152,7 +153,14 @@ export const PatchNotesPage = () => {
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: releaseIdx * 0.15 + featureIdx * 0.06 }}
-                  onClick={feature.link ? () => navigate(feature.link!.path) : undefined}
+                  onClick={
+                    feature.link
+                      ? () => {
+                          trackPatchNotesViewed(release.version, feature.title);
+                          navigate(feature.link!.path);
+                        }
+                      : undefined
+                  }
                   style={{ cursor: feature.link ? 'pointer' : 'default' }}
                 >
                   <div

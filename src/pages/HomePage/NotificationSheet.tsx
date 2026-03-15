@@ -19,6 +19,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
+import { trackNotificationDismissed } from '../../firebase/analytics';
 import type { UnifiedNotification } from './useUnifiedNotifications';
 import { formatNotificationTime } from './useUnifiedNotifications';
 
@@ -206,9 +207,11 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                     if (item.kind === 'request') return;
                     if (item.kind === 'discussion' && item.notificationId) {
                       onMarkAsRead(item.notificationId);
+                      trackNotificationDismissed('discussion');
                     }
                     if (item.kind === 'announcement') {
                       onDismissAnnouncement(item.id);
+                      trackNotificationDismissed('announcement');
                     }
                     if (item.navigateTo) {
                       onClose();

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DiscussionReply } from '../../types/Discussion';
+import { trackReplyLiked, trackSpoilerFlagged } from '../../firebase/analytics';
 import { ImagePreview } from './ImagePreview';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
@@ -41,6 +42,7 @@ export const ReplyItem: React.FC<{
   };
 
   const handleFlagAsSpoiler = async () => {
+    trackSpoilerFlagged(reply.id, 'reply');
     await onEdit({ isSpoiler: true });
     setShowSpoilerConfirm(false);
   };
@@ -295,7 +297,10 @@ export const ReplyItem: React.FC<{
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
               <button
-                onClick={onToggleLike}
+                onClick={() => {
+                  trackReplyLiked(reply.id, !isLiked);
+                  onToggleLike();
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',

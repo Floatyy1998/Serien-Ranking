@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { trackCatchUpSortChanged } from '../../firebase/analytics';
 import { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -64,6 +65,7 @@ export const useCatchUpData = () => {
       // Scroll to top when sort changes
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       sessionStorage.removeItem(SCROLL_STORAGE_KEY);
+      trackCatchUpSortChanged(value);
     },
     [sortBy]
   );

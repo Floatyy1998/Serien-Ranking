@@ -5,6 +5,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
+import {
+  trackDiscussionLiked,
+  trackDiscussionUnliked,
+  trackSpoilerFlagged,
+} from '../../firebase/analytics';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { extractImageUrls, formatRelativeTime } from './utils';
@@ -56,6 +61,7 @@ export const DiscussionItem: React.FC<{
   };
 
   const handleFlagAsSpoiler = async () => {
+    trackSpoilerFlagged(discussion.id, 'discussion');
     await onEdit({ isSpoiler: true });
     setShowSpoilerConfirm(false);
   };
@@ -538,7 +544,14 @@ export const DiscussionItem: React.FC<{
         <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={onToggleLike}
+            onClick={() => {
+              if (isLiked) {
+                trackDiscussionUnliked(discussion.id);
+              } else {
+                trackDiscussionLiked(discussion.id);
+              }
+              onToggleLike();
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
