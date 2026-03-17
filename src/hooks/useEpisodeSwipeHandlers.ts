@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../App';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
-import { trackEpisodeSwipeCompleted, trackEpisodeWatched } from '../firebase/analytics';
+import { trackEpisodeWatched } from '../firebase/analytics';
 import { useContinueWatching } from './useContinueWatching';
 import { useWebWorkerTodayEpisodes } from './useWebWorkerTodayEpisodes';
 
@@ -41,7 +41,6 @@ export const useEpisodeSwipeHandlers = () => {
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-    trackEpisodeSwipeCompleted(item.title, swipeDirection, 'continue_watching');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
@@ -140,7 +139,6 @@ export const useEpisodeSwipeHandlers = () => {
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
-    trackEpisodeSwipeCompleted(episode.seriesTitle, swipeDirection, 'today_episodes');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));

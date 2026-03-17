@@ -6,11 +6,7 @@ import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie } from '../../types/Movie';
-import {
-  trackMovieAdded,
-  trackMovieDeleted,
-  trackMovieDetailTabSwitched,
-} from '../../firebase/analytics';
+import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -323,7 +319,6 @@ export const useMovieData = () => {
     activeTab,
     setActiveTab: (tab: 'info' | 'cast') => {
       setActiveTab(tab);
-      trackMovieDetailTabSwitched(tab);
     },
     isMobile,
     showDeleteConfirm,

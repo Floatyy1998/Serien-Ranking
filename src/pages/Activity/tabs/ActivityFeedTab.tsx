@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { trackActivityFilterChanged, trackActivityEntryClicked } from '../../../firebase/analytics';
 import { ActivityEntryCard } from '../ActivityEntryCard';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';
@@ -72,7 +71,6 @@ export const ActivityFeedTab = ({
             className="activity-filter-btn"
             onClick={() => {
               setFilterType(filter.key as ActivityFilterType);
-              trackActivityFilterChanged(filter.key);
             }}
             style={{
               padding: '10px 18px',
@@ -269,7 +267,6 @@ export const ActivityFeedTab = ({
                               onClick={() => {
                                 if (tmdbId) {
                                   saveScrollPosition();
-                                  trackActivityEntryClicked(isMovie ? 'movie' : 'series');
                                   navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
                                 }
                               }}

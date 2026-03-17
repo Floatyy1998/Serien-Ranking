@@ -6,7 +6,6 @@ import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { trackDiscussionClicked } from '../../../firebase/analytics';
 import { useActivityGrouping } from '../useActivityGrouping';
 
 interface DiscussionNotification {
@@ -31,7 +30,6 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
 
   const handleNotificationClick = (notification: DiscussionNotification) => {
     markAsRead(notification.id);
-    trackDiscussionClicked(notification.id);
     if (notification.data?.discussionPath) {
       const path = notification.data.discussionPath as string;
       // Path format: "discussions/{itemType}/{itemId}" or "discussions/episode/{itemId}_s{season}_e{episode}"

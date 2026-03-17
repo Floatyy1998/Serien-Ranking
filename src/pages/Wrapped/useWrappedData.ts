@@ -12,12 +12,6 @@ import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 import { WrappedStats, DEFAULT_SLIDE_CONFIG, WrappedSlideConfig } from '../../types/Wrapped';
 import { calculateWrappedStats } from '../../services/wrappedCalculator';
 import { WatchActivityService } from '../../services/watchActivityService';
-import {
-  trackWrappedSlideNavigated,
-  trackContentShared,
-  trackWrappedViewed,
-  trackWrappedShared,
-} from '../../firebase/analytics';
 
 // Standard-Jahr (jedes Jahr hier ändern)
 const DEFAULT_YEAR = 2025;
@@ -165,7 +159,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
 
         setStats(calculatedStats);
         setError(null);
-        trackWrappedViewed(0);
       } catch (err) {
         console.error('Error loading wrapped data:', err);
         setError('Fehler beim Laden der Daten.');
@@ -184,10 +177,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
       const maxIndex = enabledSlides.length - 1;
       const newIndex = Math.max(0, Math.min(index, maxIndex));
       setCurrentSlide(newIndex);
-      const slideConfig = enabledSlides[newIndex];
-      if (slideConfig) {
-        trackWrappedSlideNavigated(slideConfig.type, newIndex);
-      }
     },
     [enabledSlides]
   );
@@ -271,9 +260,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
       `${stats.totalMoviesWatched} Filme\n` +
       `${Math.round(stats.totalHoursWatched)} Stunden\n` +
       `${stats.achievements.filter((a) => a.unlocked).length} Achievements`;
-
-    trackWrappedShared();
-    trackContentShared('wrapped', `wrapped-${year}`);
 
     if (navigator.share) {
       try {

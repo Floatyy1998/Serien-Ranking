@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackLeaderboardUserClicked } from '../../firebase/analytics';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
 
@@ -33,7 +32,6 @@ export const RankingList = React.memo(function RankingList({
           transition={{ delay: 0.3 + i * 0.05 }}
           onClick={() => {
             if (!entry.isCurrentUser) {
-              trackLeaderboardUserClicked(entry.displayName);
               navigate(`/friend/${entry.uid}`);
             }
           }}

@@ -162,6 +162,33 @@ export const useWeeklyEpisodes = (
       }
     }
 
+    // Deduplicate: if same series has same air_date from different seasons, keep highest season
+    for (const [dateKey, episodes] of schedule) {
+      const seen = new Map<string, number>(); // key: seriesId-epName → index in array
+      const toRemove = new Set<number>();
+      for (let i = 0; i < episodes.length; i++) {
+        const ep = episodes[i];
+        const key = `${ep.seriesId}-${ep.episodeName}`;
+        if (seen.has(key)) {
+          const prevIdx = seen.get(key)!;
+          // Keep the one with the higher season number (more recent source)
+          if (ep.seasonNumber > episodes[prevIdx].seasonNumber) {
+            toRemove.add(prevIdx);
+            seen.set(key, i);
+          } else {
+            toRemove.add(i);
+          }
+        } else {
+          seen.set(key, i);
+        }
+      }
+      if (toRemove.size > 0) {
+        const filtered = episodes.filter((_, idx) => !toRemove.has(idx));
+        schedule.set(dateKey, filtered);
+        totalEpisodes -= toRemove.size;
+      }
+    }
+
     // Sort episodes within each day by air time, then series title
     for (const [, episodes] of schedule) {
       episodes.sort((a, b) => {

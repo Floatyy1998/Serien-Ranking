@@ -101,8 +101,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           module.initFirebase();
           import('./firebase/analytics').then((a) => {
             a.initAnalyticsIfConsented();
-            a.installGlobalErrorTracking();
           });
+          // Remove compat analytics import (GA4 replaced by RTDB)
+          // firebase/compat/analytics is no longer needed
           setFirebaseInitialized(true);
           window.setAppReady?.('firebase', true);
 
@@ -139,6 +140,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
             setUser(user);
             setAuthStateResolved(true);
+            // Set analytics user for RTDB analytics
+            import('./firebase/analytics').then((a) => {
+              a.setAnalyticsUser(user?.uid ?? null);
+            });
             window.setAppReady?.('auth', true);
             window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
 

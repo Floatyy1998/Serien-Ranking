@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
-import { trackRegister, trackRegisterError } from '../../firebase/analytics';
+import { trackRegister } from '../../firebase/analytics';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -80,7 +80,6 @@ export const RegisterPage = () => {
       }
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
-      trackRegisterError(firebaseError.code || 'unknown');
       if (firebaseError.code === 'auth/email-already-in-use') {
         setError('Diese E-Mail-Adresse wird bereits verwendet.');
       } else if (firebaseError.code === 'auth/invalid-email') {

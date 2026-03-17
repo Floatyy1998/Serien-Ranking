@@ -1,7 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { trackWatchNextReorderUsed } from '../firebase/analytics';
 import { NextEpisode } from './useWatchNextEpisodes';
 
 interface UseEpisodeDragDropOptions {
@@ -190,7 +189,6 @@ export const useEpisodeDragDrop = ({
         const uniqueOrder = [...new Set(newOrder)];
         setWatchlistOrder(uniqueOrder);
         await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
-        trackWatchNextReorderUsed();
       }
 
       setDraggedIndex(null);
@@ -452,7 +450,6 @@ export const useEpisodeDragDrop = ({
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
       await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
-      trackWatchNextReorderUsed();
     }
 
     setDraggedIndex(null);
