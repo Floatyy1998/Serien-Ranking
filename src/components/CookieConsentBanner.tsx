@@ -112,8 +112,8 @@ export const CookieConsentBanner = memo(() => {
                 lineHeight: 1.55,
               }}
             >
-              Wir nutzen Firebase Analytics zur Verbesserung der App. Die Einwilligung ist
-              freiwillig und jederzeit in den{' '}
+              Wir erfassen anonymisierte Nutzungsdaten zur Verbesserung der App. Die Einwilligung
+              ist freiwillig und jederzeit in den{' '}
               <a
                 href="/settings"
                 style={{

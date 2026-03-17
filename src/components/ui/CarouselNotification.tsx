@@ -21,7 +21,6 @@ import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { trackHomeAnnouncementDismissed } from '../../firebase/analytics';
 import './CarouselNotification.css';
 
 type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch';
@@ -153,7 +152,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   const handleDismissAll = async () => {
     await markAsNotified(series.map((s) => s.id));
-    trackHomeAnnouncementDismissed(variant);
     setIsVisible(false);
     setTimeout(onDismiss, 300);
   };

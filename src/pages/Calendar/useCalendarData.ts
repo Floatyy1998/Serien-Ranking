@@ -3,13 +3,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import {
-  trackCalendarNavigated,
-  trackCalendarFilterToggled,
-  trackCalendarEpisodeMarked,
-  trackCalendarGroupExpanded,
-  trackEpisodeWatched,
-} from '../../firebase/analytics';
+import { trackEpisodeWatched } from '../../firebase/analytics';
 import { useWeeklyEpisodes, getWeekNumber, WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 
 // ── Utility helpers ──────────────────────────────────────────────
@@ -67,7 +61,6 @@ export const useCalendarData = () => {
   const toggleWatchlistOnly = useCallback((next: boolean) => {
     setWatchlistOnly(next);
     localStorage.setItem('calendarWatchlistOnly', String(next));
-    trackCalendarFilterToggled(next);
   }, []);
 
   // Weekly episodes from shared hook
@@ -87,7 +80,6 @@ export const useCalendarData = () => {
       else next.add(groupKey);
       return next;
     });
-    trackCalendarGroupExpanded(groupKey);
   }, []);
 
   // ── Backdrops ────────────────────────────────────────────────
@@ -172,7 +164,6 @@ export const useCalendarData = () => {
         }
 
         await firebase.database().ref().update(updates);
-        trackCalendarEpisodeMarked(String(seriesNmr));
 
         // GA4 Analytics: episode watched with full data
         const series = seriesList.find((s) => s.nmr === seriesNmr);
@@ -201,15 +192,12 @@ export const useCalendarData = () => {
 
   const goToPrevWeek = useCallback(() => {
     setWeekOffset((o) => o - 1);
-    trackCalendarNavigated('prev');
   }, []);
   const goToNextWeek = useCallback(() => {
     setWeekOffset((o) => o + 1);
-    trackCalendarNavigated('next');
   }, []);
   const goToCurrentWeek = useCallback(() => {
     setWeekOffset(0);
-    trackCalendarNavigated('today');
   }, []);
 
   return {

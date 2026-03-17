@@ -8,7 +8,6 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackStatsActorUniverseClicked } from '../../firebase/analytics';
 import {
   ActorUniverseBanner,
   HeroSection,
@@ -29,7 +28,6 @@ export const StatsPage = () => {
   const timeData = useMemo(() => formatTime(stats.totalMinutes), [stats.totalMinutes]);
   const navigateToActors = useMemo(
     () => () => {
-      trackStatsActorUniverseClicked();
       navigate('/actor-universe');
     },
     [navigate]

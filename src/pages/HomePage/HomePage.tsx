@@ -45,7 +45,6 @@ import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
-import { trackHomeCardClicked } from '../../firebase/analytics';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +55,21 @@ export const HomePage: React.FC = () => {
   }
 
   const { user } = authContext;
+
+  // Always load displayName from DB (Firebase Auth displayName may be outdated or missing)
+  const [dbDisplayName, setDbDisplayName] = useState<string | null>(null);
+  useEffect(() => {
+    if (user) {
+      firebase
+        .database()
+        .ref(`users/${user.uid}/displayName`)
+        .once('value')
+        .then((snap) => {
+          if (snap.val()) setDbDisplayName(snap.val());
+        })
+        .catch(() => {});
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!user) navigate('/login');
@@ -504,7 +518,6 @@ export const HomePage: React.FC = () => {
                     key={id}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => {
-                      trackHomeCardClicked(id, a.label);
                       navigate(a.path);
                     }}
                     style={{
@@ -601,7 +614,6 @@ export const HomePage: React.FC = () => {
                   key={id}
                   whileTap={{ scale: 0.93 }}
                   onClick={() => {
-                    trackHomeCardClicked(id, a.label);
                     navigate(a.path);
                   }}
                   style={{
@@ -708,7 +720,6 @@ export const HomePage: React.FC = () => {
                   key={id}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    trackHomeCardClicked(id, a.label);
                     navigate(a.path);
                   }}
                   style={{
@@ -912,7 +923,7 @@ export const HomePage: React.FC = () => {
 
       {/* Greeting / Header */}
       <GreetingSection
-        displayName={user.displayName ?? undefined}
+        displayName={dbDisplayName || user.displayName || undefined}
         photoURL={user.photoURL ?? undefined}
         totalUnreadBadge={notifs.totalUnreadBadge}
         onNotificationsOpen={() => setShowNotifications(true)}

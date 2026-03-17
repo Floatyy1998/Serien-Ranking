@@ -3,10 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import {
-  trackDiscussionFeedFilterChanged,
-  trackDiscussionFeedEntryClicked,
-} from '../../firebase/analytics';
 import { PageLayout, PageHeader, LoadingSpinner, EmptyState } from '../../components/ui';
 import { useDiscussionFeed, FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
@@ -181,7 +177,6 @@ export const DiscussionFeedPage = () => {
   const { entries, loading, error } = useDiscussionFeed(filter);
 
   const handleCardClick = (entry: DiscussionFeedEntry) => {
-    trackDiscussionFeedEntryClicked(entry.itemTitle);
     if (entry.itemType === 'episode' && entry.seasonNumber && entry.episodeNumber) {
       navigate(`/episode/${entry.itemId}/s/${entry.seasonNumber}/e/${entry.episodeNumber}`);
     } else if (entry.itemType === 'movie') {
@@ -211,7 +206,6 @@ export const DiscussionFeedPage = () => {
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               setFilter(tab.id);
-              trackDiscussionFeedFilterChanged(tab.id);
             }}
             style={{
               flex: 1,

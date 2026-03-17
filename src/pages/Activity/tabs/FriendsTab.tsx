@@ -6,7 +6,6 @@ import { Person, PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { trackFriendProfileClicked } from '../../../firebase/analytics';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 
@@ -98,9 +97,6 @@ export const FriendsTab = ({
                 transition={{ delay: index * 0.05 }}
                 onClick={() => {
                   saveScrollPosition();
-                  trackFriendProfileClicked(
-                    currentProfile.displayName || currentProfile.username || 'unknown'
-                  );
                   navigate(`/friend/${friend.uid}`);
                 }}
                 style={{

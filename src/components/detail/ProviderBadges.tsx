@@ -1,6 +1,5 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
-import { trackStreamingProviderClicked } from '../../firebase/analytics';
 
 interface Provider {
   provider_id?: number;
@@ -293,9 +292,6 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                   ...badgeStyle,
                   textDecoration: 'none',
                 }}
-                onClick={() =>
-                  trackStreamingProviderClicked(providerName, searchTitle || providerName)
-                }
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'scale(1.1)';
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';

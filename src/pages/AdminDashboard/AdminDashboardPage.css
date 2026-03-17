@@ -1,0 +1,74 @@
+/* ─── Admin Dashboard ─────────────────────────────────────── */
+
+.admin-tab-bar {
+  position: sticky;
+  top: 56px;
+  z-index: 10;
+  padding: 0 16px;
+  margin: 0 -16px;
+  background: inherit;
+}
+
+.admin-tab-scroll {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 8px 0;
+}
+
+.admin-tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.admin-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-tab--active {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.admin-refresh-btn {
+  border-bottom: none !important;
+}
+
+.admin-refresh-btn:hover {
+  transform: rotate(90deg);
+}
+
+.admin-content {
+  padding: 0 0 80px;
+}
+
+/* ─── Pulse Animation ────────────────────────────────────── */
+
+@keyframes admin-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.8);
+  }
+}

@@ -13,14 +13,7 @@ import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
-import {
-  trackSeriesAdded,
-  trackSeriesDeleted,
-  trackWatchlistToggled,
-  trackSeriesHiddenToggled,
-  trackRewatchStarted,
-  trackRewatchStopped,
-} from '../../firebase/analytics';
+import { trackSeriesAdded, trackSeriesDeleted } from '../../firebase/analytics';
 
 interface DialogState {
   open: boolean;
@@ -130,7 +123,6 @@ export function useSeriesActions(
         .database()
         .ref(`${userId}/serien/${series.nmr}/watchlist`)
         .set(newWatchlistStatus);
-      trackWatchlistToggled(String(series.id), newWatchlistStatus ? 'add' : 'remove');
       if (newWatchlistStatus) {
         const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
         await logWatchlistAdded(userId, series.title, series.id);
@@ -143,7 +135,6 @@ export function useSeriesActions(
   const handleHideToggle = useCallback(async () => {
     if (!series || !userId) return;
     const newHiddenStatus = !series.hidden;
-    trackSeriesHiddenToggled(newHiddenStatus ? 'hide' : 'show');
     try {
       await toggleHideSeries(series.nmr, newHiddenStatus);
       showSnackbar(newHiddenStatus ? 'Nicht weiterschauen' : 'Serie wieder aktiv');
@@ -270,7 +261,6 @@ export function useSeriesActions(
           await firebase.database().ref(`${seriesPath}/watchlist`).set(true);
         }
 
-        trackRewatchStarted(series.title || series.name || 'Unbekannte Serie');
         showSnackbar(
           continueExisting ? `Rewatch #${newRound} fortgesetzt!` : `Rewatch #${newRound} gestartet!`
         );
@@ -289,7 +279,6 @@ export function useSeriesActions(
     if (!series || !userId) return;
     try {
       await firebase.database().ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
-      trackRewatchStopped(series.title || series.name || 'Unbekannte Serie');
       showSnackbar('Rewatch beendet.');
     } catch {
       setDialog({ open: true, message: 'Fehler beim Beenden des Rewatches.', type: 'error' });

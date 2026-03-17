@@ -27,6 +27,7 @@ const ROUTE_NAMES: Record<string, string> = {
   '/discussion-feed': 'discussion_feed',
   '/settings': 'settings',
   '/patch-notes': 'patch_notes',
+  '/admin': 'admin_dashboard',
   '/login': 'login',
   '/register': 'register',
   '/privacy': 'privacy',

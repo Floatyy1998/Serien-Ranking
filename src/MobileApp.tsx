@@ -88,6 +88,9 @@ const LeaderboardPage = lazy(() =>
 const PatchNotesPage = lazy(() =>
   import('./pages/PatchNotes').then((m) => ({ default: m.PatchNotesPage }))
 );
+const AdminDashboardPage = lazy(() =>
+  import('./pages/AdminDashboard').then((m) => ({ default: m.AdminDashboardPage }))
+);
 
 const PageLoader = () => (
   <div
@@ -399,6 +402,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <PatchNotesPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <Layout hideNav>
+                <AdminDashboardPage />
               </Layout>
             }
           />

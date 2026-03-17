@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackDiscussionPosted } from '../../firebase/analytics';
 
 export const NewDiscussionForm: React.FC<{
   onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
@@ -59,7 +58,6 @@ export const NewDiscussionForm: React.FC<{
     const fullContent = [content.trim(), ...previewImages].filter(Boolean).join('\n');
     const success = await onSubmit({ title: title.trim(), content: fullContent, isSpoiler });
     if (success) {
-      trackDiscussionPosted(title.trim());
       setTitle('');
       setContent('');
       setIsSpoiler(false);

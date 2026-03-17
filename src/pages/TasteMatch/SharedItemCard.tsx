@@ -2,7 +2,6 @@ import { Favorite, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { trackTasteMatchItemClicked } from '../../firebase/analytics';
 import { SharedItem } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
@@ -24,7 +23,6 @@ export const SharedItemCard: React.FC<{
       whileTap={{ scale: 0.97 }}
       whileHover={{ scale: 1.01, y: -2 }}
       onClick={() => {
-        trackTasteMatchItemClicked(String(item.id), type);
         navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`);
       }}
       aria-label={`${item.title} – ${type === 'series' ? 'Serie' : 'Film'} Details anzeigen`}

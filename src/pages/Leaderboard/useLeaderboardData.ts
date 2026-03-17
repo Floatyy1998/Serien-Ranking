@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../App';
-import {
-  trackLeaderboardModeChanged,
-  trackLeaderboardCategoryChanged,
-} from '../../firebase/analytics';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 import {
   checkAndArchiveMonth,
@@ -185,12 +181,10 @@ export function useLeaderboardData() {
 
   const handleSetMode = useCallback((newMode: 'friends' | 'global') => {
     setMode(newMode);
-    trackLeaderboardModeChanged(newMode);
   }, []);
 
   const handleSetActiveCategory = useCallback((newCategory: LeaderboardCategory) => {
     setActiveCategory(newCategory);
-    trackLeaderboardCategoryChanged(newCategory);
   }, []);
 
   return {

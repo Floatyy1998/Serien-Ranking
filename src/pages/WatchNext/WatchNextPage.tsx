@@ -8,12 +8,6 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
-import {
-  trackWatchNextSortChanged,
-  trackWatchNextCustomOrderToggled,
-  trackWatchNextEditModeToggled,
-  trackWatchNextProviderFiltered,
-} from '../../firebase/analytics';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
@@ -187,13 +181,11 @@ export const WatchNextPage = () => {
       newOption = `${field}-asc`;
     }
     setSortOption(newOption);
-    trackWatchNextSortChanged(newOption);
   };
 
   const toggleCustomOrder = () => {
     const newValue = !customOrderActive;
     setCustomOrderActive(newValue);
-    trackWatchNextCustomOrderToggled(newValue);
     if (customOrderActive) {
       setEditModeActive(false);
     }
@@ -254,7 +246,6 @@ export const WatchNextPage = () => {
                     onClick={() => {
                       const newVal = !editModeActive;
                       setEditModeActive(newVal);
-                      trackWatchNextEditModeToggled(newVal);
                     }}
                     className="watch-next-header__btn"
                     style={{
@@ -320,7 +311,6 @@ export const WatchNextPage = () => {
                   selected={providerFilter}
                   onSelect={(p) => {
                     setProviderFilter(p);
-                    trackWatchNextProviderFiltered(p || 'all');
                   }}
                   theme={theme}
                 />

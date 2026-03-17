@@ -342,10 +342,12 @@ class PetService {
 
     if (pet.isAlive) return pet;
 
+    const now = new Date();
     pet.isAlive = true;
     pet.hunger = PET_CONFIG.REVIVAL_HUNGER;
     pet.happiness = PET_CONFIG.REVIVAL_HAPPINESS;
-    pet.lastFed = new Date();
+    pet.lastFed = now;
+    pet.lastUpdated = now;
     pet.reviveCount = (pet.reviveCount || 0) + 1;
 
     if (pet.level > 1) {
@@ -357,7 +359,8 @@ class PetService {
       isAlive: true,
       hunger: pet.hunger,
       happiness: pet.happiness,
-      lastFed: pet.lastFed.toISOString(),
+      lastFed: now.toISOString(),
+      lastUpdated: now.toISOString(),
       reviveCount: pet.reviveCount,
       level: pet.level,
       experience: pet.experience,

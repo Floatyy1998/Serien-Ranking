@@ -5,7 +5,7 @@ import { PanInfo } from 'framer-motion';
 import { Series } from '../../types/Series';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { trackEpisodeSwipeCompleted, trackEpisodeWatched } from '../../firebase/analytics';
+import { trackEpisodeWatched } from '../../firebase/analytics';
 import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 
 interface UseWatchNextSwipeOptions {
@@ -63,7 +63,6 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     swipeDirection: 'left' | 'right' = 'right'
   ) => {
     const episodeKey = getEpisodeKey(episode);
-    trackEpisodeSwipeCompleted(episode.seriesTitle || '', swipeDirection, 'watch_next');
 
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));

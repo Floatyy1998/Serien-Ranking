@@ -22,7 +22,6 @@ import {
   hasActiveRewatch,
   hasAnySeasonFullyWatched,
 } from '../../lib/validation/rewatch.utils';
-import { trackSeriesDetailTabSwitched } from '../../firebase/analytics';
 import { ActionButtons } from './ActionButtons';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { HeroSection } from './HeroSection';
@@ -310,7 +309,6 @@ export const SeriesDetailPage = memo(() => {
             key={tab.key}
             onClick={() => {
               setActiveTab(tab.key);
-              trackSeriesDetailTabSwitched(tab.key);
             }}
             className="detail-tab-btn"
             style={{

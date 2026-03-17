@@ -25,7 +25,6 @@ import {
   BadgeProgress,
   EarnedBadge,
 } from '../../features/badges/badgeDefinitions';
-import { trackBadgeCategoryTabSwitched, trackBadgeCheckTriggered } from '../../firebase/analytics';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
 import './BadgesPage.css';
@@ -114,7 +113,6 @@ export const BadgesPage = () => {
 
   const checkForNewBadges = async () => {
     if (!user) return;
-    trackBadgeCheckTriggered();
     setLoading(true);
     try {
       const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
@@ -374,7 +372,6 @@ export const BadgesPage = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   setTabValue(index);
-                  trackBadgeCategoryTabSwitched(category.key);
                 }}
                 className={`mobile-badges-tab ${isActive ? 'active' : ''}`}
                 style={{

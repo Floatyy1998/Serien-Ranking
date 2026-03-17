@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { trackDiscoverItemClicked } from '../../firebase/analytics';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
 import type { DiscoverItem } from './DiscoverItemCard';
 
@@ -124,7 +123,6 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     };
     sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
     sessionStorage.setItem('comingFromDetail', 'true');
-    trackDiscoverItemClicked(String(item.id), item.type || activeTab, activeCategory);
     navigate(item.type === 'series' ? `/series/${item.id}` : `/movie/${item.id}`);
   };
 

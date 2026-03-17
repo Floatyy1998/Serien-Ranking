@@ -1,7 +1,6 @@
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackCatchUpSeriesClicked } from '../../firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
 import { GradientRing } from './GradientRing';
 import { formatTimeString, type CatchUpSeries } from './useCatchUpData';
@@ -15,7 +14,6 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
   const { currentTheme } = useTheme();
 
   const handleClick = useCallback(() => {
-    trackCatchUpSeriesClicked(item.series.title || '');
     navigate(`/series/${item.series.id}`);
   }, [navigate, item.series.id, item.series.title]);
 

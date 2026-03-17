@@ -1,10 +1,5 @@
 import { useCallback, useState } from 'react';
 import { Actor, ActorConnection, useActorUniverse } from '../../hooks/useActorUniverse';
-import {
-  trackActorUniverseTabSwitched,
-  trackActorUniverseVoiceToggled,
-  trackActorSelected,
-} from '../../firebase/analytics';
 
 export type TabId = 'map' | 'recommendations' | 'top';
 
@@ -19,7 +14,6 @@ export const useActorUniverseData = () => {
     setHideVoiceActors((prev) => {
       const newValue = !prev;
       localStorage.setItem('actorUniverse_hideVoiceActors', String(newValue));
-      trackActorUniverseVoiceToggled(!newValue);
       return newValue;
     });
   };
@@ -64,19 +58,13 @@ export const useActorUniverseData = () => {
 
     // Selection & hover
     selectedActor,
-    setSelectedActor: (actor: Actor | null) => {
-      setSelectedActor(actor);
-      if (actor) trackActorSelected(actor.name);
-    },
+    setSelectedActor,
     hoveredActor,
     setHoveredActor,
 
     // Tab management
     activeTab,
-    setActiveTab: (tab: TabId) => {
-      setActiveTab(tab);
-      trackActorUniverseTabSwitched(tab);
-    },
+    setActiveTab,
 
     // Helpers
     getActorConnections,

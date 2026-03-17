@@ -9,11 +9,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { petService } from '../../services/petService';
-import {
-  trackRecentlyWatchedTimeRangeChanged,
-  trackRecentlyWatchedSearched,
-  trackRecentlyWatchedSeriesExpanded,
-} from '../../firebase/analytics';
 import { EpisodeDataManager } from './EpisodeDataManager';
 import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
 
@@ -115,9 +110,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
-      if (searchQuery.length > 2) {
-        trackRecentlyWatchedSearched(searchQuery);
-      }
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -256,8 +248,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   // Toggle series expanded state
   const toggleSeriesExpanded = (date: string, seriesId: number) => {
     const key = `${date}-${seriesId}`;
-    const isExpanding = !expandedSeries.has(key);
-    trackRecentlyWatchedSeriesExpanded(seriesId, isExpanding);
     setExpandedSeries((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(key)) {
@@ -275,7 +265,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
 
   // Time range change
   const handleTimeRangeChange = (days: number) => {
-    trackRecentlyWatchedTimeRangeChanged(days);
     setDaysToShow(days);
     setLoadedDateGroups([]);
     setIsLoading(true);
