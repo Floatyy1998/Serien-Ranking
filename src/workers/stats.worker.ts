@@ -2,6 +2,7 @@
 // Workers can't import modules, so define local interfaces
 interface WorkerEpisode {
   air_date?: string;
+  airstamp?: string;
   id: number;
   name?: string;
   watched: boolean | number | string;
@@ -10,6 +11,23 @@ interface WorkerEpisode {
   lastWatchedAt?: string;
   runtime?: number;
   episode_number?: number;
+}
+
+/** Parse episode date as local midnight. Prefers airstamp for timezone accuracy. */
+function parseEpisodeDateLocal(episode: WorkerEpisode): Date | null {
+  if (episode.airstamp) {
+    const d = new Date(episode.airstamp);
+    if (!isNaN(d.getTime())) {
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+  }
+  if (episode.air_date) {
+    const p = episode.air_date.split('-');
+    const d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
 }
 
 interface WorkerSeason {
@@ -116,10 +134,9 @@ function calculateStats(data: {
           (episode.watchCount && episode.watchCount > 0)
         );
 
-        if (episode.air_date) {
-          const airDate = new Date(episode.air_date);
-          if (!isNaN(airDate.getTime())) {
-            airDate.setHours(0, 0, 0, 0);
+        if (episode.air_date || episode.airstamp) {
+          const airDate = parseEpisodeDateLocal(episode);
+          if (airDate) {
             const airDateTime = airDate.getTime();
 
             if (airDateTime <= todayTime) {
@@ -207,12 +224,10 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
 
       for (let k = 0; k < seasonEpisodes.length; k++) {
         const episode = seasonEpisodes[k];
-        if (!episode || !episode.air_date || episode.watched) continue;
+        if (!episode || (!episode.air_date && !episode.airstamp) || episode.watched) continue;
 
-        const episodeDate = new Date(episode.air_date);
-        if (isNaN(episodeDate.getTime())) continue;
-
-        episodeDate.setHours(0, 0, 0, 0);
+        const episodeDate = parseEpisodeDateLocal(episode);
+        if (!episodeDate) continue;
 
         if (episodeDate.getTime() === todayTime) {
           const actualSeasonIndex =
