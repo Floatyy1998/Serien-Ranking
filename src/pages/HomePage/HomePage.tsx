@@ -45,6 +45,7 @@ import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -145,7 +146,6 @@ export const HomePage: React.FC = () => {
 
   // Total series with unwatched
   const totalSeriesWithUnwatched = useMemo(() => {
-    const today = new Date();
     let count = 0;
     for (const series of seriesList) {
       if (!series.watchlist || !series.seasons) continue;
@@ -159,7 +159,7 @@ export const HomePage: React.FC = () => {
           ? season.episodes
           : Object.values(season.episodes);
         for (const episode of episodesArray as Series['seasons'][number]['episodes']) {
-          if (!episode?.watched && episode?.air_date && new Date(episode.air_date) <= today) {
+          if (!episode?.watched && hasEpisodeAired(episode)) {
             hasUnwatched = true;
             break;
           }

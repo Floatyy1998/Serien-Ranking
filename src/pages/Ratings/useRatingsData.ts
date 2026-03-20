@@ -18,6 +18,7 @@ import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -93,14 +94,13 @@ function getRating(item: Series | Movie): number {
 
 function getSeriesProgress(series: Series): number {
   if (!series.seasons) return 0;
-  const now = Date.now();
   let aired = 0;
   let watched = 0;
   for (const season of series.seasons) {
     if (!season.episodes) continue;
     for (const ep of season.episodes) {
       if (!ep) continue;
-      if (ep.air_date && new Date(ep.air_date).getTime() <= now) {
+      if (hasEpisodeAired(ep)) {
         aired++;
         if (ep.watched) watched++;
       }
@@ -111,12 +111,11 @@ function getSeriesProgress(series: Series): number {
 
 function hasWatchedEpisodes(series: Series): boolean {
   if (!series.seasons) return false;
-  const now = Date.now();
   for (const season of series.seasons) {
     if (!season.episodes) continue;
     for (const ep of season.episodes) {
       if (!ep) continue;
-      if (ep.air_date && new Date(ep.air_date).getTime() <= now && ep.watched) return true;
+      if (hasEpisodeAired(ep) && ep.watched) return true;
     }
   }
   return false;

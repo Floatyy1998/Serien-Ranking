@@ -13,6 +13,7 @@ import { CastCrew, ProviderBadges, VideoGallery } from '../../components/detail'
 import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
 import {
   getImplicitRewatchRound,
@@ -94,12 +95,11 @@ export const SeriesDetailPage = memo(() => {
       }
     }
 
-    const today = new Date();
     for (let i = 0; i < series.seasons.length; i++) {
       const eps = series.seasons[i].episodes;
       if (!eps) continue;
       for (const ep of eps) {
-        if (!ep.watched && ep.air_date && new Date(ep.air_date) <= today) {
+        if (!ep.watched && hasEpisodeAired(ep)) {
           setSelectedSeasonIndex(i);
           return;
         }
@@ -125,12 +125,11 @@ export const SeriesDetailPage = memo(() => {
 
   const progressStats = useMemo(() => {
     if (!series?.seasons) return { watched: 0, total: 0, percentage: 0 };
-    const today = new Date();
     let watchedCount = 0;
     let airedCount = 0;
     series.seasons.forEach((season) => {
       season.episodes?.forEach((episode) => {
-        if (episode.air_date && new Date(episode.air_date) <= today) {
+        if (hasEpisodeAired(episode)) {
           airedCount++;
           if (episode.watched) watchedCount++;
         }

@@ -56,10 +56,10 @@ export const useTodayEpisodes = () => {
           const episode = seasonEpisodes[k];
           if (!episode.air_date || episode.watched) continue;
 
-          const episodeDate = new Date(episode.air_date);
+          // Parse air_date as local date (not UTC) to avoid timezone offset issues
+          const parts = episode.air_date.split('-');
+          const episodeDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
           if (isNaN(episodeDate.getTime())) continue;
-
-          episodeDate.setHours(0, 0, 0, 0);
 
           if (episodeDate.getTime() === todayTime) {
             const actualSeasonIndex =

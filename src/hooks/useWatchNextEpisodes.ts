@@ -45,7 +45,6 @@ export const useWatchNextEpisodes = (
   return useMemo(() => {
     const episodes: NextEpisode[] = [];
     const rewatches: NextEpisode[] = [];
-    const today = new Date();
 
     // All series in watchlist
     const seriesInWatchlist = seriesList.filter((series) => {
@@ -89,12 +88,9 @@ export const useWatchNextEpisodes = (
             ? (Object.values(season.episodes) as typeof season.episodes)
             : [];
         for (const ep of epsList) {
-          if (ep.air_date) {
-            const epDate = new Date(ep.air_date);
-            if (epDate <= today) {
-              totalAiredEpisodes++;
-              if (ep.watched) watchedEpisodes++;
-            }
+          if (hasEpisodeAired(ep)) {
+            totalAiredEpisodes++;
+            if (ep.watched) watchedEpisodes++;
           }
         }
       }

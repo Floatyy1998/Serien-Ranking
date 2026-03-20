@@ -41,7 +41,7 @@ export const useContinueWatching = () => {
       if (series.seasons) {
         for (const season of series.seasons) {
           if (season?.episodes) {
-            watchedCount += season.episodes.filter((ep) => ep.watched).length;
+            watchedCount += season.episodes.filter((ep) => ep?.watched).length;
           }
         }
       }
@@ -80,12 +80,12 @@ export const useContinueWatching = () => {
         let foundNext = false;
         for (let j = 0; j < seasons.length && !foundNext; j++) {
           const season = seasons[j];
-          const episodes = season.episodes;
-          if (!episodes) continue;
+          const episodes2 = season.episodes;
+          if (!episodes2) continue;
 
-          for (let k = 0; k < episodes.length; k++) {
-            const episode = episodes[k];
-            if (!episode.watched && hasEpisodeAired(episode)) {
+          for (let k = 0; k < episodes2.length; k++) {
+            const episode = episodes2[k];
+            if (!episode?.watched && hasEpisodeAired(episode)) {
               let totalAiredEpisodes = 0;
               let watchedEpisodes = 0;
 

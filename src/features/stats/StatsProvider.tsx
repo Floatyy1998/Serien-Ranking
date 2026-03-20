@@ -93,7 +93,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           (count: number, season: StatsSeason) =>
             count +
             (season.episodes?.reduce((episodeCount: number, episode: StatsEpisode) => {
-              if (episode.watched) {
+              if (episode?.watched) {
                 return episodeCount + (episode.watchCount || 1);
               }
               return episodeCount;
@@ -105,7 +105,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           (time: number, season: StatsSeason) =>
             time +
             (season.episodes?.reduce((episodeTime: number, episode: StatsEpisode) => {
-              if (episode.watched) {
+              if (episode?.watched) {
                 return episodeTime + (episode.watchCount || 1) * (episode.runtime || seriesRuntime);
               }
               return episodeTime;

@@ -3,6 +3,7 @@
  * Handles caching, date grouping, and episode extraction from series data.
  */
 import type { Series } from '../../types/Series';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
 
 export interface WatchedEpisode {
   seriesId: number;
@@ -147,8 +148,8 @@ export class EpisodeDataManager {
           } else if (episode.lastWatchedAt) {
             watchedDate = new Date(episode.lastWatchedAt);
             dateSource = 'lastWatched';
-          } else if (episode.air_date) {
-            watchedDate = new Date(episode.air_date);
+          } else if (episode.air_date || episode.airstamp) {
+            watchedDate = getEpisodeAirDate(episode) || new Date();
             dateSource = 'airDate';
           } else {
             watchedDate = new Date();
