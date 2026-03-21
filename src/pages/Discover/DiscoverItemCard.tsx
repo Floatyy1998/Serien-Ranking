@@ -1,4 +1,6 @@
-import { Add, ArrowForward, Star } from '@mui/icons-material';
+import Add from '@mui/icons-material/Add';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';

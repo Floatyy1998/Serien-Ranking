@@ -420,3 +420,100 @@
     font-size: 11px;
   }
 }
+
+/* EpisodeActionSheet buttons */
+.episode-action-sheet__content {
+  padding: 0 20px 32px;
+}
+
+.episode-action-sheet__header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.episode-action-sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.episode-action-btn {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+}
+
+.episode-action-btn--rewatch {
+  background: linear-gradient(135deg, var(--color-status-warning, #f59e0b), #f59e0b);
+}
+
+.episode-action-btn--unwatch {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.episode-action-btn--discuss {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Section list container used in ContinueWatching, Rewatch, TodayEpisodes */
+.home-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px;
+  position: relative;
+}
+
+/* Home section wrapper */
+.home-section {
+  margin-bottom: 32px;
+}
+
+/* Episode row content text patterns */
+.episode-row__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.episode-row__subtitle {
+  font-size: 13px;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.episode-row__meta {
+  font-size: 12px;
+  margin: 2px 0 0 0;
+}
+
+/* Progress bar in episode rows */
+.episode-row__progress-track {
+  margin-top: 6px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.episode-row__progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}

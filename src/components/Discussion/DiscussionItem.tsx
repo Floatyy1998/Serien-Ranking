@@ -1,7 +1,7 @@
 import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
@@ -9,7 +9,7 @@ import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
-export const DiscussionItem: React.FC<{
+const _DiscussionItem: React.FC<{
   discussion: Discussion;
   discussionPath: string;
   onDelete: () => void;
@@ -577,3 +577,6 @@ export const DiscussionItem: React.FC<{
     </motion.div>
   );
 };
+
+export const DiscussionItem = memo(_DiscussionItem);
+DiscussionItem.displayName = 'DiscussionItem';

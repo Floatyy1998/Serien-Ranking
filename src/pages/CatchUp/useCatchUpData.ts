@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -124,7 +125,7 @@ export const useCatchUpData = () => {
       let lastWatchedDate: string | undefined;
       let foundUnwatched = false;
       let remainingMinutes = 0;
-      const seriesRuntime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;

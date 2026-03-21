@@ -19,7 +19,7 @@ export const getStoredCompletedData = async (
   try {
     const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
     const snapshot = await ref.once('value');
-    return snapshot.val() || {};
+    return (snapshot.val() as Record<string, CompletedSeriesData> | null) || {};
   } catch {
     return {};
   }
@@ -28,12 +28,13 @@ export const getStoredCompletedData = async (
 export const storeCompletedData = async (
   userId: string,
   data: Record<string, CompletedSeriesData>
-) => {
+): Promise<void> => {
   try {
     const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
     await ref.set(data);
   } catch (error) {
-    console.error('Error storing completed series data:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[CompletedSeriesDetection] Failed to store completed data: ${message}`);
   }
 };
 
@@ -78,7 +79,9 @@ export const detectCompletedSeries = async (
   // Lade bereits abgewiesene Benachrichtigungen
   const notificationsRef = firebase.database().ref(`users/${userId}/completedSeriesNotifications`);
   const notificationsSnapshot = await notificationsRef.once('value');
-  const dismissedNotifications = notificationsSnapshot.val() || {};
+  const dismissedNotifications =
+    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
+    {};
 
   for (const series of seriesList) {
     // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
@@ -150,7 +153,10 @@ export const detectCompletedSeries = async (
   return completedSeries;
 };
 
-export const markCompletedSeriesAsNotified = async (seriesId: number, userId: string) => {
+export const markCompletedSeriesAsNotified = async (
+  seriesId: number,
+  userId: string
+): Promise<void> => {
   const storedData = await getStoredCompletedData(userId);
   const seriesKey = seriesId.toString();
 

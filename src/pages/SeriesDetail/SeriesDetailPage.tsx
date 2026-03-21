@@ -2,7 +2,13 @@
  * SeriesDetailPage - Composition component using extracted subcomponents + hooks
  */
 
-import { Check, GridView, Info, List, People, Repeat, VisibilityOff } from '@mui/icons-material';
+import Check from '@mui/icons-material/Check';
+import GridView from '@mui/icons-material/GridView';
+import Info from '@mui/icons-material/Info';
+import List from '@mui/icons-material/List';
+import People from '@mui/icons-material/People';
+import Repeat from '@mui/icons-material/Repeat';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

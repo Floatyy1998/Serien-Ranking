@@ -1,9 +1,5 @@
 import { Series } from '../../types/Series';
-
-type Episode = Series['seasons'][number]['episodes'][number];
-
-const toEpisodesArray = (episodes: Episode[] | Record<string, Episode>): Episode[] =>
-  Array.isArray(episodes) ? episodes : Object.values(episodes || {});
+import { normalizeEpisodes } from '../episode/seriesMetrics';
 
 export interface NextRewatchEpisode {
   id: number;
@@ -34,6 +30,7 @@ export const getRewatchRound = (series: Series): number => {
 /**
  * Findet die nächste Episode für einen Rewatch.
  * Sucht die erste gesehene Episode deren watchCount noch unter der Ziel-Runde liegt.
+ * Gibt null zurück wenn: kein aktiver Rewatch, keine Seasons, oder alle Episoden fertig.
  */
 export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null => {
   if (!series.seasons || series.seasons.length === 0) return null;
@@ -43,7 +40,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (let i = 0; i < episodes.length; i++) {
       const episode = episodes[i];
       if (!episode.watched) continue;
@@ -67,14 +64,16 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 /**
  * Prüft ob ein aktiver Rewatch abgeschlossen ist.
  * Alle gesehenen Episoden haben die Ziel-watchCount erreicht.
+ * Gibt false zurück wenn kein aktiver Rewatch oder keine Seasons vorhanden.
  */
 export const isRewatchComplete = (series: Series): boolean => {
   if (!hasActiveRewatch(series)) return false;
+  if (!series.seasons || series.seasons.length === 0) return false;
 
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
       const currentWatchCount = episode.watchCount || 1;
@@ -90,6 +89,7 @@ export const isRewatchComplete = (series: Series): boolean => {
 /**
  * Berechnet den Rewatch-Fortschritt einer Serie.
  * Zählt gesehene Episoden die die Ziel-watchCount erreicht haben.
+ * Gibt { current: 0, total: 0 } für leere/uninitialisierte Serien.
  */
 export const getRewatchProgress = (series: Series): { current: number; total: number } => {
   if (!series.seasons || series.seasons.length === 0) {
@@ -101,7 +101,7 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
   let episodesAtTarget = 0;
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
       totalWatchedEpisodes++;
@@ -121,12 +121,13 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
 /**
  * Prüft ob mindestens eine Staffel komplett gesehen wurde.
  * Ermöglicht Rewatch auch wenn die Serie noch nicht komplett durch ist.
+ * Gibt false zurück für leere Seasons oder Seasons ohne Episoden.
  */
 export const hasAnySeasonFullyWatched = (series: Series): boolean => {
   if (!series.seasons || series.seasons.length === 0) return false;
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     if (episodes.length === 0) continue;
     if (episodes.every((ep) => ep.watched)) return true;
   }
@@ -135,7 +136,7 @@ export const hasAnySeasonFullyWatched = (series: Series): boolean => {
 
 /**
  * Prüft ob alle Episoden einer Serie gesehen wurden und alle den gleichen watchCount haben.
- * Kein aktiver Rewatch in Arbeit.
+ * Gibt false zurück für: leere Seasons, ungesehene Episoden, inkonsistente watchCounts.
  */
 export const isSeriesFullyWatched = (series: Series): boolean => {
   if (!series.seasons || series.seasons.length === 0) return false;
@@ -143,7 +144,7 @@ export const isSeriesFullyWatched = (series: Series): boolean => {
   let watchCount: number | null = null;
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) return false;
       const epCount = episode.watchCount || 1;
@@ -171,7 +172,7 @@ export const getImplicitRewatchRound = (series: Series): number => {
   let hasWatchedEpisodes = false;
 
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
       hasWatchedEpisodes = true;
@@ -189,13 +190,14 @@ export const getImplicitRewatchRound = (series: Series): number => {
 
 /**
  * Berechnet den maxWatchCount über alle gesehenen Episoden.
+ * Gibt 0 zurück für leere/uninitialisierte Serien oder wenn keine Episode gesehen wurde.
  */
 export const getMaxWatchCount = (series: Series): number => {
   if (!series.seasons || series.seasons.length === 0) return 0;
 
   let maxWatchCount = 0;
   for (const season of series.seasons) {
-    const episodes = toEpisodesArray(season.episodes);
+    const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (episode.watched) {
         maxWatchCount = Math.max(maxWatchCount, episode.watchCount || 1);

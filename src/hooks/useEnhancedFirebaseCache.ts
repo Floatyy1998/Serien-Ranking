@@ -262,7 +262,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
           setData(cachedData);
           setIsStale(!navigator.onLine); // Nur stale wenn offline
           setLoading(false); // Wichtig: Loading sofort beenden!
-        } else {
         }
         // 2. Nur wenn online - Realtime Listener oder Fetch versuchen
         if (navigator.onLine) {

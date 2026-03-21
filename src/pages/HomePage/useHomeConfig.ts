@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Default orders
 export const DEFAULT_SECTION_ORDER = [
@@ -41,6 +41,10 @@ export interface HomeConfig {
   hiddenSecondaryActions: string[];
 }
 
+export interface UseHomeConfigReturn extends HomeConfig {
+  visibleSections: string[];
+}
+
 function readCachedConfig(): Partial<HomeConfig> | null {
   try {
     return JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
@@ -49,7 +53,7 @@ function readCachedConfig(): Partial<HomeConfig> | null {
   }
 }
 
-export function useHomeConfig(uid: string | undefined) {
+export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
   const cachedConfig = readCachedConfig();
 
   const [sectionOrder, setSectionOrder] = useState<string[]>(
@@ -81,7 +85,8 @@ export function useHomeConfig(uid: string | undefined) {
     cachedConfig?.hiddenSecondaryActions || []
   );
 
-  const applyConfigData = (data: Record<string, unknown>) => {
+  // Stable reference via useCallback to avoid useEffect re-runs
+  const applyConfigData = useCallback((data: Record<string, unknown>) => {
     const applyList = (
       key: string,
       defaults: string[],
@@ -165,7 +170,7 @@ export function useHomeConfig(uid: string | undefined) {
     } catch {
       /* ignore */
     }
-  };
+  }, []); // setter-Funktionen sind stabil, daher leeres Dependency-Array
 
   // Load homeConfig from Firebase (background sync)
   useEffect(() => {
@@ -182,9 +187,13 @@ export function useHomeConfig(uid: string | undefined) {
         if (data) applyConfigData(data);
         window.setAppReady?.('homeConfig', true);
       });
-  }, [uid]);
+  }, [uid, applyConfigData]);
 
-  const visibleSections = sectionOrder.filter((id) => !hiddenSections.includes(id));
+  // Memoize derived value to avoid re-computation on unrelated renders
+  const visibleSections = useMemo(
+    () => sectionOrder.filter((id) => !hiddenSections.includes(id)),
+    [sectionOrder, hiddenSections]
+  );
 
   return {
     sectionOrder,

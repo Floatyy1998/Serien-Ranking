@@ -269,7 +269,7 @@ export const GreetingSection = React.memo(function GreetingSection({
       >
         <Chip
           icon={<PlayCircle />}
-          label={`${watchedEpisodes} Episoden`}
+          label={`${watchedEpisodes} Eps. gesamt`}
           onClick={() => navigate('/stats')}
           style={{
             background: `${currentTheme.status.success}1A`,
@@ -289,7 +289,7 @@ export const GreetingSection = React.memo(function GreetingSection({
         />
         <Chip
           icon={<TrendingUp />}
-          label={`${progress}% Fortschritt`}
+          label={`${progress}% aktive Serien`}
           onClick={() => navigate('/stats')}
           style={{
             background: `${currentTheme.primary}1A`,

@@ -7,6 +7,12 @@ import {
   hasActiveRewatch,
 } from '../lib/validation/rewatch.utils';
 import { getImageUrl } from '../utils/imageUrl';
+import {
+  DEFAULT_EPISODE_RUNTIME_MINUTES,
+  calculateSeriesMetrics,
+  normalizeSeasons,
+  normalizeEpisodes,
+} from '../lib/episode/seriesMetrics';
 
 export interface NextEpisode {
   seriesId: number;
@@ -73,30 +79,9 @@ export const useWatchNextEpisodes = (
         }
       }
 
-      // Convert seasons to array if needed
-      const seasonsArray: typeof series.seasons = Array.isArray(series.seasons)
-        ? series.seasons
-        : (Object.values(series.seasons) as typeof series.seasons);
-
-      // Calculate progress data for this series
-      let totalAiredEpisodes = 0;
-      let watchedEpisodes = 0;
-      for (const season of seasonsArray) {
-        const epsList = Array.isArray(season.episodes)
-          ? season.episodes
-          : season.episodes
-            ? (Object.values(season.episodes) as typeof season.episodes)
-            : [];
-        for (const ep of epsList) {
-          if (hasEpisodeAired(ep)) {
-            totalAiredEpisodes++;
-            if (ep.watched) watchedEpisodes++;
-          }
-        }
-      }
-      const remainingEpisodes = totalAiredEpisodes - watchedEpisodes;
-      const progress =
-        totalAiredEpisodes > 0 ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100) : 0;
+      const seasonsArray = normalizeSeasons(series.seasons);
+      const { totalAiredEpisodes, watchedEpisodes, remainingEpisodes, progress } =
+        calculateSeriesMetrics(series);
       const providerNames = series.provider?.provider?.map((p) => p.name) || [];
 
       // Collect rewatch episodes for series with active rewatches
@@ -125,7 +110,7 @@ export const useWatchNextEpisodes = (
               episodeNumber: rewatchEpisode.episodeIndex + 1,
               episodeName: rewatchEpisode.name || `Episode ${rewatchEpisode.episodeIndex + 1}`,
               airDate: rewatchEpisode.air_date,
-              runtime: ep?.runtime || series.episodeRuntime || 45,
+              runtime: ep?.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
               isRewatch: true,
               currentWatchCount: rewatchEpisode.currentWatchCount,
               targetWatchCount: rewatchEpisode.targetWatchCount,
@@ -133,8 +118,9 @@ export const useWatchNextEpisodes = (
               watchedEpisodes: rewatchProg.current,
               remainingEpisodes: rewatchRemaining,
               progress: rewatchPercent,
-              currentSeasonOf: `S${rewatchEpisode.seasonNumber} von S${series.seasonCount}`,
-              estimatedMinutesLeft: rewatchRemaining * (series.episodeRuntime || 45),
+              currentSeasonOf: `S${rewatchEpisode.seasonNumber + 1} von S${series.seasonCount}`,
+              estimatedMinutesLeft:
+                rewatchRemaining * (series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
               providerNames,
             });
           }
@@ -146,11 +132,7 @@ export const useWatchNextEpisodes = (
         let foundUnwatched = false;
 
         for (const [seasonIndex, season] of seasonsArray.entries()) {
-          const episodesList: typeof season.episodes = Array.isArray(season.episodes)
-            ? season.episodes
-            : season.episodes
-              ? (Object.values(season.episodes) as typeof season.episodes)
-              : [];
+          const episodesList = normalizeEpisodes(season.episodes);
 
           if (!episodesList.length) continue;
 
@@ -168,14 +150,15 @@ export const useWatchNextEpisodes = (
               episodeNumber: episodeIndex + 1,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,
               airDate: getEpisodeAirDateStr(episode) || episode.air_date,
-              runtime: episode.runtime || series.episodeRuntime || 45,
+              runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
               totalAiredEpisodes,
               watchedEpisodes,
               remainingEpisodes,
               progress,
               currentSeasonOf: `S${season.seasonNumber + 1} von S${series.seasonCount}`,
               estimatedMinutesLeft:
-                remainingEpisodes * (episode.runtime || series.episodeRuntime || 45),
+                remainingEpisodes *
+                (episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
               providerNames,
             });
             foundUnwatched = true;

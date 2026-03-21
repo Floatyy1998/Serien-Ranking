@@ -19,6 +19,7 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -78,14 +79,6 @@ export interface UseRatingsDataResult {
 }
 
 // ─── Helpers (pure functions, created once) ─────────────────────────────
-
-function getImageUrl(posterObj: string | { poster?: string } | null | undefined): string {
-  if (!posterObj) return '';
-  const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/w342${path}`;
-}
 
 function getRating(item: Series | Movie): number {
   const r = parseFloat(calculateOverallRating(item));
@@ -415,7 +408,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
       ({ s, r }): PreparedItem => ({
         id: s.id,
         title: s.title || '',
-        posterUrl: getImageUrl(s.poster),
+        posterUrl: getImageUrl(s.poster, 'w342', ''),
         rating: r,
         progress: getSeriesProgress(s),
         isMovie: false,
@@ -478,7 +471,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
       ({ m, r }): PreparedItem => ({
         id: m.id,
         title: m.title || '',
-        posterUrl: getImageUrl(m.poster),
+        posterUrl: getImageUrl(m.poster, 'w342', ''),
         rating: r,
         progress: 0,
         isMovie: true,

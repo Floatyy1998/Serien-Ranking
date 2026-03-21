@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { WatchJourneyData } from '../../services/watchJourneyService';
 
 interface SerienTabProps {
@@ -118,7 +119,8 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         const widthPercent = Math.max(endPercent - startPercent, 2); // Min 2% width
 
         // Calculate total watch time in hours
-        const totalMinutes = series.episodes * (series.avgRuntime || 45);
+        const totalMinutes =
+          series.episodes * (series.avgRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES);
         const totalHours = Math.round((totalMinutes / 60) * 10) / 10;
 
         return {

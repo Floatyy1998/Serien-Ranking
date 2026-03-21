@@ -70,7 +70,13 @@ export const ProfileItemCard = memo<ProfileItemCardProps>(
             <div className="pic-providers">
               {providers.slice(0, 2).map((p) => (
                 <div key={p.id} className="pic-provider-badge">
-                  <img src={p.logo} alt={p.name} className="pic-provider-logo" />
+                  <img
+                    src={p.logo}
+                    alt={p.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="pic-provider-logo"
+                  />
                 </div>
               ))}
             </div>

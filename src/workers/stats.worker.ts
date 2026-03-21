@@ -1,5 +1,5 @@
 // Web Worker for heavy statistics calculations
-// Workers can't import modules, so define local interfaces
+import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 interface WorkerEpisode {
   air_date?: string;
   airstamp?: string;
@@ -100,8 +100,9 @@ function calculateStats(data: {
 
   let totalSeries = 0;
   let watchlistCount = 0;
-  let watchedEpisodes = 0;
-  let totalAiredEpisodes = 0;
+  let watchedEpisodes = 0; // all series incl. hidden (for episode chip)
+  let totalAiredEpisodes = 0; // non-hidden only (denominator for progress %)
+  let watchedEpisodesVisible = 0; // non-hidden only (numerator for progress %)
   let todayTotalEpisodes = 0;
 
   // Process series in worker thread
@@ -113,8 +114,13 @@ function calculateStats(data: {
     totalSeries++;
     if (series.watchlist === true) watchlistCount++;
 
+    const isHidden = series.hidden === true;
     const seasons = series.seasons;
     if (!seasons) continue;
+
+    // Per-series counters — only add to progress if series has been started (>0 watched)
+    let seriesWatchedVisible = 0;
+    let seriesTotalVisible = 0;
 
     for (let j = 0; j < seasons.length; j++) {
       const season = seasons[j];
@@ -125,14 +131,7 @@ function calculateStats(data: {
         const episode = episodes[k];
         if (!episode) continue;
 
-        // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
-        const isWatched = !!(
-          episode.firstWatchedAt ||
-          episode.watched === true ||
-          (episode.watched as unknown) === 1 ||
-          (episode.watched as unknown) === 'true' ||
-          (episode.watchCount && episode.watchCount > 0)
-        );
+        const isWatched = isEpisodeWatched(episode);
 
         if (episode.air_date || episode.airstamp) {
           const airDate = parseEpisodeDateLocal(episode);
@@ -140,24 +139,30 @@ function calculateStats(data: {
             const airDateTime = airDate.getTime();
 
             if (airDateTime <= todayTime) {
-              totalAiredEpisodes++;
-              if (isWatched) {
-                watchedEpisodes++;
-              }
+              if (isWatched) watchedEpisodes++;
 
-              if (airDateTime === todayTime && !series.hidden) {
-                todayTotalEpisodes++;
+              if (!isHidden) {
+                seriesTotalVisible++;
+                if (isWatched) seriesWatchedVisible++;
+                if (airDateTime === todayTime) todayTotalEpisodes++;
               }
             }
           }
         } else {
           // No air_date means it's probably an old episode that's already aired
-          totalAiredEpisodes++;
-          if (isWatched) {
-            watchedEpisodes++;
+          if (isWatched) watchedEpisodes++;
+          if (!isHidden) {
+            seriesTotalVisible++;
+            if (isWatched) seriesWatchedVisible++;
           }
         }
       }
+    }
+
+    // Only count in progress ring if at least 1 episode has been watched (serie begonnen)
+    if (!isHidden && seriesWatchedVisible > 0) {
+      totalAiredEpisodes += seriesTotalVisible;
+      watchedEpisodesVisible += seriesWatchedVisible;
     }
   }
 
@@ -181,12 +186,13 @@ function calculateStats(data: {
   }
 
   const progress =
-    totalAiredEpisodes > 0 ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100) : 0;
+    totalAiredEpisodes > 0 ? Math.round((watchedEpisodesVisible / totalAiredEpisodes) * 100) : 0;
 
   return {
     totalSeries,
     totalMovies,
     watchedEpisodes,
+    watchedEpisodesActive: watchedEpisodesVisible,
     totalEpisodes: totalAiredEpisodes,
     watchedMovies,
     watchlistCount,
@@ -252,7 +258,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             seriesProviders: series.provider?.provider?.map(
               (p: { id: number; name: string; logo: string }) => p.name
             ),
-            runtime: episode.runtime || series.episodeRuntime || 45,
+            runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
           });
         }
       }

@@ -1,4 +1,5 @@
-import { Delete, Star } from '@mui/icons-material';
+import Delete from '@mui/icons-material/Delete';
+import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';

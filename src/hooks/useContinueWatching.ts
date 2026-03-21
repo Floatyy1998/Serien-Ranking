@@ -1,7 +1,8 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { getImageUrl } from '../utils/imageUrl';
 import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
+import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
 export const useContinueWatching = () => {
@@ -28,55 +29,18 @@ export const useContinueWatching = () => {
     seasons: Series['seasons'];
   }
 
-  const cacheRef = useRef<{ items: ContinueWatchingItem[] | null; deps: string }>({
-    items: null,
-    deps: '',
-  });
-
   const continueWatching = useMemo(() => {
-    // Create a more detailed dependency string that includes watched status
-    // This will invalidate the cache when episodes are marked as watched
-    let watchedCount = 0;
-    for (const series of seriesList) {
-      if (series.seasons) {
-        for (const season of series.seasons) {
-          if (season?.episodes) {
-            watchedCount += season.episodes.filter((ep) => ep?.watched).length;
-          }
-        }
-      }
-    }
-
-    const depsString = `${seriesList.length}-${watchedCount}`;
-
-    if (cacheRef.current.items && cacheRef.current.deps === depsString) {
-      return cacheRef.current.items;
-    }
-
     const items: ContinueWatchingItem[] = [];
 
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
       if (!series.watchlist) continue;
 
-      let lastWatchedAt: string | null = null;
+      const lastWatchedAt = getSeriesLastWatchedAt(series);
+      const { progress } = calculateSeriesMetrics(series);
       const seasons = series.seasons;
 
       if (seasons) {
-        for (let j = 0; j < seasons.length; j++) {
-          const episodes = seasons[j].episodes;
-          if (!episodes) continue;
-
-          for (let k = 0; k < episodes.length; k++) {
-            const ep = episodes[k];
-            if (ep.firstWatchedAt && ep.watched) {
-              if (!lastWatchedAt || new Date(ep.firstWatchedAt) > new Date(lastWatchedAt)) {
-                lastWatchedAt = ep.firstWatchedAt;
-              }
-            }
-          }
-        }
-
         let foundNext = false;
         for (let j = 0; j < seasons.length && !foundNext; j++) {
           const season = seasons[j];
@@ -86,32 +50,13 @@ export const useContinueWatching = () => {
           for (let k = 0; k < episodes2.length; k++) {
             const episode = episodes2[k];
             if (!episode?.watched && hasEpisodeAired(episode)) {
-              let totalAiredEpisodes = 0;
-              let watchedEpisodes = 0;
-
-              for (let s = 0; s < seasons.length; s++) {
-                const sEpisodes = seasons[s].episodes;
-                if (!sEpisodes) continue;
-
-                for (let e = 0; e < sEpisodes.length; e++) {
-                  const ep = sEpisodes[e];
-                  if (hasEpisodeAired(ep)) {
-                    totalAiredEpisodes++;
-                    if (ep.watched) watchedEpisodes++;
-                  }
-                }
-              }
-
-              const percentage =
-                totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
-
               items.push({
                 type: 'series',
                 id: series.id,
                 nmr: series.nmr,
                 title: series.title,
                 poster: getImageUrl(series.poster),
-                progress: percentage,
+                progress,
                 nextEpisode: {
                   seasonNumber: (season.seasonNumber ?? 0) + 1,
                   episodeNumber: k + 1,
@@ -120,7 +65,7 @@ export const useContinueWatching = () => {
                   episodeIndex: k,
                 },
                 airDate: getEpisodeAirDateStr(episode) || episode.air_date,
-                lastWatchedAt: lastWatchedAt || '1900-01-01',
+                lastWatchedAt,
                 genre: series.genre,
                 seasons: series.seasons,
                 provider: series.provider,
@@ -140,9 +85,7 @@ export const useContinueWatching = () => {
       return dateB - dateA;
     });
 
-    const result = items.slice(0, 10);
-    cacheRef.current = { items: result, deps: depsString };
-    return result;
+    return items.slice(0, 10);
   }, [seriesList]);
 
   return continueWatching;

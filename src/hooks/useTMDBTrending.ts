@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { useMovieList } from '../contexts/MovieListProvider';
+import { getImageUrl } from '../utils/imageUrl';
 
 interface TMDBTrendingItem {
   id: number;
@@ -15,7 +16,7 @@ interface TMDBTrendingItem {
   release_date?: string;
 }
 
-interface TrendingItem {
+export interface TrendingItem {
   type: 'series' | 'movie';
   id: number;
   title: string;
@@ -25,18 +26,46 @@ interface TrendingItem {
   releaseDate?: string;
 }
 
-export const useTMDBTrending = () => {
+interface UseTMDBTrendingResult {
+  trending: TrendingItem[];
+  loading: boolean;
+  error: Error | null;
+}
+
+function mapTMDBItem(item: TMDBTrendingItem, type: 'series' | 'movie'): TrendingItem {
+  const title =
+    type === 'series'
+      ? (item.name ?? item.original_name ?? '')
+      : (item.title ?? item.original_title ?? '');
+  return {
+    type,
+    id: item.id,
+    title,
+    poster: getImageUrl(item.poster_path),
+    rating: item.vote_average,
+    voteCount: item.vote_count,
+    releaseDate: type === 'series' ? item.first_air_date : item.release_date,
+  };
+}
+
+export const useTMDBTrending = (): UseTMDBTrendingResult => {
   const { allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const [rawSeries, setRawSeries] = useState<TrendingItem[]>([]);
   const [rawMovies, setRawMovies] = useState<TrendingItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchTrending = async () => {
+      setError(null);
       try {
         const apiKey = import.meta.env.VITE_API_TMDB;
-
+        if (!apiKey) {
+          throw new Error('VITE_API_TMDB ist nicht konfiguriert');
+        }
         const [tvResponse, movieResponse] = await Promise.all([
           fetch(
             `https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=de-DE&region=DE`
@@ -45,60 +74,47 @@ export const useTMDBTrending = () => {
             `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=de-DE&region=DE`
           ),
         ]);
-
+        if (!tvResponse.ok || !movieResponse.ok) {
+          throw new Error(
+            `TMDB API Fehler: TV=${tvResponse.status}, Movie=${movieResponse.status}`
+          );
+        }
         const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
-
+        if (cancelled) return;
         setRawSeries(
-          (tvData.results || []).map((item: TMDBTrendingItem) => ({
-            type: 'series' as const,
-            id: item.id,
-            title: item.name || item.original_name,
-            poster: item.poster_path
-              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-              : '/placeholder.jpg',
-            rating: item.vote_average,
-            voteCount: item.vote_count,
-            releaseDate: item.first_air_date,
-          }))
+          (tvData.results ?? []).map((item: TMDBTrendingItem) => mapTMDBItem(item, 'series'))
         );
-
         setRawMovies(
-          (movieData.results || []).map((item: TMDBTrendingItem) => ({
-            type: 'movie' as const,
-            id: item.id,
-            title: item.title || item.original_title,
-            poster: item.poster_path
-              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-              : '/placeholder.jpg',
-            rating: item.vote_average,
-            voteCount: item.vote_count,
-            releaseDate: item.release_date,
-          }))
+          (movieData.results ?? []).map((item: TMDBTrendingItem) => mapTMDBItem(item, 'movie'))
         );
-      } catch {
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err : new Error(String(err)));
         setRawSeries([]);
         setRawMovies([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTrending();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const trending = useMemo(() => {
     const seriesIds = new Set(allSeriesList.map((s) => s.id));
     const movieIds = new Set(movieList.map((m) => m.id));
-
     const filteredSeries = rawSeries.filter((i) => !seriesIds.has(i.id));
     const filteredMovies = rawMovies.filter((i) => !movieIds.has(i.id));
-
     const targetEach = 10;
     const sCount = Math.min(filteredSeries.length, targetEach);
     const mCount = Math.min(filteredMovies.length, targetEach);
     const seriesFinal = sCount + Math.min(filteredSeries.length - sCount, targetEach - mCount);
     const movieFinal = mCount + Math.min(filteredMovies.length - mCount, targetEach - sCount);
-
     const combined = [
       ...filteredSeries.slice(0, seriesFinal),
       ...filteredMovies.slice(0, movieFinal),
@@ -107,5 +123,5 @@ export const useTMDBTrending = () => {
     return combined.slice(0, 20);
   }, [rawSeries, rawMovies, allSeriesList, movieList]);
 
-  return { trending, loading };
+  return { trending, loading, error };
 };

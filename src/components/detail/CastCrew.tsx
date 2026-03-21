@@ -461,6 +461,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                 <img
                   src={voiceActorDetails.image.large}
                   alt={voiceActorDetails.name.full}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: '80px',
                     height: '120px',
@@ -561,6 +563,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                         <img
                           src={edge.node.coverImage.large}
                           alt={edge.node.title.english || edge.node.title.romaji}
+                          loading="lazy"
+                          decoding="async"
                           style={{
                             width: '100px',
                             height: '150px',
@@ -704,6 +708,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
             <img
               src={`https://image.tmdb.org/t/p/w185${personDetails.profile_path}`}
               alt={personDetails.name}
+              loading="lazy"
+              decoding="async"
               style={{
                 width: '80px',
                 height: '120px',
@@ -793,6 +799,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                     <img
                       src={`https://image.tmdb.org/t/p/w185${credit.poster_path}`}
                       alt={credit.title || credit.name}
+                      loading="lazy"
+                      decoding="async"
                       style={{
                         width: '100px',
                         height: '150px',
@@ -1011,6 +1019,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                   <img
                     src={char.character.image}
                     alt={char.character.name}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '48px',
                       height: '48px',
@@ -1102,6 +1112,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                       <img
                         src={char.voice_actors[0].person.image}
                         alt={char.voice_actors[0].person.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{
                           width: '40px',
                           height: '40px',
@@ -1150,6 +1162,8 @@ export const CastCrew: React.FC<CastCrewProps> = ({
                   <img
                     src={`https://image.tmdb.org/t/p/w92${member.profile_path}`}
                     alt={member.name}
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: '48px',
                       height: '48px',

@@ -10,6 +10,7 @@ import {
   MovieWatchEvent,
   BingeSession,
 } from '../types/WatchActivity';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import {
   WrappedStats,
   TopSeriesEntry,
@@ -52,7 +53,10 @@ export function calculateWrappedStats(
   const totalEpisodes = episodeEvents.length;
   const totalMovies = movieEvents.length;
 
-  const episodeMinutes = episodeEvents.reduce((sum, e) => sum + (e.episodeRuntime || 45), 0);
+  const episodeMinutes = episodeEvents.reduce(
+    (sum, e) => sum + (e.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
+    0
+  );
   const movieMinutes = movieEvents.reduce((sum, e) => sum + (e.runtime || 120), 0);
   const totalMinutes = episodeMinutes + movieMinutes;
 
@@ -174,7 +178,7 @@ function calculateTopSeries(episodes: EpisodeWatchEvent[], limit = 5): TopSeries
       minutesWatched: 0,
     };
     existing.episodesWatched++;
-    existing.minutesWatched += ep.episodeRuntime || 45;
+    existing.minutesWatched += ep.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
     seriesMap.set(ep.seriesId, existing);
   }
 
@@ -213,7 +217,8 @@ function calculateTopGenres(
       const validGenres = episode.genres.filter((g) => !ignoredGenres.has(g));
       if (validGenres.length === 0) continue;
 
-      const minutesPerGenre = (episode.episodeRuntime || 45) / validGenres.length;
+      const minutesPerGenre =
+        (episode.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES) / validGenres.length;
       for (const genre of validGenres) {
         const existing = genreMap.get(genre) || { count: 0, minutes: 0 };
         existing.count++;
@@ -281,7 +286,7 @@ function calculateTopProviders(
     const providers = [
       ...new Set<string>(episode.providers || (episode.provider ? [episode.provider] : [])),
     ];
-    const runtime = episode.episodeRuntime || 45;
+    const runtime = episode.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
     for (const providerName of providers) {
       if (!providerName) continue;
@@ -361,8 +366,10 @@ function calculateMonthlyBreakdown(events: ActivityEvent[]): MonthStats[] {
       episodesWatched: episodeEvents.length,
       moviesWatched: movieEvents.length,
       minutesWatched:
-        episodeEvents.reduce((sum, e) => sum + (e.episodeRuntime || 45), 0) +
-        movieEvents.reduce((sum, e) => sum + (e.runtime || 120), 0),
+        episodeEvents.reduce(
+          (sum, e) => sum + (e.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
+          0
+        ) + movieEvents.reduce((sum, e) => sum + (e.runtime || 120), 0),
     });
   }
 
@@ -384,7 +391,8 @@ function findMostActiveDay(events: ActivityEvent[]): DayStats {
 
     if (event.type === 'episode_watch') {
       existing.episodes++;
-      existing.minutes += (event as EpisodeWatchEvent).episodeRuntime || 45;
+      existing.minutes +=
+        (event as EpisodeWatchEvent).episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
     } else if (event.type === 'movie_watch') {
       existing.movies++;
       existing.minutes += (event as MovieWatchEvent).runtime || 120;

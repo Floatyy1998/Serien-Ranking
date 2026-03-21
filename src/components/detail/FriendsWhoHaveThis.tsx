@@ -2,7 +2,7 @@ import { Person, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
@@ -23,7 +23,7 @@ interface FriendsWhoHaveThisProps {
   mediaType: 'series' | 'movie';
 }
 
-export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
+const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
   const { user } = useAuth()!;
   const { friends } = useOptimizedFriends();
   const { currentTheme } = useTheme();
@@ -249,3 +249,6 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
     </div>
   );
 };
+
+export const FriendsWhoHaveThis = memo(_FriendsWhoHaveThis);
+FriendsWhoHaveThis.displayName = 'FriendsWhoHaveThis';

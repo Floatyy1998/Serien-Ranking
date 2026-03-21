@@ -4,6 +4,7 @@
  */
 
 import type { SvgIconComponent } from '@mui/icons-material';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import {
   EmojiEvents,
   Group,
@@ -80,7 +81,7 @@ function computeStats(
 
   seriesList.forEach((series) => {
     if (!series || series.nmr === undefined || series.nmr === null) return;
-    const seriesRuntime = series.episodeRuntime || 45;
+    const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
     if (series.seasons) {
       series.seasons.forEach((season) => {

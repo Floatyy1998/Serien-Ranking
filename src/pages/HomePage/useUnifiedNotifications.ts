@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
 
@@ -51,7 +51,17 @@ export const ANNOUNCEMENTS: Announcement[] = [
   },
 ];
 
-export function useUnifiedNotifications() {
+export interface UseUnifiedNotificationsReturn {
+  unifiedNotifications: UnifiedNotification[];
+  totalUnreadBadge: number;
+  dismissAnnouncement: (id: string) => void;
+  handleMarkAllNotificationsRead: () => void;
+  markAsRead: (id: string) => void;
+  acceptFriendRequest: (requestId: string) => void;
+  declineFriendRequest: (requestId: string) => void;
+}
+
+export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     unreadActivitiesCount,
     friendActivities,
@@ -77,11 +87,13 @@ export function useUnifiedNotifications() {
     }
   });
 
-  const dismissAnnouncement = (id: string) => {
-    const updated = [...dismissedAnnouncements, id];
-    setDismissedAnnouncements(updated);
-    localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
-  };
+  const dismissAnnouncement = useCallback((id: string) => {
+    setDismissedAnnouncements((prev) => {
+      const updated = [...prev, id];
+      localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const unifiedNotifications = useMemo(() => {
     const items: UnifiedNotification[] = [];
@@ -198,7 +210,7 @@ export function useUnifiedNotifications() {
     notificationUnreadCount +
     ANNOUNCEMENTS.filter((a) => !dismissedAnnouncements.includes(a.id)).length;
 
-  const handleMarkAllNotificationsRead = () => {
+  const handleMarkAllNotificationsRead = useCallback(() => {
     markActivitiesAsRead();
     markRequestsAsRead();
     markAllAsRead();
@@ -206,7 +218,7 @@ export function useUnifiedNotifications() {
     const allIds = ANNOUNCEMENTS.map((a) => a.id);
     setDismissedAnnouncements(allIds);
     localStorage.setItem('dismissed_announcements', JSON.stringify(allIds));
-  };
+  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead]);
 
   return {
     unifiedNotifications,
@@ -219,7 +231,7 @@ export function useUnifiedNotifications() {
   };
 }
 
-export function formatNotificationTime(timestamp: number) {
+export function formatNotificationTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return 'gerade eben';

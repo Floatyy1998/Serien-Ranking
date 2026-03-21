@@ -389,6 +389,8 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                       <img
                         src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
                         alt={video.name}
+                        loading="lazy"
+                        decoding="async"
                         style={{
                           width: '100%',
                           height: '100%',

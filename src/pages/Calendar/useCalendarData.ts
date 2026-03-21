@@ -5,6 +5,8 @@ import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { trackEpisodeWatched } from '../../firebase/analytics';
 import { useWeeklyEpisodes, getWeekNumber, WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
 
@@ -107,7 +109,7 @@ export const useCalendarData = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.backdrop_path) {
-            const url = `https://image.tmdb.org/t/p/w780${data.backdrop_path}`;
+            const url = getImageUrl(data.backdrop_path, 'w780');
             backdropCache.current[id] = url;
             setBackdrops((prev) => ({ ...prev, [id]: url }));
           }
@@ -175,7 +177,7 @@ export const useCalendarData = () => {
             {
               tmdbId: series.id,
               genres: series.genre?.genres,
-              runtime: series.episodeRuntime || 45,
+              runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
               isRewatch: !snap.val() ? false : true,
               source: 'calendar',
             }

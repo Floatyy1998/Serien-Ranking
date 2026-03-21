@@ -198,6 +198,8 @@ export const RepliesSection: React.FC<{
                             <img
                               src={img}
                               alt="Bild"
+                              loading="lazy"
+                              decoding="async"
                               style={{
                                 maxWidth: '150px',
                                 maxHeight: '100px',

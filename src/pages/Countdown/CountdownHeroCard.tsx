@@ -44,7 +44,12 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
     <div className="cd-hero-body">
       {/* Poster */}
       {item.posterUrl ? (
-        <img src={item.posterUrl} alt={`Poster von ${item.title}`} className="cd-hero-poster" />
+        <img
+          src={item.posterUrl}
+          alt={`Poster von ${item.title}`}
+          decoding="async"
+          className="cd-hero-poster"
+        />
       ) : (
         <div
           className="cd-hero-poster-placeholder"

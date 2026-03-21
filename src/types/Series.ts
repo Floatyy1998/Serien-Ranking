@@ -63,6 +63,7 @@ export interface Series {
     active: boolean;
     round: number;
     startedAt?: string;
+    lastWatchedAt?: string;
   };
   release_date: string;
   media_type?: string;

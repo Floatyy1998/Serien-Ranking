@@ -1,6 +1,15 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import firebase from 'firebase/compat/app';
-import { createContext, lazy, Suspense, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
@@ -320,13 +329,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Kein LoadingSpinner mehr - SplashScreen handled das
   // Provider trotzdem rendern damit initialData gesetzt werden kann
 
-  return (
-    <AuthContext.Provider
-      value={{ user, setUser, authStateResolved, onboardingComplete, setOnboardingComplete }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const setOnboardingCompleteCallback = useCallback(
+    (value: React.SetStateAction<boolean>) => setOnboardingComplete(value),
+    []
   );
+  const setUserCallback = useCallback(
+    (value: React.SetStateAction<firebase.User | null>) => setUser(value),
+    []
+  );
+
+  const authContextValue = useMemo(
+    () => ({
+      user,
+      setUser: setUserCallback,
+      authStateResolved,
+      onboardingComplete,
+      setOnboardingComplete: setOnboardingCompleteCallback,
+    }),
+    [user, setUserCallback, authStateResolved, onboardingComplete, setOnboardingCompleteCallback]
+  );
+
+  return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };
 export const useAuth = () => useContext(AuthContext);
 // Theme beim App-Start laden

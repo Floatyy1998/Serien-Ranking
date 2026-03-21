@@ -7,6 +7,7 @@ import { useMovieList } from '../../contexts/MovieListProvider';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
+import { getImageUrl } from '../../utils/imageUrl';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -108,11 +109,8 @@ export const useMovieData = () => {
   }, [movie]);
 
   // --- Helpers ---
-  const getBackdropUrl = (backdropPath: string | undefined): string => {
-    if (!backdropPath) return '';
-    if (backdropPath.startsWith('http')) return backdropPath;
-    return `https://image.tmdb.org/t/p/original${backdropPath}`;
-  };
+  const getBackdropUrl = (backdropPath: string | undefined): string =>
+    getImageUrl(backdropPath, 'original', '');
 
   const formatRuntime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);

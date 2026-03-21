@@ -1,14 +1,14 @@
 import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
-export const ReplyItem: React.FC<{
+const _ReplyItem: React.FC<{
   reply: DiscussionReply;
   onDelete: () => void;
   onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
@@ -470,3 +470,6 @@ export const ReplyItem: React.FC<{
     </motion.div>
   );
 };
+
+export const ReplyItem = memo(_ReplyItem);
+ReplyItem.displayName = 'ReplyItem';

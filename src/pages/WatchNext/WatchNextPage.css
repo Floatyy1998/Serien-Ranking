@@ -44,6 +44,11 @@
   transform: scale(0.95);
 }
 
+.watch-next-header__btn--active {
+  color: white;
+  box-shadow: var(--btn-active-shadow, 0 4px 15px rgba(0, 0, 0, 0.3));
+}
+
 /* Filter Section */
 .watch-next-filter {
   margin-top: 8px;
@@ -93,6 +98,11 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.episode-card {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 100px;
 }
 
 /* Scroll container */

@@ -2,6 +2,11 @@ import firebase from 'firebase/compat/app';
 import { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
+import {
+  normalizeSeasons,
+  normalizeEpisodes,
+  getSeriesLastWatchedAt,
+} from '../episode/seriesMetrics';
 
 export interface InactiveSeriesData {
   seriesId: number;
@@ -19,7 +24,7 @@ export const getStoredInactiveData = async (
   try {
     const ref = firebase.database().ref(`users/${userId}/inactiveSeriesData`);
     const snapshot = await ref.once('value');
-    return snapshot.val() || {};
+    return (snapshot.val() as Record<string, InactiveSeriesData> | null) || {};
   } catch {
     return {};
   }
@@ -28,50 +33,25 @@ export const getStoredInactiveData = async (
 export const storeInactiveData = async (
   userId: string,
   data: Record<string, InactiveSeriesData>
-) => {
+): Promise<void> => {
   try {
     const ref = firebase.database().ref(`users/${userId}/inactiveSeriesData`);
     await ref.set(data);
   } catch (error) {
-    console.error('Error storing inactive series data:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[InactiveSeriesDetection] Failed to store inactive data: ${message}`);
   }
 };
 
+/**
+ * Returns the most recent watch timestamp as epoch ms, or null if never watched.
+ * Delegates to the shared `getSeriesLastWatchedAt` helper.
+ */
 const getLastWatchedDate = (series: Series): number | null => {
-  let lastWatchedAt: number | null = null;
-
-  if (series.seasons) {
-    for (const season of series.seasons) {
-      if (season.episodes) {
-        for (const episode of season.episodes) {
-          if (episode.watched) {
-            // Sammle alle möglichen Watch-Daten für diese Episode
-            const dates: number[] = [];
-
-            // lastWatchedAt hat höchste Priorität (wird bei Rewatches aktualisiert)
-            if (episode.lastWatchedAt) {
-              dates.push(new Date(episode.lastWatchedAt).getTime());
-            }
-
-            // firstWatchedAt als Fallback
-            if (episode.firstWatchedAt) {
-              dates.push(new Date(episode.firstWatchedAt).getTime());
-            }
-
-            // Finde das neueste Datum dieser Episode
-            if (dates.length > 0) {
-              const episodeLatestDate = Math.max(...dates);
-              if (!lastWatchedAt || episodeLatestDate > lastWatchedAt) {
-                lastWatchedAt = episodeLatestDate;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  return lastWatchedAt;
+  const iso = getSeriesLastWatchedAt(series);
+  if (iso === '1900-01-01') return null;
+  const ts = new Date(iso).getTime();
+  return isNaN(ts) ? null : ts;
 };
 
 const hasUpcomingEpisodes = (series: Series): boolean => {
@@ -92,35 +72,11 @@ const hasUpcomingEpisodes = (series: Series): boolean => {
   }
 
   // Prüfe ob es Episoden mit zukünftigem Datum in den Seasons gibt
-  if (series.seasons) {
-    const seasonsArr: Series['seasons'] = Array.isArray(series.seasons)
-      ? series.seasons
-      : (Object.values(series.seasons) as Series['seasons']);
-    for (const season of seasonsArr) {
-      const episodes = Array.isArray(season.episodes)
-        ? season.episodes
-        : season.episodes
-          ? (Object.values(season.episodes) as typeof season.episodes)
-          : [];
-      for (const episode of episodes) {
-        const airDate = getEpisodeAirDate(episode);
-        if (airDate && airDate > today) {
-          return true;
-        }
-      }
-    }
-  }
-
-  // Prüfe alle Staffeln nach zukünftigen Episoden
-  if (series.seasons) {
-    for (const season of series.seasons) {
-      if (season.episodes) {
-        for (const episode of season.episodes) {
-          const airDate = getEpisodeAirDate(episode);
-          if (airDate && airDate > today && !episode.watched) {
-            return true;
-          }
-        }
+  for (const season of normalizeSeasons(series.seasons)) {
+    for (const episode of normalizeEpisodes(season.episodes)) {
+      const airDate = getEpisodeAirDate(episode);
+      if (airDate && airDate > today) {
+        return true;
       }
     }
   }
@@ -140,7 +96,9 @@ export const detectInactiveSeries = async (
   // Lade bereits abgewiesene Benachrichtigungen
   const notificationsRef = firebase.database().ref(`users/${userId}/inactiveSeriesNotifications`);
   const notificationsSnapshot = await notificationsRef.once('value');
-  const dismissedNotifications = notificationsSnapshot.val() || {};
+  const dismissedNotifications =
+    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
+    {};
 
   for (const series of seriesList) {
     // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
@@ -233,7 +191,9 @@ export const detectInactiveRewatches = async (
 
   const notificationsRef = firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`);
   const notificationsSnapshot = await notificationsRef.once('value');
-  const dismissedNotifications = notificationsSnapshot.val() || {};
+  const dismissedNotifications =
+    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
+    {};
 
   for (const series of seriesList) {
     if (!series || !series.id || !series.watchlist) continue;
@@ -261,7 +221,10 @@ export const detectInactiveRewatches = async (
   return result;
 };
 
-export const markInactiveSeriesAsNotified = async (seriesId: number, userId: string) => {
+export const markInactiveSeriesAsNotified = async (
+  seriesId: number,
+  userId: string
+): Promise<void> => {
   const storedData = await getStoredInactiveData(userId);
   const seriesKey = seriesId.toString();
 

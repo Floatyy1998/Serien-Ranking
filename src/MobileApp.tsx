@@ -6,90 +6,162 @@ import { useOptimizedFriends } from './contexts/OptimizedFriendsProvider';
 import { useNotifications } from './contexts/NotificationContext';
 import './styles/App.css';
 
-// Lazy load all pages for better code splitting
-const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
-const WatchNextPage = lazy(() =>
-  import('./pages/WatchNext').then((m) => ({ default: m.WatchNextPage }))
+// Main nav tabs: eager imports — these are always needed and must never show a loading spinner
+import { HomePage } from './pages/HomePage';
+import { WatchNextPage } from './pages/WatchNext';
+import { RatingsPage } from './pages/Ratings';
+import { ProfilePage } from './pages/Profile';
+import { SearchPage } from './pages/Search';
+
+// All other pages: lazy loaded
+const SeriesDetailPage = lazy(() =>
+  import(/* webpackChunkName: "series-detail" */ './pages/SeriesDetail').then((m) => ({
+    default: m.SeriesDetailPage,
+  }))
 );
-const RatingsPage = lazy(() => import('./pages/Ratings').then((m) => ({ default: m.RatingsPage })));
-const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })));
-const RecentlyWatchedPage = lazy(() =>
-  import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage }))
+const MovieDetailPage = lazy(() =>
+  import(/* webpackChunkName: "movie-detail" */ './pages/MovieDetail').then((m) => ({
+    default: m.MovieDetailPage,
+  }))
 );
 const DiscoverPage = lazy(() =>
-  import('./pages/Discover').then((m) => ({ default: m.DiscoverPage }))
+  import(/* webpackChunkName: "discover" */ './pages/Discover').then((m) => ({
+    default: m.DiscoverPage,
+  }))
 );
 const ActivityPage = lazy(() =>
-  import('./pages/Activity').then((m) => ({ default: m.ActivityPage }))
+  import(/* webpackChunkName: "activity" */ './pages/Activity').then((m) => ({
+    default: m.ActivityPage,
+  }))
 );
-const SearchPage = lazy(() => import('./pages/Search').then((m) => ({ default: m.SearchPage })));
-const BadgesPage = lazy(() => import('./pages/Badges').then((m) => ({ default: m.BadgesPage })));
-const PetsPage = lazy(() => import('./pages/Pets').then((m) => ({ default: m.PetsPage })));
-const ThemePage = lazy(() => import('./pages/Theme').then((m) => ({ default: m.ThemePage })));
+const StatsPage = lazy(() =>
+  import(/* webpackChunkName: "stats" */ './pages/Stats').then((m) => ({ default: m.StatsPage }))
+);
+const RecentlyWatchedPage = lazy(() =>
+  import(/* webpackChunkName: "recently-watched" */ './pages/RecentlyWatched').then((m) => ({
+    default: m.RecentlyWatchedPage,
+  }))
+);
+const BadgesPage = lazy(() =>
+  import(/* webpackChunkName: "badges" */ './pages/Badges').then((m) => ({
+    default: m.BadgesPage,
+  }))
+);
+const PetsPage = lazy(() =>
+  import(/* webpackChunkName: "pets" */ './pages/Pets').then((m) => ({ default: m.PetsPage }))
+);
+const ThemePage = lazy(() =>
+  import(/* webpackChunkName: "theme" */ './pages/Theme').then((m) => ({ default: m.ThemePage }))
+);
 const HomeLayoutPage = lazy(() =>
-  import('./pages/HomeLayout').then((m) => ({ default: m.HomeLayoutPage }))
+  import(/* webpackChunkName: "home-layout" */ './pages/HomeLayout').then((m) => ({
+    default: m.HomeLayoutPage,
+  }))
 );
-const StatsPage = lazy(() => import('./pages/Stats').then((m) => ({ default: m.StatsPage })));
-const WrappedPage = lazy(() => import('./pages/Wrapped').then((m) => ({ default: m.WrappedPage })));
+const WrappedPage = lazy(() =>
+  import(/* webpackChunkName: "wrapped" */ './pages/Wrapped').then((m) => ({
+    default: m.WrappedPage,
+  }))
+);
 const ActorUniversePage = lazy(() =>
-  import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage }))
+  import(/* webpackChunkName: "actor-universe" */ './pages/ActorUniverse').then((m) => ({
+    default: m.ActorUniversePage,
+  }))
 );
 const SettingsPage = lazy(() =>
-  import('./pages/Settings').then((m) => ({ default: m.SettingsPage }))
+  import(/* webpackChunkName: "settings" */ './pages/Settings').then((m) => ({
+    default: m.SettingsPage,
+  }))
 );
 const ProfileSettingsPage = lazy(() =>
-  import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettingsPage }))
-);
-const SeriesDetailPage = lazy(() =>
-  import('./pages/SeriesDetail').then((m) => ({ default: m.SeriesDetailPage }))
+  import(/* webpackChunkName: "profile-settings" */ './pages/ProfileSettings').then((m) => ({
+    default: m.ProfileSettingsPage,
+  }))
 );
 const EpisodeManagementPage = lazy(() =>
-  import('./pages/EpisodeManagement').then((m) => ({ default: m.EpisodeManagementPage }))
+  import(/* webpackChunkName: "episode-management" */ './pages/EpisodeManagement').then((m) => ({
+    default: m.EpisodeManagementPage,
+  }))
 );
 const EpisodeDiscussionPage = lazy(() =>
-  import('./pages/EpisodeDiscussion').then((m) => ({ default: m.EpisodeDiscussionPage }))
+  import(/* webpackChunkName: "episode-discussion" */ './pages/EpisodeDiscussion').then((m) => ({
+    default: m.EpisodeDiscussionPage,
+  }))
 );
-const RatingPage = lazy(() => import('./pages/Rating').then((m) => ({ default: m.RatingPage })));
-const MovieDetailPage = lazy(() =>
-  import('./pages/MovieDetail').then((m) => ({ default: m.MovieDetailPage }))
+const RatingPage = lazy(() =>
+  import(/* webpackChunkName: "rating" */ './pages/Rating').then((m) => ({
+    default: m.RatingPage,
+  }))
 );
 const FriendProfilePage = lazy(() =>
-  import('./pages/FriendProfile').then((m) => ({ default: m.FriendProfilePage }))
+  import(/* webpackChunkName: "friend-profile" */ './pages/FriendProfile').then((m) => ({
+    default: m.FriendProfilePage,
+  }))
 );
 const TasteMatchPage = lazy(() =>
-  import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage }))
+  import(/* webpackChunkName: "taste-match" */ './pages/TasteMatch').then((m) => ({
+    default: m.TasteMatchPage,
+  }))
 );
 const WatchJourneyPage = lazy(() =>
-  import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage }))
+  import(/* webpackChunkName: "watch-journey" */ './pages/WatchJourney').then((m) => ({
+    default: m.WatchJourneyPage,
+  }))
 );
-const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
+const CatchUpPage = lazy(() =>
+  import(/* webpackChunkName: "catch-up" */ './pages/CatchUp').then((m) => ({
+    default: m.CatchUpPage,
+  }))
+);
 const HiddenSeriesPage = lazy(() =>
-  import('./pages/HiddenSeries').then((m) => ({ default: m.HiddenSeriesPage }))
+  import(/* webpackChunkName: "hidden-series" */ './pages/HiddenSeries').then((m) => ({
+    default: m.HiddenSeriesPage,
+  }))
 );
 const ImpressumPage = lazy(() =>
-  import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage }))
+  import(/* webpackChunkName: "impressum" */ './pages/Impressum').then((m) => ({
+    default: m.ImpressumPage,
+  }))
 );
-const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
+const PrivacyPage = lazy(() =>
+  import(/* webpackChunkName: "privacy" */ './pages/Privacy').then((m) => ({
+    default: m.PrivacyPage,
+  }))
+);
 const DiscussionFeedPage = lazy(() =>
-  import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage }))
+  import(/* webpackChunkName: "discussion-feed" */ './pages/DiscussionFeed').then((m) => ({
+    default: m.DiscussionFeedPage,
+  }))
 );
 const CountdownPage = lazy(() =>
-  import('./pages/Countdown').then((m) => ({ default: m.CountdownPage }))
+  import(/* webpackChunkName: "countdown" */ './pages/Countdown').then((m) => ({
+    default: m.CountdownPage,
+  }))
 );
 const CalendarPage = lazy(() =>
-  import('./pages/Calendar').then((m) => ({ default: m.CalendarPage }))
+  import(/* webpackChunkName: "calendar" */ './pages/Calendar').then((m) => ({
+    default: m.CalendarPage,
+  }))
 );
 const OnboardingPage = lazy(() =>
-  import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage }))
+  import(/* webpackChunkName: "onboarding" */ './pages/Onboarding').then((m) => ({
+    default: m.OnboardingPage,
+  }))
 );
 const LeaderboardPage = lazy(() =>
-  import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage }))
+  import(/* webpackChunkName: "leaderboard" */ './pages/Leaderboard').then((m) => ({
+    default: m.LeaderboardPage,
+  }))
 );
 const PatchNotesPage = lazy(() =>
-  import('./pages/PatchNotes').then((m) => ({ default: m.PatchNotesPage }))
+  import(/* webpackChunkName: "patch-notes" */ './pages/PatchNotes').then((m) => ({
+    default: m.PatchNotesPage,
+  }))
 );
 const AdminDashboardPage = lazy(() =>
-  import('./pages/AdminDashboard').then((m) => ({ default: m.AdminDashboardPage }))
+  import(/* webpackChunkName: "admin-dashboard" */ './pages/AdminDashboard').then((m) => ({
+    default: m.AdminDashboardPage,
+  }))
 );
 
 const PageLoader = () => (
@@ -105,6 +177,43 @@ const PageLoader = () => (
     <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
   </div>
 );
+
+// Preload all lazy route chunks when the browser is idle
+// so that first navigation to any page feels instant
+function preloadRoutes() {
+  const routes = [
+    () => import('./pages/SeriesDetail'),
+    () => import('./pages/MovieDetail'),
+    () => import('./pages/Activity'),
+    () => import('./pages/Discover'),
+    () => import('./pages/RecentlyWatched'),
+    () => import('./pages/Calendar'),
+    () => import('./pages/Countdown'),
+    () => import('./pages/Stats'),
+    () => import('./pages/EpisodeManagement'),
+    () => import('./pages/EpisodeDiscussion'),
+    () => import('./pages/FriendProfile'),
+    () => import('./pages/Badges'),
+    () => import('./pages/Settings'),
+  ];
+
+  let i = 0;
+  function loadNext() {
+    if (i >= routes.length) return;
+    routes[i++]().finally(() => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadNext, { timeout: 3000 });
+      }
+    });
+  }
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadNext, { timeout: 5000 });
+  } else {
+    // Fallback for Safari
+    setTimeout(loadNext, 2000);
+  }
+}
 
 export const MobileApp = () => {
   const { onboardingComplete } = useAuth() || {};
@@ -179,6 +288,11 @@ export const MobileApp = () => {
 
     return () => clearInterval(interval);
   }, [totalUnread, tickerMessages]);
+
+  // Preload lazy route chunks in the background once app is stable
+  useEffect(() => {
+    preloadRoutes();
+  }, []);
 
   // Redirect to onboarding if not complete
   if (onboardingComplete === false && location.pathname !== '/onboarding') {

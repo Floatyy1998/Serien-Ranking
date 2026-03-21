@@ -1,5 +1,6 @@
 import type { Series } from '../types/Series';
 import { hasEpisodeAired } from '../utils/episodeDate';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from './episode/seriesMetrics';
 
 export interface WatchingPace {
   episodesPerWeek: number;
@@ -59,7 +60,9 @@ export function calculateWatchingPace(
 
   // Remaining watchtime (always calculable)
   const avgRuntime =
-    runtimeSamples > 0 ? totalRuntimeMinutes / runtimeSamples : episodeRuntime || 45;
+    runtimeSamples > 0
+      ? totalRuntimeMinutes / runtimeSamples
+      : episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
   const remainingHoursCalc = Math.round(((remaining * avgRuntime) / 60) * 10) / 10;
 
   // Not enough timestamps for pace calculation — still show pausiert + remaining time

@@ -7,6 +7,7 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { trackEpisodeWatched } from '../../firebase/analytics';
 import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 
 interface UseWatchNextSwipeOptions {
   user: { uid: string } | null;
@@ -155,7 +156,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
           {
             tmdbId: series.id,
             genres: series.genre?.genres,
-            runtime: episode.runtime || series.episodeRuntime || 45,
+            runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
             isRewatch: episode.isRewatch || false,
             source: 'watch_next_swipe',
           }
@@ -168,7 +169,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
           series.title || series.name || 'Unbekannte Serie',
           episode.seasonIndex + 1,
           episode.episodeIndex + 1,
-          episode.runtime || series.episodeRuntime || 45,
+          episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
           episode.isRewatch || false,
           series.genre?.genres,
           series.provider?.provider?.map((p) => p.name)
