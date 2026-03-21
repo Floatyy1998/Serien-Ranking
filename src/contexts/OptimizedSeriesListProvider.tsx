@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
@@ -8,8 +16,21 @@ import {
 } from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { Series } from '../types/Series';
+import { normalizeSeasons, normalizeEpisodes } from '../lib/episode/seriesMetrics';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+
+/** Read and JSON-parse a sessionStorage key, returning `fallback` on any failure. */
+function getSessionStorageJSON<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback;
+  const stored = sessionStorage.getItem(key);
+  if (!stored) return fallback;
+  try {
+    return JSON.parse(stored);
+  } catch {
+    return fallback;
+  }
+}
 
 interface SeriesListContextType {
   seriesList: Series[];
@@ -58,20 +79,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const { user } = useAuth()!;
 
   // Verwende sessionStorage um State zwischen Re-Renders zu behalten
-  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('seriesWithNewSeasons');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          return parsed;
-        } catch (e) {
-          console.error('❌ Error parsing sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() =>
+    getSessionStorageJSON('seriesWithNewSeasons', [])
+  );
 
   // Listen for sessionStorage updates from other tabs via storage event
   useEffect(() => {
@@ -99,33 +109,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   });
 
   // State für inaktive Serien
-  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('inactiveSeries');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error('❌ Error parsing inactiveSeries from sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('inactiveSeries', [])
+  );
 
-  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('inactiveRewatches');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-    return [];
-  });
+  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() =>
+    getSessionStorageJSON('inactiveRewatches', [])
+  );
 
   const [hasCheckedForInactive, setHasCheckedForInactive] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -135,19 +125,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   });
 
   // State für komplett geschaute Serien
-  const [completedSeries, setCompletedSeries] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('completedSeries');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error('❌ Error parsing completedSeries from sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [completedSeries, setCompletedSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('completedSeries', [])
+  );
 
   const [hasCheckedForCompleted, setHasCheckedForCompleted] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -180,23 +160,23 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
   // Firebase can return sparse arrays as objects - normalize seasons to arrays
-  const allSeries: Series[] = seriesData
-    ? Object.values(seriesData).map((s) => ({
-        ...s,
-        seasons: (Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [])
-          .filter((season): season is Series['seasons'][number] => !!season)
-          .map((season) => ({
-            ...season,
-            episodes: Array.isArray(season.episodes)
-              ? season.episodes
-              : season.episodes
-                ? (Object.values(season.episodes) as Series['seasons'][number]['episodes'])
-                : [],
-          })),
-      }))
-    : [];
-  const seriesList = allSeries.filter((s) => !s.hidden);
-  const hiddenSeriesList = allSeries.filter((s) => s.hidden === true);
+  const allSeries: Series[] = useMemo(
+    () =>
+      seriesData
+        ? Object.values(seriesData).map((s) => ({
+            ...s,
+            seasons: normalizeSeasons(s.seasons)
+              .filter((season): season is Series['seasons'][number] => !!season)
+              .map((season) => ({
+                ...season,
+                episodes: normalizeEpisodes(season.episodes),
+              })),
+          }))
+        : [],
+    [seriesData]
+  );
+  const seriesList = useMemo(() => allSeries.filter((s) => !s.hidden), [allSeries]);
+  const hiddenSeriesList = useMemo(() => allSeries.filter((s) => s.hidden === true), [allSeries]);
 
   // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
   // Diese Funktion setzt das HEUTIGE Datum für alte Episoden - das verfälscht historische Daten!

@@ -12,7 +12,8 @@ export const writeDiscussionFeedEntry = async (
     const newRef = await ref.push(entry);
     return newRef.key;
   } catch (error) {
-    console.error('Error writing discussion feed entry:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[DiscussionFeed] Failed to write entry: ${message}`);
     return null;
   }
 };
@@ -30,6 +31,9 @@ export const deleteDiscussionFeedEntries = async (discussionId: string): Promise
       await ref.update(updates);
     }
   } catch (error) {
-    console.error('Error deleting discussion feed entries:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(
+      `[DiscussionFeed] Failed to delete entries for discussion ${discussionId}: ${message}`
+    );
   }
 };

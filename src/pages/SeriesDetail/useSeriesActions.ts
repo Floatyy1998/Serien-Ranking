@@ -13,6 +13,7 @@ import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { trackSeriesAdded, trackSeriesDeleted } from '../../firebase/analytics';
 
 interface DialogState {
@@ -171,7 +172,7 @@ export function useSeriesActions(
           series.title || series.name || 'Unbekannte Serie',
           seasonNumber,
           episodeIndex + 1,
-          episode.runtime || series.episodeRuntime || 45,
+          episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
           true,
           series.genre?.genres,
           series.provider?.provider?.map((p) => p.name)

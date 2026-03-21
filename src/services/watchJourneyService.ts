@@ -11,6 +11,7 @@
 
 import { getYearlyActivity } from './watchActivityService';
 import { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 
 // ============================================================================
 // TYPES
@@ -319,7 +320,7 @@ export async function calculateWatchJourney(
 
     const isEpisode = event.type === 'episode_watch';
     const runtime = isEpisode
-      ? (event as EpisodeWatchEvent).episodeRuntime || 45
+      ? (event as EpisodeWatchEvent).episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES
       : (event as MovieWatchEvent).runtime || 120;
 
     // Activity
@@ -380,7 +381,8 @@ export async function calculateWatchJourney(
 
     // Episode runtime tracking
     if (isEpisode) {
-      const epRuntime = (event as EpisodeWatchEvent).episodeRuntime || 45;
+      const epRuntime =
+        (event as EpisodeWatchEvent).episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
       episodeRuntimes.push(epRuntime);
       if (epRuntime < shortestEpisode) shortestEpisode = epRuntime;
       if (epRuntime > longestEpisode) longestEpisode = epRuntime;

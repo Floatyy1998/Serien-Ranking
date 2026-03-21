@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { useMovieList } from '../contexts/MovieListProvider';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { calculateOverallRating } from '../lib/rating/rating';
@@ -6,7 +6,7 @@ import type { Movie } from '../types/Movie';
 import type { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
 
-interface TopRatedItem {
+export interface TopRatedItem {
   type: 'series' | 'movie';
   id: number;
   title: string;
@@ -14,74 +14,41 @@ interface TopRatedItem {
   rating: number;
 }
 
-export const useTopRated = () => {
+const TOP_N = 10;
+const MAX_COMBINED = 20;
+
+function collectTopRated<T extends Series | Movie>(
+  list: T[],
+  type: 'series' | 'movie',
+  limit: number
+): TopRatedItem[] {
+  const rated: Array<{ item: T; rating: number }> = [];
+  for (const item of list) {
+    const rating = parseFloat(calculateOverallRating(item));
+    if (rating > 0) {
+      rated.push({ item, rating });
+    }
+  }
+  rated.sort((a, b) => b.rating - a.rating);
+  return rated.slice(0, limit).map(({ item, rating }) => ({
+    type,
+    id: item.id,
+    title: item.title,
+    poster: getImageUrl(item.poster),
+    rating,
+  }));
+}
+
+export const useTopRated = (): TopRatedItem[] => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const cacheRef = useRef<{ items: TopRatedItem[] | null; deps: string }>({
-    items: null,
-    deps: '',
-  });
 
-  const topRated = useMemo(() => {
-    const depsString = `${seriesList.length}-${movieList.length}`;
-
-    if (cacheRef.current.items && cacheRef.current.deps === depsString) {
-      return cacheRef.current.items;
-    }
-
-    const items: TopRatedItem[] = [];
-
-    // Process series
-    const ratedSeries: Array<{ item: Series; rating: number }> = [];
-    for (let i = 0; i < seriesList.length; i++) {
-      const series = seriesList[i];
-      const rating = parseFloat(calculateOverallRating(series));
-      if (rating > 0) {
-        ratedSeries.push({ item: series, rating });
-      }
-    }
-
-    ratedSeries.sort((a, b) => b.rating - a.rating);
-
-    for (let i = 0; i < Math.min(10, ratedSeries.length); i++) {
-      const { item: series, rating } = ratedSeries[i];
-      items.push({
-        type: 'series',
-        id: series.id,
-        title: series.title,
-        poster: getImageUrl(series.poster),
-        rating,
-      });
-    }
-
-    // Process movies
-    const ratedMovies: Array<{ item: Movie; rating: number }> = [];
-    for (let i = 0; i < movieList.length; i++) {
-      const movie = movieList[i];
-      const rating = parseFloat(calculateOverallRating(movie));
-      if (rating > 0) {
-        ratedMovies.push({ item: movie, rating });
-      }
-    }
-
-    ratedMovies.sort((a, b) => b.rating - a.rating);
-
-    for (let i = 0; i < Math.min(10, ratedMovies.length); i++) {
-      const { item: movie, rating } = ratedMovies[i];
-      items.push({
-        type: 'movie',
-        id: movie.id,
-        title: movie.title,
-        poster: getImageUrl(movie.poster),
-        rating,
-      });
-    }
-
-    items.sort((a, b) => b.rating - a.rating);
-    const result = items.slice(0, 20);
-    cacheRef.current = { items: result, deps: depsString };
-    return result;
+  return useMemo(() => {
+    const combined = [
+      ...collectTopRated(seriesList, 'series', TOP_N),
+      ...collectTopRated(movieList, 'movie', TOP_N),
+    ];
+    combined.sort((a, b) => b.rating - a.rating);
+    return combined.slice(0, MAX_COMBINED);
   }, [seriesList, movieList]);
-
-  return topRated;
 };

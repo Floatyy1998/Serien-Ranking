@@ -192,6 +192,8 @@ export const EpisodeCard = React.memo(
           <img
             src={episode.poster}
             alt={episode.seriesTitle}
+            loading={index >= 4 ? 'lazy' : 'eager'}
+            decoding="async"
             onClick={() =>
               navigate(
                 `/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`

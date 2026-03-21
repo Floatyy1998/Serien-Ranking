@@ -231,6 +231,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
               <img
                 src={`https://image.tmdb.org/t/p/w500${logoPath}`}
                 alt={providerName}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: '100%',
                   height: '100%',

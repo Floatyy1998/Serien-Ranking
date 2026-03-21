@@ -34,7 +34,12 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
     >
       {/* Poster */}
       {item.posterUrl ? (
-        <img src={item.posterUrl} alt={`Poster von ${item.title}`} className="cd-item-poster" />
+        <img
+          src={item.posterUrl}
+          alt={`Poster von ${item.title}`}
+          decoding="async"
+          className="cd-item-poster"
+        />
       ) : (
         <div
           className="cd-item-poster-placeholder"

@@ -11,6 +11,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import {
   ActivityEvent,
   BingeSession,
@@ -124,7 +125,13 @@ function checkBulkMarkingAndGetTimestamp(): { isBulkMarking: boolean; distribute
 /**
  * Erstellt Basis-Metadaten für jedes Event
  */
-function createBaseEventData() {
+function createBaseEventData(): {
+  timestamp: string;
+  month: number;
+  dayOfWeek: number;
+  hour: number;
+  deviceType: 'mobile' | 'desktop' | 'tablet';
+} {
   const now = new Date();
   return {
     timestamp: now.toISOString(),
@@ -201,7 +208,8 @@ async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean>
 
     return true;
   } catch (error) {
-    console.error('[Wrapped] ❌ Failed to save event:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to save event: ${message}`);
     return false;
   }
 }
@@ -223,18 +231,18 @@ async function getActiveBingeSession(
       .equalTo(seriesId)
       .once('value');
 
-    const sessions = snapshot.val();
+    const sessions = snapshot.val() as Record<string, BingeSession> | null;
     if (!sessions) return null;
 
     for (const [id, session] of Object.entries(sessions)) {
-      const s = session as BingeSession;
-      if (s.isActive) {
-        return { ...s, id };
+      if (session.isActive) {
+        return { ...session, id };
       }
     }
     return null;
   } catch (error) {
-    console.error('[Wrapped] Error getting binge session:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to get binge session: ${message}`);
     return null;
   }
 }
@@ -306,7 +314,8 @@ async function updateBingeSession(
 
     return newSessionId;
   } catch (error) {
-    console.error('[Wrapped] Error updating binge session:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to update binge session: ${message}`);
     return undefined;
   }
 }
@@ -323,7 +332,7 @@ async function updateWatchStreak(userId: string): Promise<void> {
     const streakRef = firebase.database().ref(getStreakPath(userId, year));
     const snapshot = await streakRef.once('value');
 
-    const currentStreak: WatchStreak = snapshot.val() || {
+    const currentStreak: WatchStreak = (snapshot.val() as WatchStreak | null) ?? {
       currentStreak: 0,
       longestStreak: 0,
       lastWatchDate: '',
@@ -364,7 +373,8 @@ async function updateWatchStreak(userId: string): Promise<void> {
     currentStreak.lastWatchDate = today;
     await streakRef.set(currentStreak);
   } catch (error) {
-    console.error('[Wrapped] Error updating streak:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to update watch streak: ${message}`);
   }
 }
 
@@ -385,7 +395,7 @@ export async function logEpisodeWatch(
 ): Promise<void> {
   // Verwende Episode-spezifische Event-Erstellung mit Bulk-Marking-Erkennung
   const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData();
-  const runtime = episodeRuntime || 45;
+  const runtime = episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
   // Binge session handling - SKIP für Bulk-Marking
   let bingeSessionId: string | undefined;
@@ -491,7 +501,8 @@ export async function logMovieWatch(
       watchtimeMinutes: runtime || 120,
     }).catch(() => {});
   } catch (error) {
-    console.error('[Wrapped] Error logging movie watch:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to log movie watch: ${message}`);
   }
 }
 
@@ -508,17 +519,18 @@ async function findExistingMovieEvent(
       .equalTo(movieId)
       .once('value');
 
-    const events = snapshot.val();
+    const events = snapshot.val() as Record<string, ActivityEvent> | null;
     if (!events) return null;
 
     for (const [eventId, event] of Object.entries(events)) {
-      const e = event as ActivityEvent;
-      if (e.type === 'movie_watch' || e.type === 'movie_rating') {
+      if (event.type === 'movie_watch' || event.type === 'movie_rating') {
         return eventId;
       }
     }
     return null;
   } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to find existing movie event: ${message}`);
     return null;
   }
 }
@@ -530,9 +542,10 @@ async function findExistingMovieEvent(
 export async function getWatchStreak(userId: string, year: number): Promise<WatchStreak | null> {
   try {
     const snapshot = await firebase.database().ref(getStreakPath(userId, year)).once('value');
-    return snapshot.val();
+    return snapshot.val() as WatchStreak | null;
   } catch (error) {
-    console.error('[Wrapped] Error getting streak:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to get watch streak: ${message}`);
     return null;
   }
 }
@@ -542,16 +555,16 @@ export async function getYearlyActivity(userId: string, year: number): Promise<A
   try {
     const snapshot = await firebase.database().ref(eventsPath).once('value');
 
-    const data = snapshot.val();
+    const data = snapshot.val() as Record<string, ActivityEvent> | null;
 
     if (data) {
-      const events = Object.values(data) as ActivityEvent[];
-      return events;
+      return Object.values(data);
     }
 
     return [];
   } catch (error) {
-    console.error('[Wrapped] ❌ Error loading events:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to load events: ${message}`);
     return [];
   }
 }
@@ -570,13 +583,13 @@ export async function getBingeSessionsForYear(
       .ref(getBingeSessionsPath(userId, year))
       .once('value');
 
-    const data = snapshot.val();
+    const data = snapshot.val() as Record<string, BingeSession> | null;
     if (!data) return [];
 
-    const sessions = Object.values(data) as BingeSession[];
-    return sessions;
+    return Object.values(data);
   } catch (error) {
-    console.error('[Wrapped] Error getting binge sessions:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to get binge sessions: ${message}`);
     return [];
   }
 }
@@ -590,7 +603,8 @@ export async function clearAllWrappedData(userId: string): Promise<void> {
     await firebase.database().ref(getWrappedBasePath(userId)).remove();
     localStorage.removeItem(LAST_CLEANUP_KEY);
   } catch (error) {
-    console.error('[Wrapped] Error clearing data:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[WatchActivity] Failed to clear wrapped data: ${message}`);
     throw error;
   }
 }

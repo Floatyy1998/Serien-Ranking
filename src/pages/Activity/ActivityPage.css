@@ -1,4 +1,4 @@
-/* ActivityPage - Performance-optimized styles */
+/* ActivityPage - Styles */
 
 @keyframes fadeInUp {
   from {
@@ -11,6 +11,165 @@
   }
 }
 
+/* ── Page Container ────────────────────────────────────────── */
+.activity-page {
+  min-height: 100vh;
+  position: relative;
+  padding-bottom: 100px;
+}
+
+/* ── Decorative Background ─────────────────────────────────── */
+.activity-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 400px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.activity-header {
+  padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.activity-header__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ── Add-Friend Button ─────────────────────────────────────── */
+.activity-add-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────── */
+.activity-tabs {
+  display: flex;
+  margin: 0 20px 20px;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.activity-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 14px;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.2s ease;
+}
+
+.activity-tab:active {
+  transform: scale(0.95);
+}
+
+.activity-tab__label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.activity-tab__icon-wrap {
+  position: relative;
+  display: flex;
+}
+
+/* ── Tab Badges ────────────────────────────────────────────── */
+.activity-tab__badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.activity-tab__badge-count {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Discussion Banner ─────────────────────────────────────── */
+.activity-banner {
+  margin: 0 20px 16px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s ease;
+}
+
+.activity-banner:active {
+  opacity: 0.85;
+}
+
+.activity-banner__text-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.activity-banner__text-sub {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.activity-banner__arrow {
+  font-size: 20px;
+}
+
+/* ── Tab Content ───────────────────────────────────────────── */
+.activity-content {
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Legacy (from tabs) ────────────────────────────────────── */
 .activity-group-item {
   content-visibility: auto;
   contain-intrinsic-block-size: auto 80px;

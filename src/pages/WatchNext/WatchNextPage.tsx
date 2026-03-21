@@ -1,8 +1,13 @@
-import { Edit, ExpandLess, ExpandMore, FilterList, PlayCircle, Repeat } from '@mui/icons-material';
+import Edit from '@mui/icons-material/Edit';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import FilterList from '@mui/icons-material/FilterList';
+import PlayCircle from '@mui/icons-material/PlayCircle';
+import Repeat from '@mui/icons-material/Repeat';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { useNavigationType, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -21,10 +26,14 @@ export const WatchNextPage = () => {
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [searchParams] = useSearchParams();
+  const navigationType = useNavigationType(); // 'POP' = back button, 'PUSH' = fresh navigation
+
+  const [, startTransition] = useTransition();
 
   // UI State
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
+  const [debouncedFilter, setDebouncedFilter] = useState('');
   const [showRewatches, setShowRewatches] = useState(searchParams.get('rewatches') === 'open');
   const [editModeActive, setEditModeActive] = useState(false);
   const [customOrderActive, setCustomOrderActive] = useState(
@@ -67,10 +76,18 @@ export const WatchNextPage = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [seriesList]);
 
+  // Debounce filter input — avoids re-filtering on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTransition(() => setDebouncedFilter(filterInput));
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [filterInput]);
+
   // First call to get initial episodes (needed by drag/drop hook)
   const nextEpisodes = useWatchNextEpisodes(
     seriesList,
-    filterInput,
+    debouncedFilter,
     showRewatches,
     sortOption,
     customOrderActive,
@@ -94,7 +111,7 @@ export const WatchNextPage = () => {
   // Re-compute with actual watchlistOrder
   const actualNextEpisodes = useWatchNextEpisodes(
     seriesList,
-    filterInput,
+    debouncedFilter,
     showRewatches,
     sortOption,
     customOrderActive,
@@ -102,11 +119,11 @@ export const WatchNextPage = () => {
     providerFilter
   );
 
-  // Scroll position restore
+  // Scroll position restore — nur bei "Zurück"-Navigation (POP), nicht bei direktem Seitenaufruf
   const scrollRestoredRef = useRef(false);
   useEffect(() => {
     const saved = sessionStorage.getItem('watchNext-scroll');
-    if (saved && !scrollRestoredRef.current) {
+    if (saved && !scrollRestoredRef.current && navigationType === 'POP') {
       scrollRestoredRef.current = true;
       const scrollY = parseInt(saved, 10);
       requestAnimationFrame(() => {
@@ -115,9 +132,11 @@ export const WatchNextPage = () => {
           if (container) container.scrollTop = scrollY;
         });
       });
+    }
+    if (navigationType !== 'POP') {
       sessionStorage.removeItem('watchNext-scroll');
     }
-  }, []);
+  }, [navigationType]);
 
   useEffect(() => {
     const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
@@ -144,25 +163,17 @@ export const WatchNextPage = () => {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Persist preferences — consolidated to one effect
   useEffect(() => {
     localStorage.setItem('watchNextHideRewatches', (!showRewatches).toString());
-  }, [showRewatches]);
-
-  useEffect(() => {
     localStorage.setItem('watchNextCustomOrderActive', customOrderActive.toString());
-  }, [customOrderActive]);
-
-  useEffect(() => {
     localStorage.setItem('watchNextSortOption', sortOption);
-  }, [sortOption]);
-
-  useEffect(() => {
     if (providerFilter) {
       localStorage.setItem('watchNextProvider', providerFilter);
     } else {
       localStorage.removeItem('watchNextProvider');
     }
-  }, [providerFilter]);
+  }, [showRewatches, customOrderActive, sortOption, providerFilter]);
 
   // Count active rewatches
   const activeRewatchCount = useMemo(() => {
@@ -180,12 +191,12 @@ export const WatchNextPage = () => {
     } else {
       newOption = `${field}-asc`;
     }
-    setSortOption(newOption);
+    startTransition(() => setSortOption(newOption));
   };
 
   const toggleCustomOrder = () => {
     const newValue = !customOrderActive;
-    setCustomOrderActive(newValue);
+    startTransition(() => setCustomOrderActive(newValue));
     if (customOrderActive) {
       setEditModeActive(false);
     }
@@ -247,14 +258,16 @@ export const WatchNextPage = () => {
                       const newVal = !editModeActive;
                       setEditModeActive(newVal);
                     }}
-                    className="watch-next-header__btn"
-                    style={{
-                      background: editModeActive
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : 'rgba(255, 255, 255, 0.05)',
-                      color: editModeActive ? 'white' : currentTheme.text.primary,
-                      boxShadow: editModeActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
-                    }}
+                    className={`watch-next-header__btn${editModeActive ? ' watch-next-header__btn--active' : ''}`}
+                    style={
+                      {
+                        background: editModeActive
+                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                          : 'rgba(255, 255, 255, 0.05)',
+                        color: editModeActive ? 'white' : currentTheme.text.primary,
+                        '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
+                      } as React.CSSProperties
+                    }
                   >
                     <Edit />
                   </motion.button>
@@ -265,14 +278,16 @@ export const WatchNextPage = () => {
                 <motion.button
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowFilter(!showFilter)}
-                  className="watch-next-header__btn"
-                  style={{
-                    background: showFilter
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                      : 'rgba(255, 255, 255, 0.05)',
-                    color: showFilter ? 'white' : currentTheme.text.primary,
-                    boxShadow: showFilter ? `0 4px 15px ${currentTheme.primary}40` : 'none',
-                  }}
+                  className={`watch-next-header__btn${showFilter ? ' watch-next-header__btn--active' : ''}`}
+                  style={
+                    {
+                      background: showFilter
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255, 255, 255, 0.05)',
+                      color: showFilter ? 'white' : currentTheme.text.primary,
+                      '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
+                    } as React.CSSProperties
+                  }
                 >
                   <FilterList />
                 </motion.button>
@@ -309,9 +324,7 @@ export const WatchNextPage = () => {
                 <ProviderFilter
                   providers={availableProviders}
                   selected={providerFilter}
-                  onSelect={(p) => {
-                    setProviderFilter(p);
-                  }}
+                  onSelect={(p) => startTransition(() => setProviderFilter(p))}
                   theme={theme}
                 />
               </motion.div>

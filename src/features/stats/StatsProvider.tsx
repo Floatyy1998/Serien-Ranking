@@ -1,5 +1,13 @@
 import 'firebase/compat/database';
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from 'react';
 import { useAuth } from '../../App';
 import { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -36,34 +44,34 @@ export const StatsContext = createContext<StatsContextType>({
   movieStatsData: null,
 });
 
+// Pure Hilfsfunktion - außerhalb des Components damit sie nicht bei jedem Render neu erstellt wird
+function secondsToString(minutes: number) {
+  let value = minutes;
+  const units: { [key: string]: number } = {
+    Jahre: 24 * 60 * 365,
+    Monate: 24 * 60 * 30,
+    Tage: 24 * 60,
+    Stunden: 60,
+    Minuten: 1,
+  };
+  const result: string[] = [];
+  for (const name in units) {
+    const p = Math.floor(value / units[name]);
+    if (p > 0) result.push(p + ' ' + name);
+    value %= units[name];
+  }
+  return result;
+}
+
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth()!;
-  const [, setSeriesList] = useState<StatsListItem[]>([]);
-  const [, setMovieList] = useState<StatsListItem[]>([]);
   const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(null);
   const [movieStatsData, setMovieStatsData] = useState<StatsData | null>(null);
-  const { allSeriesList: seriesList } = useSeriesList();
+  const [, startTransition] = useTransition();
+  const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
-  function secondsToString(minutes: number) {
-    let value = minutes;
-    const units: { [key: string]: number } = {
-      Jahre: 24 * 60 * 365,
-      Monate: 24 * 60 * 30,
-      Tage: 24 * 60,
-      Stunden: 60,
-      Minuten: 1,
-    };
-    const result: string[] = [];
-    for (const name in units) {
-      const p = Math.floor(value / units[name]);
-      if (p > 0) result.push(p + ' ' + name);
-      value %= units[name];
-    }
-    return result;
-  }
-
-  const computeStats = (list: StatsListItem[]): StatsData => {
+  const computeStats = useCallback((list: StatsListItem[]): StatsData => {
     const genres: {
       [key: string]: {
         count: number;
@@ -161,32 +169,32 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         watchtimeTotal: watchtime,
       },
     };
-  };
+  }, []); // Pure Funktion - keine Dependencies
 
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+    startTransition(() => {
       if (seriesList) {
         const seriesArray = (
           Array.isArray(seriesList) ? seriesList : Object.values(seriesList || {})
         ) as StatsListItem[];
-        setSeriesList(seriesArray);
         setSeriesStatsData(computeStats(seriesArray));
       }
       if (movieList) {
         const movieArray = (
           Array.isArray(movieList) ? movieList : Object.values(movieList || {})
         ) as StatsListItem[];
-        setMovieList(movieArray);
         setMovieStatsData(computeStats(movieArray));
       }
-    }
-  }, [user, seriesList, movieList]);
+    });
+  }, [user, seriesList, movieList, computeStats]);
 
-  return (
-    <StatsContext.Provider value={{ seriesStatsData, movieStatsData }}>
-      {children}
-    </StatsContext.Provider>
+  const contextValue = useMemo(
+    () => ({ seriesStatsData, movieStatsData }),
+    [seriesStatsData, movieStatsData]
   );
+
+  return <StatsContext.Provider value={contextValue}>{children}</StatsContext.Provider>;
 };
 
 export const useStats = () => useContext(StatsContext);

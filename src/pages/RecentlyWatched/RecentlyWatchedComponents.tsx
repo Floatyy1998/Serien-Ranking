@@ -295,6 +295,8 @@ export const SingleEpisodeCard = memo<{
         <img
           src={episode.seriesPoster}
           alt={episode.seriesName}
+          loading="lazy"
+          decoding="async"
           onClick={() => onNavigateToSeries(episode.seriesId)}
           className="rw-episode-poster"
         />
@@ -327,10 +329,10 @@ export const SingleEpisodeCard = memo<{
                   color: currentTheme.primary,
                 }}
               >
-                {episode.watchCount}x
+                Rewatch ({episode.watchCount}x)
               </span>
             )}
-            {episode.dateSource !== 'firstWatched' && (
+            {episode.dateSource !== 'firstWatched' && episode.watchCount <= 1 && (
               <span className="rw-badge-date-source">
                 {episode.dateSource === 'lastWatched'
                   ? 'zuletzt'
@@ -422,6 +424,8 @@ export const SeriesAccordion = memo<{
           <img
             src={firstEpisode.seriesPoster}
             alt={firstEpisode.seriesName}
+            loading="lazy"
+            decoding="async"
             onClick={(e) => {
               e.stopPropagation();
               onNavigateToSeries(firstEpisode.seriesId);
@@ -444,6 +448,17 @@ export const SeriesAccordion = memo<{
               >
                 {episodes.length} Episoden
               </span>
+              {episodes.some((ep) => ep.watchCount > 1) && (
+                <span
+                  className="rw-accordion-count"
+                  style={{
+                    background: `${currentTheme.primary}15`,
+                    color: currentTheme.primary,
+                  }}
+                >
+                  Rewatch
+                </span>
+              )}
             </div>
 
             <p className="rw-accordion-date" style={{ color: currentTheme.text.muted }}>
@@ -503,9 +518,9 @@ export const SeriesAccordion = memo<{
                         {episode.watchCount > 1 && (
                           <p
                             className="rw-accordion-watch-count"
-                            style={{ color: currentTheme.text.muted }}
+                            style={{ color: currentTheme.primary }}
                           >
-                            {episode.watchCount}x gesehen
+                            Rewatch ({episode.watchCount}x)
                           </p>
                         )}
                       </div>

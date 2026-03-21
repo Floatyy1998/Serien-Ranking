@@ -106,7 +106,7 @@ const PosterWrap = memo(
 
     return (
       <div className="cal-ep-poster-wrap">
-        <img src={posterSrc} alt="" className="cal-ep-poster" />
+        <img src={posterSrc} alt="" decoding="async" className="cal-ep-poster" />
 
         {premiereType && (
           <PremiereOverlay type={premiereType} themePrimary={currentTheme.primary} />
@@ -204,7 +204,12 @@ export const SingleEpisodeCard = memo(
         </PosterWrap>
 
         {/* Mobile: poster + info */}
-        <img src={ep.poster} alt="" className="cal-ep-poster cal-ep-poster-mobile" />
+        <img
+          src={ep.poster}
+          alt=""
+          decoding="async"
+          className="cal-ep-poster cal-ep-poster-mobile"
+        />
         <div className="cal-ep-info cal-ep-info-mobile">
           <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
             {ep.seriesTitle}
@@ -306,7 +311,12 @@ export const EpisodeGroupCard = memo(
 
           {/* Mobile: poster + info */}
           {firstEp.poster && (
-            <img src={firstEp.poster} alt="" className="cal-ep-poster cal-ep-poster-mobile" />
+            <img
+              src={firstEp.poster}
+              alt=""
+              decoding="async"
+              className="cal-ep-poster cal-ep-poster-mobile"
+            />
           )}
           <div className="cal-ep-info cal-ep-info-mobile">
             <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>

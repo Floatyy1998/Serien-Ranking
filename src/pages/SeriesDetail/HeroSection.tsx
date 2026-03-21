@@ -53,6 +53,8 @@ export const HeroSection = memo<HeroSectionProps>(
             className="hero-section__backdrop"
             src={getBackdropUrl(tmdbBackdrop)}
             alt={series.title}
+            decoding="async"
+            fetchPriority="low"
           />
         )}
 

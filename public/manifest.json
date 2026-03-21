@@ -27,7 +27,7 @@
       "src": "logo180.png?v=2",
       "type": "image/png",
       "sizes": "180x180",
-      "purpose": "apple-touch-icon"
+      "purpose": "any"
     },
     {
       "src": "logo192.png?v=2",

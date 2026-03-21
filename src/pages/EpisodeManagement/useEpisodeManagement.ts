@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../App';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
 import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { Series } from '../../types/Series';
@@ -13,7 +14,7 @@ import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analy
 type Episode = Series['seasons'][number]['episodes'][number];
 
 function getEpisodeRuntime(series: Series, episode: Episode): number {
-  return episode.runtime || series.episodeRuntime || 45;
+  return episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 }
 
 export interface SelectedEpisode {

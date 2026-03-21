@@ -1,4 +1,6 @@
-import { Info, People, Star } from '@mui/icons-material';
+import Info from '@mui/icons-material/Info';
+import People from '@mui/icons-material/People';
+import Star from '@mui/icons-material/Star';
 import { memo } from 'react';
 import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';

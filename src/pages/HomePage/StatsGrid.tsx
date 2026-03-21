@@ -13,6 +13,7 @@ import { Box, Collapse, IconButton, Paper, Tooltip, Typography } from '@mui/mate
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatMinutesToString } from '../../lib/date';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
@@ -22,7 +23,9 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import { colors } from '../../theme';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
+import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 
 interface StatCardProps {
   icon: React.ReactNode;
@@ -149,8 +152,9 @@ export const StatsGrid = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth()!;
-  const { allSeriesList: seriesList } = useSeriesList();
+  const { seriesList, allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const workerStats = useWebWorkerStatsOptimized();
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -173,40 +177,14 @@ export const StatsGrid = () => {
         completedSeries: 0,
       };
     }
-    // Series stats - only count aired episodes
-    // Allow nmr: 0 as valid
-    const totalSeries = seriesList.filter((s) => s && s.nmr !== undefined && s.nmr !== null).length;
+    // Series stats - total series count includes hidden (you own them all)
+    const totalSeries = allSeriesList.filter(
+      (s) => s && s.nmr !== undefined && s.nmr !== null
+    ).length;
 
-    // Count watched episodes (only aired ones)
-    let watchedEpisodes = 0;
-    let totalAiredEpisodes = 0;
-
-    seriesList.forEach((series) => {
-      // Allow nmr: 0 as valid (only skip if undefined/null)
-      if (!series || series.nmr === undefined || series.nmr === null) return;
-
-      series.seasons?.forEach((season) => {
-        season.episodes?.forEach((ep) => {
-          // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
-          const isWatched = !!(
-            ep.firstWatchedAt ||
-            ep.watched === true ||
-            (ep.watched as unknown) === 1 ||
-            (ep.watched as unknown) === 'true' ||
-            (ep.watchCount && ep.watchCount > 0)
-          );
-
-          if (hasEpisodeAired(ep) || !ep.air_date) {
-            totalAiredEpisodes++;
-            if (isWatched) {
-              watchedEpisodes++;
-            }
-          }
-        });
-      });
-    });
-
-    const totalEpisodes = totalAiredEpisodes;
+    // Episode progress ring: vom Worker (non-hidden, mind. 1 Folge gesehen = begonnen)
+    const watchedEpisodes = workerStats.watchedEpisodesActive;
+    const totalEpisodes = workerStats.totalEpisodes;
 
     // Movies stats - only count valid movies with ratings
     // Allow nmr: 0 as valid
@@ -219,28 +197,19 @@ export const StatsGrid = () => {
       return !isNaN(rating) && rating > 0;
     }).length;
 
-    // Time stats - only count actually watched content
+    // Time stats - all series including hidden (you did watch those episodes)
     let seriesMinutesWatched = 0;
     let moviesMinutesWatched = 0;
 
     // Series watch time
-    seriesList.forEach((series) => {
+    allSeriesList.forEach((series) => {
       // Allow nmr: 0 as valid (only skip if undefined/null)
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const seriesRuntime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons?.forEach((season) => {
         season.episodes?.forEach((ep) => {
-          // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
-          const isWatched = !!(
-            ep.firstWatchedAt ||
-            ep.watched === true ||
-            (ep.watched as unknown) === 1 ||
-            (ep.watched as unknown) === 'true' ||
-            (ep.watchCount && ep.watchCount > 0)
-          );
-
-          if (isWatched && (hasEpisodeAired(ep) || !ep.air_date)) {
+          if (isEpisodeWatched(ep) && (hasEpisodeAired(ep) || !ep.air_date)) {
             const epRuntime = ep.runtime || seriesRuntime;
             const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
             seriesMinutesWatched += epRuntime * count;
@@ -262,47 +231,14 @@ export const StatsGrid = () => {
 
     const totalMinutesWatched = seriesMinutesWatched + moviesMinutesWatched;
 
-    // Calculate years, months, days, hours like desktop
-    const years = Math.floor(totalMinutesWatched / (365 * 24 * 60));
-    const remainingAfterYears = totalMinutesWatched % (365 * 24 * 60);
-    const months = Math.floor(remainingAfterYears / (30 * 24 * 60));
-    const remainingAfterMonths = remainingAfterYears % (30 * 24 * 60);
-    const days = Math.floor(remainingAfterMonths / 1440);
-    const hours = Math.floor((remainingAfterMonths % 1440) / 60);
-    const minutes = remainingAfterMonths % 60;
-
-    let timeString = '';
-    if (years > 0) timeString += `${years}J `;
-    if (months > 0) timeString += `${months}M `;
-    if (days > 0) timeString += `${days}T `;
-    if (hours > 0) timeString += `${hours}S `;
-    if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
-    if (!timeString) timeString = '0Min';
+    const timeString = formatMinutesToString(totalMinutesWatched);
 
     // Format series and movie times separately
-    const formatMinutesToString = (totalMinutes: number) => {
-      const y = Math.floor(totalMinutes / (365 * 24 * 60));
-      const remainingAfterY = totalMinutes % (365 * 24 * 60);
-      const m = Math.floor(remainingAfterY / (30 * 24 * 60));
-      const remainingAfterM = remainingAfterY % (30 * 24 * 60);
-      const d = Math.floor(remainingAfterM / 1440);
-      const h = Math.floor((remainingAfterM % 1440) / 60);
-      const min = Math.floor(remainingAfterM % 60);
-
-      let str = '';
-      if (y > 0) str += `${y}J `;
-      if (m > 0) str += `${m}M `;
-      if (d > 0) str += `${d}T `;
-      if (h > 0) str += `${h}S `;
-      if (min > 0) str += `${min}Min`;
-      return str.trim() || '0Min';
-    };
-
     const seriesTimeString = formatMinutesToString(seriesMinutesWatched);
     const movieTimeString = formatMinutesToString(moviesMinutesWatched);
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
-    const seriesWithRating = seriesList.filter((s: Series) => {
+    const seriesWithRating = allSeriesList.filter((s: Series) => {
       if (!s || s.nmr === undefined || s.nmr === null) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
@@ -328,7 +264,7 @@ export const StatsGrid = () => {
 
     // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+    ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
         if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
@@ -361,7 +297,7 @@ export const StatsGrid = () => {
 
     // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
-    ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
+    ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
         if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
 
@@ -385,7 +321,7 @@ export const StatsGrid = () => {
       Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
     // Activity - fix date handling and add safety checks
-    const lastWeekWatched = seriesList.reduce((acc, series) => {
+    const lastWeekWatched = allSeriesList.reduce((acc, series) => {
       const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
       if (!series.seasons) return acc;
@@ -436,7 +372,7 @@ export const StatsGrid = () => {
       topGenre,
       topProvider,
       lastWeekWatched,
-      completedSeries: seriesList.filter((s) => {
+      completedSeries: allSeriesList.filter((s) => {
         if (!s || s.nmr === undefined || s.nmr === null || !s.seasons || s.seasons.length === 0)
           return false;
 
@@ -458,7 +394,7 @@ export const StatsGrid = () => {
         return totalAired > 0 && totalAired === watchedAired;
       }).length,
     };
-  }, [seriesList, movieList, user]);
+  }, [seriesList, allSeriesList, movieList, user]);
 
   // Navigation handlers
   const handleSeriesClick = () => {
@@ -651,7 +587,7 @@ export const StatsGrid = () => {
                 opacity: 0.7,
               }}
             >
-              Episoden
+              Eps. (begonnen, nicht abgebr.)
             </Typography>
           </Paper>
         </motion.div>

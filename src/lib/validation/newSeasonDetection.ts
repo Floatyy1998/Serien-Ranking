@@ -9,17 +9,18 @@ const NOTIFIED_KEY = 'newSeasonNotified';
 const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   try {
     const snapshot = await firebase.database().ref(`${userId}/seasonCounts`).once('value');
-    return snapshot.val() || {};
+    return (snapshot.val() as SeasonCounts | null) || {};
   } catch {
     return {};
   }
 };
 
-const storeSeasonCounts = async (userId: string, data: SeasonCounts) => {
+const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<void> => {
   try {
     await firebase.database().ref(`${userId}/seasonCounts`).set(data);
   } catch (error) {
-    console.error('Failed to store season counts:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[NewSeasonDetection] Failed to store season counts: ${message}`);
   }
 };
 
@@ -27,13 +28,13 @@ const storeSeasonCounts = async (userId: string, data: SeasonCounts) => {
 const getNotifiedIds = (): Set<string> => {
   try {
     const stored = sessionStorage.getItem(NOTIFIED_KEY);
-    return stored ? new Set(JSON.parse(stored)) : new Set();
+    return stored ? new Set(JSON.parse(stored) as string[]) : new Set();
   } catch {
     return new Set();
   }
 };
 
-const addNotifiedIds = (ids: string[]) => {
+const addNotifiedIds = (ids: string[]): void => {
   const notified = getNotifiedIds();
   ids.forEach((id) => notified.add(id));
   sessionStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notified]));
@@ -71,7 +72,7 @@ export const markMultipleSeasonsAsNotified = async (
   seriesIds: number[],
   userId: string,
   seriesList?: Series[]
-) => {
+): Promise<void> => {
   const storedCounts = await getStoredSeasonCounts(userId);
   const keys = seriesIds.map((id) => id.toString());
 

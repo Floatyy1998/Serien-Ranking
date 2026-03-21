@@ -48,7 +48,8 @@ export async function updateLeaderboardStats(
   try {
     const ref = firebase.database().ref(`${userId}/leaderboardStats`);
     const snapshot = await ref.once('value');
-    const current: LeaderboardStats = snapshot.val() || getDefaultStats();
+    const current: LeaderboardStats =
+      (snapshot.val() as LeaderboardStats | null) ?? getDefaultStats();
     const currentMonth = getCurrentMonthKey();
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
@@ -118,7 +119,8 @@ export async function updateLeaderboardStats(
     // Global leaderboard is now read directly from leaderboardStats nodes,
     // so no separate update is needed.
   } catch (error) {
-    console.error('[Leaderboard] Error updating stats:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[Leaderboard] Failed to update stats: ${message}`);
   }
 }
 
@@ -136,7 +138,7 @@ export async function fetchLeaderboardData(
     allUids.map(async (uid) => {
       try {
         const snapshot = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
-        const stats: LeaderboardStats | null = snapshot.val();
+        const stats = snapshot.val() as LeaderboardStats | null;
 
         if (!stats) {
           return { uid, stats: getDefaultStats() };
@@ -181,13 +183,13 @@ export async function fetchLeaderboardProfiles(
     uids.map(async (uid) => {
       try {
         const snapshot = await firebase.database().ref(`users/${uid}`).once('value');
-        const data = snapshot.val();
+        const data = snapshot.val() as Record<string, unknown> | null;
         return {
           uid,
           profile: {
-            displayName: data?.displayName || data?.username || 'Unbekannt',
-            photoURL: data?.photoURL || undefined,
-            username: data?.username || undefined,
+            displayName: (data?.displayName as string) || (data?.username as string) || 'Unbekannt',
+            photoURL: (data?.photoURL as string) || undefined,
+            username: (data?.username as string) || undefined,
           },
         };
       } catch {
@@ -226,7 +228,7 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
     uids.map(async (uid) => {
       try {
         const statsSnap = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
-        const stats: LeaderboardStats | null = statsSnap.val();
+        const stats = statsSnap.val() as LeaderboardStats | null;
         if (!stats || stats.monthKey !== currentMonth) return;
         if (
           stats.watchtimeThisMonth <= 0 &&
@@ -299,7 +301,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
 
   // Prüfe welche Monate bereits archiviert sind
   const trophiesSnap = await firebase.database().ref('leaderboardTrophies').once('value');
-  const existingTrophies = trophiesSnap.val() || {};
+  const existingTrophies = (trophiesSnap.val() as Record<string, unknown>) || {};
   const missingMonths = pastMonths.filter((m) => !existingTrophies[m]);
   if (missingMonths.length === 0) return;
 
@@ -321,7 +323,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
             .database()
             .ref(`${uid}/leaderboardHistory/${monthKey}`)
             .once('value');
-          const hist = histSnap.val();
+          const hist = histSnap.val() as Record<string, number> | null;
           if (hist && hist.watchtimeThisMonth > 0) {
             const userData = usersData[uid];
             entryList.push({
@@ -336,7 +338,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
 
           // Fallback: aktuelle leaderboardStats (falls Monat noch nicht gewechselt)
           const statsSnap = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
-          const stats: LeaderboardStats | null = statsSnap.val();
+          const stats = statsSnap.val() as LeaderboardStats | null;
           if (!stats || stats.monthKey !== monthKey) return;
           if (stats.watchtimeThisMonth <= 0) return;
 
@@ -412,22 +414,23 @@ export async function checkAndArchiveMonth(): Promise<void> {
  * Lädt alle monatlichen Trophäen, sortiert nach Monat (neueste zuerst).
  */
 export async function fetchTrophyHistory(): Promise<MonthlyTrophy[]> {
-  const snapshot = await firebase.database().ref('leaderboardTrophies').once('value');
-  const data = snapshot.val();
-  if (!data) return [];
+  try {
+    const snapshot = await firebase.database().ref('leaderboardTrophies').once('value');
+    const data = snapshot.val() as Record<string, Record<string, unknown>> | null;
+    if (!data) return [];
 
-  const trophies: MonthlyTrophy[] = Object.entries(data)
-    .map(([monthKey, val]: [string, unknown]) => {
-      const v = val as Record<string, unknown>;
-      return {
+    return Object.entries(data)
+      .map(([monthKey, v]) => ({
         monthKey,
         category: (v.category as string) || 'watchtimeThisMonth',
         first: (v.first as MonthlyTrophy['first']) || null,
         second: (v.second as MonthlyTrophy['second']) || null,
         third: (v.third as MonthlyTrophy['third']) || null,
-      };
-    })
-    .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
-
-  return trophies;
+      }))
+      .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[Leaderboard] Failed to fetch trophy history: ${message}`);
+    return [];
+  }
 }

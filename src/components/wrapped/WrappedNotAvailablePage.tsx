@@ -3,7 +3,12 @@
  */
 
 import { motion } from 'framer-motion';
-import { PlayCircle, Theaters, Star, TrendingUp, Schedule, ArrowBack } from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import PlayCircle from '@mui/icons-material/PlayCircle';
+import Schedule from '@mui/icons-material/Schedule';
+import Star from '@mui/icons-material/Star';
+import Theaters from '@mui/icons-material/Theaters';
+import TrendingUp from '@mui/icons-material/TrendingUp';
 
 interface Props {
   year: number;

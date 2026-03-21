@@ -2,11 +2,11 @@ import { AddPhotoAlternate, Close, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 
-export const NewDiscussionForm: React.FC<{
+const _NewDiscussionForm: React.FC<{
   onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
   onCancel: () => void;
 }> = ({ onSubmit, onCancel }) => {
@@ -313,3 +313,6 @@ export const NewDiscussionForm: React.FC<{
     </motion.div>
   );
 };
+
+export const NewDiscussionForm = memo(_NewDiscussionForm);
+NewDiscussionForm.displayName = 'NewDiscussionForm';

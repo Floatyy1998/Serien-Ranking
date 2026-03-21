@@ -20,6 +20,8 @@ export { ProgressBar } from './ProgressBar';
 export { ScrollToTopButton } from './ScrollToTopButton';
 export { VisuallyHidden } from './VisuallyHidden';
 export { CatchUpDialog } from './CatchUpDialog';
+export { IconContainer } from './IconContainer';
+export { NavCard } from './NavCard';
 
 // --- Design Modernization Components ---
 export { AnimatedPage } from './AnimatedPage';

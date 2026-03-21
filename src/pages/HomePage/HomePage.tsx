@@ -1,15 +1,13 @@
-import {
-  AutoAwesome,
-  CalendarMonth,
-  CalendarToday,
-  EmojiEvents,
-  Group,
-  History,
-  LocalFireDepartment,
-  PlayCircle,
-  Star,
-  Tv,
-} from '@mui/icons-material';
+import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import CalendarToday from '@mui/icons-material/CalendarToday';
+import EmojiEvents from '@mui/icons-material/EmojiEvents';
+import Group from '@mui/icons-material/Group';
+import History from '@mui/icons-material/History';
+import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
+import PlayCircle from '@mui/icons-material/PlayCircle';
+import Star from '@mui/icons-material/Star';
+import Tv from '@mui/icons-material/Tv';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -29,7 +27,6 @@ import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import type { Series } from '../../types/Series';
 import { CatchUpCard } from './CatchUpCard';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { NotificationSheet } from './NotificationSheet';
@@ -45,6 +42,7 @@ import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
+import { normalizeSeasons, normalizeEpisodes } from '../../lib/episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export const HomePage: React.FC = () => {
@@ -149,16 +147,10 @@ export const HomePage: React.FC = () => {
     let count = 0;
     for (const series of seriesList) {
       if (!series.watchlist || !series.seasons) continue;
-      const seasonsArray = Array.isArray(series.seasons)
-        ? series.seasons
-        : Object.values(series.seasons);
       let hasUnwatched = false;
-      for (const season of seasonsArray as Series['seasons']) {
+      for (const season of normalizeSeasons(series.seasons)) {
         if (!season?.episodes) continue;
-        const episodesArray = Array.isArray(season.episodes)
-          ? season.episodes
-          : Object.values(season.episodes);
-        for (const episode of episodesArray as Series['seasons'][number]['episodes']) {
+        for (const episode of normalizeEpisodes(season.episodes)) {
           if (!episode?.watched && hasEpisodeAired(episode)) {
             hasUnwatched = true;
             break;
@@ -185,8 +177,14 @@ export const HomePage: React.FC = () => {
         const episodePath = `${user.uid}/serien/${item.nmr}/seasons/${item.seasonIndex}/episodes/${item.episodeIndex}`;
         const newWatchCount = (item.currentWatchCount || 0) + 1;
 
+        const nowIso = new Date().toISOString();
         await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
-        await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+        await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(nowIso);
+        // Stable sort key at series level — avoids relying on episode scan for ordering
+        await firebase
+          .database()
+          .ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`)
+          .set(nowIso);
 
         // Pet XP with genre bonus (rewatches count too)
         await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);

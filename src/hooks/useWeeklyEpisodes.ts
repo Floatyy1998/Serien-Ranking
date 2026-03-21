@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
 import { getEpisodeAirDateStr, getEpisodeAirDate } from '../utils/episodeDate';
@@ -144,7 +145,7 @@ export const useWeeklyEpisodes = (
             watched: !!ep.watched,
             seasonIndex: sIdx,
             episodeIndex: eIdx,
-            runtime: ep.runtime || series.episodeRuntime || 45,
+            runtime: ep.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
             providerNames: series.provider?.provider?.map((p) => p.name) || [],
             premiereType,
           };

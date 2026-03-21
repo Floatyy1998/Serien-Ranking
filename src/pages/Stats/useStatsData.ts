@@ -11,6 +11,7 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 
 export interface StatsData {
   totalSeries: number;
@@ -155,7 +156,7 @@ export const useStatsData = (): StatsData => {
 
     seriesList.forEach((series) => {
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const seriesRuntime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       let seriesTotal = 0;
       let seriesWatched = 0;

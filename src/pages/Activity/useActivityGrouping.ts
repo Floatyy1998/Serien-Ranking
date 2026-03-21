@@ -180,9 +180,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     const cacheKey = `${itemType}_${tmdbId}`;
     const tmdbPoster = tmdbPosters[cacheKey];
     const item = getItemDetails(activity);
-    const posterUrl = tmdbPoster
-      ? `https://image.tmdb.org/t/p/w342${tmdbPoster}`
-      : getImageUrl(item?.poster);
+    const posterUrl = tmdbPoster ? getImageUrl(tmdbPoster) : getImageUrl(item?.poster);
     return posterUrl;
   };
 

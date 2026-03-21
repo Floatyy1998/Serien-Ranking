@@ -2,7 +2,10 @@
  * RequestsTab - Incoming and sent friend requests
  */
 
-import { Cancel, CheckCircle, Person, PersonAdd } from '@mui/icons-material';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Person from '@mui/icons-material/Person';
+import PersonAdd from '@mui/icons-material/PersonAdd';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useActivityGrouping } from '../useActivityGrouping';

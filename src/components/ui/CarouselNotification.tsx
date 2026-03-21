@@ -229,6 +229,8 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 <img
                   src={currentSeries.poster.poster}
                   alt={currentSeries.title || currentSeries.original_name}
+                  loading="lazy"
+                  decoding="async"
                   className="series-poster"
                 />
               )}
@@ -307,15 +309,31 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   </span>
                 </Tooltip>
 
-                <div className="dots" ref={dotsContainerRef}>
-                  {series.map((_, index) => (
+                <div
+                  className="dots"
+                  ref={dotsContainerRef}
+                  role="tablist"
+                  aria-label="Serie auswählen"
+                >
+                  {series.map((s, index) => (
                     <span
                       key={index}
+                      role="tab"
+                      aria-selected={index === currentIndex}
+                      aria-label={`${s.title || s.original_name || 'Serie'} (${index + 1} von ${series.length})`}
+                      tabIndex={0}
                       className={`dot ${index === currentIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setCurrentIndex(index);
+                        }
+                      }}
                       style={{
                         backgroundColor:
                           index === currentIndex ? color : currentTheme.text.primary + '30',
+                        cursor: 'pointer',
                       }}
                     />
                   ))}

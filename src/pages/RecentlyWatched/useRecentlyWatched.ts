@@ -56,7 +56,7 @@ export interface UseRecentlyWatchedResult {
 export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   const navigate = useNavigate();
   const { user } = useAuth()!;
-  const { seriesList } = useSeriesList();
+  const { allSeriesList: seriesList } = useSeriesList();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');

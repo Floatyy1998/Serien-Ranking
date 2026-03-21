@@ -13,15 +13,30 @@ import 'firebase/compat/database';
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
+/** Alle erlaubten Analytics-Event-Namen als typisierte Union */
+export type AllowedAnalyticsEvent =
+  | 'page_view'
+  | 'login'
+  | 'logout'
+  | 'sign_up'
+  | 'series_added'
+  | 'series_deleted'
+  | 'movie_added'
+  | 'movie_deleted'
+  | 'episode_watched'
+  | 'episode_unwatched'
+  | 'rating_saved'
+  | 'rating_deleted';
+
 interface AnalyticsEvent {
-  e: string;
+  e: AllowedAnalyticsEvent;
   p?: Record<string, unknown>;
   t: number;
 }
 
 // ─── Whitelist: only these events are stored ─────────────────────────────
 
-const ALLOWED_EVENTS = new Set([
+const ALLOWED_EVENTS = new Set<AllowedAnalyticsEvent>([
   'page_view',
   'login',
   'logout',
@@ -65,14 +80,14 @@ class AnalyticsService {
   private enabled = false;
   private flushing = false;
 
-  init() {
+  init(): void {
     this.enabled = localStorage.getItem(CONSENT_KEY) === 'true';
     if (!this.enabled) return;
     this.startFlushTimer();
     this.setupLifecycleListeners();
   }
 
-  setUser(uid: string | null) {
+  setUser(uid: string | null): void {
     if (this.userId && uid !== this.userId && this.buffer.length > 0) {
       this.flush();
     }
@@ -83,7 +98,7 @@ class AnalyticsService {
     }
   }
 
-  setEnabled(enabled: boolean) {
+  setEnabled(enabled: boolean): void {
     this.enabled = enabled;
     localStorage.setItem(CONSENT_KEY, String(enabled));
     if (enabled) {
@@ -101,11 +116,15 @@ class AnalyticsService {
     return v === 'true';
   }
 
-  track(eventName: string, params?: Record<string, unknown>) {
-    if (!this.enabled || !ALLOWED_EVENTS.has(eventName)) return;
+  /**
+   * Nimmt einen beliebigen string entgegen (Aufruf-Kompatibilität),
+   * prüft gegen die typisierte Whitelist und speichert nur erlaubte Events.
+   */
+  track(eventName: string, params?: Record<string, unknown>): void {
+    if (!this.enabled || !ALLOWED_EVENTS.has(eventName as AllowedAnalyticsEvent)) return;
 
     this.buffer.push({
-      e: eventName,
+      e: eventName as AllowedAnalyticsEvent,
       p: params && Object.keys(params).length > 0 ? params : undefined,
       t: Date.now(),
     });
@@ -161,7 +180,8 @@ class AnalyticsService {
 
       await db.ref().update(updates);
     } catch (err) {
-      console.error('[Analytics] Flush failed:', err);
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error(`[Analytics] Flush failed: ${message}`);
       this.buffer.unshift(...batch);
     } finally {
       this.flushing = false;
@@ -169,7 +189,7 @@ class AnalyticsService {
   }
 
   /** Mark this user as active today in global DAU/MAU */
-  private async updateMeta() {
+  private async updateMeta(): Promise<void> {
     if (!this.userId) return;
     const db = firebase.database();
     const dateKey = todayKey();
@@ -190,12 +210,13 @@ class AnalyticsService {
         await firstSeenRef.set(firebase.database.ServerValue.TIMESTAMP);
       }
     } catch (err) {
-      console.error('[Analytics] Meta update failed:', err);
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error(`[Analytics] Meta update failed: ${message}`);
     }
   }
 
   /** Real-time presence tracking */
-  private async updateRealtimePresence(online: boolean) {
+  private async updateRealtimePresence(online: boolean): Promise<void> {
     if (!this.userId) return;
     try {
       const ref = firebase.database().ref(`analytics/global/realtime/activeUsers/${this.userId}`);
@@ -214,7 +235,7 @@ class AnalyticsService {
   }
 
   /** Update the page in realtime presence */
-  updateCurrentPage(page: string) {
+  updateCurrentPage(page: string): void {
     if (!this.userId || !this.enabled) return;
     firebase
       .database()
@@ -223,19 +244,19 @@ class AnalyticsService {
       .catch(() => {});
   }
 
-  private startFlushTimer() {
+  private startFlushTimer(): void {
     this.stopFlushTimer();
     this.flushTimer = setInterval(() => this.flush(), FLUSH_INTERVAL_MS);
   }
 
-  private stopFlushTimer() {
+  private stopFlushTimer(): void {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
   }
 
-  private setupLifecycleListeners() {
+  private setupLifecycleListeners(): void {
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
         this.flush();
@@ -250,7 +271,7 @@ class AnalyticsService {
     });
   }
 
-  private flushSync() {
+  private flushSync(): void {
     if (this.buffer.length === 0 || !this.userId || !this.enabled) return;
 
     const batch = [...this.buffer];
@@ -263,7 +284,7 @@ class AnalyticsService {
     navigator.sendBeacon(url, payload);
   }
 
-  destroy() {
+  destroy(): void {
     this.flush();
     this.stopFlushTimer();
     this.updateRealtimePresence(false);

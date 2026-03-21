@@ -4,6 +4,29 @@ import { Pet, PET_COLORS, ACCESSORIES, GENRE_FAVORITES, PetAccessory } from '../
 import { PET_CONFIG } from './petConstants';
 import { toLocalDateString } from '../lib/date/date.utils';
 
+// ============================================================================
+// TYPE GUARDS
+// ============================================================================
+
+/** Erkennt das alte Single-Pet-Format (direkt name/type/id auf Root-Ebene) */
+function isLegacySinglePet(data: unknown): data is { name: string; type: string; id: string } {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'name' in data &&
+    'type' in data &&
+    'id' in data &&
+    typeof (data as Record<string, unknown>).name === 'string' &&
+    typeof (data as Record<string, unknown>).type === 'string' &&
+    typeof (data as Record<string, unknown>).id === 'string'
+  );
+}
+
+/** Prüft ob das Objekt ein gültiger Pet-Datensatz aus Firebase ist */
+function isRawPetData(data: unknown): data is Record<string, unknown> {
+  return typeof data === 'object' && data !== null && 'type' in data;
+}
+
 class PetService {
   private migrationDone: Set<string> = new Set();
 
@@ -11,25 +34,30 @@ class PetService {
   private async migrateIfNeeded(userId: string): Promise<void> {
     if (this.migrationDone.has(userId)) return;
 
-    const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
-    if (!snapshot.exists()) {
-      this.migrationDone.add(userId);
-      return;
-    }
+    try {
+      const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
+      if (!snapshot.exists()) {
+        this.migrationDone.add(userId);
+        return;
+      }
 
-    const data = snapshot.val();
+      const data: unknown = snapshot.val();
 
-    // Altes Format erkennen: data hat direkt 'name' und 'type' (Pet-Objekt)
-    // Neues Format: data hat petId-Keys als Kinder
-    if (data.name && data.type && data.id) {
-      const petId = data.id;
-      await firebase
-        .database()
-        .ref(`pets/${userId}`)
-        .set({
-          [petId]: data,
-        });
-      await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+      // Altes Format erkennen: data hat direkt 'name' und 'type' (Pet-Objekt)
+      // Neues Format: data hat petId-Keys als Kinder
+      if (isLegacySinglePet(data)) {
+        const petId = data.id;
+        await firebase
+          .database()
+          .ref(`pets/${userId}`)
+          .set({
+            [petId]: data,
+          });
+        await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[PetService] Migration failed for user ${userId}: ${message}`);
     }
 
     this.migrationDone.add(userId);
@@ -42,12 +70,14 @@ class PetService {
     const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
     if (!snapshot.exists()) return [];
 
-    const data = snapshot.val();
+    const data = snapshot.val() as Record<string, unknown> | null;
+    if (!data) return [];
+
     const pets: Pet[] = [];
 
     for (const petId of Object.keys(data)) {
       const petData = data[petId];
-      if (!petData || typeof petData !== 'object' || !petData.type) continue;
+      if (!isRawPetData(petData)) continue;
 
       if (!petData.createdAt) {
         petData.createdAt = Date.now();
@@ -61,9 +91,9 @@ class PetService {
       }
 
       pets.push({
-        ...petData,
-        lastFed: new Date(petData.lastFed),
-        createdAt: new Date(petData.createdAt),
+        ...(petData as unknown as Pet),
+        lastFed: new Date(petData.lastFed as string | number),
+        createdAt: new Date(petData.createdAt as string | number),
       });
     }
 
@@ -77,7 +107,7 @@ class PetService {
     const snapshot = await firebase.database().ref(`pets/${userId}/${petId}`).once('value');
     if (!snapshot.exists()) return null;
 
-    const petData = snapshot.val();
+    const petData = snapshot.val() as Record<string, unknown>;
 
     if (!petData.createdAt) {
       const now = new Date();
@@ -92,16 +122,16 @@ class PetService {
     }
 
     return {
-      ...petData,
-      lastFed: new Date(petData.lastFed),
-      createdAt: new Date(petData.createdAt),
+      ...(petData as unknown as Pet),
+      lastFed: new Date(petData.lastFed as string | number),
+      createdAt: new Date(petData.createdAt as string | number),
     };
   }
 
   // Aktives Pet für Widget
   async getActivePetId(userId: string): Promise<string | null> {
     const snapshot = await firebase.database().ref(`petWidget/${userId}/activePetId`).once('value');
-    return snapshot.val() || null;
+    return (snapshot.val() as string | null) || null;
   }
 
   async setActivePetId(userId: string, petId: string): Promise<void> {
@@ -265,7 +295,7 @@ class PetService {
     if (minutesSinceLastUpdate < 1) return pet;
 
     if (isNaN(lastFedTime.getTime())) {
-      console.warn('Invalid lastFed date, using current time');
+      console.warn('[PetService] Invalid lastFed date, resetting to current time');
       pet.lastFed = now;
       pet.hunger = 50;
     } else {
@@ -283,6 +313,7 @@ class PetService {
     pet.hunger = isNaN(pet.hunger) ? PET_CONFIG.INITIAL_HUNGER : pet.hunger;
     pet.happiness = isNaN(pet.happiness) ? PET_CONFIG.INITIAL_HAPPINESS : pet.happiness;
 
+    // Death-Logik: klar getrennte Ursachen
     let hasDied = false;
     let deathCause: Pet['deathCause'] = undefined;
 
@@ -292,7 +323,7 @@ class PetService {
     } else if (pet.happiness <= PET_CONFIG.HAPPINESS_DEATH_THRESHOLD) {
       hasDied = true;
       deathCause = 'sadness';
-    } else if (lastFedTime && !isNaN(lastFedTime.getTime())) {
+    } else if (!isNaN(lastFedTime.getTime())) {
       const daysSinceLastFed = (now.getTime() - lastFedTime.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSinceLastFed >= PET_CONFIG.NEGLECT_DAYS_THRESHOLD) {
         hasDied = true;
@@ -335,11 +366,12 @@ class PetService {
     return updated;
   }
 
-  // Wiederbelebe das Pet
+  // Revival-Logik: klar getrennt von Death-Logik
   async revivePet(userId: string, petId: string): Promise<Pet | null> {
     const pet = await this.getUserPet(userId, petId);
     if (!pet) return null;
 
+    // Nur tote Pets können wiederbelebt werden
     if (pet.isAlive) return pet;
 
     const now = new Date();
@@ -350,6 +382,7 @@ class PetService {
     pet.lastUpdated = now;
     pet.reviveCount = (pet.reviveCount || 0) + 1;
 
+    // Level-Penalty bei Revival
     if (pet.level > 1) {
       pet.level = Math.max(1, pet.level - 1);
       pet.experience = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL;
@@ -367,6 +400,7 @@ class PetService {
     };
 
     await firebase.database().ref(`pets/${userId}/${petId}`).update(updates);
+    // Todesfelder explizit entfernen
     await firebase.database().ref(`pets/${userId}/${petId}/deathTime`).remove();
     await firebase.database().ref(`pets/${userId}/${petId}/deathCause`).remove();
 
@@ -655,9 +689,17 @@ class PetService {
   > {
     try {
       const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
-      return snapshot.val();
+      return snapshot.val() as
+        | {
+            edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+            offsetX: number;
+            offsetY: number;
+          }
+        | { xPercent: number; yPercent: number }
+        | null;
     } catch (error) {
-      console.error('Error getting pet widget position:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[PetService] Failed to get widget position: ${message}`);
       return null;
     }
   }
@@ -714,19 +756,20 @@ class PetService {
 
       const streakRef = firebase.database().ref(`${userId}/wrapped/${year}/streak`);
       const streakSnapshot = await streakRef.once('value');
-      const streakData = streakSnapshot.val();
+      const streakData = streakSnapshot.val() as Record<string, unknown> | null;
 
       if (streakData) {
         await streakRef.update({
           lastWatchDate: yesterdayStr,
           lastShieldUsedDate: todayStr,
-          shieldUsedCount: (streakData.shieldUsedCount || 0) + 1,
+          shieldUsedCount: ((streakData.shieldUsedCount as number) || 0) + 1,
         });
       }
 
       return { success: true, newLevel, newExperience };
     } catch (error) {
-      console.error('Streak Shield error:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[PetService] Streak Shield activation failed: ${message}`);
       return { success: false, error: 'Unbekannter Fehler' };
     }
   }
@@ -742,7 +785,8 @@ class PetService {
     try {
       await firebase.database().ref(`petWidget/${userId}/position`).set(position);
     } catch (error) {
-      console.error('Error saving pet widget position:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[PetService] Failed to save widget position: ${message}`);
     }
   }
 }
