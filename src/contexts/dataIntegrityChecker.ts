@@ -30,6 +30,8 @@ export function checkSeriesIntegrity(
     fields: string[],
     values: Record<string, unknown>
   ) => {
+    // Firebase doesn't allow undefined values — strip them via JSON roundtrip
+    const safeValues: Record<string, unknown> = JSON.parse(JSON.stringify(values));
     issues.push({
       type,
       seriesName: sName,
@@ -39,7 +41,7 @@ export function checkSeriesIntegrity(
       firebasePath: path,
       problem,
       storedFields: fields,
-      storedValues: values,
+      storedValues: safeValues,
     });
   };
 
