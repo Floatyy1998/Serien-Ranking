@@ -149,11 +149,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Konvertiere Object zu Array, sanitize kaputte Daten, logge Probleme ins Admin-Panel
   const allSeries: Series[] = useMemo(() => {
-    if (!seriesData) return [];
+    if (!seriesData || !user) return [];
 
-    const { sanitized, issues } = checkSeriesIntegrity(seriesData, user!.uid);
+    const { sanitized, issues } = checkSeriesIntegrity(seriesData, user.uid);
 
-    if (issues.length > 0 && user) {
+    if (issues.length > 0) {
       firebase
         .database()
         .ref(`admin/dataIntegrityIssues/${user.uid}`)
@@ -163,6 +163,8 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
           issueCount: issues.length,
           issues,
         });
+    } else {
+      firebase.database().ref(`admin/dataIntegrityIssues/${user.uid}`).remove();
     }
 
     return sanitized;
