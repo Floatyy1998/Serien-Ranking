@@ -6,6 +6,7 @@
  */
 import {
   Assessment,
+  BugReport,
   Extension,
   Groups,
   HealthAndSafety,
@@ -25,6 +26,7 @@ import { ExtensionTab } from './tabs/ExtensionTab';
 import { OverviewTab } from './tabs/OverviewTab';
 import { RealtimeTab } from './tabs/RealtimeTab';
 import { UsersTab } from './tabs/UsersTab';
+import { BackendErrorsTab } from './tabs/BackendErrorsTab';
 import { DataHealthTab } from './tabs/DataHealthTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
@@ -37,6 +39,7 @@ const TABS = [
   { id: 'events', label: 'Events', icon: <Timeline style={{ fontSize: 16 }} /> },
   { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
+  { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -134,6 +137,7 @@ export function AdminDashboardPage() {
               {activeTab === 'events' && <EventsTab data={data} theme={currentTheme} />}
               {activeTab === 'extension' && <ExtensionTab data={data} theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
+              {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
             </motion.div>
           </AnimatePresence>
         </div>
