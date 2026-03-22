@@ -118,7 +118,9 @@ export const SeriesDetailPage = memo(() => {
     let watchedCount = 0;
     let airedCount = 0;
     series.seasons.forEach((season) => {
+      if (!season) return;
       season.episodes?.forEach((episode) => {
+        if (!episode || !episode.episode_number) return;
         if (hasEpisodeAired(episode)) {
           airedCount++;
           if (episode.watched) watchedCount++;

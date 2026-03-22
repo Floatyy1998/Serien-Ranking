@@ -34,8 +34,9 @@ export function calculateWatchingPace(
   let runtimeSamples = 0;
 
   for (const season of seasons) {
-    if (!season.episodes) continue;
+    if (!season?.episodes) continue;
     for (const episode of season.episodes) {
+      if (!episode) continue;
       if (hasEpisodeAired(episode)) {
         airedCount++;
         if (episode.watched) {
