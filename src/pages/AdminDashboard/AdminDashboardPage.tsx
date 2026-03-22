@@ -8,6 +8,7 @@ import {
   Assessment,
   Extension,
   Groups,
+  HealthAndSafety,
   History,
   Refresh,
   Speed,
@@ -24,6 +25,7 @@ import { ExtensionTab } from './tabs/ExtensionTab';
 import { OverviewTab } from './tabs/OverviewTab';
 import { RealtimeTab } from './tabs/RealtimeTab';
 import { UsersTab } from './tabs/UsersTab';
+import { DataHealthTab } from './tabs/DataHealthTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -34,6 +36,7 @@ const TABS = [
   { id: 'activity', label: 'Activity', icon: <History style={{ fontSize: 16 }} /> },
   { id: 'events', label: 'Events', icon: <Timeline style={{ fontSize: 16 }} /> },
   { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
+  { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -130,6 +133,7 @@ export function AdminDashboardPage() {
               {activeTab === 'activity' && <ActivityTab data={data} theme={currentTheme} />}
               {activeTab === 'events' && <EventsTab data={data} theme={currentTheme} />}
               {activeTab === 'extension' && <ExtensionTab data={data} theme={currentTheme} />}
+              {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
             </motion.div>
           </AnimatePresence>
         </div>
