@@ -1,7 +1,6 @@
 export const PET_CONFIG = {
   // Pet limits
-  MAX_PETS: 2,
-  SECOND_PET_LEVEL_REQUIREMENT: 15,
+  NEW_PET_LEVEL_REQUIREMENT: 15,
 
   // Feeding
   HUNGER_DECREASE_PER_FEED: 30,

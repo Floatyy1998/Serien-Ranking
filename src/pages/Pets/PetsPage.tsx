@@ -22,7 +22,7 @@ export const PetsPage: React.FC = () => {
     pets,
     pet,
     selectedPetIndex,
-    canAddSecondPet,
+    canAddNewPet,
     isLoading,
     showCreateModal,
     petName,
@@ -100,7 +100,7 @@ export const PetsPage: React.FC = () => {
       <PetSelector
         pets={pets}
         selectedPetIndex={selectedPetIndex}
-        canAddSecondPet={canAddSecondPet}
+        canAddNewPet={canAddNewPet}
         onSelectPet={selectPet}
         onOpenCreateModal={openCreateModal}
       />
