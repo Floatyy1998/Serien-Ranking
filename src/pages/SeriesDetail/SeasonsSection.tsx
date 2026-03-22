@@ -164,22 +164,22 @@ export function SeasonsSection({
         );
       })()}
 
-      {/* Season Tabs */}
-      <SeasonTabs
-        seasons={series.seasons}
-        selectedSeasonIndex={selectedSeasonIndex}
-        onSelectSeason={setSelectedSeasonIndex}
-      />
-
       {/* Selected Season Content */}
       <div
         style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: currentTheme.background.paper,
+          border: '1px solid rgba(255,255,255,0.08)',
           borderRadius: '12px',
           padding: '16px',
+          overflow: 'hidden',
         }}
       >
+        {/* Season Tabs */}
+        <SeasonTabs
+          seasons={series.seasons}
+          selectedSeasonIndex={selectedSeasonIndex}
+          onSelectSeason={setSelectedSeasonIndex}
+        />
         {/* Season header with view toggle */}
         <div
           style={{

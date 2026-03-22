@@ -357,18 +357,20 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Seasons Overview */}
           {series.seasons && series.seasons.length > 0 && (
-            <SeasonsSection
-              series={series}
-              selectedSeasonIndex={selectedSeasonIndex}
-              setSelectedSeasonIndex={setSelectedSeasonIndex}
-              setShowRewatchDialog={setShowRewatchDialog}
-              episodeDiscussionCounts={episodeDiscussionCounts}
-              warningColor={warningColor}
-              currentTheme={currentTheme}
-              handleStopRewatch={handleStopRewatch}
-              handleStartRewatch={handleStartRewatch}
-              navigate={navigate}
-            />
+            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
+              <SeasonsSection
+                series={series}
+                selectedSeasonIndex={selectedSeasonIndex}
+                setSelectedSeasonIndex={setSelectedSeasonIndex}
+                setShowRewatchDialog={setShowRewatchDialog}
+                episodeDiscussionCounts={episodeDiscussionCounts}
+                warningColor={warningColor}
+                currentTheme={currentTheme}
+                handleStopRewatch={handleStopRewatch}
+                handleStartRewatch={handleStartRewatch}
+                navigate={navigate}
+              />
+            </div>
           )}
         </>
       )}
