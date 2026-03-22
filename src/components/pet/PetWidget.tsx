@@ -10,26 +10,16 @@ import { petMoodService } from '../../services/pet/petMoodService';
 import { Pet } from '../../types/pet.types';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
 import { PetHungerToast } from './PetHungerToast';
-
-const getStatusColor = (pet: Pet): string => {
-  if (!pet.isAlive) return '#6b7280';
-  if (pet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER) return '#ef4444';
-  if (pet.hunger >= PET_CONFIG.STATUS_WARNING_HUNGER) return '#f97316';
-  if (
-    pet.hunger >= PET_CONFIG.STATUS_GOOD_HUNGER ||
-    pet.happiness <= PET_CONFIG.STATUS_GOOD_HAPPINESS
-  )
-    return '#eab308';
-  return '#22c55e';
-};
-
-const isPetHealthy = (pet: Pet): boolean => {
-  return (
-    pet.isAlive &&
-    pet.hunger < PET_CONFIG.HEALTHY_HUNGER_THRESHOLD &&
-    pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD
-  );
-};
+import {
+  EdgePosition,
+  calculateEdgeFromPosition,
+  calculatePixelPosition,
+  convertPercentToEdge,
+  getNavbarHeight,
+  getStatusColor,
+  isPetHealthy,
+} from './PetWidgetHelpers';
+import { PetWidgetNoPet } from './PetWidgetNoPet';
 
 export const PetWidget: React.FC = () => {
   const authContext = useAuth();
@@ -41,7 +31,6 @@ export const PetWidget: React.FC = () => {
   const [showWidget, setShowWidget] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [recentlyDragged, setRecentlyDragged] = useState(false);
-  // Drag & Drop State
   const [dragConstraints, setDragConstraints] = useState({
     left: 0,
     right: window.innerWidth - 70,
@@ -49,8 +38,8 @@ export const PetWidget: React.FC = () => {
     bottom: window.innerHeight - 70,
   });
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [edgePosition, setEdgePosition] = useState({
-    edge: 'bottom-right' as 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right',
+  const [edgePosition, setEdgePosition] = useState<EdgePosition>({
+    edge: 'bottom-right',
     offsetX: 2,
     offsetY: 2,
   });
@@ -64,133 +53,32 @@ export const PetWidget: React.FC = () => {
     }
   }, [user]);
 
-  const getNavbarHeight = () => {
-    // Navbar: padding 8px top/bottom + safe-area-inset-bottom + icon container height (32px)
-    const basePadding = 16; // 8px top + 8px bottom
-    const iconContainerHeight = 32;
-    const labelHeight = 14; // Approximate label height
-    const safeAreaBottom =
-      window.innerHeight - (window.visualViewport?.height || window.innerHeight);
-    return basePadding + iconContainerHeight + labelHeight + safeAreaBottom;
-  };
-
   const loadPosition = async () => {
     if (!user) return;
 
     try {
       const savedPosition = await petService.getPetWidgetPosition(user.uid);
       if (savedPosition && 'edge' in savedPosition) {
-        // If we have edge-based position saved
         setEdgePosition(savedPosition);
-        calculateAndSetPixelPosition(savedPosition);
+        setPosition(calculatePixelPosition(savedPosition));
       } else if (savedPosition && 'xPercent' in savedPosition) {
-        // Legacy percentage-based position - convert to edge-based
         const convertedEdge = convertPercentToEdge(savedPosition);
         setEdgePosition(convertedEdge);
-        calculateAndSetPixelPosition(convertedEdge);
+        setPosition(calculatePixelPosition(convertedEdge));
       } else {
-        // Set default position on first load
-        calculateAndSetPixelPosition(edgePosition);
+        setPosition(calculatePixelPosition(edgePosition));
       }
     } catch (error) {
       console.error('Error loading pet position:', error);
-      calculateAndSetPixelPosition(edgePosition);
+      setPosition(calculatePixelPosition(edgePosition));
     }
-  };
-
-  const convertPercentToEdge = (percentPos: { xPercent: number; yPercent: number }) => {
-    // Convert legacy percentage to edge-based
-    const isLeft = percentPos.xPercent < 50;
-    const isTop = percentPos.yPercent < 50;
-
-    let edge: typeof edgePosition.edge;
-    if (isTop && isLeft) edge = 'top-left';
-    else if (isTop && !isLeft) edge = 'top-right';
-    else if (!isTop && isLeft) edge = 'bottom-left';
-    else edge = 'bottom-right';
-
-    return {
-      edge,
-      offsetX: 2,
-      offsetY: 2,
-    };
-  };
-
-  const calculateAndSetPixelPosition = (edgePos: typeof edgePosition) => {
-    const screenWidth = window.innerWidth || 1920;
-    const screenHeight = window.innerHeight || 1080;
-    const widgetSize = 70;
-    const navbarHeight = getNavbarHeight();
-
-    let x: number, y: number;
-
-    switch (edgePos.edge) {
-      case 'top-left':
-        x = edgePos.offsetX;
-        y = edgePos.offsetY;
-        break;
-      case 'top-right':
-        x = screenWidth - widgetSize - edgePos.offsetX;
-        y = edgePos.offsetY;
-        break;
-      case 'bottom-left':
-        x = edgePos.offsetX;
-        y = screenHeight - navbarHeight - widgetSize - edgePos.offsetY;
-        break;
-      case 'bottom-right':
-        x = screenWidth - widgetSize - edgePos.offsetX;
-        y = screenHeight - navbarHeight - widgetSize - edgePos.offsetY;
-        break;
-    }
-
-    setPosition({ x, y });
   };
 
   const savePosition = async (newPosition: { x: number; y: number }) => {
     if (!user) return;
 
     try {
-      const screenWidth = window.innerWidth || 1920;
-      const screenHeight = window.innerHeight || 1080;
-      const widgetSize = 70;
-      const navbarHeight = getNavbarHeight();
-
-      // Determine which edge the widget is closest to
-      const centerX = newPosition.x + widgetSize / 2;
-      const centerY = newPosition.y + widgetSize / 2;
-
-      const distanceToLeft = centerX;
-      const distanceToRight = screenWidth - centerX;
-      const distanceToTop = centerY;
-      const distanceToBottom = screenHeight - centerY;
-
-      const isCloserToLeft = distanceToLeft < distanceToRight;
-      const isCloserToTop = distanceToTop < distanceToBottom;
-
-      let edge: typeof edgePosition.edge;
-      let offsetX: number;
-      let offsetY: number;
-
-      if (isCloserToTop && isCloserToLeft) {
-        edge = 'top-left';
-        offsetX = newPosition.x;
-        offsetY = newPosition.y;
-      } else if (isCloserToTop && !isCloserToLeft) {
-        edge = 'top-right';
-        offsetX = screenWidth - newPosition.x - widgetSize;
-        offsetY = newPosition.y;
-      } else if (!isCloserToTop && isCloserToLeft) {
-        edge = 'bottom-left';
-        offsetX = newPosition.x;
-        offsetY = screenHeight - navbarHeight - newPosition.y - widgetSize;
-      } else {
-        edge = 'bottom-right';
-        offsetX = screenWidth - newPosition.x - widgetSize;
-        offsetY = screenHeight - navbarHeight - newPosition.y - widgetSize;
-      }
-
-      const newEdgePosition = { edge, offsetX, offsetY };
-
+      const newEdgePosition = calculateEdgeFromPosition(newPosition);
       await petService.savePetWidgetPosition(user.uid, newEdgePosition);
       setEdgePosition(newEdgePosition);
       setPosition(newPosition);
@@ -199,7 +87,6 @@ export const PetWidget: React.FC = () => {
     }
   };
 
-  // Auto-update Status alle 5 Minuten für alle Pets, aktives Pet neu laden
   useEffect(() => {
     if (!user || !pet) return;
 
@@ -207,7 +94,7 @@ export const PetWidget: React.FC = () => {
       if (!updatedPet.isAlive || updatedPet.hunger < PET_CONFIG.STATUS_WARNING_HUNGER) return;
 
       const lastToast = localStorage.getItem('petHungerToastLast');
-      const cooldown = 30 * 60 * 1000; // 30 Minuten
+      const cooldown = 30 * 60 * 1000;
       if (lastToast && Date.now() - Number(lastToast) < cooldown) return;
 
       setHungerToastLevel(
@@ -221,7 +108,6 @@ export const PetWidget: React.FC = () => {
       async () => {
         try {
           await petService.updateAllPetsStatus(user.uid);
-          // Aktives Pet neu laden
           const activePetId = await petService.getActivePetId(user.uid);
           if (activePetId) {
             const updatedPet = await petService.getUserPet(user.uid, activePetId);
@@ -237,13 +123,11 @@ export const PetWidget: React.FC = () => {
       5 * 60 * 1000
     );
 
-    // Initial check on mount
     checkHungerToast(pet);
 
     return () => clearInterval(interval);
   }, [user, pet]);
 
-  // Update drag constraints and position on window resize
   useEffect(() => {
     const updateConstraintsAndPosition = () => {
       const screenWidth = window.innerWidth || 1920;
@@ -258,12 +142,10 @@ export const PetWidget: React.FC = () => {
         bottom: screenHeight - navbarHeight - widgetSize,
       });
 
-      // Recalculate position based on stored edge position
-      calculateAndSetPixelPosition(edgePosition);
+      setPosition(calculatePixelPosition(edgePosition));
     };
 
     window.addEventListener('resize', updateConstraintsAndPosition);
-    // Run once on mount
     updateConstraintsAndPosition();
 
     return () => window.removeEventListener('resize', updateConstraintsAndPosition);
@@ -273,7 +155,6 @@ export const PetWidget: React.FC = () => {
     if (!user) return;
 
     try {
-      // Aktives Pet laden oder auf erstes Pet zurückfallen
       let petId = await petService.getActivePetId(user.uid);
 
       if (!petId) {
@@ -300,100 +181,16 @@ export const PetWidget: React.FC = () => {
 
   if (!user || !showWidget || isLoading) return null;
 
-  // Zeige "Hol dir ein Pet" wenn kein Pet vorhanden
   if (!pet) {
     return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        whileHover={{ scale: 1.05 }}
-        className="pet-widget"
-        style={{
-          position: 'fixed',
-          left: position.x || 15,
-          top: position.y || window.innerHeight - 200,
-          background: currentTheme.background.card + 'f0',
-          backdropFilter: 'blur(10px)',
-          borderRadius: '16px',
-          padding: '12px',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          zIndex: 1001,
-          cursor: 'pointer',
-          maxWidth: '160px',
-        }}
-        onClick={() => navigate('/pets')}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowWidget(false);
-          }}
-          style={{
-            position: 'absolute',
-            top: '6px',
-            right: '6px',
-            background: currentTheme.background.default + 'ee',
-            border: 'none',
-            color: currentTheme.text.secondary,
-            cursor: 'pointer',
-            fontSize: '15px',
-            width: '18px',
-            height: '18px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          ×
-        </button>
-
-        <div style={{ textAlign: 'center' }}>
-          <motion.div
-            animate={{
-              rotate: [0, 10, -10, 0],
-              y: [0, -5, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-            style={{
-              fontSize: '36px',
-              marginBottom: '8px',
-            }}
-          >
-            🥚
-          </motion.div>
-          <h4
-            style={{
-              color: currentTheme.text.primary,
-              margin: '0 0 4px',
-              fontSize: '15px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-            }}
-          >
-            Hol dir ein Pet!
-          </h4>
-          <p
-            style={{
-              color: currentTheme.text.secondary,
-              fontSize: '12px',
-              margin: 0,
-              opacity: 0.8,
-            }}
-          >
-            Tippe zum Starten
-          </p>
-        </div>
-      </motion.div>
+      <PetWidgetNoPet
+        position={position}
+        onNavigate={() => navigate('/pets')}
+        onClose={() => setShowWidget(false)}
+      />
     );
   }
 
-  // Pet Widget mit neuen Features
   const currentMood = petMoodService.calculateCurrentMood(pet);
   const statusColor = getStatusColor(pet);
   const isCritical = pet.isAlive && pet.hunger >= PET_CONFIG.STATUS_CRITICAL_HUNGER;
@@ -449,8 +246,6 @@ export const PetWidget: React.FC = () => {
             onDragEnd={(_event, info) => {
               setIsDragging(false);
               setRecentlyDragged(true);
-
-              // Reset recently dragged after 100ms
               setTimeout(() => setRecentlyDragged(false), 100);
 
               const newPosition = {
@@ -476,10 +271,8 @@ export const PetWidget: React.FC = () => {
                 }
               }}
             >
-              {/* Animiertes Pet */}
               <EvolvingPixelPet pet={pet} size={70} animated={pet.isAlive} />
 
-              {/* Mini Hunger-Bar unter dem Pet */}
               {pet.isAlive && (
                 <Tooltip title={`Hunger: ${pet.hunger}%`} arrow>
                   <div
@@ -507,7 +300,6 @@ export const PetWidget: React.FC = () => {
                 </Tooltip>
               )}
 
-              {/* Healthy XP Bonus Indicator */}
               {healthy && (
                 <Tooltip title="Gesundes Pet: +50% XP-Bonus aktiv" arrow>
                   <motion.div
@@ -532,7 +324,6 @@ export const PetWidget: React.FC = () => {
                 </Tooltip>
               )}
 
-              {/* Tod-Indikator für tote Pets */}
               {!pet.isAlive && (
                 <Tooltip title="Pet ist verstorben – Tippe zum Wiederbeleben" arrow>
                   <motion.div
@@ -550,7 +341,6 @@ export const PetWidget: React.FC = () => {
                 </Tooltip>
               )}
 
-              {/* Feed Indicator wenn hungrig (nur lebende Pets) */}
               {pet.isAlive && pet.hunger > 70 && (
                 <Tooltip title="Dein Pet hat Hunger!" arrow>
                   <motion.div
@@ -568,7 +358,6 @@ export const PetWidget: React.FC = () => {
                 </Tooltip>
               )}
 
-              {/* Mood Text unter dem Pet */}
               {pet.isAlive && currentMood && (
                 <motion.div
                   initial={{ opacity: 0 }}

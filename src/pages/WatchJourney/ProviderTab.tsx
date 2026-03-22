@@ -7,7 +7,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -48,7 +47,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
     return data.topProviders.map((provider) => ({
       name: provider,
       hours: Math.round((totals[provider] || 0) / 60),
-      color: data.providerColors[provider],
+      fill: data.providerColors[provider],
     }));
   }, [data]);
 
@@ -203,14 +202,14 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                       <div
                         style={{
                           background: bgSurface,
-                          border: `1px solid ${data.color}50`,
+                          border: `1px solid ${data.fill}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
                           boxShadow:
                             '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
-                        <p style={{ color: data.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p style={{ color: data.fill, fontWeight: 700, margin: 0, fontSize: 15 }}>
                           {data.name}
                         </p>
                         <p
@@ -233,11 +232,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                 radius={[0, 8, 8, 0]}
                 animationDuration={800}
                 style={{ outline: 'none' }}
-              >
-                {barData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
-                ))}
-              </Bar>
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

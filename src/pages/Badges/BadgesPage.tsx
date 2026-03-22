@@ -3,43 +3,26 @@
  * Beautiful badge showcase with animated progress
  */
 
-import {
-  EmojiEvents,
-  Explore,
-  Groups,
-  LocalFireDepartment,
-  Movie,
-  Refresh,
-  Speed,
-  Star,
-  TrendingUp,
-} from '@mui/icons-material';
+import { EmojiEvents, Refresh } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   BADGE_DEFINITIONS,
-  Badge,
-  BadgeCategory,
   BadgeProgress,
   EarnedBadge,
 } from '../../features/badges/badgeDefinitions';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
+import {
+  categories,
+  getEarnedCount,
+  getTotalCount,
+  getCategoryBadges,
+  getNextTierInfo,
+} from './badgesPageHelpers';
 import './BadgesPage.css';
-
-const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
-  { key: 'all', label: 'Alle', icon: <EmojiEvents /> },
-  { key: 'binge', label: 'Binge', icon: <Movie /> },
-  { key: 'quickwatch', label: 'Quick', icon: <Speed /> },
-  { key: 'marathon', label: 'Marathon', icon: <LocalFireDepartment /> },
-  { key: 'streak', label: 'Streak', icon: <TrendingUp /> },
-  { key: 'rewatch', label: 'Rewatch', icon: <Refresh /> },
-  { key: 'series_explorer', label: 'Explorer', icon: <Explore /> },
-  { key: 'collector', label: 'Collector', icon: <Star /> },
-  { key: 'social', label: 'Social', icon: <Groups /> },
-];
 
 export const BadgesPage = () => {
   const { user } = useAuth()!;
@@ -177,82 +160,6 @@ export const BadgesPage = () => {
     return earnedBadges.some((b) => b.id === badgeId);
   };
 
-  const getNextTierInfo = (badge: Badge, earned: boolean) => {
-    if (earned) return null;
-
-    const sameCategoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === badge.category);
-    const badgeGroups: Record<string, typeof sameCategoryBadges> = {};
-
-    sameCategoryBadges.forEach((b) => {
-      const reqKey = Object.keys(b.requirements)
-        .filter((k) => k !== 'timeframe')
-        .sort()
-        .join('_');
-
-      if (!badgeGroups[reqKey]) {
-        badgeGroups[reqKey] = [];
-      }
-      badgeGroups[reqKey].push(b);
-    });
-
-    const myReqKey = Object.keys(badge.requirements)
-      .filter((k) => k !== 'timeframe')
-      .sort()
-      .join('_');
-
-    const myGroup = badgeGroups[myReqKey];
-    if (!myGroup || myGroup.length <= 1) return null;
-
-    const tierOrder: Record<string, number> = {
-      bronze: 1,
-      silver: 2,
-      gold: 3,
-      platinum: 4,
-      diamond: 5,
-    };
-
-    myGroup.sort((a, b) => {
-      const aValue =
-        a.requirements.episodes || a.requirements.series || a.requirements.seasons || 0;
-      const bValue =
-        b.requirements.episodes || b.requirements.series || b.requirements.seasons || 0;
-      if (aValue !== bValue) return aValue - bValue;
-      return (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0);
-    });
-
-    const currentIndex = myGroup.findIndex((b) => b.id === badge.id);
-    if (currentIndex === -1 || currentIndex === 0) return null;
-
-    const previousBadges = myGroup.slice(0, currentIndex);
-    const earnedPreviousBadges = previousBadges.filter((b) => isBadgeEarned(b.id));
-
-    if (earnedPreviousBadges.length === previousBadges.length) {
-      return { isNextTier: true };
-    }
-
-    return null;
-  };
-
-  const getEarnedCount = (category: BadgeCategory | 'all') => {
-    const categoryBadges =
-      category === 'all'
-        ? BADGE_DEFINITIONS
-        : BADGE_DEFINITIONS.filter((b) => b.category === category);
-    return categoryBadges.filter((b) => isBadgeEarned(b.id)).length;
-  };
-
-  const getTotalCount = (category: BadgeCategory | 'all') => {
-    return category === 'all'
-      ? BADGE_DEFINITIONS.length
-      : BADGE_DEFINITIONS.filter((b) => b.category === category).length;
-  };
-
-  const getCategoryBadges = (category: BadgeCategory | 'all') => {
-    return category === 'all'
-      ? BADGE_DEFINITIONS
-      : BADGE_DEFINITIONS.filter((b) => b.category === category);
-  };
-
   const progressPercent = Math.round((earnedBadges.length / BADGE_DEFINITIONS.length) * 100);
 
   return (
@@ -361,7 +268,7 @@ export const BadgesPage = () => {
           }}
         >
           {categories.map((category, index) => {
-            const earnedCount = getEarnedCount(category.key);
+            const earnedCount = getEarnedCount(category.key, earnedBadges);
             const totalCount = getTotalCount(category.key);
             const isActive = tabValue === index;
             const hasEarned = earnedCount > 0;
@@ -473,7 +380,7 @@ export const BadgesPage = () => {
                     <div className="badges-grid">
                       {getCategoryBadges(category.key).map((badge, badgeIndex) => {
                         const earned = isBadgeEarned(badge.id);
-                        const nextTierInfo = getNextTierInfo(badge, earned);
+                        const nextTierInfo = getNextTierInfo(badge, earned, isBadgeEarned);
                         return (
                           <BadgeCard
                             key={badge.id}

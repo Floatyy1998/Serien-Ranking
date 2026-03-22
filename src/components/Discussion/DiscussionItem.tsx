@@ -1,10 +1,12 @@
-import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, Person, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
+import { DiscussionActions } from './DiscussionActions';
+import { DiscussionEditForm } from './DiscussionEditForm';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { extractImageUrls, formatRelativeTime } from './utils';
@@ -181,150 +183,19 @@ const _DiscussionItem: React.FC<{
           </div>
         </div>
 
-        {/* Action Buttons - inline mit Bestätigungen */}
-        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
-          {/* Spoiler Flag Button */}
-          {!isOwner && !discussion.isSpoiler && currentUserId && !showSpoilerConfirm && (
-            <Tooltip title="Als Spoiler melden" arrow>
-              <button
-                onClick={() => setShowSpoilerConfirm(true)}
-                style={{
-                  background: `${currentTheme.status.warning}15`,
-                  border: 'none',
-                  padding: '6px',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  color: currentTheme.status.warning,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Flag style={{ fontSize: '18px' }} />
-              </button>
-            </Tooltip>
-          )}
-
-          {/* Spoiler Confirm - inline */}
-          {showSpoilerConfirm && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span
-                style={{ fontSize: '13px', color: currentTheme.status.warning, fontWeight: 500 }}
-              >
-                Spoiler?
-              </span>
-              <button
-                onClick={handleFlagAsSpoiler}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: currentTheme.status.warning,
-                  color: currentTheme.text.primary,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-              >
-                Ja
-              </button>
-              <button
-                onClick={() => setShowSpoilerConfirm(false)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  background: 'transparent',
-                  color: currentTheme.text.secondary,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                }}
-              >
-                Nein
-              </button>
-            </div>
-          )}
-
-          {/* Edit/Delete Buttons */}
-          {isOwner && !showDeleteConfirm && !showSpoilerConfirm && (
-            <>
-              <Tooltip title="Bearbeiten" arrow>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{
-                    background: `${currentTheme.primary}15`,
-                    border: 'none',
-                    padding: '6px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    color: currentTheme.primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Edit style={{ fontSize: '18px' }} />
-                </button>
-              </Tooltip>
-              <Tooltip title="Löschen" arrow>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  style={{
-                    background: `${currentTheme.status.error}15`,
-                    border: 'none',
-                    padding: '6px',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    color: currentTheme.status.error,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Delete style={{ fontSize: '18px' }} />
-                </button>
-              </Tooltip>
-            </>
-          )}
-
-          {/* Delete Confirm - inline */}
-          {showDeleteConfirm && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '13px', color: currentTheme.status.error, fontWeight: 500 }}>
-                Löschen?
-              </span>
-              <button
-                onClick={handleDelete}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  background: currentTheme.status.error,
-                  color: currentTheme.text.primary,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                }}
-              >
-                Ja
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                style={{
-                  padding: '4px 8px',
-                  borderRadius: '6px',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  background: 'transparent',
-                  color: currentTheme.text.secondary,
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                }}
-              >
-                Nein
-              </button>
-            </div>
-          )}
-        </div>
+        {/* Action Buttons */}
+        <DiscussionActions
+          isOwner={isOwner}
+          isSpoiler={discussion.isSpoiler || false}
+          currentUserId={currentUserId}
+          showDeleteConfirm={showDeleteConfirm}
+          setShowDeleteConfirm={setShowDeleteConfirm}
+          showSpoilerConfirm={showSpoilerConfirm}
+          setShowSpoilerConfirm={setShowSpoilerConfirm}
+          onEdit={() => setIsEditing(true)}
+          onDelete={handleDelete}
+          onFlagAsSpoiler={handleFlagAsSpoiler}
+        />
       </div>
 
       {/* Title */}
@@ -342,130 +213,22 @@ const _DiscussionItem: React.FC<{
 
       {/* Edit Form */}
       {isEditing && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          style={{
-            marginBottom: '16px',
-            padding: '16px',
-            background: currentTheme.background.surface,
-            borderRadius: '12px',
-            border: `2px solid ${currentTheme.primary}40`,
+        <DiscussionEditForm
+          editTitle={editTitle}
+          setEditTitle={setEditTitle}
+          editContent={editContent}
+          setEditContent={setEditContent}
+          editIsSpoiler={editIsSpoiler}
+          setEditIsSpoiler={setEditIsSpoiler}
+          saving={saving}
+          onSave={handleSaveEdit}
+          onCancel={() => {
+            setIsEditing(false);
+            setEditTitle(discussion.title);
+            setEditContent(discussion.content);
+            setEditIsSpoiler(discussion.isSpoiler || false);
           }}
-        >
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            placeholder="Titel"
-            style={{
-              width: '100%',
-              padding: '12px',
-              marginBottom: '10px',
-              borderRadius: '8px',
-              border: `1px solid ${currentTheme.border.default}`,
-              background: currentTheme.background.card,
-              color: currentTheme.text.primary,
-              fontSize: '15px',
-              fontWeight: 600,
-              boxSizing: 'border-box',
-            }}
-          />
-          <textarea
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            placeholder="Inhalt"
-            rows={4}
-            style={{
-              width: '100%',
-              padding: '12px',
-              marginBottom: '10px',
-              borderRadius: '8px',
-              border: `1px solid ${currentTheme.border.default}`,
-              background: currentTheme.background.card,
-              color: currentTheme.text.primary,
-              fontSize: '15px',
-              resize: 'vertical',
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-            }}
-          />
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: '10px',
-            }}
-          >
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                border: `1px solid ${editIsSpoiler ? currentTheme.status.warning + '60' : currentTheme.border.default}`,
-                background: editIsSpoiler ? `${currentTheme.status.warning}15` : 'transparent',
-                color: editIsSpoiler ? currentTheme.status.warning : currentTheme.text.secondary,
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={editIsSpoiler}
-                onChange={(e) => setEditIsSpoiler(e.target.checked)}
-                style={{ display: 'none' }}
-              />
-              <Warning style={{ fontSize: '18px' }} />
-              Spoiler
-            </label>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditTitle(discussion.title);
-                  setEditContent(discussion.content);
-                  setEditIsSpoiler(discussion.isSpoiler || false);
-                }}
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  background: 'transparent',
-                  color: currentTheme.text.secondary,
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                }}
-              >
-                Abbrechen
-              </button>
-              <button
-                onClick={handleSaveEdit}
-                disabled={!editTitle.trim() || saving}
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: editTitle.trim()
-                    ? currentTheme.primary
-                    : currentTheme.background.surface,
-                  color: editTitle.trim() ? currentTheme.text.primary : currentTheme.text.muted,
-                  cursor: editTitle.trim() ? 'pointer' : 'default',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                }}
-              >
-                {saving ? 'Speichern...' : 'Speichern'}
-              </button>
-            </div>
-          </div>
-        </motion.div>
+        />
       )}
 
       {/* Content */}

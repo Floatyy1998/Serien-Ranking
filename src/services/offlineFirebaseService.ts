@@ -1,44 +1,20 @@
 /**
- * 🚀 Offline-First Firebase Cache Service
+ * Offline-First Firebase Cache Service
  * Erweitert useFirebaseCache um Service Worker Integration
  */
 
 import { serviceWorkerManager } from './serviceWorkerManager';
-
-interface OfflineCacheConfig {
-  enableServiceWorker: boolean;
-  enableIndexedDB: boolean;
-  syncOnReconnect: boolean;
-  maxOfflineTime: number; // Milliseconds
-}
-
-interface OfflineQueueItem {
-  id: string;
-  path: string;
-  operation: 'set' | 'update' | 'delete';
-  data: unknown;
-  timestamp: number;
-  retryCount: number;
-}
-
-interface CachedUserData {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  emailVerified: boolean;
-  metadata: unknown;
-  cachedAt: number;
-}
-
-interface FirebaseUserLike {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-  emailVerified: boolean;
-  metadata: unknown;
-}
+import {
+  OfflineCacheConfig,
+  OfflineQueueItem,
+  CachedUserData,
+  FirebaseUserLike,
+} from './offlineFirebaseTypes';
+import {
+  cacheUserToStorage,
+  getCachedUserFromStorage,
+  clearCachedUserFromStorage,
+} from './offlineUserCache';
 
 class OfflineFirebaseService {
   private config: OfflineCacheConfig;
@@ -58,9 +34,6 @@ class OfflineFirebaseService {
     this.init();
   }
 
-  /**
-   * 🔧 Service Initialisierung
-   */
   private async init(): Promise<void> {
     try {
       if (this.config.enableIndexedDB) {
@@ -76,9 +49,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 🗄️ IndexedDB Initialisierung
-   */
   private async initIndexedDB(): Promise<IDBDatabase> {
     if (this.dbPromise) {
       return this.dbPromise;
@@ -125,11 +95,7 @@ class OfflineFirebaseService {
     return this.dbPromise;
   }
 
-  /**
-   * 🎧 Event Listeners Setup
-   */
   private setupEventListeners(): void {
-    // Online/Offline Status
     window.addEventListener('online', () => {
       this.isOnline = true;
       this.processOfflineQueue();
@@ -139,7 +105,6 @@ class OfflineFirebaseService {
       this.isOnline = false;
     });
 
-    // Service Worker Messages
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data.type === 'SYNC_COMPLETE') {
@@ -149,9 +114,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 📦 Firebase Daten mit Offline Support cachen
-   */
   public async cacheData(path: string, data: unknown, ttl: number = 5 * 60 * 1000): Promise<void> {
     try {
       const cacheItem = {
@@ -162,12 +124,10 @@ class OfflineFirebaseService {
         expiresAt: Date.now() + ttl,
       };
 
-      // IndexedDB Cache
       if (this.config.enableIndexedDB) {
         await this.storeInIndexedDB('firebaseCache', cacheItem);
       }
 
-      // Service Worker Cache
       if (this.config.enableServiceWorker) {
         serviceWorkerManager.cacheFirebaseData(path, data);
       }
@@ -176,9 +136,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 🔍 Cached Daten abrufen
-   */
   public async getCachedData(path: string): Promise<unknown | null> {
     try {
       if (!this.config.enableIndexedDB) return null;
@@ -197,9 +154,7 @@ class OfflineFirebaseService {
             return;
           }
 
-          // Check TTL
           if (Date.now() > result.expiresAt) {
-            // Expired, remove from cache
             this.removeCachedData(path);
             resolve(null);
             return;
@@ -215,9 +170,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 🗑️ Cached Daten entfernen
-   */
   public async removeCachedData(path: string): Promise<void> {
     try {
       if (!this.config.enableIndexedDB) return;
@@ -236,9 +188,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 📤 Firebase Operation in Offline Queue
-   */
   public async queueOperation(
     path: string,
     operation: 'set' | 'update' | 'delete',
@@ -255,23 +204,17 @@ class OfflineFirebaseService {
 
     this.offlineQueue.push(queueItem);
 
-    // Speichere in IndexedDB für Persistenz
     if (this.config.enableIndexedDB) {
       await this.storeInIndexedDB('offlineQueue', queueItem);
     }
 
-    // Versuche sofort zu synchronisieren falls online
     if (this.isOnline) {
       await this.processOfflineQueue();
     } else {
-      // Registriere Background Sync
       await serviceWorkerManager.registerBackgroundSync('firebase-sync');
     }
   }
 
-  /**
-   * 🔄 Offline Queue abarbeiten
-   */
   private async processOfflineQueue(): Promise<void> {
     if (!this.isOnline || this.offlineQueue.length === 0) {
       return;
@@ -284,12 +227,8 @@ class OfflineFirebaseService {
         await this.executeQueuedOperation(item);
         processedItems.push(item.id);
       } catch (error) {
-        // console.error(`Operation fehlgeschlagen: ${item.operation} ${item.path}`, error);
-
-        // Erhöhe Retry Count
         item.retryCount += 1;
 
-        // Entferne nach 3 Versuchen oder wenn zu alt
         const isExpired = Date.now() - item.timestamp > this.config.maxOfflineTime;
         if (item.retryCount >= 3 || isExpired) {
           processedItems.push(item.id);
@@ -297,10 +236,8 @@ class OfflineFirebaseService {
       }
     }
 
-    // Entferne verarbeitete Items
     this.offlineQueue = this.offlineQueue.filter((item) => !processedItems.includes(item.id));
 
-    // Update IndexedDB
     if (this.config.enableIndexedDB) {
       for (const itemId of processedItems) {
         await this.removeFromIndexedDB('offlineQueue', itemId);
@@ -308,28 +245,18 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * ⚡ Einzelne Operation ausführen
-   */
   private async executeQueuedOperation(item: OfflineQueueItem): Promise<void> {
-    // Hier würde die tatsächliche Firebase Operation ausgeführt
-    // Diese Implementierung hängt von Ihrer Firebase-Konfiguration ab
-
     const { path, operation, data } = item;
 
     switch (operation) {
       case 'set':
-        // await firebase.database().ref(path).set(data);
         break;
       case 'update':
-        // await firebase.database().ref(path).update(data);
         break;
       case 'delete':
-        // await firebase.database().ref(path).remove();
         break;
     }
 
-    // Nach erfolgreicher Operation: Cache aktualisieren
     if (operation === 'delete') {
       await this.removeCachedData(path);
     } else {
@@ -337,9 +264,6 @@ class OfflineFirebaseService {
     }
   }
 
-  /**
-   * 🔄 Offline Queue aus IndexedDB wiederherstellen
-   */
   private async restoreOfflineQueue(): Promise<void> {
     try {
       if (!this.config.enableIndexedDB) return;
@@ -355,24 +279,17 @@ class OfflineFirebaseService {
       });
 
       this.offlineQueue = items.filter((item) => {
-        // Entferne abgelaufene Items
         return Date.now() - item.timestamp < this.config.maxOfflineTime;
       });
     } catch (error) {
-      // console.error('❌ Offline Queue Wiederherstellung fehlgeschlagen:', error);
+      // console.error('Offline Queue Wiederherstellung fehlgeschlagen:', error);
     }
   }
 
-  /**
-   * ✅ Sync Complete Handler
-   */
   private handleSyncComplete(_results: unknown): void {
     // Hier können Sie UI Updates oder weitere Aktionen durchführen
   }
 
-  /**
-   * 🗄️ IndexedDB Helper Funktionen
-   */
   private async storeInIndexedDB(storeName: string, data: unknown): Promise<void> {
     try {
       const db = await this.initIndexedDB();
@@ -385,7 +302,7 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      // console.error(`❌ IndexedDB Speicherung fehlgeschlagen (${storeName}):`, error);
+      // console.error(`IndexedDB Speicherung fehlgeschlagen (${storeName}):`, error);
     }
   }
 
@@ -401,13 +318,10 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch (error) {
-      // console.error(`❌ IndexedDB Löschung fehlgeschlagen (${storeName}):`, error);
+      // console.error(`IndexedDB Löschung fehlgeschlagen (${storeName}):`, error);
     }
   }
 
-  /**
-   * 📊 Public API für Cache Management
-   */
   public async clearAllCaches(): Promise<void> {
     try {
       if (this.config.enableIndexedDB) {
@@ -425,7 +339,7 @@ class OfflineFirebaseService {
         await serviceWorkerManager.clearCache();
       }
     } catch (error) {
-      // console.error('❌ Cache-Löschung fehlgeschlagen:', error);
+      // console.error('Cache-Löschung fehlgeschlagen:', error);
     }
   }
 
@@ -441,7 +355,6 @@ class OfflineFirebaseService {
     };
 
     try {
-      // IndexedDB Size
       if (this.config.enableIndexedDB) {
         const db = await this.initIndexedDB();
         const transaction = db.transaction(['firebaseCache'], 'readonly');
@@ -456,21 +369,17 @@ class OfflineFirebaseService {
         stats.indexedDBSize = count;
       }
 
-      // Service Worker Size
       if (this.config.enableServiceWorker) {
         const swStats = await serviceWorkerManager.getCacheStatistics();
         stats.serviceWorkerSize = swStats.totalSize;
       }
     } catch (error) {
-      // console.error('❌ Statistik-Abruf fehlgeschlagen:', error);
+      // console.error('Statistik-Abruf fehlgeschlagen:', error);
     }
 
     return stats;
   }
 
-  /**
-   * 🔌 Online/Offline Status
-   */
   public get isOffline(): boolean {
     return !this.isOnline;
   }
@@ -479,85 +388,18 @@ class OfflineFirebaseService {
     return this.offlineQueue.length;
   }
 
-  /**
-   * 👤 User Cache Management
-   */
   public async cacheUser(user: FirebaseUserLike): Promise<void> {
-    if (!user) return;
-
-    try {
-      const userData: CachedUserData = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-        metadata: user.metadata,
-        cachedAt: Date.now(),
-      };
-
-      // Store in localStorage for quick access
-      localStorage.setItem('cachedUser', JSON.stringify(userData));
-
-      // Also store in IndexedDB for persistence
-      if (this.config.enableIndexedDB) {
-        await this.cacheData(`user_${user.uid}`, userData);
-      }
-    } catch (error) {
-      console.error('Failed to cache user:', error);
-    }
+    await cacheUserToStorage(user, this.config.enableIndexedDB, (path, data) =>
+      this.cacheData(path, data)
+    );
   }
 
   public async getCachedUser(): Promise<CachedUserData | null> {
-    try {
-      // Try localStorage first
-      const cached = localStorage.getItem('cachedUser');
-      if (cached) {
-        const userData = JSON.parse(cached);
-        // Check if cache is not too old (24 hours)
-        if (Date.now() - userData.cachedAt < 24 * 60 * 60 * 1000) {
-          return userData;
-        }
-      }
-
-      // Fallback to IndexedDB
-      if (this.config.enableIndexedDB) {
-        const db = await this.initIndexedDB();
-        const transaction = db.transaction(['firebaseCache'], 'readonly');
-        const store = transaction.objectStore('firebaseCache');
-
-        return new Promise((resolve, reject) => {
-          const request = store.get('user_*');
-          request.onsuccess = () => resolve(request.result?.data || null);
-          request.onerror = () => reject(request.error);
-        });
-      }
-
-      return null;
-    } catch (error) {
-      console.error('Failed to get cached user:', error);
-      return null;
-    }
+    return getCachedUserFromStorage(this.config.enableIndexedDB, () => this.initIndexedDB());
   }
 
   public async clearCachedUser(): Promise<void> {
-    try {
-      localStorage.removeItem('cachedUser');
-
-      if (this.config.enableIndexedDB) {
-        const db = await this.initIndexedDB();
-        const transaction = db.transaction(['firebaseCache'], 'readwrite');
-        const store = transaction.objectStore('firebaseCache');
-
-        await new Promise<void>((resolve, reject) => {
-          const request = store.delete('user_*');
-          request.onsuccess = () => resolve();
-          request.onerror = () => reject(request.error);
-        });
-      }
-    } catch (error) {
-      console.error('Failed to clear cached user:', error);
-    }
+    await clearCachedUserFromStorage(this.config.enableIndexedDB, () => this.initIndexedDB());
   }
 }
 
@@ -565,4 +407,4 @@ class OfflineFirebaseService {
 export const offlineFirebaseService = new OfflineFirebaseService();
 
 // Type Exports
-export type { OfflineCacheConfig, OfflineQueueItem };
+export type { OfflineCacheConfig, OfflineQueueItem } from './offlineFirebaseTypes';

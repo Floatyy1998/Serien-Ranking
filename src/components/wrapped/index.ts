@@ -5,7 +5,7 @@
  */
 
 // Base Component
-export { WrappedSlide, SLIDE_THEMES, getSlideThemes } from './WrappedSlide';
+export { WrappedSlide, getSlideThemes } from './WrappedSlide';
 
 // Individual Slides
 export { IntroSlide } from './IntroSlide';

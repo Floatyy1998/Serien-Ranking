@@ -1,7 +1,7 @@
 import { FiberManualRecord, Person } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
@@ -52,7 +52,7 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
       .map(([name, value]) => ({
         name,
         value,
-        color: PAGE_COLORS[name] || `hsl(${(name.length * 47) % 360}, 60%, 60%)`,
+        fill: PAGE_COLORS[name] || `hsl(${(name.length * 47) % 360}, 60%, 60%)`,
       }));
   }, [data.realtimeUsers]);
 
@@ -212,11 +212,8 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
                   dataKey="value"
                   label={({ name, value }) => `${name} (${value})`}
                   labelLine={false}
-                >
-                  {pageDistribution.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="transparent" />
-                  ))}
-                </Pie>
+                  stroke="transparent"
+                />
                 <Tooltip
                   contentStyle={{
                     background: theme.background.surface,
