@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, Warning, Delete } from '@mui/icons-material';
+import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 
@@ -41,6 +41,18 @@ export function BackendErrorsTab({
 
   const handleClear = async () => {
     await firebase.database().ref('admin/backendErrors').remove();
+  };
+
+  const handleCopyAll = () => {
+    const lines = (log?.errors || []).map((e) => {
+      const details = Object.entries(e)
+        .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
+        .map(([k, v]) => `${k}: ${v}`)
+        .join(' | ');
+      return `[${e.context}] ${e.message}${details ? ` (${details})` : ''}`;
+    });
+    const text = `Backend Errors (${log?.runStart || '?'}):\n${lines.join('\n')}`;
+    navigator.clipboard.writeText(text);
   };
 
   if (loading) {
@@ -102,19 +114,34 @@ export function BackendErrorsTab({
           </div>
         </div>
         {hasErrors && (
-          <button
-            onClick={handleClear}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: theme.text.muted,
-              cursor: 'pointer',
-              padding: 4,
-            }}
-            title="Alle Errors löschen"
-          >
-            <Delete style={{ fontSize: 18 }} />
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={handleCopyAll}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: theme.text.muted,
+                cursor: 'pointer',
+                padding: 4,
+              }}
+              title="Alle Errors kopieren"
+            >
+              <ContentCopy style={{ fontSize: 18 }} />
+            </button>
+            <button
+              onClick={handleClear}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: theme.text.muted,
+                cursor: 'pointer',
+                padding: 4,
+              }}
+              title="Alle Errors löschen"
+            >
+              <Delete style={{ fontSize: 18 }} />
+            </button>
+          </div>
         )}
       </div>
 
@@ -190,9 +217,35 @@ export function BackendErrorsTab({
                       color: theme.text.primary,
                       marginBottom: 4,
                       fontFamily: 'monospace',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 8,
                     }}
                   >
-                    {err.message}
+                    <span>{err.message}</span>
+                    <button
+                      onClick={() => {
+                        const d = Object.entries(err)
+                          .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
+                          .map(([k, v]) => `${k}: ${v}`)
+                          .join(' | ');
+                        navigator.clipboard.writeText(
+                          `[${err.context}] ${err.message}${d ? ` (${d})` : ''}`
+                        );
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: theme.text.muted,
+                        cursor: 'pointer',
+                        padding: 2,
+                        flexShrink: 0,
+                      }}
+                      title="Fehler kopieren"
+                    >
+                      <ContentCopy style={{ fontSize: 13 }} />
+                    </button>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span style={{ fontSize: 10, color: theme.text.muted }}>
@@ -201,6 +254,7 @@ export function BackendErrorsTab({
                     {details.map(([key, val]) => (
                       <span
                         key={key}
+                        onClick={() => navigator.clipboard.writeText(String(val))}
                         style={{
                           fontSize: 10,
                           color: '#4cc9f0',
@@ -208,7 +262,9 @@ export function BackendErrorsTab({
                           padding: '1px 6px',
                           borderRadius: 4,
                           fontFamily: 'monospace',
+                          cursor: 'pointer',
                         }}
+                        title={`"${val}" kopieren`}
                       >
                         {key}: {String(val)}
                       </span>
