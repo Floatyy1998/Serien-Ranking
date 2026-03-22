@@ -1,5 +1,6 @@
 import { Info } from '@mui/icons-material';
 import { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Movie } from '../../types/Movie';
 
 interface MovieInfoTabProps {
@@ -9,6 +10,7 @@ interface MovieInfoTabProps {
 }
 
 export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTabProps) => {
+  const { currentTheme } = useTheme();
   const mobileClass = isMobile ? '--mobile' : '';
 
   return (
@@ -16,11 +18,17 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
       {/* Overview */}
       {(movie.beschreibung || movie.overview || tmdbOverview) && (
         <div className={`md-info__section md-info__section${mobileClass}`}>
-          <h3 className={`md-info__heading md-info__heading${mobileClass}`}>
-            <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />
+          <h3
+            className={`md-info__heading md-info__heading${mobileClass}`}
+            style={{ color: currentTheme.text.primary }}
+          >
+            <Info style={{ fontSize: isMobile ? '16px' : '18px', color: currentTheme.accent }} />
             Handlung
           </h3>
-          <p className={`md-info__text md-info__text${mobileClass}`}>
+          <p
+            className={`md-info__text md-info__text${mobileClass}`}
+            style={{ color: currentTheme.text.secondary }}
+          >
             {movie.beschreibung || movie.overview || tmdbOverview}
           </p>
         </div>
@@ -34,6 +42,7 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
               fontSize: isMobile ? '14px' : '16px',
               fontWeight: 600,
               marginBottom: isMobile ? '8px' : '12px',
+              color: currentTheme.text.primary,
             }}
           >
             Genres
@@ -52,8 +61,10 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
       {movie.status && (
         <div className="md-info-grid">
           <div className="md-info-card">
-            <p className="md-info-card__label">Status</p>
-            <p className="md-info-card__value">
+            <p className="md-info-card__label" style={{ color: currentTheme.text.muted }}>
+              Status
+            </p>
+            <p className="md-info-card__value" style={{ color: currentTheme.text.primary }}>
               {movie.status === 'Released' ? 'Veröffentlicht' : movie.status}
             </p>
           </div>

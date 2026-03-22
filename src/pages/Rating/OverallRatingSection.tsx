@@ -8,14 +8,6 @@ import {
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 
-const ratingEmojis = [
-  { value: 2, icon: <SentimentVeryDissatisfied />, label: 'Schrecklich', color: '#e74c3c' },
-  { value: 4, icon: <SentimentDissatisfied />, label: 'Schlecht', color: '#ff6b6b' },
-  { value: 6, icon: <SentimentNeutral />, label: 'Okay', color: '#ffd43b' },
-  { value: 8, icon: <SentimentSatisfied />, label: 'Gut', color: '#4cd137' },
-  { value: 10, icon: <SentimentVerySatisfied />, label: 'Meisterwerk', color: '#00d2d3' },
-];
-
 interface OverallRatingSectionProps {
   overallRating: number;
   onRatingChange: (value: number) => void;
@@ -26,6 +18,34 @@ export const OverallRatingSection = ({
   onRatingChange,
 }: OverallRatingSectionProps) => {
   const { currentTheme } = useTheme();
+
+  const ratingEmojis = [
+    {
+      value: 2,
+      icon: <SentimentVeryDissatisfied />,
+      label: 'Schrecklich',
+      color: currentTheme.status?.error || '#e74c3c',
+    },
+    {
+      value: 4,
+      icon: <SentimentDissatisfied />,
+      label: 'Schlecht',
+      color: currentTheme.status?.error || '#ff6b6b',
+    },
+    { value: 6, icon: <SentimentNeutral />, label: 'Okay', color: currentTheme.accent },
+    {
+      value: 8,
+      icon: <SentimentSatisfied />,
+      label: 'Gut',
+      color: currentTheme.status?.success || '#4cd137',
+    },
+    {
+      value: 10,
+      icon: <SentimentVerySatisfied />,
+      label: 'Meisterwerk',
+      color: currentTheme.primary,
+    },
+  ];
 
   return (
     <motion.div

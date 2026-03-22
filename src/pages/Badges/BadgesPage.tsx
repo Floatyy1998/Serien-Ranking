@@ -279,8 +279,8 @@ export const BadgesPage = () => {
               onClick={checkForNewBadges}
               disabled={loading}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
-                color: '#fff',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                color: currentTheme.text.secondary,
                 border: 'none',
                 borderRadius: '12px',
                 padding: '10px 16px',
@@ -342,7 +342,7 @@ export const BadgesPage = () => {
           <ProgressBar
             value={progressPercent}
             color={currentTheme.status.warning}
-            toColor="#fbbf24"
+            toColor={currentTheme.accent}
           />
           <p style={{ fontSize: '13px', color: currentTheme.text.muted, marginTop: '8px' }}>
             {earnedBadges.length} von {BADGE_DEFINITIONS.length} Badges freigeschaltet
@@ -376,17 +376,17 @@ export const BadgesPage = () => {
                 className={`mobile-badges-tab ${isActive ? 'active' : ''}`}
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                     : hasEarned
                       ? `${currentTheme.primary}10`
-                      : currentTheme.background.surface,
+                      : `rgba(255,255,255,0.05)`,
                   border: isActive
                     ? 'none'
                     : hasEarned
                       ? `1px solid ${currentTheme.primary}30`
                       : `1px solid ${currentTheme.border.default}`,
                   color: isActive
-                    ? 'white'
+                    ? currentTheme.text.secondary
                     : hasEarned
                       ? currentTheme.primary
                       : currentTheme.text.muted,
@@ -400,7 +400,7 @@ export const BadgesPage = () => {
                     className="mobile-badges-tab-count"
                     style={{
                       color: isActive
-                        ? 'rgba(255,255,255,0.8)'
+                        ? currentTheme.text.secondary
                         : hasEarned
                           ? currentTheme.primary
                           : currentTheme.text.muted,
@@ -442,7 +442,7 @@ export const BadgesPage = () => {
                 <ProgressBar
                   value={(loadingProgress.current / loadingProgress.total) * 100}
                   color={currentTheme.status.warning}
-                  toColor="#fbbf24"
+                  toColor={currentTheme.accent}
                   height={6}
                 />
                 <p

@@ -336,8 +336,8 @@ export const HomePage: React.FC = () => {
             label: 'Weiterschauen',
             subtitle: `${totalSeriesWithUnwatched} Serien`,
             path: '/watchlist',
-            bg: 'linear-gradient(135deg, rgba(0, 212, 170, 0.15) 0%, rgba(0, 180, 216, 0.15) 100%)',
-            border: '1px solid rgba(0, 212, 170, 0.25)',
+            bg: `linear-gradient(135deg, ${currentTheme.primary}26 0%, ${currentTheme.primary}26 100%)`,
+            border: `1px solid ${currentTheme.primary}40`,
             color: currentTheme.status.success,
           },
           discover: {
@@ -676,7 +676,7 @@ export const HomePage: React.FC = () => {
             path: '/leaderboard',
             bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
             border: '1px solid rgba(245, 158, 11, 0.2)',
-            color: '#f59e0b',
+            color: currentTheme.status?.warning || '#f59e0b',
           },
           badges: {
             icon: <AutoAwesome style={{ fontSize: '18px' }} />,
@@ -1052,7 +1052,8 @@ function CountdownBanner({
   totalCount: number;
   navigate: (path: string) => void;
 }) {
-  const countdownColor = '#a855f7';
+  const { currentTheme: _ct } = useTheme();
+  const countdownColor = _ct.accent;
   const daysText =
     countdown.daysUntil === 0
       ? 'Heute!'
@@ -1149,7 +1150,7 @@ function CountdownBanner({
             fontSize: '15px',
             fontWeight: 700,
             fontFamily: 'var(--font-display)',
-            color: '#fff',
+            color: _ct.text.secondary,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -1181,7 +1182,7 @@ function CountdownBanner({
             style={{
               fontSize: '11px',
               fontWeight: 800,
-              color: '#fff',
+              color: _ct.text.secondary,
               lineHeight: 1,
               textTransform: 'uppercase',
               letterSpacing: '0.5px',
@@ -1191,7 +1192,14 @@ function CountdownBanner({
           </span>
         ) : (
           <>
-            <span style={{ fontSize: '16px', fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+            <span
+              style={{
+                fontSize: '16px',
+                fontWeight: 800,
+                color: _ct.text.secondary,
+                lineHeight: 1,
+              }}
+            >
               {countdown.daysUntil}
             </span>
             <span

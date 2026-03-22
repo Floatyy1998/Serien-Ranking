@@ -9,12 +9,8 @@ import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/petConstants';
 import { toLocalDateString } from '../../lib/date/date.utils';
 
-const STREAK_COLORS = {
-  active: '#4caf50',
-  at_risk: '#ffa726',
-  shieldable: '#ffa726',
-  lost: '', // uses currentTheme.text.muted
-} as const;
+// Streak colors are resolved at render time from currentTheme
+// active = success, at_risk/shieldable = warning, lost = muted
 
 interface WatchStreakData {
   currentStreak: number;
@@ -186,7 +182,13 @@ export const WatchStreakCard: React.FC = () => {
   const shieldEligible = canUseShield && !shieldDisabledReason;
   const showShieldButton = canUseShield && pet;
 
-  const flameColor = STREAK_COLORS[status] || currentTheme.text.muted;
+  const streakColors = {
+    active: currentTheme.status?.success || '#22c55e',
+    at_risk: currentTheme.status?.warning || '#f59e0b',
+    shieldable: currentTheme.status?.warning || '#f59e0b',
+    lost: currentTheme.text.muted,
+  };
+  const flameColor = streakColors[status] || currentTheme.text.muted;
 
   const shieldColor = '#5c6bc0';
 
@@ -198,9 +200,9 @@ export const WatchStreakCard: React.FC = () => {
           style={{
             padding: '12px 14px',
             borderRadius: showInfo ? '14px 14px 0 0' : '14px',
-            background: `linear-gradient(135deg, ${flameColor}15, ${flameColor}05)`,
-            border: `1px solid ${flameColor}30`,
-            borderBottom: showInfo ? 'none' : `1px solid ${flameColor}30`,
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
+            borderBottom: showInfo ? 'none' : `1px solid ${currentTheme.border.default}`,
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -391,8 +393,8 @@ export const WatchStreakCard: React.FC = () => {
                 }}
               >
                 {[
-                  { color: STREAK_COLORS.active, label: 'Heute geschaut' },
-                  { color: STREAK_COLORS.at_risk, label: 'Schau heute, sonst bricht die Streak' },
+                  { color: streakColors.active, label: 'Heute geschaut' },
+                  { color: streakColors.at_risk, label: 'Schau heute, sonst bricht die Streak' },
                   { color: currentTheme.text.muted, label: 'Streak verloren' },
                 ].map(({ color, label }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -550,7 +552,7 @@ export const WatchStreakCard: React.FC = () => {
                       paddingTop: 8,
                       borderTop: `1px solid ${currentTheme.text.muted}20`,
                       fontSize: 12,
-                      color: '#ffa726',
+                      color: currentTheme.status?.warning || '#f59e0b',
                     }}
                   >
                     {pet.name} wird auf Level {pet.level - 1} fallen

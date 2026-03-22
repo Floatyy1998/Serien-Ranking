@@ -54,8 +54,8 @@ export const LoadingScreen = ({ progress }: LoadingScreenProps) => {
               <AutoAwesome
                 style={{
                   fontSize: '24px',
-                  color: currentTheme.primary,
-                  WebkitTextFillColor: currentTheme.primary,
+                  color: currentTheme.accent,
+                  WebkitTextFillColor: currentTheme.accent,
                 }}
               />
               Actor Universe

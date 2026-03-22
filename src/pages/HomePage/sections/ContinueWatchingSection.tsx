@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { calculateWatchingPace, formatPaceLine } from '../../../lib/paceCalculation';
+import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import type { Series } from '../../../types/Series';
 
 interface ContinueWatchingItem {
@@ -59,7 +59,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
 }: ContinueWatchingSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.status.success;
+  const accentColor = currentTheme.accent;
 
   if (items.length === 0) return null;
 
@@ -170,7 +170,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                             top: 0,
                             height: '100%',
                             width: `${item.progress}%`,
-                            background: `linear-gradient(90deg, ${currentTheme.primary}, ${accentColor})`,
+                            background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                             transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         />

@@ -19,7 +19,7 @@ export const getRarityColor = (rarity: string, theme: ThemeColors): string => {
     case 'rare':
       return theme.primary;
     case 'epic':
-      return 'var(--theme-secondary-gradient, #8b5cf6)';
+      return theme.accent || theme.primary;
     case 'legendary':
       return theme.status.warning;
     default:
@@ -143,7 +143,7 @@ export const BadgeCard = React.memo(
                 width: '24px',
                 height: '24px',
                 borderRadius: '50%',
-                background: `linear-gradient(135deg, ${theme.status.success}, #22c55e)`,
+                background: `linear-gradient(135deg, ${theme.status.success}, ${theme.status.success}cc)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -161,7 +161,7 @@ export const BadgeCard = React.memo(
                 background: `linear-gradient(135deg, ${badge.color}, ${badge.color}cc)`,
                 fontSize: '9px',
                 fontWeight: 700,
-                color: 'white',
+                color: theme.text.secondary,
               }}
             >
               NEXT
@@ -195,7 +195,7 @@ export const BadgeCard = React.memo(
               badgeId={badge.id}
               sx={{
                 fontSize: '2.8rem',
-                color: earned ? 'white' : theme.text.muted,
+                color: earned ? theme.text.secondary : theme.text.muted,
                 opacity: earned ? 1 : 0.5,
               }}
             />

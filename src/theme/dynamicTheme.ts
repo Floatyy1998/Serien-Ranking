@@ -15,6 +15,7 @@ export interface UserThemeConfig {
   backgroundColor: string;
   surfaceColor?: string;
   accentColor?: string;
+  textColor?: string;
   backgroundImage?: string;
   backgroundImageOpacity?: number;
   backgroundImageBlur?: number;
@@ -26,7 +27,7 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   // Smarte Normalisierung: korrigiert schlechte Farbkombinationen für die Darstellung.
   // Die originalen gespeicherten Werte in localStorage/Firebase bleiben unverändert.
   const normalized = normalizeThemeColors(config);
-  const { primaryColor, backgroundColor, surfaceColor, accentColor } = normalized;
+  const { primaryColor, backgroundColor, surfaceColor, accentColor, textColor } = normalized;
 
   // Automatische Palette-Generierung
   const primaryPalette = generateColorPalette(primaryColor);
@@ -34,7 +35,6 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
   // Automatische Surface-Farbe falls nicht angegeben
   const autoSurfaceColor = surfaceColor || lightenColor(backgroundColor, 0.1);
-  const surfaceTextColors = createAccessibleTextColors(autoSurfaceColor);
 
   // Accent-Farbe als Fallback auf aufgehellte Primärfarbe
   const finalAccentColor = accentColor || lightenColor(primaryColor, 0.2);
@@ -74,15 +74,18 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       },
     },
 
-    // Automatische Textfarben basierend auf Kontrast
+    /**
+     * Semantische Textfarben:
+     * - primary: Accent/highlight color (the theme's primary color)
+     * - secondary: Main readable body text color
+     * - muted: Dimmed/secondary text color
+     * - accent: Secondary accent for special highlights
+     */
     text: {
       primary: primaryColor,
-      secondary: backgroundTextColors.secondary,
-      muted: backgroundTextColors.muted,
-      onPrimary: primaryPalette.textOnPrimary,
-      onSurface: surfaceTextColors.primary,
-      white: '#ffffff',
-      black: '#000000',
+      secondary: textColor || backgroundTextColors.secondary,
+      muted: textColor ? withOpacity(textColor, 0.6) : backgroundTextColors.muted,
+      accent: finalAccentColor,
     },
 
     // Statusfarben - bleiben konsistent aber mit Theme-Anpassung
@@ -163,6 +166,7 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
     backgroundColor: config.backgroundColor || defaultThemeConfig.backgroundColor,
     surfaceColor: config.surfaceColor || defaultThemeConfig.surfaceColor,
     accentColor: config.accentColor || defaultThemeConfig.accentColor,
+    textColor: config.textColor || undefined,
     backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
     backgroundImageOpacity:
       config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,

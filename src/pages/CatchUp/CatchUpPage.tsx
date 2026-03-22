@@ -107,8 +107,8 @@ const HeaderBadge: React.FC<{ count: number }> = ({ count }) => {
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       className="cu-header-badge"
       style={{
-        background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.primary}08)`,
-        border: `1px solid ${currentTheme.primary}30`,
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
         color: currentTheme.primary,
         boxShadow: `0 0 20px ${currentTheme.primary}10`,
       }}

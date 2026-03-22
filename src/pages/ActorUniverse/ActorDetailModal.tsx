@@ -66,7 +66,7 @@ export const ActorDetailModal = ({
                 style={{
                   background: selectedActor.profilePath
                     ? `url(${TMDB_IMAGE_BASE}${selectedActor.profilePath})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                    : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   borderColor: currentTheme.primary,
@@ -90,10 +90,10 @@ export const ActorDetailModal = ({
                 <div
                   className="au-modal-series-badge"
                   style={{
-                    background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
                   }}
                 >
-                  <Star style={{ fontSize: '18px', color: '#ffc107' }} />
+                  <Star style={{ fontSize: '18px', color: currentTheme.accent }} />
                   <span style={{ fontSize: '15px', fontWeight: 600 }}>
                     {selectedActor.seriesCount} Serien
                   </span>
@@ -102,7 +102,7 @@ export const ActorDetailModal = ({
             </div>
 
             {/* Series list */}
-            <h2 className="au-modal-section-title" style={{ color: currentTheme.text.muted }}>
+            <h2 className="au-modal-section-title" style={{ color: currentTheme.text.primary }}>
               In deiner Sammlung
             </h2>
             <div className="au-modal-series-list">
@@ -125,7 +125,7 @@ export const ActorDetailModal = ({
                     style={{
                       background: series.poster
                         ? `url(https://image.tmdb.org/t/p/w92${series.poster})`
-                        : `linear-gradient(135deg, ${currentTheme.primary}40, var(--theme-secondary-gradient, #8b5cf6)40)`,
+                        : `linear-gradient(135deg, ${currentTheme.primary}40, ${currentTheme.accent}40)`,
                       backgroundSize: 'cover',
                       boxShadow: `0 4px 12px ${currentTheme.background.default}60`,
                     }}
@@ -151,7 +151,7 @@ export const ActorDetailModal = ({
             {/* Recommendations */}
             {selectedActor.recommendations && selectedActor.recommendations.length > 0 && (
               <>
-                <h2 className="au-modal-section-title" style={{ color: currentTheme.text.muted }}>
+                <h2 className="au-modal-section-title" style={{ color: currentTheme.text.primary }}>
                   Weitere Serien mit {selectedActor.name.split(' ')[0]}
                 </h2>
                 <HorizontalScrollContainer gap={14}>
@@ -170,14 +170,14 @@ export const ActorDetailModal = ({
                         style={{
                           background: rec.poster
                             ? `url(${TMDB_IMAGE_BASE}${rec.poster})`
-                            : `linear-gradient(135deg, ${currentTheme.primary}40, var(--theme-secondary-gradient, #8b5cf6)40)`,
+                            : `linear-gradient(135deg, ${currentTheme.primary}40, ${currentTheme.accent}40)`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                           boxShadow: `0 6px 16px ${currentTheme.background.default}60`,
                         }}
                       >
                         <div className="au-modal-rec-rating">
-                          <Star style={{ fontSize: '12px', color: '#ffc107' }} />
+                          <Star style={{ fontSize: '12px', color: currentTheme.accent }} />
                           <span className="au-modal-rec-rating-text">
                             {rec.voteAverage.toFixed(1)}
                           </span>
@@ -186,7 +186,7 @@ export const ActorDetailModal = ({
                           whileHover={{ scale: 1.1 }}
                           className="au-modal-rec-add-btn"
                           style={{
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                             boxShadow: `0 4px 12px ${currentTheme.primary}50`,
                           }}
                         >
@@ -210,7 +210,7 @@ export const ActorDetailModal = ({
               <>
                 <h2
                   className="au-modal-section-title au-modal-section-title--connected"
-                  style={{ color: currentTheme.text.muted }}
+                  style={{ color: currentTheme.text.primary }}
                 >
                   Spielt zusammen mit
                 </h2>
@@ -230,7 +230,7 @@ export const ActorDetailModal = ({
                           onClick={() => onSelectActor(other)}
                           className="au-modal-connection-chip"
                           style={{
-                            background: `linear-gradient(135deg, ${currentTheme.primary}25, var(--theme-secondary-gradient, #8b5cf6)25)`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}25, ${currentTheme.accent}25)`,
                             borderColor: `${currentTheme.primary}30`,
                           }}
                         >
@@ -239,7 +239,7 @@ export const ActorDetailModal = ({
                             style={{
                               background: other.profilePath
                                 ? `url(${TMDB_IMAGE_BASE}${other.profilePath})`
-                                : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                               backgroundSize: 'cover',
                               borderColor: `${currentTheme.primary}50`,
                             }}

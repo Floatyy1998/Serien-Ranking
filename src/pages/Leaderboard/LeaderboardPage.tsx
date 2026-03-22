@@ -89,13 +89,13 @@ export const LeaderboardPage = () => {
               width: 40,
               height: 40,
               borderRadius: '50%',
-              background: 'rgba(245, 158, 11, 0.1)',
+              background: `${currentTheme.accent}18`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <EmojiEvents style={{ fontSize: 24, color: '#f59e0b' }} />
+            <EmojiEvents style={{ fontSize: 24, color: currentTheme.accent }} />
           </motion.div>
         </motion.div>
         <div style={{ textAlign: 'center' }}>
@@ -131,8 +131,8 @@ export const LeaderboardPage = () => {
           <BackButton />
           <GradientText
             as="h1"
-            from="#f59e0b"
-            to="#ef4444"
+            from={currentTheme.accent}
+            to={currentTheme.status?.error || '#ef4444'}
             style={{ margin: 0, fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)' }}
           >
             Rangliste
@@ -143,7 +143,7 @@ export const LeaderboardPage = () => {
 
         <div className="lb-empty">
           <div className="lb-empty-icon">
-            <Group style={{ fontSize: 36, color: '#f59e0b' }} />
+            <Group style={{ fontSize: 36, color: currentTheme.accent }} />
           </div>
           <h2
             style={{
@@ -169,8 +169,8 @@ export const LeaderboardPage = () => {
               padding: '12px 24px',
               borderRadius: 12,
               border: 'none',
-              background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-              color: 'white',
+              background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`,
+              color: currentTheme.text.secondary,
               fontSize: 14,
               fontWeight: 700,
               cursor: 'pointer',
@@ -211,8 +211,8 @@ export const LeaderboardPage = () => {
           <div style={{ flex: 1 }}>
             <GradientText
               as="h1"
-              from="#f59e0b"
-              to="#ef4444"
+              from={currentTheme.accent}
+              to={currentTheme.status?.error || '#ef4444'}
               style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
             >
               Rangliste
@@ -245,7 +245,7 @@ export const LeaderboardPage = () => {
                     ? undefined
                     : {
                         background: 'rgba(255, 255, 255, 0.05)',
-                        color: currentTheme.text.secondary,
+                        color: currentTheme.text.muted,
                       }
                 }
               >
@@ -279,6 +279,7 @@ const ModeToggle = React.memo(function ModeToggle({
   mode: 'friends' | 'global';
   onModeChange: (m: 'friends' | 'global') => void;
 }) {
+  const { currentTheme } = useTheme();
   const options = [
     { id: 'friends' as const, label: 'Freunde', icon: <Group sx={{ fontSize: 16 }} /> },
     { id: 'global' as const, label: 'Alle', icon: <Public sx={{ fontSize: 16 }} /> },
@@ -295,9 +296,11 @@ const ModeToggle = React.memo(function ModeToggle({
             onClick={() => onModeChange(opt.id)}
             className="lb-mode-btn"
             style={{
-              background: isActive ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : 'transparent',
-              color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
-              boxShadow: isActive ? '0 2px 8px rgba(245, 158, 11, 0.4)' : 'none',
+              background: isActive
+                ? `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`
+                : 'transparent',
+              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
+              boxShadow: isActive ? `0 2px 8px ${currentTheme.accent}66` : 'none',
             }}
           >
             {opt.icon}

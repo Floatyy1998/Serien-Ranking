@@ -121,7 +121,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <Tv style={{ color: 'white', fontSize: 26 }} />
+                <Tv style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 28, fontWeight: 800 }}>
                 {data.totalEpisodes}
@@ -145,7 +145,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <LocalMovies style={{ color: 'white', fontSize: 26 }} />
+                <LocalMovies style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.movies, fontSize: 28, fontWeight: 800 }}>
                 {data.totalMovies}
@@ -169,7 +169,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <Schedule style={{ color: 'white', fontSize: 26 }} />
+                <Schedule style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.time, fontSize: 28, fontWeight: 800 }}>
                 {totalHours}h

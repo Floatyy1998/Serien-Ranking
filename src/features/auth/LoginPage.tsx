@@ -21,10 +21,12 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
+import { useTheme } from '../../contexts/ThemeContext';
 import { trackLogin } from '../../firebase/analytics';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
+  const { currentTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -102,8 +104,6 @@ export const LoginPage = () => {
           <Box sx={{ mb: 6, textAlign: 'center' }}>
             <GradientText
               as="h1"
-              from="#00fed7"
-              to="#ff0080"
               style={{
                 fontSize: '3rem',
                 fontWeight: 900,
@@ -142,7 +142,7 @@ export const LoginPage = () => {
                 sx={{
                   mb: 3,
                   background: 'rgba(211, 47, 47, 0.1)',
-                  color: '#ff5252',
+                  color: currentTheme.status?.error || '#ff5252',
                 }}
               >
                 {error}
@@ -170,7 +170,7 @@ export const LoginPage = () => {
                 sx={{
                   mb: 2,
                   '& .MuiOutlinedInput-root': {
-                    color: 'white',
+                    color: currentTheme.text.secondary,
                     '& fieldset': {
                       borderColor: 'rgba(255, 255, 255, 0.2)',
                     },
@@ -178,7 +178,7 @@ export const LoginPage = () => {
                       borderColor: 'rgba(255, 255, 255, 0.3)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00fed7',
+                      borderColor: currentTheme.primary,
                     },
                   },
                   '& .MuiInputLabel-root': {
@@ -225,7 +225,7 @@ export const LoginPage = () => {
                 sx={{
                   mb: 4,
                   '& .MuiOutlinedInput-root': {
-                    color: 'white',
+                    color: currentTheme.text.secondary,
                     '& fieldset': {
                       borderColor: 'rgba(255, 255, 255, 0.2)',
                     },
@@ -233,7 +233,7 @@ export const LoginPage = () => {
                       borderColor: 'rgba(255, 255, 255, 0.3)',
                     },
                     '&.Mui-focused fieldset': {
-                      borderColor: '#00fed7',
+                      borderColor: currentTheme.primary,
                     },
                   },
                   '& .MuiInputLabel-root': {
@@ -251,8 +251,8 @@ export const LoginPage = () => {
                 endIcon={!loading && <ArrowForward />}
                 sx={{
                   py: 1.5,
-                  background: 'linear-gradient(135deg, #00fed7 0%, #00c9b7 100%)',
-                  color: '#000',
+                  background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.primary}cc 100%)`,
+                  color: currentTheme.background.default,
                   fontWeight: 700,
                   fontSize: '1.1rem',
                   borderRadius: '14px',
@@ -261,9 +261,9 @@ export const LoginPage = () => {
                     '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #00fed7 0%, #00c9b7 100%)',
+                    background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.primary}cc 100%)`,
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(0, 254, 215, 0.35)',
+                    boxShadow: `0 8px 24px ${currentTheme.primary}59`,
                   },
                   '&:disabled': {
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -282,7 +282,7 @@ export const LoginPage = () => {
               <Link
                 to="/register"
                 style={{
-                  color: '#00fed7',
+                  color: currentTheme.primary,
                   textDecoration: 'none',
                   fontWeight: 600,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

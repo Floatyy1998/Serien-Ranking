@@ -80,7 +80,7 @@ export const MovieHeroSection = memo(
                   background: isAdding
                     ? `${currentTheme.status.success}88`
                     : `${currentTheme.status.success}CC`,
-                  color: currentTheme.text.primary,
+                  color: currentTheme.text.secondary,
                 }}
               >
                 {isAdding ? '...' : '+'}
@@ -98,7 +98,7 @@ export const MovieHeroSection = memo(
               {movie.release_date && <span>{new Date(movie.release_date).getFullYear()}</span>}
               {movie.runtime && <span>&bull; {formatRuntime(movie.runtime)}</span>}
               {averageRating > 0 && (
-                <span style={{ color: '#ffd700' }}>&bull; &#11088; {averageRating}</span>
+                <span style={{ color: currentTheme.accent }}>&bull; &#11088; {averageRating}</span>
               )}
               {movie && (
                 <>

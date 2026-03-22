@@ -42,10 +42,11 @@ export const PetSelector = memo(function PetSelector({
           style={{
             background:
               idx === selectedPetIndex
-                ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
             border: idx === selectedPetIndex ? 'none' : `1px solid ${currentTheme.border.default}`,
-            color: idx === selectedPetIndex ? '#fff' : currentTheme.text.primary,
+            color:
+              idx === selectedPetIndex ? currentTheme.text.secondary : currentTheme.text.primary,
             boxShadow: idx === selectedPetIndex ? `0 4px 15px ${currentTheme.primary}40` : 'none',
           }}
         >
@@ -63,9 +64,9 @@ export const PetSelector = memo(function PetSelector({
             onClick={onOpenCreateModal}
             className="pet-selector-add-btn"
             style={{
-              background: `linear-gradient(135deg, #ec4899, var(--theme-secondary-gradient, #8b5cf6))`,
-              color: '#fff',
-              boxShadow: '0 4px 15px rgba(236,72,153,0.35)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              color: currentTheme.text.secondary,
+              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
             }}
           >
             +

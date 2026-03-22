@@ -27,18 +27,18 @@ export const AppearanceSection = memo(
           onClick={onNavigateTheme}
           className="settings-nav-btn"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
-            border: `1px solid ${currentTheme.primary}30`,
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
             color: currentTheme.text.primary,
           }}
         >
           <div
             className="settings-nav-btn-icon"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             }}
           >
-            <Palette style={{ fontSize: '24px', color: 'white' }} />
+            <Palette style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
           </div>
           <div className="settings-nav-btn-text">
             <h2 className="settings-nav-btn-title">Design & Themes</h2>
@@ -58,16 +58,18 @@ export const AppearanceSection = memo(
           onClick={onNavigateLayout}
           className="settings-nav-btn"
           style={{
-            background: `linear-gradient(135deg, #a855f715, #a855f708)`,
-            border: `1px solid #a855f730`,
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
             color: currentTheme.text.primary,
           }}
         >
           <div
             className="settings-nav-btn-icon"
-            style={{ background: `linear-gradient(135deg, #a855f7, #6366f1)` }}
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.primary})`,
+            }}
           >
-            <ViewQuilt style={{ fontSize: '24px', color: 'white' }} />
+            <ViewQuilt style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
           </div>
           <div className="settings-nav-btn-text">
             <h2 className="settings-nav-btn-title">Homepage Layout</h2>

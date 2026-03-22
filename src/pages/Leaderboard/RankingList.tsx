@@ -38,7 +38,7 @@ export const RankingList = React.memo(function RankingList({
           style={{
             background: entry.isCurrentUser
               ? `${currentTheme.primary}18`
-              : 'rgba(255, 255, 255, 0.04)',
+              : currentTheme.background.surface,
             border: entry.isCurrentUser ? `1px solid ${currentTheme.primary}40` : undefined,
             cursor: entry.isCurrentUser ? 'default' : 'pointer',
           }}

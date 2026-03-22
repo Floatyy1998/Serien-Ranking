@@ -244,7 +244,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               borderRadius: '12px',
               border: 'none',
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
-              color: '#fff',
+              color: currentTheme.text.secondary,
               cursor: 'pointer',
               fontSize: '15px',
               fontWeight: 700,

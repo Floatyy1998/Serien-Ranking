@@ -45,11 +45,10 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
         gap: '6px',
         position: 'relative',
         zIndex: 5,
-        background:
-          'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)',
+        background: `${currentTheme.text.muted}08`,
         borderRadius: '18px',
         padding: '4px',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
+        border: `1px solid ${currentTheme.border.default}`,
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         ...style,
@@ -72,7 +71,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
               background: 'transparent',
               border: 'none',
               borderRadius: '14px',
-              color: isActive ? 'white' : currentTheme.text.muted,
+              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
               fontSize: '13.5px',
               fontWeight: isActive ? 700 : 600,
               letterSpacing: isActive ? '-0.01em' : '0',
@@ -94,8 +93,8 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
                   position: 'absolute',
                   inset: 0,
                   borderRadius: '14px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, var(--theme-secondary-gradient, #8b5cf6)))`,
-                  boxShadow: `0 4px 24px ${currentTheme.primary}35, 0 0 40px ${currentTheme.primary}12, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
+                  boxShadow: `0 4px 24px ${currentTheme.primary}35, 0 0 40px ${currentTheme.accent || currentTheme.primary}12, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
                   zIndex: -1,
                 }}
                 transition={{

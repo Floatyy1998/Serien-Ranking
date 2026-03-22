@@ -39,7 +39,7 @@ export const HomeLayoutPage = () => {
           className="hl-toolbar"
         >
           <div className="hl-toolbar-left">
-            <ViewQuilt className="hl-toolbar-icon" style={{ color: currentTheme.primary }} />
+            <ViewQuilt className="hl-toolbar-icon" style={{ color: currentTheme.accent }} />
             <h2 className="hl-toolbar-title" style={{ color: currentTheme.text.primary }}>
               Sektionen
             </h2>

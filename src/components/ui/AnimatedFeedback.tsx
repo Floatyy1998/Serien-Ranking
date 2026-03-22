@@ -1,5 +1,6 @@
 import React from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface AnimatedFeedbackProps {
   type: 'success' | 'error' | 'warning';
@@ -22,6 +23,11 @@ export const AnimatedFeedback: React.FC<AnimatedFeedbackProps> = ({
   message,
   size = 48,
 }) => {
+  const { currentTheme } = useTheme();
+  const successColor = currentTheme.status?.success ?? '#4ade80';
+  const errorColor = currentTheme.status?.error ?? '#ff6b6b';
+  const warningColor = currentTheme.accent ?? '#fbbf24';
+
   return (
     <AnimatePresence>
       {visible && (
@@ -37,9 +43,9 @@ export const AnimatedFeedback: React.FC<AnimatedFeedbackProps> = ({
             gap: '8px',
           }}
         >
-          {type === 'success' && <SuccessIcon size={size} />}
-          {type === 'error' && <ErrorIcon size={size} />}
-          {type === 'warning' && <WarningIcon size={size} />}
+          {type === 'success' && <SuccessIcon size={size} color={successColor} />}
+          {type === 'error' && <ErrorIcon size={size} color={errorColor} />}
+          {type === 'warning' && <WarningIcon size={size} color={warningColor} />}
 
           {message && (
             <motion.p
@@ -49,7 +55,8 @@ export const AnimatedFeedback: React.FC<AnimatedFeedbackProps> = ({
               style={{
                 fontSize: '14px',
                 fontWeight: 600,
-                color: type === 'success' ? '#4ade80' : type === 'error' ? '#ff6b6b' : '#fbbf24',
+                color:
+                  type === 'success' ? successColor : type === 'error' ? errorColor : warningColor,
                 margin: 0,
               }}
             >
@@ -62,13 +69,13 @@ export const AnimatedFeedback: React.FC<AnimatedFeedbackProps> = ({
   );
 };
 
-const SuccessIcon: React.FC<{ size: number }> = ({ size }) => (
+const SuccessIcon: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <motion.div
     style={{
       width: size,
       height: size,
       borderRadius: '50%',
-      background: 'rgba(74, 222, 128, 0.15)',
+      background: `${color}26`,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -77,7 +84,7 @@ const SuccessIcon: React.FC<{ size: number }> = ({ size }) => (
     <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="none">
       <motion.path
         d="M5 13l4 4L19 7"
-        stroke="#4ade80"
+        stroke={color}
         strokeWidth={3}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -89,7 +96,7 @@ const SuccessIcon: React.FC<{ size: number }> = ({ size }) => (
   </motion.div>
 );
 
-const ErrorIcon: React.FC<{ size: number }> = ({ size }) => (
+const ErrorIcon: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <motion.div
     animate={{ x: [0, -4, 4, -3, 3, 0] }}
     transition={{ duration: 0.4, delay: 0.1 }}
@@ -97,7 +104,7 @@ const ErrorIcon: React.FC<{ size: number }> = ({ size }) => (
       width: size,
       height: size,
       borderRadius: '50%',
-      background: 'rgba(255, 107, 107, 0.15)',
+      background: `${color}26`,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -106,7 +113,7 @@ const ErrorIcon: React.FC<{ size: number }> = ({ size }) => (
     <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="none">
       <motion.path
         d="M6 6l12 12M18 6L6 18"
-        stroke="#ff6b6b"
+        stroke={color}
         strokeWidth={3}
         strokeLinecap="round"
         initial={{ pathLength: 0 }}
@@ -117,7 +124,7 @@ const ErrorIcon: React.FC<{ size: number }> = ({ size }) => (
   </motion.div>
 );
 
-const WarningIcon: React.FC<{ size: number }> = ({ size }) => (
+const WarningIcon: React.FC<{ size: number; color: string }> = ({ size, color }) => (
   <motion.div
     animate={{ y: [0, -3, 0] }}
     transition={{ duration: 0.5, delay: 0.1, repeat: 1 }}
@@ -125,12 +132,12 @@ const WarningIcon: React.FC<{ size: number }> = ({ size }) => (
       width: size,
       height: size,
       borderRadius: '50%',
-      background: 'rgba(251, 191, 36, 0.15)',
+      background: `${color}26`,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       fontSize: size * 0.5,
-      color: '#fbbf24',
+      color: color,
       fontWeight: 700,
     }}
   >

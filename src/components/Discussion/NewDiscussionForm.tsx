@@ -153,7 +153,7 @@ const _NewDiscussionForm: React.FC<{
                     borderRadius: '50%',
                     background: currentTheme.status.error,
                     border: 'none',
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -292,7 +292,7 @@ const _NewDiscussionForm: React.FC<{
                   : currentTheme.background.surface,
               color:
                 title.trim() && (content.trim() || previewImages.length > 0)
-                  ? '#fff'
+                  ? currentTheme.text.primary
                   : currentTheme.text.muted,
               cursor:
                 title.trim() && (content.trim() || previewImages.length > 0)

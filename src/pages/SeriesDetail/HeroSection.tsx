@@ -16,7 +16,7 @@ interface HeroSectionProps {
   isReadOnlyTmdbSeries: boolean;
   isAdding: boolean;
   isMobile: boolean;
-  currentTheme: { status: { success: string } };
+  currentTheme: { status: { success: string }; accent: string };
   onAddSeries: () => void;
 }
 
@@ -126,7 +126,7 @@ export const HeroSection = memo<HeroSectionProps>(
               </span>
             )}
             {parseFloat(overallRating) > 0 && (
-              <span style={{ color: '#ffd700' }}>&bull; &#11088; {overallRating}</span>
+              <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
             )}
             {series && (
               <>

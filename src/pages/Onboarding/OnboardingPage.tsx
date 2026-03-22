@@ -360,7 +360,7 @@ export const OnboardingPage: React.FC = () => {
           right: 0,
           bottom: 0,
           background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 50%),
-                       radial-gradient(ellipse at 80% 90%, #a855f712 0%, transparent 50%)`,
+                       radial-gradient(ellipse at 80% 90%, ${currentTheme.accent}12 0%, transparent 50%)`,
           pointerEvents: 'none',
           zIndex: 0,
         }}
@@ -387,7 +387,7 @@ export const OnboardingPage: React.FC = () => {
               borderRadius: 4,
               background:
                 s === step
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : `${currentTheme.text.muted}30`,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}

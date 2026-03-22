@@ -3,8 +3,6 @@ import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 
-const ACCENT = '#a855f7';
-
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -45,7 +43,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
           className="cd-item-poster-placeholder"
           style={{ background: `${currentTheme.primary}15` }}
         >
-          <CalendarMonth style={{ fontSize: 20, color: currentTheme.primary, opacity: 0.4 }} />
+          <CalendarMonth style={{ fontSize: 20, color: currentTheme.text.muted }} />
         </div>
       )}
 
@@ -62,12 +60,12 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       {/* Day count */}
       <div className="cd-item-days">
         {item.daysUntil === 0 ? (
-          <span className="cd-item-days-today" style={{ color: ACCENT }}>
+          <span className="cd-item-days-today" style={{ color: currentTheme.accent }}>
             Heute
           </span>
         ) : (
           <>
-            <span className="cd-item-days-number" style={{ color: ACCENT }}>
+            <span className="cd-item-days-number" style={{ color: currentTheme.accent }}>
               {item.daysUntil}
             </span>
             <span className="cd-item-days-label" style={{ color: currentTheme.text.muted }}>

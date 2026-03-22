@@ -65,7 +65,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Sort />,
-          color: '#f59e0b',
+          color: currentTheme.accent,
           title: 'Neue Sortierung',
           description:
             'Sortiere deine Watchlist nach Fortschritt oder verbleibenden Episoden – finde schnell was fast fertig ist.',
@@ -89,7 +89,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <PlaylistAddCheck />,
-          color: 'var(--theme-secondary-gradient, #8b5cf6)',
+          color: currentTheme.accent,
           title: '"Ich bin bei…" Markierung',
           description:
             'Wähle Staffel und Episode – alles davor wird automatisch als gesehen markiert. Perfekt für Serien die du woanders geschaut hast.',
@@ -102,7 +102,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <ViewQuilt />,
-          color: '#a855f7',
+          color: currentTheme.accent,
           title: 'Homepage Layout',
           description:
             'Sektionen auf der Homepage sortieren, ausblenden und nach deinem Geschmack anpassen.',
@@ -117,7 +117,7 @@ export const PatchNotesPage = () => {
       <PageHeader
         title="Patch Notes"
         gradientTo={currentTheme.primary}
-        icon={<NewReleases style={{ fontSize: 22, color: currentTheme.primary }} />}
+        icon={<NewReleases style={{ fontSize: 22, color: currentTheme.accent }} />}
       />
 
       <div className="pn-releases">

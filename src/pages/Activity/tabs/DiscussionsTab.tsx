@@ -122,7 +122,7 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
                         ? `${currentTheme.primary}20`
                         : notification.type === 'spoiler_flag'
                           ? `${currentTheme.status.warning}20`
-                          : '#ff6b6b20',
+                          : `${currentTheme.status?.error || '#ff6b6b'}20`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -133,7 +133,9 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
                   ) : notification.type === 'spoiler_flag' ? (
                     <Flag style={{ color: currentTheme.status.warning, fontSize: '20px' }} />
                   ) : (
-                    <Favorite style={{ color: '#ff6b6b', fontSize: '20px' }} />
+                    <Favorite
+                      style={{ color: currentTheme.status?.error || '#ff6b6b', fontSize: '20px' }}
+                    />
                   )}
                 </div>
                 <div style={{ flex: 1 }}>

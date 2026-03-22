@@ -72,7 +72,7 @@ export const ProfileHeader = memo(
                 }
           }
         >
-          {!photoURL && <Person style={{ fontSize: '50px', color: 'white' }} />}
+          {!photoURL && <Person style={{ fontSize: '50px', color: currentTheme.text.secondary }} />}
         </div>
       </motion.div>
 
@@ -211,7 +211,7 @@ export const ProfileFeaturedNav = memo(
       transition={{ delay: animationDelay }}
       className="profile-menu-section"
     >
-      <h2 className="profile-section-title" style={{ color: currentTheme.text.muted }}>
+      <h2 className="profile-section-title" style={{ color: currentTheme.text.primary }}>
         {title}
       </h2>
       <div className="profile-featured-list">
@@ -237,7 +237,7 @@ export const ProfileFeaturedNav = memo(
                   background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)`,
                 }}
               >
-                <item.icon style={{ fontSize: '22px', color: 'white' }} />
+                <item.icon style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
               </div>
               <span className="profile-featured-label">{item.label}</span>
             </div>
@@ -280,7 +280,7 @@ export const ProfileMenuGroup = memo(
       transition={{ delay: animationDelay }}
       className="profile-menu-section"
     >
-      <h2 className="profile-section-title" style={{ color: currentTheme.text.muted }}>
+      <h2 className="profile-section-title" style={{ color: currentTheme.text.primary }}>
         {title}
       </h2>
       <div

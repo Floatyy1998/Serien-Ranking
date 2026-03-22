@@ -315,8 +315,8 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
                 justifyContent: 'space-between',
                 padding: '12px 16px',
                 borderRadius: 12,
-                background: `${theme.primary}15`,
-                border: `1px solid ${theme.primary}30`,
+                background: theme.background.surface,
+                border: `1px solid ${theme.border.default}`,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

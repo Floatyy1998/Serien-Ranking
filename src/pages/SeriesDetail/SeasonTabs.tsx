@@ -13,7 +13,6 @@ interface SeasonTabsProps {
 export const SeasonTabs = memo<SeasonTabsProps>(
   ({ seasons, selectedSeasonIndex, onSelectSeason }) => {
     const { currentTheme } = useTheme();
-    const warningColor = currentTheme.status?.warning || '#f59e0b';
 
     return (
       <div className="season-tabs">
@@ -37,14 +36,18 @@ export const SeasonTabs = memo<SeasonTabsProps>(
               className="season-tabs__tab"
               style={{
                 borderColor: isSelected
-                  ? '#00d4aa'
+                  ? currentTheme.primary
                   : progress === 100
-                    ? 'rgba(0, 212, 170, 0.4)'
+                    ? minWatch > 1
+                      ? `${currentTheme.accent}80`
+                      : `${currentTheme.primary}80`
                     : 'rgba(255, 255, 255, 0.15)',
                 background: isSelected
-                  ? 'rgba(0, 212, 170, 0.2)'
+                  ? `${currentTheme.primary}33`
                   : progress === 100
-                    ? 'rgba(0, 212, 170, 0.1)'
+                    ? minWatch > 1
+                      ? `${currentTheme.accent}30`
+                      : `${currentTheme.primary}30`
                     : 'rgba(255, 255, 255, 0.05)',
               }}
             >
@@ -52,9 +55,11 @@ export const SeasonTabs = memo<SeasonTabsProps>(
               <span className="season-tabs__progress">
                 {progress === 100 ? (
                   <span style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                    <Check style={{ fontSize: '13px', color: '#00d4aa' }} />
+                    <Check
+                      style={{ fontSize: '13px', color: currentTheme.status?.success || '#22c55e' }}
+                    />
                     {minWatch > 1 && (
-                      <span style={{ color: warningColor, fontWeight: '700' }}>
+                      <span style={{ color: currentTheme.accent, fontWeight: '700' }}>
                         &times;{minWatch}
                       </span>
                     )}

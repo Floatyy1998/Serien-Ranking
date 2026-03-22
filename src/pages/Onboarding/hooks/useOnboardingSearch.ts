@@ -70,7 +70,7 @@ export function useOnboardingSearch() {
       if (selectedGenreIds.length > 0) {
         // Genre-basierte Discovery: Maximal 4 Genres für Performance
         const limitedGenreIds = selectedGenreIds.slice(0, 4);
-        console.log('Fetching genre-based suggestions for:', limitedGenreIds);
+        // Genre-basierte Suggestions laden
 
         const allTvResults: OnboardingItem[] = [];
         const allMovieResults: OnboardingItem[] = [];
@@ -122,7 +122,7 @@ export function useOnboardingSearch() {
         movieItems = allMovieResults.sort((a, b) => b.vote_average - a.vote_average).slice(0, 60);
       } else {
         // Fallback: Trending wenn keine Genres gewählt
-        console.log('Fetching trending (no genres selected)');
+        // Trending als Fallback laden
         const [tvRes, movieRes] = await Promise.all([
           fetch(`${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
           fetch(`${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`).then((r) =>
@@ -159,12 +159,6 @@ export function useOnboardingSearch() {
       // Combine: Series first, then movies
       const combined: OnboardingItem[] = [...tvItems, ...movieItems];
 
-      console.log(
-        'Combined suggestions:',
-        combined.length,
-        'items',
-        `(${tvItems.length} series, ${movieItems.length} movies)`
-      );
       setSuggestions(combined);
     } catch (error) {
       console.error('Fehler beim Laden der Vorschläge:', error);

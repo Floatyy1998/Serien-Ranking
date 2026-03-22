@@ -204,6 +204,7 @@ export const WatchNextPage = () => {
 
   const theme = {
     primary: currentTheme.primary,
+    accent: currentTheme.accent,
     text: currentTheme.text,
     status: currentTheme.status,
     background: currentTheme.background,
@@ -263,8 +264,10 @@ export const WatchNextPage = () => {
                       {
                         background: editModeActive
                           ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                          : 'rgba(255, 255, 255, 0.05)',
-                        color: editModeActive ? 'white' : currentTheme.text.primary,
+                          : `rgba(255,255,255,0.05)`,
+                        color: editModeActive
+                          ? currentTheme.text.secondary
+                          : currentTheme.text.primary,
                         '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
                       } as React.CSSProperties
                     }
@@ -283,8 +286,8 @@ export const WatchNextPage = () => {
                     {
                       background: showFilter
                         ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : 'rgba(255, 255, 255, 0.05)',
-                      color: showFilter ? 'white' : currentTheme.text.primary,
+                        : `rgba(255,255,255,0.05)`,
+                      color: showFilter ? currentTheme.text.secondary : currentTheme.text.primary,
                       '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
                     } as React.CSSProperties
                   }
@@ -347,22 +350,20 @@ export const WatchNextPage = () => {
               className="watch-next-rewatch-toggle"
               style={{
                 background: showRewatches
-                  ? `${currentTheme.status?.warning || '#f59e0b'}20`
-                  : `${currentTheme.status?.warning || '#f59e0b'}10`,
-                border: `1px solid ${currentTheme.status?.warning || '#f59e0b'}${showRewatches ? '50' : '30'}`,
+                  ? `${currentTheme.accent || '#f59e0b'}20`
+                  : `${currentTheme.accent || '#f59e0b'}10`,
+                border: `1px solid ${currentTheme.accent || '#f59e0b'}${showRewatches ? '50' : '30'}`,
               }}
             >
               <div className="watch-next-rewatch-toggle__content">
                 <div className="watch-next-rewatch-toggle__label">
-                  <Repeat
-                    style={{ fontSize: '15px', color: currentTheme.status?.warning || '#f59e0b' }}
-                  />
+                  <Repeat style={{ fontSize: '15px', color: currentTheme.accent || '#f59e0b' }} />
                   {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
                 </div>
                 {showRewatches ? (
-                  <ExpandLess style={{ fontSize: '18px', opacity: 0.5 }} />
+                  <ExpandLess style={{ fontSize: '18px', color: currentTheme.text.muted }} />
                 ) : (
-                  <ExpandMore style={{ fontSize: '18px', opacity: 0.5 }} />
+                  <ExpandMore style={{ fontSize: '18px', color: currentTheme.text.muted }} />
                 )}
               </div>
             </motion.div>
@@ -380,9 +381,7 @@ export const WatchNextPage = () => {
                   background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.status.success}15)`,
                 }}
               >
-                <PlayCircle
-                  style={{ fontSize: '44px', color: currentTheme.primary, opacity: 0.7 }}
-                />
+                <PlayCircle style={{ fontSize: '44px', color: currentTheme.primary }} />
               </div>
               <h2
                 style={{

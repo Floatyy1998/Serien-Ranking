@@ -141,7 +141,7 @@ export const ItemCard = memo(
               <Star
                 style={{
                   fontSize: '14px',
-                  color: '#ffc107',
+                  color: currentTheme.accent,
                 }}
               />
               {item.vote_average.toFixed(1)}
@@ -196,7 +196,7 @@ export const ItemCard = memo(
                     fontSize: '14px',
                     fontWeight: 700,
                     margin: '0 0 6px',
-                    color: 'white',
+                    color: currentTheme.text.secondary,
                     lineHeight: 1.2,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -211,7 +211,7 @@ export const ItemCard = memo(
                   style={{
                     fontSize: '12px',
                     lineHeight: 1.5,
-                    color: 'rgba(255, 255, 255, 0.75)',
+                    color: currentTheme.text.muted,
                     margin: 0,
                     flex: 1,
                     overflow: 'hidden',
@@ -231,10 +231,10 @@ export const ItemCard = memo(
                   style={{
                     marginTop: '10px',
                     padding: '8px 0',
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                     border: 'none',
                     borderRadius: '10px',
-                    color: 'white',
+                    color: currentTheme.text.secondary,
                     fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer',
@@ -269,7 +269,7 @@ export const ItemCard = memo(
                   background:
                     addingItem === `${item.type}-${item.id}`
                       ? 'rgba(255, 255, 255, 0.1)'
-                      : `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                      : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
@@ -285,7 +285,7 @@ export const ItemCard = memo(
                 <Add
                   style={{
                     fontSize: '20px',
-                    color: 'white',
+                    color: currentTheme.text.secondary,
                     opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
                   }}
                 />

@@ -1,3 +1,5 @@
+import React from 'react';
+
 export type DiscussionItemType = 'movie' | 'series' | 'episode';
 
 export interface DiscussionReply {
@@ -80,4 +82,14 @@ export interface DiscussionFeedEntry {
   episodeTitle?: string;
   contentPreview: string;
   createdAt: number;
+}
+
+export interface DiscussionThreadProps {
+  itemId: number;
+  itemType: DiscussionItemType;
+  seasonNumber?: number;
+  episodeNumber?: number;
+  title?: React.ReactNode;
+  isWatched?: boolean; // For spoiler protection on episodes
+  feedMetadata?: DiscussionFeedMetadata;
 }

@@ -45,19 +45,19 @@ export const SearchPage = memo(() => {
       key: 'all',
       label: 'Alle',
       icon: null,
-      gradient: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'series',
       label: 'Serien',
       icon: CalendarToday,
-      gradient: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #667eea))`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'movies',
       label: 'Filme',
       icon: Movie,
-      gradient: `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
   ];
 
@@ -141,7 +141,8 @@ export const SearchPage = memo(() => {
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
                 border:
                   searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
-                color: searchType === tab.key ? 'white' : currentTheme.text.secondary,
+                color:
+                  searchType === tab.key ? currentTheme.text.secondary : currentTheme.text.muted,
                 boxShadow: searchType === tab.key ? `0 4px 15px ${currentTheme.primary}40` : 'none',
               }}
             >
@@ -235,7 +236,7 @@ export const SearchPage = memo(() => {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="search-snackbar"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
               boxShadow: `0 8px 24px ${currentTheme.status.success}40`,
             }}
           >

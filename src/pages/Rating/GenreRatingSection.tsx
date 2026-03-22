@@ -1,6 +1,7 @@
 import { Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const genreIcons: Record<string, React.ReactNode> = {
   Action: <Zap size={20} />,
@@ -12,15 +13,15 @@ const genreIcons: Record<string, React.ReactNode> = {
   Thriller: <TrendingUp size={20} />,
 };
 
-const genreColors: Record<string, string> = {
+const getGenreColors = (accent: string): Record<string, string> => ({
   Action: '#ff6b6b',
   Comedy: '#ffd43b',
-  Drama: 'var(--theme-secondary-gradient, #667eea)',
+  Drama: accent,
   Romance: '#f06292',
   'Sci-Fi': '#4ecdc4',
-  Fantasy: 'var(--theme-secondary-gradient, #764ba2)',
+  Fantasy: accent,
   Thriller: '#e74c3c',
-};
+});
 
 interface GenreRatingSectionProps {
   genreRatings: Record<string, number>;
@@ -31,6 +32,8 @@ export const GenreRatingSection = ({
   genreRatings,
   onGenreRatingChange,
 }: GenreRatingSectionProps) => {
+  const { currentTheme } = useTheme();
+  const genreColors = getGenreColors(currentTheme.accent);
   return (
     <motion.div
       key="genre"
@@ -41,7 +44,7 @@ export const GenreRatingSection = ({
       className="rate-genre-list"
     >
       {Object.keys(genreRatings).map((genre) => {
-        const color = genreColors[genre] || 'var(--theme-secondary-gradient, #667eea)';
+        const color = genreColors[genre] || currentTheme.accent;
         return (
           <div key={genre} className="rate-genre-item">
             <div className="rate-genre-header">

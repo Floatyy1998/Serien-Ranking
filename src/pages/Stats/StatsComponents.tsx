@@ -26,6 +26,7 @@ import { formatTimeDetailed } from './useStatsData';
 /* ------------------------------------------------------------------ */
 interface ThemeColors {
   primary: string;
+  accent?: string;
   background: { default: string; surface: string };
   text: { primary: string; secondary: string; muted: string };
   border: { default: string };
@@ -106,11 +107,11 @@ export const HeroSection = memo(({ stats, timeData, theme }: HeroSectionProps) =
         animate={{ scale: 1 }}
         transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
         style={{
-          background: `linear-gradient(135deg, ${theme.primary}20, ${theme.primary}10)`,
+          background: `linear-gradient(135deg, ${theme.primary}20, ${theme.accent || theme.primary}10)`,
           border: `3px solid ${theme.primary}40`,
         }}
       >
-        <Timer style={{ fontSize: 48, color: theme.primary }} />
+        <Timer style={{ fontSize: 48, color: theme.accent || theme.primary }} />
       </motion.div>
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -192,7 +193,7 @@ const QuickStatsGrid = memo(({ stats, theme }: QuickStatsGridProps) => {
       icon: <Movie style={{ fontSize: 20 }} />,
       value: stats.totalMovies,
       label: 'Filme',
-      color: '#f59e0b',
+      color: theme.accent || theme.primary,
     },
     {
       icon: <EmojiEvents style={{ fontSize: 20 }} />,
@@ -212,8 +213,8 @@ const QuickStatsGrid = memo(({ stats, theme }: QuickStatsGridProps) => {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 + i * 0.1 }}
           style={{
-            background: `${stat.color}10`,
-            border: `1px solid ${stat.color}25`,
+            background: theme.background.surface,
+            border: `1px solid ${theme.border.default}`,
           }}
         >
           <div className="stats-quick-icon" style={{ color: stat.color }}>
@@ -277,11 +278,11 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
         animate={{ rotate: [0, 360] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
         style={{
-          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.primary}cc 100%)`,
+          background: `linear-gradient(135deg, ${theme.primary} 0%, ${theme.accent || theme.primary}cc 100%)`,
           boxShadow: `0 0 30px ${theme.primary}60`,
         }}
       >
-        <AutoAwesome style={{ color: 'white', fontSize: '28px' }} />
+        <AutoAwesome style={{ color: theme.text.secondary, fontSize: '28px' }} />
       </motion.div>
       <div className="stats-actor-text">
         <h2 className="stats-actor-title">Actor Universe</h2>
@@ -332,15 +333,15 @@ export const TimeBreakdownSection = memo(
       }}
     >
       <h2 className="stats-section-title">
-        <Timer style={{ fontSize: 20, color: theme.primary }} />
+        <Timer style={{ fontSize: 20, color: theme.accent || theme.primary }} />
         Zeit-Aufteilung
       </h2>
       <div className="stats-time-row">
         <div
           className="stats-time-card"
           style={{
-            background: `${theme.primary}10`,
-            border: `1px solid ${theme.primary}25`,
+            background: theme.background.surface,
+            border: `1px solid ${theme.border.default}`,
           }}
         >
           <Tv style={{ fontSize: 24, color: theme.primary, marginBottom: '8px' }} />
@@ -352,11 +353,13 @@ export const TimeBreakdownSection = memo(
         <div
           className="stats-time-card"
           style={{
-            background: '#f59e0b10',
-            border: '1px solid #f59e0b25',
+            background: theme.background.surface,
+            border: `1px solid ${theme.border.default}`,
           }}
         >
-          <Movie style={{ fontSize: 24, color: '#f59e0b', marginBottom: '8px' }} />
+          <Movie
+            style={{ fontSize: 24, color: theme.accent || theme.primary, marginBottom: '8px' }}
+          />
           <div className="stats-time-value">{formatTimeDetailed(movieMinutes)}</div>
           <div className="stats-time-label" style={{ color: theme.text.muted }}>
             Filme
@@ -390,17 +393,17 @@ export const RatingsSection = memo(
       }}
     >
       <h2 className="stats-section-title">
-        <Star style={{ fontSize: 20, color: '#fbbf24' }} />
+        <Star style={{ fontSize: 20, color: theme.accent || theme.primary }} />
         Deine Bewertungen
       </h2>
       <div className="stats-ratings-row">
-        <div className="stats-rating-card" style={{ background: '#fbbf2410' }}>
+        <div className="stats-rating-card" style={{ background: theme.background.surface }}>
           <div className="stats-rating-value">{avgSeriesRating.toFixed(1)}</div>
           <div className="stats-rating-label" style={{ color: theme.text.muted }}>
             &Oslash; Serien
           </div>
         </div>
-        <div className="stats-rating-card" style={{ background: '#fbbf2410' }}>
+        <div className="stats-rating-card" style={{ background: theme.background.surface }}>
           <div className="stats-rating-value">{avgMovieRating.toFixed(1)}</div>
           <div className="stats-rating-label" style={{ color: theme.text.muted }}>
             &Oslash; Filme
@@ -436,7 +439,7 @@ export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
       }}
     >
       <h2 className="stats-section-title">
-        <Category style={{ fontSize: 20, color: theme.primary }} />
+        <Category style={{ fontSize: 20, color: theme.accent || theme.primary }} />
         Top Genres
       </h2>
       <div className="stats-genre-list">
@@ -450,7 +453,7 @@ export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
           >
             <span
               className="stats-genre-rank"
-              style={{ color: i === 0 ? '#fbbf24' : theme.text.muted }}
+              style={{ color: i === 0 ? theme.accent || theme.primary : theme.text.muted }}
             >
               #{i + 1}
             </span>
@@ -471,7 +474,7 @@ export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
                   animate={{ width: `${(genre.count / maxCount) * 100}%` }}
                   transition={{ duration: 0.8, delay: 1 + i * 0.1 }}
                   style={{
-                    background: `linear-gradient(90deg, ${theme.primary}, ${theme.primary}cc)`,
+                    background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary}cc)`,
                   }}
                 />
               </div>
@@ -507,7 +510,7 @@ export const TopProvidersSection = memo(({ providers, theme }: TopProvidersProps
       }}
     >
       <h2 className="stats-section-title">
-        <Stream style={{ fontSize: 20, color: '#06b6d4' }} />
+        <Stream style={{ fontSize: 20, color: theme.accent || theme.primary }} />
         Streaming-Dienste
       </h2>
       <div className="stats-provider-list">
@@ -519,8 +522,8 @@ export const TopProvidersSection = memo(({ providers, theme }: TopProvidersProps
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 1.1 + i * 0.1 }}
             style={{
-              background: i === 0 ? `${theme.primary}20` : `${theme.text.muted}10`,
-              border: `1px solid ${i === 0 ? theme.primary : theme.text.muted}25`,
+              background: theme.background.surface,
+              border: `1px solid ${theme.border.default}`,
             }}
           >
             <span className="stats-provider-name">{provider.name}</span>
@@ -556,18 +559,18 @@ export const WeekActivitySection = memo(({ lastWeekWatched, theme }: WeekActivit
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 1.2 }}
     style={{
-      background: `linear-gradient(135deg, ${theme.status.success}15, ${theme.primary}15)`,
-      border: `1px solid ${theme.status.success}30`,
+      background: theme.background.surface,
+      border: `1px solid ${theme.border.default}`,
     }}
   >
     <div className="stats-week-content">
       <div
         className="stats-week-icon"
         style={{
-          background: `linear-gradient(135deg, ${theme.status.success}, ${theme.primary})`,
+          background: `linear-gradient(135deg, ${theme.status.success}, ${theme.accent || theme.primary})`,
         }}
       >
-        <LocalFireDepartment style={{ fontSize: 28, color: '#fff' }} />
+        <LocalFireDepartment style={{ fontSize: 28, color: theme.text.secondary }} />
       </div>
       <div>
         <div className="stats-week-value">{lastWeekWatched}</div>

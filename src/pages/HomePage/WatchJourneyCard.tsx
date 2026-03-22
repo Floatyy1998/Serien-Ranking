@@ -20,7 +20,7 @@ export const WatchJourneyCard: React.FC = () => {
       accentColor={primaryColor}
       aria-label="Watch Journey: Trends und Entwicklung anzeigen"
     >
-      <IconContainer color={primaryColor}>
+      <IconContainer color={primaryColor} secondaryColor={currentTheme.accent}>
         <TrendingUp style={{ fontSize: 20, color: 'white' }} />
       </IconContainer>
 
@@ -61,7 +61,7 @@ export const WatchJourneyCard: React.FC = () => {
               width: 4,
               maxHeight: 24,
               borderRadius: 2,
-              background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}cc)`,
+              background: `linear-gradient(180deg, ${primaryColor}, ${currentTheme.accent || primaryColor}cc)`,
               opacity: 0.3 + i * 0.1,
             }}
           />

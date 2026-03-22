@@ -9,6 +9,7 @@ import {
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
+import { useTheme } from '../../contexts/ThemeContext';
 import { SearchInput } from './SearchInput';
 import { BottomSheet } from './BottomSheet';
 import { GradientText } from './GradientText';
@@ -62,6 +63,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   hasBottomNav = true, // Default to true for most pages
   initialFilters = {},
 }) => {
+  const { currentTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(initialFilters.genre || '');
   const [selectedProvider, setSelectedProvider] = useState<string>(initialFilters.provider || '');
@@ -163,8 +165,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             position: 'fixed',
             bottom: hasBottomNav ? '95px' : '30px',
             right: '20px',
-            background:
-              'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)',
+            background: `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`,
             border: 'none',
             borderRadius: '50%',
             width: '56px',
@@ -172,8 +173,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
-            boxShadow: '0 4px 20px rgba(139, 92, 246, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
+            color: currentTheme.text.secondary,
+            boxShadow: `0 4px 20px ${currentTheme.accent}50, 0 2px 8px rgba(0, 0, 0, 0.2)`,
             cursor: 'pointer',
             zIndex: 1000,
           }}
@@ -185,7 +186,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 position: 'absolute',
                 top: '-4px',
                 right: '-4px',
-                background: '#ff4757',
+                background: currentTheme.accent,
                 borderRadius: '50%',
                 width: '20px',
                 height: '20px',
@@ -225,8 +226,6 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
           >
             <GradientText
               as="h2"
-              from="var(--theme-secondary-gradient, #8b5cf6)"
-              to="var(--theme-tertiary-gradient, #6d28d9)"
               style={{
                 fontSize: '20px',
                 fontWeight: 800,
@@ -241,11 +240,11 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
               <button
                 onClick={clearFilters}
                 style={{
-                  background: 'rgba(255, 71, 87, 0.1)',
-                  border: '1px solid rgba(255, 71, 87, 0.3)',
+                  background: `${currentTheme.accent}1a`,
+                  border: `1px solid ${currentTheme.accent}4d`,
                   borderRadius: '14px',
                   padding: '6px 12px',
-                  color: '#ff4757',
+                  color: currentTheme.accent,
                   fontSize: '14px',
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -262,7 +261,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
               style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 display: 'block',
                 marginBottom: '8px',
               }}
@@ -282,7 +281,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
               style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 display: 'block',
                 marginBottom: '12px',
               }}
@@ -307,11 +306,11 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                     style={{
                       padding: '12px',
                       background: isActive
-                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                        ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
+                        : `rgba(255,255,255,0.05)`,
+                      border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                       borderRadius: '14px',
-                      color: 'white',
+                      color: currentTheme.text.secondary,
                       fontSize: '14px',
                       fontWeight: isActive ? 600 : 500,
                       cursor: 'pointer',
@@ -337,7 +336,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 style={{
                   fontSize: '15px',
                   fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
+                  color: currentTheme.text.secondary,
                   display: 'block',
                   marginBottom: '12px',
                 }}
@@ -350,10 +349,10 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 style={{
                   width: '100%',
                   padding: '12px 16px',
-                  background: 'rgba(255, 255, 255, 0.05)',
+                  background: `rgba(255,255,255,0.05)`,
                   border: '1px solid rgba(255, 255, 255, 0.08)',
                   borderRadius: '14px',
-                  color: 'white',
+                  color: currentTheme.text.secondary,
                   fontSize: '15px',
                 }}
               >
@@ -412,7 +411,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
               style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 display: 'block',
                 marginBottom: '12px',
               }}
@@ -438,11 +437,11 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                     style={{
                       padding: '10px',
                       background: isActive
-                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                        ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
+                        : `rgba(255,255,255,0.05)`,
+                      border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                       borderRadius: '14px',
-                      color: 'white',
+                      color: currentTheme.text.secondary,
                       fontSize: '13px',
                       fontWeight: isActive ? 600 : 500,
                       cursor: 'pointer',
@@ -463,7 +462,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
               style={{
                 fontSize: '15px',
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: currentTheme.text.secondary,
                 display: 'block',
                 marginBottom: '12px',
               }}
@@ -487,9 +486,9 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                       style={{
                         padding: '12px',
                         background: isActive
-                          ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                          : 'rgba(255, 255, 255, 0.04)',
-                        border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
+                          ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
+                          : `rgba(255,255,255,0.05)`,
+                        border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                         borderRadius: '14px',
                         display: 'flex',
                         alignItems: 'center',
@@ -517,7 +516,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                           style={{
                             fontSize: '13px',
                             fontWeight: 600,
-                            color: 'white',
+                            color: currentTheme.text.secondary,
                             textAlign: 'center',
                             lineHeight: '1.2',
                           }}

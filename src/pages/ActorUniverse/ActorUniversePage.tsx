@@ -52,7 +52,7 @@ export const ActorUniversePage = () => {
         className="au-bg-decoration au-bg-decoration--fixed"
         style={{
           background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 40%),
-                       radial-gradient(ellipse at 80% 90%, #8b5cf612 0%, transparent 40%)`,
+                       radial-gradient(ellipse at 80% 90%, ${currentTheme.accent}12 0%, transparent 40%)`,
         }}
       />
 
@@ -88,8 +88,8 @@ export const ActorUniversePage = () => {
               <AutoAwesome
                 style={{
                   fontSize: '24px',
-                  color: currentTheme.primary,
-                  WebkitTextFillColor: currentTheme.primary,
+                  color: currentTheme.accent,
+                  WebkitTextFillColor: currentTheme.accent,
                 }}
               />
               Actor Universe
@@ -115,10 +115,10 @@ export const ActorUniversePage = () => {
                 className="au-tab-btn"
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
-                    : currentTheme.background.surface,
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                    : `rgba(255,255,255,0.05)`,
                   border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
-                  color: isActive ? '#fff' : currentTheme.text.secondary,
+                  color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
                   fontWeight: isActive ? 700 : 500,
                   boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                 }}
@@ -139,10 +139,10 @@ export const ActorUniversePage = () => {
             className="au-voice-toggle"
             style={{
               background: hideVoiceActors
-                ? currentTheme.background.surface
-                : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                ? `rgba(255,255,255,0.05)`
+                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               border: hideVoiceActors ? `1px solid ${currentTheme.border.default}` : 'none',
-              color: hideVoiceActors ? currentTheme.text.muted : '#fff',
+              color: hideVoiceActors ? currentTheme.text.muted : currentTheme.text.secondary,
               boxShadow: !hideVoiceActors ? `0 4px 15px ${currentTheme.primary}40` : 'none',
             }}
           >

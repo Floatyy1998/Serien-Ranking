@@ -107,7 +107,10 @@ const _DiscussionItem: React.FC<{
           }}
         >
           {!discussion.userPhotoURL && (
-            <Person style={{ fontSize: '20px', color: 'white' }} aria-hidden="true" />
+            <Person
+              style={{ fontSize: '20px', color: currentTheme.text.primary }}
+              aria-hidden="true"
+            />
           )}
         </button>
 
@@ -217,7 +220,7 @@ const _DiscussionItem: React.FC<{
                   borderRadius: '6px',
                   border: 'none',
                   background: currentTheme.status.warning,
-                  color: '#fff',
+                  color: currentTheme.text.primary,
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 600,
@@ -297,7 +300,7 @@ const _DiscussionItem: React.FC<{
                   borderRadius: '6px',
                   border: 'none',
                   background: currentTheme.status.error,
-                  color: '#fff',
+                  color: currentTheme.text.primary,
                   cursor: 'pointer',
                   fontSize: '12px',
                   fontWeight: 600,
@@ -452,7 +455,7 @@ const _DiscussionItem: React.FC<{
                   background: editTitle.trim()
                     ? currentTheme.primary
                     : currentTheme.background.surface,
-                  color: editTitle.trim() ? '#fff' : currentTheme.text.muted,
+                  color: editTitle.trim() ? currentTheme.text.primary : currentTheme.text.muted,
                   cursor: editTitle.trim() ? 'pointer' : 'default',
                   fontSize: '14px',
                   fontWeight: 600,
@@ -550,7 +553,7 @@ const _DiscussionItem: React.FC<{
               padding: '8px 16px',
               borderRadius: '20px',
               cursor: 'pointer',
-              color: isLiked ? '#e91e63' : currentTheme.text.muted,
+              color: isLiked ? currentTheme.accent : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 600,
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',

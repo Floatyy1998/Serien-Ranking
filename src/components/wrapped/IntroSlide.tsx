@@ -98,7 +98,6 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
         >
           <GradientText
             as="h1"
-            from="var(--theme-primary, #667eea)"
             to="#f093fb"
             style={{
               fontSize: 'clamp(6rem, 25vw, 14rem)',

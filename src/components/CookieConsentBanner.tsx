@@ -168,7 +168,7 @@ export const CookieConsentBanner = memo(() => {
                   cursor: 'pointer',
                   border: 'none',
                   background: `linear-gradient(135deg, ${COLORS.accent}, ${COLORS.accentDark})`,
-                  color: '#fff',
+                  color: COLORS.text,
                   transition: 'all 0.2s ease',
                   boxShadow: `0 4px 12px ${COLORS.accent}40`,
                   letterSpacing: '-0.01em',

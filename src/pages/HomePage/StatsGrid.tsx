@@ -31,12 +31,12 @@ interface StatCardProps {
   icon: React.ReactNode;
   label: string;
   value: string | number;
-  color: string;
+  iconColor: string;
   subValue?: string;
   onClick?: () => void;
 }
 
-const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProps) => (
+const StatCard = ({ icon, label, value, iconColor, subValue, onClick }: StatCardProps) => (
   <Paper
     onClick={onClick}
     sx={{
@@ -55,8 +55,8 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
       '&:hover': onClick
         ? {
             transform: 'translateY(-3px)',
-            boxShadow: `0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 20px -5px ${color}18`,
-            borderColor: `${color}25`,
+            boxShadow: `0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 20px -5px ${iconColor}18`,
+            borderColor: `${iconColor}25`,
           }
         : {},
       '&::after': {
@@ -80,7 +80,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
         width: 90,
         height: 90,
         borderRadius: '50%',
-        background: `radial-gradient(circle, ${color}18 0%, transparent 70%)`,
+        background: `radial-gradient(circle, ${iconColor}18 0%, transparent 70%)`,
         filter: 'blur(25px)',
       }}
     />
@@ -91,12 +91,12 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
           width: 36,
           height: 36,
           borderRadius: 2,
-          background: `linear-gradient(135deg, ${color}1a 0%, ${color}0a 100%)`,
+          background: `linear-gradient(135deg, ${iconColor}1a 0%, ${iconColor}0a 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: color,
-          border: `1px solid ${color}15`,
+          color: iconColor,
+          border: `1px solid ${iconColor}15`,
         }}
       >
         {icon}
@@ -108,7 +108,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
       sx={{
         fontWeight: 700,
         fontFamily: 'var(--font-display)',
-        color: colors.text.secondary,
+        color: 'var(--color-text-primary)',
         fontSize: '1.3rem',
         mb: 0.5,
         letterSpacing: '-0.02em',
@@ -120,7 +120,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
     <Typography
       variant="caption"
       sx={{
-        color: colors.text.muted,
+        color: 'var(--color-text-muted)',
         fontSize: '0.7rem',
         textTransform: 'uppercase',
         letterSpacing: 0.8,
@@ -135,7 +135,7 @@ const StatCard = ({ icon, label, value, color, subValue, onClick }: StatCardProp
         variant="caption"
         sx={{
           display: 'block',
-          color: color,
+          color: 'var(--color-text-secondary)',
           fontSize: '0.65rem',
           mt: 0.5,
           opacity: 0.8,
@@ -334,19 +334,12 @@ export const StatsGrid = () => {
           return (
             sAcc +
             season.episodes.filter((ep) => {
-              if (!ep.firstWatchedAt) return false;
+              if (!ep.firstWatchedAt && !ep.lastWatchedAt) return false;
 
               try {
-                // Handle different date formats
-                let watchDate: Date;
-                if (typeof ep.firstWatchedAt === 'string') {
-                  watchDate = new Date(ep.firstWatchedAt);
-                } else if (typeof ep.firstWatchedAt === 'number') {
-                  watchDate = new Date(ep.firstWatchedAt);
-                } else {
-                  return false;
-                }
-
+                const dateStr = ep.lastWatchedAt || ep.firstWatchedAt;
+                if (!dateStr) return false;
+                const watchDate = new Date(dateStr);
                 return !isNaN(watchDate.getTime()) && watchDate > oneWeekAgo;
               } catch {
                 return false;
@@ -441,7 +434,7 @@ export const StatsGrid = () => {
         <Typography
           sx={{
             fontSize: '0.9rem',
-            color: colors.text.secondary,
+            color: currentTheme.text.secondary,
             fontWeight: 700,
             fontFamily: 'var(--font-display)',
           }}
@@ -454,7 +447,7 @@ export const StatsGrid = () => {
             onClick={() => setExpanded(!expanded)}
             size="small"
             sx={{
-              color: colors.text.muted,
+              color: currentTheme.text.muted,
               padding: '4px',
             }}
           >
@@ -512,6 +505,8 @@ export const StatsGrid = () => {
                 <defs>
                   <linearGradient id="stats-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor={currentTheme.primary || colors.primary} />
+                    <stop offset="35%" stopColor={currentTheme.accent || colors.primary} />
+                    <stop offset="65%" stopColor={currentTheme.status?.warning || '#f59e0b'} />
                     <stop
                       offset="100%"
                       stopColor={currentTheme.status?.success || colors.status.success}
@@ -557,7 +552,7 @@ export const StatsGrid = () => {
                     fontSize: '1.1rem',
                     fontWeight: 800,
                     fontFamily: 'var(--font-display)',
-                    background: `linear-gradient(135deg, ${currentTheme.primary || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary || colors.primary}, ${currentTheme.accent || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}
@@ -570,7 +565,7 @@ export const StatsGrid = () => {
             <Typography
               sx={{
                 fontSize: '0.65rem',
-                color: colors.text.muted,
+                color: currentTheme.text.muted,
                 textAlign: 'center',
                 textTransform: 'uppercase',
                 letterSpacing: 0.5,
@@ -582,7 +577,7 @@ export const StatsGrid = () => {
             <Typography
               sx={{
                 fontSize: '0.6rem',
-                color: colors.text.muted,
+                color: currentTheme.text.muted,
                 textAlign: 'center',
                 opacity: 0.7,
               }}
@@ -598,7 +593,7 @@ export const StatsGrid = () => {
             icon={<Tv sx={{ fontSize: 20 }} />}
             label="Serien"
             value={stats.totalSeries}
-            color={colors.primary}
+            iconColor={currentTheme.primary}
             subValue={stats.completedSeries > 0 ? `${stats.completedSeries} komplett` : undefined}
             onClick={handleSeriesClick}
           />
@@ -610,7 +605,7 @@ export const StatsGrid = () => {
             icon={<Movie sx={{ fontSize: 20 }} />}
             label="Filme"
             value={stats.totalMovies}
-            color={colors.text.accent}
+            iconColor={currentTheme.primary}
             subValue={`${stats.watchedMovies} geschaut`}
             onClick={handleMoviesClick}
           />
@@ -630,7 +625,7 @@ export const StatsGrid = () => {
               icon={<Timer sx={{ fontSize: 20 }} />}
               label="Gesamte Watchzeit"
               value={stats.timeString}
-              color={colors.status.warning}
+              iconColor={currentTheme.primary}
             />
           </motion.div>
 
@@ -639,7 +634,7 @@ export const StatsGrid = () => {
               icon={<TrendingUp sx={{ fontSize: 20 }} />}
               label="Diese Woche"
               value={`${stats.lastWeekWatched} Ep.`}
-              color={colors.status.success}
+              iconColor={currentTheme.primary}
               subValue="neu geschaut"
               onClick={handleWeeklyEpisodesClick}
             />
@@ -650,7 +645,7 @@ export const StatsGrid = () => {
               icon={<Tv sx={{ fontSize: 20 }} />}
               label="Zeit mit Serien"
               value={stats.seriesTimeString}
-              color={colors.primary}
+              iconColor={currentTheme.primary}
             />
           </motion.div>
 
@@ -659,7 +654,7 @@ export const StatsGrid = () => {
               icon={<Movie sx={{ fontSize: 20 }} />}
               label="Zeit mit Filmen"
               value={stats.movieTimeString}
-              color={colors.text.accent}
+              iconColor={currentTheme.primary}
             />
           </motion.div>
 
@@ -668,7 +663,7 @@ export const StatsGrid = () => {
               icon={<Star sx={{ fontSize: 20 }} />}
               label="Ø Serien-Rating"
               value={stats.avgSeriesRating}
-              color={colors.status.warning}
+              iconColor={currentTheme.primary}
               onClick={handleSeriesRatingClick}
             />
           </motion.div>
@@ -678,7 +673,7 @@ export const StatsGrid = () => {
               icon={<Star sx={{ fontSize: 20 }} />}
               label="Ø Film-Rating"
               value={stats.avgMovieRating}
-              color={colors.status.warning}
+              iconColor={currentTheme.primary}
               onClick={handleMovieRatingClick}
             />
           </motion.div>
@@ -688,7 +683,7 @@ export const StatsGrid = () => {
               icon={<Category sx={{ fontSize: 20 }} />}
               label="Lieblingsgenre"
               value={stats.topGenre}
-              color={colors.primary}
+              iconColor={currentTheme.primary}
             />
           </motion.div>
 
@@ -697,7 +692,7 @@ export const StatsGrid = () => {
               icon={<Stream sx={{ fontSize: 20 }} />}
               label="Hauptprovider"
               value={stats.topProvider}
-              color={colors.text.accent}
+              iconColor={currentTheme.primary}
             />
           </motion.div>
         </motion.div>

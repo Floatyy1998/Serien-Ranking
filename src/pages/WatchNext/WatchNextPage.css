@@ -45,7 +45,7 @@
 }
 
 .watch-next-header__btn--active {
-  color: white;
+  color: var(--color-text-secondary, white);
   box-shadow: var(--btn-active-shadow, 0 4px 15px rgba(0, 0, 0, 0.3));
 }
 

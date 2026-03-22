@@ -66,7 +66,12 @@ const NotFoundState = memo<{
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
     >
-      <Public style={{ fontSize: '48px', opacity: 0.4 }} />
+      <Public
+        style={{
+          fontSize: '48px',
+          color: (theme.text as { muted?: string }).muted ?? theme.text.secondary,
+        }}
+      />
     </motion.div>
     <h2 className="pp-not-found__title">Profil nicht gefunden</h2>
     <p className="pp-not-found__text" style={{ color: theme.text.secondary }}>

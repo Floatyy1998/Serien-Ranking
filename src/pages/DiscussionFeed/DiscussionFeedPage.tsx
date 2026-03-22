@@ -92,7 +92,7 @@ const FeedCard: React.FC<{
                     backgroundPosition: 'center',
                   }
                 : {
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   }),
             }}
           />
@@ -212,12 +212,12 @@ export const DiscussionFeedPage = () => {
               padding: '12px',
               background:
                 filter === tab.id
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : currentTheme.background.card,
               border: filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: filter === tab.id ? 'white' : currentTheme.text.primary,
+              color: filter === tab.id ? currentTheme.text.secondary : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',

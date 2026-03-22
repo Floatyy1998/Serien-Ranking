@@ -76,12 +76,13 @@ export const ActivityFeedTab = ({
               padding: '10px 18px',
               background:
                 filterType === filter.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : currentTheme.background.surface,
               border:
                 filterType === filter.key ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '20px',
-              color: filterType === filter.key ? 'white' : currentTheme.text.primary,
+              color:
+                filterType === filter.key ? currentTheme.text.secondary : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -177,7 +178,7 @@ export const ActivityFeedTab = ({
                             backgroundSize: 'cover',
                           }
                         : {
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                           }),
                       display: 'flex',
                       alignItems: 'center',
@@ -186,7 +187,7 @@ export const ActivityFeedTab = ({
                     }}
                   >
                     {!userProfile?.photoURL && (
-                      <Person style={{ fontSize: '24px', color: 'white' }} />
+                      <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
                     )}
                   </div>
 

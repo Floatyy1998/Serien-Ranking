@@ -141,7 +141,7 @@ export const formatTimeDetailed = (minutes: number): string => {
 
 export const useStatsData = (): StatsData => {
   const { user } = useAuth()!;
-  const { allSeriesList: seriesList } = useSeriesList();
+  const { seriesList, allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   return useMemo(() => {
@@ -149,14 +149,13 @@ export const useStatsData = (): StatsData => {
 
     const totalSeries = seriesList.filter((s) => s && s.nmr !== undefined && s.nmr !== null).length;
 
+    // Progress: only non-hidden series, only started ones
     let watchedEpisodes = 0;
     let totalAiredEpisodes = 0;
-    let seriesMinutes = 0;
     let completedSeries = 0;
 
     seriesList.forEach((series) => {
       if (!series || series.nmr === undefined || series.nmr === null) return;
-      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       let seriesTotal = 0;
       let seriesWatched = 0;
@@ -171,21 +170,43 @@ export const useStatsData = (): StatsData => {
           );
 
           if (hasEpisodeAired(ep) || !ep.air_date) {
-            totalAiredEpisodes++;
             seriesTotal++;
-            if (isWatched) {
-              watchedEpisodes++;
-              seriesWatched++;
-              const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
-              seriesMinutes += (ep.runtime || seriesRuntime) * count;
-            }
+            if (isWatched) seriesWatched++;
           }
         });
       });
 
+      if (seriesWatched > 0) {
+        totalAiredEpisodes += seriesTotal;
+        watchedEpisodes += seriesWatched;
+      }
+
       if (seriesTotal > 0 && seriesTotal === seriesWatched) {
         completedSeries++;
       }
+    });
+
+    // Watch time: ALL series including hidden (you watched those episodes)
+    let seriesMinutes = 0;
+    allSeriesList.forEach((series) => {
+      if (!series || series.nmr === undefined || series.nmr === null) return;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
+
+      series.seasons?.forEach((season) => {
+        season.episodes?.forEach((ep) => {
+          const isWatched = !!(
+            ep.firstWatchedAt ||
+            ep.watched === true ||
+            (ep.watched as unknown) === 1 ||
+            (ep.watchCount && ep.watchCount > 0)
+          );
+
+          if (isWatched && (hasEpisodeAired(ep) || !ep.air_date)) {
+            const count = ep.watchCount && ep.watchCount > 1 ? ep.watchCount : 1;
+            seriesMinutes += (ep.runtime || seriesRuntime) * count;
+          }
+        });
+      });
     });
 
     // Movies
@@ -275,11 +296,12 @@ export const useStatsData = (): StatsData => {
     // Last week
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     let lastWeekWatched = 0;
-    seriesList.forEach((series) => {
+    allSeriesList.forEach((series) => {
       series.seasons?.forEach((season) => {
         season.episodes?.forEach((ep) => {
-          if (ep.firstWatchedAt) {
-            const watchDate = new Date(ep.firstWatchedAt);
+          const dateStr = ep.lastWatchedAt || ep.firstWatchedAt;
+          if (dateStr) {
+            const watchDate = new Date(dateStr);
             if (!isNaN(watchDate.getTime()) && watchDate > oneWeekAgo) {
               lastWeekWatched++;
             }
@@ -307,5 +329,5 @@ export const useStatsData = (): StatsData => {
       completedSeries,
       progress,
     };
-  }, [seriesList, movieList, user]);
+  }, [seriesList, allSeriesList, movieList, user]);
 };

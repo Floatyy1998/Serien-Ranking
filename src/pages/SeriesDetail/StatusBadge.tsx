@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Series } from '../../types/Series';
 
 interface StatusBadgeProps {
@@ -6,6 +7,7 @@ interface StatusBadgeProps {
 }
 
 export const StatusBadge = memo<StatusBadgeProps>(({ series }) => {
+  const { currentTheme } = useTheme();
   const isOngoing =
     series.status === 'Returning Series' ||
     series.status === 'ongoing' ||
@@ -17,7 +19,7 @@ export const StatusBadge = memo<StatusBadgeProps>(({ series }) => {
 
   if (!isOngoing && !isEnded) return null;
 
-  const color = isOngoing ? '#4CAF50' : '#9E9E9E';
+  const color = isOngoing ? currentTheme.status?.success || '#22c55e' : currentTheme.text.muted;
   const label = isOngoing ? 'Fortlaufend' : 'Beendet';
 
   return (

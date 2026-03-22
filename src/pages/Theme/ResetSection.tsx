@@ -68,7 +68,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
               className="theme-confirm-btn"
               style={{
                 background: currentTheme.status.error,
-                color: 'white',
+                color: currentTheme.text.secondary,
               }}
             >
               Zurücksetzen

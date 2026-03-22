@@ -61,7 +61,7 @@ const DayCell = memo(
             className={`cal-day-number ${isToday ? 'is-today' : ''}`}
             style={
               isToday
-                ? { background: currentTheme.primary, color: '#fff' }
+                ? { background: currentTheme.primary, color: currentTheme.text.secondary }
                 : { color: currentTheme.text.primary }
             }
           >

@@ -20,8 +20,8 @@ export const StatsBanner = ({ mostConnectedPair }: StatsBannerProps) => {
       animate={{ opacity: 1, y: 0 }}
       className="au-stats-banner"
       style={{
-        background: `linear-gradient(135deg, ${currentTheme.primary}18, var(--theme-secondary-gradient, #8b5cf6)18)`,
-        borderColor: `${currentTheme.primary}30`,
+        background: currentTheme.background.surface,
+        borderColor: currentTheme.border.default,
       }}
     >
       {/* Decorative gradient */}
@@ -36,11 +36,11 @@ export const StatsBanner = ({ mostConnectedPair }: StatsBannerProps) => {
         <div
           className="au-stats-icon"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             boxShadow: `0 4px 12px ${currentTheme.primary}40`,
           }}
         >
-          <People style={{ color: '#fff', fontSize: '24px' }} />
+          <People style={{ color: currentTheme.text.secondary, fontSize: '24px' }} />
         </div>
         <div>
           <p className="au-stats-label" style={{ color: currentTheme.text.muted }}>

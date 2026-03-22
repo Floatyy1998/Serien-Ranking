@@ -20,7 +20,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
+import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import {
   getImplicitRewatchRound,
   getNextRewatchEpisode,
@@ -177,7 +177,7 @@ export const SeriesDetailPage = memo(() => {
             background: 'rgba(255,255,255,0.1)',
             border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: '12px',
-            color: 'white',
+            color: currentTheme.text.secondary,
             fontSize: '16px',
             cursor: 'pointer',
           }}
@@ -196,7 +196,7 @@ export const SeriesDetailPage = memo(() => {
     );
   }
 
-  const warningColor = currentTheme.status?.warning || '#f59e0b';
+  const warningColor = currentTheme.accent;
 
   return (
     <div>
@@ -283,7 +283,7 @@ export const SeriesDetailPage = memo(() => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            color: '#ffb74d',
+            color: currentTheme.status?.warning || '#f59e0b',
           }}
         >
           <VisibilityOff style={{ fontSize: '16px' }} />
@@ -320,7 +320,7 @@ export const SeriesDetailPage = memo(() => {
               padding: isMobile ? '8px' : '10px',
               background:
                 activeTab === tab.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : 'rgba(255, 255, 255, 0.05)',
               borderRadius: isMobile ? '10px' : '12px',
               fontSize: isMobile ? '12px' : '14px',
@@ -351,14 +351,16 @@ export const SeriesDetailPage = memo(() => {
                   gap: '8px',
                 }}
               >
-                <Info style={{ fontSize: isMobile ? '16px' : '20px' }} />
-                Beschreibung
+                <Info
+                  style={{ fontSize: isMobile ? '16px' : '20px', color: currentTheme.accent }}
+                />
+                <span style={{ color: currentTheme.text.primary }}>Beschreibung</span>
               </h3>
               <p
                 style={{
                   fontSize: isMobile ? '12px' : '14px',
                   lineHeight: isMobile ? 1.4 : 1.5,
-                  opacity: 0.8,
+                  color: currentTheme.text.secondary,
                   margin: 0,
                 }}
               >
@@ -395,11 +397,10 @@ export const SeriesDetailPage = memo(() => {
             style={{
               width: '100%',
               padding: '16px',
-              background:
-                'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
-              border: '1px solid rgba(0, 212, 170, 0.5)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}cc 0%, ${currentTheme.accent}cc 100%)`,
+              border: `1px solid ${currentTheme.primary}80`,
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '16px',
               fontWeight: 600,
               cursor: isAdding ? 'not-allowed' : 'pointer',
@@ -486,7 +487,7 @@ export const SeriesDetailPage = memo(() => {
             left: '20px',
             right: '20px',
             background: currentTheme.status.success,
-            color: 'white',
+            color: currentTheme.text.secondary,
             padding: '16px 20px',
             borderRadius: '12px',
             backdropFilter: 'blur(10px)',
@@ -571,8 +572,8 @@ function SeasonsSection({
             gap: '8px',
           }}
         >
-          <List fontSize="small" />
-          Staffeln
+          <List fontSize="small" style={{ color: currentTheme.accent }} />
+          <span style={{ color: currentTheme.text.primary }}>Staffeln</span>
         </h3>
         <motion.button
           whileTap={{ scale: 0.95 }}
@@ -582,7 +583,7 @@ function SeasonsSection({
             background: 'rgba(255,255,255,0.1)',
             border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: '8px',
-            color: 'white',
+            color: currentTheme.text.secondary,
             fontSize: '13px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -688,10 +689,10 @@ function SeasonsSection({
           }}
         >
           <div>
-            <div style={{ fontSize: '15px', fontWeight: 600 }}>
+            <div style={{ fontSize: '15px', fontWeight: 600, color: currentTheme.text.primary }}>
               Staffel {selectedSeason.seasonNumber + 1}
             </div>
-            <div style={{ fontSize: '13px', opacity: 0.7 }}>
+            <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
               {watchedEpisodes}/{totalEpisodes} Episoden
             </div>
           </div>
@@ -704,7 +705,7 @@ function SeasonsSection({
                 border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: '8px',
                 padding: '4px',
-                color: 'white',
+                color: currentTheme.text.secondary,
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -726,7 +727,7 @@ function SeasonsSection({
                 fontWeight: 600,
                 background:
                   seasonProgress === 100
-                    ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                    ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
                     : 'rgba(255,255,255,0.1)',
               }}
             >
@@ -760,21 +761,32 @@ function SeasonsSection({
                     }
                   }}
                   className={`episode-list-item ${episode.watched ? 'episode-list-item--watched' : 'episode-list-item--unwatched'}`}
+                  style={
+                    episode.watched
+                      ? {
+                          background: 'rgba(255,255,255,0.04)',
+                          borderLeft: `3px solid ${isRewatched ? currentTheme.accent : currentTheme.primary}`,
+                        }
+                      : undefined
+                  }
                 >
-                  {/* Number circle */}
+                  {/* Number / check indicator */}
                   <div
                     className="episode-list-number"
                     style={{
                       background: episode.watched
                         ? isRewatched
-                          ? `${warningColor}30`
-                          : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                        : 'rgba(255,255,255,0.1)',
-                      border: isRewatched ? `2px solid ${warningColor}` : 'none',
-                      color: episode.watched ? '#fff' : 'rgba(255,255,255,0.7)',
+                          ? `${currentTheme.accent}18`
+                          : `${currentTheme.primary}18`
+                        : 'rgba(255,255,255,0.06)',
+                      color: episode.watched
+                        ? isRewatched
+                          ? currentTheme.accent
+                          : currentTheme.primary
+                        : currentTheme.text.muted,
                     }}
                   >
-                    {episode.watched ? <Check style={{ fontSize: '16px' }} /> : episodeIndex + 1}
+                    {episode.watched ? <Check style={{ fontSize: '15px' }} /> : episodeIndex + 1}
                   </div>
 
                   {/* Episode info */}
@@ -787,9 +799,12 @@ function SeasonsSection({
                   {isRewatched && (
                     <span
                       style={{
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: warningColor,
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        color: currentTheme.accent,
+                        background: `${currentTheme.accent}12`,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
                       }}
                     >
                       ×{episode.watchCount}
@@ -845,7 +860,7 @@ function SeasonsSection({
                     background: episode.watched
                       ? isRewatched
                         ? `${warningColor}30`
-                        : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
+                        : `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
                       : 'rgba(255,255,255,0.1)',
                     border: episode.watched
                       ? isRewatched
@@ -870,7 +885,7 @@ function SeasonsSection({
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#000',
+                        color: currentTheme.background.default,
                         lineHeight: 1,
                       }}
                     >
@@ -952,7 +967,7 @@ function RewatchBanner({
           {rewatchProgress.current}/{rewatchProgress.total} Episoden
         </span>
       </div>
-      <ProgressBar value={rewatchPercent} color={warningColor} toColor="#f59e0b" height={6} />
+      <ProgressBar value={rewatchPercent} color={warningColor} toColor={warningColor} height={6} />
       {nextEp && (
         <motion.button
           whileTap={{ scale: 0.95 }}
