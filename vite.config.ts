@@ -32,8 +32,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp}'],
         navigateFallback: null, // Disable navigate fallback to prevent loops
-        skipWaiting: false, // Don't auto-activate new SW versions
-        clientsClaim: false, // Don't auto-take control
+        skipWaiting: false, // Controlled via SKIP_WAITING message from UpdateToast
+        clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
         // Disable verbose logging
         disableDevLogs: true,

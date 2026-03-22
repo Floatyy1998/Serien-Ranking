@@ -121,10 +121,11 @@ export const ActionButtons = memo<ActionButtonsProps>(
               }}
             >
               {series.watchlist ? (
-                <BookmarkRemove style={{ fontSize: iconSize }} />
+                <BookmarkRemove style={{ fontSize: iconSize, color: currentTheme.primary }} />
               ) : (
-                <BookmarkAdd style={{ fontSize: iconSize }} />
+                <BookmarkAdd style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
               )}
+              <span>{series.watchlist ? 'Watchlist ✓' : 'Watchlist'}</span>
             </motion.button>
           </Tooltip>
 
@@ -147,10 +148,13 @@ export const ActionButtons = memo<ActionButtonsProps>(
               }}
             >
               {series.hidden ? (
-                <Visibility style={{ fontSize: iconSize }} />
+                <Visibility
+                  style={{ fontSize: iconSize, color: currentTheme.status?.warning || '#f59e0b' }}
+                />
               ) : (
-                <VisibilityOff style={{ fontSize: iconSize }} />
+                <VisibilityOff style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
               )}
+              <span>{series.hidden ? 'Sichtbar' : 'Verstecken'}</span>
             </motion.button>
           </Tooltip>
 

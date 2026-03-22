@@ -14,6 +14,7 @@ import { StatsProvider } from './features/stats/StatsProvider';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { RouteTracker } from './components/RouteTracker';
+import { UpdateToast } from './components/ui/UpdateToast';
 import './styles/performance.css';
 import { updateTheme } from './theme';
 import { AuthContext, AuthProvider } from './authProvider';
@@ -108,6 +109,7 @@ export function App() {
         <AppContent />
       </AuthProvider>
       <CookieConsentBanner />
+      <UpdateToast />
     </Router>
   );
 }
