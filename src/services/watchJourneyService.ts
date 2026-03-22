@@ -27,6 +27,7 @@ import {
   isValidGenre,
   isValidProvider,
   getColor,
+  normalizeGenre,
 } from './watchJourneyTypes';
 import { calculateMultiYearTrends } from './watchJourneyTrends';
 
@@ -143,8 +144,9 @@ export async function calculateWatchJourney(
     activityMonthly[monthIndex].totalMinutes += runtime;
     totalMinutes += runtime;
 
-    // Genres
-    const genres = (event.genres || []).filter(isValidGenre);
+    // Genres (normalize to merge duplicates like Comedy/Komödie)
+    const rawGenres = (event.genres || []).filter(isValidGenre);
+    const genres = [...new Set(rawGenres.map(normalizeGenre))];
     const runtimePerGenre = runtime / Math.max(genres.length, 1);
     genres.forEach((genre) => {
       genreMonthly[monthIndex].values[genre] =
@@ -238,8 +240,11 @@ export async function calculateWatchJourney(
         seriesData.bingeEpisodes++;
       }
 
-      // Add genres
-      (epEvent.genres || []).filter(isValidGenre).forEach((g) => seriesData.genres.add(g));
+      // Add genres (normalized)
+      (epEvent.genres || [])
+        .filter(isValidGenre)
+        .map(normalizeGenre)
+        .forEach((g) => seriesData.genres.add(g));
 
       // Update provider if not set
       if (!seriesData.provider && epEvent.provider) {
@@ -248,29 +253,10 @@ export async function calculateWatchJourney(
     }
   });
 
-  // Top genres (limit to 6)
-  const sortedGenres = Array.from(genreCounts.entries())
+  // All genres sorted by watch time (no limit, no "Andere")
+  const topGenres = Array.from(genreCounts.entries())
     .sort((a, b) => b[1] - a[1])
     .map(([genre]) => genre);
-  const topGenres = sortedGenres.slice(0, 6);
-
-  // Consolidate other genres
-  const otherGenres = sortedGenres.slice(6);
-  if (otherGenres.length > 0) {
-    genreMonthly.forEach((month) => {
-      let otherTotal = 0;
-      otherGenres.forEach((genre) => {
-        if (month.values[genre]) {
-          otherTotal += month.values[genre];
-          delete month.values[genre];
-        }
-      });
-      if (otherTotal > 0) month.values['Andere'] = otherTotal;
-    });
-    if (genreMonthly.some((m) => m.values['Andere'] > 0)) {
-      topGenres.push('Andere');
-    }
-  }
 
   // All providers sorted by watch time (no artificial limit)
   const topProviders = Array.from(providerCounts.entries())
@@ -291,6 +277,7 @@ export async function calculateWatchJourney(
   // Build heatmap array
   const heatmap: HeatmapData[] = [];
   let maxCount = 0;
+  let maxMinutes = 0;
   let peakHour = 20;
   let peakDay = 0;
 
@@ -299,8 +286,9 @@ export async function calculateWatchJourney(
       const key = `${hour}-${day}`;
       const data = heatmapGrid[key] || { count: 0, minutes: 0 };
       heatmap.push({ hour, dayOfWeek: day, count: data.count, minutes: data.minutes });
-      if (data.count > maxCount) {
+      if (data.count > maxCount || (data.count === maxCount && data.minutes > maxMinutes)) {
         maxCount = data.count;
+        maxMinutes = data.minutes;
         peakHour = hour;
         peakDay = day;
       }
