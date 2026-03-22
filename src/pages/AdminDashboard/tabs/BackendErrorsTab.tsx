@@ -13,6 +13,7 @@ interface BackendError {
 interface BackendErrorLog {
   runStart: string;
   runEnd: string;
+  action?: string;
   errorCount: number;
   errors: BackendError[];
 }
@@ -157,7 +158,22 @@ export function BackendErrorsTab({
           }}
         >
           <span style={{ fontWeight: 600 }}>Letzter Run:</span>{' '}
-          {new Date(log.runStart).toLocaleString('de-DE')}
+          {log.action && (
+            <span
+              style={{
+                background: `${theme.primary}20`,
+                color: theme.primary,
+                padding: '1px 8px',
+                borderRadius: 10,
+                fontSize: 11,
+                fontWeight: 700,
+                marginRight: 6,
+              }}
+            >
+              {log.action}
+            </span>
+          )}
+          {log.runStart ? new Date(log.runStart).toLocaleString('de-DE') : '—'}
           {log.runEnd ? ` — ${new Date(log.runEnd).toLocaleString('de-DE')}` : ' (läuft noch...)'}
         </div>
       )}
