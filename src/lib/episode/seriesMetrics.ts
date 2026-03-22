@@ -12,12 +12,16 @@ export const normalizeSeasons = (seasons: Series['seasons'] | undefined): Season
   return Array.isArray(seasons) ? seasons : Object.values(seasons);
 };
 
-/** Normalizes episodes to an array regardless of storage format. */
+/** Normalizes episodes to an array regardless of storage format.
+ *  Filters out null/undefined entries and malformed episodes (missing episode_number). */
 export const normalizeEpisodes = (
   episodes: Episode[] | Record<string, Episode> | undefined
 ): Episode[] => {
   if (!episodes) return [];
-  return Array.isArray(episodes) ? episodes : Object.values(episodes);
+  const arr = Array.isArray(episodes) ? episodes : Object.values(episodes);
+  return arr.filter(
+    (ep): ep is Episode => !!ep && typeof ep === 'object' && ep.episode_number != null
+  );
 };
 
 /**
