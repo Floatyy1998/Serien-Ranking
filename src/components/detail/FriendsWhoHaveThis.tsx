@@ -158,9 +158,9 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
                   justifyContent: 'center',
                   fontSize: '13px',
                   fontWeight: 700,
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   border: hasRating
-                    ? `2px solid ${isHighRating ? '#FFD700' : '#FFA500'}`
+                    ? `2px solid ${currentTheme.accent}`
                     : '2px solid rgba(255, 255, 255, 0.4)',
                   boxShadow: hasRating
                     ? isHighRating
@@ -182,8 +182,8 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
                     left: '50%',
                     transform: 'translateX(-50%)',
                     background: isHighRating
-                      ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-                      : 'linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)',
+                      ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`
+                      : `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`,
                     borderRadius: '8px',
                     padding: '1px 5px',
                     display: 'flex',
@@ -199,7 +199,7 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
                   <Star
                     style={{
                       fontSize: '8px',
-                      color: '#000',
+                      color: currentTheme.background.default,
                       filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.4))',
                     }}
                   />
@@ -207,7 +207,7 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
                     style={{
                       fontSize: '9px',
                       fontWeight: 900,
-                      color: '#000',
+                      color: currentTheme.background.default,
                       lineHeight: 1,
                       textShadow: '0 0 3px rgba(255,255,255,0.3)',
                     }}
@@ -237,7 +237,7 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
               justifyContent: 'center',
               fontSize: '11px',
               fontWeight: 800,
-              color: 'white',
+              color: currentTheme.text.primary,
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
               cursor: 'default',
             }}

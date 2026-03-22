@@ -72,10 +72,10 @@ export const FriendsTab = ({
             onClick={onAddFriend}
             style={{
               padding: '12px 24px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               border: 'none',
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -123,7 +123,7 @@ export const FriendsTab = ({
                           backgroundSize: 'cover',
                         }
                       : {
-                          background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                         }),
                     display: 'flex',
                     alignItems: 'center',
@@ -132,7 +132,7 @@ export const FriendsTab = ({
                   }}
                 >
                   {!currentProfile.photoURL && (
-                    <Person style={{ fontSize: '24px', color: 'white' }} />
+                    <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
                   )}
                 </div>
 

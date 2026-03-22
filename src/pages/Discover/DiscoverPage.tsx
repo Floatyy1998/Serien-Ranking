@@ -91,7 +91,7 @@ export const DiscoverPage = memo(() => {
   const categories = [
     { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
     { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
-    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.status.warning },
+    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.accent },
     {
       id: 'upcoming',
       label: activeTab === 'movies' ? 'Neu' : 'Läuft',
@@ -102,7 +102,7 @@ export const DiscoverPage = memo(() => {
       id: 'recommendations',
       label: 'Für dich',
       icon: Recommend,
-      color: 'var(--theme-secondary-gradient, #8b5cf6)',
+      color: currentTheme.accent,
     },
   ] as const;
 
@@ -143,7 +143,6 @@ export const DiscoverPage = memo(() => {
             >
               <GradientText
                 as="h1"
-                to="#8b5cf6"
                 style={{
                   fontSize: '24px',
                   fontWeight: 800,
@@ -161,11 +160,13 @@ export const DiscoverPage = memo(() => {
                     style={{
                       padding: '10px',
                       background: selectedGenre
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                         : currentTheme.background.surface,
                       border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '12px',
-                      color: selectedGenre ? '#fff' : currentTheme.text.primary,
+                      color: selectedGenre
+                        ? currentTheme.text.secondary
+                        : currentTheme.text.primary,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -194,11 +195,11 @@ export const DiscoverPage = memo(() => {
                   style={{
                     padding: '10px',
                     background: showSearch
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                       : currentTheme.background.surface,
                     border: showSearch ? 'none' : `1px solid ${currentTheme.border.default}`,
                     borderRadius: '12px',
-                    color: showSearch ? '#fff' : currentTheme.text.primary,
+                    color: showSearch ? currentTheme.text.secondary : currentTheme.text.primary,
                     cursor: 'pointer',
                     boxShadow: showSearch ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                   }}
@@ -631,8 +632,8 @@ export const DiscoverPage = memo(() => {
               bottom: '100px',
               left: '50%',
               transform: 'translateX(-50%)',
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, #10b981)`,
-              color: 'white',
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
+              color: currentTheme.text.secondary,
               padding: '14px 24px',
               borderRadius: '16px',
               boxShadow: `0 12px 40px -8px ${currentTheme.status.success}50, 0 4px 12px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)`,

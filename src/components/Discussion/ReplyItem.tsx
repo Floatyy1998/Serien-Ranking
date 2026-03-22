@@ -92,7 +92,10 @@ const _ReplyItem: React.FC<{
         }}
       >
         {!reply.userPhotoURL && (
-          <Person style={{ fontSize: '15px', color: 'white' }} aria-hidden="true" />
+          <Person
+            style={{ fontSize: '15px', color: currentTheme.text.primary }}
+            aria-hidden="true"
+          />
         )}
       </button>
 
@@ -225,7 +228,7 @@ const _ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.primary,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '13px',
                   }}
@@ -307,7 +310,7 @@ const _ReplyItem: React.FC<{
                   padding: '6px 10px',
                   borderRadius: '16px',
                   cursor: 'pointer',
-                  color: isLiked ? '#e91e63' : currentTheme.text.muted,
+                  color: isLiked ? currentTheme.accent : currentTheme.text.muted,
                   fontSize: '13px',
                   fontWeight: 600,
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -358,7 +361,7 @@ const _ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.status.warning,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 600,
@@ -440,7 +443,7 @@ const _ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.status.error,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 600,

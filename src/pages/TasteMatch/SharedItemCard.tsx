@@ -86,9 +86,9 @@ export const SharedItemCard: React.FC<{
           }}
         >
           {type === 'series' ? (
-            <Tv style={{ fontSize: 26, color: 'rgba(255,255,255,0.25)' }} />
+            <Tv style={{ fontSize: 26, color: `${ACCENT_COLORS.series}40` }} />
           ) : (
-            <Movie style={{ fontSize: 26, color: 'rgba(255,255,255,0.25)' }} />
+            <Movie style={{ fontSize: 26, color: `${ACCENT_COLORS.movies}40` }} />
           )}
         </div>
       )}
@@ -97,7 +97,6 @@ export const SharedItemCard: React.FC<{
           style={{
             fontSize: 15,
             fontWeight: 700,
-            color: 'white',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

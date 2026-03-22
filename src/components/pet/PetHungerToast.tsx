@@ -1,5 +1,6 @@
 import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
+import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
 
 interface PetHungerToastProps {
   open: boolean;
@@ -17,6 +18,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
   onFeed,
 }) => {
   const theme = useTheme();
+  const { currentTheme } = useAppTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const isCritical = level === 'critical';
@@ -47,7 +49,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
               textDecoration: 'underline',
               mr: 1,
               fontSize: '0.8rem',
-              color: '#fff',
+              color: currentTheme.text.secondary,
               '&:hover': { opacity: 0.8 },
             }}
           >
@@ -58,7 +60,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
           minWidth: isMobile ? '280px' : '320px',
           maxWidth: isMobile ? '90vw' : '400px',
           backgroundColor: bgColor,
-          color: '#fff',
+          color: currentTheme.text.secondary,
           borderRadius: '12px',
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
           '& .MuiAlert-message': { width: '100%', color: '#fff' },
@@ -76,7 +78,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
                 fontFamily: 'var(--font-display)',
                 fontSize: isMobile ? '0.9rem' : '1rem',
                 lineHeight: 1.2,
-                color: '#fff',
+                color: currentTheme.text.secondary,
               }}
             >
               {title}
@@ -88,7 +90,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
                 fontSize: isMobile ? '0.75rem' : '0.85rem',
                 lineHeight: 1.1,
                 mt: 0.5,
-                color: '#fff',
+                color: currentTheme.text.secondary,
               }}
             >
               {isCritical

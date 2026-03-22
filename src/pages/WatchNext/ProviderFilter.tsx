@@ -13,7 +13,7 @@ interface ProviderFilterProps {
   onSelect: (provider: string | null) => void;
   theme: {
     primary: string;
-    text: { primary: string; muted: string };
+    text: { primary: string; secondary: string; muted: string };
   };
 }
 
@@ -43,8 +43,8 @@ export const ProviderFilter = React.memo(
             style={{
               background: !selected
                 ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                : 'rgba(255, 255, 255, 0.05)',
-              color: !selected ? 'white' : theme.text.primary,
+                : `rgba(255,255,255,0.05)`,
+              color: !selected ? theme.text.secondary : theme.text.primary,
             }}
           >
             Alle
@@ -59,8 +59,8 @@ export const ProviderFilter = React.memo(
                 background:
                   selected === provider.name
                     ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                    : 'rgba(255, 255, 255, 0.05)',
-                color: selected === provider.name ? 'white' : theme.text.primary,
+                    : `rgba(255,255,255,0.05)`,
+                color: selected === provider.name ? theme.text.secondary : theme.text.primary,
               }}
             >
               {provider.logo && (

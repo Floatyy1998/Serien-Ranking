@@ -64,10 +64,10 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             onClick={() => onRewatch(episode)}
             style={{
               padding: '14px',
-              background: `linear-gradient(135deg, ${warningColor}, #f59e0b)`,
+              background: `linear-gradient(135deg, ${warningColor}, ${warningColor})`,
               border: 'none',
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -86,10 +86,10 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             onClick={() => onUnwatch(episode)}
             style={{
               padding: '14px',
-              background: 'rgba(255, 107, 107, 0.15)',
-              border: '1px solid rgba(255, 107, 107, 0.3)',
+              background: `${currentTheme.status?.error || '#ef4444'}26`,
+              border: `1px solid ${currentTheme.status?.error || '#ef4444'}4D`,
               borderRadius: '12px',
-              color: '#ff6b6b',
+              color: currentTheme.status?.error || '#ef4444',
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',
@@ -115,7 +115,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
               background: 'rgba(255, 255, 255, 0.08)',
               border: '1px solid rgba(255, 255, 255, 0.15)',
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '15px',
               fontWeight: '600',
               cursor: 'pointer',

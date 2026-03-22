@@ -40,7 +40,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
         style={{
           background: `linear-gradient(90deg,
             ${currentTheme.primary}${accentAlpha},
-            #8b5cf6${accentAlpha}
+            ${currentTheme.accent}${accentAlpha}
           )`,
         }}
       />
@@ -91,7 +91,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
             className="cu-card-progress-fill"
             style={{
               width: `${item.progress}%`,
-              background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+              background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             }}
           />
         </div>

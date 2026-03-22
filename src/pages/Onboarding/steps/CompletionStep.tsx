@@ -40,7 +40,7 @@ export const CompletionStep: React.FC<Props> = ({
         <GradientText
           as="h2"
           from={currentTheme.primary}
-          to="#a855f7"
+          to={currentTheme.accent}
           style={{ fontSize: 20, fontWeight: 700, margin: 0 }}
         >
           Deine Serien & Filme werden hinzugefügt...
@@ -68,7 +68,7 @@ export const CompletionStep: React.FC<Props> = ({
             transition={{ duration: 0.3, ease: 'easeOut' }}
             style={{
               height: '100%',
-              background: `linear-gradient(90deg, ${currentTheme.primary}, #a855f7)`,
+              background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               borderRadius: 8,
             }}
           />
@@ -118,7 +118,7 @@ export const CompletionStep: React.FC<Props> = ({
             width: 80,
             height: 80,
             borderRadius: '50%',
-            background: `linear-gradient(135deg, ${currentTheme.primary}20, #a855f720)`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -132,7 +132,7 @@ export const CompletionStep: React.FC<Props> = ({
       <GradientText
         as="h1"
         from={currentTheme.primary}
-        to="#a855f7"
+        to={currentTheme.accent}
         style={{ fontSize: 28, fontWeight: 800, margin: '24px 0 0' }}
       >
         Du bist startklar!
@@ -177,8 +177,8 @@ export const CompletionStep: React.FC<Props> = ({
           padding: '14px 0',
           borderRadius: 14,
           border: 'none',
-          background: `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`,
-          color: 'white',
+          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          color: currentTheme.text.secondary,
           fontSize: 16,
           fontWeight: 700,
           cursor: 'pointer',

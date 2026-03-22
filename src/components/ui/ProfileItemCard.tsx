@@ -20,6 +20,7 @@ export interface ProfileCardProvider {
 interface CardTheme {
   primary: string;
   secondary?: string;
+  accent?: string;
   background: { surface: string };
   text: { primary: string };
   status?: { success: string };
@@ -52,7 +53,7 @@ export const ProfileItemCard = memo<ProfileItemCardProps>(
     onClick,
   }) => {
     const successColor = currentTheme.status?.success ?? '#10b981';
-    const secondaryColor = currentTheme.secondary ?? 'var(--theme-secondary-gradient, #8b5cf6)';
+    const secondaryColor = currentTheme.secondary ?? '${currentTheme.accent}';
 
     const card = (
       <div className="pic-card" onClick={onClick}>
@@ -84,7 +85,7 @@ export const ProfileItemCard = memo<ProfileItemCardProps>(
 
           {rating > 0 && (
             <div className="pic-rating-badge">
-              <Star style={{ fontSize: '15px', color: '#ffc107' }} />
+              <Star style={{ fontSize: '15px', color: currentTheme.accent ?? '#ffc107' }} />
               <span className="pic-rating-text">{rating.toFixed(1)}</span>
             </div>
           )}

@@ -57,7 +57,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
     <div style={{ paddingTop: '32px' }}>
       <div className="lb-trophy-header">
         <div className="lb-trophy-icon-wrap">
-          <EmojiEvents style={{ fontSize: '18px', color: '#000' }} />
+          <EmojiEvents style={{ fontSize: '18px', color: currentTheme.background.default }} />
         </div>
         <h2
           style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: currentTheme.text.primary }}
@@ -76,7 +76,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
             transition={{ duration: 0.4, delay: trophyIdx * 0.1 }}
             style={{
               background: currentTheme.background.card,
-              border: `1px solid rgba(255, 255, 255, 0.08)`,
+              border: `1px solid ${currentTheme.border.default}`,
             }}
           >
             <div className="lb-trophy-card-header">
@@ -92,7 +92,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                   Watchtime Rangliste
                 </div>
               </div>
-              <EmojiEvents style={{ fontSize: '24px', color: '#FFD700', opacity: 0.7 }} />
+              <EmojiEvents style={{ fontSize: '24px', color: currentTheme.text.muted }} />
             </div>
 
             <div className="lb-trophy-entries">
@@ -126,7 +126,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         style={{
                           fontSize: isFirst ? '14px' : '12px',
                           fontWeight: 900,
-                          color: '#000',
+                          color: currentTheme.background.default,
                         }}
                       >
                         {idx + 1}
@@ -177,7 +177,6 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         fontWeight: 700,
                         color: medal,
                         whiteSpace: 'nowrap',
-                        opacity: 0.9,
                       }}
                     >
                       {formatWatchtime(entry.score)}

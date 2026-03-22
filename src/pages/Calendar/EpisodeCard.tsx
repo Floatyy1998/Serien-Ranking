@@ -39,7 +39,7 @@ const PremiereOverlay = memo(
     type: NonNullable<WeeklyEpisode['premiereType']>;
     themePrimary: string;
   }) => {
-    const bg = type === 'season-start' ? themePrimary : '#e67e22';
+    const bg = type === 'season-start' ? themePrimary : themePrimary;
     return (
       <span
         className="cal-ep-premiere-overlay"
@@ -115,7 +115,10 @@ const PosterWrap = memo(
         {watched ? (
           <div
             className="cal-ep-status-overlay"
-            style={{ background: `${currentTheme.status.success}cc`, color: '#fff' }}
+            style={{
+              background: `${currentTheme.status.success}cc`,
+              color: currentTheme.text.secondary,
+            }}
           >
             <Check style={{ fontSize: '15px' }} />
           </div>
@@ -126,7 +129,7 @@ const PosterWrap = memo(
               e.stopPropagation();
               onMark();
             }}
-            style={{ borderColor: 'rgba(255,255,255,0.5)' }}
+            style={{ borderColor: `${currentTheme.text.muted}80` }}
           />
         ) : null}
 
@@ -178,12 +181,12 @@ export const SingleEpisodeCard = memo(
           <span
             className="cal-ep-episode"
             style={{
-              color: ep.premiereType ? currentTheme.status.warning : 'rgba(255,255,255,0.7)',
+              color: ep.premiereType ? currentTheme.status.warning : currentTheme.text.muted,
             }}
           >
             {formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)}
             {airTime && (
-              <span className="cal-ep-airtime" style={{ opacity: 0.7 }}>
+              <span className="cal-ep-airtime" style={{ color: currentTheme.text.muted }}>
                 {' · '}
                 {airTime}
               </span>
@@ -301,7 +304,7 @@ export const EpisodeGroupCard = memo(
             <span
               className="cal-ep-episode"
               style={{
-                color: groupPremiereType ? currentTheme.status.warning : 'rgba(255,255,255,0.7)',
+                color: groupPremiereType ? currentTheme.status.warning : currentTheme.text.muted,
               }}
             >
               {episodeRange}

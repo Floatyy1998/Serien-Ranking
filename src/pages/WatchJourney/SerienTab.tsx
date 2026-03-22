@@ -172,8 +172,8 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           margin: '0 20px 24px',
           padding: '24px',
           borderRadius: '24px',
-          background: `linear-gradient(135deg, ${primaryColor}30, ${primaryColor}10)`,
-          border: `1px solid ${primaryColor}50`,
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -627,7 +627,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                   justifyContent: 'center',
                   fontSize: 13,
                   fontWeight: 700,
-                  color: index < 3 ? '#1a1a2e' : textSecondary,
+                  color: index < 3 ? currentTheme.background.default : textSecondary,
                   flexShrink: 0,
                 }}
               >
@@ -651,7 +651,10 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 <div style={{ color: textSecondary, fontSize: 12, marginTop: 2 }}>
                   {formatDate(series.firstWatched)} – {formatDate(series.lastWatched)}
                   {series.rewatchEpisodes > 0 && (
-                    <span style={{ color: '#a29bfe' }}> · {series.rewatchEpisodes}× Rewatch</span>
+                    <span style={{ color: currentTheme.accent }}>
+                      {' '}
+                      · {series.rewatchEpisodes}× Rewatch
+                    </span>
                   )}
                 </div>
               </div>

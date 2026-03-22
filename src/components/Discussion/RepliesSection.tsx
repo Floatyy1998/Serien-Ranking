@@ -219,7 +219,7 @@ export const RepliesSection: React.FC<{
                                 borderRadius: '50%',
                                 background: currentTheme.status.error,
                                 border: 'none',
-                                color: '#fff',
+                                color: currentTheme.text.primary,
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -324,7 +324,7 @@ export const RepliesSection: React.FC<{
                           : currentTheme.background.surface,
                       color:
                         newReply.trim() || replyImages.length > 0
-                          ? '#fff'
+                          ? currentTheme.text.primary
                           : currentTheme.text.muted,
                       cursor: newReply.trim() || replyImages.length > 0 ? 'pointer' : 'default',
                       display: 'flex',

@@ -147,7 +147,7 @@ export const ActivityPage = () => {
         style={{
           background: `
             radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
-            radial-gradient(ellipse 60% 40% at 80% 10%, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)), transparent)
+            radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.accent}20, transparent)
           `,
         }}
       />
@@ -187,7 +187,7 @@ export const ActivityPage = () => {
               onClick={() => setShowAddFriend(true)}
               className="activity-add-btn"
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 boxShadow: currentTheme.shadow.card,
               }}
             >
@@ -212,10 +212,10 @@ export const ActivityPage = () => {
             className="activity-tab"
             style={{
               background: isActive(tab.id)
-                ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
               border: isActive(tab.id) ? 'none' : `1px solid ${currentTheme.border.default}`,
-              color: isActive(tab.id) ? 'white' : currentTheme.text.secondary,
+              color: isActive(tab.id) ? currentTheme.text.secondary : currentTheme.text.muted,
               boxShadow: isActive(tab.id) ? `0 4px 15px ${currentTheme.primary}40` : 'none',
             }}
           >
@@ -225,7 +225,9 @@ export const ActivityPage = () => {
                 <span
                   className="activity-tab__badge-dot"
                   style={{
-                    background: isActive(tab.id) ? 'white' : currentTheme.status.error,
+                    background: isActive(tab.id)
+                      ? currentTheme.text.secondary
+                      : currentTheme.status.error,
                   }}
                 />
               )}
@@ -233,8 +235,10 @@ export const ActivityPage = () => {
                 <span
                   className="activity-tab__badge-count"
                   style={{
-                    background: isActive(tab.id) ? 'white' : currentTheme.status.error,
-                    color: isActive(tab.id) ? currentTheme.primary : 'white',
+                    background: isActive(tab.id)
+                      ? currentTheme.text.secondary
+                      : currentTheme.status.error,
+                    color: isActive(tab.id) ? currentTheme.primary : currentTheme.text.secondary,
                   }}
                 >
                   {tab.badgeCount}
@@ -254,16 +258,16 @@ export const ActivityPage = () => {
         onClick={() => navigate('/discussions')}
         className="activity-banner"
         style={{
-          background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)))`,
+          background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
           border: `1px solid ${currentTheme.primary}30`,
         }}
       >
         <IconContainer
           color={currentTheme.primary}
-          secondaryColor="var(--theme-secondary-gradient, #8b5cf6)"
+          secondaryColor="${currentTheme.accent}"
           size={42}
         >
-          <ChatBubbleOutline style={{ fontSize: '22px', color: 'white' }} />
+          <ChatBubbleOutline style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
         </IconContainer>
 
         <div style={{ flex: 1, minWidth: 0 }}>

@@ -2,7 +2,13 @@ import { LocalFireDepartment } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { GenreComparison } from '../../services/tasteMatchService';
-import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, FRIEND_GRADIENT } from './constants';
+import {
+  USER_COLOR,
+  USER_GRADIENT,
+  FRIEND_COLOR,
+  FRIEND_GRADIENT,
+  ACCENT_COLORS,
+} from './constants';
 
 // Genre Bar - Premium Version
 export const GenreBar: React.FC<{
@@ -38,7 +44,7 @@ export const GenreBar: React.FC<{
           marginBottom: '14px',
         }}
       >
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{genre.genre}</div>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>{genre.genre}</div>
         {similarity >= 80 && (
           <motion.div
             initial={{ scale: 0 }}
@@ -50,12 +56,14 @@ export const GenreBar: React.FC<{
               gap: '4px',
               padding: '3px 8px',
               borderRadius: '8px',
-              background: 'rgba(0, 206, 201, 0.2)',
-              border: '1px solid rgba(0, 206, 201, 0.3)',
+              background: `${ACCENT_COLORS.genres}33`,
+              border: `1px solid ${ACCENT_COLORS.genres}4d`,
             }}
           >
-            <LocalFireDepartment style={{ fontSize: 12, color: '#00cec9' }} />
-            <span style={{ fontSize: 10, color: '#00cec9', fontWeight: 600 }}>Match!</span>
+            <LocalFireDepartment style={{ fontSize: 12, color: ACCENT_COLORS.genres }} />
+            <span style={{ fontSize: 10, color: ACCENT_COLORS.genres, fontWeight: 600 }}>
+              Match!
+            </span>
           </motion.div>
         )}
       </div>

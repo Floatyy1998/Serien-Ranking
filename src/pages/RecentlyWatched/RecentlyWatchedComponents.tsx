@@ -165,7 +165,8 @@ export const TimeRangeChips = memo<{
                 : currentTheme.background.surface,
             boxShadow:
               daysToShow === range.days ? `0 4px 12px ${currentTheme.status.success}40` : 'none',
-            color: daysToShow === range.days ? '#fff' : currentTheme.text.secondary,
+            color:
+              daysToShow === range.days ? currentTheme.text.secondary : currentTheme.text.secondary,
             fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',

@@ -54,7 +54,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '20px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
                   border: `1px solid ${currentTheme.primary}40`,
                   fontSize: '14px',
                   fontWeight: 600,
@@ -86,7 +86,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 width: '100px',
                 height: '100px',
                 borderRadius: '50px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -225,7 +225,7 @@ export const HiddenSeriesPage: React.FC = () => {
                         style={{
                           height: '100%',
                           borderRadius: '2px',
-                          background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                         }}
                       />
                     </div>

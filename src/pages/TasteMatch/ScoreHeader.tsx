@@ -182,7 +182,7 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           {result.overallMatch >= 60 && (
             <LocalFireDepartment style={{ fontSize: 18, color: scoreColor }} />
           )}
-          <span style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>
             {getScoreMessage(result.overallMatch)}
           </span>
         </motion.div>

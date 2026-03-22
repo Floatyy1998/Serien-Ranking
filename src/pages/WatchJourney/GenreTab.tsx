@@ -332,7 +332,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 <div
                   style={{ width: 10, height: 10, borderRadius: '50%', background: stat.color }}
                 />
-                <span style={{ color: 'white', fontSize: 14, fontWeight: 600, flex: 1 }}>
+                <span style={{ color: textPrimary, fontSize: 14, fontWeight: 600, flex: 1 }}>
                   {stat.genre}
                 </span>
               </div>
@@ -341,7 +341,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                   {stat.hours}h
                 </span>
                 <span
-                  style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, alignSelf: 'flex-end' }}
+                  style={{ color: currentTheme.text.muted, fontSize: 14, alignSelf: 'flex-end' }}
                 >
                   {stat.percentage}%
                 </span>

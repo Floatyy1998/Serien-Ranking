@@ -243,7 +243,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  color: '#fff',
+                  color: currentTheme.text.secondary,
                   zIndex: 10001,
                 }}
               >
@@ -270,7 +270,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                     fontSize: '24px',
                     fontWeight: 700,
                     fontFamily: 'var(--font-display)',
-                    color: '#fff',
+                    color: currentTheme.text.secondary,
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
@@ -290,7 +290,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                     borderRadius: '12px',
                     overflow: 'hidden',
                     marginBottom: '24px',
-                    background: '#000',
+                    background: currentTheme.background.default,
                   }}
                 >
                   <iframe
@@ -325,7 +325,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         border: 'none',
                         background:
                           activeTab === 'trailers' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color: '#fff',
+                        color: currentTheme.text.secondary,
                         fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
@@ -344,7 +344,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         border: 'none',
                         background:
                           activeTab === 'bts' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color: '#fff',
+                        color: currentTheme.text.secondary,
                         fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
@@ -423,7 +423,9 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                             justifyContent: 'center',
                           }}
                         >
-                          <PlayArrow style={{ fontSize: '28px', color: '#fff' }} />
+                          <PlayArrow
+                            style={{ fontSize: '28px', color: currentTheme.text.primary }}
+                          />
                         </div>
                       </div>
                       {/* Category Badge */}
@@ -437,7 +439,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                           background: 'rgba(0,0,0,0.7)',
                           fontSize: '12px',
                           fontWeight: 500,
-                          color: '#fff',
+                          color: currentTheme.text.secondary,
                         }}
                       >
                         {getVideoTypeLabel(video.type)}
@@ -454,7 +456,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                             background: currentTheme.primary,
                             fontSize: '12px',
                             fontWeight: 500,
-                            color: '#fff',
+                            color: currentTheme.text.primary,
                           }}
                         >
                           Offiziell
@@ -468,7 +470,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                           margin: 0,
                           fontSize: '14px',
                           fontWeight: 500,
-                          color: '#fff',
+                          color: currentTheme.text.secondary,
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',

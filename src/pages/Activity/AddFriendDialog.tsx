@@ -342,7 +342,9 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                       flexShrink: 0,
                     }}
                   >
-                    {!result.photoURL && <Person style={{ fontSize: '24px', color: 'white' }} />}
+                    {!result.photoURL && (
+                      <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+                    )}
                   </div>
 
                   {/* User Info */}
@@ -370,8 +372,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                       <div
                         style={{
                           fontSize: '13px',
-                          color: currentTheme.text.secondary,
-                          opacity: 0.8,
+                          color: currentTheme.text.muted,
                         }}
                       >
                         {result.seriesCount || 0} Serien • {result.moviesCount || 0} Filme
@@ -426,7 +427,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 padding: '12px 24px',
                 background: currentTheme.status.success,
                 borderRadius: '12px',
-                color: 'white',
+                color: currentTheme.text.secondary,
                 fontWeight: 600,
                 boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                 zIndex: 1001,

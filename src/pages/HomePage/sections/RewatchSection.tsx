@@ -56,7 +56,7 @@ export const RewatchSection = React.memo(function RewatchSection({
 }: RewatchSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.status?.warning || '#f59e0b';
+  const accentColor = currentTheme.accent || currentTheme.status?.warning || '#f59e0b';
 
   if (episodes.length === 0) return null;
 
@@ -161,7 +161,7 @@ export const RewatchSection = React.memo(function RewatchSection({
                             top: 0,
                             height: '100%',
                             width: `${item.progress}%`,
-                            background: `linear-gradient(90deg, ${accentColor}, #f59e0b)`,
+                            background: `linear-gradient(90deg, ${accentColor}, ${accentColor})`,
                             transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         />

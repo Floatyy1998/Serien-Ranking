@@ -5,6 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { TopSeriesEntry } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface TopSeriesSlideProps {
   topSeries: TopSeriesEntry[];
@@ -12,6 +13,7 @@ interface TopSeriesSlideProps {
 }
 
 export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxItems = 5 }) => {
+  const { currentTheme } = useTheme();
   const displaySeries = topSeries.slice(0, maxItems);
 
   if (displaySeries.length === 0) {
@@ -32,8 +34,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
               width: '80px',
               height: '80px',
               borderRadius: '16px',
-              background:
-                'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -138,8 +139,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
             style={{
               width: 'min(200px, 45vw)',
               aspectRatio: '2/3',
-              background:
-                'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
               borderRadius: '12px',
               display: 'flex',
               alignItems: 'center',

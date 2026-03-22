@@ -196,10 +196,10 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         <div
           style={{
             padding: '12px',
-            background: `${currentTheme.primary}15`,
+            background: currentTheme.background.surface,
             borderRadius: '12px',
             marginBottom: '20px',
-            border: `1px solid ${currentTheme.primary}25`,
+            border: `1px solid ${currentTheme.border.default}`,
           }}
         >
           <p

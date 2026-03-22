@@ -10,6 +10,7 @@ interface EpisodeCardProps {
   index: number;
   theme: {
     primary: string;
+    accent: string;
     text: { primary: string; secondary: string; muted: string };
     status: { success: string; warning: string };
   };
@@ -61,6 +62,7 @@ export const EpisodeCard = React.memo(
     episodeKey,
   }: EpisodeCardProps) => {
     const navigate = useNavigate();
+    const successColor = theme.status.success;
 
     const isDragTarget =
       currentTouchIndex === index && draggedIndex !== null && draggedIndex !== index;
@@ -124,20 +126,28 @@ export const EpisodeCard = React.memo(
             minHeight: '75px',
             gap: '12px',
             background: isCompleting
-              ? 'linear-gradient(90deg, rgba(76, 209, 55, 0.2), rgba(0, 212, 170, 0.05))'
+              ? `linear-gradient(90deg, ${successColor}33, ${theme.primary}0D)`
               : episode.isRewatch
-                ? `${theme.status.warning}0D`
+                ? `${theme.accent}0D`
                 : dragOffset
-                  ? `rgba(76, 209, 55, ${Math.min((Math.abs(dragOffset) / 100) * 0.15, 0.15)})`
+                  ? `${successColor}${Math.round(
+                      Math.min((Math.abs(dragOffset) / 100) * 0.15, 0.15) * 255
+                    )
+                      .toString(16)
+                      .padStart(2, '0')}`
                   : 'var(--theme-surface, rgba(255,255,255,0.05))',
             border: `1px solid ${
               isCompleting
-                ? 'rgba(76, 209, 55, 0.5)'
+                ? `${successColor}80`
                 : isDragTarget
                   ? theme.primary
                   : episode.isRewatch
-                    ? `${theme.status.warning}4D`
-                    : `rgba(76, 209, 55, ${0.2 + Math.min((Math.abs(dragOffset) / 100) * 0.3, 0.3)})`
+                    ? `${theme.accent}4D`
+                    : `${successColor}${Math.round(
+                        (0.2 + Math.min((Math.abs(dragOffset) / 100) * 0.3, 0.3)) * 255
+                      )
+                        .toString(16)
+                        .padStart(2, '0')}`
             }`,
             borderRadius: '14px',
             padding: isDragTarget ? '11px' : '12px',
@@ -164,7 +174,7 @@ export const EpisodeCard = React.memo(
               left: 0,
               right: 0,
               bottom: 0,
-              background: 'linear-gradient(90deg, transparent, rgba(76, 209, 55, 0.3))',
+              background: `linear-gradient(90deg, transparent, ${successColor}4D)`,
               opacity: 0,
             }}
             animate={{ opacity: isSwiping ? 1 : 0 }}
@@ -243,7 +253,7 @@ export const EpisodeCard = React.memo(
                 fontSize: '14px',
                 fontWeight: 500,
                 margin: 0,
-                color: episode.isRewatch ? theme.status.warning : theme.status.success,
+                color: episode.isRewatch ? theme.accent : theme.status.success,
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
@@ -281,7 +291,7 @@ export const EpisodeCard = React.memo(
               style={{
                 marginTop: '6px',
                 height: '4px',
-                background: 'rgba(255, 255, 255, 0.15)',
+                background: `${theme.text.muted}25`,
                 borderRadius: '2px',
                 overflow: 'hidden',
                 position: 'relative',
@@ -294,7 +304,7 @@ export const EpisodeCard = React.memo(
                   top: 0,
                   height: '100%',
                   width: `${episode.progress}%`,
-                  background: `linear-gradient(90deg, ${theme.primary}, ${theme.status.success})`,
+                  background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent})`,
                   transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               />
@@ -356,7 +366,7 @@ export const EpisodeCard = React.memo(
                   <PlayCircle
                     style={{
                       fontSize: '24px',
-                      color: episode.isRewatch ? theme.status.warning : theme.status.success,
+                      color: episode.isRewatch ? theme.accent : theme.status.success,
                     }}
                   />
                 </motion.div>

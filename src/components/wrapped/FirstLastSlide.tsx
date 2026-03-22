@@ -5,6 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { FirstLastWatch } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FirstLastSlideProps {
   firstWatch: FirstLastWatch | null;
@@ -40,6 +41,7 @@ const FilmIcon = () => (
 );
 
 export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, lastWatch, year }) => {
+  const { currentTheme } = useTheme();
   if (!firstWatch && !lastWatch) {
     return (
       <div
@@ -85,8 +87,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           top: '20%',
           bottom: '20%',
           width: '2px',
-          background:
-            'linear-gradient(180deg, #00d9ff 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+          background: `linear-gradient(180deg, #00d9ff 0%, ${currentTheme.accent} 100%)`,
           transformOrigin: 'top',
           opacity: 0.3,
         }}
@@ -183,8 +184,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           width: '50px',
           height: '50px',
           borderRadius: '50%',
-          background:
-            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+          background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

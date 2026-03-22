@@ -196,6 +196,7 @@ export function normalizeThemeColors(config: {
   backgroundColor: string;
   surfaceColor?: string;
   accentColor?: string;
+  textColor?: string;
 }): typeof config {
   let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
 

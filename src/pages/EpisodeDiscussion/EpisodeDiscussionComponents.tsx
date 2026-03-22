@@ -22,7 +22,7 @@ import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
-const SECONDARY_COLOR = '#8b5cf6';
+// SECONDARY_COLOR is resolved per-component from theme.accent
 
 // ---------- Loading State ----------
 export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => (
@@ -31,7 +31,7 @@ export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => 
       className="ed-loading-bg"
       style={{
         background: `radial-gradient(ellipse at 30% 20%, ${currentTheme.primary}15 0%, transparent 50%),
-                     radial-gradient(ellipse at 70% 80%, ${SECONDARY_COLOR}15 0%, transparent 50%)`,
+                     radial-gradient(ellipse at 70% 80%, ${currentTheme.accent}15 0%, transparent 50%)`,
       }}
     />
     <LoadingSpinner size={50} text="Lade Episodendetails..." />
@@ -70,7 +70,7 @@ export const NotFoundState = memo(
           onClick={onGoBack}
           className="ed-not-found-btn"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, ${SECONDARY_COLOR})`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             boxShadow: `0 4px 15px ${currentTheme.primary}40`,
           }}
         >
@@ -135,7 +135,7 @@ export const HeroSection = memo(
         <div
           className="ed-hero-placeholder"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${SECONDARY_COLOR} 100%)`,
+            background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           }}
         />
       )}
@@ -194,7 +194,7 @@ export const HeroSection = memo(
           <span
             className="ed-season-badge"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${SECONDARY_COLOR})`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               boxShadow: `0 4px 12px ${currentTheme.primary}50`,
             }}
           >
@@ -263,7 +263,7 @@ export const HeroSection = memo(
           {episodeRuntime && (
             <Tooltip title="Episodenlänge" arrow>
               <span className="ed-meta-item">
-                <PlayCircle className="ed-meta-icon" style={{ color: SECONDARY_COLOR }} />
+                <PlayCircle className="ed-meta-icon" style={{ color: currentTheme.accent }} />
                 {episodeRuntime} Min.
               </span>
             </Tooltip>
@@ -402,7 +402,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
       className="ed-nav-btn ed-nav-btn--next"
       style={{
         background: navigation.hasNextEpisode
-          ? `linear-gradient(135deg, ${currentTheme.primary}12, ${SECONDARY_COLOR}12)`
+          ? `linear-gradient(135deg, ${currentTheme.primary}12, ${currentTheme.accent}12)`
           : currentTheme.background.card,
         border: navigation.hasNextEpisode
           ? `1px solid ${currentTheme.primary}30`
@@ -423,7 +423,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
         className="ed-nav-icon-wrap"
         style={{
           background: navigation.hasNextEpisode
-            ? `linear-gradient(135deg, ${currentTheme.primary}30, ${SECONDARY_COLOR}30)`
+            ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.accent}30)`
             : currentTheme.background.surface,
         }}
       >
@@ -467,7 +467,7 @@ export const OverviewSection = memo(({ currentTheme, episodeOverview }: Overview
           <div
             className="ed-overview-icon-wrap"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}20, ${SECONDARY_COLOR}20)`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
             }}
           >
             <Movie className="ed-overview-icon" style={{ color: currentTheme.primary }} />
@@ -616,7 +616,7 @@ export const GuestStarsSection = memo(
                   <div
                     className="ed-guest-star-placeholder"
                     style={{
-                      background: `linear-gradient(135deg, ${currentTheme.primary}30, ${SECONDARY_COLOR}30)`,
+                      background: `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.accent}30)`,
                     }}
                   >
                     👤

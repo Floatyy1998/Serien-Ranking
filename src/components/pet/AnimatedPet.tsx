@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Pet, PetAccessory } from '../../types/pet.types';
 import { petMoodService } from '../../services/petMoodService';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface AnimatedPetProps {
   pet: Pet;
@@ -19,6 +20,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
   borderWalk = false,
   onClick,
 }) => {
+  const { currentTheme } = useTheme();
   const [currentMood, setCurrentMood] = useState<Pet['mood']>('happy');
   const controls = useAnimationControls();
   const [isWalking, setIsWalking] = useState(false);
@@ -74,8 +76,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
     }
     if (pet.color === 'cosmic') {
       return {
-        background:
-          'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
         boxShadow: '0 0 20px rgba(102, 126, 234, 0.3), 0 0 40px rgba(102, 126, 234, 0.1)',
       };
     }

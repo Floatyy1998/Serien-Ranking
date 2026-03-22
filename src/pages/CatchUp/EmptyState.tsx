@@ -75,7 +75,7 @@ export const EmptyState = memo(() => {
         onClick={handleDiscover}
         className="cu-empty-btn"
         style={{
-          background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
           boxShadow: `0 8px 24px ${currentTheme.primary}40`,
         }}
       >

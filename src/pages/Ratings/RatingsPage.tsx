@@ -72,7 +72,7 @@ export const RatingsPage: React.FC = () => {
         className="ratings-decorative-bg"
         style={{
           background: `
-            radial-gradient(ellipse 80% 50% at 50% -20%, #fbbf2430, transparent),
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.accent}30, transparent),
             radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.primary}20, transparent)
           `,
         }}

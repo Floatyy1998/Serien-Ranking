@@ -2,6 +2,7 @@ import { Close, Timer } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { Trophy3D } from '../../components/ui/Trophy3D';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { CelebrationData } from './useLeaderboardData';
 
 const PLACE_COLORS = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
@@ -45,6 +46,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
   onClose,
   userName,
 }: CelebrationModalProps) {
+  const { currentTheme } = useTheme();
   return (
     <AnimatePresence>
       {celebration && (
@@ -156,7 +158,12 @@ export const CelebrationModal = React.memo(function CelebrationModal({
               }}
             >
               <span
-                style={{ fontSize: '18px', fontWeight: 900, color: '#000', letterSpacing: '0.5px' }}
+                style={{
+                  fontSize: '18px',
+                  fontWeight: 900,
+                  color: currentTheme.background.default,
+                  letterSpacing: '0.5px',
+                }}
               >
                 {PLACE_LABELS[celebration.place]}
               </span>
@@ -172,13 +179,13 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                 style={{
                   margin: '0 0 20px',
                   fontSize: '16px',
-                  color: 'rgba(255,255,255,0.75)',
+                  color: currentTheme.text.muted,
                   lineHeight: 1.6,
                 }}
               >
                 Watchtime-Rangliste
                 <br />
-                <strong style={{ color: '#fff', fontSize: '18px' }}>
+                <strong style={{ color: currentTheme.text.secondary, fontSize: '18px' }}>
                   {celebration.monthLabel}
                 </strong>
               </p>
@@ -193,7 +200,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                background: 'rgba(255,255,255,0.08)',
+                background: `${currentTheme.text.muted}15`,
                 borderRadius: '16px',
                 padding: '12px 28px',
                 marginBottom: '28px',
@@ -202,7 +209,9 @@ export const CelebrationModal = React.memo(function CelebrationModal({
               }}
             >
               <Timer style={{ fontSize: '20px', color: PLACE_COLORS[celebration.place] }} />
-              <span style={{ fontSize: '26px', fontWeight: 800, color: '#fff' }}>
+              <span
+                style={{ fontSize: '26px', fontWeight: 800, color: currentTheme.text.secondary }}
+              >
                 {formatWatchtime(celebration.score)}
               </span>
             </motion.div>
@@ -226,7 +235,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                   borderRadius: '14px',
                   border: 'none',
                   background: PLACE_GRADIENTS[celebration.place],
-                  color: '#000',
+                  color: currentTheme.background.default,
                   fontSize: '16px',
                   fontWeight: 800,
                   cursor: 'pointer',

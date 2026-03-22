@@ -60,7 +60,7 @@ export const StatRing: React.FC<{
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke="rgba(255, 255, 255, 0.08)"
+            stroke={`${color}15`}
             strokeWidth={strokeWidth}
           />
           <motion.circle
@@ -97,7 +97,7 @@ export const StatRing: React.FC<{
           style={{
             fontSize: 17,
             fontWeight: 800,
-            color: 'white',
+            color: color,
             textShadow: `0 0 20px ${color}50`,
           }}
         >
@@ -106,7 +106,7 @@ export const StatRing: React.FC<{
         <div
           style={{
             fontSize: 11,
-            color: 'rgba(255,255,255,0.5)',
+            color: `${color}80`,
             fontWeight: 500,
             letterSpacing: '0.3px',
           }}

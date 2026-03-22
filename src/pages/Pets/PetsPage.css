@@ -117,7 +117,11 @@
   transform: translate(-50%, -50%);
   width: 250px;
   height: 250px;
-  background: radial-gradient(circle, #ec489930, transparent 70%);
+  background: radial-gradient(
+    circle,
+    var(--theme-accent-30, rgba(139, 92, 246, 0.19)),
+    transparent 70%
+  );
   border-radius: 50%;
   pointer-events: none;
 }
@@ -273,8 +277,8 @@
 }
 
 .pet-action-btn--revive {
-  background: linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6), #7c3aed);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+  background: linear-gradient(135deg, var(--theme-primary, #667eea), var(--theme-accent, #8b5cf6));
+  box-shadow: 0 8px 24px var(--theme-primary-40, rgba(102, 126, 234, 0.35));
 }
 
 /* ─── Customization ─── */

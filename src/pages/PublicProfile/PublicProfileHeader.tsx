@@ -48,7 +48,14 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
 
         {/* Rating Badge */}
         <div className="pp-header__badge">
-          <Star style={{ fontSize: 16, color: '#FFD700' }} />
+          <Star
+            style={{
+              fontSize: 16,
+              color: ('accent' in currentTheme
+                ? currentTheme.accent
+                : currentTheme.primary) as string,
+            }}
+          />
           <span className="pp-header__badge-value">Ø {averageRating.toFixed(1)}</span>
         </div>
       </div>

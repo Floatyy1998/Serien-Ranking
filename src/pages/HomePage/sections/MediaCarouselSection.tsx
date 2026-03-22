@@ -55,12 +55,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
       <Star />
     );
 
-  const sectionIconColor =
-    variant === 'seasonal'
-      ? iconColor || currentTheme.primary
-      : variant === 'trending'
-        ? currentTheme.status.error
-        : currentTheme.status.warning;
+  const sectionIconColor = iconColor || currentTheme.accent;
 
   return (
     <section style={{ marginBottom: '32px' }}>
@@ -128,7 +123,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                             item.type === 'movie'
                               ? 'rgba(255, 193, 7, 0.85)'
                               : `${currentTheme.primary}D9`,
-                          color: 'white',
+                          color: currentTheme.text.secondary,
                           borderRadius: '6px',
                           padding: '2px 6px',
                           fontSize: '11px',
@@ -172,7 +167,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                           fontWeight: 900,
                           fontFamily: 'var(--font-display)',
                           lineHeight: 1,
-                          background: `linear-gradient(180deg, #ffffff 20%, ${currentTheme.primary}90 100%)`,
+                          background: `linear-gradient(180deg, ${currentTheme.text.secondary} 20%, ${currentTheme.primary}90 100%)`,
                           WebkitBackgroundClip: 'text',
                           WebkitTextFillColor: 'transparent',
                           backgroundClip: 'text',
@@ -212,7 +207,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     marginTop: '2px',
                   }}
                 >
-                  <Star style={{ fontSize: '13px', color: '#ffd43b' }} />
+                  <Star style={{ fontSize: '13px', color: currentTheme.accent }} />
                   <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
                 </div>
               </motion.div>
@@ -280,7 +275,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                       <div
                         style={{
                           background: badgeGradient,
-                          color: 'white',
+                          color: currentTheme.text.secondary,
                           borderRadius: '6px',
                           padding: '2px 6px',
                           fontSize: isMobile ? '9px' : '11px',
@@ -313,7 +308,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '2px',
-                          color: 'white',
+                          color: currentTheme.text.secondary,
                           pointerEvents: 'auto',
                         }}
                       >
@@ -332,7 +327,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                             item.type === 'movie'
                               ? 'rgba(255, 193, 7, 0.9)'
                               : `${currentTheme.primary}E6`,
-                          color: 'white',
+                          color: currentTheme.text.secondary,
                           borderRadius: '6px',
                           padding: '2px 6px',
                           fontSize: '11px',
@@ -383,7 +378,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     marginTop: '2px',
                   }}
                 >
-                  <Star style={{ fontSize: '13px', color: '#ffd43b' }} />
+                  <Star style={{ fontSize: '13px', color: currentTheme.accent }} />
                   <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
                 </div>
               )}

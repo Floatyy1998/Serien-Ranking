@@ -6,7 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HorizontalScrollContainer } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { getGreeting } from '../../../utils/greetings';
+import { getGreeting } from '../../../lib/text/greetings';
 import { LiveClock } from '../LiveClock';
 
 interface GreetingSectionProps {
@@ -78,7 +78,8 @@ export const GreetingSection = React.memo(function GreetingSection({
 
                 if (data.results && data.results.length > 0) {
                   const result = data.results[0];
-                  navigate(`/${greeting.type}/${result.id}`);
+                  const routeType = greeting.type === 'tv' ? 'series' : 'movie';
+                  navigate(`/${routeType}/${result.id}`);
                   setGreetingInfo(null);
                 }
               } catch (error) {
@@ -99,7 +100,7 @@ export const GreetingSection = React.memo(function GreetingSection({
             whiteSpace: 'nowrap',
             zIndex: 99999,
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            color: '#ffffff',
+            color: currentTheme.text.secondary,
             pointerEvents: 'auto',
             cursor: greeting.title ? 'pointer' : 'default',
             transition: 'all 0.2s ease',
@@ -131,7 +132,7 @@ export const GreetingSection = React.memo(function GreetingSection({
             <GradientText
               as="h1"
               from={currentTheme.primary}
-              to="#f59e0b"
+              to={currentTheme.accent}
               style={{
                 fontSize: '22px',
                 fontWeight: 800,
@@ -175,7 +176,7 @@ export const GreetingSection = React.memo(function GreetingSection({
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
-                    background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
+                    background: `linear-gradient(135deg, ${currentTheme.status?.error || '#ef4444'} 0%, ${currentTheme.status?.error || '#ef4444'} 100%)`,
                   },
                 }}
               >

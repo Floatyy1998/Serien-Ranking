@@ -70,10 +70,7 @@ export const TasteMatchCard: React.FC = () => {
         accentColor={currentTheme.primary}
         aria-label="Taste Match: Geschmack mit Freunden vergleichen"
       >
-        <IconContainer
-          color={currentTheme.primary}
-          secondaryColor="var(--theme-secondary-gradient, #764ba2)"
-        >
+        <IconContainer color={currentTheme.primary} secondaryColor={currentTheme.accent}>
           <CompareArrows style={{ fontSize: 20, color: 'white' }} />
         </IconContainer>
 
@@ -253,7 +250,7 @@ export const TasteMatchCard: React.FC = () => {
                   >
                     <IconContainer
                       color={currentTheme.primary}
-                      secondaryColor="var(--theme-secondary-gradient, #764ba2)"
+                      secondaryColor={currentTheme.accent}
                       size={44}
                       borderRadius="50%"
                       style={{ overflow: 'hidden' }}

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Series } from '../../types/Series';
 
 interface RatingsCardProps {
@@ -26,6 +27,7 @@ interface RatingBadge {
 
 export const RatingsCard = memo<RatingsCardProps>(
   ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile, noMargin }) => {
+    const { currentTheme } = useTheme();
     const tmdbValue = (
       tmdbRating?.vote_average ||
       series?.vote_average ||
@@ -56,7 +58,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         key: 'imdb',
         label: 'IMDb',
         labelBg: '#F5C518',
-        labelColor: '#000',
+        labelColor: currentTheme.background.default,
         pillBg: 'rgba(245, 197, 24, 0.15)',
         pillBorder: 'rgba(245, 197, 24, 0.3)',
         value: `${imdbRating?.rating?.toFixed(1) || '0.0'}/10`,

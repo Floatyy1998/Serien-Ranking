@@ -24,7 +24,7 @@ interface SortBarProps {
   onToggleCustom: () => void;
   theme: {
     primary: string;
-    text: { primary: string };
+    text: { primary: string; secondary: string };
   };
 }
 
@@ -37,10 +37,10 @@ export const SortBar = React.memo(
       padding: '8px 14px',
       background: active
         ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-        : 'rgba(255, 255, 255, 0.05)',
+        : `rgba(255,255,255,0.05)`,
       border: 'none' as const,
       borderRadius: '10px',
-      color: active ? 'white' : theme.text.primary,
+      color: active ? theme.text.secondary : theme.text.primary,
       fontSize: '13px',
       fontWeight: 600 as const,
       cursor: 'pointer' as const,

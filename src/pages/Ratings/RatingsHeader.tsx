@@ -33,7 +33,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           <GradientText
             as="h1"
             from={theme.text.primary}
-            to="#fbbf24"
+            to={theme.accent}
             style={{
               fontSize: 26,
               fontWeight: 800,
@@ -43,7 +43,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               gap: 12,
             }}
           >
-            <Star style={{ fontSize: 28, color: '#fbbf24', WebkitTextFillColor: 'initial' }} />
+            <Star style={{ fontSize: 28, color: theme.accent, WebkitTextFillColor: 'initial' }} />
             Meine Bewertungen
           </GradientText>
         </div>

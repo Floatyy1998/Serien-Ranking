@@ -51,9 +51,9 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
                 className="wj-tab-btn"
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`
+                    ? `linear-gradient(135deg, ${primaryColor}, ${currentTheme.accent})`
                     : 'transparent',
-                  color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                  color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
                   boxShadow: isActive ? `0 2px 8px ${primaryColor}40` : 'none',
                 }}
               >

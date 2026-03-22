@@ -86,10 +86,10 @@ export const GalaxyMapTab = ({
                 width: '44px',
                 height: '44px',
                 borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                background: `${currentTheme.background.surface}cc`,
+                border: `1px solid ${currentTheme.border.default}`,
                 backdropFilter: 'blur(8px)',
-                color: 'white',
+                color: currentTheme.text.primary,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -122,7 +122,7 @@ export const GalaxyMapTab = ({
           overflow: 'hidden',
           cursor: isDragging ? 'grabbing' : 'grab',
           position: 'relative',
-          background: 'radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a1a 100%)',
+          background: `radial-gradient(ellipse at center, ${currentTheme.background.surface} 0%, ${currentTheme.background.default} 100%)`,
         }}
       >
         {/* Background stars */}
@@ -136,7 +136,7 @@ export const GalaxyMapTab = ({
               width: star.size,
               height: star.size,
               borderRadius: '50%',
-              background: 'white',
+              background: currentTheme.text.primary,
               opacity: star.opacity,
             }}
           />
@@ -165,11 +165,7 @@ export const GalaxyMapTab = ({
             <defs>
               <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor={currentTheme.primary} stopOpacity="0.5" />
-                <stop
-                  offset="100%"
-                  stopColor="var(--theme-secondary-gradient, #8b5cf6)"
-                  stopOpacity="0.5"
-                />
+                <stop offset="100%" stopColor={currentTheme.accent} stopOpacity="0.5" />
               </linearGradient>
             </defs>
             {connections.slice(0, 200).map((conn, idx) => {
@@ -188,7 +184,9 @@ export const GalaxyMapTab = ({
                   y1={`${(actor1.y || 0.5) * 100}%`}
                   x2={`${(actor2.x || 0.5) * 100}%`}
                   y2={`${(actor2.y || 0.5) * 100}%`}
-                  stroke={isHighlighted ? 'url(#connectionGradient)' : 'rgba(255, 255, 255, 0.05)'}
+                  stroke={
+                    isHighlighted ? 'url(#connectionGradient)' : `${currentTheme.text.muted}15`
+                  }
                   strokeWidth={isHighlighted ? 2 : 1}
                 />
               );
@@ -266,7 +264,7 @@ export const GalaxyMapTab = ({
                       left: '50%',
                       transform: 'translateX(-50%)',
                       marginTop: '8px',
-                      background: 'rgba(10, 14, 26, 0.75)',
+                      background: `${currentTheme.background.default}cc`,
                       backdropFilter: 'blur(8px)',
                       padding: '8px 14px',
                       borderRadius: '12px',
@@ -274,17 +272,16 @@ export const GalaxyMapTab = ({
                       fontSize: `${12 / transform.scale}px`,
                       fontWeight: 600,
                       pointerEvents: 'none',
-                      border: '1px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                      border: `1px solid ${currentTheme.border.default}`,
+                      boxShadow: `0 4px 12px ${currentTheme.background.default}80`,
                     }}
                   >
                     {actor.name}
                     <div
                       style={{
                         fontSize: `${10 / transform.scale}px`,
-                        opacity: 0.7,
                         marginTop: '3px',
-                        color: currentTheme.primary,
+                        color: currentTheme.text.muted,
                       }}
                     >
                       {actor.seriesCount} Serien
@@ -303,13 +300,13 @@ export const GalaxyMapTab = ({
           position: 'absolute',
           bottom: '16px',
           left: '16px',
-          background: 'rgba(255, 255, 255, 0.04)',
+          background: `${currentTheme.background.surface}cc`,
           borderRadius: '14px',
           padding: '14px 16px',
           fontSize: '13px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: `1px solid ${currentTheme.border.default}`,
           backdropFilter: 'blur(8px)',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.1)',
+          boxShadow: `0 4px 16px ${currentTheme.background.default}40`,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
@@ -322,18 +319,18 @@ export const GalaxyMapTab = ({
               boxShadow: '0 0 8px hsl(45, 80%, 60%)',
             }}
           />
-          <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Top 10 Schauspieler</span>
+          <span style={{ color: currentTheme.text.secondary }}>Top 10 Schauspieler</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
             style={{
               width: '18px',
               height: '3px',
-              background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+              background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               borderRadius: '2px',
             }}
           />
-          <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>Gemeinsame Serie</span>
+          <span style={{ color: currentTheme.text.secondary }}>Gemeinsame Serie</span>
         </div>
       </div>
     </motion.div>

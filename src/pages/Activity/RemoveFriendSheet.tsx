@@ -88,14 +88,14 @@ export const RemoveFriendSheet = ({
             style={{
               flex: 1,
               padding: '14px',
-              background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
+              background: `linear-gradient(135deg, ${currentTheme.status.error}, ${currentTheme.status?.error || '#ef4444'})`,
               border: 'none',
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '15px',
               fontWeight: 600,
               cursor: isRemoving ? 'not-allowed' : 'pointer',
-              opacity: isRemoving ? 0.7 : 1,
+              opacity: isRemoving ? 0.5 : 1,
             }}
           >
             {isRemoving ? 'Entfernt...' : 'Entfernen'}

@@ -391,8 +391,8 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
           style={{
             padding: '8px 20px',
             borderRadius: 12,
-            background: `${theme.primary}10`,
-            border: `1px solid ${theme.primary}25`,
+            background: theme.background.surface,
+            border: `1px solid ${theme.border.default}`,
             color: theme.text.primary,
             fontSize: 14,
             fontWeight: 700,

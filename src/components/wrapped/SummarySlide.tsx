@@ -5,6 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GradientText } from '../ui';
+import { useTheme } from '../../contexts/ThemeContext';
 import { WrappedStats } from '../../types/Wrapped';
 
 interface SummarySlideProps {
@@ -91,6 +92,7 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
 };
 
 export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) => {
+  const { currentTheme } = useTheme();
   const topSerie = stats.topSeries[0];
 
   // Confetti shapes - using colored divs instead of emojis
@@ -99,7 +101,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
     '#f5af19',
     '#e94560',
     '#fff',
-    'var(--theme-secondary-gradient, #764ba2)',
+    currentTheme.accent,
   ];
 
   return (
@@ -161,7 +163,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
       >
         <GradientText
           as="h2"
-          from="#fff"
+          from={currentTheme.text.secondary}
           to="#e94560"
           style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
@@ -266,8 +268,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
                   width: '60px',
                   height: '90px',
                   borderRadius: '8px',
-                  background:
-                    'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+                  background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

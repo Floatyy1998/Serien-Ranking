@@ -42,11 +42,11 @@ export const HeroStats = memo<HeroStatsProps>(({ totalEpisodes, totalMinutes, av
             transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
             className="cu-hero-icon"
             style={{
-              background: 'linear-gradient(135deg, #f59e0b20, #f59e0b10)',
-              border: '1px solid #f59e0b40',
+              background: `linear-gradient(135deg, ${currentTheme.accent}20, ${currentTheme.accent}10)`,
+              border: `1px solid ${currentTheme.accent}40`,
             }}
           >
-            <PlayArrow style={{ fontSize: 26, color: '#f59e0b' }} />
+            <PlayArrow style={{ fontSize: 26, color: currentTheme.accent }} />
           </motion.div>
           <div className="cu-hero-value">{totalEpisodes}</div>
           <div className="cu-hero-label" style={{ color: currentTheme.text.muted }}>
@@ -62,11 +62,11 @@ export const HeroStats = memo<HeroStatsProps>(({ totalEpisodes, totalMinutes, av
             transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
             className="cu-hero-icon"
             style={{
-              background: 'linear-gradient(135deg, #8b5cf620, #8b5cf610)',
-              border: '1px solid #8b5cf640',
+              background: `linear-gradient(135deg, ${currentTheme.accent}20, ${currentTheme.accent}10)`,
+              border: `1px solid ${currentTheme.accent}40`,
             }}
           >
-            <Timer style={{ fontSize: 26, color: 'var(--theme-secondary-gradient, #8b5cf6)' }} />
+            <Timer style={{ fontSize: 26, color: currentTheme.accent }} />
           </motion.div>
           <div className="cu-hero-value">{timeData.value}</div>
           <div className="cu-hero-label" style={{ color: currentTheme.text.muted }}>
@@ -82,7 +82,7 @@ export const HeroStats = memo<HeroStatsProps>(({ totalEpisodes, totalMinutes, av
             transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
             className="cu-hero-icon"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.primary}10)`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent || currentTheme.primary}10)`,
               border: `1px solid ${currentTheme.primary}40`,
             }}
           >

@@ -284,7 +284,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                     onClick={() => handleNavigate(currentSeries)}
                     style={{
                       backgroundColor: currentTheme.primary,
-                      color: currentTheme.text.onPrimary,
+                      color: currentTheme.background.default,
                     }}
                   >
                     Ansehen

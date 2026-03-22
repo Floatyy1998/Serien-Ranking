@@ -158,8 +158,8 @@ export const OnboardingItemCard: React.FC<Props> = ({
               border: 'none',
               background: isAdded
                 ? `${currentTheme.status.success}dd`
-                : `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`,
-              color: 'white',
+                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              color: currentTheme.text.secondary,
               cursor: isAdding ? 'default' : 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -179,7 +179,7 @@ export const OnboardingItemCard: React.FC<Props> = ({
               left: 6,
               fontSize: 10,
               fontWeight: 600,
-              color: 'white',
+              color: currentTheme.text.secondary,
               background:
                 item.type === 'series'
                   ? `${currentTheme.primary}dd`
@@ -220,7 +220,7 @@ export const OnboardingItemCard: React.FC<Props> = ({
                   color: currentTheme.text.muted,
                 }}
               >
-                <Star style={{ fontSize: 11, color: '#fbbf24' }} />
+                <Star style={{ fontSize: 11, color: currentTheme.accent }} />
                 {rating}
               </span>
             )}
@@ -369,8 +369,8 @@ export const OnboardingItemCard: React.FC<Props> = ({
                   padding: '12px',
                   borderRadius: 12,
                   border: 'none',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`,
-                  color: 'white',
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  color: currentTheme.text.secondary,
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: 'pointer',

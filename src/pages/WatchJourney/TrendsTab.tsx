@@ -61,8 +61,14 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
   }, [data]);
 
   const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
-    if (trend === 'up') return <ArrowUpward style={{ color: '#00b894', fontSize: 20 }} />;
-    if (trend === 'down') return <ArrowDownward style={{ color: '#e17055', fontSize: 20 }} />;
+    if (trend === 'up')
+      return (
+        <ArrowUpward style={{ color: currentTheme.status?.success || '#00b894', fontSize: 20 }} />
+      );
+    if (trend === 'down')
+      return (
+        <ArrowDownward style={{ color: currentTheme.status?.error || '#e17055', fontSize: 20 }} />
+      );
     return <Remove style={{ color: textSecondary, fontSize: 20 }} />;
   };
 
@@ -259,9 +265,9 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               style={{
                 color:
                   data.hoursTrend === 'up'
-                    ? '#00b894'
+                    ? currentTheme.status?.success || '#00b894'
                     : data.hoursTrend === 'down'
-                      ? '#e17055'
+                      ? currentTheme.status?.error || '#e17055'
                       : textSecondary,
                 fontSize: 13,
                 fontWeight: 600,
@@ -487,7 +493,9 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                       justifyContent: 'center',
                     }}
                   >
-                    <span style={{ color: 'white', fontSize: 16, fontWeight: 800 }}>
+                    <span
+                      style={{ color: currentTheme.text.secondary, fontSize: 16, fontWeight: 800 }}
+                    >
                       {yd.year.toString().slice(-2)}
                     </span>
                   </div>

@@ -34,8 +34,8 @@ export const GradientText: React.FC<GradientTextProps> = ({
   }
 
   const fromColor = from || currentTheme?.primary || '#00fed7';
-  const toColor = to || 'rgba(255, 255, 255, 0.92)';
-  const midColor = currentTheme?.secondary || '#8b5cf6';
+  const toColor = to || currentTheme?.accent || '#8b5cf6';
+  const midColor = currentTheme?.accent || '#8b5cf6';
 
   // Build CSS class list for animated variants
   const classNames: string[] = [];

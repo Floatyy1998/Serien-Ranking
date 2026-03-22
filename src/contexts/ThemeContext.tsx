@@ -58,6 +58,9 @@ function applyCSSVariables(
   root.style.setProperty('--color-primary', theme.primary);
   root.style.setProperty('--color-primary-hover', theme.primaryHover);
   root.style.setProperty('--color-primary-dark', theme.primaryDark);
+  root.style.setProperty('--color-primary-06', `${theme.primary}0f`);
+  root.style.setProperty('--color-primary-10', `${theme.primary}1a`);
+  root.style.setProperty('--color-primary-15', `${theme.primary}26`);
 
   // Theme-Variablen (für CSS-Nutzung)
   root.style.setProperty('--theme-primary', theme.primary);
@@ -77,6 +80,10 @@ function applyCSSVariables(
   root.style.setProperty('--color-text-primary', theme.text.primary);
   root.style.setProperty('--color-text-secondary', theme.text.secondary);
   root.style.setProperty('--color-text-muted', theme.text.muted);
+  root.style.setProperty('--color-text-accent', theme.text.accent);
+
+  // Accent-Farbe
+  root.style.setProperty('--theme-accent', theme.accent);
 
   // Border-Farben
   root.style.setProperty('--color-border-default', theme.border.default);
@@ -234,7 +241,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
         const newTheme = generateDynamicTheme(validatedConfig);
         setCurrentTheme(newTheme);
-        updateCSSVariables(newTheme);
+        updateCSSVariables(newTheme, validatedConfig);
       } else {
         // Ensure CSS variables are set even with default theme
         updateCSSVariables(currentTheme);

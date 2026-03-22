@@ -50,8 +50,8 @@ export const SearchSuggestions = memo(
                 onClick={() => onSelectTerm(term)}
                 className="search-popular-tag"
                 style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}08)`,
-                  border: `1px solid ${currentTheme.primary}30`,
+                  background: currentTheme.background.surface,
+                  border: `1px solid ${currentTheme.border.default}`,
                   color: currentTheme.text.primary,
                 }}
               >

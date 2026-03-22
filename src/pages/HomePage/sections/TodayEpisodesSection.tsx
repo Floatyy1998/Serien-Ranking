@@ -51,8 +51,6 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.status.success;
-  // Green hex for rgba(76, 209, 55) backgrounds
-  const GREEN = '#4cd137';
 
   if (episodes.length === 0) return null;
 
@@ -60,7 +58,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
     <section style={{ marginBottom: '32px' }}>
       <SectionHeader
         icon={<NewReleases />}
-        iconColor={currentTheme.status.warning}
+        iconColor={currentTheme.accent}
         title="Heute Neu"
         onSeeAll={() => navigate('/calendar')}
       />
@@ -88,14 +86,14 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   itemKey={episodeKey}
                   poster={episode.poster}
                   posterAlt={episode.seriesTitle}
-                  accentColor={GREEN}
+                  accentColor={accentColor}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}
                   dragOffset={dragOffsets[episodeKey] || 0}
                   swipeDirection={swipeDirections[episodeKey]}
                   // Watched episodes have a static background
-                  staticBackground={episode.watched ? 'rgba(76, 209, 55, 0.1)' : undefined}
-                  staticBorder={episode.watched ? 'rgba(76, 209, 55, 0.3)' : undefined}
+                  staticBackground={episode.watched ? `${accentColor}1A` : undefined}
+                  staticBorder={episode.watched ? `${accentColor}4D` : undefined}
                   canSwipe={!episode.watched}
                   onSwipeStart={() => onSwipeStart(episodeKey)}
                   onSwipeDrag={(offset) => onSwipeDrag(episodeKey, offset)}
@@ -123,7 +121,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                         style={{
                           fontSize: '13px',
                           margin: 0,
-                          color: episode.watched ? accentColor : '#ffd700',
+                          color: episode.watched ? accentColor : currentTheme.accent,
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
@@ -152,9 +150,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                           seasonNumber={episode.seasonNumber}
                           episodeNumber={episode.episodeNumber}
                         />
-                        <PlayCircle
-                          style={{ fontSize: '20px', color: currentTheme.status.warning }}
-                        />
+                        <PlayCircle style={{ fontSize: '20px', color: currentTheme.accent }} />
                       </>
                     )
                   }

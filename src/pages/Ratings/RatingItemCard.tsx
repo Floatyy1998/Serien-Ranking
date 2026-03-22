@@ -232,8 +232,8 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
                 width: `${item.progress}%`,
                 background:
                   item.progress === 100
-                    ? `linear-gradient(90deg, ${theme.status.success}, #10b981)`
-                    : `linear-gradient(90deg, ${theme.primary}, ${theme.secondary ?? 'var(--theme-secondary-gradient, #8b5cf6)'})`,
+                    ? `linear-gradient(90deg, ${theme.status.success}, ${theme.status.success}cc)`
+                    : `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary})`,
               }}
             />
           </div>

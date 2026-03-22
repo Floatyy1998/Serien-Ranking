@@ -51,7 +51,7 @@ export const ThemePreviewCard = memo(
       >
         {isActive && (
           <div className="theme-preset-check" style={{ background: currentTheme.status.success }}>
-            <Check style={{ fontSize: 11, color: 'white' }} />
+            <Check style={{ fontSize: 11, color: currentTheme.text.secondary }} />
           </div>
         )}
         <div className="theme-preset-dots">

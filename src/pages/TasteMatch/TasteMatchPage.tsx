@@ -70,7 +70,7 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
           background: `linear-gradient(135deg, ${USER_COLOR}40, ${FRIEND_COLOR}40)`,
         }}
       >
-        <CompareArrows style={{ fontSize: 32, color: 'white' }} />
+        <CompareArrows style={{ fontSize: 32, color: textPrimary }} />
       </motion.div>
     </div>
 
