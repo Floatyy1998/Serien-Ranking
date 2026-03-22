@@ -138,10 +138,10 @@ export async function setActivePetId(userId: string, petId: string): Promise<voi
   await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
 }
 
-export async function canCreateSecondPet(userId: string): Promise<boolean> {
+export async function canCreateNewPet(userId: string): Promise<boolean> {
   const pets = await getUserPets(userId);
-  if (pets.length === 0 || pets.length >= PET_CONFIG.MAX_PETS) return false;
-  return pets.some((p) => p.level >= PET_CONFIG.SECOND_PET_LEVEL_REQUIREMENT);
+  if (pets.length === 0) return false;
+  return pets.every((p) => p.level >= PET_CONFIG.NEW_PET_LEVEL_REQUIREMENT);
 }
 
 export async function createPet(userId: string, name: string, type: Pet['type']): Promise<Pet> {

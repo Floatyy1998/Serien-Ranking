@@ -16,7 +16,7 @@ export function usePetsData() {
 
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
-  const [canAddSecondPet, setCanAddSecondPet] = useState(false);
+  const [canAddNewPet, setCanAddSecondPet] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [petName, setPetName] = useState('');
@@ -69,7 +69,7 @@ export function usePetsData() {
         setShowCreateModal(true);
       }
 
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error loading pets:', error);
@@ -86,7 +86,7 @@ export function usePetsData() {
       setSelectedPetIndex(pets.length); // neues Pet auswählen
       setShowCreateModal(false);
       setPetName('');
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error creating pet:', error);
@@ -140,7 +140,7 @@ export function usePetsData() {
         setShowCreateModal(true);
       }
 
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error releasing pet:', error);
@@ -218,7 +218,7 @@ export function usePetsData() {
     pets,
     pet,
     selectedPetIndex,
-    canAddSecondPet,
+    canAddNewPet,
     isLoading,
     showCreateModal,
     petName,
