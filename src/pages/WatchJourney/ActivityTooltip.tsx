@@ -1,14 +1,19 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import { TooltipEntry } from './types';
+import { formatGermanNumber } from './tooltipUtils';
 
-export const ActivityTooltip = ({
-  active,
-  payload,
-  label,
-}: {
+interface ActivityTooltipProps {
   active?: boolean;
   payload?: TooltipEntry[];
   label?: string;
+  unit?: 'episodes' | 'hours';
+}
+
+export const ActivityTooltip: React.FC<ActivityTooltipProps> = ({
+  active,
+  payload,
+  label,
+  unit = 'episodes',
 }) => {
   const { currentTheme } = useTheme();
 
@@ -34,29 +39,35 @@ export const ActivityTooltip = ({
         >
           {label}
         </p>
-        {payload.map((entry: TooltipEntry, index: number) => (
-          <div
-            key={index}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 4,
-            }}
-          >
-            <div
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                background: entry.color,
-              }}
-            />
-            <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
-              {entry.name}: {entry.value}
-            </span>
-          </div>
-        ))}
+        {payload
+          .filter((entry: TooltipEntry) => entry.value > 0)
+          .map((entry: TooltipEntry, index: number) => {
+            const suffix = unit === 'hours' ? ' Stunden' : ' Episoden';
+            const formatted = `${formatGermanNumber(entry.value)}${suffix}`;
+            return (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: entry.color,
+                  }}
+                />
+                <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
+                  {entry.name}: {formatted}
+                </span>
+              </div>
+            );
+          })}
       </div>
     );
   }

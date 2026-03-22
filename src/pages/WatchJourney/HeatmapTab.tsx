@@ -191,6 +191,14 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
+                allowDecimals={false}
+                label={{
+                  value: 'Episoden',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 20,
+                  style: { fill: textSecondary, fontSize: 11 },
+                }}
               />
               <Tooltip
                 cursor={{ fill: `${primaryColor}10` }}
@@ -454,10 +462,8 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               textAlign: 'center',
             }}
           >
-            <Speed style={{ color: currentTheme.accent, fontSize: 28, marginBottom: 8 }} />
-            <div style={{ color: currentTheme.accent, fontSize: 24, fontWeight: 700 }}>
-              {weekdayCount}
-            </div>
+            <Speed style={{ color: primaryColor, fontSize: 28, marginBottom: 8 }} />
+            <div style={{ color: primaryColor, fontSize: 24, fontWeight: 700 }}>{weekdayCount}</div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Wochentag-Sessions</div>
           </motion.div>
         </div>

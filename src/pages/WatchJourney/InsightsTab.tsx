@@ -13,12 +13,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
-  const bingeColor = currentTheme.status?.error ?? '#e94560';
-  const rewatchColor = currentTheme.accent;
-  const runtimeColor = currentTheme.primary;
-  const recordAccent = currentTheme.accent;
-  const recordSuccess = currentTheme.status?.success || '#00b894';
-  const recordSecondary = currentTheme.accent;
+  const bingeColor = '#ff4d6d'; // Coral – distinct from genre/provider/accent
+  const rewatchColor = '#7b2cbf'; // Deep purple – distinct from genre/provider/accent
+  const runtimeColor = '#4cc9f0'; // Sky blue – distinct from genre/provider/accent
+  const recordAccent = '#7b2cbf';
+  const recordSuccess = '#4cc9f0';
+  const recordSecondary = '#ff4d6d';
 
   // Runtime distribution for histogram
   const runtimeDistribution = useMemo(() => {
@@ -32,7 +32,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
 
     data.seriesStats.forEach((series) => {
       const bucket = buckets.find((b) => series.avgRuntime >= b.min && series.avgRuntime < b.max);
-      if (bucket) bucket.count += series.episodes;
+      if (bucket) bucket.count += 1;
     });
 
     const maxCount = Math.max(...buckets.map((b) => b.count));
@@ -352,7 +352,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               />
               <div style={{ color: textSecondary, fontSize: 11 }}>{bucket.label}</div>
               <div style={{ color: runtimeColor, fontSize: 12, fontWeight: 600 }}>
-                {bucket.count}
+                {bucket.count} {bucket.count === 1 ? 'Serie' : 'Serien'}
               </div>
             </div>
           ))}

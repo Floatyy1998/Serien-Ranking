@@ -26,13 +26,13 @@ interface ActivityTabProps {
   data: WatchJourneyData;
 }
 
-// Accent Farben für Abwechslung
+// Accent Farben für Activity/Trends – bewusst distinct von Genre- und Provider-Farben
 export const ACCENT_COLORS = {
-  episodes: '#7c6ef0', // Lila für Episoden (theme-softened)
-  movies: '#f093fb', // Pink für Filme
-  time: '#00cec9', // Cyan für Zeit
-  fire: '#fdcb6e', // Gold für Highlights
-  trending: '#00b894', // Grün für Trends
+  episodes: '#8338ec', // Violet für Episoden
+  movies: '#ff006e', // Magenta für Filme
+  time: '#3a86ff', // Blau für Zeit
+  fire: '#ffbe0b', // Amber für Highlights
+  trending: '#06d6a0', // Mint für Trends
 };
 
 export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
@@ -227,6 +227,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
+                allowDecimals={false}
               />
               <Tooltip
                 content={<ActivityTooltip />}

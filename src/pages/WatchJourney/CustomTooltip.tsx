@@ -1,14 +1,19 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import { TooltipEntry } from './types';
+import { formatGermanNumber } from './tooltipUtils';
 
-export const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: {
+interface CustomTooltipProps {
   active?: boolean;
   payload?: TooltipEntry[];
   label?: string;
+  unit?: 'hours' | 'percent';
+}
+
+export const CustomTooltip: React.FC<CustomTooltipProps> = ({
+  active,
+  payload,
+  label,
+  unit = 'hours',
 }) => {
   const { currentTheme } = useTheme();
 
@@ -34,29 +39,37 @@ export const CustomTooltip = ({
         >
           {label}
         </p>
-        {payload.map((entry: TooltipEntry, index: number) => (
-          <div
-            key={index}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              marginBottom: 4,
-            }}
-          >
-            <div
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: '50%',
-                background: entry.color,
-              }}
-            />
-            <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
-              {entry.name}: {Math.round(entry.value)}%
-            </span>
-          </div>
-        ))}
+        {payload
+          .filter((entry: TooltipEntry) => entry.value > 0)
+          .map((entry: TooltipEntry, index: number) => {
+            const formatted =
+              unit === 'percent'
+                ? `${Math.round(entry.value)}%`
+                : `${formatGermanNumber(entry.value)} Stunden`;
+            return (
+              <div
+                key={index}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <div
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: entry.color,
+                  }}
+                />
+                <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
+                  {entry.name}: {formatted}
+                </span>
+              </div>
+            );
+          })}
       </div>
     );
   }

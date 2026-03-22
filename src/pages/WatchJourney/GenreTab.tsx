@@ -1,3 +1,4 @@
+import { TheaterComedy } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import {
@@ -12,7 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useTheme } from '../../contexts/ThemeContext';
-import { normalizeMonthlyData, WatchJourneyData } from '../../services/watchJourneyService';
+import { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 
 interface GenreTabProps {
@@ -25,13 +26,18 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
 
-  // Prepare data for stacked area chart
+  // Prepare data for stacked area chart (absolute hours)
   const chartData = useMemo(() => {
-    const normalized = normalizeMonthlyData(data.genreMonths, data.topGenres);
-    return normalized.map((month) => ({
-      name: month.monthName,
-      ...month.values,
-    }));
+    return data.genreMonths.map((month) => {
+      const hoursValues: Record<string, number> = {};
+      data.topGenres.forEach((genre) => {
+        hoursValues[genre] = Math.round(((month.values[genre] || 0) / 60) * 10) / 10;
+      });
+      return {
+        name: month.monthName,
+        ...hoursValues,
+      };
+    });
   }, [data]);
 
   // Prepare data for pie chart
@@ -68,6 +74,18 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
   }, [data]);
 
   const topGenre = genreStats[0];
+
+  if (data.topGenres.length === 0) {
+    return (
+      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <TheaterComedy style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
+        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Genre-Daten</h3>
+        <p style={{ color: textSecondary, fontSize: 14 }}>
+          Genres werden beim Markieren von Episoden erfasst
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -248,7 +266,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         </h3>
         <div style={{ width: '100%', height: 280 }}>
           <ResponsiveContainer>
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 {data.topGenres.map((genre) => (
                   <linearGradient
@@ -273,17 +291,17 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
-                tickFormatter={(v) => `${v}%`}
+                tickFormatter={(v) => `${v}h`}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip unit="hours" />} />
               {data.topGenres.map((genre) => (
                 <Area
                   key={genre}
                   type="monotone"
                   dataKey={genre}
-                  stackId="1"
                   stroke={data.genreColors[genre]}
                   fill={`url(#gradient-${genre.replace(/\s+/g, '-')})`}
+                  fillOpacity={0.15}
                   strokeWidth={2}
                   style={{ outline: 'none' }}
                 />

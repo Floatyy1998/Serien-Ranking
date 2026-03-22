@@ -13,7 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useTheme } from '../../contexts/ThemeContext';
-import { normalizeMonthlyData, WatchJourneyData } from '../../services/watchJourneyService';
+import { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 
 interface ProviderTabProps {
@@ -27,13 +27,18 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
   const textMuted = currentTheme.text.muted;
   const bgSurface = currentTheme.background.surface;
 
-  // Prepare data for stacked area chart
+  // Prepare data for stacked area chart (absolute hours)
   const chartData = useMemo(() => {
-    const normalized = normalizeMonthlyData(data.providerMonths, data.topProviders);
-    return normalized.map((month) => ({
-      name: month.monthName,
-      ...month.values,
-    }));
+    return data.providerMonths.map((month) => {
+      const hoursValues: Record<string, number> = {};
+      data.topProviders.forEach((provider) => {
+        hoursValues[provider] = Math.round(((month.values[provider] || 0) / 60) * 10) / 10;
+      });
+      return {
+        name: month.monthName,
+        ...hoursValues,
+      };
+    });
   }, [data]);
 
   // Prepare data for horizontal bar chart
@@ -293,9 +298,9 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
-                tickFormatter={(v) => `${v}%`}
+                tickFormatter={(v) => `${v}h`}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip unit="hours" />} />
               {data.topProviders.map((provider) => (
                 <Area
                   key={provider}
