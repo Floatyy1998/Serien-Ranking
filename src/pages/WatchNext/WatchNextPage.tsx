@@ -155,10 +155,9 @@ export const WatchNextPage = () => {
     };
   }, []);
 
-  // Save preferences to localStorage
+  // Save preferences to localStorage (initial sync)
   useEffect(() => {
     if (searchParams.get('rewatches') !== 'open') {
-      setShowRewatches(false);
       localStorage.setItem('watchNextHideRewatches', 'true');
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

@@ -12,11 +12,7 @@ dotenv.config();
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]],
-      },
-    }),
+    react(),
     criticalCSSPlugin(), // Temporarily disabled - causing build hang
     VitePWA({
       registerType: 'prompt',
@@ -101,40 +97,18 @@ export default defineConfig({
   build: {
     target: 'esnext',
     chunkSizeWarningLimit: 150,
-    minify: 'terser',
-    cssMinify: true,
+    minify: 'oxc',
+    modulePreload: { polyfill: false },
+    cssMinify: 'lightningcss',
     cssCodeSplit: true,
     sourcemap: false,
     reportCompressedSize: false,
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.trace'],
-        passes: 2, // Optimized compression passes
-        // Remove unsafe options that break Firebase
-        unsafe: false,
-        unsafe_comps: false,
-        unsafe_math: false,
-        unsafe_proto: false,
-        unsafe_regexp: false,
-      },
-      mangle: {
-        // Don't mangle properties - it breaks Firebase!
-        keep_fnames: true, // Keep function names for Firebase
-      },
-      format: {
-        comments: false, // Remove all comments
-      },
-    },
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        // Simplified chunking - let Vite handle most of it automatically
-        manualChunks: {
-          // Only split the biggest dependencies to avoid loading order issues
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/database', 'firebase/storage', 'firebase/analytics'],
-          'recharts': ['recharts'],
-          'framer': ['framer-motion'],
+        manualChunks(id) {
+          if (id.includes('node_modules/firebase')) return 'firebase';
+          if (id.includes('node_modules/recharts')) return 'recharts';
+          if (id.includes('node_modules/framer-motion')) return 'framer';
         },
       },
     },

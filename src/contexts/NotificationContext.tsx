@@ -95,10 +95,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   );
 
   useEffect(() => {
-    if (!user) {
-      setNotifications([]);
-      return;
-    }
+    if (!user) return;
 
     // Load notifications from Firebase
     const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
@@ -127,6 +124,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
 
     return () => {
       notificationsRef.off('value', handleData);
+      setNotifications([]);
     };
   }, [user, cleanupOldNotifications]);
 

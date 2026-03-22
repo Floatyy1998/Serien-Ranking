@@ -78,38 +78,36 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     if (isComingFromDetail) {
       const savedState = sessionStorage.getItem('discoverFilters');
       if (savedState) {
-        setIsRestoring(true);
         const filters = JSON.parse(savedState);
-        setActiveTab(filters.activeTab || 'series');
-        setActiveCategory(filters.activeCategory || 'trending');
-        setSelectedGenre(filters.selectedGenre || null);
-        setShowFilters(filters.showFilters || false);
-        setSearchQuery(filters.searchQuery || '');
-        setShowSearch(filters.showSearch || false);
 
+        // Batch state restoration via setTimeout to avoid synchronous setState in effect
         setTimeout(() => {
-          setIsRestoring(false);
+          setIsRestoring(true);
+          setActiveTab(filters.activeTab || 'series');
+          setActiveCategory(filters.activeCategory || 'trending');
+          setSelectedGenre(filters.selectedGenre || null);
+          setShowFilters(filters.showFilters || false);
+          setSearchQuery(filters.searchQuery || '');
+          setShowSearch(filters.showSearch || false);
+
           setTimeout(() => {
-            if (!showSearch) {
-              if (filters.activeCategory === 'recommendations') {
-                fetchRecommendationsOnRestore.current?.();
-              } else {
-                fetchFromTMDBOnRestore.current?.();
+            setIsRestoring(false);
+            setTimeout(() => {
+              if (!filters.showSearch) {
+                if (filters.activeCategory === 'recommendations') {
+                  fetchRecommendationsOnRestore.current?.();
+                } else {
+                  fetchFromTMDBOnRestore.current?.();
+                }
               }
-            }
+            }, 100);
           }, 100);
-        }, 100);
+        }, 0);
       }
       sessionStorage.removeItem('comingFromDetail');
       sessionStorage.removeItem('discoverFilters');
-    } else {
-      setActiveTab('series');
-      setActiveCategory('trending');
-      setSelectedGenre(null);
-      setShowFilters(false);
-      setSearchQuery('');
-      setShowSearch(false);
     }
+    // Default state is already set via useState initializers, no need to reset
   }, []);
 
   const handleItemClick = (item: DiscoverItem) => {

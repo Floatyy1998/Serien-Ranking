@@ -23,11 +23,14 @@ const BadgeButton = () => {
 
   // Animiere Button wenn neue Badges da sind
   useEffect(() => {
-    if (newBadges.length > 0) {
-      setAnimate(true);
-      const timer = setTimeout(() => setAnimate(false), 3000);
-      return () => clearTimeout(timer);
-    }
+    if (newBadges.length === 0) return;
+
+    const startTimer = setTimeout(() => setAnimate(true), 0);
+    const stopTimer = setTimeout(() => setAnimate(false), 3000);
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(stopTimer);
+    };
   }, [newBadges.length]);
 
   return (

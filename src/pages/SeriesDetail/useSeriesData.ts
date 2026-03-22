@@ -43,57 +43,57 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
+    if (!id || !apiKey) return;
 
     // ALWAYS fetch backdrop and providers from TMDB
-    if (id && apiKey) {
-      // Fetch backdrop and TMDB rating
-      fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.backdrop_path) {
-            setTmdbBackdrop(data.backdrop_path);
-          }
-          // Store TMDB rating data
-          if (data.vote_average && data.vote_count) {
-            setTmdbRating({
-              vote_average: data.vote_average,
-              vote_count: data.vote_count,
-            });
-          }
-          // Store first_air_date
-          if (data.first_air_date) {
-            setTmdbFirstAirDate(data.first_air_date);
-          }
-          // Store overview for description
-          if (data.overview) {
-            setTmdbOverview(data.overview);
-          }
-        })
-        .catch(() => {
-          // Handle error silently
-        });
+    // Fetch backdrop and TMDB rating
+    fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.backdrop_path) {
+          setTmdbBackdrop(data.backdrop_path);
+        }
+        // Store TMDB rating data
+        if (data.vote_average && data.vote_count) {
+          setTmdbRating({
+            vote_average: data.vote_average,
+            vote_count: data.vote_count,
+          });
+        }
+        // Store first_air_date
+        if (data.first_air_date) {
+          setTmdbFirstAirDate(data.first_air_date);
+        }
+        // Store overview for description
+        if (data.overview) {
+          setTmdbOverview(data.overview);
+        }
+      })
+      .catch(() => {
+        // Handle error silently
+      });
 
-      // Fetch providers
-      fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.results?.DE?.flatrate) {
-            setProviders(data.results.DE.flatrate);
-          }
-        })
-        .catch(() => {
-          // Handle error silently
-        });
-    }
+    // Fetch providers
+    fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.results?.DE?.flatrate) {
+          setProviders(data.results.DE.flatrate);
+        }
+      })
+      .catch(() => {
+        // Handle error silently
+      });
 
     // Full fetch if not found locally
-    if (!localSeries && id && apiKey && !tmdbSeries) {
-      setLoading(true);
-      fetch(
-        `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-      )
-        .then((res) => res.json())
-        .then(async (data) => {
+    if (!localSeries && !tmdbSeries) {
+      const fetchFullData = async () => {
+        setLoading(true);
+        try {
+          const res = await fetch(
+            `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
+          );
+          const data = await res.json();
           if (data.id) {
             // Episoden von TMDB holen (deutsche Titel)
             const regularSeasons = (data.seasons || []).filter(
@@ -163,9 +163,13 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             };
             setTmdbSeries(series);
           }
-        })
-        .catch((_err) => {})
-        .finally(() => setLoading(false));
+        } catch (_err) {
+          // Handle error silently
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchFullData();
     }
   }, [localSeries, id, tmdbSeries]); // Remove loading dependency, add tmdbSeries to prevent re-fetching
 

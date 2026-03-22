@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../App';
 
@@ -8,20 +8,14 @@ const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 export function useAdminGuard() {
   const { user } = useAuth()!;
   const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checking, setChecking] = useState(true);
+
+  const isAdmin = !!user && user.uid === ADMIN_UID;
+  const checking = !user;
 
   useEffect(() => {
-    if (!user) {
-      navigate('/', { replace: true });
-      return;
-    }
-    if (user.uid === ADMIN_UID) {
-      setIsAdmin(true);
-    } else {
+    if (!user || user.uid !== ADMIN_UID) {
       navigate('/', { replace: true });
     }
-    setChecking(false);
   }, [user, navigate]);
 
   return { isAdmin, checking };

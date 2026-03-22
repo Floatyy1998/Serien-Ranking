@@ -1,6 +1,6 @@
 import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface ScrollToTopButtonProps {
@@ -22,11 +22,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const [show, setShow] = useState(false);
-  const [hasNav, setHasNav] = useState(false);
-
-  useEffect(() => {
-    setHasNav(!!document.querySelector('.mobile-content.with-nav'));
-  }, []);
+  const [hasNav] = useState(() => !!document.querySelector('.mobile-content.with-nav'));
 
   const getContainer = useCallback((): HTMLElement | Window | null => {
     if (scrollContainerRef?.current) return scrollContainerRef.current;

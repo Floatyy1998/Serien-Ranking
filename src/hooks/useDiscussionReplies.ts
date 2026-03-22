@@ -30,20 +30,15 @@ export const useDiscussionReplies = (
   const { user } = useAuth() || {};
 
   const [replies, setReplies] = useState<DiscussionReply[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!discussionId && shouldFetch);
   const [error, setError] = useState<string | null>(null);
 
   const repliesPath = `discussionReplies/${discussionId}`;
 
   // Fetch replies with realtime listener
   useEffect(() => {
-    if (!discussionId || !shouldFetch) {
-      setLoading(false);
-      setReplies([]);
-      return;
-    }
+    if (!discussionId || !shouldFetch) return;
 
-    setLoading(true);
     const ref = firebase.database().ref(repliesPath);
 
     const listener = ref.orderByChild('createdAt').on(
@@ -75,6 +70,8 @@ export const useDiscussionReplies = (
 
     return () => {
       ref.off('value', listener);
+      setLoading(true);
+      setReplies([]);
     };
   }, [discussionId, repliesPath, shouldFetch]);
 

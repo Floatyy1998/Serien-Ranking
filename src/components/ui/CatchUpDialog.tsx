@@ -30,15 +30,15 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       : (Object.values(season.episodes) as typeof season.episodes);
   }, [seasons, selectedSeason]);
 
-  const getEpisodes = (season: (typeof seasons)[number]) => {
-    if (!season?.episodes) return [];
-    return Array.isArray(season.episodes)
-      ? season.episodes
-      : (Object.values(season.episodes) as typeof season.episodes);
-  };
-
   // Calculate how many episodes will be marked
   const episodesToMark = useMemo(() => {
+    const getEpisodes = (season: (typeof seasons)[number]) => {
+      if (!season?.episodes) return [];
+      return Array.isArray(season.episodes)
+        ? season.episodes
+        : (Object.values(season.episodes) as typeof season.episodes);
+    };
+
     let count = 0;
     for (let sIdx = 0; sIdx < seasons.length; sIdx++) {
       const eps = getEpisodes(seasons[sIdx]);

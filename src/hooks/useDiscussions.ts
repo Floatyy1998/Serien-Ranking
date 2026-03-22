@@ -49,20 +49,14 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
   const { user } = useAuth() || {};
 
   const [discussions, setDiscussions] = useState<Discussion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!!itemId);
   const [error, setError] = useState<string | null>(null);
 
   const path = getDiscussionPath(itemType, itemId, seasonNumber, episodeNumber);
 
   // Fetch discussions with realtime listener
   useEffect(() => {
-    if (!itemId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
+    if (!itemId) return;
 
     const ref = firebase.database().ref(path);
 
@@ -99,6 +93,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
     return () => {
       ref.off('value', listener);
+      setLoading(true);
+      setError(null);
     };
   }, [path, itemId]);
 
@@ -233,7 +229,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         return false;
       }
     },
-    [user, path]
+    [user, path, itemId, itemType, seasonNumber, episodeNumber]
   );
 
   // Delete a discussion (only owner)

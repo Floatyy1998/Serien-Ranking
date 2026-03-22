@@ -1,22 +1,23 @@
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
 import { getImageUrl } from '../utils/imageUrl';
 
+interface TodayEpisode {
+  seriesId: number;
+  seriesNmr: number;
+  seriesTitle: string;
+  poster: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  seasonIndex: number;
+  episodeIndex: number;
+  episodeId: number;
+  episodeName: string;
+  watched: boolean;
+}
+
 export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
-  interface TodayEpisode {
-    seriesId: number;
-    seriesNmr: number;
-    seriesTitle: string;
-    poster: string;
-    seasonNumber: number;
-    episodeNumber: number;
-    seasonIndex: number;
-    episodeIndex: number;
-    episodeId: number;
-    episodeName: string;
-    watched: boolean;
-  }
 
   const cacheRef = useRef<{ episodes: TodayEpisode[] | null; deps: string; date: string }>({
     episodes: null,
@@ -31,12 +32,9 @@ export const useTodayEpisodes = () => {
     const todayString = today.toDateString();
     const depsString = `${seriesList.length}`;
 
-    if (
-      cacheRef.current.episodes &&
-      cacheRef.current.deps === depsString &&
-      cacheRef.current.date === todayString
-    ) {
-      return cacheRef.current.episodes;
+    const cache = cacheRef.current;
+    if (cache.episodes && cache.deps === depsString && cache.date === todayString) {
+      return cache.episodes;
     }
 
     const episodes: TodayEpisode[] = [];
@@ -83,9 +81,18 @@ export const useTodayEpisodes = () => {
       }
     }
 
-    cacheRef.current = { episodes, deps: depsString, date: todayString };
     return episodes;
   }, [seriesList]);
+
+  useEffect(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    cacheRef.current = {
+      episodes: todayEpisodes,
+      deps: `${seriesList.length}`,
+      date: today.toDateString(),
+    };
+  }, [todayEpisodes, seriesList.length]);
 
   return todayEpisodes;
 };
