@@ -157,8 +157,8 @@ export function BackendErrorsTab({
           }}
         >
           <span style={{ fontWeight: 600 }}>Letzter Run:</span>{' '}
-          {new Date(log.runStart).toLocaleString('de-DE')} —{' '}
-          {new Date(log.runEnd).toLocaleString('de-DE')}
+          {new Date(log.runStart).toLocaleString('de-DE')}
+          {log.runEnd ? ` — ${new Date(log.runEnd).toLocaleString('de-DE')}` : ' (läuft noch...)'}
         </div>
       )}
 
