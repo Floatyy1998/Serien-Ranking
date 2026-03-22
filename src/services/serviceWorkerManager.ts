@@ -45,10 +45,12 @@ class ServiceWorkerManager {
     try {
       await this.register();
       this.setupEventListeners();
-      // Prüfe auf Updates, aber nicht so aggressiv
-      // Einmal nach 30 Sekunden, dann alle 5 Minuten
-      setTimeout(() => this.checkForUpdates(), 30000);
-      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000); // Alle 5 Minuten
+      // Update checks: nach 5s, dann alle 5 Minuten, und bei Tab-Fokus
+      setTimeout(() => this.checkForUpdates(), 5000);
+      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') this.checkForUpdates();
+      });
     } catch (error) {
       // // console.error(
       //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
@@ -75,12 +77,12 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Check for updates
+    // Waiting worker on page load = update from previous session → auto-activate
     if (registration.waiting) {
-      this.showUpdateAvailable();
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
-    // Update Handler einrichten
+    // Mid-session update → show toast so user can choose when to reload
     registration.addEventListener('updatefound', () => {
       const newWorker = registration.installing;
       if (newWorker) {
