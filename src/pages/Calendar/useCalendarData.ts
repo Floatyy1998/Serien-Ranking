@@ -187,7 +187,7 @@ export const useCalendarData = () => {
         console.error('Failed to mark episode:', error);
       }
     },
-    [user]
+    [user, seriesList]
   );
 
   // ── Week navigation helpers ──────────────────────────────────

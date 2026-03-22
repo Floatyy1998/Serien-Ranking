@@ -58,7 +58,10 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const [, startTransition] = useTransition();
   const isUpdatingFromQuickFilter = useRef(false);
   const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
+
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
 
   // ─── URL Sync ───────────────────────────────────────
   const updateURL = useCallback(
@@ -361,10 +364,13 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // Reset when items change (tab switch, filter change)
   const filterFingerprint = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
   const prevFingerprintRef = useRef(filterFingerprint);
-  if (prevFingerprintRef.current !== filterFingerprint) {
-    prevFingerprintRef.current = filterFingerprint;
-    setRenderCount(INITIAL_RENDER);
-  }
+
+  useEffect(() => {
+    if (prevFingerprintRef.current !== filterFingerprint) {
+      prevFingerprintRef.current = filterFingerprint;
+      setRenderCount(INITIAL_RENDER);
+    }
+  }, [filterFingerprint]);
 
   // Progressively render remaining items via rAF
   useEffect(() => {

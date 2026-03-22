@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Today } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import {
@@ -34,24 +34,28 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
     return toDateKey(d);
   }, [daysBack]);
 
-  const loadEvents = useCallback(async () => {
-    setLoading(true);
-    const allEvents: RawEvent[] = [];
-    for (let i = 0; i < range; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() - daysBack - i);
-      const dk = toDateKey(d);
-      const events = await data.loadAllRawEvents(dk);
-      allEvents.push(...events);
-    }
-    allEvents.sort((a, b) => b.t - a.t);
-    setRawEvents(allEvents);
-    setLoading(false);
-  }, [data, daysBack, range]);
-
   useEffect(() => {
+    let cancelled = false;
+    const loadEvents = async () => {
+      setLoading(true);
+      const allEvents: RawEvent[] = [];
+      for (let i = 0; i < range; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - daysBack - i);
+        const dk = toDateKey(d);
+        const events = await data.loadAllRawEvents(dk);
+        allEvents.push(...events);
+      }
+      if (cancelled) return;
+      allEvents.sort((a, b) => b.t - a.t);
+      setRawEvents(allEvents);
+      setLoading(false);
+    };
     loadEvents();
-  }, [loadEvents]);
+    return () => {
+      cancelled = true;
+    };
+  }, [data, daysBack, range]);
 
   // Unique users in current events (for user filter)
   const activeUsers = useMemo(() => {

@@ -1,5 +1,5 @@
 import { motion, useAnimationControls } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pet, PetAccessory } from '../../types/pet.types';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
@@ -21,14 +21,12 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
   onClick,
 }) => {
   const { currentTheme } = useTheme();
-  const [currentMood, setCurrentMood] = useState<Pet['mood']>('happy');
+  const currentMood = useMemo(
+    () => petMoodService.calculateCurrentMood(pet),
+    [pet.hunger, pet.happiness, pet.isAlive]
+  );
   const controls = useAnimationControls();
   const [isWalking, setIsWalking] = useState(false);
-
-  useEffect(() => {
-    const mood = petMoodService.calculateCurrentMood(pet);
-    setCurrentMood(mood);
-  }, [pet.hunger, pet.happiness, pet.isAlive]);
 
   // Border Walk Animation
   useEffect(() => {

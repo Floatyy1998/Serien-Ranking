@@ -23,23 +23,17 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verwende den User aus dem Auth Context statt firebase.auth().currentUser
     if (user) {
-      // Setze sofort den aktuellen Status
-      setIsVerified(user.emailVerified);
-
-      // Nur wenn online, versuche zu aktualisieren (ohne Loading anzuzeigen)
-      if (navigator.onLine && !user.emailVerified) {
+      // Aktuellen Status immer vom Server holen wenn online
+      if (navigator.onLine) {
         user
           .reload()
           .then(() => {
             setIsVerified(user.emailVerified);
           })
-          .catch((_error) => {
-            // console.warn(
-            //   'User reload fehlgeschlagen (offline?), verwende cached Daten:',
-            //   error
-            // );
+          .catch(() => {
+            // Offline/Fehler: cached Daten verwenden
+            setIsVerified(user.emailVerified);
           });
       }
     } else if (auth?.authStateResolved) {

@@ -110,7 +110,10 @@ export const MobileApp = () => {
 
   const [tickerIndex, setTickerIndex] = useState(0);
   const tickerRef = useRef(tickerIndex);
-  tickerRef.current = tickerIndex;
+
+  useEffect(() => {
+    tickerRef.current = tickerIndex;
+  }, [tickerIndex]);
 
   // Cycle through ticker messages in the tab title
   useEffect(() => {

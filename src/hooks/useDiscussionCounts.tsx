@@ -17,20 +17,15 @@ export const useDiscussionCount = (
   seasonNumber?: number,
   episodeNumber?: number
 ): number => {
-  const [count, setCount] = useState(0);
-
   const path =
     itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
       ? `discussions/episode/${itemId}_s${seasonNumber}_e${episodeNumber}`
       : `discussions/${itemType}/${itemId}`;
 
+  const [count, setCount] = useState(() => countsCache[path] ?? 0);
+
   useEffect(() => {
     if (!itemId) return;
-
-    // Check cache first
-    if (countsCache[path] !== undefined) {
-      setCount(countsCache[path]);
-    }
 
     const ref = firebase.database().ref(path);
 
