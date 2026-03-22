@@ -6,7 +6,7 @@ import 'firebase/compat/database';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../App';
 import { petService } from '../../services/petService';
-import { PET_CONFIG } from '../../services/petConstants';
+import { PET_CONFIG } from '../../services/pet/petConstants';
 import { toLocalDateString } from '../../lib/date/date.utils';
 
 // Streak colors are resolved at render time from currentTheme

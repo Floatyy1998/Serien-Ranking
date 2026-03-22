@@ -1,4 +1,4 @@
-import { Pet } from '../types/pet.types';
+import { Pet } from '../../types/pet.types';
 
 type MoodAnimation = Record<string, number[]>;
 

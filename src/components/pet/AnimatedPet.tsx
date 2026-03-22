@@ -1,7 +1,7 @@
 import { motion, useAnimationControls } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { Pet, PetAccessory } from '../../types/pet.types';
-import { petMoodService } from '../../services/petMoodService';
+import { petMoodService } from '../../services/pet/petMoodService';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
 import { useTheme } from '../../contexts/ThemeContext';
 
