@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../App';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { Series } from '../types/Series';
-import { normalizeSeasons, normalizeEpisodes } from '../lib/episode/seriesMetrics';
+
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import {
@@ -20,6 +20,7 @@ import {
   createInactiveSeriesDetectionRunner,
   createCompletedSeriesDetectionRunner,
 } from './seriesListDetection';
+import { checkSeriesIntegrity } from './dataIntegrityChecker';
 
 interface SeriesListContextType {
   seriesList: Series[];
@@ -146,63 +147,25 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     syncOnReconnect: true,
   });
 
-  // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
-  // Sanitize: filtert kaputte Episoden (ohne episode_number) und loggt sie ins Admin-Panel
+  // Konvertiere Object zu Array, sanitize kaputte Daten, logge Probleme ins Admin-Panel
   const allSeries: Series[] = useMemo(() => {
     if (!seriesData) return [];
 
-    const issues: Array<{ series: string; season: number; index: number; data: unknown }> = [];
+    const { sanitized, issues } = checkSeriesIntegrity(seriesData, user!.uid);
 
-    const result = Object.values(seriesData).map((s) => {
-      const sanitizedSeasons = normalizeSeasons(s.seasons)
-        .filter((season): season is Series['seasons'][number] => !!season)
-        .map((season) => {
-          const rawEps = Array.isArray(season.episodes)
-            ? season.episodes
-            : season.episodes
-              ? Object.values(season.episodes)
-              : [];
-
-          rawEps.forEach((ep, idx) => {
-            if (
-              ep &&
-              typeof ep === 'object' &&
-              (ep as Record<string, unknown>).episode_number == null
-            ) {
-              issues.push({
-                series: s.name || s.id?.toString() || 'unknown',
-                season: (season.seasonNumber ?? 0) + 1,
-                index: idx,
-                data: ep,
-              });
-            }
-          });
-
-          return {
-            ...season,
-            episodes: normalizeEpisodes(season.episodes),
-          };
-        });
-
-      return { ...s, seasons: sanitizedSeasons };
-    });
-
-    // Log data integrity issues to admin panel
     if (issues.length > 0 && user) {
-      const ref = firebase.database().ref(`admin/dataIntegrityIssues/${user.uid}`);
-      ref.set({
-        timestamp: new Date().toISOString(),
-        userName: user.displayName || user.email || user.uid,
-        issues: issues.map((i) => ({
-          series: i.series,
-          season: i.season,
-          episodeIndex: i.index,
-          fields: Object.keys(i.data as Record<string, unknown>),
-        })),
-      });
+      firebase
+        .database()
+        .ref(`admin/dataIntegrityIssues/${user.uid}`)
+        .set({
+          timestamp: new Date().toISOString(),
+          userName: user.displayName || user.email || user.uid,
+          issueCount: issues.length,
+          issues,
+        });
     }
 
-    return result;
+    return sanitized;
   }, [seriesData, user]);
   const seriesList = useMemo(() => allSeries.filter((s) => !s.hidden), [allSeries]);
   const hiddenSeriesList = useMemo(() => allSeries.filter((s) => s.hidden === true), [allSeries]);
