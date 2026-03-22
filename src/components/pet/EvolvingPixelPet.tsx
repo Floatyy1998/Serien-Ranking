@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Pet, PET_COLORS } from '../../types/pet.types';
-import { petMoodService } from '../../services/petMoodService';
+import { petMoodService } from '../../services/pet/petMoodService';
 import { adjustColor } from './colorUtils';
 import { drawAccessory } from './drawAccessory';
 import { drawCat } from './drawCat';

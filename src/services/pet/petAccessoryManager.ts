@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { Pet, PET_COLORS, ACCESSORIES, PetAccessory } from '../../types/pet.types';
-import { PET_CONFIG } from '../petConstants';
+import { PET_CONFIG } from './petConstants';
 import { getUserPet } from './petCore';
 
 // Accessoire ausruesten/ablegen

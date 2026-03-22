@@ -1,10 +1,6 @@
 import { createTheme } from '@mui/material/styles';
-import './global.css';
-import { colors } from './theme/colors';
-
-// Export theme als named export aus dem Theme-Verzeichnis
-export { colors } from './theme/colors';
-export { commonStyles, styleHelpers } from './theme/styles';
+import '../global.css';
+import { colors } from './colors';
 
 // Funktion zum Erstellen eines dynamischen Themes basierend auf gespeicherten Farben
 const createDynamicTheme = () => {

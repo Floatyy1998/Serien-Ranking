@@ -5,8 +5,8 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../App';
 import { petService } from '../../services/petService';
-import { petMoodService } from '../../services/petMoodService';
-import { PET_CONFIG } from '../../services/petConstants';
+import { petMoodService } from '../../services/pet/petMoodService';
+import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 

@@ -36,12 +36,12 @@ const StartPage = lazy(() =>
   }))
 );
 const LoginPage = lazy(() =>
-  import('./features/auth/LoginPage').then((m) => ({
+  import('./pages/Auth/LoginPage').then((m) => ({
     default: m.LoginPage,
   }))
 );
 const RegisterPage = lazy(() =>
-  import('./features/auth/RegisterPage').then((m) => ({
+  import('./pages/Auth/RegisterPage').then((m) => ({
     default: m.RegisterPage,
   }))
 );
