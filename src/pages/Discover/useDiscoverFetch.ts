@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../App';
 import { useMovieList } from '../../contexts/MovieListProvider';
 import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
-import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import type { DiscoverItem } from './DiscoverItemCard';
+import { useDiscoverActions } from './useDiscoverActions';
 
 interface UseDiscoverFetchResult {
   results: DiscoverItem[];
@@ -46,7 +44,6 @@ export const useDiscoverFetch = (
   searchQuery: string,
   isRestoring: boolean
 ): UseDiscoverFetchResult => {
-  const { user } = useAuth()!;
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
@@ -54,16 +51,6 @@ export const useDiscoverFetch = (
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [addingItem, setAddingItem] = useState<string | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: '',
-  });
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, message: '', type: 'info' });
   const [searchResults, setSearchResults] = useState<DiscoverItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -71,6 +58,12 @@ export const useDiscoverFetch = (
   const [recommendationsHasMore, setRecommendationsHasMore] = useState(true);
   const [usedRecommendationSources, setUsedRecommendationSources] = useState<Set<string>>(
     new Set()
+  );
+
+  const { addingItem, snackbar, dialog, setDialog, addToList } = useDiscoverActions(
+    setResults,
+    setSearchResults,
+    setRecommendations
   );
 
   const pageRef = useRef(page);
@@ -432,82 +425,6 @@ export const useDiscoverFetch = (
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
-
-  const addToList = useCallback(
-    async (item: DiscoverItem, event?: React.MouseEvent) => {
-      if (event) {
-        event.stopPropagation();
-      }
-
-      if (!user) {
-        setDialog({
-          open: true,
-          message: 'Bitte einloggen um Inhalte hinzuzufügen!',
-          type: 'warning',
-        });
-        return;
-      }
-
-      const itemKey = `${item.type}-${item.id}`;
-      setAddingItem(itemKey);
-
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: import.meta.env.VITE_USER,
-            id: item.id,
-            uuid: user.uid,
-          }),
-        });
-
-        if (response.ok) {
-          setResults((prev) => prev.filter((r) => r.id !== item.id));
-          setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-          setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
-
-          const addedTitle = item.title || item.name;
-          setSnackbar({
-            open: true,
-            message: `"${addedTitle}" wurde erfolgreich hinzugefügt!`,
-          });
-
-          if (item.type === 'series') {
-            trackSeriesAdded(String(item.id), addedTitle || '', 'discover');
-          } else {
-            trackMovieAdded(String(item.id), addedTitle || '', 'discover');
-          }
-
-          const posterPath = item.poster_path ?? undefined;
-          if (item.type === 'series') {
-            await logSeriesAdded(
-              user.uid,
-              item.name || item.title || 'Unbekannte Serie',
-              item.id,
-              posterPath
-            );
-          } else {
-            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
-          }
-
-          setTimeout(() => {
-            setSnackbar({ open: false, message: '' });
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('Failed to add item:', error);
-      } finally {
-        setAddingItem(null);
-      }
-    },
-    [user]
-  );
 
   const setupScrollListener = useCallback(
     (_currentActiveCategory: string) => {

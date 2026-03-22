@@ -342,15 +342,6 @@ export const logRatingAdded = async (
   }
 };
 
-// =============================================================================
-// 🚫 LEGACY COMPATIBILITY (für bestehenden Code)
-// =============================================================================
-
-/**
- * @deprecated Ersetzt durch updateEpisodeCounters()
- */
-export const logEpisodeWatchedClean = updateEpisodeCounters;
-
 /**
  * Mehrere Episoden gleichzeitig abgehakt (z.B. über Dialog)
  */

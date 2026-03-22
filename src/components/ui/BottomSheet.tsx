@@ -64,7 +64,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             backdropFilter: 'blur(4px)',
           }}
           onClick={onClose}
-          aria-hidden="true"
         >
           <motion.div
             ref={sheetRef}

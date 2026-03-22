@@ -1,22 +1,10 @@
 import { Devices, PlayArrow, StopCircle, Timer, TrendingUp, Visibility } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
+import { ExtensionCharts } from './ExtensionCharts';
+import { ExtensionSessionsList } from './ExtensionSessionsList';
 
 interface ExtensionTabProps {
   data: ReturnType<typeof useAdminDashboardData>;
@@ -48,22 +36,6 @@ const PLATFORM_COLORS: Record<string, string> = {
 function platformColor(name: string): string {
   const lower = name.toLowerCase();
   return PLATFORM_COLORS[lower] || PLATFORM_COLORS.unknown;
-}
-
-function formatDuration(seconds: number): string {
-  if (seconds < 60) return `${seconds}s`;
-  const mins = Math.round(seconds / 60);
-  if (mins < 60) return `${mins}m`;
-  const hours = Math.floor(mins / 60);
-  const remMins = mins % 60;
-  return `${hours}h ${remMins}m`;
-}
-
-function formatTime(ts: number): string {
-  return new Date(ts).toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 }
 
 export const ExtensionTab = React.memo<ExtensionTabProps>(({ data, theme }) => {
@@ -206,6 +178,7 @@ export const ExtensionTab = React.memo<ExtensionTabProps>(({ data, theme }) => {
         name: name.charAt(0).toUpperCase() + name.slice(1),
         value: (platformFromSessions[name] || 0) + (platformVisits[name] || 0),
         color: platformColor(name),
+        fill: platformColor(name),
       }))
       .sort((a, b) => b.value - a.value);
 
@@ -323,345 +296,22 @@ export const ExtensionTab = React.memo<ExtensionTabProps>(({ data, theme }) => {
         />
       </div>
 
-      {/* Charts Row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-          gap: 12,
-        }}
-      >
-        {/* Platform Distribution */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'blur(28px)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
-        >
-          <h3
-            style={{
-              margin: '0 0 16px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.text.primary,
-            }}
-          >
-            Plattform-Verteilung
-          </h3>
-          {extData.platformPieData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={extData.platformPieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={90}
-                  paddingAngle={3}
-                  dataKey="value"
-                  label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  labelLine={false}
-                >
-                  {extData.platformPieData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="transparent" />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    background: theme.background.surface,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: 10,
-                    color: theme.text.primary,
-                    fontSize: 12,
-                  }}
-                />
-                <Legend
-                  formatter={(value) => (
-                    <span style={{ color: theme.text.secondary, fontSize: 12 }}>{value}</span>
-                  )}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40 }}>Keine Daten</p>
-          )}
-        </motion.div>
+      <ExtensionCharts
+        platformPieData={extData.platformPieData}
+        seriesBarData={extData.seriesBarData}
+        hourlyData={extData.hourlyData}
+        cardBg={cardBg}
+        borderColor={borderColor}
+        theme={theme}
+      />
 
-        {/* Series watched */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          style={{
-            background: cardBg,
-            backdropFilter: 'blur(28px)',
-            border: `1px solid ${borderColor}`,
-            borderRadius: 16,
-            padding: 20,
-          }}
-        >
-          <h3
-            style={{
-              margin: '0 0 16px',
-              fontSize: 15,
-              fontWeight: 700,
-              color: theme.text.primary,
-            }}
-          >
-            Geschaute Serien (Extension)
-          </h3>
-          {extData.seriesBarData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={extData.seriesBarData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
-                <XAxis
-                  type="number"
-                  tick={{ fill: theme.text.muted, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  allowDecimals={false}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  tick={{ fill: theme.text.secondary, fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={120}
-                />
-                <Tooltip
-                  contentStyle={{
-                    background: theme.background.surface,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: 10,
-                    color: theme.text.primary,
-                    fontSize: 12,
-                  }}
-                />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Sessions" fill="#00cec9" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40 }}>Keine Daten</p>
-          )}
-        </motion.div>
-      </div>
-
-      {/* Hourly Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'blur(28px)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
-          padding: 20,
-        }}
-      >
-        <h3
-          style={{
-            margin: '0 0 16px',
-            fontSize: 15,
-            fontWeight: 700,
-            color: theme.text.primary,
-          }}
-        >
-          Extension-Aktivität nach Uhrzeit
-        </h3>
-        <ResponsiveContainer width="100%" height={180}>
-          <BarChart data={extData.hourlyData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
-            <XAxis
-              dataKey="hour"
-              tick={{ fill: theme.text.muted, fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-              interval={2}
-            />
-            <YAxis
-              tick={{ fill: theme.text.muted, fontSize: 9 }}
-              axisLine={false}
-              tickLine={false}
-              width={25}
-              allowDecimals={false}
-            />
-            <Tooltip
-              contentStyle={{
-                background: theme.background.surface,
-                border: `1px solid ${borderColor}`,
-                borderRadius: 10,
-                color: theme.text.primary,
-                fontSize: 12,
-              }}
-            />
-            <Bar
-              dataKey="count"
-              radius={[3, 3, 0, 0]}
-              name="Events"
-              fill="#f093fb"
-              fillOpacity={0.7}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </motion.div>
-
-      {/* Sessions List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        style={{
-          background: cardBg,
-          backdropFilter: 'blur(28px)',
-          border: `1px solid ${borderColor}`,
-          borderRadius: 16,
-          padding: 20,
-        }}
-      >
-        <h3
-          style={{
-            margin: '0 0 16px',
-            fontSize: 15,
-            fontWeight: 700,
-            color: theme.text.primary,
-          }}
-        >
-          Sessions ({extData.sessions.length})
-        </h3>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-            maxHeight: 400,
-            overflowY: 'auto',
-          }}
-        >
-          {extData.sessions.map((s, i) => {
-            const userName =
-              data.userProfiles[s.uid]?.displayName ||
-              data.userProfiles[s.uid]?.username ||
-              (s.uid === 'undefined' ? 'Unbekannt' : s.uid.slice(0, 8));
-            return (
-              <div
-                key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  padding: '8px 12px',
-                  borderRadius: 10,
-                  background: `${theme.background.default}50`,
-                  fontSize: 12,
-                }}
-              >
-                <span
-                  style={{
-                    color: theme.text.muted,
-                    fontSize: 10,
-                    width: 40,
-                    flexShrink: 0,
-                  }}
-                >
-                  {formatTime(s.startTime)}
-                </span>
-                <span
-                  style={{
-                    padding: '2px 8px',
-                    borderRadius: 6,
-                    background: `${platformColor(s.platform)}30`,
-                    color: platformColor(s.platform),
-                    fontWeight: 700,
-                    fontSize: 10,
-                    textTransform: 'capitalize',
-                    flexShrink: 0,
-                  }}
-                >
-                  {s.platform}
-                </span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    color: theme.text.primary,
-                    flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {s.seriesName}
-                </span>
-                <span style={{ color: theme.text.muted, flexShrink: 0 }}>
-                  S{s.season}E{s.episode}
-                </span>
-                {s.durationSec > 0 && (
-                  <span style={{ color: theme.text.muted, flexShrink: 0 }}>
-                    {formatDuration(s.durationSec)}
-                  </span>
-                )}
-                {s.progressPercent > 0 && (
-                  <div
-                    style={{
-                      width: 50,
-                      height: 6,
-                      borderRadius: 3,
-                      background: `${theme.text.muted}20`,
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: `${Math.min(s.progressPercent, 100)}%`,
-                        height: '100%',
-                        borderRadius: 3,
-                        background:
-                          s.progressPercent > 80
-                            ? '#00b894'
-                            : s.progressPercent > 40
-                              ? '#fdcb6e'
-                              : '#ff6b6b',
-                      }}
-                    />
-                  </div>
-                )}
-                {s.abandoned && (
-                  <span
-                    style={{
-                      padding: '1px 5px',
-                      borderRadius: 3,
-                      background: `${theme.status.error}20`,
-                      color: theme.status.error,
-                      fontSize: 9,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                    }}
-                  >
-                    ABBRUCH
-                  </span>
-                )}
-                <span
-                  style={{
-                    color: theme.text.muted,
-                    fontSize: 10,
-                    flexShrink: 0,
-                  }}
-                >
-                  {userName}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
+      <ExtensionSessionsList
+        sessions={extData.sessions}
+        userProfiles={data.userProfiles}
+        cardBg={cardBg}
+        borderColor={borderColor}
+        theme={theme}
+      />
     </div>
   );
 });

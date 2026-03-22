@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './App';
@@ -13,156 +13,40 @@ import { RatingsPage } from './pages/Ratings';
 import { ProfilePage } from './pages/Profile';
 import { SearchPage } from './pages/Search';
 
-// All other pages: lazy loaded
-const SeriesDetailPage = lazy(() =>
-  import(/* webpackChunkName: "series-detail" */ './pages/SeriesDetail').then((m) => ({
-    default: m.SeriesDetailPage,
-  }))
-);
-const MovieDetailPage = lazy(() =>
-  import(/* webpackChunkName: "movie-detail" */ './pages/MovieDetail').then((m) => ({
-    default: m.MovieDetailPage,
-  }))
-);
-const DiscoverPage = lazy(() =>
-  import(/* webpackChunkName: "discover" */ './pages/Discover').then((m) => ({
-    default: m.DiscoverPage,
-  }))
-);
-const ActivityPage = lazy(() =>
-  import(/* webpackChunkName: "activity" */ './pages/Activity').then((m) => ({
-    default: m.ActivityPage,
-  }))
-);
-const StatsPage = lazy(() =>
-  import(/* webpackChunkName: "stats" */ './pages/Stats').then((m) => ({ default: m.StatsPage }))
-);
-const RecentlyWatchedPage = lazy(() =>
-  import(/* webpackChunkName: "recently-watched" */ './pages/RecentlyWatched').then((m) => ({
-    default: m.RecentlyWatchedPage,
-  }))
-);
-const BadgesPage = lazy(() =>
-  import(/* webpackChunkName: "badges" */ './pages/Badges').then((m) => ({
-    default: m.BadgesPage,
-  }))
-);
-const PetsPage = lazy(() =>
-  import(/* webpackChunkName: "pets" */ './pages/Pets').then((m) => ({ default: m.PetsPage }))
-);
-const ThemePage = lazy(() =>
-  import(/* webpackChunkName: "theme" */ './pages/Theme').then((m) => ({ default: m.ThemePage }))
-);
-const HomeLayoutPage = lazy(() =>
-  import(/* webpackChunkName: "home-layout" */ './pages/HomeLayout').then((m) => ({
-    default: m.HomeLayoutPage,
-  }))
-);
-const WrappedPage = lazy(() =>
-  import(/* webpackChunkName: "wrapped" */ './pages/Wrapped').then((m) => ({
-    default: m.WrappedPage,
-  }))
-);
-const ActorUniversePage = lazy(() =>
-  import(/* webpackChunkName: "actor-universe" */ './pages/ActorUniverse').then((m) => ({
-    default: m.ActorUniversePage,
-  }))
-);
-const SettingsPage = lazy(() =>
-  import(/* webpackChunkName: "settings" */ './pages/Settings').then((m) => ({
-    default: m.SettingsPage,
-  }))
-);
-const ProfileSettingsPage = lazy(() =>
-  import(/* webpackChunkName: "profile-settings" */ './pages/ProfileSettings').then((m) => ({
-    default: m.ProfileSettingsPage,
-  }))
-);
-const EpisodeManagementPage = lazy(() =>
-  import(/* webpackChunkName: "episode-management" */ './pages/EpisodeManagement').then((m) => ({
-    default: m.EpisodeManagementPage,
-  }))
-);
-const EpisodeDiscussionPage = lazy(() =>
-  import(/* webpackChunkName: "episode-discussion" */ './pages/EpisodeDiscussion').then((m) => ({
-    default: m.EpisodeDiscussionPage,
-  }))
-);
-const RatingPage = lazy(() =>
-  import(/* webpackChunkName: "rating" */ './pages/Rating').then((m) => ({
-    default: m.RatingPage,
-  }))
-);
-const FriendProfilePage = lazy(() =>
-  import(/* webpackChunkName: "friend-profile" */ './pages/FriendProfile').then((m) => ({
-    default: m.FriendProfilePage,
-  }))
-);
-const TasteMatchPage = lazy(() =>
-  import(/* webpackChunkName: "taste-match" */ './pages/TasteMatch').then((m) => ({
-    default: m.TasteMatchPage,
-  }))
-);
-const WatchJourneyPage = lazy(() =>
-  import(/* webpackChunkName: "watch-journey" */ './pages/WatchJourney').then((m) => ({
-    default: m.WatchJourneyPage,
-  }))
-);
-const CatchUpPage = lazy(() =>
-  import(/* webpackChunkName: "catch-up" */ './pages/CatchUp').then((m) => ({
-    default: m.CatchUpPage,
-  }))
-);
-const HiddenSeriesPage = lazy(() =>
-  import(/* webpackChunkName: "hidden-series" */ './pages/HiddenSeries').then((m) => ({
-    default: m.HiddenSeriesPage,
-  }))
-);
-const ImpressumPage = lazy(() =>
-  import(/* webpackChunkName: "impressum" */ './pages/Impressum').then((m) => ({
-    default: m.ImpressumPage,
-  }))
-);
-const PrivacyPage = lazy(() =>
-  import(/* webpackChunkName: "privacy" */ './pages/Privacy').then((m) => ({
-    default: m.PrivacyPage,
-  }))
-);
-const DiscussionFeedPage = lazy(() =>
-  import(/* webpackChunkName: "discussion-feed" */ './pages/DiscussionFeed').then((m) => ({
-    default: m.DiscussionFeedPage,
-  }))
-);
-const CountdownPage = lazy(() =>
-  import(/* webpackChunkName: "countdown" */ './pages/Countdown').then((m) => ({
-    default: m.CountdownPage,
-  }))
-);
-const CalendarPage = lazy(() =>
-  import(/* webpackChunkName: "calendar" */ './pages/Calendar').then((m) => ({
-    default: m.CalendarPage,
-  }))
-);
-const OnboardingPage = lazy(() =>
-  import(/* webpackChunkName: "onboarding" */ './pages/Onboarding').then((m) => ({
-    default: m.OnboardingPage,
-  }))
-);
-const LeaderboardPage = lazy(() =>
-  import(/* webpackChunkName: "leaderboard" */ './pages/Leaderboard').then((m) => ({
-    default: m.LeaderboardPage,
-  }))
-);
-const PatchNotesPage = lazy(() =>
-  import(/* webpackChunkName: "patch-notes" */ './pages/PatchNotes').then((m) => ({
-    default: m.PatchNotesPage,
-  }))
-);
-const AdminDashboardPage = lazy(() =>
-  import(/* webpackChunkName: "admin-dashboard" */ './pages/AdminDashboard').then((m) => ({
-    default: m.AdminDashboardPage,
-  }))
-);
+import {
+  SeriesDetailPage,
+  MovieDetailPage,
+  DiscoverPage,
+  ActivityPage,
+  StatsPage,
+  RecentlyWatchedPage,
+  BadgesPage,
+  PetsPage,
+  ThemePage,
+  HomeLayoutPage,
+  WrappedPage,
+  ActorUniversePage,
+  SettingsPage,
+  ProfileSettingsPage,
+  EpisodeManagementPage,
+  EpisodeDiscussionPage,
+  RatingPage,
+  FriendProfilePage,
+  TasteMatchPage,
+  WatchJourneyPage,
+  CatchUpPage,
+  HiddenSeriesPage,
+  ImpressumPage,
+  PrivacyPage,
+  DiscussionFeedPage,
+  CountdownPage,
+  CalendarPage,
+  OnboardingPage,
+  LeaderboardPage,
+  PatchNotesPage,
+  AdminDashboardPage,
+  preloadRoutes,
+} from './lazyRoutes';
 
 const PageLoader = () => (
   <div
@@ -177,43 +61,6 @@ const PageLoader = () => (
     <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
   </div>
 );
-
-// Preload all lazy route chunks when the browser is idle
-// so that first navigation to any page feels instant
-function preloadRoutes() {
-  const routes = [
-    () => import('./pages/SeriesDetail'),
-    () => import('./pages/MovieDetail'),
-    () => import('./pages/Activity'),
-    () => import('./pages/Discover'),
-    () => import('./pages/RecentlyWatched'),
-    () => import('./pages/Calendar'),
-    () => import('./pages/Countdown'),
-    () => import('./pages/Stats'),
-    () => import('./pages/EpisodeManagement'),
-    () => import('./pages/EpisodeDiscussion'),
-    () => import('./pages/FriendProfile'),
-    () => import('./pages/Badges'),
-    () => import('./pages/Settings'),
-  ];
-
-  let i = 0;
-  function loadNext() {
-    if (i >= routes.length) return;
-    routes[i++]().finally(() => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadNext, { timeout: 3000 });
-      }
-    });
-  }
-
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadNext, { timeout: 5000 });
-  } else {
-    // Fallback for Safari
-    setTimeout(loadNext, 2000);
-  }
-}
 
 export const MobileApp = () => {
   const { onboardingComplete } = useAuth() || {};

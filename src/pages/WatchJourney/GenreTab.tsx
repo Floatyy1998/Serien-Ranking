@@ -4,7 +4,6 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
-  Cell,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -46,7 +45,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
     return data.topGenres.map((genre) => ({
       name: genre,
       value: Math.round((totals[genre] || 0) / 60),
-      color: data.genreColors[genre],
+      fill: data.genreColors[genre],
     }));
   }, [data]);
 
@@ -170,16 +169,9 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 dataKey="value"
                 animationBegin={0}
                 animationDuration={800}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.color}
-                    stroke="transparent"
-                    style={{ outline: 'none' }}
-                  />
-                ))}
-              </Pie>
+                stroke="transparent"
+                style={{ outline: 'none' }}
+              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -188,14 +180,14 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                       <div
                         style={{
                           background: bgSurface,
-                          border: `1px solid ${item.color}50`,
+                          border: `1px solid ${item.fill}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
                           boxShadow:
                             '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
-                        <p style={{ color: item.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p style={{ color: item.fill, fontWeight: 700, margin: 0, fontSize: 15 }}>
                           {item.name}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
@@ -223,7 +215,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         >
           {pieData.slice(0, 6).map((item) => (
             <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.fill }} />
               <span style={{ color: textSecondary, fontSize: 12 }}>{item.name}</span>
             </div>
           ))}
