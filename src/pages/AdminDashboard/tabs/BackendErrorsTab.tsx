@@ -10,13 +10,20 @@ interface BackendError {
   [key: string]: unknown;
 }
 
-interface BackendErrorLog {
+interface ActionLog {
   runStart: string;
-  runEnd: string;
-  action?: string;
+  runEnd?: string;
+  action: string;
   errorCount: number;
   errors: BackendError[];
 }
+
+const ACTION_COLORS: Record<string, string> = {
+  episodes: '#8338ec',
+  movies: '#ff006e',
+  all: '#3a86ff',
+  dates: '#06d6a0',
+};
 
 export function BackendErrorsTab({
   theme,
@@ -28,13 +35,23 @@ export function BackendErrorsTab({
     background: { paper: string };
   };
 }) {
-  const [log, setLog] = useState<BackendErrorLog | null>(null);
+  const [logs, setLogs] = useState<Record<string, ActionLog>>({});
   const [loading, setLoading] = useState(true);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   useEffect(() => {
     const ref = firebase.database().ref('admin/backendErrors');
     const handler = ref.on('value', (snap) => {
-      setLog(snap.val());
+      const data = snap.val();
+      if (data && typeof data === 'object') {
+        // Neues Format: { episodes: {...}, movies: {...}, all: {...} }
+        if (data.episodes || data.movies || data.all || data.dates) {
+          setLogs(data);
+        } else if (data.runStart) {
+          // Altes Format: flaches Objekt — migrieren
+          setLogs({ [data.action || 'all']: data });
+        }
+      }
       setLoading(false);
     });
     return () => ref.off('value', handler);
@@ -44,17 +61,43 @@ export function BackendErrorsTab({
     await firebase.database().ref('admin/backendErrors').remove();
   };
 
-  const handleCopyAll = () => {
-    const lines = (log?.errors || []).map((e) => {
-      const details = Object.entries(e)
-        .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
-        .map(([k, v]) => `${k}: ${v}`)
-        .join(' | ');
-      return `[${e.context}] ${e.message}${details ? ` (${details})` : ''}`;
-    });
-    const text = `Backend Errors (${log?.runStart || '?'}):\n${lines.join('\n')}`;
-    navigator.clipboard.writeText(text);
+  const handleClearAction = async (action: string) => {
+    await firebase.database().ref(`admin/backendErrors/${action}`).remove();
   };
+
+  // Collect all errors across all actions
+  const allErrors: (BackendError & { _action: string })[] = [];
+  Object.entries(logs).forEach(([action, log]) => {
+    (log.errors || []).forEach((e) => {
+      allErrors.push({ ...e, _action: action });
+    });
+  });
+
+  const filteredErrors = activeAction
+    ? allErrors.filter((e) => e._action === activeAction)
+    : allErrors;
+
+  const handleCopyAll = () => {
+    const sections = Object.entries(logs).map(([action, log]) => {
+      const lines = (log.errors || []).map((e) => {
+        const details = Object.entries(e)
+          .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
+          .map(([k, v]) => `${k}: ${v}`)
+          .join(' | ');
+        return `[${e.context}] ${e.message}${details ? ` (${details})` : ''}`;
+      });
+      return `=== ${action.toUpperCase()} (${log.runStart || '?'}) ===\n${lines.join('\n')}`;
+    });
+    navigator.clipboard.writeText(sections.join('\n\n'));
+  };
+
+  // Group filtered errors by context
+  const grouped: Record<string, (BackendError & { _action: string })[]> = {};
+  filteredErrors.forEach((e) => {
+    const ctx = e.context || 'Unbekannt';
+    if (!grouped[ctx]) grouped[ctx] = [];
+    grouped[ctx].push(e);
+  });
 
   if (loading) {
     return (
@@ -62,16 +105,7 @@ export function BackendErrorsTab({
     );
   }
 
-  const errors = log?.errors || [];
-  const hasErrors = errors.length > 0;
-
-  // Group by context
-  const grouped: Record<string, BackendError[]> = {};
-  errors.forEach((e) => {
-    const ctx = e.context || 'Unbekannt';
-    if (!grouped[ctx]) grouped[ctx] = [];
-    grouped[ctx].push(e);
-  });
+  const hasErrors = allErrors.length > 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -94,15 +128,15 @@ export function BackendErrorsTab({
               color: hasErrors ? '#ff4d6d' : '#06d6a0',
             }}
           >
-            {errors.length}
+            {allErrors.length}
           </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Fehler</div>
+          <div style={{ fontSize: 12, color: theme.text.muted }}>Fehler gesamt</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
-            {Object.keys(grouped).length}
+            {Object.keys(logs).length}
           </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Kategorien</div>
+          <div style={{ fontSize: 12, color: theme.text.muted }}>Runs</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center' }}>
           {hasErrors ? (
@@ -146,37 +180,116 @@ export function BackendErrorsTab({
         )}
       </div>
 
-      {/* Run info */}
-      {log && (
-        <div
-          style={{
-            padding: '8px 16px',
-            borderRadius: 8,
-            background: theme.background.paper,
-            fontSize: 12,
-            color: theme.text.muted,
-          }}
-        >
-          <span style={{ fontWeight: 600 }}>Letzter Run:</span>{' '}
-          {log.action && (
-            <span
-              style={{
-                background: `${theme.primary}20`,
-                color: theme.primary,
-                padding: '1px 8px',
-                borderRadius: 10,
-                fontSize: 11,
-                fontWeight: 700,
-                marginRight: 6,
-              }}
-            >
-              {log.action}
-            </span>
-          )}
-          {log.runStart ? new Date(log.runStart).toLocaleString('de-DE') : '—'}
-          {log.runEnd ? ` — ${new Date(log.runEnd).toLocaleString('de-DE')}` : ' (läuft noch...)'}
+      {/* Action tabs */}
+      {Object.keys(logs).length > 0 && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => setActiveAction(null)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              border:
+                activeAction === null ? `2px solid ${theme.primary}` : '2px solid transparent',
+              background: `${theme.text.muted}15`,
+              color: theme.text.primary,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Alle ({allErrors.length})
+          </button>
+          {Object.entries(logs)
+            .sort((a, b) => (b[1].runStart || '').localeCompare(a[1].runStart || ''))
+            .map(([action, log]) => {
+              const color = ACTION_COLORS[action] || theme.primary;
+              const count = log.errors?.length || 0;
+              return (
+                <button
+                  key={action}
+                  onClick={() => setActiveAction(activeAction === action ? null : action)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 20,
+                    border:
+                      activeAction === action ? `2px solid ${color}` : '2px solid transparent',
+                    background: `${color}20`,
+                    color,
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {action} ({count})
+                </button>
+              );
+            })}
         </div>
       )}
+
+      {/* Run info per action */}
+      {Object.entries(logs)
+        .filter(([action]) => !activeAction || activeAction === action)
+        .sort((a, b) => (b[1].runStart || '').localeCompare(a[1].runStart || ''))
+        .map(([action, log]) => {
+          const color = ACTION_COLORS[action] || theme.primary;
+          return (
+            <div
+              key={action}
+              style={{
+                padding: '8px 16px',
+                borderRadius: 8,
+                background: theme.background.paper,
+                fontSize: 12,
+                color: theme.text.muted,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <div>
+                <span
+                  style={{
+                    background: `${color}20`,
+                    color,
+                    padding: '1px 8px',
+                    borderRadius: 10,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    marginRight: 6,
+                  }}
+                >
+                  {action}
+                </span>
+                {log.runStart ? new Date(log.runStart).toLocaleString('de-DE') : '—'}
+                {log.runEnd
+                  ? ` — ${new Date(log.runEnd).toLocaleString('de-DE')}`
+                  : ' (läuft noch...)'}
+                <span
+                  style={{
+                    marginLeft: 8,
+                    color: (log.errors?.length || 0) > 0 ? '#ff4d6d' : '#06d6a0',
+                  }}
+                >
+                  {log.errors?.length || 0} Fehler
+                </span>
+              </div>
+              <button
+                onClick={() => handleClearAction(action)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: theme.text.muted,
+                  cursor: 'pointer',
+                  padding: 2,
+                }}
+                title={`${action}-Log löschen`}
+              >
+                <Delete style={{ fontSize: 14 }} />
+              </button>
+            </div>
+          );
+        })}
 
       {/* Errors grouped by context */}
       {Object.entries(grouped)
@@ -216,8 +329,9 @@ export function BackendErrorsTab({
 
             {contextErrors.map((err, idx) => {
               const details = Object.entries(err).filter(
-                ([k]) => !['timestamp', 'context', 'message'].includes(k)
+                ([k]) => !['timestamp', 'context', 'message', '_action'].includes(k)
               );
+              const actionColor = ACTION_COLORS[err._action] || theme.primary;
               return (
                 <div
                   key={idx}
@@ -243,7 +357,9 @@ export function BackendErrorsTab({
                     <button
                       onClick={() => {
                         const d = Object.entries(err)
-                          .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
+                          .filter(
+                            ([k]) => !['timestamp', 'context', 'message', '_action'].includes(k)
+                          )
                           .map(([k, v]) => `${k}: ${v}`)
                           .join(' | ');
                         navigator.clipboard.writeText(
@@ -264,6 +380,18 @@ export function BackendErrorsTab({
                     </button>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        background: `${actionColor}20`,
+                        color: actionColor,
+                        padding: '1px 6px',
+                        borderRadius: 4,
+                        fontWeight: 700,
+                      }}
+                    >
+                      {err._action}
+                    </span>
                     <span style={{ fontSize: 10, color: theme.text.muted }}>
                       {new Date(err.timestamp).toLocaleString('de-DE')}
                     </span>
@@ -295,7 +423,7 @@ export function BackendErrorsTab({
       {!hasErrors && (
         <div style={{ textAlign: 'center', padding: 40, color: theme.text.muted }}>
           <CheckCircle style={{ fontSize: 48, opacity: 0.3, marginBottom: 8 }} />
-          <div>Keine Backend-Fehler im letzten Run</div>
+          <div>Keine Backend-Fehler</div>
         </div>
       )}
     </div>
