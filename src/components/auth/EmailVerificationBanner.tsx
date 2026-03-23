@@ -4,9 +4,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { commonStyles } from '../../theme';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;

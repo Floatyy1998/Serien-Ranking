@@ -2,10 +2,10 @@ import { BarChart, Person, PlayCircle, Star } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 

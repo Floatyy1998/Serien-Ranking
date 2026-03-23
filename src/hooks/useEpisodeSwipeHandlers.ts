@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
-import { useAuth } from '../App';
+import { useAuth } from '../AuthContext';
 import { trackEpisodeWatched } from '../firebase/analytics';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';

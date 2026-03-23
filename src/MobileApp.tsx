@@ -1,9 +1,9 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout, ScrollToTop } from './components/layout';
-import { useAuth } from './App';
-import { useOptimizedFriends } from './contexts/OptimizedFriendsProvider';
-import { useNotifications } from './contexts/NotificationContext';
+import { useAuth } from './AuthContext';
+import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
+import { useNotifications } from './contexts/NotificationContextDef';
 import './styles/App.css';
 
 // Main nav tabs: eager imports — these are always needed and must never show a loading spinner

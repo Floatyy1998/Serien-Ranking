@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SortOption, SortDirection } from './useCatchUpData';
 
 interface SortToolbarProps {

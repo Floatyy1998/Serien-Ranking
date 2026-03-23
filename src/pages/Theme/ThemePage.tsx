@@ -5,7 +5,7 @@
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';

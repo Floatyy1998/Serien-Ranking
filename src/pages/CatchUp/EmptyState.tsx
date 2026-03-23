@@ -2,7 +2,7 @@ import { ArrowForward, AutoAwesome, CheckCircleOutline } from '@mui/icons-materi
 import { motion } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText } from '../../components/ui';
 
 export const EmptyState = memo(() => {

@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NextEpisode } from './useWatchNextEpisodes';
+import type { NextEpisode } from './useWatchNextEpisodes';
 
 interface UseEpisodeDragDropOptions {
   nextEpisodes: NextEpisode[];
@@ -211,7 +211,9 @@ export const useEpisodeDragDrop = ({
       dragDelayTimerRef.current = setTimeout(() => {
         // Prevent any ongoing scrolling when drag starts
         if (document.scrollingElement) {
-          document.scrollingElement.scrollTop = document.scrollingElement.scrollTop;
+          // Force stop momentum scrolling by reading and re-setting scrollTop
+          const { scrollTop } = document.scrollingElement;
+          document.scrollingElement.scrollTop = scrollTop;
         }
         setDraggedIndex(index);
         setCurrentTouchIndex(index);
@@ -322,7 +324,7 @@ export const useEpisodeDragDrop = ({
           // Only scroll if still near edges
           if (!isNearTop && !isNearBottom) {
             isAutoScrollingRef.current = false;
-            clearInterval(autoScrollIntervalRef.current!);
+            clearInterval(autoScrollIntervalRef.current ?? undefined);
             autoScrollIntervalRef.current = null;
             return;
           }
@@ -331,7 +333,7 @@ export const useEpisodeDragDrop = ({
           const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
           if (!container) {
             isAutoScrollingRef.current = false;
-            clearInterval(autoScrollIntervalRef.current!);
+            clearInterval(autoScrollIntervalRef.current ?? undefined);
             autoScrollIntervalRef.current = null;
             return;
           }
@@ -348,7 +350,7 @@ export const useEpisodeDragDrop = ({
           // If page isn't scrollable, stop auto-scroll
           if (!hasScrollableContent) {
             isAutoScrollingRef.current = false;
-            clearInterval(autoScrollIntervalRef.current!);
+            clearInterval(autoScrollIntervalRef.current ?? undefined);
             autoScrollIntervalRef.current = null;
             return;
           }

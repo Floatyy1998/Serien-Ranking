@@ -3,7 +3,7 @@ import Tv from '@mui/icons-material/Tv';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface PosterNavState {
   open: boolean;

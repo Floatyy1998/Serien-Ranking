@@ -5,7 +5,7 @@
 import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActivityGrouping } from '../useActivityGrouping';
 
 interface DiscussionNotification {

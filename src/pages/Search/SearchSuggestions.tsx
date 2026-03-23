@@ -6,7 +6,7 @@
 import { Close, History, Search, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 export interface SearchSuggestionsProps {
   popularSearches: string[];

@@ -3,12 +3,12 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DiscussionReply } from '../../types/Discussion';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
-const _ReplyItem: React.FC<{
+const ReplyItemInner: React.FC<{
   reply: DiscussionReply;
   onDelete: () => void;
   onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
@@ -474,5 +474,5 @@ const _ReplyItem: React.FC<{
   );
 };
 
-export const ReplyItem = memo(_ReplyItem);
+export const ReplyItem = memo(ReplyItemInner);
 ReplyItem.displayName = 'ReplyItem';

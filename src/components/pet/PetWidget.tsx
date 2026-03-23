@@ -1,17 +1,17 @@
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
-import { Pet } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
 import { PetHungerToast } from './PetHungerToast';
+import type { EdgePosition } from './PetWidgetHelpers';
 import {
-  EdgePosition,
   calculateEdgeFromPosition,
   calculatePixelPosition,
   convertPercentToEdge,
@@ -46,14 +46,7 @@ export const PetWidget: React.FC = () => {
   const [showHungerToast, setShowHungerToast] = useState(false);
   const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
 
-  useEffect(() => {
-    if (user) {
-      loadPet();
-      loadPosition();
-    }
-  }, [user]);
-
-  const loadPosition = async () => {
+  const loadPosition = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -72,7 +65,7 @@ export const PetWidget: React.FC = () => {
       console.error('Error loading pet position:', error);
       setPosition(calculatePixelPosition(edgePosition));
     }
-  };
+  }, [user, edgePosition]);
 
   const savePosition = async (newPosition: { x: number; y: number }) => {
     if (!user) return;
@@ -151,7 +144,7 @@ export const PetWidget: React.FC = () => {
     return () => window.removeEventListener('resize', updateConstraintsAndPosition);
   }, [edgePosition]);
 
-  const loadPet = async () => {
+  const loadPet = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -177,7 +170,14 @@ export const PetWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadPet();
+      loadPosition();
+    }
+  }, [user, loadPet, loadPosition]);
 
   if (!user || !showWidget || isLoading) return null;
 

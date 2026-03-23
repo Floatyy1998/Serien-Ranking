@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
-import type { DiscoverItem } from './DiscoverItemCard';
+import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
 
 interface UseDiscoverFetchResult {
@@ -73,6 +73,8 @@ export const useDiscoverFetch = (
   const recommendationsLoadingRef = useRef(recommendationsLoading);
   const recommendationsHasMoreRef = useRef(recommendationsHasMore);
   const activeCategoryRef = useRef(activeCategory);
+  const recommendationsRef = useRef(recommendations);
+  const usedSourcesRef = useRef(usedRecommendationSources);
 
   useEffect(() => {
     pageRef.current = page;
@@ -95,6 +97,12 @@ export const useDiscoverFetch = (
   useEffect(() => {
     activeCategoryRef.current = activeCategory;
   }, [activeCategory]);
+  useEffect(() => {
+    recommendationsRef.current = recommendations;
+  }, [recommendations]);
+  useEffect(() => {
+    usedSourcesRef.current = usedRecommendationSources;
+  }, [usedRecommendationSources]);
 
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
@@ -113,7 +121,7 @@ export const useDiscoverFetch = (
 
   const fetchRecommendations = useCallback(
     async (reset = false) => {
-      if (recommendationsLoading) return;
+      if (recommendationsLoadingRef.current) return;
 
       setRecommendationsLoading(true);
 
@@ -133,7 +141,7 @@ export const useDiscoverFetch = (
           setRecommendationsHasMore(true);
         }
 
-        const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
+        const currentUsedSources = reset ? new Set<string>() : new Set(usedSourcesRef.current);
         const availableItems = userItems.filter(
           (item) => !currentUsedSources.has(item.id.toString())
         );
@@ -148,7 +156,7 @@ export const useDiscoverFetch = (
         const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
 
         const allRecommendations: DiscoverItem[] = [];
-        const existingIds = new Set(recommendations.map((r) => r.id));
+        const existingIds = new Set(recommendationsRef.current.map((r) => r.id));
 
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
@@ -207,23 +215,15 @@ export const useDiscoverFetch = (
         setRecommendationsLoading(false);
       }
     },
-    [
-      activeTab,
-      seriesList,
-      movieList,
-      isInList,
-      recommendationsLoading,
-      recommendations,
-      usedRecommendationSources,
-    ]
+    [activeTab, seriesList, movieList, isInList]
   );
 
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
-      if (loading) return;
+      if (loadingRef.current) return;
 
       setLoading(true);
-      const currentPage = reset ? 1 : page + 1;
+      const currentPage = reset ? 1 : pageRef.current + 1;
 
       try {
         let endpoint = '';
@@ -307,7 +307,7 @@ export const useDiscoverFetch = (
         setLoading(false);
       }
     },
-    [activeTab, activeCategory, selectedGenre, page, loading, isInList]
+    [activeTab, activeCategory, selectedGenre, isInList]
   );
 
   useEffect(() => {
@@ -321,7 +321,15 @@ export const useDiscoverFetch = (
       setHasMore(true);
       fetchFromTMDB(true);
     }
-  }, [activeTab, activeCategory, selectedGenre, showSearch, isRestoring]);
+  }, [
+    activeTab,
+    activeCategory,
+    selectedGenre,
+    showSearch,
+    isRestoring,
+    fetchRecommendations,
+    fetchFromTMDB,
+  ]);
 
   useEffect(() => {
     if (activeCategory === 'recommendations') {
@@ -429,14 +437,16 @@ export const useDiscoverFetch = (
   const setupScrollListener = useCallback(
     (_currentActiveCategory: string) => {
       const scrollContainer = document.querySelector('.mobile-discover-container');
-      if (scrollContainer) {
-        const scrollHandler = () => {
-          if (!scrollContainer) return;
+      if (!scrollContainer) return undefined;
 
-          const scrollTop = scrollContainer.scrollTop;
-          const scrollHeight = scrollContainer.scrollHeight;
-          const clientHeight = scrollContainer.clientHeight;
-          const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      let ticking = false;
+      const scrollHandler = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          const distanceFromBottom =
+            scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
 
           if (distanceFromBottom < 500) {
             if (activeCategoryRef.current === 'recommendations') {
@@ -447,13 +457,13 @@ export const useDiscoverFetch = (
               fetchFromTMDB(false);
             }
           }
-        };
+        });
+      };
 
-        scrollContainer.addEventListener('scroll', scrollHandler);
-        return () => {
-          scrollContainer.removeEventListener('scroll', scrollHandler);
-        };
-      }
+      scrollContainer.addEventListener('scroll', scrollHandler, { passive: true });
+      return () => {
+        scrollContainer.removeEventListener('scroll', scrollHandler);
+      };
     },
     [fetchFromTMDB, fetchRecommendations]
   );

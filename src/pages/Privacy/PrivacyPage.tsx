@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Shield } from '@mui/icons-material';
 import { usePrivacyData } from './usePrivacyData';

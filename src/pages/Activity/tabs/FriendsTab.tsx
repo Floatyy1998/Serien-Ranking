@@ -5,7 +5,7 @@
 import { Person, PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 

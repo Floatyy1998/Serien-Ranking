@@ -12,9 +12,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DiscussionFeedMetadata } from '../../types/Discussion';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
 import { ReplyItem } from './ReplyItem';
 

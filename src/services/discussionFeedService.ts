@@ -25,7 +25,7 @@ export const deleteDiscussionFeedEntries = async (discussionId: string): Promise
     if (snapshot.exists()) {
       const updates: Record<string, null> = {};
       snapshot.forEach((child) => {
-        updates[child.key!] = null;
+        updates[child.key ?? ''] = null;
         return false;
       });
       await ref.update(updates);

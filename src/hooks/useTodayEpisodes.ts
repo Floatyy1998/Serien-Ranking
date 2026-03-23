@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMemo } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface TodayEpisode {
@@ -19,23 +19,10 @@ interface TodayEpisode {
 export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
 
-  const cacheRef = useRef<{ episodes: TodayEpisode[] | null; deps: string; date: string }>({
-    episodes: null,
-    deps: '',
-    date: '',
-  });
-
   const todayEpisodes = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
-    const todayString = today.toDateString();
-    const depsString = `${seriesList.length}`;
-
-    const cache = cacheRef.current;
-    if (cache.episodes && cache.deps === depsString && cache.date === todayString) {
-      return cache.episodes;
-    }
 
     const episodes: TodayEpisode[] = [];
 
@@ -83,16 +70,6 @@ export const useTodayEpisodes = () => {
 
     return episodes;
   }, [seriesList]);
-
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    cacheRef.current = {
-      episodes: todayEpisodes,
-      deps: `${seriesList.length}`,
-      date: today.toDateString(),
-    };
-  }, [todayEpisodes, seriesList.length]);
 
   return todayEpisodes;
 };

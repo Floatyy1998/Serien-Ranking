@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;

@@ -1,8 +1,12 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../App';
-import { DiscussionFeedMetadata, DiscussionItemType, DiscussionReply } from '../types/Discussion';
+import { useAuth } from '../AuthContext';
+import type {
+  DiscussionFeedMetadata,
+  DiscussionItemType,
+  DiscussionReply,
+} from '../types/Discussion';
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 
@@ -175,7 +179,7 @@ export const useDiscussionReplies = (
 
           writeDiscussionFeedEntry({
             type: 'reply_created',
-            discussionId: discussionId!,
+            discussionId: discussionId,
             discussionTitle: discussion.title,
             userId: user.uid,
             username,

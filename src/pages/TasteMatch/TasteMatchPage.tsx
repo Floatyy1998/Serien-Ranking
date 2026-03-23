@@ -15,7 +15,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton, GradientText } from '../../components/ui';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 import { StatRing } from './StatRing';

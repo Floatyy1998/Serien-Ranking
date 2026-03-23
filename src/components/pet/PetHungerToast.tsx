@@ -1,6 +1,6 @@
 import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
-import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
+import { useTheme as useAppTheme } from '../../contexts/ThemeContextDef';
 
 interface PetHungerToastProps {
   open: boolean;

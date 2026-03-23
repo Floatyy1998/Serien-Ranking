@@ -2,7 +2,7 @@ import { AutoAwesome, OpenInNew, Star, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 

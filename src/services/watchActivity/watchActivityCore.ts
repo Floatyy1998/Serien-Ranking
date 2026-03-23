@@ -5,7 +5,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
+import type { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { updateLeaderboardStats } from '../leaderboardService';
 import { createBaseEventData, createEpisodeEventData, getEventsPath, saveEvent } from './shared';
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';

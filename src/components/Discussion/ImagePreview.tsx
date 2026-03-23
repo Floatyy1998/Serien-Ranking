@@ -1,7 +1,7 @@
 import { Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
   src,

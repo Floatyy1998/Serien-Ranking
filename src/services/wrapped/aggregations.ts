@@ -4,14 +4,14 @@
  * Dieses Modul ist Jahr-agnostisch und kann jedes Jahr wiederverwendet werden.
  */
 
-import {
+import type {
   ActivityEvent,
   EpisodeWatchEvent,
   MovieWatchEvent,
   BingeSession,
 } from '../../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { WrappedStats, BingeSessionStats, DeviceBreakdown } from '../../types/Wrapped';
+import type { WrappedStats, BingeSessionStats, DeviceBreakdown } from '../../types/Wrapped';
 import {
   calculateTopSeries,
   calculateTopMovies,

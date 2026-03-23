@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MonthStats } from '../../types/Wrapped';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { MonthStats } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MonthlyBreakdownSlideProps {
   monthlyBreakdown: MonthStats[];
@@ -14,7 +14,7 @@ interface MonthlyBreakdownSlideProps {
 
 export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
   monthlyBreakdown,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   mostActiveMonth,
 }) => {
   const { currentTheme } = useTheme();

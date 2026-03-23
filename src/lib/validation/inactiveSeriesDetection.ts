@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import {

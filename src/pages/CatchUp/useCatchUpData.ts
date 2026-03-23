@@ -5,9 +5,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface CatchUpSeries {
@@ -136,8 +136,8 @@ export const useCatchUpData = () => {
           if (episode.watched) {
             watchedEpisodes++;
             if (episode.lastWatchedAt || episode.firstWatchedAt) {
-              const watchDate = episode.lastWatchedAt || episode.firstWatchedAt;
-              if (!lastWatchedDate || watchDate! > lastWatchedDate) {
+              const watchDate = episode.lastWatchedAt ?? episode.firstWatchedAt ?? '';
+              if (!lastWatchedDate || watchDate > lastWatchedDate) {
                 lastWatchedDate = watchDate;
               }
             }

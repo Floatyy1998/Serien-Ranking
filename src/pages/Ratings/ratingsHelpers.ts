@@ -1,4 +1,4 @@
-import { useAuth } from '../../App';
+import type { useAuth } from '../../AuthContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';

@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
-import { contrastTextColor, SeriesGroup } from './useCalendarData';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
+import type { SeriesGroup } from './useCalendarData';
+import { contrastTextColor } from './useCalendarData';
 
 // ── Shared helpers ───────────────────────────────────────────────
 

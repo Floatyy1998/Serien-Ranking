@@ -1,15 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useAuth } from '../App';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Series } from '../types/Series';
+import type { Series } from '../types/Series';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -22,56 +14,10 @@ import {
   createUnratedSeriesDetectionRunner,
 } from './seriesListDetection';
 import { checkSeriesIntegrity } from './dataIntegrityChecker';
-
-interface SeriesListContextType {
-  seriesList: Series[];
-  allSeriesList: Series[];
-  hiddenSeriesList: Series[];
-  loading: boolean;
-  seriesWithNewSeasons: Series[];
-  inactiveSeries: Series[];
-  inactiveRewatches: Series[];
-  completedSeries: Series[];
-  unratedSeries: Series[];
-  clearNewSeasons: () => void;
-  clearInactiveSeries: () => void;
-  clearInactiveRewatches: () => void;
-  clearCompletedSeries: () => void;
-  clearUnratedSeries: () => void;
-  recheckForNewSeasons: () => void;
-  refetchSeries: () => void;
-  toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
-  isOffline: boolean;
-  isStale: boolean;
-  // Test functions for development
-  simulateNewSeason?: (seriesId: number) => void;
-  forceDetection?: () => void;
-}
-
-export const SeriesListContext = createContext<SeriesListContextType>({
-  seriesList: [],
-  allSeriesList: [],
-  hiddenSeriesList: [],
-  loading: true,
-  seriesWithNewSeasons: [],
-  inactiveSeries: [],
-  inactiveRewatches: [],
-  completedSeries: [],
-  unratedSeries: [],
-  clearNewSeasons: () => {},
-  clearInactiveSeries: () => {},
-  clearInactiveRewatches: () => {},
-  clearCompletedSeries: () => {},
-  clearUnratedSeries: () => {},
-  recheckForNewSeasons: () => {},
-  refetchSeries: () => {},
-  toggleHideSeries: async () => {},
-  isOffline: false,
-  isStale: false,
-});
+import { SeriesListContext } from './SeriesListContext';
 
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   // Verwende sessionStorage um State zwischen Re-Renders zu behalten
   const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() =>
@@ -194,11 +140,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   // Make fix function available globally for manual execution
   useEffect(() => {
     if (user && seriesData && !loading) {
-      (window as any).fixFirstWatchedAt = () => {
+      (window as unknown as Record<string, unknown>).fixFirstWatchedAt = () => {
         fixMissingFirstWatchedAt(user.uid, seriesData);
       };
     } else {
-      delete (window as any).fixFirstWatchedAt;
+      delete (window as unknown as Record<string, unknown>).fixFirstWatchedAt;
     }
   }, [user, seriesData, loading]);
 
@@ -216,39 +162,43 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   // Debounced detection functions (extracted to seriesListDetection.ts)
   const runNewSeasonDetection = useCallback(
-    createNewSeasonDetectionRunner(
-      { detectionRunRef, detectionTimeoutRef },
-      setSeriesWithNewSeasons,
-      setHasCheckedForNewSeasons
-    ),
+    (list: Series[], userId: string) =>
+      createNewSeasonDetectionRunner(
+        { detectionRunRef, detectionTimeoutRef },
+        setSeriesWithNewSeasons,
+        setHasCheckedForNewSeasons
+      )(list, userId),
     []
   );
 
   const runInactiveSeriesDetection = useCallback(
-    createInactiveSeriesDetectionRunner(
-      { inactiveDetectionRunRef, inactiveDetectionTimeoutRef },
-      setInactiveSeries,
-      setInactiveRewatches,
-      setHasCheckedForInactive
-    ),
+    (list: Series[], userId: string) =>
+      createInactiveSeriesDetectionRunner(
+        { inactiveDetectionRunRef, inactiveDetectionTimeoutRef },
+        setInactiveSeries,
+        setInactiveRewatches,
+        setHasCheckedForInactive
+      )(list, userId),
     []
   );
 
   const runCompletedSeriesDetection = useCallback(
-    createCompletedSeriesDetectionRunner(
-      { completedDetectionRunRef, completedDetectionTimeoutRef },
-      setCompletedSeries,
-      setHasCheckedForCompleted
-    ),
+    (list: Series[], userId: string) =>
+      createCompletedSeriesDetectionRunner(
+        { completedDetectionRunRef, completedDetectionTimeoutRef },
+        setCompletedSeries,
+        setHasCheckedForCompleted
+      )(list, userId),
     []
   );
 
   const runUnratedSeriesDetection = useCallback(
-    createUnratedSeriesDetectionRunner(
-      { unratedDetectionRunRef, unratedDetectionTimeoutRef },
-      setUnratedSeries,
-      setHasCheckedForUnrated
-    ),
+    (list: Series[], userId: string) =>
+      createUnratedSeriesDetectionRunner(
+        { unratedDetectionRunRef, unratedDetectionTimeoutRef },
+        setUnratedSeries,
+        setHasCheckedForUnrated
+      )(list, userId),
     []
   );
 
@@ -265,7 +215,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runNewSeasonDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForNewSeasons,
     isOffline,
     seriesWithNewSeasons.length,
@@ -285,7 +235,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runInactiveSeriesDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForInactive,
     isOffline,
     inactiveSeries.length,
@@ -305,7 +255,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runCompletedSeriesDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForCompleted,
     isOffline,
     completedSeries.length,
@@ -325,16 +275,19 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runUnratedSeriesDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForUnrated,
     isOffline,
     unratedSeries.length,
     runUnratedSeriesDetection,
   ]);
 
-  // Reset bei User-Wechsel
+  // Reset bei User-Wechsel - use cleanup to avoid setState-in-effect
   useEffect(() => {
-    if (!user) {
+    if (!user) return;
+
+    // When user changes/logs out, cleanup resets state
+    return () => {
       setSeriesWithNewSeasons([]);
       setHasCheckedForNewSeasons(false);
       setInactiveSeries([]);
@@ -371,7 +324,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         sessionStorage.removeItem('completedSeries');
         sessionStorage.removeItem('hasCheckedForCompleted');
       }
-    }
+    };
   }, [user]);
 
   const clearNewSeasons = useCallback(() => {
@@ -529,5 +482,3 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     </SeriesListContext.Provider>
   );
 };
-
-export const useSeriesList = () => useContext(SeriesListContext);

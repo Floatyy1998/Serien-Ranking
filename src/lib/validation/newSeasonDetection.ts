@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 
 // Einfache Map: seriesId → bekannte Staffelanzahl
 type SeasonCounts = Record<string, number>;

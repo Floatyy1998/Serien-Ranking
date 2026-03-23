@@ -1,6 +1,6 @@
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 export function CountdownBanner({
   countdown,

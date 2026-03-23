@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { SearchInput } from './SearchInput';
 import { GradientText } from './GradientText';
 

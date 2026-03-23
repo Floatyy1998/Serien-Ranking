@@ -5,12 +5,12 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { Movie as MovieType } from '../../types/Movie';
-import { Series } from '../../types/Series';
+import type { Movie as MovieType } from '../../types/Movie';
+import type { Series } from '../../types/Series';
 
 export interface SearchResult {
   id: number;
@@ -59,7 +59,7 @@ export interface UseSearchPageResult {
 
 export const useSearchPage = (): UseSearchPageResult => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
@@ -147,22 +147,27 @@ export const useSearchPage = (): UseSearchPageResult => {
         });
       }
     }
+  }, [isReturning]);
+
+  const saveToRecent = useCallback((query: string) => {
+    setRecentSearches((prev) => {
+      const updated = [query, ...prev.filter((s) => s !== query)].slice(0, 5);
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
-  const saveToRecent = (query: string) => {
-    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
-    setRecentSearches(updated);
-    localStorage.setItem('recentSearches', JSON.stringify(updated));
-  };
-
-  const isInList = (id: string | number, type: 'series' | 'movie') => {
-    const numId = typeof id === 'string' ? parseInt(id) : id;
-    if (type === 'series') {
-      return seriesList.some((s: Series) => s.id === numId);
-    } else {
-      return movieList.some((m: MovieType) => m.id === numId);
-    }
-  };
+  const isInList = useCallback(
+    (id: string | number, type: 'series' | 'movie') => {
+      const numId = typeof id === 'string' ? parseInt(id) : id;
+      if (type === 'series') {
+        return seriesList.some((s: Series) => s.id === numId);
+      } else {
+        return movieList.some((m: MovieType) => m.id === numId);
+      }
+    },
+    [seriesList, movieList]
+  );
 
   const searchTMDB = useCallback(
     async (query: string) => {
@@ -222,7 +227,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         setLoading(false);
       }
     },
-    [searchType, seriesList, movieList]
+    [searchType, isInList, saveToRecent]
   );
 
   // Debounced search with skip-on-return logic
@@ -241,7 +246,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, searchTMDB]);
+  }, [searchQuery, searchTMDB, skipInitialSearch]);
 
   const handleItemClick = useCallback(
     (item: SearchResult) => {
@@ -258,7 +263,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         navigate(`/movie/${item.id}`);
       }
     },
-    [navigate, searchResults]
+    [navigate]
   );
 
   const addToList = useCallback(

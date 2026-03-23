@@ -1,7 +1,7 @@
 import { EmojiEvents } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { MonthlyTrophy } from '../../types/Leaderboard';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];

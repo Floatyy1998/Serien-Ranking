@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { GradientText } from '../../../components/ui';
 import type { Genre } from '../hooks/useOnboardingSearch';
 

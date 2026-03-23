@@ -9,7 +9,7 @@ import Schedule from '@mui/icons-material/Schedule';
 import Star from '@mui/icons-material/Star';
 import Theaters from '@mui/icons-material/Theaters';
 import TrendingUp from '@mui/icons-material/TrendingUp';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface Props {
   year: number;

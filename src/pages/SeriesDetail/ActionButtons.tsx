@@ -10,7 +10,7 @@ import {
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
 
 interface ActionButtonsProps {

@@ -1,5 +1,5 @@
-import { useTheme } from '../../contexts/ThemeContext';
-import { TooltipEntry } from './types';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { TooltipEntry } from './types';
 import { formatGermanNumber } from './tooltipUtils';
 
 interface ActivityTooltipProps {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 interface AnimatedTextProps {
@@ -12,6 +12,17 @@ interface AnimatedTextProps {
   as?: keyof React.JSX.IntrinsicElements;
   style?: React.CSSProperties;
   className?: string;
+}
+
+// Cache for motion-wrapped tags at module level
+const motionTagCache = new Map<string, ReturnType<typeof motion.create>>();
+
+function getMotionTag(tag: keyof React.JSX.IntrinsicElements) {
+  const cached = motionTagCache.get(tag);
+  if (cached) return cached;
+  const created = motion.create(tag as 'span');
+  motionTagCache.set(tag, created);
+  return created;
 }
 
 const containerVariants = {
@@ -52,7 +63,7 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({
   className,
 }) => {
   const shouldReduceMotion = useReducedMotion();
-  const MotionTag = motion.create(Tag as 'span');
+  const motionTag = useMemo(() => getMotionTag(Tag), [Tag]);
 
   if (shouldReduceMotion) {
     return (
@@ -64,28 +75,28 @@ export const AnimatedText: React.FC<AnimatedTextProps> = ({
 
   const elements = mode === 'word' ? text.split(' ') : text.split('');
 
-  return (
-    <MotionTag
-      style={{ display: 'inline-flex', flexWrap: 'wrap', ...style }}
-      className={className}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      custom={staggerDelay}
-      transition={{ delayChildren: delay }}
-    >
-      {elements.map((el, i) => (
-        <motion.span
-          key={`${el}-${i}`}
-          variants={elementVariants}
-          style={{
-            display: 'inline-block',
-            whiteSpace: 'pre',
-          }}
-        >
-          {mode === 'word' ? (i < elements.length - 1 ? `${el}\u00A0` : el) : el}
-        </motion.span>
-      ))}
-    </MotionTag>
+  return React.createElement(
+    motionTag as React.ComponentType<Record<string, unknown>>,
+    {
+      style: { display: 'inline-flex', flexWrap: 'wrap', ...style },
+      className,
+      variants: containerVariants,
+      initial: 'hidden',
+      animate: 'visible',
+      custom: staggerDelay,
+      transition: { delayChildren: delay },
+    },
+    ...elements.map((el, i) => (
+      <motion.span
+        key={`${el}-${i}`}
+        variants={elementVariants}
+        style={{
+          display: 'inline-block',
+          whiteSpace: 'pre',
+        }}
+      >
+        {mode === 'word' ? (i < elements.length - 1 ? `${el}\u00A0` : el) : el}
+      </motion.span>
+    ))
   );
 };

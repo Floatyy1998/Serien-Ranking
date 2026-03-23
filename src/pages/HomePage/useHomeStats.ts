@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { formatMinutesToString } from '../../lib/date';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
@@ -11,8 +11,8 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 
 export function useHomeStats() {
-  const { user } = useAuth()!;
-  const { seriesList, allSeriesList } = useSeriesList();
+  const { user } = useAuth() || {};
+  const { allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
   const workerStats = useWebWorkerStatsOptimized();
 
@@ -247,7 +247,13 @@ export function useHomeStats() {
         return totalAired > 0 && totalAired === watchedAired;
       }).length,
     };
-  }, [seriesList, allSeriesList, movieList, user]);
+  }, [
+    allSeriesList,
+    movieList,
+    user,
+    workerStats.totalEpisodes,
+    workerStats.watchedEpisodesActive,
+  ]);
 
   return stats;
 }

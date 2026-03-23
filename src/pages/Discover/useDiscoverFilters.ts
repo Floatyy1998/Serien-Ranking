@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
-import type { DiscoverItem } from './DiscoverItemCard';
+import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverFiltersResult {
   activeTab: 'series' | 'movies';
@@ -23,8 +23,8 @@ interface UseDiscoverFiltersResult {
   headerHeight: number;
   genres: { id: number; name: string }[];
   handleItemClick: (item: DiscoverItem) => void;
-  fetchRecommendationsOnRestore: React.MutableRefObject<(() => void) | null>;
-  fetchFromTMDBOnRestore: React.MutableRefObject<(() => void) | null>;
+  fetchRecommendationsOnRestoreRef: React.MutableRefObject<(() => void) | null>;
+  fetchFromTMDBOnRestoreRef: React.MutableRefObject<(() => void) | null>;
 }
 
 export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
@@ -43,10 +43,8 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [headerHeight, setHeaderHeight] = useState(220);
 
   // Refs to allow fetch hooks to be called from restore logic
-  const fetchRecommendationsOnRestore = { current: null } as React.MutableRefObject<
-    (() => void) | null
-  >;
-  const fetchFromTMDBOnRestore = { current: null } as React.MutableRefObject<(() => void) | null>;
+  const fetchRecommendationsOnRestoreRef = useRef<(() => void) | null>(null);
+  const fetchFromTMDBOnRestoreRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const updateHeaderHeight = () => {
@@ -95,9 +93,9 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
             setTimeout(() => {
               if (!filters.showSearch) {
                 if (filters.activeCategory === 'recommendations') {
-                  fetchRecommendationsOnRestore.current?.();
+                  fetchRecommendationsOnRestoreRef.current?.();
                 } else {
-                  fetchFromTMDBOnRestore.current?.();
+                  fetchFromTMDBOnRestoreRef.current?.();
                 }
               }
             }, 100);
@@ -108,7 +106,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
       sessionStorage.removeItem('discoverFilters');
     }
     // Default state is already set via useState initializers, no need to reset
-  }, []);
+  }, [fetchFromTMDBOnRestoreRef, fetchRecommendationsOnRestoreRef]);
 
   const handleItemClick = (item: DiscoverItem) => {
     const filterState = {
@@ -147,7 +145,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     headerHeight,
     genres,
     handleItemClick,
-    fetchRecommendationsOnRestore,
-    fetchFromTMDBOnRestore,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
   };
 };

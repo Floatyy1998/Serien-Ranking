@@ -100,6 +100,10 @@ export default [
       prettier,
     },
     rules: {
+      // TypeScript handles undefined variable checks natively — no-undef causes false positives
+      // https://typescript-eslint.io/troubleshooting/faqs/eslint#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
+      'no-undef': 'off',
+
       // TypeScript
       ...tseslint.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': [

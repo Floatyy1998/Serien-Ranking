@@ -10,7 +10,7 @@ import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';

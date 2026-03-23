@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Close } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import type { ActivePetInfo, WatchStreakData } from './watchStreakHelpers';
 

@@ -1,7 +1,7 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { HorizontalScrollContainer } from '../ui';
-import { VoiceActorDetailsData } from './CastCrew.types';
+import type { VoiceActorDetailsData } from './CastCrew.types';
 
 interface VoiceActorDetailsViewProps {
   voiceActorDetails: VoiceActorDetailsData;

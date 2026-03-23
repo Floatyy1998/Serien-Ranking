@@ -5,7 +5,7 @@
 import { Category } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { TasteMatchResult } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/tasteMatchService';
 import {
   USER_COLOR,
   USER_GRADIENT,

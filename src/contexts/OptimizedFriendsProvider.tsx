@@ -1,17 +1,9 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { useAuth } from '../App';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Friend, FriendActivity, FriendRequest } from '../types/Friend';
+import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
 import {
   sendFriendRequestOp,
   acceptFriendRequestOp,
@@ -20,49 +12,10 @@ import {
   removeFriendOp,
   updateUserActivityOp,
 } from './friendOperations';
-
-interface OptimizedFriendsContextType {
-  friends: Friend[];
-  friendRequests: FriendRequest[];
-  sentRequests: FriendRequest[];
-  friendActivities: FriendActivity[];
-  loading: boolean;
-  unreadRequestsCount: number;
-  unreadActivitiesCount: number;
-  markRequestsAsRead: () => void;
-  markActivitiesAsRead: () => void;
-  sendFriendRequest: (username: string) => Promise<boolean>;
-  acceptFriendRequest: (requestId: string) => Promise<void>;
-  declineFriendRequest: (requestId: string) => Promise<void>;
-  cancelFriendRequest: (requestId: string) => Promise<void>;
-  removeFriend: (friendId: string) => Promise<void>;
-  updateUserActivity: (
-    activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
-  ) => Promise<void>;
-  refreshFriends: () => void;
-}
-
-export const OptimizedFriendsContext = createContext<OptimizedFriendsContextType>({
-  friends: [],
-  friendRequests: [],
-  sentRequests: [],
-  friendActivities: [],
-  loading: true,
-  unreadRequestsCount: 0,
-  unreadActivitiesCount: 0,
-  markRequestsAsRead: () => {},
-  markActivitiesAsRead: () => {},
-  sendFriendRequest: async () => false,
-  acceptFriendRequest: async () => {},
-  declineFriendRequest: async () => {},
-  cancelFriendRequest: async () => {},
-  removeFriend: async () => {},
-  updateUserActivity: async () => {},
-  refreshFriends: () => {},
-});
+import { OptimizedFriendsContext } from './OptimizedFriendsContext';
 
 export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   const {
     data: friendsData,
@@ -191,7 +144,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       incomingRef.off('value', incomingListener);
       outgoingRef.off('value', outgoingListener);
     };
-  }, [user?.uid]);
+  }, [user]);
 
   // Friend Activities laden
   const loadFriendActivities = useCallback(async () => {
@@ -227,7 +180,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
             }));
           }
           return [];
-        } catch (error) {
+        } catch {
           return [];
         }
       });
@@ -246,7 +199,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
       );
       setUnreadActivitiesCount(unreadActivities.length);
-    } catch (error) {
+    } catch {
       // // console.warn('Failed to load friend activities:', error);
     }
   }, [user, friends]);
@@ -272,7 +225,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     return () => {
       clearInterval(interval);
     };
-  }, [user?.uid, friends.length, readTimesLoaded]);
+  }, [user, friends.length, readTimesLoaded]);
 
   useEffect(() => {
     setLoading(friendsLoading);
@@ -377,5 +330,3 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     </OptimizedFriendsContext.Provider>
   );
 };
-
-export const useOptimizedFriends = () => useContext(OptimizedFriendsContext);

@@ -10,22 +10,14 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 
 interface ActivityTabProps {
   data: WatchJourneyData;
 }
-
-// Accent Farben für Activity/Trends – bewusst distinct von Genre- und Provider-Farben
-export const ACCENT_COLORS = {
-  episodes: '#8338ec', // Violet für Episoden
-  movies: '#ff006e', // Magenta für Filme
-  time: '#3a86ff', // Blau für Zeit
-  fire: '#ffbe0b', // Amber für Highlights
-  trending: '#06d6a0', // Mint für Trends
-};
 
 export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
   const { currentTheme } = useTheme();

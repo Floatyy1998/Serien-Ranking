@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Today } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import {
   FILTERS,
@@ -99,7 +99,7 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
     for (const ev of filteredEvents) {
       const dk = toDateKey(new Date(ev.t));
       if (!groups.has(dk)) groups.set(dk, []);
-      groups.get(dk)!.push(ev);
+      groups.get(dk)?.push(ev);
     }
     return groups;
   }, [filteredEvents]);

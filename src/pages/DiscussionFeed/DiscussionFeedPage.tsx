@@ -2,9 +2,10 @@ import { ChatBubbleOutline, Movie, Reply, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageLayout, PageHeader, LoadingSpinner, EmptyState } from '../../components/ui';
-import { useDiscussionFeed, FeedFilterType } from '../../hooks/useDiscussionFeed';
+import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
+import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
 

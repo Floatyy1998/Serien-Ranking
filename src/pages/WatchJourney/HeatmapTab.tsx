@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DAY_NAMES, WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { DAY_NAMES } from '../../services/watchJourneyService';
 
 interface HeatmapTabProps {
   data: WatchJourneyData;

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarMonth, ChevronRight } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 
 export const SeriesCountdownCard: React.FC = () => {

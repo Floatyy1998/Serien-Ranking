@@ -6,8 +6,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { petService } from '../../services/petService';
 import { EpisodeDataManager } from './EpisodeDataManager';
 import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
@@ -55,7 +55,7 @@ export interface UseRecentlyWatchedResult {
 
 export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -124,7 +124,7 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     setLoadedDateGroups([]);
     dataManager.clearCache();
     setIsLoading(true);
-  }, [debouncedSearchQuery, daysToShow]);
+  }, [debouncedSearchQuery, daysToShow, dataManager]);
 
   // Load initial data
   useEffect(() => {

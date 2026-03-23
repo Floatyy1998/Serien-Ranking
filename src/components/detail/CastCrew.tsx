@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import {
+import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type {
   AnimeCharacterData,
   CastCrewProps,
   CastMember,
@@ -54,22 +54,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     isAnime ? 'characters' : 'cast'
   );
 
-  useEffect(() => {
-    if (isAnime && mediaType === 'tv') {
-      fetchAnimeCharacters();
-      setActiveTab('characters'); // Switch to characters tab when anime is detected
-    }
-    fetchCredits();
-  }, [tmdbId, mediaType, isAnime]);
-
-  // Update active tab when anime characters are loaded
-  useEffect(() => {
-    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
-      setActiveTab('characters');
-    }
-  }, [animeCharacters, isAnime]);
-
-  const fetchAnimeCharacters = async () => {
+  const fetchAnimeCharacters = useCallback(async () => {
     try {
       const query = `
         query ($search: String) {
@@ -150,7 +135,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
               image: edge.node.image?.large,
             },
             role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
-            voice_actors: edge.voiceActors!.map((va) => ({
+            voice_actors: edge.voiceActors?.map((va) => ({
               person: {
                 id: va.id,
                 name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
@@ -165,9 +150,9 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     } catch (error) {
       console.error('Failed to fetch anime characters from AniList:', error);
     }
-  };
+  }, [seriesData?.name, seriesData?.title]);
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       setLoading(true);
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
@@ -205,7 +190,22 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [mediaType, tmdbId]);
+
+  useEffect(() => {
+    if (isAnime && mediaType === 'tv') {
+      fetchAnimeCharacters();
+      setActiveTab('characters');
+    }
+    fetchCredits();
+  }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
+
+  // Update active tab when anime characters are loaded
+  useEffect(() => {
+    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
+      setActiveTab('characters');
+    }
+  }, [animeCharacters, isAnime, activeTab]);
 
   const fetchPersonDetails = async (personId: number) => {
     try {

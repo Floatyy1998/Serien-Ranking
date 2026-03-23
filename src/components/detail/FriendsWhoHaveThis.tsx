@@ -4,12 +4,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { Series } from '../../types/Series';
-import { Movie } from '../../types/Movie';
+import type { Series } from '../../types/Series';
+import type { Movie } from '../../types/Movie';
 
 interface FriendWithItem {
   uid: string;
@@ -23,8 +23,8 @@ interface FriendsWhoHaveThisProps {
   mediaType: 'series' | 'movie';
 }
 
-const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
-  const { user } = useAuth()!;
+const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
+  const { user } = useAuth() || {};
   const { friends } = useOptimizedFriends();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -250,5 +250,5 @@ const _FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaT
   );
 };
 
-export const FriendsWhoHaveThis = memo(_FriendsWhoHaveThis);
+export const FriendsWhoHaveThis = memo(FriendsWhoHaveThisInner);
 FriendsWhoHaveThis.displayName = 'FriendsWhoHaveThis';

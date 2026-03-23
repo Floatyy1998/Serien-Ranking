@@ -1,4 +1,4 @@
-import { CachedUserData, FirebaseUserLike } from './offlineFirebaseTypes';
+import type { CachedUserData, FirebaseUserLike } from './offlineFirebaseTypes';
 
 export async function cacheUserToStorage(
   user: FirebaseUserLike,

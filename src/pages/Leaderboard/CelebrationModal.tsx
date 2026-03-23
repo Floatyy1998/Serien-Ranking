@@ -2,7 +2,8 @@ import { Close, Timer } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { Trophy3D } from '../../components/ui/Trophy3D';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { seededRandom } from '../../utils/seededRandom';
 import type { CelebrationData } from './useLeaderboardData';
 
 const PLACE_COLORS = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
@@ -41,12 +42,18 @@ interface CelebrationModalProps {
   userName: string;
 }
 
+// Pre-compute random data outside component for render purity
+const _randCM = seededRandom(303);
+const RANDOM_VALUES_CM = Array.from({ length: 13 }, () => _randCM());
+
 export const CelebrationModal = React.memo(function CelebrationModal({
   celebration,
   onClose,
   userName,
 }: CelebrationModalProps) {
   const { currentTheme } = useTheme();
+  let _ri = 0;
+  const nextRandom = () => RANDOM_VALUES_CM[_ri++ % RANDOM_VALUES_CM.length];
   return (
     <AnimatePresence>
       {celebration && (
@@ -61,10 +68,10 @@ export const CelebrationModal = React.memo(function CelebrationModal({
           {Array.from({ length: 60 }).map((_, i) => {
             const w = typeof window !== 'undefined' ? window.innerWidth : 400;
             const h = typeof window !== 'undefined' ? window.innerHeight : 800;
-            const startX = Math.random() * w;
-            const drift = (Math.random() - 0.5) * 150;
-            const pSize = 5 + Math.random() * 9;
-            const isCircle = Math.random() > 0.5;
+            const startX = nextRandom() * w;
+            const drift = (nextRandom() - 0.5) * 150;
+            const pSize = 5 + nextRandom() * 9;
+            const isCircle = nextRandom() > 0.5;
             return (
               <motion.div
                 key={i}
@@ -72,13 +79,13 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                 initial={{ opacity: 1, left: startX, top: -20, rotate: 0 }}
                 animate={{
                   opacity: [1, 1, 1, 0.6, 0],
-                  top: [-(Math.random() * 40), h + 40],
+                  top: [-(nextRandom() * 40), h + 40],
                   left: [startX, startX + drift],
-                  rotate: Math.random() * 1080,
+                  rotate: nextRandom() * 1080,
                 }}
                 transition={{
-                  duration: 2.5 + Math.random() * 2.5,
-                  delay: Math.random() * 2,
+                  duration: 2.5 + nextRandom() * 2.5,
+                  delay: nextRandom() * 2,
                   ease: 'linear',
                 }}
                 style={{

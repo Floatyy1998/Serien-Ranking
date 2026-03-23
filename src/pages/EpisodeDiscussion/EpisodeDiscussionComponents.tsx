@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, LoadingSpinner } from '../../components/ui';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 

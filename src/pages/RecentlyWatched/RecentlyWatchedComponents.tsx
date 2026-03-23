@@ -6,8 +6,8 @@
 import { CalendarToday, ChatBubbleOutline, Check, History, PlayCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useDiscussionCount } from '../../hooks/useDiscussionCounts';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDiscussionCount } from '../../hooks/discussionCountHooks';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface GradientTextProps {
   children: React.ReactNode;
@@ -24,14 +24,9 @@ export const GradientText: React.FC<GradientTextProps> = ({
   shimmer = false,
   animatedGradient = false,
 }) => {
-  // Defensive: useTheme optional — bei Navigation/Lazy Loading kann Context kurzzeitig fehlen
-  let currentTheme;
-  try {
-    currentTheme = useTheme()?.currentTheme;
-  } catch {
-    // Fallback wenn ThemeProvider noch nicht verfügbar (z.B. während Lazy Loading)
-    currentTheme = null;
-  }
+  // useTheme always called unconditionally; fallback via optional chaining
+  const themeContext = useTheme();
+  const currentTheme = themeContext?.currentTheme ?? null;
 
   const fromColor = from || currentTheme?.primary || '#00fed7';
   const toColor = to || currentTheme?.accent || '#8b5cf6';

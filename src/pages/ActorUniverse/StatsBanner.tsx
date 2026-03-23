@@ -1,6 +1,6 @@
 import { People } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import './ActorUniversePage.css';
 
 interface StatsBannerProps {

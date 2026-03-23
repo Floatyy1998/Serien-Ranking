@@ -4,12 +4,14 @@ import List from '@mui/icons-material/List';
 import Repeat from '@mui/icons-material/Repeat';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import type { useNavigate } from 'react-router-dom';
 import {
   getImplicitRewatchRound,
   hasActiveRewatch,
   hasAnySeasonFullyWatched,
 } from '../../lib/validation/rewatch.utils';
+import type { DynamicTheme } from '../../theme/dynamicTheme';
+import type { Series } from '../../types/Series';
 import { RewatchBanner } from './RewatchBanner';
 import { SeasonTabs } from './SeasonTabs';
 import type { useSeriesData } from './useSeriesData';
@@ -21,13 +23,13 @@ interface SeasonsSectionProps {
   setShowRewatchDialog: (d: {
     show: boolean;
     type: 'episode' | 'season';
-    item: any;
+    item: Series['seasons'][number]['episodes'][number] | null;
     seasonNumber?: number;
     episodeNumber?: number;
   }) => void;
   episodeDiscussionCounts: Record<number, number>;
   warningColor: string;
-  currentTheme: any;
+  currentTheme: DynamicTheme;
   handleStopRewatch: () => void;
   handleStartRewatch: (continueExisting?: boolean) => void;
   navigate: ReturnType<typeof useNavigate>;

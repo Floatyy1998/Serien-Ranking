@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Add, Close, Star } from '@mui/icons-material';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
 
 interface Props {

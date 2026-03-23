@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { Bar, BarChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import { MetricCard } from '../components/MetricCard';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 

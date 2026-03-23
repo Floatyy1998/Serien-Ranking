@@ -1,7 +1,7 @@
 import { ChevronRight, OpenInNew, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
 
 interface CastCrewListViewProps {
   isAnime: boolean;

@@ -7,7 +7,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { BingeSession } from '../../types/WatchActivity';
+import type { BingeSession } from '../../types/WatchActivity';
 import { generateEventId, getBingeSessionsPath } from './shared';
 
 const BINGE_BUFFER_MINUTES = 15;

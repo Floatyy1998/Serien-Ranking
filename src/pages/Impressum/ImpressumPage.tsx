@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Gavel } from '@mui/icons-material';
 

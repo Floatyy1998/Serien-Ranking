@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TopSeriesEntry } from '../../types/Wrapped';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { TopSeriesEntry } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface TopSeriesSlideProps {
   topSeries: TopSeriesEntry[];

@@ -2,14 +2,14 @@
  * Wrapped Achievements - Achievement-Berechnungslogik
  */
 
-import { BingeSession } from '../../types/WatchActivity';
-import {
+import type { BingeSession } from '../../types/WatchActivity';
+import type {
   TopGenreEntry,
   TimeOfDayStats,
   DayOfWeekStats,
   WrappedAchievement,
-  WRAPPED_ACHIEVEMENTS,
 } from '../../types/Wrapped';
+import { WRAPPED_ACHIEVEMENTS } from '../../types/Wrapped';
 
 export interface AchievementContext {
   totalEpisodes: number;
@@ -42,7 +42,7 @@ export function calculateAchievements(ctx: AchievementContext): WrappedAchieveme
         value = `${ctx.favoriteTimeOfDay.percentage}%`;
         break;
 
-      case 'binge_king':
+      case 'binge_king': {
         const maxBinge = ctx.yearBingeSessions.reduce(
           (max, s) => Math.max(max, s.episodes.length),
           0
@@ -50,6 +50,7 @@ export function calculateAchievements(ctx: AchievementContext): WrappedAchieveme
         unlocked = maxBinge >= 10;
         value = maxBinge;
         break;
+      }
 
       case 'movie_lover':
         unlocked = ctx.totalMovies >= 20;
@@ -66,23 +67,25 @@ export function calculateAchievements(ctx: AchievementContext): WrappedAchieveme
         value = ctx.topGenres.length;
         break;
 
-      case 'weekend_warrior':
+      case 'weekend_warrior': {
         const isWeekend =
           ctx.favoriteDayOfWeek.dayOfWeek === 0 || ctx.favoriteDayOfWeek.dayOfWeek === 6;
         unlocked = isWeekend && ctx.favoriteDayOfWeek.percentage >= 50;
         value = `${ctx.favoriteDayOfWeek.percentage}%`;
         break;
+      }
 
       case 'consistent':
         unlocked = ctx.longestStreak >= 30;
         value = ctx.longestStreak;
         break;
 
-      case 'marathon_runner':
+      case 'marathon_runner': {
         const hours = Math.round(ctx.totalMinutes / 60);
         unlocked = hours >= 100;
         value = `${hours}h`;
         break;
+      }
     }
 
     achievements.push({ ...template, unlocked, value });

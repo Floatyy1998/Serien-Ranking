@@ -1,6 +1,8 @@
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WEEKDAYS_SHORT, GroupedSchedule } from './useCalendarData';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import type { GroupedSchedule } from './useCalendarData';
+import { WEEKDAYS_SHORT } from './useCalendarData';
 import { SingleEpisodeCard, EpisodeGroupCard } from './EpisodeCard';
 
 // ── Types ────────────────────────────────────────────────────────
@@ -12,7 +14,7 @@ interface DayCellProps {
   groups: {
     seriesId: number;
     seriesTitle: string;
-    episodes: import('../../hooks/useWeeklyEpisodes').WeeklyEpisode[];
+    episodes: WeeklyEpisode[];
   }[];
   backdrops: Record<number, string>;
   expandedGroups: Set<string>;

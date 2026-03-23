@@ -1,12 +1,12 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useState } from 'react';
-import { PanInfo } from 'framer-motion';
-import { Series } from '../../types/Series';
+import type { PanInfo } from 'framer-motion';
+import type { Series } from '../../types/Series';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { trackEpisodeWatched } from '../../firebase/analytics';
-import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 
 interface UseWatchNextSwipeOptions {

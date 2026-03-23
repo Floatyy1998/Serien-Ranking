@@ -183,11 +183,15 @@ export class OfflineBadgeSystem {
       const earnedIds = new Set(currentBadges.map((b) => b.id));
 
       const updatedProgress: Record<string, BadgeProgress> = {};
-      Object.keys(this.cachedProgress).forEach((badgeId) => {
-        if (!earnedIds.has(badgeId)) {
-          updatedProgress[badgeId] = this.cachedProgress![badgeId];
-        }
-      });
+      const progressCache = this.cachedProgress;
+      if (progressCache) {
+        Object.keys(progressCache).forEach((badgeId) => {
+          if (!earnedIds.has(badgeId)) {
+            const progress = progressCache[badgeId];
+            if (progress) updatedProgress[badgeId] = progress;
+          }
+        });
+      }
 
       const userData = this.cachedData;
       if (userData?.badgeCounters) {
@@ -334,7 +338,7 @@ export const getOfflineBadgeSystem = (userId: string): OfflineBadgeSystem => {
   if (!offlineBadgeSystemInstances.has(userId)) {
     offlineBadgeSystemInstances.set(userId, new OfflineBadgeSystem(userId));
   }
-  return offlineBadgeSystemInstances.get(userId)!;
+  return offlineBadgeSystemInstances.get(userId) as OfflineBadgeSystem;
 };
 
 // Global Debug Functions für Browser Console

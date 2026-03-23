@@ -76,15 +76,17 @@ self.addEventListener('message', (event) => {
   const { type, data } = event.data;
 
   switch (type) {
-    case 'CALCULATE_STATS':
+    case 'CALCULATE_STATS': {
       const stats = calculateStats(data);
       self.postMessage({ type: 'STATS_RESULT', data: stats });
       break;
+    }
 
-    case 'PROCESS_EPISODES':
+    case 'PROCESS_EPISODES': {
       const episodes = processEpisodes(data);
       self.postMessage({ type: 'EPISODES_RESULT', data: episodes });
       break;
+    }
   }
 });
 

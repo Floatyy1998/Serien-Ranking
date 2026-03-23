@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pet, PET_COLORS } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
+import { PET_COLORS } from '../../types/pet.types';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { adjustColor } from './colorUtils';
 import { drawAccessory } from './drawAccessory';
@@ -286,7 +287,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         cancelAnimationFrame(animationId);
       }
     };
-  }, [pet, size, animated, animationSpeed]);
+  }, [pet, size, animated, animationSpeed, currentMood, moodSpeedMultiplier]);
 
   return (
     <canvas

@@ -1,50 +1,18 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
-import { useAuth } from '../App';
+import type { ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../AuthContext';
+import type { UserThemeConfig } from '../theme/dynamicTheme';
 import {
   createMuiTheme,
   defaultThemeConfig,
   generateDynamicTheme,
-  UserThemeConfig,
   validateThemeConfig,
 } from '../theme/dynamicTheme';
-
-// Theme-Context Interface
-interface ThemeContextType {
-  currentTheme: ReturnType<typeof generateDynamicTheme>;
-  userConfig: UserThemeConfig;
-  updateTheme: (config: Partial<UserThemeConfig>) => void;
-  resetTheme: () => void;
-  saveTheme: () => void;
-  loadTheme: () => void;
-  syncMode: 'local' | 'cloud';
-  setSyncMode: (mode: 'local' | 'cloud') => void;
-  getMobilePageBackground: () => string;
-  getMobilePageStyle: () => React.CSSProperties;
-  getMobileHeaderStyle: (gradientColor?: string) => React.CSSProperties;
-}
-
-// Theme-Context erstellen
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-// Custom Hook für Theme-Zugriff
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+import { ThemeContext } from './ThemeContextDef';
+import type { ThemeContextType } from './ThemeContextDef';
 
 // Zentrale Funktion zum Setzen aller CSS-Variablen
 function applyCSSVariables(
@@ -132,7 +100,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
         const parsed = JSON.parse(savedConfig);
         return validateThemeConfig(parsed);
       }
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Laden des initialen Themes:', error);
     }
     return defaultThemeConfig;
@@ -175,7 +143,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
             .database()
             .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
             .set(config);
-        } catch (error) {
+        } catch {
           // console.error('Fehler beim Speichern des Themes in Firebase:', error);
         }
       }
@@ -198,7 +166,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
           .database()
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
           .remove();
-      } catch (error) {
+      } catch {
         // console.error('Fehler beim Löschen des Themes aus Firebase:', error);
       }
     }
@@ -215,7 +183,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       if (savedConfig) {
         try {
           loadedConfig = JSON.parse(savedConfig);
-        } catch (error) {
+        } catch {
           // console.error('Fehler beim Parsen des lokalen Themes:', error);
         }
       }
@@ -246,7 +214,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
         // Ensure CSS variables are set even with default theme
         updateCSSVariables(currentTheme);
       }
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Laden des Themes:', error);
       resetTheme();
     }
@@ -349,10 +317,4 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
   );
-};
-
-// Hook für direkten Theme-Zugriff in Komponenten
-export const useCurrentTheme = () => {
-  const { currentTheme } = useTheme();
-  return currentTheme;
 };

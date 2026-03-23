@@ -156,6 +156,9 @@ export const defaultThemeConfig: UserThemeConfig = {
   backgroundIsVideo: false,
 };
 
+/** The shape returned by generateDynamicTheme */
+export type DynamicTheme = ReturnType<typeof generateDynamicTheme>;
+
 // Generiert das Standard-Theme
 export const defaultDynamicTheme = generateDynamicTheme(defaultThemeConfig);
 

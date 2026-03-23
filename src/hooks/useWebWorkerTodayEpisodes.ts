@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
 import { useWebWorker } from './useWebWorker';
 

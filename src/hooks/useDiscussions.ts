@@ -1,8 +1,8 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from '../App';
-import {
+import { useAuth } from '../AuthContext';
+import type {
   CreateDiscussionInput,
   Discussion,
   DiscussionFeedMetadata,
@@ -137,7 +137,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         if (feedMetadata?.itemTitle) {
           writeDiscussionFeedEntry({
             type: 'discussion_created',
-            discussionId: newRef.key!,
+            discussionId: newRef.key ?? '',
             discussionTitle: input.title,
             userId: user.uid,
             username: newDiscussion.username,

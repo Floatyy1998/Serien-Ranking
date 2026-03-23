@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { QuickFilter, ScrollToTopButton } from '../../components/ui';
 import { RatingItemCard } from './RatingItemCard';
 import { RatingsEmptyState } from './RatingsEmptyState';

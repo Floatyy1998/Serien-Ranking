@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import type { TMDBSeason, TMDBEpisode, TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
 
 interface UseSeriesDataResult {
@@ -119,7 +119,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
                         watchCount: 0,
                       })) || [],
                   };
-                } catch (error) {
+                } catch {
                   return {
                     seasonNumber: season.season_number - 1,
                     episodes: [],
@@ -163,7 +163,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             };
             setTmdbSeries(series);
           }
-        } catch (_err) {
+        } catch {
           // Handle error silently
         } finally {
           setLoading(false);

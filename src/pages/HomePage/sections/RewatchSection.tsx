@@ -3,7 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {

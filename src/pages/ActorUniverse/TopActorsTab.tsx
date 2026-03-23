@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { HorizontalScrollContainer } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Actor } from '../../hooks/useActorUniverse';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Actor } from '../../hooks/useActorUniverse';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 

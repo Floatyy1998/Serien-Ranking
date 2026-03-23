@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { getImageUrl } from '../utils/imageUrl';
 import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
 import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../lib/episode/seriesMetrics';

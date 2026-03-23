@@ -1,7 +1,7 @@
 import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface ScrollToTopButtonProps {
   /** CSS selector for the scroll container, or 'window' to use window scroll */

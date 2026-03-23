@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { BackButton } from './BackButton';
 import { GradientText } from './GradientText';

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useMovieList } from '../contexts/MovieListProvider';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../contexts/MovieListContext';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import type { Movie } from '../types/Movie';
 import type { Series } from '../types/Series';

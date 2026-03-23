@@ -1,4 +1,4 @@
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
 /* ------------------------------------------------------------------ */
@@ -81,7 +81,7 @@ export interface FallbackTheme {
 
 export type PublicTheme = ReturnType<typeof useTheme>['currentTheme'] | FallbackTheme;
 
-export function resolveTheme(): PublicTheme {
+export function useResolvedTheme(): PublicTheme {
   try {
     const theme = useTheme();
     return theme.currentTheme;
@@ -147,7 +147,7 @@ export function applyFilters(
     filtered = filtered.filter((item) => {
       const genres = item.genre?.genres || [];
       if (Array.isArray(genres)) {
-        return genres.some((g: string) => g.toLowerCase() === filters.genre!.toLowerCase());
+        return genres.some((g: string) => g.toLowerCase() === filters.genre?.toLowerCase());
       }
       return false;
     });

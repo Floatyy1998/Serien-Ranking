@@ -85,7 +85,7 @@ const logFriendActivity = async (
         await activitiesRef.update(updates);
       }
     }
-  } catch (error) {
+  } catch {
     // console.error('❌ Friend activity logging failed:', error);
   }
 };
@@ -195,7 +195,7 @@ export const updateEpisodeCounters = async (
     );
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Episode counter update failed:', error);
     return [];
   }
@@ -238,7 +238,7 @@ export const logSeriesAdded = async (
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Series added logging failed:', error);
     return [];
   }
@@ -273,7 +273,7 @@ export const logMovieAdded = async (
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Movie added logging failed:', error);
     return [];
   }
@@ -302,7 +302,7 @@ export const logWatchlistAdded = async (
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Watchlist logging failed:', error);
     return [];
   }
@@ -336,7 +336,7 @@ export const logRatingAdded = async (
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Rating logging failed:', error);
     return [];
   }
@@ -370,7 +370,7 @@ export const logBatchEpisodesWatchedClean = async (
     );
 
     return uniqueBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Batch episodes badge check failed:', error);
     // console.error('❌ Error details:', error);
     return [];
@@ -399,7 +399,7 @@ export const logSeasonWatchedClean = async (
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;
-  } catch (error) {
+  } catch {
     // console.error('❌ Season badge check failed:', error);
     return [];
   }

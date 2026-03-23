@@ -1,6 +1,6 @@
 import { Search } from '@mui/icons-material';
 import React, { useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 
 interface Column<T> {
   key: string;
@@ -41,8 +41,8 @@ function DataTableInner<T>({
       const col = columns.find((c) => c.key === sortCol);
       if (col?.sortValue) {
         items = [...items].sort((a, b) => {
-          const va = col.sortValue!(a);
-          const vb = col.sortValue!(b);
+          const va = col.sortValue?.(a) ?? '';
+          const vb = col.sortValue?.(b) ?? '';
           const cmp =
             typeof va === 'number' ? va - (vb as number) : String(va).localeCompare(String(vb));
           return sortDir === 'asc' ? cmp : -cmp;

@@ -3,7 +3,7 @@ import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;

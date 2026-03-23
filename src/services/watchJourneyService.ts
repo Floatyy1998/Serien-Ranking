@@ -10,15 +10,17 @@
  */
 
 import { getYearlyActivity } from './watchActivityService';
-import { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
+import type { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
-import {
+import type {
   MonthlyData,
   HeatmapData,
   ActivityData,
   WatchJourneyData,
   YearlyTrendData,
   MultiYearTrendsData,
+} from './watchJourneyTypes';
+import {
   MONTH_NAMES,
   DAY_NAMES,
   GENRE_COLORS,
@@ -220,7 +222,8 @@ export async function calculateWatchJourney(
         });
       }
 
-      const seriesData = seriesMap.get(seriesId)!;
+      const seriesData = seriesMap.get(seriesId);
+      if (!seriesData) return;
       seriesData.episodes++;
       seriesData.minutes += epRuntime;
       seriesData.runtimes.push(epRuntime);

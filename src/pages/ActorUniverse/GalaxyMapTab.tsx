@@ -1,12 +1,23 @@
 import { ZoomIn, ZoomOut } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import { useTheme } from '../../contexts/ThemeContextDef';
+
+import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import { seededRandom } from '../../utils/seededRandom';
 import { useActorPanZoom } from './useActorPanZoom';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
+
+// Pre-compute background stars at module level since they never change
+const _starRand = seededRandom(404);
+const BACKGROUND_STARS = Array.from({ length: 200 }, (_, i) => ({
+  id: i,
+  x: _starRand() * 100,
+  y: _starRand() * 100,
+  size: _starRand() * 2 + 0.5,
+  opacity: _starRand() * 0.4 + 0.1,
+}));
 
 interface GalaxyMapTabProps {
   actors: Actor[];
@@ -42,16 +53,8 @@ export const GalaxyMapTab = ({
     resetView,
   } = useActorPanZoom();
 
-  // Background stars
-  const backgroundStars = useMemo(() => {
-    return Array.from({ length: 200 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 2 + 0.5,
-      opacity: Math.random() * 0.4 + 0.1,
-    }));
-  }, []);
+  // Background stars - pre-computed at module level
+  const backgroundStars = BACKGROUND_STARS;
 
   return (
     <motion.div

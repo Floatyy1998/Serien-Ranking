@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import TrendingUp from '@mui/icons-material/TrendingUp';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { IconContainer, NavCard } from '../../components/ui';
 
 export const WatchJourneyCard: React.FC = () => {

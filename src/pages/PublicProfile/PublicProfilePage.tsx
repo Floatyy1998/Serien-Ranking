@@ -171,7 +171,7 @@ export const PublicProfilePage: React.FC = () => {
                   item.provider?.provider && item.provider.provider.length > 0
                     ? Array.from(new Set(item.provider.provider.map((p) => p.name)))
                         .slice(0, 2)
-                        .map((name) => item.provider!.provider.find((p) => p.name === name))
+                        .map((name) => item.provider?.provider.find((p) => p.name === name))
                         .filter(Boolean)
                     : []
                 ) as ProfileCardProvider[];

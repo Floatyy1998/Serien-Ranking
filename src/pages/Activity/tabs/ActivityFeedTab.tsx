@@ -6,7 +6,7 @@ import { ExpandMore, Person, Timeline } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { ActivityEntryCard } from '../ActivityEntryCard';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';

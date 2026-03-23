@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { Pet, PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
+import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 
 // ============================================================================

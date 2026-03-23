@@ -2,7 +2,7 @@ import { Favorite, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SharedItem } from '../../services/tasteMatchService';
+import type { SharedItem } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
 // Shared Item Card - Premium Version

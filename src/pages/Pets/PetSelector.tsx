@@ -4,7 +4,7 @@
 
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 

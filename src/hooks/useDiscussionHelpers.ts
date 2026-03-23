@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { DiscussionItemType } from '../types/Discussion';
+import type { DiscussionItemType } from '../types/Discussion';
 
 // Helper to generate a unique path for discussions
 export const getDiscussionPath = (

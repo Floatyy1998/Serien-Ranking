@@ -22,12 +22,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useBadges } from '../../features/badges/BadgeProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useBadges } from '../../features/badges/BadgeContextDef';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
@@ -145,7 +145,7 @@ function computeStats(
 
 export const useProfileData = (): UseProfileDataResult => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user = null } = useAuth() || {};
   const { currentTheme } = useTheme();
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
   const { unreadBadgesCount } = useBadges();

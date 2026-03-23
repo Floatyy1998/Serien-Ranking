@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Badge, IconButton, Tooltip, keyframes } from '@mui/material';
 import { EmojiEvents } from '@mui/icons-material';
-import { useBadges } from './BadgeProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useBadges } from './BadgeContextDef';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const pulseAnimation = keyframes`
   0% {

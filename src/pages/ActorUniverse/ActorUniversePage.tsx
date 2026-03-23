@@ -1,6 +1,6 @@
 import { AutoAwesome, RecordVoiceOver, Star, TrendingUp } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton, GradientText } from '../../components/ui';
 import { RecommendationsTab } from './RecommendationsTab';
 import { TopActorsTab } from './TopActorsTab';
@@ -8,7 +8,8 @@ import { GalaxyMapTab } from './GalaxyMapTab';
 import { ActorDetailModal } from './ActorDetailModal';
 import { LoadingScreen } from './LoadingScreen';
 import { StatsBanner } from './StatsBanner';
-import { useActorUniverseData, TabId } from './useActorUniverseData';
+import type { TabId } from './useActorUniverseData';
+import { useActorUniverseData } from './useActorUniverseData';
 import './ActorUniversePage.css';
 
 // Tab configuration

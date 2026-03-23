@@ -23,8 +23,8 @@ import {
   LateNightSlide,
   HeatmapSlide,
 } from '../../components/wrapped';
-import { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 // === Gradient background helper ===
 

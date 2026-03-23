@@ -13,13 +13,29 @@ import {
   YAxis,
 } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContext';
-import { MultiYearTrendsData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { MultiYearTrendsData } from '../../services/watchJourneyService';
 import { GENRE_COLORS, getColor } from '../../services/watchJourneyTypes';
-import { ACCENT_COLORS } from './ActivityTab';
+import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 import { CustomTooltip } from './CustomTooltip';
 import { TrendsYearCards } from './TrendsYearCards';
+
+const TrendIcon = ({
+  trend,
+  successColor,
+  errorColor,
+  secondaryColor,
+}: {
+  trend: 'up' | 'down' | 'stable';
+  successColor: string;
+  errorColor: string;
+  secondaryColor: string;
+}) => {
+  if (trend === 'up') return <ArrowUpward style={{ color: successColor, fontSize: 20 }} />;
+  if (trend === 'down') return <ArrowDownward style={{ color: errorColor, fontSize: 20 }} />;
+  return <Remove style={{ color: secondaryColor, fontSize: 20 }} />;
+};
 
 interface TrendsTabProps {
   data: MultiYearTrendsData;
@@ -76,18 +92,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
       .filter((g) => g.hours > 0)
       .sort((a, b) => b.hours - a.hours);
   }, [data, isSingleYear]);
-
-  const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
-    if (trend === 'up')
-      return (
-        <ArrowUpward style={{ color: currentTheme.status?.success || '#00b894', fontSize: 20 }} />
-      );
-    if (trend === 'down')
-      return (
-        <ArrowDownward style={{ color: currentTheme.status?.error || '#e17055', fontSize: 20 }} />
-      );
-    return <Remove style={{ color: textSecondary, fontSize: 20 }} />;
-  };
 
   if (data.yearlyData.length === 0) {
     return (
@@ -372,7 +376,12 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             >
               <h3 style={{ ...headingStyle, margin: 0 }}>Watch-Zeit Trend</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <TrendIcon trend={data.hoursTrend} />
+                <TrendIcon
+                  trend={data.hoursTrend}
+                  successColor={currentTheme.status?.success || '#00b894'}
+                  errorColor={currentTheme.status?.error || '#e17055'}
+                  secondaryColor={textSecondary}
+                />
                 <span
                   style={{
                     color:

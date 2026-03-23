@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import type { DiscoverItem } from './DiscoverItemCard';
+import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverActionsResult {
   addingItem: string | null;
@@ -24,7 +24,7 @@ export const useDiscoverActions = (
   setSearchResults: React.Dispatch<React.SetStateAction<DiscoverItem[]>>,
   setRecommendations: React.Dispatch<React.SetStateAction<DiscoverItem[]>>
 ): UseDiscoverActionsResult => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   const [addingItem, setAddingItem] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({

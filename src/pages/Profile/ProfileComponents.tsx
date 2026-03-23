@@ -15,7 +15,7 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];

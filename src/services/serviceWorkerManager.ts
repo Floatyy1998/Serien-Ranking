@@ -51,7 +51,7 @@ class ServiceWorkerManager {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') this.checkForUpdates();
       });
-    } catch (error) {
+    } catch {
       // // console.error(
       //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
       //   error
@@ -79,18 +79,15 @@ class ServiceWorkerManager {
 
     // Waiting worker on page load → direkt aktivieren
     if (registration.waiting && navigator.serviceWorker.controller) {
-      console.log('[SW] Wartender Worker beim Laden — aktiviere');
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
     // Mid-session update → show banner, then auto-reload
     registration.addEventListener('updatefound', () => {
-      console.log('[SW] updatefound — warte auf Installation...');
       this.showUpdateBanner();
       const poll = setInterval(() => {
         if (registration.waiting) {
           clearInterval(poll);
-          console.log('[SW] Worker bereit — aktiviere und reloade');
           registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         }
       }, 500);
@@ -174,7 +171,7 @@ class ServiceWorkerManager {
           checkState();
         });
       }
-    } catch (error) {
+    } catch {
       // // console.error('❌ Service Worker Update fehlgeschlagen:', error);
     }
   }
@@ -189,7 +186,6 @@ class ServiceWorkerManager {
 
       // Wartender Worker da? → direkt aktivieren
       if (registration.waiting) {
-        console.log('[SW] Wartender Worker gefunden — aktiviere');
         registration.waiting.postMessage({ type: 'SKIP_WAITING' });
         return;
       }
@@ -251,7 +247,7 @@ class ServiceWorkerManager {
           }
         ).sync.register(tag);
       }
-    } catch (error) {
+    } catch {
       // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
     }
   }
@@ -269,7 +265,7 @@ class ServiceWorkerManager {
     try {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
-    } catch (error) {
+    } catch {
       // // console.error('❌ Failed to queue Firebase update:', error);
     }
   }
@@ -365,7 +361,8 @@ class ServiceWorkerManager {
     document.head.appendChild(style);
     const banner = document.createElement('div');
     banner.id = 'sw-update-banner';
-    banner.innerHTML = '<span class="sw-dot"></span> Update wird installiert…';
+    banner.innerHTML =
+      '<span class="sw-dot"></span> Update wird installiert… Die Seite wird automatisch neu geladen, sobald es fertig ist.';
     document.body.appendChild(banner);
   }
 

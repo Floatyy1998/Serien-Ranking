@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { FirstLastWatch } from '../../types/Wrapped';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { FirstLastWatch } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface FirstLastSlideProps {
   firstWatch: FirstLastWatch | null;

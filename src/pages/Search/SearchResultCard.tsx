@@ -5,7 +5,7 @@
 
 import { Add, Check, Star } from '@mui/icons-material';
 import { memo, useMemo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { SearchResult } from './useSearchPage';
 
 export interface SearchResultCardProps {

@@ -4,13 +4,18 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { BingeSessionStats } from '../../types/Wrapped';
+import type { BingeSessionStats } from '../../types/Wrapped';
+import { seededRandom } from '../../utils/seededRandom';
 
 interface BingeStatsSlideProps {
   totalBingeSessions: number;
   longestBinge: BingeSessionStats | null;
   averageBingeLength: number;
 }
+
+// Pre-compute random data outside component for render purity
+const _randBS = seededRandom(789);
+const RANDOM_VALUES_BS = Array.from({ length: 9 }, () => _randBS());
 
 // Play Button Icon für Binge
 const PlayIcon: React.FC<{ size?: number }> = ({ size = 80 }) => (
@@ -33,6 +38,8 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
   longestBinge,
   averageBingeLength,
 }) => {
+  let _ri = 0;
+  const nextRandom = () => RANDOM_VALUES_BS[_ri++ % RANDOM_VALUES_BS.length];
   if (totalBingeSessions === 0) {
     return (
       <div
@@ -116,14 +123,14 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
               rotate: [0, 10, -10, 0],
             }}
             transition={{
-              duration: 3 + Math.random() * 2,
+              duration: 3 + nextRandom() * 2,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: nextRandom() * 2,
             }}
             style={{
               position: 'absolute',
-              top: `${20 + Math.random() * 60}%`,
-              left: `${Math.random() * 100}%`,
+              top: `${20 + nextRandom() * 60}%`,
+              left: `${nextRandom() * 100}%`,
               opacity: 0.15,
             }}
           >

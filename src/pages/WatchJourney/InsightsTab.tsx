@@ -1,8 +1,8 @@
 import { LocalFireDepartment, Replay, Timer } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 
 interface InsightsTabProps {
   data: WatchJourneyData;

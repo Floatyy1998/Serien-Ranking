@@ -3,15 +3,15 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Discussion, DiscussionFeedMetadata } from '../../types/Discussion';
 import { DiscussionActions } from './DiscussionActions';
 import { DiscussionEditForm } from './DiscussionEditForm';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
-const _DiscussionItem: React.FC<{
+const DiscussionItemInner: React.FC<{
   discussion: Discussion;
   discussionPath: string;
   onDelete: () => void;
@@ -344,5 +344,5 @@ const _DiscussionItem: React.FC<{
   );
 };
 
-export const DiscussionItem = memo(_DiscussionItem);
+export const DiscussionItem = memo(DiscussionItemInner);
 DiscussionItem.displayName = 'DiscussionItem';
