@@ -77,21 +77,24 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Waiting worker on page load = update available from previous session
+    // Waiting worker on page load → direkt aktivieren
     if (registration.waiting && navigator.serviceWorker.controller) {
-      this.showUpdateAvailable();
+      console.log('[SW] Wartender Worker beim Laden — aktiviere');
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
-    // Mid-session update → show toast so user can choose when to reload
+    // Mid-session update → show banner, then auto-reload
     registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            this.showUpdateAvailable();
-          }
-        });
-      }
+      console.log('[SW] updatefound — warte auf Installation...');
+      this.showUpdateBanner();
+      const poll = setInterval(() => {
+        if (registration.waiting) {
+          clearInterval(poll);
+          console.log('[SW] Worker bereit — aktiviere und reloade');
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }, 500);
+      setTimeout(() => clearInterval(poll), 120_000);
     });
 
     return registration;
@@ -103,19 +106,15 @@ class ServiceWorkerManager {
   private setupEventListeners(): void {
     if (!navigator.serviceWorker) return;
 
-    // Bei Controller-Wechsel einfach neu laden (ohne Notification-Spam)
+    // Flag vom letzten Reload sofort entfernen (damit der nächste Update-Reload funktioniert)
+    sessionStorage.removeItem('sw-reloaded');
+
+    // Bei Controller-Wechsel neu laden
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // // console.log('🔄 Neuer Service Worker aktiv - Seite wird neu geladen');
-
-      // Prüfe ob wir schon einen Reload gemacht haben (verhindert Endlosschleife)
       const reloadFlag = sessionStorage.getItem('sw-reloaded');
-
       if (!reloadFlag) {
         sessionStorage.setItem('sw-reloaded', 'true');
         window.location.reload();
-      } else {
-        // Nach erfolgreichem Reload Flag entfernen
-        sessionStorage.removeItem('sw-reloaded');
       }
     });
 
@@ -140,7 +139,10 @@ class ServiceWorkerManager {
         this.notifyOfflineReady();
         break;
       case 'UPDATE_AVAILABLE':
-        this.showUpdateAvailable();
+        // Auto-update: direkt aktivieren
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        });
         break;
     }
   }
@@ -185,9 +187,16 @@ class ServiceWorkerManager {
       const registration = await this.registrationPromise;
       if (!registration) return;
 
+      // Wartender Worker da? → direkt aktivieren
+      if (registration.waiting) {
+        console.log('[SW] Wartender Worker gefunden — aktiviere');
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        return;
+      }
+
       await registration.update();
     } catch (error) {
-      // // console.log('Update-Check fehlgeschlagen:', error);
+      console.warn('[SW] Update-Check fehlgeschlagen:', error);
     }
   }
 
@@ -319,24 +328,45 @@ class ServiceWorkerManager {
   /**
    * 🔔 UI Notifications
    */
-  private showUpdateAvailable(): void {
-    // // console.log('🆕 Update verfügbar');
-
-    // Zeige nur einmal pro Session eine Update-Notification
-    const shown = sessionStorage.getItem('update-shown');
-    if (shown) {
-      // // console.log('Update-Notification bereits gezeigt');
-      return;
-    }
-
-    sessionStorage.setItem('update-shown', 'true');
-
-    // Zeige Notification, aber installiere NICHT automatisch
-    window.dispatchEvent(
-      new CustomEvent('sw-update-available', {
-        detail: { autoUpdate: false },
-      })
-    );
+  private showUpdateBanner(): void {
+    if (document.getElementById('sw-update-banner')) return;
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes sw-slide-down { from { transform: translateY(-100%); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+      @keyframes sw-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+      #sw-update-banner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: var(--theme-primary, #8b5cf6);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        animation: sw-slide-down 0.3s ease-out;
+        -webkit-font-smoothing: antialiased;
+      }
+      #sw-update-banner .sw-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #fff;
+        animation: sw-pulse 1s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+    `;
+    document.head.appendChild(style);
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.innerHTML = '<span class="sw-dot"></span> Update wird installiert…';
+    document.body.appendChild(banner);
   }
 
   private notifyOfflineReady(): void {

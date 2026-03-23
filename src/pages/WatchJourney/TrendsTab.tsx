@@ -8,11 +8,11 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MultiYearTrendsData } from '../../services/watchJourneyService';
 import { GENRE_COLORS, getColor } from '../../services/watchJourneyTypes';
@@ -299,7 +299,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
           >
             <h3 style={headingStyle}>Aktivität pro Jahr</h3>
             <div style={{ width: '100%', height: 280 }}>
-              <ResponsiveContainer>
+              <SafeResponsiveContainer minWidth={0} minHeight={0}>
                 <BarChart
                   data={yearlyChartData}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -351,7 +351,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                     style={{ outline: 'none' }}
                   />
                 </BarChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             </div>
           </motion.div>
 
@@ -394,7 +394,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               </div>
             </div>
             <div style={{ width: '100%', height: 200 }}>
-              <ResponsiveContainer>
+              <SafeResponsiveContainer minWidth={0} minHeight={0}>
                 <AreaChart
                   data={yearlyChartData}
                   margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -426,7 +426,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                     style={{ outline: 'none' }}
                   />
                 </AreaChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             </div>
           </motion.div>
 
@@ -440,7 +440,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             >
               <h3 style={headingStyle}>Genre-Entwicklung</h3>
               <div style={{ width: '100%', height: 280 }}>
-                <ResponsiveContainer>
+                <SafeResponsiveContainer minWidth={0} minHeight={0}>
                   <BarChart
                     data={genreEvolutionData}
                     margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
@@ -490,7 +490,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                       />
                     ))}
                   </BarChart>
-                </ResponsiveContainer>
+                </SafeResponsiveContainer>
               </div>
             </motion.div>
           )}

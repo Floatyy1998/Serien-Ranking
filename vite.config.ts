@@ -15,7 +15,7 @@ export default defineConfig({
     react(),
     criticalCSSPlugin(), // Temporarily disabled - causing build hang
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Serien Tracker',
@@ -32,7 +32,7 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp}'],
         navigateFallback: null, // Disable navigate fallback to prevent loops
-        skipWaiting: false, // Controlled via SKIP_WAITING message from UpdateToast
+        skipWaiting: true, // Auto-update: neuer Worker übernimmt sofort
         clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
         // Disable verbose logging

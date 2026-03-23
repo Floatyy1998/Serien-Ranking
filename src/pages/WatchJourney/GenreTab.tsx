@@ -1,17 +1,8 @@
 import { TheaterComedy } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
@@ -175,7 +166,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           Genre-Verteilung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={pieData}
@@ -218,7 +209,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 }}
               />
             </PieChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
 
         {/* Legend */}
@@ -265,7 +256,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           Genre-Entwicklung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 {data.topGenres.map((genre) => (
@@ -307,7 +298,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 />
               ))}
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 

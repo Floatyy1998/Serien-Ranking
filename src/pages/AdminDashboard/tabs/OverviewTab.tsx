@@ -1,17 +1,8 @@
 import { Extension, Groups, Insights, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { KpiScorecard } from '../components/KpiScorecard';
 import { LivePulse } from '../components/LivePulse';
@@ -130,7 +121,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
         >
           Aktivitaet (letzte 30 Tage)
         </h3>
-        <ResponsiveContainer width="100%" height={260}>
+        <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={260}>
           <AreaChart data={data.activityChartData}>
             <defs>
               <linearGradient id="gradDau" x1="0" y1="0" x2="0" y2="1">
@@ -193,7 +184,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
               name="DAU"
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </SafeResponsiveContainer>
       </motion.div>
 
       {/* Top Events + Top Pages */}
@@ -227,7 +218,12 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
           >
             Top Events heute
           </h3>
-          <ResponsiveContainer width="100%" height={Math.max(200, data.topEvents.length * 28)}>
+          <SafeResponsiveContainer
+            minWidth={0}
+            minHeight={0}
+            width="100%"
+            height={Math.max(200, data.topEvents.length * 28)}
+          >
             <BarChart data={data.topEvents} layout="vertical" margin={{ left: 80 }}>
               <defs>
                 <linearGradient id="gradBar" x1="0" y1="0" x2="1" y2="0">
@@ -261,7 +257,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
               />
               <Bar dataKey="count" fill="url(#gradBar)" radius={[0, 6, 6, 0]} name="Anzahl" />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </motion.div>
 
         {/* Top Pages */}
@@ -288,7 +284,12 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
             Top Seiten heute
           </h3>
           {data.topPages.length > 0 ? (
-            <ResponsiveContainer width="100%" height={Math.max(200, data.topPages.length * 32)}>
+            <SafeResponsiveContainer
+              minWidth={0}
+              minHeight={0}
+              width="100%"
+              height={Math.max(200, data.topPages.length * 32)}
+            >
               <BarChart data={data.topPages} layout="vertical" margin={{ left: 80 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
                 <XAxis
@@ -316,7 +317,7 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
                 />
                 <Bar dataKey="count" fill="#00cec9" radius={[0, 6, 6, 0]} name="Aufrufe" />
               </BarChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           ) : (
             <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40, fontSize: 13 }}>
               Keine Daten

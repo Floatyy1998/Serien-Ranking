@@ -1,7 +1,8 @@
 import { FiberManualRecord, Person } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Pie, PieChart, Tooltip } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
@@ -200,7 +201,7 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
             Seiten-Verteilung
           </h3>
           {pageDistribution.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
+            <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={240}>
               <PieChart>
                 <Pie
                   data={pageDistribution}
@@ -224,7 +225,7 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
                   }}
                 />
               </PieChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           ) : (
             <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40, fontSize: 13 }}>
               Keine Daten

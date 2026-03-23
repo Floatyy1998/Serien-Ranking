@@ -1,7 +1,8 @@
 import { AccessTime, CalendarMonth, Nightlight, Speed, WbSunny } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { DAY_NAMES, WatchJourneyData } from '../../services/watchJourneyService';
 
@@ -179,7 +180,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           Uhrzeitverteilung
         </h3>
         <div style={{ width: '100%', height: 200 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart data={hourlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
               <XAxis
@@ -243,7 +244,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 style={{ outline: 'none' }}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 

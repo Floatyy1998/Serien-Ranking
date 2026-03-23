@@ -1,7 +1,8 @@
 import { TrendingDown, TrendingFlat, TrendingUp } from '@mui/icons-material';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import React, { useEffect } from 'react';
-import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { Area, AreaChart } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 
 interface KpiScorecardProps {
@@ -75,7 +76,7 @@ export const KpiScorecard = React.memo<KpiScorecardProps>(
               opacity: 0.2,
             }}
           >
-            <ResponsiveContainer width="100%" height="100%">
+            <SafeResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <AreaChart data={sparklineData}>
                 <defs>
                   <linearGradient id={`spark-${title}`} x1="0" y1="0" x2="0" y2="1">
@@ -93,7 +94,7 @@ export const KpiScorecard = React.memo<KpiScorecardProps>(
                   isAnimationActive={false}
                 />
               </AreaChart>
-            </ResponsiveContainer>
+            </SafeResponsiveContainer>
           </div>
         )}
 

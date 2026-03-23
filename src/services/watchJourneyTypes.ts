@@ -224,11 +224,23 @@ export const FALLBACK_COLORS = [
 const GENRE_ALIASES: Record<string, string> = {
   Comedy: 'Komödie',
   Crime: 'Krimi',
+  Action: 'Action & Adventure',
+  Adventure: 'Action & Adventure',
+  Abenteuer: 'Action & Adventure',
   'Science Fiction': 'Sci-Fi & Fantasy',
   Fantasy: 'Sci-Fi & Fantasy',
+  SciFi: 'Sci-Fi & Fantasy',
   'War & Politics': 'War & Politics',
   War: 'War & Politics',
   Politik: 'War & Politics',
+  'Soap Opera': 'Drama',
+  Documentary: 'Dokumentation',
+  Dokumentation: 'Dokumentation',
+  Family: 'Kids',
+  Kids: 'Kids',
+  Familie: 'Kids',
+  Talk: 'Reality',
+  'News & Talk': 'Reality',
 };
 
 export function normalizeGenre(genre: string): string {

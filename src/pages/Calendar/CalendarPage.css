@@ -300,6 +300,31 @@
   line-height: 1.3;
 }
 
+/* ── Provider badge ── */
+
+/* Desktop badge — hidden on mobile, shown in poster-info on desktop */
+.cal-ep-provider-badge {
+  display: none;
+}
+
+/* Mobile poster wrapper with provider overlay */
+.cal-ep-poster-mobile-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cal-ep-provider-badge-mobile {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(15, 20, 35, 1);
+}
+
 /* Watch status */
 .cal-ep-status {
   flex-shrink: 0;
@@ -339,8 +364,12 @@
 }
 
 .cal-ep-mark.small {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
+  min-width: 24px !important;
+  min-height: 24px !important;
+  max-width: 24px;
+  max-height: 24px;
 }
 
 /* Group */
@@ -507,6 +536,7 @@
   .cal-ep-mark-mobile,
   .cal-ep-expand-mobile,
   .cal-ep-poster-mobile,
+  .cal-ep-poster-mobile-wrap,
   .cal-ep-mobile-status {
     display: none !important;
   }
@@ -577,6 +607,25 @@
     background: rgba(10, 14, 26, 0.75);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Reserve space when provider badge is present */
+  .cal-ep-poster-info.has-provider {
+    padding-right: 42px;
+  }
+
+  /* Provider badge — vertically centered in poster-info, right side */
+  .cal-ep-provider-badge {
+    display: block;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   }
 
   .cal-ep-poster-info .cal-ep-title {
