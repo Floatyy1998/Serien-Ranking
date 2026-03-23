@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { staggerContainer, staggerItem } from '../../lib/motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { colors } from '../../theme';
 import { StatCard } from './StatCard';
 import { useHomeStats } from './useHomeStats';

@@ -1,10 +1,11 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../firebase/analytics';
-import { useWeeklyEpisodes, getWeekNumber, WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -49,7 +50,7 @@ export type GroupedSchedule = Map<string, SeriesGroup[]>;
 // ── Hook ─────────────────────────────────────────────────────────
 
 export const useCalendarData = () => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { seriesList } = useSeriesList();
 
   // Week navigation

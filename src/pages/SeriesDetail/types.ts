@@ -1,4 +1,4 @@
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 
 /** Episode type from the Series seasons structure */
 export type SeriesEpisode = Series['seasons'][number]['episodes'][number];

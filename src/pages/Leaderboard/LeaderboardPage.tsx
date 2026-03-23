@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackButton, GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { LeaderboardCategory } from '../../types/Leaderboard';
 import { CelebrationModal } from './CelebrationModal';
 import './LeaderboardPage.css';
@@ -67,7 +67,7 @@ export const LeaderboardPage = () => {
   } = useLeaderboardData();
 
   const activeCat = useMemo(
-    () => CATEGORIES.find((c) => c.id === activeCategory)!,
+    () => CATEGORIES.find((c) => c.id === activeCategory),
     [activeCategory]
   );
   const topThree = rankings.slice(0, 3);
@@ -220,7 +220,7 @@ export const LeaderboardPage = () => {
             <p
               style={{ margin: 0, fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}
             >
-              {activeCat.label}
+              {activeCat?.label}
               {activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}
               {mode === 'global' ? ' · Alle Nutzer' : ''}
             </p>
@@ -257,10 +257,10 @@ export const LeaderboardPage = () => {
         </div>
 
         {/* Podium */}
-        <PodiumSection topThree={topThree} category={activeCategory} unit={activeCat.unit} />
+        <PodiumSection topThree={topThree} category={activeCategory} unit={activeCat?.unit ?? ''} />
 
         {/* Rest of Rankings */}
-        <RankingList entries={rest} category={activeCategory} unit={activeCat.unit} />
+        <RankingList entries={rest} category={activeCategory} unit={activeCat?.unit ?? ''} />
 
         {/* Trophy History */}
         <TrophyHistory trophies={trophies} currentUserId={user?.uid} />

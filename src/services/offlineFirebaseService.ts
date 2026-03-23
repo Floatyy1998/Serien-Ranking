@@ -4,7 +4,7 @@
  */
 
 import { serviceWorkerManager } from './serviceWorkerManager';
-import {
+import type {
   OfflineCacheConfig,
   OfflineQueueItem,
   CachedUserData,
@@ -44,7 +44,7 @@ class OfflineFirebaseService {
 
       // Restore offline queue from IndexedDB
       await this.restoreOfflineQueue();
-    } catch (error) {
+    } catch {
       // Offline Firebase Service Initialisierung fehlgeschlagen
     }
   }
@@ -131,7 +131,7 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         serviceWorkerManager.cacheFirebaseData(path, data);
       }
-    } catch (error) {
+    } catch {
       // console.error('Cache Speicherung fehlgeschlagen:', error);
     }
   }
@@ -164,7 +164,7 @@ class OfflineFirebaseService {
         };
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch {
       // console.error('Cache Abruf fehlgeschlagen:', error);
       return null;
     }
@@ -183,7 +183,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch {
       // console.error('Cache Löschung fehlgeschlagen:', error);
     }
   }
@@ -226,7 +226,7 @@ class OfflineFirebaseService {
       try {
         await this.executeQueuedOperation(item);
         processedItems.push(item.id);
-      } catch (error) {
+      } catch {
         item.retryCount += 1;
 
         const isExpired = Date.now() - item.timestamp > this.config.maxOfflineTime;
@@ -281,7 +281,7 @@ class OfflineFirebaseService {
       this.offlineQueue = items.filter((item) => {
         return Date.now() - item.timestamp < this.config.maxOfflineTime;
       });
-    } catch (error) {
+    } catch {
       // console.error('Offline Queue Wiederherstellung fehlgeschlagen:', error);
     }
   }
@@ -301,7 +301,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch {
       // console.error(`IndexedDB Speicherung fehlgeschlagen (${storeName}):`, error);
     }
   }
@@ -317,7 +317,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch (error) {
+    } catch {
       // console.error(`IndexedDB Löschung fehlgeschlagen (${storeName}):`, error);
     }
   }
@@ -338,7 +338,7 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         await serviceWorkerManager.clearCache();
       }
-    } catch (error) {
+    } catch {
       // console.error('Cache-Löschung fehlgeschlagen:', error);
     }
   }
@@ -373,7 +373,7 @@ class OfflineFirebaseService {
         const swStats = await serviceWorkerManager.getCacheStatistics();
         stats.serviceWorkerSize = swStats.totalSize;
       }
-    } catch (error) {
+    } catch {
       // console.error('Statistik-Abruf fehlgeschlagen:', error);
     }
 

@@ -1,5 +1,5 @@
 import firebase from 'firebase/compat/app';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { normalizeSeasons, normalizeEpisodes } from '../episode/seriesMetrics';
 import { calculateOverallRating } from '../rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';

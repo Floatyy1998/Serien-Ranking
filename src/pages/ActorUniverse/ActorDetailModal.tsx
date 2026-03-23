@@ -1,9 +1,9 @@
 import { Add, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText, HorizontalScrollContainer } from '../../components/ui';
-import { Actor, ActorConnection } from '../../hooks/useActorUniverse';
+import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import './ActorUniversePage.css';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';

@@ -3,7 +3,7 @@
  * Inline styles ONLY for theme colors, CSS classes for layout
  */
 
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface SectionToggleCardProps {
   checked: boolean;

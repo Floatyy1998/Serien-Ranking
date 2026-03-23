@@ -4,7 +4,7 @@
 
 import { PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BottomSheet } from '../../components/ui';
 
 interface RemoveFriendSheetProps {

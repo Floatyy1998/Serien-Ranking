@@ -6,7 +6,7 @@
 import { CalendarToday, Check, Close, Movie, Search } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, LoadingSpinner, PageHeader, ScrollToTopButton } from '../../components/ui';
 import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';

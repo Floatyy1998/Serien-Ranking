@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { CheckCircle } from '@mui/icons-material';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { GradientText } from '../../../components/ui';
 
 interface Props {

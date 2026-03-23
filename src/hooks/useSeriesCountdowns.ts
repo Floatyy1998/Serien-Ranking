@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
 
 export interface SeriesCountdown {

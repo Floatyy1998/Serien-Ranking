@@ -2,8 +2,8 @@
  * usePetsData - Custom hook for all PetsPage state & business logic
  */
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../App';
+import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../../AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
@@ -45,13 +45,7 @@ export function usePetsData() {
     : '';
 
   // --- Load pets on mount ---
-  useEffect(() => {
-    if (user) {
-      loadPets();
-    }
-  }, [user]);
-
-  const loadPets = async () => {
+  const loadPets = useCallback(async () => {
     if (!user) return;
     try {
       const updatedPets = await petService.updateAllPetsStatus(user.uid);
@@ -76,7 +70,13 @@ export function usePetsData() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, selectedPetIndex]);
+
+  useEffect(() => {
+    if (user) {
+      loadPets();
+    }
+  }, [user, loadPets]);
 
   const createPet = async () => {
     if (!user || !petName.trim()) return;

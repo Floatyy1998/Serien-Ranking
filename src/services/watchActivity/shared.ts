@@ -6,7 +6,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { ActivityEvent } from '../../types/WatchActivity';
+import type { ActivityEvent } from '../../types/WatchActivity';
 import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
 
 // ============================================================================

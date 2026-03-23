@@ -18,7 +18,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { PageHeader, PageLayout } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import './AdminDashboardPage.css';
 import { ActivityTab } from './tabs/ActivityTab';
 import { EventsTab } from './tabs/EventsTab';

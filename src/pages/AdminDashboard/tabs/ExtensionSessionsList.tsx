@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import React from 'react';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
 interface SessionItem {

@@ -5,7 +5,7 @@
 
 import { Check, Logout } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
 import { ProfileSection } from './ProfileSection';

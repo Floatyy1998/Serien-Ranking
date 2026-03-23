@@ -2,8 +2,8 @@ import { ExpandMore, MovieFilter, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { SerienTabRanking } from './SerienTabRanking';
 import {
   TMDB_IMAGE_BASE,

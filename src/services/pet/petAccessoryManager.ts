@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { Pet, PET_COLORS, ACCESSORIES, PetAccessory } from '../../types/pet.types';
+import type { Pet, PetAccessory } from '../../types/pet.types';
+import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet } from './petCore';
 
@@ -90,7 +91,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   const updates: Record<string, string[] | undefined> = {};
 
   if (
-    pet.totalSeriesWatched! >= PET_CONFIG.SILVER_COLOR_SERIES_THRESHOLD &&
+    (pet.totalSeriesWatched ?? 0) >= PET_CONFIG.SILVER_COLOR_SERIES_THRESHOLD &&
     !pet.unlockedColors?.includes('silver')
   ) {
     pet.unlockedColors = [...(pet.unlockedColors || []), 'silver'];
@@ -98,7 +99,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 
   if (
-    pet.totalSeriesWatched! >= PET_CONFIG.GOLD_COLOR_SERIES_THRESHOLD &&
+    (pet.totalSeriesWatched ?? 0) >= PET_CONFIG.GOLD_COLOR_SERIES_THRESHOLD &&
     !pet.unlockedColors?.includes('gold')
   ) {
     pet.unlockedColors = [...(pet.unlockedColors || []), 'gold'];
@@ -106,7 +107,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 
   if (
-    pet.totalSeriesWatched! >= PET_CONFIG.RAINBOW_COLOR_SERIES_THRESHOLD &&
+    (pet.totalSeriesWatched ?? 0) >= PET_CONFIG.RAINBOW_COLOR_SERIES_THRESHOLD &&
     !pet.unlockedColors?.includes('rainbow')
   ) {
     pet.unlockedColors = [...(pet.unlockedColors || []), 'rainbow'];

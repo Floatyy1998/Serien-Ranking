@@ -2,7 +2,7 @@
  * Wrapped Fun Facts - Fun-Fact-Generierung
  */
 
-import { TopSeriesEntry, MonthStats, TimeOfDayStats, FunFact } from '../../types/Wrapped';
+import type { TopSeriesEntry, MonthStats, TimeOfDayStats, FunFact } from '../../types/Wrapped';
 
 export interface FunFactContext {
   totalMinutes: number;

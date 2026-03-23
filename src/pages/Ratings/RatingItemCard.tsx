@@ -9,7 +9,7 @@ import { Star, WatchLater } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { PreparedItem } from './useRatingsData';
 
 // ─── Constants ──────────────────────────────────────────────────────────

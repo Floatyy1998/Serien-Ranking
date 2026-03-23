@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 
 function formatDate(dateStr: string): string {

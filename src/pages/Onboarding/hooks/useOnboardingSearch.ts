@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../../App';
+import { useAuth } from '../../../AuthContext';
 
 export interface OnboardingItem {
   id: number;

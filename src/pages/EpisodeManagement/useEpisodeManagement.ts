@@ -2,13 +2,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
@@ -33,7 +33,7 @@ export interface SeasonProgress {
 
 export const useEpisodeManagement = () => {
   const { id } = useParams();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
 
   // --- State ---
@@ -131,7 +131,7 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
 
     const season = series.seasons[seasonIndex];
-    const episode = season.episodes![episodeIndex];
+    const episode = season.episodes[episodeIndex];
 
     try {
       const currentWatchCount = episode.watchCount || 0;
@@ -156,7 +156,7 @@ export const useEpisodeManagement = () => {
         newWatchCount = 1;
       }
 
-      const updatedEpisodes = season.episodes!.map((e, idx) => {
+      const updatedEpisodes = season.episodes?.map((e, idx) => {
         if (idx === episodeIndex) {
           if (newWatched && newWatchCount < 1) {
             newWatchCount = 1;
@@ -174,7 +174,12 @@ export const useEpisodeManagement = () => {
               lastWatchedAt: new Date().toISOString(),
             };
           } else {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = e;
+            const {
+              watchCount: _watchCount,
+              firstWatchedAt: _firstWatchedAt,
+              lastWatchedAt: _lastWatchedAt,
+              ...episodeWithoutFields
+            } = e;
             return {
               ...episodeWithoutFields,
               watched: false,
@@ -333,7 +338,12 @@ export const useEpisodeManagement = () => {
     try {
       const updatedEpisodes = season.episodes?.map((ep) => {
         if (mode === 'unwatch') {
-          const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+          const {
+            watchCount: _watchCount,
+            firstWatchedAt: _firstWatchedAt,
+            lastWatchedAt: _lastWatchedAt,
+            ...episodeWithoutFields
+          } = ep;
           return { ...episodeWithoutFields, watched: false };
         } else if (mode === 'rewatch') {
           return {
@@ -353,7 +363,12 @@ export const useEpisodeManagement = () => {
               lastWatchedAt: new Date().toISOString(),
             };
           } else {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+            const {
+              watchCount: _watchCount,
+              firstWatchedAt: _firstWatchedAt,
+              lastWatchedAt: _lastWatchedAt,
+              ...episodeWithoutFields
+            } = ep;
             return { ...episodeWithoutFields, watched: false };
           }
         }

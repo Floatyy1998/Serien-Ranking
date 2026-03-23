@@ -6,7 +6,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 
 // --- Constants ---
 

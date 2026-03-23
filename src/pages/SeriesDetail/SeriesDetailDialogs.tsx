@@ -3,18 +3,35 @@ import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 
+import type { DynamicTheme } from '../../theme/dynamicTheme';
+import type { Series } from '../../types/Series';
 import type { SeriesEpisode } from './types';
 
+interface RewatchDialogState {
+  show: boolean;
+  type: 'episode' | 'season';
+  item: SeriesEpisode | null;
+  seasonNumber?: number;
+  episodeNumber?: number;
+}
+
+interface DialogState {
+  open: boolean;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  onConfirm?: () => void;
+}
+
 interface SeriesDetailDialogsProps {
-  series: any;
-  showRewatchDialog: any;
-  setShowRewatchDialog: (val: any) => void;
+  series: Series;
+  showRewatchDialog: RewatchDialogState;
+  setShowRewatchDialog: (val: RewatchDialogState) => void;
   handleEpisodeRewatch: (episode: SeriesEpisode) => Promise<void>;
   handleEpisodeUnwatch: (episode: SeriesEpisode) => Promise<void>;
-  dialog: any;
-  setDialog: (val: any) => void;
+  dialog: DialogState;
+  setDialog: (val: DialogState) => void;
   snackbar: { open: boolean; message: string };
-  currentTheme: any;
+  currentTheme: DynamicTheme;
   navigate: (path: string) => void;
 }
 

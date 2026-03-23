@@ -3,9 +3,9 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 

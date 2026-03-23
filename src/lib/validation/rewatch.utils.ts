@@ -1,4 +1,4 @@
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { normalizeEpisodes } from '../episode/seriesMetrics';
 
 export interface NextRewatchEpisode {

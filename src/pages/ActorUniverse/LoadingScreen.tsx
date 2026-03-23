@@ -1,6 +1,6 @@
 import { AutoAwesome } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton, GradientText } from '../../components/ui';
 import './ActorUniversePage.css';
 

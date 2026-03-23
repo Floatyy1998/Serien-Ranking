@@ -1,11 +1,10 @@
 import { Recommend, Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { staggerContainerFast, staggerItemFast } from '../../lib/motion';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import { LoadingSpinner } from '../../components/ui';
 import { ItemCard } from './DiscoverItemCard';
-import type { DiscoverItem } from './DiscoverItemCard';
+import type { DiscoverItem } from './discoverItemHelpers';
 
 interface DiscoverContentProps {
   activeCategory: string;
@@ -96,10 +95,8 @@ export const DiscoverContent = memo(
           >
             Basierend auf deiner Liste
           </p>
-          <motion.div
-            variants={staggerContainerFast}
-            initial="hidden"
-            animate="visible"
+          <div
+            className="discover-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: isDesktop
@@ -111,7 +108,7 @@ export const DiscoverContent = memo(
             }}
           >
             {recommendations.map((item) => (
-              <motion.div key={`rec-${item.type}-${item.id}`} variants={staggerItemFast}>
+              <div key={`rec-${item.type}-${item.id}`} className="discover-grid-item">
                 <ItemCard
                   item={item}
                   onItemClick={handleItemClick}
@@ -120,9 +117,9 @@ export const DiscoverContent = memo(
                   currentTheme={currentTheme}
                   isDesktop={isDesktop}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       );
     }
@@ -181,10 +178,8 @@ export const DiscoverContent = memo(
               </p>
             </motion.div>
           ) : (
-            <motion.div
-              variants={staggerContainerFast}
-              initial="hidden"
-              animate="visible"
+            <div
+              className="discover-grid"
               style={{
                 display: 'grid',
                 gridTemplateColumns: isDesktop
@@ -196,7 +191,7 @@ export const DiscoverContent = memo(
               }}
             >
               {searchResults.map((item) => (
-                <motion.div key={`search-${item.type}-${item.id}`} variants={staggerItemFast}>
+                <div key={`search-${item.type}-${item.id}`} className="discover-grid-item">
                   <ItemCard
                     item={item}
                     onItemClick={handleItemClick}
@@ -205,20 +200,17 @@ export const DiscoverContent = memo(
                     currentTheme={currentTheme}
                     isDesktop={isDesktop}
                   />
-                </motion.div>
+                </div>
               ))}
-            </motion.div>
+            </div>
           )}
         </div>
       );
     }
 
     return (
-      <motion.div
-        variants={staggerContainerFast}
-        initial="hidden"
-        animate="visible"
-        key={`grid-${activeCategory}`}
+      <div
+        className="discover-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: isDesktop
@@ -230,7 +222,7 @@ export const DiscoverContent = memo(
         }}
       >
         {results.map((item) => (
-          <motion.div key={`${item.type}-${item.id}`} variants={staggerItemFast}>
+          <div key={`${item.type}-${item.id}`} className="discover-grid-item">
             <ItemCard
               item={item}
               onItemClick={handleItemClick}
@@ -239,9 +231,9 @@ export const DiscoverContent = memo(
               currentTheme={currentTheme}
               isDesktop={isDesktop}
             />
-          </motion.div>
+          </div>
         ))}
-      </motion.div>
+      </div>
     );
   }
 );

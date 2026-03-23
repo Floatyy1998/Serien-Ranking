@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { Pet } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
 import { checkAndUnlockAccessories, checkAchievements } from './petAccessoryManager';

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from '@mui/icons-material';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { OnboardingItemCard } from '../components/OnboardingItemCard';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
 

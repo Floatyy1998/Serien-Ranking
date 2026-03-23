@@ -1,6 +1,8 @@
 import Repeat from '@mui/icons-material/Repeat';
 import { motion } from 'framer-motion';
 import { ProgressBar } from '../../components/ui';
+import type { DynamicTheme } from '../../theme/dynamicTheme';
+import type { Series } from '../../types/Series';
 import {
   getNextRewatchEpisode,
   getRewatchProgress,
@@ -8,11 +10,17 @@ import {
 } from '../../lib/validation/rewatch.utils';
 
 interface RewatchBannerProps {
-  series: any;
+  series: Series;
   warningColor: string;
-  currentTheme: any;
+  currentTheme: DynamicTheme;
   setSelectedSeasonIndex: (i: number) => void;
-  setShowRewatchDialog: (d: any) => void;
+  setShowRewatchDialog: (d: {
+    show: boolean;
+    type: 'episode' | 'season';
+    item: Series['seasons'][number]['episodes'][number] | null;
+    seasonNumber?: number;
+    episodeNumber?: number;
+  }) => void;
   handleStopRewatch: () => void;
 }
 
@@ -65,7 +73,7 @@ export function RewatchBanner({
           whileTap={{ scale: 0.95 }}
           onClick={() => {
             const sIdx = series.seasons.findIndex(
-              (s: any) => s.seasonNumber === nextEp.seasonNumber
+              (s: Series['seasons'][number]) => s.seasonNumber === nextEp.seasonNumber
             );
             if (sIdx >= 0) {
               setSelectedSeasonIndex(sIdx);

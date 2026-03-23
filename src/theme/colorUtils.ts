@@ -280,9 +280,7 @@ export function hslToHex(h: number, s: number, l: number): string {
   const c = (1 - Math.abs(2 * lN - 1)) * sN;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = lN - c / 2;
-  let r = 0,
-    g = 0,
-    b = 0;
+  let r: number, g: number, b: number;
   if (h < 60) {
     r = c;
     g = x;

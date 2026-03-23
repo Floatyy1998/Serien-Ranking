@@ -1,13 +1,13 @@
 import { ChatBubbleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { LoadingSpinner } from '../ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDiscussions } from '../../hooks/useDiscussions';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
-import { DiscussionThreadProps } from './types';
+import type { DiscussionThreadProps } from './types';
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemId,

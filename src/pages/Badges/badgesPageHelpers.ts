@@ -10,12 +10,8 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { createElement } from 'react';
-import {
-  BADGE_DEFINITIONS,
-  Badge,
-  BadgeCategory,
-  EarnedBadge,
-} from '../../features/badges/badgeDefinitions';
+import type { Badge, BadgeCategory, EarnedBadge } from '../../features/badges/badgeDefinitions';
+import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
 
 export const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
   { key: 'all', label: 'Alle', icon: createElement(EmojiEvents) },

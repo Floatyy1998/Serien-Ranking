@@ -1,5 +1,5 @@
 import { PET_CONFIG } from '../../services/pet/petConstants';
-import { Pet } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
 
 export type EdgeType = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 

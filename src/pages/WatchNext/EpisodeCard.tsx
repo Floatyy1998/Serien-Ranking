@@ -1,9 +1,10 @@
 import { Check, DragHandle, PlayCircle } from '@mui/icons-material';
-import { AnimatePresence, motion, PanInfo } from 'framer-motion';
+import type { PanInfo } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../components/Discussion';
-import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 
 interface EpisodeCardProps {
   episode: NextEpisode;

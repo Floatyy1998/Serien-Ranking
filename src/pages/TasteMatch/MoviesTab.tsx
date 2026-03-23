@@ -5,7 +5,7 @@
 import { Favorite, Movie } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { TasteMatchResult } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { ACCENT_COLORS } from './constants';
 import { SharedItemCard } from './SharedItemCard';
 

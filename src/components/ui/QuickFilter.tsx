@@ -1,7 +1,7 @@
 import { FilterList } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BottomSheet } from './BottomSheet';
 import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';
 import { QuickFilterPanel } from './QuickFilterPanel';

@@ -8,8 +8,8 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { TabType } from './types';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { TabType } from './types';
 
 interface TabDefinition {
   id: TabType;

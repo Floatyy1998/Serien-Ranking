@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Series } from '../types/Series';
+import type { Series } from '../types/Series';
 import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
 import {
   getNextRewatchEpisode,

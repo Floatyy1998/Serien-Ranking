@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { CalendarMonth } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { PageHeader, LoadingSpinner, EmptyState, PageLayout } from '../../components/ui';
 import { CountdownHeroCard } from './CountdownHeroCard';

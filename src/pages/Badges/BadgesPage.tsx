@@ -5,14 +5,11 @@
 
 import { EmojiEvents, Refresh } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
-import {
-  BADGE_DEFINITIONS,
-  BadgeProgress,
-  EarnedBadge,
-} from '../../features/badges/badgeDefinitions';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
+import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
 import {
@@ -25,7 +22,7 @@ import {
 import './BadgesPage.css';
 
 export const BadgesPage = () => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
@@ -37,89 +34,7 @@ export const BadgesPage = () => {
   } | null>(null);
   const [, setRefreshTick] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      loadBadgeData();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const handleBadgeUpdate = async (event: CustomEvent) => {
-      const { newBadges } = event.detail;
-      if (newBadges && newBadges.length > 0) {
-        const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
-        const badgeSystem = getOfflineBadgeSystem(user!.uid);
-        badgeSystem.invalidateCache();
-
-        setEarnedBadges((prevBadges) => {
-          const existingIds = new Set(prevBadges.map((b) => b.id));
-          const uniqueNewBadges = newBadges.filter(
-            (badge: EarnedBadge) => !existingIds.has(badge.id)
-          );
-          if (uniqueNewBadges.length > 0) {
-            return [...prevBadges, ...uniqueNewBadges];
-          }
-          return prevBadges;
-        });
-
-        window.dispatchEvent(
-          new CustomEvent('badgeDialogOpened', {
-            detail: { userId: user!.uid, newBadges },
-          })
-        );
-
-        loadBadgeData();
-      }
-    };
-
-    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
-
-    return () => {
-      window.removeEventListener(
-        'badgeProgressUpdate',
-        handleBadgeUpdate as unknown as EventListener
-      );
-    };
-  }, [user]);
-
-  useEffect(() => {
-    const hasActiveSessions = Object.values(badgeProgress).some((p) => p.sessionActive);
-    if (!hasActiveSessions) return;
-
-    const interval = setInterval(() => {
-      setRefreshTick((tick) => tick + 1);
-      loadBadgeData();
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [badgeProgress]);
-
-  const checkForNewBadges = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
-      const badgeSystem = getOfflineBadgeSystem(user.uid);
-      badgeSystem.invalidateCache();
-      const newBadges = await badgeSystem.checkForNewBadges();
-
-      if (newBadges.length > 0) {
-        window.dispatchEvent(
-          new CustomEvent('badgeProgressUpdate', {
-            detail: { newBadges },
-          })
-        );
-      }
-
-      await loadBadgeData();
-    } catch (error) {
-      console.error('Fehler beim Badge-Check:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadBadgeData = async () => {
+  const loadBadgeData = useCallback(async () => {
     if (!user) return;
 
     const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
@@ -153,6 +68,91 @@ export const BadgesPage = () => {
         setLoading(false);
         setLoadingProgress(null);
       }
+    }
+  }, [user]);
+
+  const loadBadgeDataRef = useRef(loadBadgeData);
+  loadBadgeDataRef.current = loadBadgeData;
+
+  useEffect(() => {
+    if (user) {
+      loadBadgeData();
+    }
+  }, [user, loadBadgeData]);
+
+  useEffect(() => {
+    const handleBadgeUpdate = async (event: CustomEvent) => {
+      const { newBadges } = event.detail;
+      if (newBadges && newBadges.length > 0) {
+        const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
+        const badgeSystem = getOfflineBadgeSystem(user?.uid ?? '');
+        badgeSystem.invalidateCache();
+
+        setEarnedBadges((prevBadges) => {
+          const existingIds = new Set(prevBadges.map((b) => b.id));
+          const uniqueNewBadges = newBadges.filter(
+            (badge: EarnedBadge) => !existingIds.has(badge.id)
+          );
+          if (uniqueNewBadges.length > 0) {
+            return [...prevBadges, ...uniqueNewBadges];
+          }
+          return prevBadges;
+        });
+
+        window.dispatchEvent(
+          new CustomEvent('badgeDialogOpened', {
+            detail: { userId: user?.uid, newBadges },
+          })
+        );
+
+        loadBadgeDataRef.current();
+      }
+    };
+
+    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        'badgeProgressUpdate',
+        handleBadgeUpdate as unknown as EventListener
+      );
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const hasActiveSessions = Object.values(badgeProgress).some((p) => p.sessionActive);
+    if (!hasActiveSessions) return;
+
+    const interval = setInterval(() => {
+      setRefreshTick((tick) => tick + 1);
+      loadBadgeDataRef.current();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [badgeProgress]);
+
+  const checkForNewBadges = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
+      const badgeSystem = getOfflineBadgeSystem(user.uid);
+      badgeSystem.invalidateCache();
+      const newBadges = await badgeSystem.checkForNewBadges();
+
+      if (newBadges.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent('badgeProgressUpdate', {
+            detail: { newBadges },
+          })
+        );
+      }
+
+      await loadBadgeData();
+    } catch (error) {
+      console.error('Fehler beim Badge-Check:', error);
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -58,7 +58,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
       // 2. Fallback: Memory Cache (falls implementiert)
       // Hier könnte ein Memory-Cache implementiert werden
       return null;
-    } catch (error) {
+    } catch {
       // console.error('❌ Cache loading failed:', error);
       return null;
     }
@@ -81,7 +81,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
             });
           }
         }
-      } catch (error) {
+      } catch {
         // console.error('❌ Cache saving failed:', error);
       }
     },
@@ -92,20 +92,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
    */
   const fetchFromFirebase = useCallback(async (): Promise<T | null> => {
     if (!path) return null;
-    try {
-      const ref = firebase.database().ref(path);
-      const snapshot = await ref.once('value');
-      if (snapshot.exists()) {
-        const firebaseData = snapshot.val();
-        // Cache aktualisieren
-        await saveToCache(firebaseData);
-        return firebaseData;
-      }
-      return null;
-    } catch (error) {
-      // console.error(`❌ Firebase fetch failed for ${path}:`, error);
-      throw error;
+    const ref = firebase.database().ref(path);
+    const snapshot = await ref.once('value');
+    if (snapshot.exists()) {
+      const firebaseData = snapshot.val();
+      // Cache aktualisieren
+      await saveToCache(firebaseData);
+      return firebaseData;
     }
+    return null;
   }, [path, saveToCache]);
   /**
    * 🔄 Realtime Listener einrichten
@@ -210,7 +205,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
       if (enableOfflineSupport) {
         await offlineFirebaseService.removeCachedData(path);
       }
-    } catch (error) {
+    } catch {
       // console.error('❌ Cache clearing failed:', error);
     }
   }, [path, enableOfflineSupport]);
@@ -277,7 +272,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
                 setIsStale(false);
                 setLastUpdated(Date.now());
               }
-            } catch (firebaseError) {
+            } catch {
               // console.warn(`⚠️ Firebase fetch failed, using cache: ${firebaseError}`);
               // Cache-Daten bleiben bestehen
             }

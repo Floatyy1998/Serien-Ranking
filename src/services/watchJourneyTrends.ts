@@ -1,11 +1,6 @@
 import { calculateWatchJourney } from './watchJourneyService';
-import {
-  MultiYearTrendsData,
-  YearlyTrendData,
-  getColor,
-  GENRE_COLORS,
-  PROVIDER_COLORS,
-} from './watchJourneyTypes';
+import type { MultiYearTrendsData, YearlyTrendData } from './watchJourneyTypes';
+import { getColor, GENRE_COLORS, PROVIDER_COLORS } from './watchJourneyTypes';
 
 // ============================================================================
 // MULTI-YEAR TRENDS CALCULATION

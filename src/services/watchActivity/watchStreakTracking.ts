@@ -6,7 +6,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { WatchStreak } from '../../types/WatchActivity';
+import type { WatchStreak } from '../../types/WatchActivity';
 import { toLocalDateString } from '../../lib/date/date.utils';
 import { getStreakPath } from './shared';
 

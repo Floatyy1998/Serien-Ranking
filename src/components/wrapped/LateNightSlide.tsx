@@ -4,11 +4,16 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { LateNightStats } from '../../types/Wrapped';
+import { seededRandom } from '../../utils/seededRandom';
+import type { LateNightStats } from '../../types/Wrapped';
 
 interface LateNightSlideProps {
   lateNightStats: LateNightStats;
 }
+
+// Pre-compute random data outside component for render purity
+const _randLN = seededRandom(101);
+const RANDOM_VALUES_LN = Array.from({ length: 20 }, () => _randLN());
 
 // Moon Icon
 const MoonIcon = ({ size = 80 }: { size?: number }) => (
@@ -26,6 +31,8 @@ const MoonIcon = ({ size = 80 }: { size?: number }) => (
 );
 
 export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }) => {
+  let _ri = 0;
+  const nextRandom = () => RANDOM_VALUES_LN[_ri++ % RANDOM_VALUES_LN.length];
   const hasLateNightData = lateNightStats.totalLateNightWatches > 0;
 
   if (!hasLateNightData) {
@@ -103,16 +110,16 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
             key={i}
             animate={{ opacity: [0.2, 1, 0.2] }}
             transition={{
-              duration: 2 + Math.random() * 2,
+              duration: 2 + nextRandom() * 2,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: nextRandom() * 3,
             }}
             style={{
               position: 'absolute',
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
+              top: `${nextRandom() * 100}%`,
+              left: `${nextRandom() * 100}%`,
+              width: `${2 + nextRandom() * 3}px`,
+              height: `${2 + nextRandom() * 3}px`,
               background: 'white',
               borderRadius: '50%',
             }}

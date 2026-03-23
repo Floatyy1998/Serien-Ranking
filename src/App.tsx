@@ -17,11 +17,9 @@ import { RouteTracker } from './components/RouteTracker';
 
 import './styles/performance.css';
 import { updateTheme } from './theme';
-import { AuthContext, AuthProvider } from './authProvider';
+import { AuthProvider } from './authProvider';
+import { AuthContext } from './AuthContext';
 import { loadSavedTheme } from './themeHelpers';
-
-// Re-export for backward compatibility
-export { AuthContext, AuthProvider, useAuth } from './authProvider';
 
 // Lazy load mobile app for all platforms
 const MobileApp = lazy(() => import('./MobileApp').then((m) => ({ default: m.MobileApp })));

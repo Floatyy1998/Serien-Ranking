@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 
 export function useRewatchHandler() {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { seriesList } = useSeriesList();
   const rewatchEpisodes = useRewatchEpisodes();
   const [completingRewatches, setCompletingRewatches] = useState<Set<string>>(new Set());

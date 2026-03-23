@@ -5,7 +5,7 @@
 
 import { DragIndicator, ExpandMore } from '@mui/icons-material';
 import { AnimatePresence, motion, Reorder } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { ExpandableConfig } from './useHomeLayoutData';
 import { SECTION_LABELS } from './useHomeLayoutData';
 import { SectionToggleCard } from './SectionToggleCard';

@@ -16,11 +16,11 @@ import {
   Star,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Series } from '../../types/Series';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Series } from '../../types/Series';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import './CarouselNotification.css';
@@ -122,19 +122,15 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { refetchSeries } = useSeriesList();
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(series.length > 0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [actionedIds, setActionedIds] = useState<Set<number>>(new Set());
   const dotsContainerRef = useRef<HTMLDivElement>(null);
 
   const config = variantConfigs[variant];
   const color = config.themeColor(currentTheme);
-
-  useEffect(() => {
-    if (series.length > 0) setIsVisible(true);
-  }, [series]);
 
   useEffect(() => {
     if (dotsContainerRef.current && series.length > 1) {
@@ -191,9 +187,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
       }
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));
-
-      const idx = series.findIndex((s) => s.id === seriesItem.id);
-      if (idx !== -1) series[idx].watchlist = config.watchlistValue;
 
       setTimeout(() => refetchSeries(), 100);
       await markAsNotified([seriesItem.id]);

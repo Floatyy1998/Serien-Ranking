@@ -1,9 +1,9 @@
 import { motion, useAnimationControls } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Pet, PetAccessory } from '../../types/pet.types';
+import type { Pet, PetAccessory } from '../../types/pet.types';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { EvolvingPixelPet } from './EvolvingPixelPet';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface AnimatedPetProps {
   pet: Pet;
@@ -21,10 +21,7 @@ export const AnimatedPet: React.FC<AnimatedPetProps> = ({
   onClick,
 }) => {
   const { currentTheme } = useTheme();
-  const currentMood = useMemo(
-    () => petMoodService.calculateCurrentMood(pet),
-    [pet.hunger, pet.happiness, pet.isAlive]
-  );
+  const currentMood = useMemo(() => petMoodService.calculateCurrentMood(pet), [pet]);
   const controls = useAnimationControls();
   const [isWalking, setIsWalking] = useState(false);
 

@@ -5,7 +5,7 @@ import {
 } from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { detectUnratedSeries } from '../lib/validation/unratedSeriesDetection';
-import { Series } from '../types/Series';
+import type { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 
@@ -32,9 +32,9 @@ export async function fixMissingFirstWatchedAt(
   try {
     const todayISO = new Date().toISOString();
     const updates: Record<string, string | null> = {};
-    let totalUpdated = 0;
-    let totalWatchedEpisodes = 0;
-    let totalEpisodesWithFirstWatched = 0;
+    let _totalUpdated = 0;
+    let _totalWatchedEpisodes = 0;
+    let _totalEpisodesWithFirstWatched = 0;
 
     Object.keys(seriesData).forEach((seriesKey) => {
       const series: Series = seriesData[seriesKey];
@@ -46,14 +46,14 @@ export async function fixMissingFirstWatchedAt(
 
         season.episodes.forEach((episode, episodeIndex) => {
           if (episode.watched) {
-            totalWatchedEpisodes++;
+            _totalWatchedEpisodes++;
 
             if (episode.firstWatchedAt) {
-              totalEpisodesWithFirstWatched++;
+              _totalEpisodesWithFirstWatched++;
             } else {
               const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
               updates[episodePath] = todayISO;
-              totalUpdated++;
+              _totalUpdated++;
             }
           }
         });
@@ -119,7 +119,7 @@ export function createNewSeasonDetectionRunner(
             sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
           }
         }
-      } catch (error) {
+      } catch {
         setHasCheckedForNewSeasons(true);
       } finally {
         refs.detectionRunRef.current = false;

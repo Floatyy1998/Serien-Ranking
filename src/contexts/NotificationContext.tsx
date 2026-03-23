@@ -1,65 +1,22 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-  ReactNode,
-} from 'react';
-import { useAuth } from '../App';
+import type { ReactNode } from 'react';
+import { useCallback, useState, useEffect, useMemo } from 'react';
+import { useAuth } from '../AuthContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-
-interface Notification {
-  id: string;
-  type:
-    | 'new_season'
-    | 'new_episode'
-    | 'friend_activity'
-    | 'achievement'
-    | 'recommendation'
-    | 'discussion_reply'
-    | 'discussion_like'
-    | 'spoiler_flag'
-    | 'trophy_won';
-  title: string;
-  message: string;
-  timestamp: number;
-  read: boolean;
-  data?: Record<string, unknown>;
-}
-
-interface NotificationContextType {
-  notifications: Notification[];
-  unreadCount: number;
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
-  markAsRead: (notificationId: string) => void;
-  markAllAsRead: () => void;
-  clearNotifications: () => void;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
-
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
-  }
-  return context;
-};
+import { NotificationContext } from './NotificationContextDef';
+import type { AppNotification, NotificationContextType } from './NotificationContextDef';
 
 interface NotificationProviderProps {
   children: ReactNode;
 }
 
 export const NotificationProvider = ({ children }: NotificationProviderProps) => {
-  const { user } = useAuth()!;
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user } = useAuth() || {};
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   // Cleanup old notifications (older than 30 days, keep max 50)
   const cleanupOldNotifications = useCallback(
-    async (notificationsList: Notification[]) => {
+    async (notificationsList: AppNotification[]) => {
       if (!user || notificationsList.length === 0) return;
 
       const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -103,8 +60,8 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
       if (data) {
-        const notificationsList = Object.entries(
-          data as Record<string, Omit<Notification, 'id'>>
+        const notificationsList: AppNotification[] = Object.entries(
+          data as Record<string, Omit<AppNotification, 'id'>>
         ).map(([id, notification]) => ({
           id,
           ...notification,
@@ -131,7 +88,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
   const addNotification = useCallback(
-    async (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    async (notification: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
       if (!user) return;
 
       const newNotification = {

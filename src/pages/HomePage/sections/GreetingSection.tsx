@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HorizontalScrollContainer } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { getGreeting } from '../../../lib/text/greetings';
 import { LiveClock } from '../LiveClock';
 

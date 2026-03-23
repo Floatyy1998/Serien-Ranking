@@ -1,22 +1,15 @@
 import firebase from 'firebase/compat/app';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
-
-export const AuthContext = createContext<{
-  user: firebase.User | null;
-  setUser: React.Dispatch<React.SetStateAction<firebase.User | null>>;
-  authStateResolved: boolean;
-  onboardingComplete: boolean;
-  setOnboardingComplete: React.Dispatch<React.SetStateAction<boolean>>;
-} | null>(null);
+import { AuthContext } from './AuthContext';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
   const [, setFirebaseInitialized] = useState(false);
   const [authStateResolved, setAuthStateResolved] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(true);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [_isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     // Online/Offline Status überwachen
@@ -56,13 +49,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               window.setAppReady?.('emailVerification', true); // No verification check on timeout
 
               // Wenn offline, versuche gespeicherten User zu laden
-              if (isOffline) {
+              if (!navigator.onLine) {
                 const savedUser = localStorage.getItem('cachedUser');
                 if (savedUser) {
                   try {
                     const parsedUser = JSON.parse(savedUser);
                     setUser(parsedUser);
-                  } catch (error) {
+                  } catch {
                     // console.error(
                     //   'Fehler beim Laden des gespeicherten Users:',
                     //   error
@@ -71,7 +64,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 }
               }
             },
-            isOffline ? 2000 : 5000
+            !navigator.onLine ? 2000 : 5000
           ); // Kürzerer Timeout wenn offline
 
           firebase.auth().onAuthStateChanged(async (user) => {
@@ -179,7 +172,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }
-                } catch (error) {
+                } catch {
                   // console.error('Error loading cloud theme:', error);
                 }
               } else {
@@ -242,7 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 .set(firebase.database.ServerValue.TIMESTAMP);
             }
           });
-        } catch (error) {
+        } catch {
           // console.error('Fehler bei Firebase-Initialisierung:', error);
           setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
           window.setAppReady?.('emailVerification', true); // No verification needed when auth fails
@@ -280,5 +273,3 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <AuthContext.Provider value={authContextValue}>{children}</AuthContext.Provider>;
 };
-
-export const useAuth = () => useContext(AuthContext);

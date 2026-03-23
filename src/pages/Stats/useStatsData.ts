@@ -4,9 +4,9 @@
  */
 
 import { useMemo } from 'react';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
@@ -140,7 +140,7 @@ export const formatTimeDetailed = (minutes: number): string => {
 };
 
 export const useStatsData = (): StatsData => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { seriesList, allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
 

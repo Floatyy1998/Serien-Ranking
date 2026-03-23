@@ -3,10 +3,10 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
 import { memo, useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
-const _NewDiscussionForm: React.FC<{
+const NewDiscussionFormInner: React.FC<{
   onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
   onCancel: () => void;
 }> = ({ onSubmit, onCancel }) => {
@@ -314,5 +314,5 @@ const _NewDiscussionForm: React.FC<{
   );
 };
 
-export const NewDiscussionForm = memo(_NewDiscussionForm);
+export const NewDiscussionForm = memo(NewDiscussionFormInner);
 NewDiscussionForm.displayName = 'NewDiscussionForm';

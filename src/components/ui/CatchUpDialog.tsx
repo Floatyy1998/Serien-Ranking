@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Series } from '../../types/Series';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Series } from '../../types/Series';
 
 interface CatchUpDialogProps {
   open: boolean;
@@ -15,23 +15,22 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [selectedEpisode, setSelectedEpisode] = useState(0);
 
-  const seasons = useMemo(() => {
-    if (!series?.seasons) return [];
-    return Array.isArray(series.seasons)
+  const seasons = !series?.seasons
+    ? []
+    : Array.isArray(series.seasons)
       ? series.seasons
       : (Object.values(series.seasons) as typeof series.seasons);
-  }, [series]);
 
-  const currentSeasonEpisodes = useMemo(() => {
+  const currentSeasonEpisodes = (() => {
     const season = seasons[selectedSeason];
     if (!season?.episodes) return [];
     return Array.isArray(season.episodes)
       ? season.episodes
       : (Object.values(season.episodes) as typeof season.episodes);
-  }, [seasons, selectedSeason]);
+  })();
 
   // Calculate how many episodes will be marked
-  const episodesToMark = useMemo(() => {
+  const episodesToMark = (() => {
     const getEpisodes = (season: (typeof seasons)[number]) => {
       if (!season?.episodes) return [];
       return Array.isArray(season.episodes)
@@ -51,10 +50,10 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       }
     }
     return count;
-  }, [seasons, selectedSeason, selectedEpisode]);
+  })();
 
   // Preview text
-  const previewText = useMemo(() => {
+  const previewText = (() => {
     if (episodesToMark === 0) return 'Keine neuen Episoden zu markieren';
     const parts: string[] = [];
     if (selectedSeason > 0) {
@@ -68,7 +67,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       );
     }
     return `Markiert ${episodesToMark} Episoden als gesehen (${parts.join(' + ')})`;
-  }, [episodesToMark, selectedSeason, selectedEpisode]);
+  })();
 
   if (!open) return null;
 

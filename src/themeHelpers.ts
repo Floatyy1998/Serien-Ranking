@@ -38,7 +38,7 @@ export const loadSavedTheme = async (userId?: string) => {
     try {
       theme = JSON.parse(savedTheme);
       // console.log('Lokales Theme geladen (hat Vorrang):', theme);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Laden des lokalen Themes:', error);
     }
   }
@@ -56,7 +56,7 @@ export const loadSavedTheme = async (userId?: string) => {
         localStorage.setItem('customTheme', JSON.stringify(theme));
         // console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
       }
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Laden des Cloud-Themes:', error);
     }
   }

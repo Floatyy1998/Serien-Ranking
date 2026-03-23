@@ -8,7 +8,7 @@ import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import Star from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MainActionsProps {
   config: {

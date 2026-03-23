@@ -1,6 +1,6 @@
 import { PlaylistAddCheck } from '@mui/icons-material';
 import { memo } from 'react';
-import { SeasonProgress } from './useEpisodeManagement';
+import type { SeasonProgress } from './useEpisodeManagement';
 
 interface BulkActionBarProps {
   seasonNumber: number;

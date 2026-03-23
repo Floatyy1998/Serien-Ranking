@@ -1,5 +1,5 @@
-import { Movie } from '../../types/Movie';
-import { Series } from '../../types/Series';
+import type { Movie } from '../../types/Movie';
+import type { Series } from '../../types/Series';
 
 const addZeroes = (num: number) => num.toFixed(2);
 const round = (num: number, precision: number) => {
@@ -54,7 +54,7 @@ export const calculateOverallRating = (series: Series | Movie) => {
     const overallRating = totalRating / genreCount;
     const roundedRating = addZeroes(round(overallRating, 0.01));
     return roundedRating;
-  } catch (error) {
+  } catch {
     return '0.00';
   }
 };

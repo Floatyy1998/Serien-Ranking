@@ -4,11 +4,11 @@ import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
 import { useSeasonalRecommendations } from '../../hooks/useSeasonalRecommendations';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
@@ -44,15 +44,11 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const authContext = useAuth();
+  const user = authContext?.user ?? null;
 
-  if (!authContext) {
-    return <div>Loading...</div>;
-  }
-
-  const { user } = authContext;
-
-  // Always load displayName from DB (Firebase Auth displayName may be outdated or missing)
+  // All hooks must be called unconditionally (before any return)
   const [dbDisplayName, setDbDisplayName] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) {
       firebase
@@ -70,10 +66,6 @@ export const HomePage: React.FC = () => {
     if (!user) navigate('/login');
   }, [user, navigate]);
 
-  if (!user) {
-    return <div>Redirecting to login...</div>;
-  }
-
   const {
     seriesWithNewSeasons,
     inactiveSeries,
@@ -89,8 +81,7 @@ export const HomePage: React.FC = () => {
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const { countdowns } = useSeriesCountdowns();
-
-  const config = useHomeConfig(user.uid);
+  const config = useHomeConfig(user?.uid ?? '');
   const notifs = useUnifiedNotifications();
 
   // Swipe handlers
@@ -163,6 +154,11 @@ export const HomePage: React.FC = () => {
     }
     return count;
   }, [seriesList]);
+
+  // Early returns after all hooks
+  if (!authContext || !user) {
+    return <div>Redirecting...</div>;
+  }
 
   // Poster navigation
   const handlePosterClick = (seriesId: number, title: string, episodePath: string) => {

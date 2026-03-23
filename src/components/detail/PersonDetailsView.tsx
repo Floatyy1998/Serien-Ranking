@@ -1,8 +1,8 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { getFormattedDate } from '../../lib/date/date.utils';
 import { HorizontalScrollContainer } from '../ui';
-import { PersonDetailsData } from './CastCrew.types';
+import type { PersonDetailsData } from './CastCrew.types';
 
 interface PersonDetailsViewProps {
   personDetails: PersonDetailsData;
@@ -200,7 +200,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                       fontWeight: 500,
                     }}
                   >
-                    {new Date((credit.release_date || credit.first_air_date)!).getFullYear()}
+                    {new Date(credit.release_date || credit.first_air_date || '').getFullYear()}
                   </div>
                 )}
               </div>

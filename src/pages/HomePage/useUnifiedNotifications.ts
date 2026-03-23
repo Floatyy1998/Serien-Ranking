@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 
 export interface UnifiedNotification {
   id: string;
@@ -147,7 +147,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         kind: 'request',
         title: 'Freundschaftsanfrage',
         message: req.fromUsername || 'Unbekannt',
-        timestamp: req.timestamp || req.sentAt || Date.now(),
+        timestamp: req.timestamp || req.sentAt || 0,
         read: unreadRequestsCount === 0,
         requestId: req.id,
         fromUsername: req.fromUsername,

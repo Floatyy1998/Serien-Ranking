@@ -1,7 +1,7 @@
 import { LocalFireDepartment } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { GenreComparison } from '../../services/tasteMatchService';
+import type { GenreComparison } from '../../services/tasteMatchService';
 import {
   USER_COLOR,
   USER_GRADIENT,

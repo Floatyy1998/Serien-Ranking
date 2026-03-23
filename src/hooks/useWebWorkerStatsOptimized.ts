@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
-import { useAuth } from '../App';
-import { useMovieList } from '../contexts/MovieListProvider';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../AuthContext';
+import { useMovieList } from '../contexts/MovieListContext';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Movie } from '../types/Movie';
 import type { Series } from '../types/Series';
 import { useWebWorker } from './useWebWorker';
@@ -43,7 +43,7 @@ const createStatsWorker = () =>
 let _cachedStats: WorkerStats = INITIAL_STATS;
 
 export const useWebWorkerStatsOptimized = (): WorkerStats => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 

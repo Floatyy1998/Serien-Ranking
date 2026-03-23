@@ -198,14 +198,14 @@ export async function calculateTasteMatch(
   const sharedSeriesIds = [...userSeriesIds].filter((id) => friendSeriesIds.has(id));
 
   const sharedSeries: SharedItem[] = sharedSeriesIds.map((id) => {
-    const userSeries = userData.series.find((s) => s.id === id)!;
-    const friendSeries = friendData.series.find((s) => s.id === id)!;
-    const userRating = getAverageRating(userSeries.rating);
-    const friendRating = getAverageRating(friendSeries.rating);
+    const userSeries = userData.series.find((s) => s.id === id);
+    const friendSeries = friendData.series.find((s) => s.id === id);
+    const userRating = getAverageRating(userSeries?.rating);
+    const friendRating = getAverageRating(friendSeries?.rating);
     return {
       id,
-      title: userSeries.title,
-      poster: userSeries.poster,
+      title: userSeries?.title ?? '',
+      poster: userSeries?.poster ?? '',
       userRating,
       friendRating,
       ratingDiff: userRating && friendRating ? Math.abs(userRating - friendRating) : undefined,
@@ -222,14 +222,14 @@ export async function calculateTasteMatch(
   const sharedMovieIds = [...userMovieIds].filter((id) => friendMovieIds.has(id));
 
   const sharedMovies: SharedItem[] = sharedMovieIds.map((id) => {
-    const userMovie = userData.movies.find((m) => m.id === id)!;
-    const friendMovie = friendData.movies.find((m) => m.id === id)!;
-    const userRating = getAverageRating(userMovie.rating);
-    const friendRating = getAverageRating(friendMovie.rating);
+    const userMovie = userData.movies.find((m) => m.id === id);
+    const friendMovie = friendData.movies.find((m) => m.id === id);
+    const userRating = getAverageRating(userMovie?.rating);
+    const friendRating = getAverageRating(friendMovie?.rating);
     return {
       id,
-      title: userMovie.title,
-      poster: userMovie.poster,
+      title: userMovie?.title ?? '',
+      poster: userMovie?.poster ?? '',
       userRating,
       friendRating,
       ratingDiff: userRating && friendRating ? Math.abs(userRating - friendRating) : undefined,

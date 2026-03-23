@@ -12,7 +12,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
 import { DiscoverContent } from './DiscoverContent';
@@ -47,8 +47,8 @@ export const DiscoverPage = memo(() => {
     headerHeight,
     genres,
     handleItemClick,
-    fetchRecommendationsOnRestore,
-    fetchFromTMDBOnRestore,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
   } = useDiscoverFilters();
 
   const {
@@ -77,9 +77,14 @@ export const DiscoverPage = memo(() => {
 
   // Wire up restore callbacks
   useEffect(() => {
-    fetchRecommendationsOnRestore.current = () => fetchRecommendations(true);
-    fetchFromTMDBOnRestore.current = () => fetchFromTMDB(true);
-  }, [fetchRecommendations, fetchFromTMDB]);
+    fetchRecommendationsOnRestoreRef.current = () => fetchRecommendations(true);
+    fetchFromTMDBOnRestoreRef.current = () => fetchFromTMDB(true);
+  }, [
+    fetchRecommendations,
+    fetchFromTMDB,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
+  ]);
 
   // Setup scroll listener
   useEffect(() => {

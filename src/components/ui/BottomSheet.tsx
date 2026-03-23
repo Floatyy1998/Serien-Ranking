@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
-import { AnimatePresence, motion, useDragControls, PanInfo } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, useDragControls } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 

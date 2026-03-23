@@ -22,7 +22,7 @@ export function checkExplorerBadge(
 ): { earned: boolean; details?: string } | null {
   const seriesCount = series.length;
 
-  if (seriesCount >= badge.requirements.series!) {
+  if (seriesCount >= (badge.requirements.series ?? 0)) {
     return {
       earned: true,
       details: `${seriesCount} verschiedene Serien entdeckt`,
@@ -50,7 +50,7 @@ export function checkCollectorBadge(
     }
   });
 
-  if (ratingCount >= badge.requirements.ratings!) {
+  if (ratingCount >= (badge.requirements.ratings ?? 0)) {
     return {
       earned: true,
       details: `${ratingCount} Bewertungen abgegeben`,
@@ -69,7 +69,7 @@ export async function checkSocialBadgeFromCounters(
   const friendsSnapshot = await firebase.database().ref(`users/${userId}/friends`).once('value');
   const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
-  if (friendsCount >= badge.requirements.friends!) {
+  if (friendsCount >= (badge.requirements.friends ?? 0)) {
     return {
       earned: true,
       details: `${friendsCount} Freunde hinzugefügt`,
@@ -146,7 +146,7 @@ export function checkSeasonBadgeFromRealData(
       }
     });
 
-    if (completedSeasonsInTimeframe >= badge.requirements.seasons!) {
+    if (completedSeasonsInTimeframe >= (badge.requirements.seasons ?? 0)) {
       return {
         earned: true,
         details: `${completedSeasonsInTimeframe} Staffel${
@@ -156,7 +156,7 @@ export function checkSeasonBadgeFromRealData(
     }
 
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -167,13 +167,13 @@ export function checkBingeBadgeFromSeries(
   _activities: unknown[],
   cachedData: BadgeUserData | null
 ): { earned: boolean; details?: string } | null {
-  if (badge.requirements.episodes && badge.requirements.timeframe) {
+  if ((badge.requirements.episodes ?? 0) && badge.requirements.timeframe) {
     const timeframe = badge.requirements.timeframe;
     const badgeCounters = cachedData?.badgeCounters || {};
 
     const currentBinge = badgeCounters.bingeWindows?.[timeframe]?.count || 0;
 
-    if (currentBinge >= badge.requirements.episodes) {
+    if (currentBinge >= (badge.requirements.episodes ?? 0)) {
       return {
         earned: true,
         details: `${currentBinge} Episoden in ${getTimeframeDescription(timeframe)}`,
@@ -181,9 +181,9 @@ export function checkBingeBadgeFromSeries(
     }
   }
 
-  if (badge.requirements.episodes && !badge.requirements.timeframe) {
+  if ((badge.requirements.episodes ?? 0) && !badge.requirements.timeframe) {
     const maxBingeEpisodes = getCounterValue(cachedData, 'maxBingeEpisodes');
-    if (maxBingeEpisodes >= badge.requirements.episodes) {
+    if (maxBingeEpisodes >= (badge.requirements.episodes ?? 0)) {
       return {
         earned: true,
         details: `${maxBingeEpisodes} Episoden in einer Binge-Session`,
@@ -191,7 +191,7 @@ export function checkBingeBadgeFromSeries(
     }
   }
 
-  if (badge.requirements.seasons) {
+  if (badge.requirements.seasons ?? 0) {
     return checkSeasonBadgeFromRealData(badge, _series);
   }
 
@@ -223,7 +223,7 @@ export function checkMarathonBadgeFromSeries(
     }
   });
 
-  if (maxWeeklyEpisodes >= badge.requirements.episodes!) {
+  if (maxWeeklyEpisodes >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
       details: `${maxWeeklyEpisodes} Episoden in einer Woche (${bestWeek})`,
@@ -238,7 +238,7 @@ export function checkStreakBadgeFromCounters(
 ): { earned: boolean; details?: string } | null {
   const currentStreak = badgeCounters.currentStreak || 0;
 
-  if (currentStreak >= badge.requirements.days!) {
+  if (currentStreak >= (badge.requirements.days ?? 0)) {
     return {
       earned: true,
       details: `${currentStreak} Tage Streak`,
@@ -253,7 +253,7 @@ export function checkQuickwatchBadgeFromCounters(
 ): { earned: boolean; details?: string } | null {
   const quickwatchCount = badgeCounters.quickwatchEpisodes || 0;
 
-  if (quickwatchCount >= badge.requirements.episodes!) {
+  if (quickwatchCount >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
       details: `${quickwatchCount} Quickwatch Episoden`,
@@ -282,7 +282,7 @@ export function checkRewatchBadgeFromSeries(
     }
   });
 
-  if (rewatchEpisodes >= badge.requirements.episodes!) {
+  if (rewatchEpisodes >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
       details: `${rewatchEpisodes} Rewatch Episoden`,

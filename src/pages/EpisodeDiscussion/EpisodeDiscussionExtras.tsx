@@ -2,7 +2,7 @@ import { Movie, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { DiscussionThread } from '../../components/Discussion';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];

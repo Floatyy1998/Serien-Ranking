@@ -18,7 +18,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { UnifiedNotification } from './useUnifiedNotifications';
 import { formatNotificationTime } from './useUnifiedNotifications';
 
@@ -332,7 +332,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onAcceptRequest(item.requestId!);
+                            onAcceptRequest(item.requestId ?? '');
                           }}
                           style={{
                             padding: '8px 16px',
@@ -357,7 +357,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDeclineRequest(item.requestId!);
+                            onDeclineRequest(item.requestId ?? '');
                           }}
                           style={{
                             padding: '8px 16px',

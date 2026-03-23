@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
 interface EventsTabProps {

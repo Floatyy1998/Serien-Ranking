@@ -1,6 +1,6 @@
 import { Devices, PlayArrow, StopCircle, Timer, TrendingUp, Visibility } from '@mui/icons-material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import { KpiScorecard } from '../components/KpiScorecard';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import { ExtensionCharts } from './ExtensionCharts';

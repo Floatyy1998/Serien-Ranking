@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
-import { Series } from '../types/Series';
+import type { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
 import { getEpisodeAirDateStr, getEpisodeAirDate } from '../utils/episodeDate';
 
@@ -191,7 +191,7 @@ export const useWeeklyEpisodes = (
         const ep = episodes[i];
         const key = `${ep.seriesId}-${ep.episodeName}`;
         if (seen.has(key)) {
-          const prevIdx = seen.get(key)!;
+          const prevIdx = seen.get(key) ?? 0;
           // Keep the one with the higher season number (more recent source)
           if (ep.seasonNumber > episodes[prevIdx].seasonNumber) {
             toRemove.add(prevIdx);

@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface PageLayoutProps {
   children: React.ReactNode;

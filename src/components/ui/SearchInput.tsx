@@ -1,6 +1,6 @@
 import React from 'react';
 import { Search, Close } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface SearchInputProps {
   value: string;

@@ -2,15 +2,13 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import {
+import type {
   PublicItem,
   PublicSeason,
   PublicFilters,
   PublicUserData,
-  resolveTheme,
-  calculatePublicRating,
-  applyFilters,
 } from './publicProfileHelpers';
+import { useResolvedTheme, calculatePublicRating, applyFilters } from './publicProfileHelpers';
 
 // Re-export types for backward compatibility
 export type {
@@ -33,7 +31,7 @@ export function usePublicProfileData() {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  const currentTheme = resolveTheme();
+  const currentTheme = useResolvedTheme();
 
   /* state */
   const [loading, setLoading] = useState(true);

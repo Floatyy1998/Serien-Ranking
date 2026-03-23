@@ -1,4 +1,4 @@
-import { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
+import type { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
 
 // ============================================================================
 // TYPES

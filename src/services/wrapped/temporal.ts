@@ -2,19 +2,17 @@
  * Wrapped Temporal - Zeitliche Berechnungen (Monate, Tage, Tageszeiten, Heatmap)
  */
 
-import { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
+import type { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import {
+import type {
   MonthStats,
   DayStats,
   TimeOfDayStats,
   DayOfWeekStats,
   FirstLastWatch,
   LateNightStats,
-  MONTH_NAMES,
-  DAY_NAMES,
-  TIME_OF_DAY_LABELS,
 } from '../../types/Wrapped';
+import { MONTH_NAMES, DAY_NAMES, TIME_OF_DAY_LABELS } from '../../types/Wrapped';
 
 export function calculateMonthlyBreakdown(events: ActivityEvent[]): MonthStats[] {
   const months: MonthStats[] = [];

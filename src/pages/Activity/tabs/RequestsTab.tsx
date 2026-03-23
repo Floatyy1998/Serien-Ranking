@@ -7,7 +7,7 @@ import CheckCircle from '@mui/icons-material/CheckCircle';
 import Person from '@mui/icons-material/Person';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
@@ -114,7 +114,7 @@ export const RequestsTab = ({
                         margin: 0,
                       }}
                     >
-                      {formatTimeAgo(request.timestamp || request.sentAt || Date.now())}
+                      {formatTimeAgo(request.timestamp || request.sentAt || 0)}
                     </p>
                   </div>
 

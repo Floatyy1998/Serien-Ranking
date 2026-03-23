@@ -2,9 +2,9 @@
  * Wrapped Rankings - Top-Listen Berechnungen (Serien, Filme, Genres, Provider)
  */
 
-import { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
+import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import {
+import type {
   TopSeriesEntry,
   TopMovieEntry,
   TopGenreEntry,

@@ -1,19 +1,12 @@
 import 'firebase/compat/database';
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from 'react';
-import { useAuth } from '../../App';
-import { StatsData } from '../../types/StatsData';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useAuth } from '../../AuthContext';
+import type { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
+import { StatsContext } from './StatsContextDef';
 
 interface StatsEpisode {
   watched: boolean;
@@ -33,16 +26,6 @@ interface StatsListItem {
   genre?: { genres?: string[] };
   provider?: { provider?: { name: string }[] };
 }
-
-interface StatsContextType {
-  seriesStatsData: StatsData | null;
-  movieStatsData: StatsData | null;
-}
-
-export const StatsContext = createContext<StatsContextType>({
-  seriesStatsData: null,
-  movieStatsData: null,
-});
 
 // Pure Hilfsfunktion - außerhalb des Components damit sie nicht bei jedem Render neu erstellt wird
 function secondsToString(minutes: number) {
@@ -64,7 +47,7 @@ function secondsToString(minutes: number) {
 }
 
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(null);
   const [movieStatsData, setMovieStatsData] = useState<StatsData | null>(null);
   const [, startTransition] = useTransition();
@@ -196,5 +179,3 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
 
   return <StatsContext.Provider value={contextValue}>{children}</StatsContext.Provider>;
 };
-
-export const useStats = () => useContext(StatsContext);

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMemo, useState } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -16,9 +16,10 @@ const MAX_ITEMS = 10;
 
 export const useRecentlyWatched = (): RecentlyWatchedItem[] => {
   const { seriesList } = useSeriesList();
+  // Use state initializer to avoid impure Date.now() during render
+  const [sevenDaysAgo] = useState(() => Date.now() - SEVEN_DAYS_MS);
 
   return useMemo(() => {
-    const sevenDaysAgo = Date.now() - SEVEN_DAYS_MS;
     const items: RecentlyWatchedItem[] = [];
 
     for (const series of seriesList) {
@@ -50,5 +51,5 @@ export const useRecentlyWatched = (): RecentlyWatchedItem[] => {
     }
 
     return items.slice(0, MAX_ITEMS);
-  }, [seriesList]);
+  }, [seriesList, sevenDaysAgo]);
 };

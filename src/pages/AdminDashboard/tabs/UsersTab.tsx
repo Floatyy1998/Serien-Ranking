@@ -1,7 +1,7 @@
 import { Circle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContext';
+import type { useTheme } from '../../../contexts/ThemeContextDef';
 import { DataTable } from '../components/DataTable';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import { UserDeepDive } from './UserDeepDive';

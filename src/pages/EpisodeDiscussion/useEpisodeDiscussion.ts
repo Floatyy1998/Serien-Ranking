@@ -2,12 +2,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 
 export interface TMDBEpisodeDetails {
   id: number;
@@ -261,15 +261,19 @@ export const useEpisodeDiscussion = () => {
 
       const isCurrentlyWatched = localEpisode.watched;
 
-      const updatedEpisodes = localSeason.episodes!.map((ep, idx) => {
+      const updatedEpisodes = localSeason.episodes?.map((ep, idx) => {
         if (idx === episodeIndex) {
           if (isCurrentlyWatched) {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...rest } =
-              ep as Series['seasons'][number]['episodes'][number] & {
-                watchCount?: number;
-                firstWatchedAt?: string;
-                lastWatchedAt?: string;
-              };
+            const {
+              watchCount: _watchCount,
+              firstWatchedAt: _firstWatchedAt,
+              lastWatchedAt: _lastWatchedAt,
+              ...rest
+            } = ep as Series['seasons'][number]['episodes'][number] & {
+              watchCount?: number;
+              firstWatchedAt?: string;
+              lastWatchedAt?: string;
+            };
             return { ...rest, watched: false };
           } else {
             return {

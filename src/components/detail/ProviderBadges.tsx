@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface Provider {
   provider_id?: number;

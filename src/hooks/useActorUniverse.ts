@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
 
 // Global cache to persist data across navigation
 const globalCache = {
@@ -125,6 +125,16 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
 
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
 
+  // Refs for accessing current state without deps
+  const actorMapRef = useRef(actorMap);
+  const fetchedSeriesIdsRef = useRef(fetchedSeriesIds);
+  useEffect(() => {
+    actorMapRef.current = actorMap;
+  }, [actorMap]);
+  useEffect(() => {
+    fetchedSeriesIdsRef.current = fetchedSeriesIds;
+  }, [fetchedSeriesIds]);
+
   // Set of user's series IDs for quick lookup
   const userSeriesIds = useMemo(() => new Set(seriesList.map((s) => s.id)), [seriesList]);
 
@@ -137,15 +147,15 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         return;
       }
 
-      const seriesToFetch = seriesList.filter((s) => !fetchedSeriesIds.has(s.id));
+      const seriesToFetch = seriesList.filter((s) => !fetchedSeriesIdsRef.current.has(s.id));
       if (seriesToFetch.length === 0) {
         setLoading(false);
         return;
       }
 
       setLoading(true);
-      const newActorMap = new Map(actorMap);
-      const newFetchedIds = new Set(fetchedSeriesIds);
+      const newActorMap = new Map(actorMapRef.current);
+      const newFetchedIds = new Set(fetchedSeriesIdsRef.current);
 
       const BATCH_SIZE = 5;
       const DELAY_MS = 100;
@@ -203,7 +213,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
               });
 
               newFetchedIds.add(series.id);
-            } catch (error) {
+            } catch {
               // Silently handle errors
             }
           })
@@ -234,10 +244,11 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   useEffect(() => {
     const fetchRecommendations = async () => {
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      if (!TMDB_API_KEY || loading || actorMap.size === 0) return;
+      const currentActorMap = actorMapRef.current;
+      if (!TMDB_API_KEY || loading || currentActorMap.size === 0) return;
 
       // Get top 20 actors by series count
-      const topActorIds = Array.from(actorMap.values())
+      const topActorIds = Array.from(currentActorMap.values())
         .filter((a) => a.seriesCount >= 2)
         .sort((a, b) => b.seriesCount - a.seriesCount)
         .slice(0, 20)
@@ -246,7 +257,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
       if (topActorIds.length === 0) return;
 
       setLoadingRecommendations(true);
-      const updatedActorMap = new Map(actorMap);
+      const updatedActorMap = new Map(currentActorMap);
 
       // Fetch in batches
       for (let i = 0; i < topActorIds.length; i += 3) {
@@ -289,7 +300,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                 }));
 
               actor.recommendations = recommendations;
-            } catch (error) {
+            } catch {
               // Silently handle errors
             }
           })
@@ -341,12 +352,19 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
       const radius = 0.1 + normalizedIndex * 0.4;
 
       const jitter = 0.04;
-      const randomAngle = (Math.random() - 0.5) * jitter * Math.PI;
-      const randomRadius = (Math.random() - 0.5) * jitter;
+      // Deterministic pseudo-random based on index for consistent rendering
+      const seed1 = Math.sin(index * 127.1 + 311.7) * 43758.5453;
+      const seed2 = Math.sin(index * 269.5 + 183.3) * 43758.5453;
+      const seed3 = Math.sin(index * 419.2 + 371.9) * 43758.5453;
+      const rand1 = seed1 - Math.floor(seed1);
+      const rand2 = seed2 - Math.floor(seed2);
+      const rand3 = seed3 - Math.floor(seed3);
+      const randomAngle = (rand1 - 0.5) * jitter * Math.PI;
+      const randomRadius = (rand2 - 0.5) * jitter;
 
       const x = 0.5 + Math.cos(angle + randomAngle) * (radius + randomRadius);
       const y = 0.5 + Math.sin(angle + randomAngle) * (radius + randomRadius);
-      const z = Math.random() * 0.5 + 0.25;
+      const z = rand3 * 0.5 + 0.25;
 
       // Size based on series count
       const size = Math.log2(actor.seriesCount + 1) * 10 + 6;
@@ -376,8 +394,8 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         const actor1 = actorsWithPositions[i];
         const actor2 = actorsWithPositions[j];
 
-        const series1 = actorSeriesMap.get(actor1.id)!;
-        const series2 = actorSeriesMap.get(actor2.id)!;
+        const series1 = actorSeriesMap.get(actor1.id) ?? new Set<number>();
+        const series2 = actorSeriesMap.get(actor2.id) ?? new Set<number>();
 
         const sharedSeriesIds = [...series1].filter((id) => series2.has(id));
 

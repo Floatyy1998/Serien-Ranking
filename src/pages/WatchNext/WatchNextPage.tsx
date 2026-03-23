@@ -8,9 +8,9 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useNavigationType, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
@@ -22,7 +22,7 @@ import { ProviderFilter } from './ProviderFilter';
 import './WatchNextPage.css';
 
 export const WatchNextPage = () => {
-  const { user } = useAuth()!;
+  const { user = null } = useAuth() || {};
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [searchParams] = useSearchParams();

@@ -8,7 +8,7 @@ export function UpdateToast() {
   const checkForWaitingWorker = useCallback(() => {
     navigator.serviceWorker?.getRegistration().then((reg) => {
       if (reg?.waiting) {
-        console.log('[UpdateToast] Wartender Worker gefunden — zeige Toast');
+        // Worker found waiting — show toast
         setShow(true);
       }
     });
@@ -17,7 +17,7 @@ export function UpdateToast() {
   useEffect(() => {
     // 1) Listen for event from SW manager
     const handler = () => {
-      console.log('[UpdateToast] sw-update-available Event empfangen');
+      // sw-update-available event received
       setShow(true);
     };
     window.addEventListener('sw-update-available', handler);

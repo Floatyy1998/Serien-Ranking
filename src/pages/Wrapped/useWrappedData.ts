@@ -6,10 +6,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import firebase from 'firebase/compat/app';
-import { useAuth } from '../../App';
+import type firebase from 'firebase/compat/app';
+import { useAuth } from '../../AuthContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
-import { WrappedStats, DEFAULT_SLIDE_CONFIG, WrappedSlideConfig } from '../../types/Wrapped';
+import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
+import { DEFAULT_SLIDE_CONFIG } from '../../types/Wrapped';
 import { calculateWrappedStats } from '../../services/wrappedCalculator';
 import { WatchActivityService } from '../../services/watchActivityService';
 

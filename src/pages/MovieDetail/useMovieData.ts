@@ -2,10 +2,10 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
-import { Movie } from '../../types/Movie';
+import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -38,7 +38,7 @@ export interface SnackbarState {
 export const useMovieData = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { movieList } = useMovieList();
 
   // --- Core state ---

@@ -1,7 +1,7 @@
 import { Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const genreIcons: Record<string, React.ReactNode> = {
   Action: <Zap size={20} />,

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { EvolvingPixelPet } from '../../components/pet';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';

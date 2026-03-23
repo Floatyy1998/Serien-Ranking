@@ -1,28 +1,12 @@
-import { createContext, useContext } from 'react';
-import { useAuth } from '../App';
+import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { Movie } from '../types/Movie';
-
-interface MovieListContextType {
-  movieList: Movie[];
-  loading: boolean;
-  refetchMovies: () => void;
-  isOffline: boolean;
-  isStale: boolean;
-}
-
-export const MovieListContext = createContext<MovieListContextType>({
-  movieList: [],
-  loading: true,
-  refetchMovies: () => {},
-  isOffline: false,
-  isStale: false,
-});
+import type { Movie } from '../types/Movie';
+import { MovieListContext } from './MovieListContext';
 
 export const MovieListProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
-  // 🚀 Enhanced Cache mit Offline-Support für Filme
+  // Enhanced Cache mit Offline-Support für Filme
   const {
     data: movieData,
     loading,
@@ -53,5 +37,3 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     </MovieListContext.Provider>
   );
 };
-
-export const useMovieList = () => useContext(MovieListContext);

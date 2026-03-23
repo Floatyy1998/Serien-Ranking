@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-import { useMovieList } from '../contexts/MovieListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
+import { useMovieList } from '../contexts/MovieListContext';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface TMDBTrendingItem {

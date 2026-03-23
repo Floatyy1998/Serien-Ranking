@@ -3,7 +3,7 @@
  */
 
 import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 export interface ColorCategory {
   key: string;

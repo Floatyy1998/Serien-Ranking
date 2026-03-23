@@ -1,6 +1,6 @@
 import { Close } from '@mui/icons-material';
 import { memo, useRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { IconButton } from './IconButton';
 

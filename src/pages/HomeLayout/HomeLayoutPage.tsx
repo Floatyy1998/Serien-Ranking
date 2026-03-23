@@ -6,7 +6,7 @@
 import { RestartAlt, ViewQuilt } from '@mui/icons-material';
 import { motion, Reorder } from 'framer-motion';
 import { PageHeader, PageLayout } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { DraggableSectionItem } from './DraggableSectionItem';
 import { useHomeLayoutData } from './useHomeLayoutData';
 import './HomeLayoutPage.css';

@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Movie } from '../../types/Movie';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Movie } from '../../types/Movie';
 import type { TMDBWatchProvider } from './useMovieData';
 
 interface MovieHeroSectionProps {

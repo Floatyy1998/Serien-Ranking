@@ -6,9 +6,9 @@
  */
 
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton, GradientText } from '../../components/ui';
-import { ACCENT_COLORS } from './ActivityTab';
+import { ACCENT_COLORS } from './accentColors';
 import { useWatchJourneyData } from './useWatchJourneyData';
 import { WatchJourneyEmptyState } from './WatchJourneyEmptyState';
 import { WatchJourneyLoadingState } from './WatchJourneyLoadingState';
@@ -123,7 +123,7 @@ export const WatchJourneyPage: React.FC = () => {
         {/* Tab Content */}
         <WatchJourneyTabContent
           activeTab={activeTab}
-          data={data!}
+          data={data ?? ({} as NonNullable<typeof data>)}
           trendsData={trendsData}
           chartWidth={chartWidth}
         />

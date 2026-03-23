@@ -1,7 +1,7 @@
 import { PlayArrow, Timer, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { ProgressBar } from '../../components/ui';
 import { formatTime } from './useCatchUpData';
 

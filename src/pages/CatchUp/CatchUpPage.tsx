@@ -7,7 +7,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpData } from './useCatchUpData';

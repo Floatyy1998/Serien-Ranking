@@ -4,7 +4,7 @@ import { getOfflineBadgeSystem } from './offlineBadgeSystem';
 export function registerBadgeDebugTools(): void {
   if (typeof window === 'undefined') return;
 
-  (window as any).debugBadges = async (userId: string) => {
+  (window as unknown as Record<string, unknown>).debugBadges = async (userId: string) => {
     const badgeSystem = getOfflineBadgeSystem(userId);
     const debug = await badgeSystem.debugSocialBadges();
 
@@ -14,7 +14,7 @@ export function registerBadgeDebugTools(): void {
     return { debug, newBadges };
   };
 
-  (window as any).badgeDebugTools = {
+  (window as unknown as Record<string, unknown>).badgeDebugTools = {
     getCurrentUserId: async () => {
       try {
         const firebase = await import('firebase/compat/app');
@@ -22,7 +22,7 @@ export function registerBadgeDebugTools(): void {
         if (user) {
           return user.uid;
         }
-      } catch (error) {
+      } catch {
         // Firebase auth not available
       }
 

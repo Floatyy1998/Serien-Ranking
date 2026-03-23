@@ -12,9 +12,9 @@ import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton, GradientText, IconContainer, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
@@ -98,7 +98,16 @@ export const ActivityPage = () => {
     } else if (activeTab === 'discussions' && unreadDiscussionsCount > 0) {
       discussionNotifications.filter((n) => !n.read).forEach((n) => markAsRead(n.id));
     }
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionsCount]);
+  }, [
+    activeTab,
+    unreadActivitiesCount,
+    unreadRequestsCount,
+    unreadDiscussionsCount,
+    discussionNotifications,
+    markActivitiesAsRead,
+    markAsRead,
+    markRequestsAsRead,
+  ]);
 
   const handleRemoveFriend = useCallback(
     async (uid: string) => {

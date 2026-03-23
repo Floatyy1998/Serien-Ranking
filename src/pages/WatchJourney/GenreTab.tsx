@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 
 interface GenreTabProps {

@@ -11,8 +11,8 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import Close from '@mui/icons-material/Close';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
 
 interface FriendProfile {

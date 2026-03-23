@@ -1,4 +1,4 @@
-import { useCurrentTheme } from '../contexts/ThemeContext';
+import { useCurrentTheme } from '../contexts/ThemeContextDef';
 
 /**
  * Vereinfachter Hook für Theme-Zugriff in Komponenten

@@ -12,9 +12,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import {
   getRating,
   getSeriesProgress,
@@ -359,24 +359,27 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const currentItems = activeTab === 'series' ? preparedSeries : preparedMovies;
 
   // ─── Progressive Rendering ────────────────────────
-  const [renderCount, setRenderCount] = useState(INITIAL_RENDER);
-
-  // Reset when items change (tab switch, filter change)
   const filterFingerprint = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
-  const prevFingerprintRef = useRef(filterFingerprint);
+  const [renderState, setRenderState] = useState({
+    fingerprint: filterFingerprint,
+    count: INITIAL_RENDER,
+  });
 
-  useEffect(() => {
-    if (prevFingerprintRef.current !== filterFingerprint) {
-      prevFingerprintRef.current = filterFingerprint;
-      setRenderCount(INITIAL_RENDER);
-    }
-  }, [filterFingerprint]);
+  // Reset count when fingerprint changes (derived state pattern)
+  const renderCount =
+    renderState.fingerprint === filterFingerprint ? renderState.count : INITIAL_RENDER;
+  if (renderState.fingerprint !== filterFingerprint) {
+    setRenderState({ fingerprint: filterFingerprint, count: INITIAL_RENDER });
+  }
 
   // Progressively render remaining items via rAF
   useEffect(() => {
     if (renderCount >= currentItems.length) return;
     const id = requestAnimationFrame(() => {
-      setRenderCount((c) => Math.min(c + RENDER_BATCH, currentItems.length));
+      setRenderState((prev) => ({
+        ...prev,
+        count: Math.min(prev.count + RENDER_BATCH, currentItems.length),
+      }));
     });
     return () => cancelAnimationFrame(id);
   }, [renderCount, currentItems.length]);
