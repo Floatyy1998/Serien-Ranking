@@ -4,6 +4,7 @@ import {
   detectInactiveRewatches,
 } from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
+import { detectUnratedSeries } from '../lib/validation/unratedSeriesDetection';
 import { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -71,9 +72,11 @@ export interface DetectionRefs {
   detectionRunRef: React.MutableRefObject<boolean>;
   inactiveDetectionRunRef: React.MutableRefObject<boolean>;
   completedDetectionRunRef: React.MutableRefObject<boolean>;
+  unratedDetectionRunRef: React.MutableRefObject<boolean>;
   detectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   inactiveDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   completedDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+  unratedDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
 }
 
 export function createNewSeasonDetectionRunner(
@@ -229,6 +232,55 @@ export function createCompletedSeriesDetectionRunner(
         setHasCheckedForCompleted(true);
       } finally {
         refs.completedDetectionRunRef.current = false;
+      }
+    }, 500);
+  };
+}
+
+export function createUnratedSeriesDetectionRunner(
+  refs: Pick<DetectionRefs, 'unratedDetectionRunRef' | 'unratedDetectionTimeoutRef'>,
+  setUnratedSeries: React.Dispatch<React.SetStateAction<Series[]>>,
+  setHasCheckedForUnrated: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  return (seriesList: Series[], userId: string) => {
+    if (refs.unratedDetectionTimeoutRef.current) {
+      clearTimeout(refs.unratedDetectionTimeoutRef.current);
+      refs.unratedDetectionTimeoutRef.current = null;
+    }
+
+    if (refs.unratedDetectionRunRef.current) {
+      return;
+    }
+
+    refs.unratedDetectionTimeoutRef.current = setTimeout(async () => {
+      if (refs.unratedDetectionRunRef.current || seriesList.length === 0) {
+        return;
+      }
+
+      refs.unratedDetectionRunRef.current = true;
+
+      try {
+        const unrated = await detectUnratedSeries(seriesList, userId);
+
+        if (unrated.length > 0) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('unratedSeries', JSON.stringify(unrated));
+          }
+          setUnratedSeries(unrated);
+          setTimeout(() => {
+            setUnratedSeries([...unrated]);
+          }, 100);
+        } else {
+          setHasCheckedForUnrated(true);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('hasCheckedForUnrated', 'true');
+          }
+        }
+      } catch (error) {
+        console.error('Error detecting unrated series:', error);
+        setHasCheckedForUnrated(true);
+      } finally {
+        refs.unratedDetectionRunRef.current = false;
       }
     }, 500);
   };

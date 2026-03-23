@@ -12,6 +12,8 @@ import {
   PlaylistRemove,
   Check,
   Stop,
+  StarOutline,
+  Star,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -23,7 +25,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import './CarouselNotification.css';
 
-type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch';
+type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch' | 'unrated';
 
 interface VariantConfig {
   themeColor: (theme: ReturnType<typeof useTheme>['currentTheme']) => string;
@@ -92,6 +94,19 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     firebasePath: 'inactiveRewatchNotifications',
     watchlistValue: true, // not used for rewatch
   },
+  unrated: {
+    themeColor: (t) => t.primary,
+    HeaderIcon: StarOutline,
+    DetailIcon: Star,
+    headerText: (n) => `${n} Serie${n > 1 ? 'n' : ''} noch nicht bewertet`,
+    detailText: () => 'Staffel fertig geschaut — jetzt bewerten?',
+    actionLabel: 'Bewerten',
+    actionDoneLabel: 'Bewertet',
+    ActionIcon: Star,
+    counterSuffix: 'unbewerteten Serien',
+    firebasePath: 'unratedSeriesNotifications',
+    watchlistValue: true, // not used
+  },
 };
 
 interface CarouselNotificationProps {
@@ -159,7 +174,13 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const handleAction = async (seriesItem: Series) => {
     if (!user) return;
     try {
-      if (variant === 'inactive-rewatch') {
+      if (variant === 'unrated') {
+        // Zur Bewertungsseite navigieren
+        navigate(`/rating/series/${seriesItem.id}`);
+        await markAsNotified([seriesItem.id]);
+        onDismiss();
+        return;
+      } else if (variant === 'inactive-rewatch') {
         // Rewatch beenden statt Watchlist ändern
         await firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/rewatch`).remove();
       } else {
@@ -220,7 +241,10 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
           <div className="notification-content">
             <div className="notification-header">
-              <HeaderIcon className="new-icon pulse" style={{ color }} />
+              <HeaderIcon
+                className={`new-icon${variant === 'unrated' ? '' : ' pulse'}`}
+                style={{ color }}
+              />
               <h3>{config.headerText(series.length)}</h3>
             </div>
 
