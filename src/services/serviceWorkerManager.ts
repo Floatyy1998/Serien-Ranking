@@ -77,9 +77,9 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Waiting worker on page load = update from previous session → auto-activate
-    if (registration.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    // Waiting worker on page load = update available from previous session
+    if (registration.waiting && navigator.serviceWorker.controller) {
+      this.showUpdateAvailable();
     }
 
     // Mid-session update → show toast so user can choose when to reload

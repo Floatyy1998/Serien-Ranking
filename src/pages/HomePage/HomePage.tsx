@@ -83,6 +83,8 @@ export const HomePage: React.FC = () => {
     clearInactiveSeries,
     clearInactiveRewatches,
     clearCompletedSeries,
+    unratedSeries,
+    clearUnratedSeries,
     seriesList,
   } = useSeriesList();
   const { currentTheme } = useTheme();
@@ -398,6 +400,18 @@ export const HomePage: React.FC = () => {
             variant="completed"
             series={completedSeries}
             onDismiss={clearCompletedSeries}
+          />
+        )}
+      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
+        (!inactiveSeries || inactiveSeries.length === 0) &&
+        (!inactiveRewatches || inactiveRewatches.length === 0) &&
+        (!completedSeries || completedSeries.length === 0) &&
+        unratedSeries &&
+        unratedSeries.length > 0 && (
+          <CarouselNotification
+            variant="unrated"
+            series={unratedSeries}
+            onDismiss={clearUnratedSeries}
           />
         )}
 

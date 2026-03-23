@@ -19,6 +19,7 @@ import {
   createNewSeasonDetectionRunner,
   createInactiveSeriesDetectionRunner,
   createCompletedSeriesDetectionRunner,
+  createUnratedSeriesDetectionRunner,
 } from './seriesListDetection';
 import { checkSeriesIntegrity } from './dataIntegrityChecker';
 
@@ -31,10 +32,12 @@ interface SeriesListContextType {
   inactiveSeries: Series[];
   inactiveRewatches: Series[];
   completedSeries: Series[];
+  unratedSeries: Series[];
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
   clearInactiveRewatches: () => void;
   clearCompletedSeries: () => void;
+  clearUnratedSeries: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
   toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
@@ -54,10 +57,12 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   inactiveSeries: [],
   inactiveRewatches: [],
   completedSeries: [],
+  unratedSeries: [],
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
   clearInactiveRewatches: () => {},
   clearCompletedSeries: () => {},
+  clearUnratedSeries: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
   toggleHideSeries: async () => {},
@@ -126,12 +131,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return false;
   });
 
+  // State für unbewertete Serien
+  const [unratedSeries, setUnratedSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('unratedSeries', [])
+  );
+
+  const [hasCheckedForUnrated, setHasCheckedForUnrated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForUnrated') === 'true';
+    }
+    return false;
+  });
+
   const detectionRunRef = useRef(false);
   const inactiveDetectionRunRef = useRef(false);
   const completedDetectionRunRef = useRef(false);
+  const unratedDetectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inactiveDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unratedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstWatchedAtFixedRef = useRef(false);
 
   const {
@@ -224,6 +243,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     []
   );
 
+  const runUnratedSeriesDetection = useCallback(
+    createUnratedSeriesDetectionRunner(
+      { unratedDetectionRunRef, unratedDetectionTimeoutRef },
+      setUnratedSeries,
+      setHasCheckedForUnrated
+    ),
+    []
+  );
+
   // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
     if (seriesWithNewSeasons.length > 0) {
@@ -284,6 +312,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runCompletedSeriesDetection,
   ]);
 
+  // Unrated series detection
+  useEffect(() => {
+    if (unratedSeries.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForUnrated || isOffline) {
+      return;
+    }
+
+    runUnratedSeriesDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList.length,
+    hasCheckedForUnrated,
+    isOffline,
+    unratedSeries.length,
+    runUnratedSeriesDetection,
+  ]);
+
   // Reset bei User-Wechsel
   useEffect(() => {
     if (!user) {
@@ -294,6 +342,8 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setHasCheckedForInactive(false);
       setCompletedSeries([]);
       setHasCheckedForCompleted(false);
+      setUnratedSeries([]);
+      setHasCheckedForUnrated(false);
       detectionRunRef.current = false;
       inactiveDetectionRunRef.current = false;
       completedDetectionRunRef.current = false;
@@ -361,6 +411,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('completedSeries');
       sessionStorage.setItem('hasCheckedForCompleted', 'true');
+    }
+  }, []);
+
+  const clearUnratedSeries = useCallback(() => {
+    setUnratedSeries([]);
+    setHasCheckedForUnrated(true);
+    unratedDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('unratedSeries');
+      sessionStorage.setItem('hasCheckedForUnrated', 'true');
     }
   }, []);
 
@@ -445,10 +506,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         inactiveSeries,
         inactiveRewatches,
         completedSeries,
+        unratedSeries,
         clearNewSeasons,
         clearInactiveSeries,
         clearInactiveRewatches,
         clearCompletedSeries,
+        clearUnratedSeries,
         recheckForNewSeasons,
         refetchSeries,
         toggleHideSeries,
