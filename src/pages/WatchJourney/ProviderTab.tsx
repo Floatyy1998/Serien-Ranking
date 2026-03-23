@@ -1,17 +1,8 @@
 import { Subscriptions } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
@@ -175,7 +166,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           Stunden pro Streaming-Dienst
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart
               data={barData}
               layout="vertical"
@@ -239,7 +230,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                 style={{ outline: 'none' }}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 
@@ -268,7 +259,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           Streaming-Verlauf
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 {data.topProviders.map((provider) => (
@@ -306,15 +297,15 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                   key={provider}
                   type="monotone"
                   dataKey={provider}
-                  stackId="1"
                   stroke={data.providerColors[provider]}
                   fill={`url(#gradient-provider-${provider.replace(/\s+/g, '-')})`}
+                  fillOpacity={0.3}
                   strokeWidth={2}
                   style={{ outline: 'none' }}
                 />
               ))}
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
 
         {/* Legend */}

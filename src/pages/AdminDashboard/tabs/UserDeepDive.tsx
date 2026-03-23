@@ -1,17 +1,8 @@
 import { Close, LiveTv, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useMemo } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import { MetricCard } from '../components/MetricCard';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
@@ -336,7 +327,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                       theme={theme}
                       icon={<Star style={{ fontSize: 14, color: '#fdcb6e' }} />}
                     >
-                      <ResponsiveContainer width="100%" height={200}>
+                      <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={200}>
                         <PieChart>
                           <Pie
                             data={userAnalysis.genreData}
@@ -362,7 +353,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                             }}
                           />
                         </PieChart>
-                      </ResponsiveContainer>
+                      </SafeResponsiveContainer>
                     </MetricCard>
                   )}
                 </div>
@@ -376,7 +367,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                   }}
                 >
                   <MetricCard title="Aktivität nach Uhrzeit" theme={theme}>
-                    <ResponsiveContainer width="100%" height={150}>
+                    <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={150}>
                       <BarChart data={userAnalysis.hourActivity}>
                         <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
                         <XAxis
@@ -409,7 +400,7 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                           fill={theme.primary}
                         />
                       </BarChart>
-                    </ResponsiveContainer>
+                    </SafeResponsiveContainer>
                   </MetricCard>
                 </div>
 

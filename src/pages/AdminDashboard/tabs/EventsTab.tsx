@@ -1,15 +1,8 @@
 import { FilterList, Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Area, AreaChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 
@@ -187,7 +180,7 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
             </span>
           </div>
 
-          <ResponsiveContainer width="100%" height={220}>
+          <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={220}>
             <AreaChart data={eventChartData}>
               <defs>
                 <linearGradient id="gradEvent" x1="0" y1="0" x2="0" y2="1">
@@ -228,7 +221,7 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
                 name="Anzahl"
               />
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </motion.div>
       )}
     </div>

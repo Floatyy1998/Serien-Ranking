@@ -7,11 +7,11 @@ import {
   Legend,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
+import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
 import type { useTheme } from '../../../contexts/ThemeContext';
 
 interface PlatformPieItem {
@@ -76,7 +76,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
               Plattform-Verteilung
             </h3>
             {platformPieData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={250}>
                 <PieChart>
                   <Pie
                     data={platformPieData}
@@ -105,7 +105,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
                     )}
                   />
                 </PieChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             ) : (
               <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40 }}>
                 Keine Daten
@@ -137,7 +137,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
               Geschaute Serien (Extension)
             </h3>
             {seriesBarData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={250}>
+              <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={250}>
                 <BarChart data={seriesBarData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
                   <XAxis
@@ -166,7 +166,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
                   />
                   <Bar dataKey="count" radius={[0, 4, 4, 0]} name="Sessions" fill="#00cec9" />
                 </BarChart>
-              </ResponsiveContainer>
+              </SafeResponsiveContainer>
             ) : (
               <p style={{ color: theme.text.muted, textAlign: 'center', padding: 40 }}>
                 Keine Daten
@@ -198,7 +198,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
           >
             Extension-Aktivität nach Uhrzeit
           </h3>
-          <ResponsiveContainer width="100%" height={180}>
+          <SafeResponsiveContainer minWidth={0} minHeight={0} width="100%" height={180}>
             <BarChart data={hourlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${theme.text.muted}15`} />
               <XAxis
@@ -232,7 +232,7 @@ export const ExtensionCharts = React.memo<ExtensionChartsProps>(
                 fillOpacity={0.7}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </motion.div>
       </>
     );

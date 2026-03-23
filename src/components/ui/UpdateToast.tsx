@@ -1,24 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import SystemUpdateAltRoundedIcon from '@mui/icons-material/SystemUpdateAltRounded';
 
 export function UpdateToast() {
   const [show, setShow] = useState(false);
 
+  const checkForWaitingWorker = useCallback(() => {
+    navigator.serviceWorker?.getRegistration().then((reg) => {
+      if (reg?.waiting) {
+        console.log('[UpdateToast] Wartender Worker gefunden — zeige Toast');
+        setShow(true);
+      }
+    });
+  }, []);
+
   useEffect(() => {
-    // Listen for future mid-session updates
-    const handler = () => setShow(true);
+    // 1) Listen for event from SW manager
+    const handler = () => {
+      console.log('[UpdateToast] sw-update-available Event empfangen');
+      setShow(true);
+    };
     window.addEventListener('sw-update-available', handler);
 
-    // Check if event was already fired before mount (race condition)
-    if (sessionStorage.getItem('update-shown')) {
-      navigator.serviceWorker?.getRegistration().then((reg) => {
-        if (reg?.waiting) setShow(true);
-      });
-    }
+    // 2) Check immediately (covers race condition with splash screen)
+    checkForWaitingWorker();
 
-    return () => window.removeEventListener('sw-update-available', handler);
-  }, []);
+    // 3) Re-check when user returns to tab
+    const visHandler = () => {
+      if (document.visibilityState === 'visible') checkForWaitingWorker();
+    };
+    document.addEventListener('visibilitychange', visHandler);
+
+    // 4) Poll every 30s as safety net
+    const interval = setInterval(checkForWaitingWorker, 30_000);
+
+    return () => {
+      window.removeEventListener('sw-update-available', handler);
+      document.removeEventListener('visibilitychange', visHandler);
+      clearInterval(interval);
+    };
+  }, [checkForWaitingWorker]);
 
   const handleUpdate = () => {
     setShow(false);

@@ -8,16 +8,8 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
 import { useTheme } from '../../contexts/ThemeContext';
 import { WatchJourneyData } from '../../services/watchJourneyService';
 import { ActivityTooltip } from './ActivityTooltip';
@@ -206,7 +198,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         </h3>
 
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="episodenGradient" x1="0" y1="0" x2="0" y2="1">
@@ -256,7 +248,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                 style={{ outline: 'none' }}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
-import { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
 import { contrastTextColor, SeriesGroup } from './useCalendarData';
 
 // ── Shared helpers ───────────────────────────────────────────────
@@ -28,6 +28,22 @@ function formatAirTime(airstamp?: string): string | null {
 function premiereLabel(type: WeeklyEpisode['premiereType']): string {
   return type === 'season-start' ? 'Staffelstart' : 'Rückkehr';
 }
+
+// ── Provider badge (single logo) ─────────────────────────────────
+
+const ProviderBadge = memo(
+  ({ provider, className }: { provider: WeeklyEpisodeProvider; className: string }) => (
+    <img
+      src={`https://image.tmdb.org/t/p/w92${provider.logo}`}
+      alt={provider.name}
+      title={provider.name}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
+  )
+);
+ProviderBadge.displayName = 'ProviderBadge';
 
 // ── Premiere overlay (desktop poster) ────────────────────────────
 
@@ -97,11 +113,12 @@ interface PosterWrapProps {
   premiereType?: WeeklyEpisode['premiereType'];
   watched: boolean;
   onMark?: () => void;
+  provider?: WeeklyEpisodeProvider;
   children: React.ReactNode; // poster-info content
 }
 
 const PosterWrap = memo(
-  ({ posterSrc, premiereType, watched, onMark, children }: PosterWrapProps) => {
+  ({ posterSrc, premiereType, watched, onMark, provider, children }: PosterWrapProps) => {
     const { currentTheme } = useTheme();
 
     return (
@@ -133,12 +150,27 @@ const PosterWrap = memo(
           />
         ) : null}
 
-        <div className="cal-ep-poster-info">{children}</div>
+        <div className={`cal-ep-poster-info${provider ? ' has-provider' : ''}`}>
+          {children}
+          {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge" />}
+        </div>
       </div>
     );
   }
 );
 PosterWrap.displayName = 'PosterWrap';
+
+// ── Mobile poster with provider overlay ──────────────────────────
+
+const MobilePoster = memo(
+  ({ src, provider }: { src: string; provider?: WeeklyEpisodeProvider }) => (
+    <div className="cal-ep-poster-mobile-wrap">
+      <img src={src} alt="" decoding="async" className="cal-ep-poster cal-ep-poster-mobile" />
+      {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge-mobile" />}
+    </div>
+  )
+);
+MobilePoster.displayName = 'MobilePoster';
 
 // ── Single Episode Card ──────────────────────────────────────────
 
@@ -163,6 +195,7 @@ export const SingleEpisodeCard = memo(
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
     const handleMark = () => onMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex);
     const airTime = formatAirTime(ep.airstamp);
+    const provider = ep.providers[0];
 
     return (
       <div
@@ -176,6 +209,7 @@ export const SingleEpisodeCard = memo(
           premiereType={ep.premiereType}
           watched={ep.watched}
           onMark={!ep.watched ? handleMark : undefined}
+          provider={provider}
         >
           <span className="cal-ep-title">{ep.seriesTitle}</span>
           <span
@@ -207,12 +241,7 @@ export const SingleEpisodeCard = memo(
         </PosterWrap>
 
         {/* Mobile: poster + info */}
-        <img
-          src={ep.poster}
-          alt=""
-          decoding="async"
-          className="cal-ep-poster cal-ep-poster-mobile"
-        />
+        <MobilePoster src={ep.poster} provider={provider} />
         <div className="cal-ep-info cal-ep-info-mobile">
           <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
             {ep.seriesTitle}
@@ -286,6 +315,7 @@ export const EpisodeGroupCard = memo(
 
     const episodeRange = `S${String(firstEp.seasonNumber).padStart(2, '0')} E${String(firstEp.episodeNumber).padStart(2, '0')}–E${String(lastEp.episodeNumber).padStart(2, '0')}`;
     const countLabel = `${group.episodes.length} Folgen · ${watchedInGroup} gesehen`;
+    const provider = firstEp.providers[0];
 
     return (
       <div
@@ -299,6 +329,7 @@ export const EpisodeGroupCard = memo(
             posterSrc={backdropSrc || firstEp.poster}
             premiereType={groupPremiereType}
             watched={allWatched}
+            provider={provider}
           >
             <span className="cal-ep-title">{group.seriesTitle}</span>
             <span
@@ -313,14 +344,7 @@ export const EpisodeGroupCard = memo(
           </PosterWrap>
 
           {/* Mobile: poster + info */}
-          {firstEp.poster && (
-            <img
-              src={firstEp.poster}
-              alt=""
-              decoding="async"
-              className="cal-ep-poster cal-ep-poster-mobile"
-            />
-          )}
+          <MobilePoster src={firstEp.poster} provider={provider} />
           <div className="cal-ep-info cal-ep-info-mobile">
             <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
               {group.seriesTitle}

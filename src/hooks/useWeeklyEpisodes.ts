@@ -4,6 +4,24 @@ import { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
 import { getEpisodeAirDateStr, getEpisodeAirDate } from '../utils/episodeDate';
 
+/** Priority providers: Crunchyroll (283) first, ADN (415) second */
+const PROVIDER_PRIORITY: Record<number, number> = { 283: 0, 415: 1 };
+
+function prioritizeProviders(providers: WeeklyEpisodeProvider[]): WeeklyEpisodeProvider[] {
+  if (providers.length <= 1) return providers;
+  return [...providers].sort((a, b) => {
+    const pa = PROVIDER_PRIORITY[a.id] ?? 99;
+    const pb = PROVIDER_PRIORITY[b.id] ?? 99;
+    return pa - pb;
+  });
+}
+
+export interface WeeklyEpisodeProvider {
+  id: number;
+  logo: string;
+  name: string;
+}
+
 export interface WeeklyEpisode {
   seriesId: number;
   seriesNmr: number;
@@ -19,6 +37,7 @@ export interface WeeklyEpisode {
   episodeIndex: number;
   runtime: number;
   providerNames: string[];
+  providers: WeeklyEpisodeProvider[];
   premiereType?: 'season-start' | 'mid-season-return';
 }
 
@@ -147,6 +166,7 @@ export const useWeeklyEpisodes = (
             episodeIndex: eIdx,
             runtime: ep.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
             providerNames: series.provider?.provider?.map((p) => p.name) || [],
+            providers: prioritizeProviders(series.provider?.provider || []),
             premiereType,
           };
 
