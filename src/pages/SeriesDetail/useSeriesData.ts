@@ -87,13 +87,19 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
 
     // Full fetch if not found locally
     if (!localSeries && !tmdbSeries) {
+      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
       const fetchFullData = async () => {
         setLoading(true);
         try {
-          const res = await fetch(
-            `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-          );
-          const data = await res.json();
+          const [res, resEN] = await Promise.all([
+            fetch(
+              `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
+            ),
+            fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`),
+          ]);
+          const [data, dataEN] = await Promise.all([res.json(), resEN.json()]);
+          const bestName =
+            data.name && !hasNonLatin(data.name) ? data.name : dataEN.name || data.name;
           if (data.id) {
             // Episoden von TMDB holen (deutsche Titel)
             const regularSeasons = (data.seasons || []).filter(
@@ -132,8 +138,8 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             const series: Series = {
               id: data.id,
               nmr: 0, // No nmr for non-user series
-              title: data.name,
-              name: data.name,
+              title: bestName,
+              name: bestName,
               poster: { poster: data.poster_path },
               genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
               provider: { provider: [] },

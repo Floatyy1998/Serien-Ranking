@@ -15,8 +15,17 @@ interface ActionLog {
   runEnd?: string;
   action: string;
   errorCount: number;
-  errors: BackendError[];
+  errors: BackendError[] | Record<string, BackendError>;
 }
+
+// Firebase kann Arrays als Objekte mit numerischen Keys liefern
+const toErrorArray = (
+  errors: BackendError[] | Record<string, BackendError> | undefined
+): BackendError[] => {
+  if (!errors) return [];
+  if (Array.isArray(errors)) return errors;
+  return Object.values(errors);
+};
 
 const ACTION_COLORS: Record<string, string> = {
   episodes: '#8338ec',
@@ -68,7 +77,7 @@ export function BackendErrorsTab({
   // Collect all errors across all actions
   const allErrors: (BackendError & { _action: string })[] = [];
   Object.entries(logs).forEach(([action, log]) => {
-    (log.errors || []).forEach((e) => {
+    toErrorArray(log.errors).forEach((e) => {
       allErrors.push({ ...e, _action: action });
     });
   });
@@ -79,7 +88,7 @@ export function BackendErrorsTab({
 
   const handleCopyAll = () => {
     const sections = Object.entries(logs).map(([action, log]) => {
-      const lines = (log.errors || []).map((e) => {
+      const lines = toErrorArray(log.errors).map((e) => {
         const details = Object.entries(e)
           .filter(([k]) => !['timestamp', 'context', 'message'].includes(k))
           .map(([k, v]) => `${k}: ${v}`)
@@ -203,7 +212,7 @@ export function BackendErrorsTab({
             .sort((a, b) => (b[1].runStart || '').localeCompare(a[1].runStart || ''))
             .map(([action, log]) => {
               const color = ACTION_COLORS[action] || theme.primary;
-              const count = log.errors?.length || 0;
+              const count = toErrorArray(log.errors).length;
               return (
                 <button
                   key={action}
@@ -268,10 +277,10 @@ export function BackendErrorsTab({
                 <span
                   style={{
                     marginLeft: 8,
-                    color: (log.errors?.length || 0) > 0 ? '#ff4d6d' : '#06d6a0',
+                    color: toErrorArray(log.errors).length > 0 ? '#ff4d6d' : '#06d6a0',
                   }}
                 >
-                  {log.errors?.length || 0} Fehler
+                  {toErrorArray(log.errors).length} Fehler
                 </span>
               </div>
               <button

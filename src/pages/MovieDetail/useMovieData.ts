@@ -155,17 +155,24 @@ export const useMovieData = () => {
 
     // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
+      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
       setLoading(true);
-      fetch(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-      )
-        .then((res) => res.json())
-        .then((data) => {
+      Promise.all([
+        fetch(
+          `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
+        ).then((r) => r.json()),
+        fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`).then(
+          (r) => r.json()
+        ),
+      ])
+        .then(([data, dataEN]) => {
+          const bestTitle =
+            data.title && !hasNonLatin(data.title) ? data.title : dataEN.title || data.title;
           if (data.id) {
             const movie: Movie = {
               id: data.id,
               nmr: 0,
-              title: data.title,
+              title: bestTitle,
               poster: { poster: data.poster_path },
               genre: {
                 genres: data.genres?.map((g: TMDBGenre) => g.name) || [],

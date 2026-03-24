@@ -178,36 +178,63 @@ export function useOnboardingSearch() {
     }
 
     setSearchLoading(true);
+    const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+
     debounceRef.current = setTimeout(async () => {
       try {
         const encoded = encodeURIComponent(query.trim());
-        const [tvRes, movieRes] = await Promise.all([
+        const [tvDE, tvEN, movieDE, movieEN] = await Promise.all([
           fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then((r) =>
+            r.json()
+          ),
+          fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=en-US&query=${encoded}`).then((r) =>
             r.json()
           ),
           fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then(
             (r) => r.json()
           ),
+          fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=en-US&query=${encoded}`).then(
+            (r) => r.json()
+          ),
         ]);
 
+        const enTvMap = new Map<number, string>();
+        for (const item of tvEN.results || []) {
+          enTvMap.set(item.id, item.name || item.title || '');
+        }
+        const enMovieMap = new Map<number, string>();
+        for (const item of movieEN.results || []) {
+          enMovieMap.set(item.id, item.title || item.name || '');
+        }
+
         const results: OnboardingItem[] = [
-          ...(tvRes.results || []).map((item: Record<string, unknown>) => ({
-            id: item.id,
-            title: item.name || item.title || '',
-            name: item.name as string,
-            poster_path: item.poster_path,
-            vote_average: item.vote_average || 0,
-            first_air_date: item.first_air_date as string,
-            type: 'series' as const,
-          })),
-          ...(movieRes.results || []).map((item: Record<string, unknown>) => ({
-            id: item.id,
-            title: item.title || item.name || '',
-            poster_path: item.poster_path,
-            vote_average: item.vote_average || 0,
-            release_date: item.release_date as string,
-            type: 'movie' as const,
-          })),
+          ...(tvDE.results || []).map((item: Record<string, unknown>) => {
+            const deName = (item.name || item.title || '') as string;
+            const enName = enTvMap.get(item.id as number);
+            const title = hasNonLatin(deName) && enName ? enName : deName;
+            return {
+              id: item.id,
+              title,
+              name: title,
+              poster_path: item.poster_path,
+              vote_average: item.vote_average || 0,
+              first_air_date: item.first_air_date as string,
+              type: 'series' as const,
+            };
+          }),
+          ...(movieDE.results || []).map((item: Record<string, unknown>) => {
+            const deTitle = (item.title || item.name || '') as string;
+            const enTitle = enMovieMap.get(item.id as number);
+            const title = hasNonLatin(deTitle) && enTitle ? enTitle : deTitle;
+            return {
+              id: item.id,
+              title,
+              poster_path: item.poster_path,
+              vote_average: item.vote_average || 0,
+              release_date: item.release_date as string,
+              type: 'movie' as const,
+            };
+          }),
         ]
           .sort((a, b) => (b.vote_average as number) - (a.vote_average as number))
           .slice(0, 20);

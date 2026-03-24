@@ -179,42 +179,83 @@ export const useSearchPage = (): UseSearchPageResult => {
       setLoading(true);
       saveToRecent(query);
 
+      const apiKey = import.meta.env.VITE_API_TMDB;
+      const encoded = encodeURIComponent(query);
+      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+
       try {
         const results: SearchResult[] = [];
+        const wantSeries = searchType === 'all' || searchType === 'series';
+        const wantMovies = searchType === 'all' || searchType === 'movies';
 
-        const fetchSeries =
-          searchType === 'all' || searchType === 'series'
+        const [seriesDE, seriesEN, movieDE, movieEN] = await Promise.all([
+          wantSeries
             ? fetch(
-                `https://api.themoviedb.org/3/search/tv?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=de-DE`
               ).then((r) => r.json())
-            : Promise.resolve(null);
-
-        const fetchMovies =
-          searchType === 'all' || searchType === 'movies'
+            : Promise.resolve(null),
+          wantSeries
             ? fetch(
-                `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=en-US`
               ).then((r) => r.json())
-            : Promise.resolve(null);
+            : Promise.resolve(null),
+          wantMovies
+            ? fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=de-DE`
+              ).then((r) => r.json())
+            : Promise.resolve(null),
+          wantMovies
+            ? fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=en-US`
+              ).then((r) => r.json())
+            : Promise.resolve(null),
+        ]);
 
-        const [seriesData, movieData] = await Promise.all([fetchSeries, fetchMovies]);
+        const enSeriesMap = new Map<number, string>();
+        if (seriesEN?.results) {
+          for (const item of seriesEN.results) {
+            enSeriesMap.set(item.id, item.name || item.title || '');
+          }
+        }
 
-        if (seriesData?.results) {
+        const enMovieMap = new Map<number, string>();
+        if (movieEN?.results) {
+          for (const item of movieEN.results) {
+            enMovieMap.set(item.id, item.title || item.name || '');
+          }
+        }
+
+        if (seriesDE?.results) {
           results.push(
-            ...seriesData.results.map((item: SearchResult) => ({
-              ...item,
-              type: 'series' as const,
-              inList: isInList(item.id, 'series'),
-            }))
+            ...seriesDE.results.map((item: SearchResult) => {
+              const deName = item.name || item.title || '';
+              const enName = enSeriesMap.get(item.id);
+              const name = hasNonLatin(deName) && enName ? enName : deName;
+              return {
+                ...item,
+                name,
+                title: name,
+                type: 'series' as const,
+                inList: isInList(item.id, 'series'),
+              };
+            })
           );
         }
 
-        if (movieData?.results) {
+        if (movieDE?.results) {
           results.push(
-            ...movieData.results.map((item: SearchResult) => ({
-              ...item,
-              type: 'movie' as const,
-              inList: isInList(item.id, 'movie'),
-            }))
+            ...movieDE.results.map((item: SearchResult) => {
+              const deTitle = item.title || item.name || '';
+              const enTitle = enMovieMap.get(item.id);
+              const title = hasNonLatin(deTitle) && enTitle ? enTitle : deTitle;
+              return {
+                ...item,
+                title,
+                name: title,
+                type: 'movie' as const,
+                inList: isInList(item.id, 'movie'),
+              };
+            })
           );
         }
 
