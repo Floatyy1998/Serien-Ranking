@@ -328,41 +328,52 @@ class ServiceWorkerManager {
     if (document.getElementById('sw-update-banner')) return;
     const style = document.createElement('style');
     style.textContent = `
-      @keyframes sw-slide-down { from { transform: translateY(-100%); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
-      @keyframes sw-pulse { 0%,100% { opacity: 1 } 50% { opacity: 0.4 } }
+      @keyframes sw-slide-up {
+        from { transform: translateY(100%); opacity: 0 }
+        to { transform: translateY(0); opacity: 1 }
+      }
+      @keyframes sw-spinner {
+        to { transform: rotate(360deg) }
+      }
       #sw-update-banner {
         position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 99999;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px 16px;
-        background: var(--theme-primary, #8b5cf6);
-        color: #fff;
+        gap: 10px;
+        padding: 12px 20px;
+        background: rgba(30, 30, 40, 0.85);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.9);
         font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.2px;
-        animation: sw-slide-down 0.3s ease-out;
+        font-weight: 500;
+        letter-spacing: 0.1px;
+        animation: sw-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
         -webkit-font-smoothing: antialiased;
+        white-space: nowrap;
+        pointer-events: none;
       }
-      #sw-update-banner .sw-dot {
-        width: 6px;
-        height: 6px;
+      #sw-update-banner .sw-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-top-color: rgba(255, 255, 255, 0.8);
         border-radius: 50%;
-        background: #fff;
-        animation: sw-pulse 1s ease-in-out infinite;
+        animation: sw-spinner 0.8s linear infinite;
         flex-shrink: 0;
       }
     `;
     document.head.appendChild(style);
     const banner = document.createElement('div');
     banner.id = 'sw-update-banner';
-    banner.innerHTML =
-      '<span class="sw-dot"></span> Update wird installiert… Die Seite wird automatisch neu geladen, sobald es fertig ist.';
+    banner.innerHTML = '<span class="sw-spinner"></span> Update wird installiert…';
     document.body.appendChild(banner);
   }
 

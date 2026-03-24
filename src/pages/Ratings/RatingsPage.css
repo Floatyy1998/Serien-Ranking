@@ -121,10 +121,11 @@
 
 .ratings-grid-item {
   content-visibility: auto;
-  contain-intrinsic-block-size: auto 200px;
+  contain-intrinsic-block-size: auto 320px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
 
 .ratings-grid-item:hover {
@@ -132,7 +133,7 @@
 }
 
 .ratings-grid-item:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 /* ─── Poster ──────────────────────────────────────────────────────────── */

@@ -108,14 +108,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       search: searchQuery,
       sortBy: selectedSort,
     });
-  }, [
-    selectedGenre,
-    selectedProvider,
-    selectedQuickFilter,
-    searchQuery,
-    selectedSort,
-    onFilterChange,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onFilterChange is a callback, not a synced value
+  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort]);
 
   const clearFilters = () => {
     setSelectedGenre('');
