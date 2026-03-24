@@ -21,8 +21,6 @@ import {
   hasWatchedEpisodes,
   prepareSeriesItem,
   prepareMovieItem,
-  INITIAL_RENDER,
-  RENDER_BATCH,
 } from './ratingsHelpers';
 import type { UseRatingsDataResult } from './ratingsHelpers';
 
@@ -66,7 +64,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // ─── URL Sync ───────────────────────────────────────
   const updateURL = useCallback(
     (updates: Record<string, string | null | undefined>) => {
-      const newParams = new URLSearchParams(searchParams);
+      const newParams = new URLSearchParams(searchParamsRef.current);
       const defaults: Record<string, string> = {
         tab: 'series',
         sort: 'rating-desc',
@@ -83,7 +81,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
       setSearchParams(newParams, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [setSearchParams]
   );
 
   // Handle browser back/forward
@@ -104,10 +102,12 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // ─── Tab Change Handler ────────────────────────────
   const handleTabChange = useCallback(
     (id: string) => {
-      setActiveTab(id as 'series' | 'movies');
+      startTransition(() => {
+        setActiveTab(id as 'series' | 'movies');
+      });
       updateURL({ tab: id });
     },
-    [updateURL]
+    [updateURL, startTransition]
   );
 
   // ─── QuickFilter Integration ────────────────────────
@@ -358,33 +358,33 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
   const currentItems = activeTab === 'series' ? preparedSeries : preparedMovies;
 
-  // ─── Progressive Rendering ────────────────────────
-  const filterFingerprint = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
-  const [renderState, setRenderState] = useState({
-    fingerprint: filterFingerprint,
-    count: INITIAL_RENDER,
-  });
+  // Progressive rendering via derived state pattern:
+  // When the filter fingerprint changes, reset to initial batch.
+  // Then rAF fills in remaining items without blocking the UI.
+  const filterKey = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
+  const [renderState, setRenderState] = useState({ key: filterKey, count: 60 });
 
-  // Reset count when fingerprint changes (derived state pattern)
-  const renderCount =
-    renderState.fingerprint === filterFingerprint ? renderState.count : INITIAL_RENDER;
-  if (renderState.fingerprint !== filterFingerprint) {
-    setRenderState({ fingerprint: filterFingerprint, count: INITIAL_RENDER });
+  // Derived state: reset count when filters change (React-safe setState during render)
+  if (renderState.key !== filterKey) {
+    setRenderState({ key: filterKey, count: 60 });
   }
 
-  // Progressively render remaining items via rAF
+  const renderCount = renderState.key === filterKey ? renderState.count : 60;
+
+  // Progressively render remaining items
   useEffect(() => {
     if (renderCount >= currentItems.length) return;
     const id = requestAnimationFrame(() => {
       setRenderState((prev) => ({
         ...prev,
-        count: Math.min(prev.count + RENDER_BATCH, currentItems.length),
+        count: Math.min(prev.count + 80, currentItems.length),
       }));
     });
     return () => cancelAnimationFrame(id);
   }, [renderCount, currentItems.length]);
 
-  const itemsToRender = currentItems.slice(0, renderCount);
+  const itemsToRender =
+    renderCount >= currentItems.length ? currentItems : currentItems.slice(0, renderCount);
 
   // ─── Stats (cheap: ratings are pre-computed) ────────
   const stats = useMemo(() => {

@@ -93,7 +93,11 @@ export const RatingsPage: React.FC = () => {
         {itemsToRender.length > 0 ? (
           <div className="ratings-grid" onClick={handleGridClick}>
             {itemsToRender.map((item) => (
-              <RatingItemCard key={item.id} item={item} theme={currentTheme} />
+              <RatingItemCard
+                key={`${item.isMovie ? 'm' : 's'}-${item.id}`}
+                item={item}
+                theme={currentTheme}
+              />
             ))}
             <div className="ratings-spacer" />
           </div>
