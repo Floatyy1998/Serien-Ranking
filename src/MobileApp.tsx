@@ -4,6 +4,7 @@ import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './AuthContext';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContextDef';
+import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
 import './styles/App.css';
 
 // Main nav tabs: eager imports — these are always needed and must never show a loading spinner
@@ -138,6 +139,8 @@ export const MobileApp = () => {
 
     return () => clearInterval(interval);
   }, [totalUnread, tickerMessages]);
+
+  useAdminHealthAlert();
 
   // Preload lazy route chunks in the background once app is stable
   useEffect(() => {
