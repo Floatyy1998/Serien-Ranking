@@ -2,6 +2,7 @@ import { Tooltip } from '@mui/material';
 import { memo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis } from '../../components/detail';
+import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { StatusBadge } from './StatusBadge';
 
@@ -98,7 +99,14 @@ export const HeroSection = memo<HeroSectionProps>(
 
         {/* Series Info Overlay */}
         <div className="hero-section__info" style={{ padding: isMobile ? '0 16px' : '0 20px' }}>
-          <h1 className="hero-section__title" style={{ fontSize: isMobile ? '20px' : '28px' }}>
+          <h1
+            className="hero-section__title"
+            style={{ fontSize: isMobile ? '20px' : '28px', cursor: 'pointer' }}
+            onClick={() => {
+              navigator.clipboard.writeText(series.title);
+              showToast('Titel kopiert');
+            }}
+          >
             {series.title}
           </h1>
 
