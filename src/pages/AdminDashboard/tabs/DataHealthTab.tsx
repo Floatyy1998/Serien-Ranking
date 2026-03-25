@@ -34,6 +34,8 @@ const ISSUE_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
   'watched-without-timestamp': { label: 'Watched ohne firstWatchedAt', color: '#06d6a0' },
   'sparse-array-hole': { label: 'Sparse Array Löcher', color: '#118ab2' },
   'mismatched-numbering': { label: 'Falsche Nummerierung', color: '#ef476f' },
+  'missing-all-genre': { label: 'Fehlendes "All" Genre', color: '#ff9f1c' },
+  'missing-all-rating': { label: 'Fehlendes "All" Rating', color: '#e9c46a' },
 };
 
 function getIssueColor(type?: string): string {

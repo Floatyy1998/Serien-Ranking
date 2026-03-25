@@ -22,30 +22,49 @@ export const OverallRatingSection = ({
   const ratingEmojis = [
     {
       value: 2,
+      min: 0.1,
+      max: 3,
       icon: <SentimentVeryDissatisfied />,
       label: 'Schrecklich',
       color: currentTheme.status?.error || '#e74c3c',
     },
     {
       value: 4,
+      min: 3.1,
+      max: 5,
       icon: <SentimentDissatisfied />,
       label: 'Schlecht',
       color: currentTheme.status?.error || '#ff6b6b',
     },
-    { value: 6, icon: <SentimentNeutral />, label: 'Okay', color: currentTheme.accent },
+    {
+      value: 6,
+      min: 5.1,
+      max: 6.5,
+      icon: <SentimentNeutral />,
+      label: 'Okay',
+      color: currentTheme.accent,
+    },
     {
       value: 8,
+      min: 6.6,
+      max: 8.5,
       icon: <SentimentSatisfied />,
       label: 'Gut',
       color: currentTheme.status?.success || '#4cd137',
     },
     {
       value: 10,
+      min: 8.6,
+      max: 10,
       icon: <SentimentVerySatisfied />,
       label: 'Meisterwerk',
       color: currentTheme.primary,
     },
   ];
+
+  const activeEmojiIndex = ratingEmojis.findIndex(
+    (e) => overallRating >= e.min && overallRating <= e.max
+  );
 
   return (
     <motion.div
@@ -65,14 +84,14 @@ export const OverallRatingSection = ({
 
         {/* Emoji Indicators */}
         <div className="rate-emoji-row">
-          {ratingEmojis.map((emoji) => (
+          {ratingEmojis.map((emoji, i) => (
             <motion.div
               key={emoji.value}
-              className={`rate-emoji ${Math.round(overallRating) === emoji.value ? 'active' : ''}`}
+              className={`rate-emoji ${activeEmojiIndex === i ? 'active' : ''}`}
               onClick={() => onRatingChange(emoji.value)}
               whileTap={{ scale: 0.9 }}
               style={{
-                opacity: Math.round(overallRating) === emoji.value ? 1 : 0.3,
+                opacity: activeEmojiIndex === i ? 1 : 0.3,
                 color: emoji.color,
               }}
             >

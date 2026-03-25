@@ -98,6 +98,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               boxShadow:
                 '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3)',
               marginBottom: bottomOffset,
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
