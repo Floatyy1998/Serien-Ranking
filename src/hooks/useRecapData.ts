@@ -26,6 +26,7 @@ interface RecapData {
   dismissPermanent: () => void;
   generateAiRecap: () => Promise<void>;
   aiLoading: boolean;
+  aiError: string | null;
   askQuestion: (question: string) => Promise<void>;
   questionAnswer: string | null;
   questionLoading: boolean;
@@ -193,6 +194,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
   const [shouldShowRecap, setShouldShowRecap] = useState(false);
   const [daysSinceLastWatch, setDaysSinceLastWatch] = useState(0);
   const [aiRecap, setAiRecap] = useState<string | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
   useEffect(() => {
@@ -278,14 +280,17 @@ export const useRecapData = (series: Series | undefined): RecapData => {
       if (res.ok) {
         const data = await res.json();
         setAiRecap(data.recap);
+        setAiError(null);
       } else if (res.status === 429) {
         const data = await res.json();
-        setAiRecap(`⚠ ${data.error}`);
+        setAiError(data.error);
       } else if (res.status === 404) {
-        setAiRecap(null);
+        setAiError('Serie dem KI-Modell nicht bekannt');
+      } else {
+        setAiError('KI-Zusammenfassung fehlgeschlagen');
       }
-    } catch (error) {
-      console.error('Failed to generate AI recap:', error);
+    } catch {
+      setAiError('KI-Zusammenfassung fehlgeschlagen');
     } finally {
       setAiLoading(false);
     }
@@ -353,6 +358,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
     dismissPermanent,
     generateAiRecap,
     aiLoading,
+    aiError,
     askQuestion,
     questionAnswer,
     questionLoading,

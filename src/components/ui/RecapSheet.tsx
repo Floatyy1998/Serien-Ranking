@@ -14,6 +14,7 @@ interface RecapSheetProps {
   recapEpisodes: RecapEpisode[];
   aiRecap: string | null;
   aiLoading: boolean;
+  aiError: string | null;
   onGenerateAiRecap: () => void;
   loading: boolean;
   onAskQuestion: (question: string) => Promise<void>;
@@ -30,6 +31,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
   recapEpisodes,
   aiRecap,
   aiLoading,
+  aiError,
   onGenerateAiRecap,
   loading,
   onAskQuestion,
@@ -191,6 +193,30 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                   </motion.div>
                 ))}
               </div>
+            </motion.div>
+          ) : aiError ? (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              style={{
+                marginBottom: '20px',
+                padding: '14px',
+                borderRadius: '10px',
+                background: 'rgba(239,68,68,0.08)',
+                border: '1px solid rgba(239,68,68,0.2)',
+                textAlign: 'center',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: 'clamp(13px, 1.2vw, 15px)',
+                  color: currentTheme.text.muted,
+                  margin: 0,
+                }}
+              >
+                {aiError}
+              </p>
             </motion.div>
           ) : (
             !loading &&
