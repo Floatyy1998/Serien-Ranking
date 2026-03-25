@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
+import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
@@ -35,6 +36,16 @@ export const useEpisodeManagement = () => {
   const { id } = useParams();
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
+
+  // --- Quick Rating ---
+  const {
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    showQuickRating,
+    closeQuickRating,
+    saveQuickRating,
+  } = useQuickSeasonRating();
 
   // --- State ---
   const [selectedSeason, setSelectedSeason] = useState(0);
@@ -248,6 +259,13 @@ export const useEpisodeManagement = () => {
           [...new Set(series.provider?.provider?.map((p) => p.name))]
         );
       }
+
+      // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel markiert
+      if (newWatched && shouldTriggerQuickRate(series, seasonIndex, episodeIndex)) {
+        setTimeout(() => {
+          showQuickRating(series, series.seasons[seasonIndex].seasonNumber + 1);
+        }, 500);
+      }
     } catch (error) {
       console.error('Failed to toggle episode watch status:', error);
     }
@@ -383,6 +401,19 @@ export const useEpisodeManagement = () => {
 
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
+
+      // Quick-Rate: Trigger wenn letzte Staffel komplett markiert
+      if (mode !== 'unwatch') {
+        const lastSeasonIndex = series.seasons.length - 1;
+        if (seasonIndex === lastSeasonIndex) {
+          const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
+          if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {
+            setTimeout(() => {
+              showQuickRating(series, season.seasonNumber + 1);
+            }, 500);
+          }
+        }
+      }
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
     }
@@ -451,5 +482,12 @@ export const useEpisodeManagement = () => {
     handleWatchDialogIncrease,
     handleWatchDialogDecrease,
     closeWatchDialog,
+
+    // Quick rating
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    closeQuickRating,
+    saveQuickRating,
   };
 };

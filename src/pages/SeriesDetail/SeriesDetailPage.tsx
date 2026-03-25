@@ -7,8 +7,12 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { CastCrew, ProviderBadges, VideoGallery } from '../../components/detail';
+import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
+import { useRecapData } from '../../hooks/useRecapData';
+import { CharacterGuide } from './CharacterGuide';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
@@ -28,7 +32,7 @@ export const SeriesDetailPage = memo(() => {
   const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [selectedSeasonIndex, setSelectedSeasonIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'cast' | 'characters'>('info');
 
   // Responsive state
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -71,6 +75,21 @@ export const SeriesDetailPage = memo(() => {
     handleStartRewatch,
     handleStopRewatch,
   } = useSeriesActions(series, user?.uid, tmdbSeries ?? undefined);
+
+  // Recap hook
+  const recap = useRecapData(localSeries ?? undefined);
+
+  // Character guide hook
+  const characterGuide = useCharacterDescriptions(localSeries ?? undefined);
+  const [showRecap, setShowRecap] = useState(false);
+
+  // Auto-show recap when data is ready
+  useEffect(() => {
+    if (recap.shouldShowRecap && !recap.loading && recap.recapEpisodes.length > 0) {
+      const timer = setTimeout(() => setShowRecap(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [recap.shouldShowRecap, recap.loading, recap.recapEpisodes.length]);
 
   // Auto-select most relevant season tab
   useEffect(() => {
@@ -294,6 +313,15 @@ export const SeriesDetailPage = memo(() => {
               icon: <People style={{ fontSize: isMobile ? '16px' : '18px' }} />,
               label: 'Besetzung',
             },
+            ...(!isReadOnlyTmdbSeries && characterGuide.userProgress
+              ? [
+                  {
+                    key: 'characters' as const,
+                    icon: <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />,
+                    label: 'KI-Guide',
+                  },
+                ]
+              : []),
           ] as const
         ).map((tab) => (
           <button
@@ -320,7 +348,16 @@ export const SeriesDetailPage = memo(() => {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'cast' ? (
+      {activeTab === 'characters' ? (
+        <CharacterGuide
+          characters={characterGuide.characters}
+          loading={characterGuide.loading}
+          error={characterGuide.error}
+          onGenerate={characterGuide.generate}
+          userProgress={characterGuide.userProgress}
+          isMobile={isMobile}
+        />
+      ) : activeTab === 'cast' ? (
         <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
       ) : (
         <>
@@ -415,6 +452,25 @@ export const SeriesDetailPage = memo(() => {
         snackbar={snackbar}
         currentTheme={currentTheme}
         navigate={navigate}
+      />
+
+      <RecapSheet
+        isOpen={showRecap}
+        onClose={() => {
+          setShowRecap(false);
+          recap.dismiss();
+        }}
+        onDismissPermanent={() => {
+          setShowRecap(false);
+          recap.dismissPermanent();
+        }}
+        seriesTitle={series?.title || localSeries?.title || ''}
+        daysSinceLastWatch={recap.daysSinceLastWatch}
+        recapEpisodes={recap.recapEpisodes}
+        aiRecap={recap.aiRecap}
+        aiLoading={recap.aiLoading}
+        onGenerateAiRecap={recap.generateAiRecap}
+        loading={recap.loading}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { Series } from '../types/Series';
+import type { ProviderChangeInfo } from './seriesListDetection';
 
 export interface SeriesListContextType {
   seriesList: Series[];
@@ -11,11 +12,13 @@ export interface SeriesListContextType {
   inactiveRewatches: Series[];
   completedSeries: Series[];
   unratedSeries: Series[];
+  providerChanges: ProviderChangeInfo[];
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
   clearInactiveRewatches: () => void;
   clearCompletedSeries: () => void;
   clearUnratedSeries: () => void;
+  clearProviderChanges: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
   toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
@@ -36,11 +39,13 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   inactiveRewatches: [],
   completedSeries: [],
   unratedSeries: [],
+  providerChanges: [],
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
   clearInactiveRewatches: () => {},
   clearCompletedSeries: () => {},
   clearUnratedSeries: () => {},
+  clearProviderChanges: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
   toggleHideSeries: async () => {},

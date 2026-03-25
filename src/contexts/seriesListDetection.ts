@@ -5,6 +5,10 @@ import {
 } from '../lib/validation/inactiveSeriesDetection';
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { detectUnratedSeries } from '../lib/validation/unratedSeriesDetection';
+import {
+  detectProviderChanges,
+  type ProviderChangeInfo,
+} from '../lib/validation/providerChangeDetection';
 import type { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -68,15 +72,19 @@ export async function fixMissingFirstWatchedAt(
   }
 }
 
+export type { ProviderChangeInfo };
+
 export interface DetectionRefs {
   detectionRunRef: React.MutableRefObject<boolean>;
   inactiveDetectionRunRef: React.MutableRefObject<boolean>;
   completedDetectionRunRef: React.MutableRefObject<boolean>;
   unratedDetectionRunRef: React.MutableRefObject<boolean>;
+  providerChangeDetectionRunRef: React.MutableRefObject<boolean>;
   detectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   inactiveDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   completedDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
   unratedDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+  providerChangeDetectionTimeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
 }
 
 export function createNewSeasonDetectionRunner(
@@ -283,5 +291,55 @@ export function createUnratedSeriesDetectionRunner(
         refs.unratedDetectionRunRef.current = false;
       }
     }, 500);
+  };
+}
+
+export function createProviderChangeDetectionRunner(
+  refs: Pick<DetectionRefs, 'providerChangeDetectionRunRef' | 'providerChangeDetectionTimeoutRef'>,
+  setProviderChanges: React.Dispatch<React.SetStateAction<ProviderChangeInfo[]>>,
+  setHasCheckedForProviderChanges: React.Dispatch<React.SetStateAction<boolean>>
+) {
+  return (seriesList: Series[], userId: string) => {
+    if (refs.providerChangeDetectionTimeoutRef.current) {
+      clearTimeout(refs.providerChangeDetectionTimeoutRef.current);
+      refs.providerChangeDetectionTimeoutRef.current = null;
+    }
+
+    if (refs.providerChangeDetectionRunRef.current) {
+      return;
+    }
+
+    // Längerer Delay weil TMDB-API-Calls gemacht werden
+    refs.providerChangeDetectionTimeoutRef.current = setTimeout(async () => {
+      if (refs.providerChangeDetectionRunRef.current || seriesList.length === 0) {
+        return;
+      }
+
+      refs.providerChangeDetectionRunRef.current = true;
+
+      try {
+        const changes = await detectProviderChanges(seriesList, userId);
+
+        if (changes.length > 0) {
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('providerChanges', JSON.stringify(changes));
+          }
+          setProviderChanges(changes);
+          setTimeout(() => {
+            setProviderChanges([...changes]);
+          }, 100);
+        } else {
+          setHasCheckedForProviderChanges(true);
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('hasCheckedForProviderChanges', 'true');
+          }
+        }
+      } catch (error) {
+        console.error('Error detecting provider changes:', error);
+        setHasCheckedForProviderChanges(true);
+      } finally {
+        refs.providerChangeDetectionRunRef.current = false;
+      }
+    }, 2000);
   };
 }
