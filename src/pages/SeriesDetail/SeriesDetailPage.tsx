@@ -356,6 +356,9 @@ export const SeriesDetailPage = memo(() => {
           onGenerate={characterGuide.generate}
           userProgress={characterGuide.userProgress}
           isMobile={isMobile}
+          onAskQuestion={characterGuide.askQuestion}
+          questionAnswer={characterGuide.questionAnswer}
+          questionLoading={characterGuide.questionLoading}
         />
       ) : activeTab === 'cast' ? (
         <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
@@ -471,6 +474,9 @@ export const SeriesDetailPage = memo(() => {
         aiLoading={recap.aiLoading}
         onGenerateAiRecap={recap.generateAiRecap}
         loading={recap.loading}
+        onAskQuestion={recap.askQuestion}
+        questionAnswer={recap.questionAnswer}
+        questionLoading={recap.questionLoading}
       />
     </div>
   );

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
@@ -25,6 +26,9 @@ interface RecapData {
   dismissPermanent: () => void;
   generateAiRecap: () => Promise<void>;
   aiLoading: boolean;
+  askQuestion: (question: string) => Promise<void>;
+  questionAnswer: string | null;
+  questionLoading: boolean;
 }
 
 /**
@@ -182,6 +186,7 @@ async function fetchEpisodeOverviews(
 }
 
 export const useRecapData = (series: Series | undefined): RecapData => {
+  const { user } = useAuth() || {};
   const [recapEpisodes, setRecapEpisodes] = useState<RecapEpisode[]>([]);
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -266,12 +271,16 @@ export const useRecapData = (series: Series | undefined): RecapData => {
           seriesTitle: series.title,
           originalTitle: series.original_name || series.title,
           episodes: recapEpisodes,
+          uid: user?.uid,
         }),
       });
 
       if (res.ok) {
         const data = await res.json();
         setAiRecap(data.recap);
+      } else if (res.status === 429) {
+        const data = await res.json();
+        setAiRecap(`⚠ ${data.error}`);
       } else if (res.status === 404) {
         setAiRecap(null);
       }
@@ -281,6 +290,57 @@ export const useRecapData = (series: Series | undefined): RecapData => {
       setAiLoading(false);
     }
   }, [series, recapEpisodes]);
+
+  const [questionAnswer, setQuestionAnswer] = useState<string | null>(null);
+  const [questionLoading, setQuestionLoading] = useState(false);
+
+  const askQuestion = useCallback(
+    async (question: string) => {
+      if (!series || !BACKEND_URL || !question.trim()) return;
+
+      // Fortschritt = letzte Recap-Episode
+      const lastEp = recapEpisodes[recapEpisodes.length - 1];
+      const userProgress = lastEp
+        ? { season: lastEp.seasonNumber, episode: lastEp.episodeNumber, isComplete: false }
+        : { season: 1, episode: 1, isComplete: false };
+
+      setQuestionLoading(true);
+      setQuestionAnswer(null);
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/ai/character-question`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            seriesTitle: series.title,
+            originalTitle: series.original_name || series.title,
+            userProgress,
+            question: question.trim(),
+            uid: user?.uid,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setQuestionAnswer(data.answer);
+        } else if (res.status === 429) {
+          const data = await res.json();
+          setQuestionAnswer(`⚠ ${data.error}`);
+        } else {
+          setQuestionAnswer(
+            res.status === 404
+              ? 'Serie dem KI-Modell nicht bekannt.'
+              : 'Fehler bei der Beantwortung.'
+          );
+        }
+      } catch {
+        setQuestionAnswer('Fehler bei der Beantwortung.');
+      } finally {
+        setQuestionLoading(false);
+      }
+    },
+    [series, recapEpisodes]
+  );
 
   return {
     shouldShowRecap,
@@ -293,5 +353,8 @@ export const useRecapData = (series: Series | undefined): RecapData => {
     dismissPermanent,
     generateAiRecap,
     aiLoading,
+    askQuestion,
+    questionAnswer,
+    questionLoading,
   };
 };
