@@ -234,10 +234,13 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
           <div className="notification-content">
             <div className="notification-header">
-              <HeaderIcon
-                className={`new-icon${variant === 'unrated' ? '' : ' pulse'}`}
-                style={{ color }}
-              />
+              <motion.div
+                animate={variant !== 'unrated' ? { scale: [1, 1.15, 1], opacity: [1, 0.8, 1] } : {}}
+                transition={{ repeat: Infinity, duration: 2 }}
+                style={{ display: 'flex' }}
+              >
+                <HeaderIcon className="new-icon" style={{ color }} />
+              </motion.div>
               <h3>{config.headerText(series.length)}</h3>
             </div>
 

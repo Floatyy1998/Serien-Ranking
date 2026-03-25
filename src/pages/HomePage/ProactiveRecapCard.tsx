@@ -95,7 +95,13 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({ recaps, 
               marginBottom: '12px',
             }}
           >
-            <AutoAwesome className="new-icon pulse" style={{ fontSize: '28px', color: accent }} />
+            <motion.div
+              animate={{ scale: [1, 1.15, 1], opacity: [1, 0.8, 1] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+              style={{ display: 'flex' }}
+            >
+              <AutoAwesome style={{ fontSize: '28px', color: accent }} />
+            </motion.div>
             <h3
               style={{
                 margin: 0,
