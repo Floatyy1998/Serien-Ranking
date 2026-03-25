@@ -7,6 +7,7 @@ import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { useContinueWatching } from './useContinueWatching';
+import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRating';
 import type { TodayEpisode } from './useWebWorkerTodayEpisodes';
 import { useWebWorkerTodayEpisodes } from './useWebWorkerTodayEpisodes';
 
@@ -36,6 +37,11 @@ interface EpisodeSwipeHandlersReturn {
     swipeDirection?: 'left' | 'right'
   ) => Promise<void>;
   swipeDirections: Record<string, 'left' | 'right'>;
+  quickRatingOpen: boolean;
+  quickRatingSeries: import('../types/Series').Series | null;
+  quickRatingSeasonNumber: number;
+  closeQuickRating: () => void;
+  saveQuickRating: (rating: number) => Promise<void>;
 }
 
 /**
@@ -91,6 +97,14 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
   const user = authContext?.user ?? null;
   const continueWatching = useContinueWatching();
   const todayEpisodes = useWebWorkerTodayEpisodes();
+  const {
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    showQuickRating,
+    closeQuickRating,
+    saveQuickRating,
+  } = useQuickSeasonRating();
 
   // Today-episodes Swipe-State
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
@@ -153,10 +167,34 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         } catch (error) {
           console.error('Error marking episode as watched:', error);
         }
+
+        // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel
+        if (item.seasons) {
+          const seriesLike = {
+            seasons: item.seasons,
+            rating: {},
+            rewatch: undefined,
+            genre: item.genre,
+            title: item.title,
+            id: item.id,
+            nmr: item.nmr,
+          } as unknown as import('../types/Series').Series;
+          if (
+            shouldTriggerQuickRate(
+              seriesLike,
+              item.nextEpisode.seasonIndex,
+              item.nextEpisode.episodeIndex
+            )
+          ) {
+            setTimeout(() => {
+              showQuickRating(seriesLike, item.nextEpisode.seasonNumber);
+            }, 500);
+          }
+        }
       }
       scheduleEpisodeHide(episodeKey, setCompletingContinueEpisodes, setHiddenContinueEpisodes);
     },
-    [user]
+    [user, showQuickRating]
   );
 
   const handleEpisodeComplete = useCallback(
@@ -224,5 +262,11 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
     handleEpisodeComplete,
     // Gemeinsam
     swipeDirections,
+    // Quick rating
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    closeQuickRating,
+    saveQuickRating,
   };
 };

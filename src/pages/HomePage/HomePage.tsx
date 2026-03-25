@@ -7,9 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
+import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
+import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
+import { useProactiveRecaps } from '../../hooks/useProactiveRecaps';
 import { useSeasonalRecommendations } from '../../hooks/useSeasonalRecommendations';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
@@ -24,6 +27,7 @@ import {
   SecondaryActionsSection,
 } from './HomeActionSections';
 import { NotificationSheet } from './NotificationSheet';
+import { ProactiveRecapCard } from './ProactiveRecapCard';
 import { PosterNavSheet } from './PosterNavSheet';
 import { StatsGrid } from './StatsGrid';
 import { TasteMatchCard } from './TasteMatchCard';
@@ -77,10 +81,13 @@ export const HomePage: React.FC = () => {
     clearCompletedSeries,
     unratedSeries,
     clearUnratedSeries,
+    providerChanges,
+    clearProviderChanges,
     seriesList,
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const { countdowns } = useSeriesCountdowns();
+  const proactiveRecaps = useProactiveRecaps();
   const config = useHomeConfig(user?.uid ?? '');
   const notifs = useUnifiedNotifications();
 
@@ -103,6 +110,11 @@ export const HomePage: React.FC = () => {
     hiddenEpisodes,
     handleEpisodeComplete,
     swipeDirections,
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    closeQuickRating,
+    saveQuickRating,
   } = useEpisodeSwipeHandlers();
 
   // Rewatch
@@ -411,6 +423,14 @@ export const HomePage: React.FC = () => {
           />
         )}
 
+      {providerChanges && providerChanges.length > 0 && (
+        <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />
+      )}
+
+      {proactiveRecaps.recaps.length > 0 && (
+        <ProactiveRecapCard recaps={proactiveRecaps.recaps} onDismiss={proactiveRecaps.dismiss} />
+      )}
+
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}
         photoURL={user.photoURL ?? undefined}
@@ -454,6 +474,14 @@ export const HomePage: React.FC = () => {
         onDismissAnnouncement={notifs.dismissAnnouncement}
         onAcceptRequest={notifs.acceptFriendRequest}
         onDeclineRequest={notifs.declineFriendRequest}
+      />
+
+      <QuickRatingSheet
+        isOpen={quickRatingOpen}
+        onClose={closeQuickRating}
+        seriesTitle={quickRatingSeries?.title || ''}
+        seasonNumber={quickRatingSeasonNumber}
+        onRate={saveQuickRating}
       />
     </div>
   );

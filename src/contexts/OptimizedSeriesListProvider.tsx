@@ -12,6 +12,8 @@ import {
   createInactiveSeriesDetectionRunner,
   createCompletedSeriesDetectionRunner,
   createUnratedSeriesDetectionRunner,
+  createProviderChangeDetectionRunner,
+  type ProviderChangeInfo,
 } from './seriesListDetection';
 import { checkSeriesIntegrity } from './dataIntegrityChecker';
 import { SeriesListContext } from './SeriesListContext';
@@ -89,14 +91,28 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return false;
   });
 
+  // State für Provider-Änderungen
+  const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>(() =>
+    getSessionStorageJSON('providerChanges', [])
+  );
+
+  const [hasCheckedForProviderChanges, setHasCheckedForProviderChanges] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForProviderChanges') === 'true';
+    }
+    return false;
+  });
+
   const detectionRunRef = useRef(false);
   const inactiveDetectionRunRef = useRef(false);
   const completedDetectionRunRef = useRef(false);
   const unratedDetectionRunRef = useRef(false);
+  const providerChangeDetectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inactiveDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unratedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const providerChangeDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstWatchedAtFixedRef = useRef(false);
 
   const {
@@ -202,6 +218,16 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     []
   );
 
+  const runProviderChangeDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createProviderChangeDetectionRunner(
+        { providerChangeDetectionRunRef, providerChangeDetectionTimeoutRef },
+        setProviderChanges,
+        setHasCheckedForProviderChanges
+      )(list, userId),
+    []
+  );
+
   // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
     if (seriesWithNewSeasons.length > 0) {
@@ -282,6 +308,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runUnratedSeriesDetection,
   ]);
 
+  // Provider change detection
+  useEffect(() => {
+    if (providerChanges.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForProviderChanges || isOffline) {
+      return;
+    }
+
+    runProviderChangeDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList,
+    hasCheckedForProviderChanges,
+    isOffline,
+    providerChanges.length,
+    runProviderChangeDetection,
+  ]);
+
   // Reset bei User-Wechsel - use cleanup to avoid setState-in-effect
   useEffect(() => {
     if (!user) return;
@@ -297,9 +343,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setHasCheckedForCompleted(false);
       setUnratedSeries([]);
       setHasCheckedForUnrated(false);
+      setProviderChanges([]);
+      setHasCheckedForProviderChanges(false);
       detectionRunRef.current = false;
       inactiveDetectionRunRef.current = false;
       completedDetectionRunRef.current = false;
+      providerChangeDetectionRunRef.current = false;
       firstWatchedAtFixedRef.current = false;
 
       if (detectionTimeoutRef.current) {
@@ -315,6 +364,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         completedDetectionTimeoutRef.current = null;
       }
 
+      if (providerChangeDetectionTimeoutRef.current) {
+        clearTimeout(providerChangeDetectionTimeoutRef.current);
+        providerChangeDetectionTimeoutRef.current = null;
+      }
+
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('seriesWithNewSeasons');
         sessionStorage.removeItem('hasCheckedForNewSeasons');
@@ -323,6 +377,8 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         sessionStorage.removeItem('hasCheckedForInactive');
         sessionStorage.removeItem('completedSeries');
         sessionStorage.removeItem('hasCheckedForCompleted');
+        sessionStorage.removeItem('providerChanges');
+        sessionStorage.removeItem('hasCheckedForProviderChanges');
       }
     };
   }, [user]);
@@ -375,6 +431,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('unratedSeries');
       sessionStorage.setItem('hasCheckedForUnrated', 'true');
+    }
+  }, []);
+
+  const clearProviderChanges = useCallback(() => {
+    setProviderChanges([]);
+    setHasCheckedForProviderChanges(true);
+    providerChangeDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('providerChanges');
+      sessionStorage.setItem('hasCheckedForProviderChanges', 'true');
     }
   }, []);
 
@@ -460,11 +527,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         inactiveRewatches,
         completedSeries,
         unratedSeries,
+        providerChanges,
         clearNewSeasons,
         clearInactiveSeries,
         clearInactiveRewatches,
         clearCompletedSeries,
         clearUnratedSeries,
+        clearProviderChanges,
         recheckForNewSeasons,
         refetchSeries,
         toggleHideSeries,
