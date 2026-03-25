@@ -472,6 +472,7 @@ export const SeriesDetailPage = memo(() => {
         recapEpisodes={recap.recapEpisodes}
         aiRecap={recap.aiRecap}
         aiLoading={recap.aiLoading}
+        aiError={recap.aiError}
         onGenerateAiRecap={recap.generateAiRecap}
         loading={recap.loading}
         onAskQuestion={recap.askQuestion}
