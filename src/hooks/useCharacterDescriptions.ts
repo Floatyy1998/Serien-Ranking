@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
@@ -59,6 +60,7 @@ export interface CharacterDescription {
 interface UserProgress {
   season: number;
   episode: number;
+  isComplete: boolean;
 }
 
 function getUserProgress(series: Series): UserProgress | null {
@@ -81,7 +83,14 @@ function getUserProgress(series: Series): UserProgress | null {
   }
 
   if (lastSeason === 0) return null;
-  return { season: lastSeason, episode: lastEpisode };
+
+  // Prüfe ob alle Episoden geschaut sind
+  const hasUnwatched = seasons.some((s) => {
+    const eps = Array.isArray(s.episodes) ? s.episodes : Object.values(s.episodes || {});
+    return eps.some((ep) => ep && !(ep as { watched?: boolean }).watched);
+  });
+
+  return { season: lastSeason, episode: lastEpisode, isComplete: !hasUnwatched };
 }
 
 async function fetchCast(
@@ -148,6 +157,7 @@ async function fetchAniListCharacterImages(seriesTitle: string): Promise<Record<
 }
 
 export function useCharacterDescriptions(series: Series | undefined) {
+  const { user } = useAuth() || {};
   const [characters, setCharacters] = useState<CharacterDescription[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -208,15 +218,21 @@ export function useCharacterDescriptions(series: Series | undefined) {
           characters: cast.map((c) => ({ name: c.name, character: c.character || c.name })),
           userProgress,
           episodeContext,
+          uid: user?.uid,
         }),
       });
 
       if (!res.ok) {
-        setError(
-          res.status === 404
-            ? 'Serie dem KI-Modell nicht bekannt'
-            : 'Fehler beim Laden der Charaktere'
-        );
+        if (res.status === 429) {
+          const data = await res.json();
+          setError(data.error);
+        } else {
+          setError(
+            res.status === 404
+              ? 'Serie dem KI-Modell nicht bekannt'
+              : 'Fehler beim Laden der Charaktere'
+          );
+        }
         setLoading(false);
         return;
       }
@@ -268,11 +284,59 @@ export function useCharacterDescriptions(series: Series | undefined) {
     }
   }, [series, userProgress]);
 
+  const [questionAnswer, setQuestionAnswer] = useState<string | null>(null);
+  const [questionLoading, setQuestionLoading] = useState(false);
+
+  const askQuestion = useCallback(
+    async (question: string) => {
+      if (!series || !userProgress || !BACKEND_URL || !question.trim()) return;
+
+      setQuestionLoading(true);
+      setQuestionAnswer(null);
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/ai/character-question`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            seriesTitle: series.title,
+            originalTitle: series.original_name || series.title,
+            userProgress,
+            question: question.trim(),
+            uid: user?.uid,
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setQuestionAnswer(data.answer);
+        } else if (res.status === 429) {
+          const data = await res.json();
+          setQuestionAnswer(`⚠ ${data.error}`);
+        } else {
+          setQuestionAnswer(
+            res.status === 404
+              ? 'Serie dem KI-Modell nicht bekannt.'
+              : 'Fehler bei der Beantwortung.'
+          );
+        }
+      } catch {
+        setQuestionAnswer('Fehler bei der Beantwortung.');
+      } finally {
+        setQuestionLoading(false);
+      }
+    },
+    [series, userProgress]
+  );
+
   return {
     characters,
     loading,
     error,
     generate,
     userProgress,
+    askQuestion,
+    questionAnswer,
+    questionLoading,
   };
 }

@@ -1,5 +1,6 @@
-import { AutoAwesome } from '@mui/icons-material';
+import { AutoAwesome, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { RecapEpisode } from '../../hooks/useRecapData';
 import { BottomSheet } from './BottomSheet';
@@ -15,6 +16,9 @@ interface RecapSheetProps {
   aiLoading: boolean;
   onGenerateAiRecap: () => void;
   loading: boolean;
+  onAskQuestion: (question: string) => Promise<void>;
+  questionAnswer: string | null;
+  questionLoading: boolean;
 }
 
 export const RecapSheet: React.FC<RecapSheetProps> = ({
@@ -28,9 +32,19 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
   aiLoading,
   onGenerateAiRecap,
   loading,
+  onAskQuestion,
+  questionAnswer,
+  questionLoading,
 }) => {
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
+  const [question, setQuestion] = useState('');
+
+  const handleAsk = () => {
+    if (!question.trim() || questionLoading) return;
+    onAskQuestion(question.trim());
+    setQuestion('');
+  };
   const surface = currentTheme.background.surface;
 
   const parseBulletPoints = (text: string) => {
@@ -393,6 +407,119 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
               </div>
             </div>
           )
+        )}
+
+        {/* Question input */}
+        {(aiRecap || recapEpisodes.length > 0) && !loading && (
+          <div style={{ marginTop: '20px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
+                placeholder="Was ist nochmal passiert mit...?"
+                disabled={questionLoading}
+                style={{
+                  flex: 1,
+                  padding: '11px 14px',
+                  background: currentTheme.background.surface,
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  color: currentTheme.text.secondary,
+                  fontSize: 'clamp(13px, 1.2vw, 15px)',
+                  outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleAsk}
+                disabled={!question.trim() || questionLoading}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: question.trim() ? accent : `${accent}20`,
+                  color: question.trim() ? currentTheme.background.default : `${accent}60`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: question.trim() && !questionLoading ? 'pointer' : 'default',
+                  flexShrink: 0,
+                }}
+              >
+                <Send style={{ fontSize: '16px' }} />
+              </button>
+            </div>
+
+            {questionLoading && (
+              <div
+                style={{
+                  marginTop: '10px',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: `${accent}08`,
+                  border: `1px solid ${accent}15`,
+                }}
+              >
+                <div
+                  style={{
+                    height: '12px',
+                    width: '60%',
+                    borderRadius: '6px',
+                    background: `${accent}15`,
+                    animation: 'recapPulse 1.5s ease-in-out infinite',
+                  }}
+                />
+              </div>
+            )}
+
+            {questionAnswer && !questionLoading && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  marginTop: '10px',
+                  padding: '12px',
+                  borderRadius: '10px',
+                  background: `${accent}08`,
+                  border: `1px solid ${accent}15`,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    marginBottom: '6px',
+                  }}
+                >
+                  <AutoAwesome style={{ fontSize: '12px', color: accent }} />
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      letterSpacing: '1px',
+                      color: accent,
+                    }}
+                  >
+                    Antwort
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontSize: 'clamp(13px, 1.2vw, 15px)',
+                    lineHeight: 1.6,
+                    color: currentTheme.text.secondary,
+                    margin: 0,
+                  }}
+                >
+                  {questionAnswer}
+                </p>
+              </motion.div>
+            )}
+          </div>
         )}
 
         {/* Dismiss */}

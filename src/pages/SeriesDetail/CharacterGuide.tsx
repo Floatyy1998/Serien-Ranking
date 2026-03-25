@@ -1,5 +1,6 @@
-import { AutoAwesome } from '@mui/icons-material';
+import { AutoAwesome, Send } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { CharacterDescription } from '../../hooks/useCharacterDescriptions';
 
@@ -10,7 +11,153 @@ interface CharacterGuideProps {
   onGenerate: () => void;
   userProgress: { season: number; episode: number } | null;
   isMobile: boolean;
+  onAskQuestion: (question: string) => Promise<void>;
+  questionAnswer: string | null;
+  questionLoading: boolean;
 }
+
+interface QuestionInputProps {
+  question: string;
+  setQuestion: (q: string) => void;
+  onAsk: () => void;
+  questionLoading: boolean;
+  questionAnswer: string | null;
+  lastAsked: string;
+  accent: string;
+  currentTheme: ReturnType<typeof useTheme>['currentTheme'];
+  isMobile: boolean;
+  userProgress: { season: number; episode: number } | null;
+}
+
+const QuestionInput: React.FC<QuestionInputProps> = ({
+  question,
+  setQuestion,
+  onAsk,
+  questionLoading,
+  questionAnswer,
+  lastAsked,
+  accent,
+  currentTheme,
+  isMobile,
+  userProgress,
+}) => (
+  <div style={{ marginTop: '20px', padding: `0 ${isMobile ? '0' : '0'}` }}>
+    <div
+      style={{
+        fontSize: '11px',
+        fontWeight: 600,
+        color: currentTheme.text.muted,
+        marginBottom: '8px',
+      }}
+    >
+      Frage zur Serie
+      {userProgress ? ` (spoilerfrei bis S${userProgress.season}E${userProgress.episode})` : ''}
+    </div>
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <input
+        type="text"
+        value={question}
+        onChange={(e) => setQuestion(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && onAsk()}
+        placeholder="Was ist nochmal mit ... passiert?"
+        disabled={questionLoading}
+        style={{
+          flex: 1,
+          padding: '12px 14px',
+          background: currentTheme.background.surface,
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '12px',
+          color: currentTheme.text.secondary,
+          fontSize: isMobile ? '14px' : '15px',
+          outline: 'none',
+        }}
+      />
+      <button
+        onClick={onAsk}
+        disabled={!question.trim() || questionLoading}
+        style={{
+          width: '44px',
+          height: '44px',
+          borderRadius: '12px',
+          border: 'none',
+          background: question.trim() ? accent : `${accent}20`,
+          color: question.trim() ? currentTheme.background.default : `${accent}60`,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: question.trim() && !questionLoading ? 'pointer' : 'default',
+          flexShrink: 0,
+        }}
+      >
+        <Send style={{ fontSize: '18px' }} />
+      </button>
+    </div>
+
+    {(questionLoading || questionAnswer) && lastAsked && (
+      <div
+        style={{
+          marginTop: '10px',
+          padding: '10px 14px',
+          borderRadius: '10px 10px 0 0',
+          background: currentTheme.background.surface,
+          fontSize: isMobile ? '13px' : '14px',
+          color: currentTheme.text.secondary,
+          fontStyle: 'italic',
+        }}
+      >
+        {lastAsked}
+      </div>
+    )}
+
+    {questionLoading && (
+      <div
+        style={{
+          padding: '14px',
+          borderRadius: lastAsked ? '0 0 10px 10px' : '12px',
+          background: `${accent}08`,
+          border: `1px solid ${accent}15`,
+          borderTop: lastAsked ? 'none' : undefined,
+        }}
+      >
+        <div
+          style={{
+            height: '14px',
+            width: '70%',
+            borderRadius: '7px',
+            background: `${accent}15`,
+            animation: 'pulse 1.5s ease-in-out infinite',
+          }}
+        />
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.7; } }`}</style>
+      </div>
+    )}
+
+    {questionAnswer && !questionLoading && (
+      <motion.div
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          padding: '14px',
+          borderRadius: lastAsked ? '0 0 10px 10px' : '12px',
+          background: `${accent}08`,
+          border: `1px solid ${accent}15`,
+          borderTop: lastAsked ? 'none' : undefined,
+        }}
+      >
+        <p
+          style={{
+            fontSize: isMobile ? '13px' : '14px',
+            lineHeight: 1.6,
+            color: currentTheme.text.secondary,
+            margin: 0,
+          }}
+        >
+          {questionAnswer}
+        </p>
+      </motion.div>
+    )}
+  </div>
+);
 
 export const CharacterGuide: React.FC<CharacterGuideProps> = ({
   characters,
@@ -19,10 +166,22 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
   onGenerate,
   userProgress,
   isMobile,
+  onAskQuestion,
+  questionAnswer,
+  questionLoading,
 }) => {
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
   const pad = isMobile ? '12px' : '20px';
+  const [question, setQuestion] = useState('');
+  const [lastAsked, setLastAsked] = useState('');
+
+  const handleAsk = () => {
+    if (!question.trim() || questionLoading) return;
+    setLastAsked(question.trim());
+    onAskQuestion(question.trim());
+    setQuestion('');
+  };
 
   // Noch nicht generiert
   if (characters.length === 0 && !loading && !error) {
@@ -73,6 +232,19 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
           <AutoAwesome style={{ fontSize: '18px' }} />
           Guide generieren
         </button>
+
+        <QuestionInput
+          question={question}
+          setQuestion={setQuestion}
+          onAsk={handleAsk}
+          questionLoading={questionLoading}
+          questionAnswer={questionAnswer}
+          lastAsked={lastAsked}
+          accent={accent}
+          currentTheme={currentTheme}
+          isMobile={isMobile}
+          userProgress={userProgress}
+        />
       </div>
     );
   }
@@ -151,11 +323,23 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
         >
           Nochmal versuchen
         </button>
+        <QuestionInput
+          question={question}
+          setQuestion={setQuestion}
+          onAsk={handleAsk}
+          questionLoading={questionLoading}
+          questionAnswer={questionAnswer}
+          lastAsked={lastAsked}
+          accent={accent}
+          currentTheme={currentTheme}
+          isMobile={isMobile}
+          userProgress={userProgress}
+        />
       </div>
     );
   }
 
-  // Character list
+  // Character list + question input
   return (
     <div style={{ padding: `8px ${pad} 16px` }}>
       <div
@@ -298,6 +482,19 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
           </motion.div>
         ))}
       </div>
+
+      <QuestionInput
+        question={question}
+        setQuestion={setQuestion}
+        onAsk={handleAsk}
+        questionLoading={questionLoading}
+        questionAnswer={questionAnswer}
+        lastAsked={lastAsked}
+        accent={accent}
+        currentTheme={currentTheme}
+        isMobile={isMobile}
+        userProgress={userProgress}
+      />
     </div>
   );
 };
