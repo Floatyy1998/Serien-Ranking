@@ -43,40 +43,46 @@ export const GenreRatingSection = ({
       transition={{ duration: 0.2 }}
       className="rate-genre-list"
     >
-      {Object.keys(genreRatings).map((genre) => {
-        const color = genreColors[genre] || currentTheme.accent;
-        return (
-          <div key={genre} className="rate-genre-item">
-            <div className="rate-genre-header">
-              <div className="rate-genre-info">
-                <div
-                  className="rate-genre-icon"
-                  style={{
-                    background: `${color}20`,
-                    color: color,
-                  }}
-                >
-                  {genreIcons[genre] || <Star />}
+      {Object.keys(genreRatings)
+        .sort((a, b) => {
+          if (a === 'All') return -1;
+          if (b === 'All') return 1;
+          return a.localeCompare(b);
+        })
+        .map((genre) => {
+          const color = genreColors[genre] || currentTheme.accent;
+          return (
+            <div key={genre} className="rate-genre-item">
+              <div className="rate-genre-header">
+                <div className="rate-genre-info">
+                  <div
+                    className="rate-genre-icon"
+                    style={{
+                      background: `${color}20`,
+                      color: color,
+                    }}
+                  >
+                    {genreIcons[genre] || <Star />}
+                  </div>
+                  <span className="rate-genre-name">{genre}</span>
                 </div>
-                <span className="rate-genre-name">{genre}</span>
+                <span className="rate-genre-value">{genreRatings[genre].toFixed(1)}</span>
               </div>
-              <span className="rate-genre-value">{genreRatings[genre].toFixed(1)}</span>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={genreRatings[genre]}
+                onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
+                className="rate-genre-range"
+                style={{
+                  background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
+                }}
+              />
             </div>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="0.1"
-              value={genreRatings[genre]}
-              onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
-              className="rate-genre-range"
-              style={{
-                background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
-              }}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
     </motion.div>
   );
 };

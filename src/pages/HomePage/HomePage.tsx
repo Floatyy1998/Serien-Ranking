@@ -373,6 +373,10 @@ export const HomePage: React.FC = () => {
     <div style={{ overflowY: 'auto', position: 'relative' }}>
       <WrappedNotification />
 
+      {proactiveRecaps.recaps.length > 0 && (
+        <ProactiveRecapCard recaps={proactiveRecaps.recaps} onDismiss={proactiveRecaps.dismiss} />
+      )}
+
       {seriesWithNewSeasons && seriesWithNewSeasons.length > 0 && (
         <CarouselNotification
           variant="new-season"
@@ -425,10 +429,6 @@ export const HomePage: React.FC = () => {
 
       {providerChanges && providerChanges.length > 0 && (
         <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />
-      )}
-
-      {proactiveRecaps.recaps.length > 0 && (
-        <ProactiveRecapCard recaps={proactiveRecaps.recaps} onDismiss={proactiveRecaps.dismiss} />
       )}
 
       <GreetingSection

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
+import { hasEpisodeAired } from '../utils/episodeDate';
 
 const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
@@ -226,8 +227,10 @@ export const useRecapData = (series: Series | undefined): RecapData => {
     );
     setDaysSinceLastWatch(daysSince);
 
-    // Prüfe ob es unwatched Episodes gibt (Serie nicht komplett)
-    const hasUnwatched = series.seasons?.some((s) => s.episodes?.some((ep) => !ep.watched));
+    // Prüfe ob es unwatched Episodes gibt die bereits ausgestrahlt wurden
+    const hasUnwatched = series.seasons?.some((s) =>
+      s.episodes?.some((ep) => !ep.watched && hasEpisodeAired(ep))
+    );
 
     if (daysSince >= RECAP_THRESHOLD_DAYS && hasUnwatched) {
       setShouldShowRecap(true);

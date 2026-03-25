@@ -54,8 +54,8 @@ export const useRatingData = (): UseRatingDataResult => {
     if (item && user) {
       const allPossibleGenres =
         type === 'movie'
-          ? genreMenuItemsForMovies.filter((g) => g.value !== 'All').map((g) => g.label)
-          : genreMenuItems.filter((g) => g.value !== 'All').map((g) => g.label);
+          ? genreMenuItemsForMovies.map((g) => g.value)
+          : genreMenuItems.map((g) => g.value);
 
       const loadedRatings: Record<string, number> = {};
       allPossibleGenres.forEach((genre) => {

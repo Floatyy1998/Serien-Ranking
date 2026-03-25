@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
@@ -13,6 +14,7 @@ export interface ProactiveRecap {
   seriesTitle: string;
   posterUrl: string;
   triggerType: 'new-season' | 'mid-season-return';
+  startsToday: boolean;
   seasonNumber: number;
   recap: string | null;
   loading: boolean;
@@ -39,6 +41,7 @@ function isToday(date: Date): boolean {
 interface RecapTrigger {
   series: Series;
   triggerType: 'new-season' | 'mid-season-return';
+  startsToday: boolean;
   seasonNumber: number;
   episodesToRecap: { seasonIndex: number; episodes: number[] };
 }
@@ -60,13 +63,16 @@ function findRecapTriggers(seriesList: Series[]): RecapTrigger[] {
       if (!firstAirDate) continue;
 
       // Neue Staffel startet morgen/heute?
-      if ((isTomorrow(new Date(firstAirDate)) || isToday(new Date(firstAirDate))) && sIdx > 0) {
+      const today = isToday(new Date(firstAirDate));
+      const tomorrow = isTomorrow(new Date(firstAirDate));
+      if ((today || tomorrow) && sIdx > 0) {
         const prevSeason = seasons[sIdx - 1];
         const allWatched = prevSeason.episodes?.every((ep) => ep.watched);
         if (allWatched && prevSeason.episodes?.length) {
           triggers.push({
             series,
             triggerType: 'new-season',
+            startsToday: today,
             seasonNumber: season.seasonNumber + 1,
             episodesToRecap: {
               seasonIndex: sIdx - 1,
@@ -93,6 +99,7 @@ function findRecapTriggers(seriesList: Series[]): RecapTrigger[] {
           gapDays >= MID_SEASON_GAP_DAYS &&
           (isTomorrow(new Date(epDate)) || isToday(new Date(epDate)))
         ) {
+          const midToday = isToday(new Date(epDate));
           // Prüfe ob User die Episoden vor der Pause geschaut hat
           const prevWatched = prevEp.watched;
           if (prevWatched) {
@@ -105,6 +112,7 @@ function findRecapTriggers(seriesList: Series[]): RecapTrigger[] {
               triggers.push({
                 series,
                 triggerType: 'mid-season-return',
+                startsToday: midToday,
                 seasonNumber: season.seasonNumber + 1,
                 episodesToRecap: { seasonIndex: sIdx, episodes: watchedEpisodes },
               });
@@ -118,7 +126,7 @@ function findRecapTriggers(seriesList: Series[]): RecapTrigger[] {
   return triggers;
 }
 
-async function fetchRecapForTrigger(trigger: RecapTrigger): Promise<string | null> {
+async function fetchRecapForTrigger(trigger: RecapTrigger, uid?: string): Promise<string | null> {
   if (!BACKEND_URL) return null;
 
   const season = trigger.series.seasons[trigger.episodesToRecap.seasonIndex];
@@ -173,6 +181,7 @@ async function fetchRecapForTrigger(trigger: RecapTrigger): Promise<string | nul
         seriesTitle: trigger.series.title,
         originalTitle: trigger.series.original_name || trigger.series.title,
         episodes,
+        uid,
       }),
     });
 
@@ -188,6 +197,7 @@ async function fetchRecapForTrigger(trigger: RecapTrigger): Promise<string | nul
 }
 
 export function useProactiveRecaps() {
+  const { user } = useAuth() || {};
   const { seriesList } = useSeriesList();
   const [recaps, setRecaps] = useState<ProactiveRecap[]>([]);
   const [loading, setLoading] = useState(false);
@@ -195,7 +205,7 @@ export function useProactiveRecaps() {
   const triggers = useMemo(() => findRecapTriggers(seriesList), [seriesList]);
 
   useEffect(() => {
-    if (triggers.length === 0) return;
+    if (triggers.length === 0 || !user) return;
 
     // Prüfe welche Triggers nicht dismissed sind
     const activeTriggers = triggers.filter((t) => {
@@ -214,6 +224,7 @@ export function useProactiveRecaps() {
         seriesTitle: t.series.title,
         posterUrl: t.series.poster?.poster || '',
         triggerType: t.triggerType,
+        startsToday: t.startsToday,
         seasonNumber: t.seasonNumber,
         recap: cached || null,
         loading: !cached,
@@ -240,7 +251,7 @@ export function useProactiveRecaps() {
     Promise.all(
       fetchBatch.map(async (trigger) => {
         const cacheKey = `proactive-recap-${trigger.series.id}-${trigger.triggerType}-S${trigger.seasonNumber}`;
-        const recap = await fetchRecapForTrigger(trigger);
+        const recap = await fetchRecapForTrigger(trigger, user?.uid);
         if (recap) {
           sessionStorage.setItem(cacheKey, recap);
         }
@@ -258,7 +269,7 @@ export function useProactiveRecaps() {
       );
       setLoading(false);
     });
-  }, [triggers]);
+  }, [triggers, user]);
 
   const dismiss = useCallback((cacheKey: string) => {
     localStorage.setItem(`proactive-recap-dismissed-${cacheKey}`, 'true');

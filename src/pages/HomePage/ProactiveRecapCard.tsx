@@ -1,5 +1,4 @@
-import { AutoAwesome, Close, ChevronRight } from '@mui/icons-material';
-import { Tooltip } from '@mui/material';
+import { AutoAwesome, Close, ExpandMore, ExpandLess, ChevronRight } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +22,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({ recaps, 
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [expanded, setExpanded] = useState(false);
   const accent = currentTheme.accent || currentTheme.primary;
 
   if (recaps.length === 0) return null;
@@ -31,215 +31,315 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({ recaps, 
 
   const triggerLabel =
     current.triggerType === 'new-season'
-      ? `Staffel ${current.seasonNumber} startet!`
-      : `Mid-Season Comeback!`;
+      ? `Staffel ${current.seasonNumber} startet ${current.startsToday ? 'heute' : 'morgen'}!`
+      : `Staffel ${current.seasonNumber} wird ${current.startsToday ? 'heute' : 'morgen'} fortgesetzt!`;
+
+  const hasContent = current.recap && !current.loading;
+  const points = hasContent ? parseBulletPoints(current.recap!) : [];
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        key={current.cacheKey}
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
+        exit={{ opacity: 0, y: -12 }}
+        transition={{ duration: 0.3 }}
         style={{
-          background: `linear-gradient(135deg, ${accent}12, ${currentTheme.background.default})`,
-          border: `1px solid ${accent}25`,
+          position: 'fixed',
+          top: '60px',
+          left: 0,
+          right: 0,
+          margin: '0 auto',
+          zIndex: 1000,
+          maxWidth: '480px',
+          width: 'calc(100% - 32px)',
           borderRadius: '16px',
-          padding: '16px',
-          margin: '0 0 12px',
-          position: 'relative',
+          border: `1px solid ${accent}30`,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)',
+          backdropFilter: 'blur(16px)',
+          background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee)`,
+          overflow: 'hidden',
         }}
       >
-        <Tooltip title="Schließen" arrow>
-          <button
-            onClick={() => onDismiss(current.cacheKey)}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              color: currentTheme.text.muted,
-              cursor: 'pointer',
-              padding: '4px',
-              display: 'flex',
-            }}
-          >
-            <Close style={{ fontSize: '18px' }} />
-          </button>
-        </Tooltip>
+        {/* Close button */}
+        <button
+          onClick={() => onDismiss(current.cacheKey)}
+          className="close-button"
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '12px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: '50%',
+            color: currentTheme.text.muted,
+            zIndex: 1,
+          }}
+        >
+          <Close style={{ fontSize: '18px' }} />
+        </button>
 
         {/* Header */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-          {current.posterUrl && (
-            <img
-              src={current.posterUrl}
-              alt={current.seriesTitle}
+        <div style={{ padding: '16px 16px 0' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              marginBottom: '12px',
+            }}
+          >
+            <AutoAwesome className="new-icon pulse" style={{ fontSize: '28px', color: accent }} />
+            <h3
               style={{
-                width: '48px',
-                height: '72px',
-                objectFit: 'cover',
-                borderRadius: '8px',
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                marginBottom: '4px',
+                margin: 0,
+                fontSize: '1.1rem',
+                fontWeight: 800,
+                color: accent,
+                lineHeight: 1.2,
               }}
             >
-              <AutoAwesome style={{ fontSize: '14px', color: accent }} />
-              <span
+              {triggerLabel}
+            </h3>
+          </div>
+
+          {/* Series info */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '10px',
+              background: 'rgba(0,0,0,0.15)',
+              borderRadius: '14px',
+              marginBottom: '12px',
+            }}
+          >
+            {current.posterUrl && (
+              <img
+                src={current.posterUrl}
+                alt={current.seriesTitle}
+                onClick={() => navigate(`/series/${current.seriesId}`)}
                 style={{
-                  fontSize: '11px',
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '1.5px',
-                  color: accent,
+                  width: '50px',
+                  height: '75px',
+                  objectFit: 'cover',
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+                  flexShrink: 0,
+                  cursor: 'pointer',
+                }}
+              />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h4
+                style={{
+                  margin: '0 0 6px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  color: currentTheme.text.secondary,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
                 }}
               >
-                {triggerLabel}
-              </span>
+                {current.seriesTitle}
+              </h4>
+              <p
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  margin: 0,
+                  opacity: 0.9,
+                  fontSize: '0.85rem',
+                  color: currentTheme.text.muted,
+                }}
+              >
+                {current.loading
+                  ? 'Recap wird generiert...'
+                  : current.triggerType === 'new-season'
+                    ? 'Recap der vorherigen Staffel'
+                    : 'Recap vor der Fortsetzung'}
+              </p>
             </div>
             <div
-              style={{
-                fontSize: '17px',
-                fontWeight: 700,
-                color: currentTheme.text.secondary,
-                marginBottom: '2px',
-              }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '120px' }}
             >
-              {current.seriesTitle}
-            </div>
-            <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-              {current.triggerType === 'new-season'
-                ? `Recap der vorherigen Staffel`
-                : `Recap vor der Fortsetzung`}
+              <button
+                onClick={() => navigate(`/series/${current.seriesId}`)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  padding: '10px 16px',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.9rem',
+                  background: accent,
+                  color: currentTheme.background.default,
+                }}
+              >
+                <span>Zur Serie</span>
+                <ChevronRight style={{ fontSize: '20px' }} />
+              </button>
+              {hasContent && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    padding: '10px 16px',
+                    border: 'none',
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontSize: '0.9rem',
+                    background: `${accent}20`,
+                    color: accent,
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <span>{expanded ? 'Einklappen' : 'Recap lesen'}</span>
+                  {expanded ? (
+                    <ExpandLess style={{ fontSize: '18px' }} />
+                  ) : (
+                    <ExpandMore style={{ fontSize: '18px' }} />
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Recap Content */}
-        {current.loading ? (
+        {/* Loading indicator */}
+        {current.loading && (
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '8px 0',
+              height: '3px',
+              background: `${accent}15`,
+              overflow: 'hidden',
             }}
           >
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                style={{
-                  height: '16px',
-                  borderRadius: '8px',
-                  background: currentTheme.background.surface,
-                  width: `${100 - i * 15}%`,
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                }}
-              />
-            ))}
+            <motion.div
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+              style={{ width: '40%', height: '100%', background: accent }}
+            />
           </div>
-        ) : current.recap ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {parseBulletPoints(current.recap).map((point, i) => (
+        )}
+
+        {/* Expandable recap */}
+        <AnimatePresence>
+          {expanded && hasContent && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{ overflow: 'hidden' }}
+            >
               <div
-                key={i}
                 style={{
+                  padding: '4px 16px 16px',
                   display: 'flex',
-                  gap: '10px',
-                  alignItems: 'flex-start',
+                  flexDirection: 'column',
+                  gap: '8px',
                 }}
               >
                 <div
                   style={{
-                    width: '3px',
-                    minHeight: '16px',
-                    height: '100%',
-                    borderRadius: '2px',
-                    background: accent,
-                    opacity: 0.5 + i * 0.1,
-                    flexShrink: 0,
-                    marginTop: '3px',
+                    height: '1px',
+                    background: `linear-gradient(90deg, transparent, ${accent}25, transparent)`,
+                    marginBottom: '6px',
                   }}
                 />
-                <p
-                  style={{
-                    fontSize: '14px',
-                    lineHeight: 1.6,
-                    color: currentTheme.text.secondary,
-                    margin: 0,
-                  }}
-                >
-                  {point}
-                </p>
+                {points.map((point, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -6 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}
+                  >
+                    <div
+                      style={{
+                        width: '3px',
+                        minHeight: '16px',
+                        height: '100%',
+                        borderRadius: '2px',
+                        background: accent,
+                        opacity: 0.4 + i * 0.1,
+                        flexShrink: 0,
+                        marginTop: '4px',
+                      }}
+                    />
+                    <p
+                      style={{
+                        fontSize: '14px',
+                        lineHeight: 1.65,
+                        color: currentTheme.text.secondary,
+                        margin: 0,
+                      }}
+                    >
+                      {point}
+                    </p>
+                  </motion.div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : null}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* Actions */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginTop: '14px',
-          }}
-        >
-          {/* Navigation dots */}
-          {recaps.length > 1 && (
-            <div style={{ display: 'flex', gap: '6px' }}>
+        {/* Navigation dots */}
+        {recaps.length > 1 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '0 0 12px',
+            }}
+          >
+            <span style={{ fontSize: '0.85rem', opacity: 0.7, color: currentTheme.text.muted }}>
+              {currentIndex + 1} von {recaps.length}
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
               {recaps.map((_, i) => (
                 <span
                   key={i}
-                  onClick={() => setCurrentIndex(i)}
+                  onClick={() => {
+                    setCurrentIndex(i);
+                    setExpanded(false);
+                  }}
                   style={{
-                    width: '8px',
+                    width: i === currentIndex ? '24px' : '8px',
                     height: '8px',
-                    borderRadius: '50%',
+                    borderRadius: i === currentIndex ? '4px' : '50%',
                     background: i === currentIndex ? accent : `${currentTheme.text.muted}40`,
                     cursor: 'pointer',
+                    transition: 'all 0.3s',
                   }}
                 />
               ))}
             </div>
-          )}
-          <div style={{ flex: 1 }} />
-          <button
-            onClick={() => navigate(`/series/${current.seriesId}`)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              background: accent,
-              border: 'none',
-              borderRadius: '10px',
-              padding: '8px 14px',
-              color: currentTheme.background.default,
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Zur Serie
-            <ChevronRight style={{ fontSize: '16px' }} />
-          </button>
-        </div>
+          </div>
+        )}
       </motion.div>
-
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.6; }
-        }
-      `}</style>
     </AnimatePresence>
   );
 };

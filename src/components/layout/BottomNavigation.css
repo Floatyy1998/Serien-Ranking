@@ -1,4 +1,4 @@
-/* === Floating Dock Navigation === */
+/* === Floating Dock Navigation – Liquid Glass === */
 .mobile-bottom-navigation {
   position: fixed;
   bottom: 12px;
@@ -6,14 +6,28 @@
   transform: translateX(-50%);
   width: 90%;
   z-index: 1000;
-  background: color-mix(in srgb, var(--theme-surface, #0e1420) 55%, transparent);
-  backdrop-filter: blur(50px) saturate(1.8);
-  -webkit-backdrop-filter: blur(50px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+
+  /* Liquid Glass: sehr transparent mit leichtem Tint */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  backdrop-filter: blur(40px) saturate(1.6) brightness(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(1.6) brightness(1.1);
+
+  /* Doppelte Borders für Lichtbrechungs-Effekt */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 22px;
+
+  /* Tiefe + innerer Glanz */
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.05);
 }
 
 .nav-container {
@@ -44,15 +58,6 @@
 
 .nav-item.active {
   color: var(--color-primary);
-}
-
-/* No special center treatment - same as others */
-.nav-item.nav-center {
-  /* intentionally empty - same as other items */
-}
-
-.nav-item.nav-center .nav-label {
-  /* show label just like other items */
 }
 
 /* --- Nav Icon --- */

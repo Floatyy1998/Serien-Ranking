@@ -74,6 +74,34 @@ export function checkSeriesIntegrity(
         { name: s.name, title: s.title, nmr: s.nmr }
       );
 
+    const genres = s.genre?.genres || [];
+    if (genres.length > 0 && !genres.includes('All'))
+      add(
+        'missing-all-genre',
+        sName,
+        seriesKey,
+        -1,
+        -1,
+        `${bp}/genre/genres`,
+        'Serie ohne "All" in genre.genres — wird im Genrefilter "Alle" nicht angezeigt',
+        ['genres'],
+        { genres }
+      );
+
+    const ratingKeys = s.rating && typeof s.rating === 'object' ? Object.keys(s.rating) : [];
+    if (ratingKeys.length > 0 && !ratingKeys.includes('All'))
+      add(
+        'missing-all-rating',
+        sName,
+        seriesKey,
+        -1,
+        -1,
+        `${bp}/rating`,
+        'Serie ohne "All" in rating — wird im Bewertungsfilter "Alle" nicht angezeigt',
+        ['rating'],
+        { ratingKeys }
+      );
+
     const normalizedSeasons = normalizeSeasons(s.seasons).filter(
       (season): season is Series['seasons'][number] => !!season
     );
