@@ -19,6 +19,7 @@ export const DEFAULT_SECTION_ORDER = [
 ];
 export const DEFAULT_FOR_YOU_ORDER = [
   'watch-streak',
+  'taste-profile',
   'taste-match',
   'watch-journey',
   'catch-up',
@@ -47,7 +48,20 @@ export interface UseHomeConfigReturn extends HomeConfig {
 
 function readCachedConfig(): Partial<HomeConfig> | null {
   try {
-    return JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
+    const cached = JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
+    if (!cached) return null;
+
+    // Merge missing default items into cached lists so new features appear automatically
+    const merge = (cached: string[] | undefined, defaults: string[]) => {
+      if (!cached) return undefined;
+      const missing = defaults.filter((id) => !cached.includes(id));
+      return missing.length > 0 ? [...cached, ...missing] : cached;
+    };
+
+    cached.forYouOrder = merge(cached.forYouOrder, DEFAULT_FOR_YOU_ORDER);
+    cached.sectionOrder = merge(cached.sectionOrder, DEFAULT_SECTION_ORDER);
+
+    return cached;
   } catch {
     return null;
   }
@@ -112,7 +126,7 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
       DEFAULT_FOR_YOU_ORDER,
       new Set(DEFAULT_FOR_YOU_ORDER),
       setForYouOrder,
-      false
+      true
     );
     applyList(
       'hiddenForYou',

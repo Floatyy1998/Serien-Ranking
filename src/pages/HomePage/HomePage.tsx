@@ -31,6 +31,7 @@ import { ProactiveRecapCard } from './ProactiveRecapCard';
 import { PosterNavSheet } from './PosterNavSheet';
 import { StatsGrid } from './StatsGrid';
 import { TasteMatchCard } from './TasteMatchCard';
+import { TasteProfileCard } from './TasteProfileCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { WatchStreakCard } from './WatchStreakCard';
 import { WrappedNotification } from './WrappedNotification';
@@ -249,6 +250,7 @@ export const HomePage: React.FC = () => {
       case 'for-you': {
         const comps: Record<string, React.ReactNode> = {
           'watch-streak': <WatchStreakCard key="watch-streak" />,
+          'taste-profile': <TasteProfileCard key="taste-profile" />,
           'taste-match': <TasteMatchCard key="taste-match" />,
           'watch-journey': <WatchJourneyCard key="watch-journey" />,
           'catch-up': <CatchUpCard key="catch-up" />,

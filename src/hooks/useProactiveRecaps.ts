@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
@@ -196,26 +196,18 @@ async function fetchRecapForTrigger(trigger: RecapTrigger, uid?: string): Promis
   return null;
 }
 
-export function useProactiveRecaps() {
-  const { user } = useAuth() || {};
-  const { seriesList } = useSeriesList();
-  const [recaps, setRecaps] = useState<ProactiveRecap[]>([]);
+function buildRecaps(
+  triggers: RecapTrigger[],
+  user: { uid: string } | null | undefined
+): ProactiveRecap[] {
+  if (triggers.length === 0 || !user) return [];
 
-  const triggers = useMemo(() => findRecapTriggers(seriesList), [seriesList]);
-
-  useEffect(() => {
-    if (triggers.length === 0 || !user) return;
-
-    // Prüfe welche Triggers nicht dismissed sind
-    const activeTriggers = triggers.filter((t) => {
+  return triggers
+    .filter((t) => {
       const cacheKey = `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`;
       return !localStorage.getItem(`proactive-recap-dismissed-${cacheKey}`);
-    });
-
-    if (activeTriggers.length === 0) return;
-
-    // Initialisiere Recaps mit Loading-State
-    const initialRecaps: ProactiveRecap[] = activeTriggers.map((t) => {
+    })
+    .map((t) => {
       const cacheKey = `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`;
       const cached = sessionStorage.getItem(cacheKey);
       return {
@@ -226,13 +218,32 @@ export function useProactiveRecaps() {
         startsToday: t.startsToday,
         seasonNumber: t.seasonNumber,
         recap: cached || null,
-        loading: !cached,
+        loading: false,
         cacheKey,
       };
     });
+}
 
-    setRecaps(initialRecaps);
-  }, [triggers, user]);
+export function useProactiveRecaps() {
+  const { user } = useAuth() || {};
+  const { seriesList } = useSeriesList();
+
+  const triggers = useMemo(() => findRecapTriggers(seriesList), [seriesList]);
+
+  // Derive initial recaps from triggers (recalculated when triggers change)
+  const initialRecaps = useMemo(() => buildRecaps(triggers, user), [triggers, user]);
+
+  // Mutable state for loading/dismiss updates on top of derived initial
+  const [recapOverrides, setRecapOverrides] = useState<Record<string, Partial<ProactiveRecap>>>({});
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set());
+
+  const recaps = useMemo(
+    () =>
+      initialRecaps
+        .filter((r) => !dismissedKeys.has(r.cacheKey))
+        .map((r) => (recapOverrides[r.cacheKey] ? { ...r, ...recapOverrides[r.cacheKey] } : r)),
+    [initialRecaps, recapOverrides, dismissedKeys]
+  );
 
   const fetchRecap = useCallback(
     async (cacheKey: string) => {
@@ -241,32 +252,27 @@ export function useProactiveRecaps() {
       );
       if (!trigger) return;
 
-      // Schon gecacht?
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
-        setRecaps((prev) =>
-          prev.map((r) => (r.cacheKey === cacheKey ? { ...r, recap: cached, loading: false } : r))
-        );
+        setRecapOverrides((prev) => ({ ...prev, [cacheKey]: { recap: cached, loading: false } }));
         return;
       }
 
-      setRecaps((prev) => prev.map((r) => (r.cacheKey === cacheKey ? { ...r, loading: true } : r)));
+      setRecapOverrides((prev) => ({ ...prev, [cacheKey]: { loading: true } }));
 
       const recap = await fetchRecapForTrigger(trigger, user?.uid);
       if (recap) {
         sessionStorage.setItem(cacheKey, recap);
       }
 
-      setRecaps((prev) =>
-        prev.map((r) => (r.cacheKey === cacheKey ? { ...r, recap, loading: false } : r))
-      );
+      setRecapOverrides((prev) => ({ ...prev, [cacheKey]: { recap, loading: false } }));
     },
     [triggers, user]
   );
 
   const dismiss = useCallback((cacheKey: string) => {
     localStorage.setItem(`proactive-recap-dismissed-${cacheKey}`, 'true');
-    setRecaps((prev) => prev.filter((r) => r.cacheKey !== cacheKey));
+    setDismissedKeys((prev) => new Set([...prev, cacheKey]));
   }, []);
 
   return { recaps, dismiss, fetchRecap };

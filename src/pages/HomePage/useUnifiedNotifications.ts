@@ -49,6 +49,14 @@ export const ANNOUNCEMENTS: Announcement[] = [
     timestamp: new Date('2026-03-01T12:00:00').getTime(),
     navigateTo: '/patch-notes',
   },
+  {
+    id: 'announcement_ki-empfehlungen-2026-03',
+    title: 'Neu: KI-Empfehlungen',
+    message:
+      'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!',
+    timestamp: new Date('2026-03-26T12:00:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
 ];
 
 export interface UseUnifiedNotificationsReturn {

@@ -145,6 +145,11 @@ export const PatchNotesPage = lazy(() =>
     default: m.PatchNotesPage,
   }))
 );
+export const TasteProfilePage = lazy(() =>
+  import(/* webpackChunkName: "taste-profile" */ './pages/TasteProfile').then((m) => ({
+    default: m.TasteProfilePage,
+  }))
+);
 export const AdminDashboardPage = lazy(() =>
   import(/* webpackChunkName: "admin-dashboard" */ './pages/AdminDashboard').then((m) => ({
     default: m.AdminDashboardPage,

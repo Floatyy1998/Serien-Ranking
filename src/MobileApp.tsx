@@ -34,6 +34,7 @@ import {
   RatingPage,
   FriendProfilePage,
   TasteMatchPage,
+  TasteProfilePage,
   WatchJourneyPage,
   CatchUpPage,
   HiddenSeriesPage,
@@ -272,6 +273,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <StatsPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/taste-profile"
+            element={
+              <Layout hideNav>
+                <TasteProfilePage />
               </Layout>
             }
           />
