@@ -1,7 +1,9 @@
 import {
   ArrowForward,
+  AutoAwesome,
   CalendarMonth,
   FilterAlt,
+  Navigation,
   NewReleases,
   PlaylistAddCheck,
   Replay,
@@ -43,6 +45,34 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'März 2026 – Update 2',
+      date: '2026-03-26',
+      features: [
+        {
+          icon: <AutoAwesome />,
+          color: '#a855f7',
+          title: 'KI-Empfehlungen',
+          description:
+            'Personalisierte Serien- und Film-Empfehlungen basierend auf deinen Bewertungen, Binge-Verhalten, Genre-Vorlieben und Watch-Patterns. Mit Poster, TMDB-Rating und Streaming-Anbietern – klick auf eine Empfehlung um direkt zur Serie zu gelangen.',
+          link: { label: 'Empfehlungen ansehen', path: '/taste-profile' },
+        },
+        {
+          icon: <AutoAwesome />,
+          color: '#ec4899',
+          title: 'Proaktive Recaps verbessert',
+          description:
+            'Recaps werden nicht mehr automatisch geladen – erst wenn du auf "Recap lesen" klickst. Spart KI-Anfragen und lädt schneller.',
+        },
+        {
+          icon: <Navigation />,
+          color: '#00cec9',
+          title: 'Navbar Redesign',
+          description:
+            'Neue Glassmorphism-Navigation mit Glow-Effekt auf dem aktiven Tab. Bessere Lesbarkeit der inaktiven Icons.',
+        },
+      ],
+    },
     {
       version: 'März 2026',
       date: '2026-03-01',

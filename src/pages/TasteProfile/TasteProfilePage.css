@@ -1,0 +1,264 @@
+/* TasteProfilePage - structural styles, colors via theme inline */
+
+.tp-content {
+  padding: 8px 16px 100px;
+  position: relative;
+}
+
+.tp-refresh-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ==================== List ==================== */
+.tp-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== Card ==================== */
+.tp-card {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s;
+}
+
+.tp-card:active {
+  opacity: 0.65;
+}
+
+/* Poster */
+.tp-card__poster-wrap {
+  width: 110px;
+  height: 165px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+}
+
+.tp-card__poster {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.tp-card__poster-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tp-card__type-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Info */
+.tp-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+}
+
+.tp-card__top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+h3.tp-card__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.tp-card__match {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  color: white;
+  margin-top: 2px;
+}
+
+/* Meta */
+.tp-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tp-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tp-card__providers {
+  display: flex;
+  gap: 6px;
+}
+
+.tp-card__provider-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+}
+
+/* Reason */
+p.tp-card__reason {
+  font-size: 16px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Genres */
+.tp-card__genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.tp-card__genre {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ==================== CTA ==================== */
+.tp-cta-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px 40px;
+  gap: 16px;
+}
+
+.tp-cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 32px;
+  border-radius: 50px;
+  border: none;
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-display);
+}
+
+p.tp-cta-sub {
+  font-size: 14px;
+  margin: 0;
+  text-align: center;
+}
+
+/* ==================== Loading ==================== */
+.tp-loading__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.tp-loading__item {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+}
+
+.tp-loading__poster {
+  width: 110px;
+  height: 165px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.tp-loading__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
+
+.tp-loading__line {
+  height: 14px;
+  border-radius: 7px;
+}
+
+p.tp-loading__text {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 20px 0 0;
+}
+
+/* ==================== Empty ==================== */
+.tp-empty {
+  text-align: center;
+  padding: 80px 24px;
+}
+
+.tp-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+p.tp-empty__title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+p.tp-empty__text {
+  font-size: 15px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+p.tp-error {
+  text-align: center;
+  font-size: 14px;
+  margin: 16px 0 0;
+}

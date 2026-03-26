@@ -6,6 +6,7 @@
 import type { SvgIconComponent } from '@mui/icons-material';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import {
+  AutoAwesome,
   EmojiEvents,
   Group,
   History,
@@ -219,6 +220,7 @@ export const useProfileData = (): UseProfileDataResult => {
         badge: unreadBadgesCount || 0,
       },
       { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
+      { label: 'KI-Empfehlungen', icon: AutoAwesome, color: '#a855f7', path: '/taste-profile' },
     ],
     [currentTheme, unreadBadgesCount]
   );
