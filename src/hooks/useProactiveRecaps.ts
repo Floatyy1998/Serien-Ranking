@@ -200,7 +200,6 @@ export function useProactiveRecaps() {
   const { user } = useAuth() || {};
   const { seriesList } = useSeriesList();
   const [recaps, setRecaps] = useState<ProactiveRecap[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const triggers = useMemo(() => findRecapTriggers(seriesList), [seriesList]);
 
@@ -233,48 +232,42 @@ export function useProactiveRecaps() {
     });
 
     setRecaps(initialRecaps);
-
-    // Fetche fehlende Recaps (max 3 parallel)
-    const toFetch = activeTriggers.filter((t) => {
-      const cacheKey = `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`;
-      return !sessionStorage.getItem(cacheKey);
-    });
-
-    if (toFetch.length === 0) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const fetchBatch = toFetch.slice(0, 3);
-
-    Promise.all(
-      fetchBatch.map(async (trigger) => {
-        const cacheKey = `proactive-recap-${trigger.series.id}-${trigger.triggerType}-S${trigger.seasonNumber}`;
-        const recap = await fetchRecapForTrigger(trigger, user?.uid);
-        if (recap) {
-          sessionStorage.setItem(cacheKey, recap);
-        }
-        return { cacheKey, recap };
-      })
-    ).then((results) => {
-      setRecaps((prev) =>
-        prev.map((r) => {
-          const result = results.find((res) => res.cacheKey === r.cacheKey);
-          if (result) {
-            return { ...r, recap: result.recap, loading: false };
-          }
-          return r;
-        })
-      );
-      setLoading(false);
-    });
   }, [triggers, user]);
+
+  const fetchRecap = useCallback(
+    async (cacheKey: string) => {
+      const trigger = triggers.find(
+        (t) => `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}` === cacheKey
+      );
+      if (!trigger) return;
+
+      // Schon gecacht?
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        setRecaps((prev) =>
+          prev.map((r) => (r.cacheKey === cacheKey ? { ...r, recap: cached, loading: false } : r))
+        );
+        return;
+      }
+
+      setRecaps((prev) => prev.map((r) => (r.cacheKey === cacheKey ? { ...r, loading: true } : r)));
+
+      const recap = await fetchRecapForTrigger(trigger, user?.uid);
+      if (recap) {
+        sessionStorage.setItem(cacheKey, recap);
+      }
+
+      setRecaps((prev) =>
+        prev.map((r) => (r.cacheKey === cacheKey ? { ...r, recap, loading: false } : r))
+      );
+    },
+    [triggers, user]
+  );
 
   const dismiss = useCallback((cacheKey: string) => {
     localStorage.setItem(`proactive-recap-dismissed-${cacheKey}`, 'true');
     setRecaps((prev) => prev.filter((r) => r.cacheKey !== cacheKey));
   }, []);
 
-  return { recaps, dismiss, loading };
+  return { recaps, dismiss, fetchRecap };
 }

@@ -374,7 +374,11 @@ export const HomePage: React.FC = () => {
       <WrappedNotification />
 
       {proactiveRecaps.recaps.length > 0 && (
-        <ProactiveRecapCard recaps={proactiveRecaps.recaps} onDismiss={proactiveRecaps.dismiss} />
+        <ProactiveRecapCard
+          recaps={proactiveRecaps.recaps}
+          onDismiss={proactiveRecaps.dismiss}
+          onFetchRecap={proactiveRecaps.fetchRecap}
+        />
       )}
 
       {seriesWithNewSeasons && seriesWithNewSeasons.length > 0 && (

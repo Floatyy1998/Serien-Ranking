@@ -33,7 +33,22 @@ const createEpisodesWorker = () =>
 export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   const { seriesList } = useSeriesList();
 
-  const depsKey = `${seriesList.length}`;
+  // depsKey muss sich ändern wenn Episoden als watched markiert werden
+  const watchedCount = useMemo(() => {
+    let count = 0;
+    for (const s of seriesList) {
+      if (!s.seasons) continue;
+      for (const season of s.seasons) {
+        if (!season.episodes) continue;
+        for (const ep of season.episodes) {
+          if (ep.watched) count++;
+        }
+      }
+    }
+    return count;
+  }, [seriesList]);
+
+  const depsKey = `${seriesList.length}-${watchedCount}`;
 
   const workerInput = useMemo<EpisodesWorkerInput>(() => ({ seriesList }), [seriesList]);
 

@@ -8,6 +8,7 @@ import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 interface ProactiveRecapCardProps {
   recaps: ProactiveRecap[];
   onDismiss: (cacheKey: string) => void;
+  onFetchRecap: (cacheKey: string) => Promise<void>;
 }
 
 function parseBulletPoints(text: string): string[] {
@@ -18,7 +19,11 @@ function parseBulletPoints(text: string): string[] {
     .map((line) => line.replace(/^[•\-\*]\s*/, '').replace(/\*\*/g, ''));
 }
 
-export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({ recaps, onDismiss }) => {
+export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
+  recaps,
+  onDismiss,
+  onFetchRecap,
+}) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -199,9 +204,16 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({ recaps, 
                 <span>Zur Serie</span>
                 <ChevronRight style={{ fontSize: '20px' }} />
               </button>
-              {hasContent && (
+              {!current.loading && (
                 <button
-                  onClick={() => setExpanded(!expanded)}
+                  onClick={() => {
+                    if (!hasContent) {
+                      onFetchRecap(current.cacheKey);
+                      setExpanded(true);
+                    } else {
+                      setExpanded(!expanded);
+                    }
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
