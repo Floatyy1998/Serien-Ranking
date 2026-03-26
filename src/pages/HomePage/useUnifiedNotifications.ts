@@ -54,7 +54,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: 'Neu: KI-Empfehlungen',
     message:
       'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!',
-    timestamp: new Date('2026-03-26T12:00:00').getTime(),
+    timestamp: new Date('2026-03-26T22:00:00+01:00').getTime(),
     navigateTo: '/patch-notes',
   },
 ];
