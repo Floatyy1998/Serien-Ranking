@@ -143,26 +143,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   const cloudTheme = themeSnapshot.val();
 
                   if (cloudTheme) {
-                    // console.log('Cloud theme found as fallback, applying...');
-                    // Cloud-Theme als Fallback verwenden
+                    const validHex = (c: string | undefined, fb: string) =>
+                      c && /^#?[0-9a-fA-F]{6}$/.test(c) ? c : fb;
+                    const primary = validHex(cloudTheme.primaryColor, '#00fed7');
+                    const accent = validHex(cloudTheme.accentColor, '#ff6b6b');
+                    const bg = validHex(cloudTheme.backgroundColor, '#06090f');
+                    const surface = validHex(cloudTheme.surfaceColor, '#0e1420');
+
                     const root = document.documentElement;
-                    root.style.setProperty('--theme-primary', cloudTheme.primaryColor || '#00fed7');
-                    const primaryHover = adjustBrightness(cloudTheme.primaryColor || '#00fed7', 10);
-                    root.style.setProperty('--theme-primary-hover', primaryHover);
-                    root.style.setProperty('--theme-accent', cloudTheme.accentColor || '#ff6b6b');
-                    root.style.setProperty(
-                      '--theme-background',
-                      cloudTheme.backgroundColor || '#06090f'
-                    );
-                    root.style.setProperty('--theme-surface', cloudTheme.surfaceColor || '#0e1420');
-                    root.style.setProperty(
-                      '--theme-text-primary',
-                      cloudTheme.primaryColor || '#00fed7'
-                    );
+                    root.style.setProperty('--theme-primary', primary);
+                    root.style.setProperty('--theme-primary-hover', adjustBrightness(primary, 10));
+                    root.style.setProperty('--theme-accent', accent);
+                    root.style.setProperty('--theme-background', bg);
+                    root.style.setProperty('--theme-surface', surface);
+                    root.style.setProperty('--theme-text-primary', primary);
                     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
-                    // Update theme-color Meta-Tag für PWA Status Bar
-                    updateThemeColorMeta(cloudTheme.backgroundColor || '#06090f');
+                    updateThemeColorMeta(bg);
 
                     // WICHTIG: Cloud-Theme temporär im localStorage speichern,
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)

@@ -68,20 +68,26 @@ export const loadSavedTheme = async (userId?: string) => {
   const root = document.documentElement;
 
   if (theme) {
-    root.style.setProperty('--theme-primary', theme.primaryColor || '#00fed7');
-    // Hover-Farbe automatisch berechnen (etwas heller/dunkler)
-    const primaryHover = adjustBrightness(theme.primaryColor || '#00fed7', 10);
+    const safe = (c: string | undefined, fallback: string) =>
+      c && VALID_HEX.test(c) ? c : fallback;
+    const primary = safe(theme.primaryColor, '#00fed7');
+    const accent = safe(theme.accentColor, '#ff6b6b');
+    const bg = safe(theme.backgroundColor, '#06090f');
+    const surface = safe(theme.surfaceColor, '#0e1420');
+
+    root.style.setProperty('--theme-primary', primary);
+    const primaryHover = adjustBrightness(primary, 10);
     root.style.setProperty('--theme-primary-hover', primaryHover);
-    root.style.setProperty('--theme-accent', theme.accentColor || '#ff6b6b');
-    root.style.setProperty('--theme-background', theme.backgroundColor || '#06090f');
-    root.style.setProperty('--theme-surface', theme.surfaceColor || '#0e1420');
-    root.style.setProperty('--theme-text-primary', theme.primaryColor || '#00fed7');
+    root.style.setProperty('--theme-accent', accent);
+    root.style.setProperty('--theme-background', bg);
+    root.style.setProperty('--theme-surface', surface);
+    root.style.setProperty('--theme-text-primary', primary);
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
     // Mobile-first app - no background images needed
 
     // Update theme-color Meta-Tag für PWA Status Bar
-    updateThemeColorMeta(theme.backgroundColor || '#06090f');
+    updateThemeColorMeta(bg);
   } else {
     // Stelle sicher, dass Default-Werte gesetzt sind
     root.style.setProperty('--theme-primary', '#00fed7');

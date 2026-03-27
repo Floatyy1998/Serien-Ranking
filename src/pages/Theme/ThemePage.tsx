@@ -99,10 +99,7 @@ export const ThemePage = () => {
 
   const handleColorChange = useCallback(
     (key: string, value: string) => {
-      // Nur gültige Hex-Farben ans Theme weiterleiten — verhindert Crash beim Tippen
-      if (/^#[0-9a-fA-F]{6}$/.test(value)) {
-        updateTheme({ [key]: value });
-      }
+      updateTheme({ [key]: value });
     },
     [updateTheme]
   );
