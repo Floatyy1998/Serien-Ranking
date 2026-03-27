@@ -16,6 +16,8 @@ export interface PreparedItem {
   isMovie: boolean;
   watchlist: boolean;
   releaseDate?: string;
+  year?: string;
+  genres?: string;
   providers: { name: string; logo: string }[];
 }
 
@@ -111,6 +113,41 @@ export function extractProviders(item: Series | Movie): { name: string; logo: st
   return result;
 }
 
+function extractGenres(item: Series | Movie): string | undefined {
+  const genres = item.genre?.genres;
+  if (genres && genres.length > 0) return genres.slice(0, 2).join(', ');
+  const tmdbGenres = item.genres;
+  if (tmdbGenres && tmdbGenres.length > 0)
+    return tmdbGenres
+      .slice(0, 2)
+      .map((g) => g.name)
+      .join(', ');
+  return undefined;
+}
+
+function extractYear(dateStr?: string): string | undefined {
+  if (!dateStr) return undefined;
+  return String(dateStr).slice(0, 4) || undefined;
+}
+
+function getSeriesYear(s: Series): string | undefined {
+  // 1. Explicit dates
+  const explicit = s.first_air_date || s.release_date;
+  if (explicit) return extractYear(explicit);
+  // 2. Fallback: first episode air_date
+  if (s.seasons) {
+    for (const season of s.seasons) {
+      if (!season.episodes) continue;
+      for (const ep of season.episodes) {
+        if (!ep) continue;
+        const d = ep.air_date || ep.airDate || ep.firstAired;
+        if (d) return extractYear(d);
+      }
+    }
+  }
+  return undefined;
+}
+
 export function prepareSeriesItem(s: Series, r: number): PreparedItem {
   return {
     id: s.id,
@@ -120,6 +157,8 @@ export function prepareSeriesItem(s: Series, r: number): PreparedItem {
     progress: getSeriesProgress(s),
     isMovie: false,
     watchlist: s.watchlist === true,
+    year: getSeriesYear(s),
+    genres: extractGenres(s),
     providers: extractProviders(s),
   };
 }
@@ -134,6 +173,8 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
     isMovie: true,
     watchlist: m.watchlist === true,
     releaseDate: m.release_date,
+    year: extractYear(m.release_date),
+    genres: extractGenres(m),
     providers: extractProviders(m),
   };
 }

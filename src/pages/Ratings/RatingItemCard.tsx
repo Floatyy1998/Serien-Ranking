@@ -1,5 +1,5 @@
 /**
- * RatingItemCard - Memoized grid item for the ratings grid.
+ * RatingItemCard - Cinematic poster card for the ratings grid.
  *
  * No Framer Motion on grid items (performance).
  * Uses CSS classes for layout, inline styles ONLY for theme colors.
@@ -86,7 +86,6 @@ function ProviderBadgeArea({
   }, [showPopup]);
 
   // Desktop: show up to 3 logos, Mobile: show 1 logo
-  // Extra logos (index 1,2) get a CSS class that hides them on mobile
   const MAX_DESKTOP = 3;
   const visible = providers.slice(0, MAX_DESKTOP);
   const overflow = providers.length - MAX_DESKTOP;
@@ -144,7 +143,7 @@ function ProviderBadgeArea({
         </div>
       )}
 
-      {/* Portal popup so it's not clipped by overflow:hidden */}
+      {/* Portal popup so it's not clipped */}
       {showPopup &&
         createPortal(
           <div
@@ -184,84 +183,99 @@ interface RatingItemCardProps {
 
 export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => (
   <div className="ratings-grid-item" data-id={item.id} data-movie={item.isMovie || undefined}>
-    <div className="ratings-poster-wrap">
+    {/* Card container — no overflow:hidden (iOS Safari fix) */}
+    <div className="ratings-card">
+      {/* Poster image */}
       <img
         src={item.posterUrl || PLACEHOLDER_SVG}
         alt={item.title}
         loading="lazy"
         decoding="async"
-        className="ratings-poster-img"
+        className="ratings-card-poster"
         onError={handleImgError}
         style={{ background: theme.background.surface }}
       />
 
-      {item.providers.length > 0 && (
-        <ProviderBadgeArea
-          providers={item.providers}
-          bgColor={`${theme.background.default}dd`}
-          textColor={theme.text.muted}
-        />
-      )}
-
-      {item.rating > 0 && (
-        <Tooltip title={`Bewertung: ${item.rating.toFixed(1)}/10`} arrow>
-          <div className="ratings-rating-badge">
-            <Star className="ratings-star-icon" />
-            <span className="ratings-rating-value">{item.rating.toFixed(1)}</span>
+      {/* Full overlay */}
+      <div className="ratings-card-overlay">
+        {/* Top row: providers left, type+watchlist+rating right */}
+        <div className="ratings-card-top">
+          {/* Left: provider badges */}
+          <div className="ratings-card-top-left">
+            {item.providers.length > 0 && (
+              <ProviderBadgeArea
+                providers={item.providers}
+                bgColor={`${theme.background.default}dd`}
+                textColor={theme.text.muted}
+              />
+            )}
           </div>
-        </Tooltip>
-      )}
 
-      {item.watchlist && (
-        <Tooltip title="Auf deiner Watchlist" arrow>
-          <div
-            className="ratings-watchlist-badge"
-            style={{ top: item.rating > 0 ? 42 : 6, background: `${theme.status.info}dd` }}
-          >
-            <WatchLater className="ratings-watchlist-icon" />
+          {/* Right: watchlist badge */}
+          <div className="ratings-card-top-right">
+            {item.watchlist && (
+              <Tooltip title="Auf deiner Watchlist" arrow>
+                <div
+                  className="ratings-card-watchlist-badge"
+                  style={{ background: `${theme.status.info}dd` }}
+                >
+                  <WatchLater style={{ fontSize: '13px', color: '#fff' }} />
+                </div>
+              </Tooltip>
+            )}
           </div>
-        </Tooltip>
-      )}
+        </div>
 
-      {!item.isMovie && item.progress > 0 && (
-        <Tooltip title={`${item.progress}% gesehen`} arrow>
-          <div className="ratings-progress-track">
-            <div
-              className="ratings-progress-fill"
-              style={{
-                width: `${item.progress}%`,
-                background:
-                  item.progress === 100
-                    ? `linear-gradient(90deg, ${theme.status.success}, ${theme.status.success}cc)`
-                    : `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary})`,
-              }}
-            />
+        {/* Bottom: gradient + title + meta */}
+        <div className="ratings-card-bottom">
+          <h2 className="ratings-card-title">{item.title}</h2>
+
+          <div className="ratings-card-meta">
+            {/* Rating */}
+            {item.rating > 0 && (
+              <span className="ratings-card-rating" style={{ color: theme.status.warning }}>
+                <Star className="ratings-card-meta-icon" />
+                {item.rating.toFixed(1)}
+              </span>
+            )}
+
+            {/* Year */}
+            {item.rating > 0 && item.year && <span className="ratings-card-dot">&bull;</span>}
+            {item.year && <span>{item.year}</span>}
+
+            {/* Genres */}
+            {item.year && item.genres && <span className="ratings-card-dot">&bull;</span>}
+            {item.genres && <span className="ratings-card-genres">{item.genres}</span>}
           </div>
-        </Tooltip>
-      )}
+
+          {/* Progress bar for series */}
+          {!item.isMovie && item.progress > 0 && (
+            <div className="ratings-card-progress">
+              <div className="ratings-card-progress-track">
+                <div
+                  className="ratings-card-progress-fill"
+                  style={{
+                    width: `${item.progress}%`,
+                    background:
+                      item.progress === 100
+                        ? theme.status.success
+                        : `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary})`,
+                  }}
+                />
+              </div>
+              <span
+                className="ratings-card-progress-text"
+                style={{
+                  color: item.progress === 100 ? theme.status.success : theme.primary,
+                }}
+              >
+                {item.progress === 100 ? 'Fertig' : `${Math.round(item.progress)}%`}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-
-    <h2 className="ratings-item-title" style={{ color: theme.text.primary }}>
-      {item.title}
-    </h2>
-
-    {!item.isMovie && item.progress > 0 && (
-      <p
-        className="ratings-item-meta"
-        style={{
-          color: item.progress === 100 ? theme.status.success : theme.primary,
-          fontWeight: 600,
-        }}
-      >
-        {item.progress === 100 ? 'Fertig' : `${Math.round(item.progress)}%`}
-      </p>
-    )}
-
-    {item.isMovie && item.releaseDate && (
-      <p className="ratings-item-meta" style={{ color: theme.text.muted }}>
-        {item.releaseDate.split('-')[0]}
-      </p>
-    )}
   </div>
 ));
 
