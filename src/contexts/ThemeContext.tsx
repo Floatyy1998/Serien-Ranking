@@ -92,16 +92,23 @@ interface ThemeProviderProps {
 export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const { user } = useAuth() || {};
 
-  // Initialisiere Theme aus localStorage beim Start
+  // Initialisiere Theme aus localStorage beim Start — mit Auto-Recovery bei kaputten Werten
   const getInitialConfig = (): UserThemeConfig => {
     try {
       const savedConfig = localStorage.getItem('customTheme');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
-        return validateThemeConfig(parsed);
+        const validated = validateThemeConfig(parsed);
+        // Repariertes Theme zurückschreiben falls es korrigiert wurde
+        const repaired = JSON.stringify(validated);
+        if (repaired !== savedConfig) {
+          localStorage.setItem('customTheme', repaired);
+        }
+        return validated;
       }
     } catch {
-      // console.error('Fehler beim Laden des initialen Themes:', error);
+      // localStorage ist korrupt — aufräumen
+      localStorage.removeItem('customTheme');
     }
     return defaultThemeConfig;
   };
@@ -109,10 +116,17 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const initialConfig = getInitialConfig();
   const [userConfig, setUserConfig] = useState<UserThemeConfig>(initialConfig);
   const [currentTheme, setCurrentTheme] = useState(() => {
-    const theme = generateDynamicTheme(initialConfig);
-    // Setze CSS-Variablen sofort beim Start
-    setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
-    return theme;
+    try {
+      const theme = generateDynamicTheme(initialConfig);
+      setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
+      return theme;
+    } catch {
+      // Fallback auf Default-Theme wenn alles schiefgeht
+      localStorage.removeItem('customTheme');
+      const fallback = generateDynamicTheme(defaultThemeConfig);
+      setTimeout(() => applyCSSVariables(fallback, defaultThemeConfig, isMobile()), 0);
+      return fallback;
+    }
   });
 
   const [syncMode, setSyncModeState] = useState<'local' | 'cloud'>(() => {

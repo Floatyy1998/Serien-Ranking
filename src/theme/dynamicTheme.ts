@@ -180,11 +180,11 @@ export const defaultDynamicTheme = generateDynamicTheme(defaultThemeConfig);
 // Theme-Validierung
 export function validateThemeConfig(config: Partial<UserThemeConfig>): UserThemeConfig {
   return {
-    primaryColor: config.primaryColor || defaultThemeConfig.primaryColor,
-    backgroundColor: config.backgroundColor || defaultThemeConfig.backgroundColor,
-    surfaceColor: config.surfaceColor || defaultThemeConfig.surfaceColor,
-    accentColor: config.accentColor || defaultThemeConfig.accentColor,
-    textColor: config.textColor || undefined,
+    primaryColor: safeHex(config.primaryColor, defaultThemeConfig.primaryColor),
+    backgroundColor: safeHex(config.backgroundColor, defaultThemeConfig.backgroundColor),
+    surfaceColor: safeHex(config.surfaceColor, defaultThemeConfig.surfaceColor || '#0e1420'),
+    accentColor: safeHex(config.accentColor, defaultThemeConfig.accentColor || '#ff6b6b'),
+    textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
     backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
     backgroundImageOpacity:
       config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,
