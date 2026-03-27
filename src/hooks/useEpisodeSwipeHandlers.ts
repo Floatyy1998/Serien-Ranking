@@ -8,6 +8,7 @@ import { WatchActivityService } from '../services/watchActivityService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { useContinueWatching } from './useContinueWatching';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRating';
+import type { Series } from '../types/Series';
 import type { TodayEpisode } from './useWebWorkerTodayEpisodes';
 import { useWebWorkerTodayEpisodes } from './useWebWorkerTodayEpisodes';
 
@@ -38,7 +39,7 @@ interface EpisodeSwipeHandlersReturn {
   ) => Promise<void>;
   swipeDirections: Record<string, 'left' | 'right'>;
   quickRatingOpen: boolean;
-  quickRatingSeries: import('../types/Series').Series | null;
+  quickRatingSeries: Series | null;
   quickRatingSeasonNumber: number;
   closeQuickRating: () => void;
   saveQuickRating: (rating: number) => Promise<void>;
@@ -178,7 +179,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
             title: item.title,
             id: item.id,
             nmr: item.nmr,
-          } as unknown as import('../types/Series').Series;
+          } as unknown as Series;
           if (
             shouldTriggerQuickRate(
               seriesLike,

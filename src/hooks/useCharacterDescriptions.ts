@@ -282,7 +282,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
     } finally {
       setLoading(false);
     }
-  }, [series, userProgress]);
+  }, [series, userProgress, isAnime, user?.uid]);
 
   const [questionAnswer, setQuestionAnswer] = useState<string | null>(null);
   const [questionLoading, setQuestionLoading] = useState(false);
@@ -326,7 +326,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
         setQuestionLoading(false);
       }
     },
-    [series, userProgress]
+    [series, userProgress, user?.uid]
   );
 
   return {

@@ -155,7 +155,7 @@ export const useMovieData = () => {
 
     // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
-      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
       setLoading(true);
       Promise.all([
         fetch(

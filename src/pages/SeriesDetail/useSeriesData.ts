@@ -87,7 +87,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
 
     // Full fetch if not found locally
     if (!localSeries && !tmdbSeries) {
-      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
       const fetchFullData = async () => {
         setLoading(true);
         try {

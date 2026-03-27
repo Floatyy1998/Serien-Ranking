@@ -48,7 +48,6 @@ export function SeasonsSection({
   navigate,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
-  const [swipeDir, setSwipeDir] = useState<'left' | 'right' | null>(null);
   const selectedSeason = series.seasons[selectedSeasonIndex];
 
   const handleSeasonSwipe = useCallback(
@@ -57,13 +56,10 @@ export function SeasonsSection({
       if (Math.abs(info.offset.x) < threshold || Math.abs(info.velocity.x) < 100) return;
 
       if (info.offset.x < 0 && selectedSeasonIndex < series.seasons.length - 1) {
-        setSwipeDir('left');
         setSelectedSeasonIndex(selectedSeasonIndex + 1);
       } else if (info.offset.x > 0 && selectedSeasonIndex > 0) {
-        setSwipeDir('right');
         setSelectedSeasonIndex(selectedSeasonIndex - 1);
       }
-      setTimeout(() => setSwipeDir(null), 300);
     },
     [selectedSeasonIndex, series.seasons.length, setSelectedSeasonIndex]
   );
@@ -205,11 +201,12 @@ export function SeasonsSection({
           key={selectedSeasonIndex}
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.15}
+          dragElastic={0.03}
+          dragMomentum={false}
           dragSnapToOrigin
           onDragEnd={handleSeasonSwipe}
-          initial={{ opacity: 0.6, x: swipeDir === 'left' ? 40 : swipeDir === 'right' ? -40 : 0 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0.6 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
           style={{ touchAction: 'pan-y' }}
         >
