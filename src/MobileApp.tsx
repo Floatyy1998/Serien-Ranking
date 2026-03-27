@@ -5,6 +5,7 @@ import { useAuth } from './AuthContext';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContextDef';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
 import './styles/App.css';
 
 // Main nav tabs: eager imports — these are always needed and must never show a loading spinner
@@ -71,6 +72,8 @@ export const MobileApp = () => {
     useOptimizedFriends();
   const { unreadCount: notificationUnreadCount, notifications: generalNotifications } =
     useNotifications();
+
+  useNetworkStatus();
 
   const totalUnread = unreadActivitiesCount + unreadRequestsCount + notificationUnreadCount;
 

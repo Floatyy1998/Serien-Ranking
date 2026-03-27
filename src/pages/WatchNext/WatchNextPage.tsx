@@ -1,4 +1,5 @@
 import React from 'react';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import Edit from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -205,6 +206,19 @@ export const WatchNextPage = () => {
       setEditModeActive(false);
     }
   };
+
+  // Swipe hint — show once for new users
+  const [showSwipeHint, setShowSwipeHint] = useState(() => {
+    return !localStorage.getItem('watchNextSwipeHintSeen');
+  });
+
+  useEffect(() => {
+    if (showSwipeHint && actualNextEpisodes.length > 0) {
+      localStorage.setItem('watchNextSwipeHintSeen', '1');
+      const timer = setTimeout(() => setShowSwipeHint(false), 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [showSwipeHint, actualNextEpisodes.length]);
 
   const isMobile = window.innerWidth < 768;
 
@@ -423,7 +437,15 @@ export const WatchNextPage = () => {
                     const prevEpisode = index > 0 ? arr[index - 1] : null;
                     const showSeparator = prevEpisode?.isRewatch && !episode.isRewatch;
                     return (
-                      <div key={episodeKey}>
+                      <div key={episodeKey} style={{ position: 'relative' }}>
+                        {showSwipeHint && index === 0 && (
+                          <div className="swipe-hint-overlay">
+                            <span className="swipe-hint-label">
+                              <ChevronLeft style={{ fontSize: '16px' }} />
+                              Swipen
+                            </span>
+                          </div>
+                        )}
                         {showSeparator && (
                           <div
                             style={{
