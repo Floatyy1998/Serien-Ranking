@@ -33,7 +33,10 @@ function collectTopRated<T extends Series | Movie>(
   }
   rated.sort((a, b) => b.rating - a.rating);
   return rated.slice(0, limit).map(({ item, rating }) => {
-    const genres = (item.genre?.genres ?? []).slice(0, 2).join(', ');
+    const genres = (item.genre?.genres ?? [])
+      .filter((g) => g.toLowerCase() !== 'all')
+      .slice(0, 2)
+      .join(', ');
     let dateStr: string | undefined;
     if (type === 'series') {
       const s = item as Series;
