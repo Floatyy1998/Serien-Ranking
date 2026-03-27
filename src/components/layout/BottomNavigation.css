@@ -118,23 +118,6 @@
   font-weight: 700;
 }
 
-/* Badge animation */
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgba(255, 107, 107, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
-  }
-}
-
-.MuiBadge-badge {
-  animation: pulse 2s infinite;
-}
-
 /* Tablet/Desktop - still 90% but cap at a reasonable max */
 @media (min-width: 768px) {
   .mobile-bottom-navigation {

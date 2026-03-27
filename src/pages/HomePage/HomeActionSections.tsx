@@ -1,6 +1,5 @@
 import React from 'react';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
-import CalendarToday from '@mui/icons-material/CalendarToday';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Group from '@mui/icons-material/Group';
 import History from '@mui/icons-material/History';
@@ -280,33 +279,35 @@ interface QuickActionsProps {
 export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navigate }) => {
   const { currentTheme } = useTheme();
 
-  const all: Record<string, { icon: React.ReactNode; label: string; path: string; color: string }> =
-    {
-      ratings: {
-        icon: <Star style={{ fontSize: '18px' }} />,
-        label: 'Ratings',
-        path: '/ratings',
-        color: currentTheme.status.warning,
-      },
-      calendar: {
-        icon: <CalendarToday style={{ fontSize: '18px' }} />,
-        label: 'Kalender',
-        path: '/calendar',
-        color: currentTheme.status.success,
-      },
-      history: {
-        icon: <History style={{ fontSize: '18px' }} />,
-        label: 'Verlauf',
-        path: '/recently-watched',
-        color: currentTheme.status.error,
-      },
-      friends: {
-        icon: <Group style={{ fontSize: '18px' }} />,
-        label: 'Freunde',
-        path: '/activity',
-        color: currentTheme.status.info.main,
-      },
-    };
+  const all: Record<
+    string,
+    { icon: React.ReactNode; label: string; path: string; color: string; badge?: number }
+  > = {
+    ratings: {
+      icon: <Star style={{ fontSize: '18px' }} />,
+      label: 'Ratings',
+      path: '/ratings',
+      color: currentTheme.status.warning,
+    },
+    discover: {
+      icon: <AutoAwesome style={{ fontSize: '18px' }} />,
+      label: 'Entdecken',
+      path: '/discover',
+      color: currentTheme.status.success,
+    },
+    history: {
+      icon: <History style={{ fontSize: '18px' }} />,
+      label: 'Verlauf',
+      path: '/recently-watched',
+      color: currentTheme.status.error,
+    },
+    friends: {
+      icon: <Group style={{ fontSize: '18px' }} />,
+      label: 'Freunde',
+      path: '/activity',
+      color: currentTheme.status.info.main,
+    },
+  };
   const visible = config.quickActionsOrder.filter((id) => !config.hiddenQuickActions.includes(id));
   if (visible.length === 0) return null;
   return (
@@ -344,6 +345,7 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
           >
             <div
               style={{
+                position: 'relative',
                 width: '32px',
                 height: '32px',
                 borderRadius: '10px',
@@ -355,6 +357,29 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
               }}
             >
               {a.icon}
+              {a.badge != null && a.badge > 0 && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: -5,
+                    right: -8,
+                    minWidth: '16px',
+                    height: '16px',
+                    borderRadius: '8px',
+                    background: a.color,
+                    color: '#fff',
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 4px',
+                    boxShadow: `0 2px 6px ${a.color}60`,
+                  }}
+                >
+                  {a.badge}
+                </span>
+              )}
             </div>
             <span
               style={{

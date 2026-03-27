@@ -297,6 +297,58 @@ export const useEpisodeDiscussion = () => {
 
       await firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`).set(updatedSeasons);
 
+      // Auto-navigate to next unwatched episode (delayed so user sees the checkmark)
+      if (!isCurrentlyWatched && series) {
+        const epIdx = episodeIndex;
+        const sIdx = seasonIndex;
+        const seasons = updatedSeasons;
+
+        // Find next unwatched episode
+        let nextPath: string | null = null;
+        let nextSeasonNum = 0;
+        let nextEpNum = 0;
+        let nextEpName = '';
+
+        // 1. Remaining episodes in current season
+        const currentSeasonEps = seasons[sIdx]?.episodes || [];
+        for (let i = epIdx + 1; i < currentSeasonEps.length; i++) {
+          if (!currentSeasonEps[i]?.watched) {
+            nextSeasonNum = seasons[sIdx].seasonNumber + 1;
+            nextEpNum = i + 1;
+            nextEpName = currentSeasonEps[i]?.name || `Episode ${i + 1}`;
+            nextPath = `/episode/${seriesId}/s/${nextSeasonNum}/e/${nextEpNum}`;
+            break;
+          }
+        }
+        // 2. Next seasons
+        if (!nextPath) {
+          for (let s = sIdx + 1; s < seasons.length; s++) {
+            const eps = seasons[s]?.episodes || [];
+            for (let i = 0; i < eps.length; i++) {
+              if (!eps[i]?.watched) {
+                nextSeasonNum = seasons[s].seasonNumber + 1;
+                nextEpNum = i + 1;
+                nextEpName = eps[i]?.name || `Episode ${i + 1}`;
+                nextPath = `/episode/${seriesId}/s/${nextSeasonNum}/e/${nextEpNum}`;
+                break;
+              }
+            }
+            if (nextPath) break;
+          }
+        }
+
+        if (nextPath) {
+          const path = nextPath;
+          setNextEpisodeTransition({
+            active: true,
+            seasonNumber: nextSeasonNum,
+            episodeNumber: nextEpNum,
+            episodeName: nextEpName,
+          });
+          setTimeout(() => navigate(path, { replace: true }), 1200);
+        }
+      }
+
       if (!isCurrentlyWatched) {
         WatchActivityService.logEpisodeWatch(
           user.uid,
@@ -353,6 +405,14 @@ export const useEpisodeDiscussion = () => {
       })
     : null;
 
+  // ---------- Next Episode Transition ----------
+  const [nextEpisodeTransition, setNextEpisodeTransition] = useState<{
+    active: boolean;
+    seasonNumber: number;
+    episodeNumber: number;
+    episodeName: string;
+  } | null>(null);
+
   // ---------- Status Flags ----------
   const isNotFound = !series && !tmdbDetails && !seriesInfo;
   const hasUser = !!user;
@@ -406,6 +466,7 @@ export const useEpisodeDiscussion = () => {
 
     // Actions
     handleToggleWatched,
+    nextEpisodeTransition,
 
     // Image helpers
     getStillUrl,

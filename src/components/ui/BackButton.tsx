@@ -6,9 +6,10 @@ import { IconButton } from './IconButton';
 interface BackButtonProps {
   label?: string;
   style?: React.CSSProperties;
+  showHome?: boolean;
 }
 
-export const BackButton = ({ label, style }: BackButtonProps) => {
+export const BackButton = ({ label, style, showHome = true }: BackButtonProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -56,32 +57,34 @@ export const BackButton = ({ label, style }: BackButtonProps) => {
         tooltip="Zurück"
         style={style}
       />
-      <IconButton
-        icon={
-          <div
-            style={{
-              width: '16px',
-              height: '16px',
-              backgroundColor: 'var(--color-primary)',
-              WebkitMaskImage: 'url(/tv-logo.svg)',
-              maskImage: 'url(/tv-logo.svg)',
-              WebkitMaskSize: 'contain',
-              maskSize: 'contain' as string,
-              WebkitMaskRepeat: 'no-repeat',
-              maskRepeat: 'no-repeat' as string,
-              WebkitMaskPosition: 'center',
-              maskPosition: 'center' as string,
-            }}
-          />
-        }
-        onClick={() => navigate('/')}
-        size={32}
-        borderRadius="10px"
-        variant="glass"
-        ariaLabel="Zur Startseite"
-        tooltip="Zur Startseite"
-        style={style}
-      />
+      {showHome && (
+        <IconButton
+          icon={
+            <div
+              style={{
+                width: '16px',
+                height: '16px',
+                backgroundColor: 'var(--color-primary)',
+                WebkitMaskImage: 'url(/tv-logo.svg)',
+                maskImage: 'url(/tv-logo.svg)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain' as string,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat' as string,
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center' as string,
+              }}
+            />
+          }
+          onClick={() => navigate('/')}
+          size={32}
+          borderRadius="10px"
+          variant="glass"
+          ariaLabel="Zur Startseite"
+          tooltip="Zur Startseite"
+          style={style}
+        />
+      )}
     </div>
   );
 };

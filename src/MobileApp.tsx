@@ -207,7 +207,7 @@ export const MobileApp = () => {
           <Route
             path="/discover"
             element={
-              <Layout>
+              <Layout hideNav>
                 <DiscoverPage />
               </Layout>
             }
@@ -392,7 +392,7 @@ export const MobileApp = () => {
           <Route
             path="/calendar"
             element={
-              <Layout hideNav>
+              <Layout>
                 <CalendarPage />
               </Layout>
             }

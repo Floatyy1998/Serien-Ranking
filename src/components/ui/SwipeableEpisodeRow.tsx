@@ -8,6 +8,7 @@
 import { Check, DragHandle } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { memo } from 'react';
+import { usePosterColor } from '../../hooks/usePosterColor';
 
 interface SwipeableEpisodeRowProps {
   itemKey: string;
@@ -88,6 +89,8 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     onTouchEnd,
   }) => {
     const isMobile = window.innerWidth < 768;
+    const posterAccent = usePosterColor(poster, accentColor);
+    const color = posterAccent;
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
     const isDragTarget =
       index != null &&
@@ -97,9 +100,9 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     const isDragged = index != null && draggedIndex === index;
 
     const borderColor = isCompleting
-      ? `${accentColor}50`
+      ? `${color}50`
       : (staticBorder ??
-        (isDragTarget ? accentColor : `rgba(255,255,255,${(0.07 + dragRatio * 0.15).toFixed(2)})`));
+        (isDragTarget ? color : `rgba(255,255,255,${(0.07 + dragRatio * 0.15).toFixed(2)})`));
 
     return (
       <motion.div
@@ -175,13 +178,14 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             borderRadius: isMobile ? '14px' : '18px',
             overflow: 'hidden',
             border: `1px solid ${borderColor}`,
+            borderLeft: staticBorder ? undefined : `3px solid ${color}`,
             boxShadow: isDragged
-              ? `0 8px 24px ${accentColor}40`
+              ? `0 8px 24px ${color}40`
               : isDragTarget
-                ? `0 4px 12px ${accentColor}30`
+                ? `0 4px 12px ${color}30`
                 : isSwiping
-                  ? '0 12px 44px rgba(0,0,0,0.55)'
-                  : '0 6px 28px rgba(0,0,0,0.4)',
+                  ? `0 12px 44px rgba(0,0,0,0.55), 0 0 20px ${color}30`
+                  : `0 6px 28px rgba(0,0,0,0.4), 0 0 12px ${color}15`,
             cursor: isEditMode ? 'move' : undefined,
             opacity: isDragged ? 0.6 : 1,
             transform: isDragged ? 'scale(1.05)' : isDragTarget ? 'scale(1.02)' : undefined,
@@ -234,7 +238,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             style={{
               position: 'absolute',
               inset: 0,
-              background: `radial-gradient(ellipse at ${dragOffset > 0 ? '10%' : '90%'} 50%, ${accentColor}30 0%, transparent 60%)`,
+              background: `radial-gradient(ellipse at ${dragOffset > 0 ? '10%' : '90%'} 50%, ${color}30 0%, transparent 60%)`,
               opacity: 0,
               pointerEvents: 'none',
               zIndex: 1,
@@ -345,11 +349,11 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                       width: 36,
                       height: 36,
                       borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${accentColor}, ${accentColor}bb)`,
+                      background: `linear-gradient(135deg, ${color}, ${color}bb)`,
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: `0 4px 16px ${accentColor}40`,
+                      boxShadow: `0 4px 16px ${color}40`,
                       flexShrink: 0,
                     }}
                   >

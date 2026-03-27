@@ -17,6 +17,7 @@ import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
 import { DiscoverContent } from './DiscoverContent';
 import {
+  BackButton,
   Dialog,
   GradientText,
   LoadingSpinner,
@@ -145,16 +146,19 @@ export const DiscoverPage = memo(() => {
                 alignItems: 'center',
               }}
             >
-              <GradientText
-                as="h1"
-                style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  margin: 0,
-                }}
-              >
-                Entdecken
-              </GradientText>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <BackButton />
+                <GradientText
+                  as="h1"
+                  style={{
+                    fontSize: '20px',
+                    fontWeight: 800,
+                    margin: 0,
+                  }}
+                >
+                  Entdecken
+                </GradientText>
+              </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 {!showSearch && activeCategory !== 'recommendations' && (

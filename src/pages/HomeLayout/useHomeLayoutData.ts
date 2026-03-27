@@ -36,7 +36,7 @@ export const DEFAULT_FOR_YOU_ORDER = [
 
 export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
 
-export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'calendar', 'history', 'friends'];
+export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
@@ -71,7 +71,7 @@ export const MAIN_ACTIONS_LABELS: Record<string, string> = {
 
 export const QUICK_ACTIONS_LABELS: Record<string, string> = {
   ratings: 'Ratings',
-  calendar: 'Kalender',
+  discover: 'Entdecken',
   history: 'Verlauf',
   friends: 'Freunde',
 };
