@@ -130,7 +130,6 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
           overflowY: 'hidden',
           scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
-          WebkitTransform: 'translateZ(0)',
           ...(shouldShowArrows && canScrollLeft ? { paddingLeft: '40px' } : {}),
           ...(shouldShowArrows && canScrollRight ? { paddingRight: '40px' } : {}),
         }}

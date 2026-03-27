@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
+import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface TMDBTrendingItem {
@@ -14,6 +15,7 @@ interface TMDBTrendingItem {
   vote_count: number;
   first_air_date?: string;
   release_date?: string;
+  genre_ids?: number[];
 }
 
 export interface TrendingItem {
@@ -24,6 +26,8 @@ export interface TrendingItem {
   rating: number;
   voteCount: number;
   releaseDate?: string;
+  genres: string;
+  year?: string;
 }
 
 interface UseTMDBTrendingResult {
@@ -37,14 +41,18 @@ function mapTMDBItem(item: TMDBTrendingItem, type: 'series' | 'movie'): Trending
     type === 'series'
       ? (item.name ?? item.original_name ?? '')
       : (item.title ?? item.original_title ?? '');
+  const dateStr = type === 'series' ? item.first_air_date : item.release_date;
+  const genres = mapGenreIds(item.genre_ids ?? []);
   return {
     type,
     id: item.id,
     title,
-    poster: getImageUrl(item.poster_path),
+    poster: getImageUrl(item.poster_path, 'w500'),
     rating: item.vote_average,
     voteCount: item.vote_count,
-    releaseDate: type === 'series' ? item.first_air_date : item.release_date,
+    releaseDate: dateStr,
+    genres,
+    year: dateStr ? dateStr.slice(0, 4) : undefined,
   };
 }
 
