@@ -1,7 +1,10 @@
 import firebase from 'firebase/compat/app';
 
 // Funktion um eine Farbe heller oder dunkler zu machen
+const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
+
 export const adjustBrightness = (color: string, percent: number) => {
+  if (!color || !VALID_HEX.test(color)) return '#00fed7';
   const num = parseInt(color.replace('#', ''), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
