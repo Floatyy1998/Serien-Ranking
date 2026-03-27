@@ -6,7 +6,29 @@ import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
+import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
+
+function formatLastWatched(lastWatchedAt: string): string | null {
+  if (!lastWatchedAt) return null;
+  const now = Date.now();
+  const then = new Date(lastWatchedAt).getTime();
+  if (isNaN(then)) return null;
+  const diffMs = now - then;
+  const diffMins = Math.floor(diffMs / 60000);
+  if (diffMins < 60) return 'Gerade eben gesehen';
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `Vor ${diffHours}h gesehen`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return 'Gestern gesehen';
+  if (diffDays < 7) return `Vor ${diffDays} Tagen gesehen`;
+  const diffWeeks = Math.floor(diffDays / 7);
+  if (diffWeeks === 1) return 'Vor 1 Woche gesehen';
+  if (diffDays < 30) return `Vor ${diffWeeks} Wochen gesehen`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths === 1) return 'Vor 1 Monat gesehen';
+  return `Vor ${diffMonths} Monaten gesehen`;
+}
 
 interface ContinueWatchingItem {
   type: 'series';
@@ -28,6 +50,7 @@ interface ContinueWatchingItem {
   lastWatchedAt: string;
   genre: Series['genre'];
   provider: Series['provider'];
+  chipType?: EpisodeChipType;
 }
 
 interface ContinueWatchingSectionProps {
@@ -60,6 +83,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.accent;
+  const isMobile = window.innerWidth < 768;
 
   if (items.length === 0) return null;
 
@@ -101,6 +125,25 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   poster={item.poster}
                   posterAlt={item.title}
                   accentColor={accentColor}
+                  posterOverlay={
+                    item.provider?.provider?.[0]?.logo ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w92${item.provider.provider[0].logo}`}
+                        alt={item.provider.provider[0].name}
+                        style={{
+                          position: 'absolute',
+                          bottom: -3,
+                          right: -3,
+                          width: 26,
+                          height: 26,
+                          borderRadius: 6,
+                          objectFit: 'cover',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                          border: '1.5px solid rgba(15,20,35,1)',
+                        }}
+                      />
+                    ) : undefined
+                  }
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}
                   dragOffset={dragOffsets[episodeKey] || 0}
@@ -120,39 +163,67 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                     <>
                       <h3
                         style={{
-                          fontSize: '15px',
-                          fontWeight: 600,
+                          fontSize: isMobile ? '13px' : '16px',
+                          fontWeight: 700,
                           margin: '0 0 2px 0',
+                          letterSpacing: '-0.01em',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {item.title}
                       </h3>
                       <p
                         style={{
-                          fontSize: '14px',
+                          fontSize: isMobile ? '11px' : '14px',
                           margin: 0,
-                          color: accentColor,
+                          color: item.chipType ? chipColor(item.chipType) : accentColor,
                           fontWeight: 500,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
+                          whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
                         {item.nextEpisode.name}
+                        {item.chipType && (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: 4,
+                              marginLeft: 6,
+                              background: `${chipColor(item.chipType)}20`,
+                              color: chipColor(item.chipType),
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {chipLabel(item.chipType)}
+                          </span>
+                        )}
                       </p>
-                      {paceText && (
-                        <p
-                          style={{
-                            fontSize: '12px',
-                            margin: '2px 0 0 0',
-                            color: currentTheme.text.muted,
-                          }}
-                        >
-                          {paceText}
-                        </p>
-                      )}
+                      {(() => {
+                        const lastWatchedText = formatLastWatched(item.lastWatchedAt);
+                        const parts = [paceText, lastWatchedText].filter(Boolean);
+                        return parts.length > 0 ? (
+                          <p
+                            style={{
+                              fontSize: isMobile ? '10px' : '13px',
+                              margin: '2px 0 0 0',
+                              color: currentTheme.text.muted,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {parts.join(' · ')}
+                          </p>
+                        ) : null;
+                      })()}
                       <div
                         style={{
                           marginTop: '6px',
@@ -178,14 +249,11 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                     </>
                   }
                   action={
-                    <>
-                      <EpisodeDiscussionButton
-                        seriesId={item.id}
-                        seasonNumber={item.nextEpisode.seasonNumber}
-                        episodeNumber={item.nextEpisode.episodeNumber}
-                      />
-                      <PlayCircle style={{ fontSize: '20px', color: accentColor }} />
-                    </>
+                    <EpisodeDiscussionButton
+                      seriesId={item.id}
+                      seasonNumber={item.nextEpisode.seasonNumber}
+                      episodeNumber={item.nextEpisode.episodeNumber}
+                    />
                   }
                 />
               );

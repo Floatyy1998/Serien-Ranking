@@ -199,12 +199,13 @@
 }
 
 /* Ratings Card */
-.ratings-card {
+.detail-ratings-card {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.ratings-card__badge {
+.detail-ratings-card__badge {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -214,7 +215,7 @@
   color: white;
 }
 
-.ratings-card__label {
+.detail-ratings-card__label {
   font-weight: 900;
   font-size: 12px;
   padding: 2px 4px;

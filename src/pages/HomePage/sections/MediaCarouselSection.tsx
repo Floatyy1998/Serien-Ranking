@@ -158,11 +158,16 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                             fontWeight: 900,
                             fontFamily: 'var(--font-display)',
                             lineHeight: 1,
-                            color: 'rgba(255,255,255,0.9)',
+                            color: 'rgba(255,255,255,0.75)',
                             userSelect: 'none',
                             letterSpacing: '-2px',
-                            textShadow:
-                              '0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
+                            textShadow: `
+                              0 1px 0 rgba(255,255,255,0.3),
+                              0 2px 0 rgba(0,80,60,0.4),
+                              0 3px 0 rgba(0,70,50,0.3),
+                              0 4px 0 rgba(0,60,40,0.2),
+                              0 5px 10px rgba(0,0,0,0.35)
+                            `,
                           }}
                         >
                           {index + 1}

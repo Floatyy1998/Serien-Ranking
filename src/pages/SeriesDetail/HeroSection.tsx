@@ -4,7 +4,7 @@ import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis } from '../../components/detail';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
-import { StatusBadge } from './StatusBadge';
+import { StatusBadge, NextEpisodeChip } from './StatusBadge';
 
 interface HeroSectionProps {
   series: Series;
@@ -150,6 +150,7 @@ export const HeroSection = memo<HeroSectionProps>(
             style={{ gap: isMobile ? '6px' : '8px', marginBottom: isMobile ? '12px' : '12px' }}
           >
             <StatusBadge series={series} />
+            <NextEpisodeChip series={series} />
             {genres.slice(0, maxGenres).map((genre, i) => (
               <span key={i} className="hero-section__genre-tag">
                 {genre}

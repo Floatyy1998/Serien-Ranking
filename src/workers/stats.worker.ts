@@ -47,6 +47,7 @@ interface WorkerSeries {
   poster?: string | { poster?: string };
   genre?: { genres?: string[] };
   provider?: { provider?: { id: number; name: string; logo: string }[] };
+  production?: { production?: boolean };
 }
 
 interface WorkerMovie {
@@ -70,6 +71,9 @@ interface WorkerProcessedEpisode {
   seriesGenre: string[] | undefined;
   seriesProviders: string[] | undefined;
   runtime: number;
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 }
 
 self.addEventListener('message', (event) => {
@@ -212,6 +216,41 @@ const getImageUrl = (posterObj: string | { poster?: string } | null | undefined)
   return `https://image.tmdb.org/t/p/w342${path}`;
 };
 
+/** Detect episode chip type inline (worker can't import modules) */
+function detectChipType(
+  episodes: WorkerEpisode[],
+  idx: number,
+  isInProduction: boolean
+): WorkerProcessedEpisode['chipType'] {
+  const ep = episodes[idx];
+  if (!ep) return undefined;
+  const airDate = parseEpisodeDateLocal(ep);
+  if (!airDate) return undefined;
+
+  if (idx === 0) return 'season-start';
+
+  const prevDate = parseEpisodeDateLocal(episodes[idx - 1]);
+  if (prevDate) {
+    const gap = (airDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (gap > 14) return 'mid-season-return';
+  }
+
+  const isLast = idx === episodes.length - 1;
+  if (isLast) {
+    if (episodes.length >= 4 || !isInProduction) return 'season-finale';
+  } else {
+    const remaining = episodes.slice(idx + 1);
+    const nextDate = parseEpisodeDateLocal(remaining[0]);
+    if (nextDate) {
+      const gap = (nextDate.getTime() - airDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (gap > 14) return 'season-break';
+    } else if (remaining.length > 1 && !remaining.some((e) => parseEpisodeDateLocal(e))) {
+      return 'season-break';
+    }
+  }
+  return undefined;
+}
+
 function processEpisodes(data: { seriesList: WorkerSeries[] }) {
   const { seriesList } = data;
   const today = new Date();
@@ -244,6 +283,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             ) ?? 0;
           const seasonNum = (season.seasonNumber ?? 0) + 1;
           const epNum = k + 1;
+          const isInProduction = series.production?.production !== false;
           episodes.push({
             seriesId: series.id,
             seriesNmr: series.nmr,
@@ -261,6 +301,9 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
               (p: { id: number; name: string; logo: string }) => p.name
             ),
             runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+            providerLogo: series.provider?.provider?.[0]?.logo,
+            providerName: series.provider?.provider?.[0]?.name,
+            chipType: detectChipType(seasonEpisodes, k, isInProduction),
           });
         }
       }

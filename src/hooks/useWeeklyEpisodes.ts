@@ -39,6 +39,7 @@ export interface WeeklyEpisode {
   providerNames: string[];
   providers: WeeklyEpisodeProvider[];
   premiereType?: 'season-start' | 'mid-season-return';
+  breakType?: 'season-finale' | 'season-break';
 }
 
 export type WeeklySchedule = Map<string, WeeklyEpisode[]>;
@@ -151,6 +152,43 @@ export const useWeeklyEpisodes = (
             }
           }
 
+          // Detect break type (season finale or upcoming hiatus)
+          let breakType: WeeklyEpisode['breakType'];
+          const isLastEpisode = eIdx === episodes.length - 1;
+
+          if (isLastEpisode) {
+            // Last known episode in this season
+            const totalEps = episodes.length;
+            const isInProduction = series.production?.production !== false;
+
+            // Only mark as finale if we're confident it's truly the last:
+            // - Season has enough episodes to be credible (≥4), OR
+            // - Series is confirmed not in production anymore
+            // This prevents marking a series with only 1-2 announced eps as "finale"
+            if (totalEps >= 4 || !isInProduction) {
+              breakType = 'season-finale';
+            }
+          } else {
+            // Check if next episode has a large gap → upcoming break
+            const remaining = episodes.slice(eIdx + 1);
+            const nextEp = remaining[0];
+            const nextAirDate = getEpisodeAirDate(nextEp);
+            if (nextAirDate) {
+              const nextDay = new Date(nextAirDate);
+              nextDay.setHours(0, 0, 0, 0);
+              const gapDays = (nextDay.getTime() - airDateDay.getTime()) / (1000 * 60 * 60 * 24);
+              if (gapDays > 14) {
+                breakType = 'season-break';
+              }
+            } else if (remaining.length > 1) {
+              // Multiple upcoming episodes but none have a date → likely on hiatus
+              const anyHasDate = remaining.some((e) => getEpisodeAirDate(e));
+              if (!anyHasDate) {
+                breakType = 'season-break';
+              }
+            }
+          }
+
           const entry: WeeklyEpisode = {
             seriesId: series.id,
             seriesNmr: series.nmr,
@@ -168,6 +206,7 @@ export const useWeeklyEpisodes = (
             providerNames: series.provider?.provider?.map((p) => p.name) || [],
             providers: prioritizeProviders(series.provider?.provider || []),
             premiereType,
+            breakType,
           };
 
           const dayEpisodes = schedule.get(dateKey);

@@ -1,3 +1,4 @@
+import React from 'react';
 import Edit from '@mui/icons-material/Edit';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -7,7 +8,7 @@ import Repeat from '@mui/icons-material/Repeat';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { useNavigationType, useSearchParams } from 'react-router-dom';
+import { useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -16,7 +17,9 @@ import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
-import { EpisodeCard } from './EpisodeCard';
+import { SwipeableEpisodeRow } from '../../components/ui';
+import { EpisodeDiscussionButton } from '../../components/Discussion';
+import { chipLabel, chipColor } from '../../utils/episodeChips';
 import { SortBar } from './SortBar';
 import { ProviderFilter } from './ProviderFilter';
 import './WatchNextPage.css';
@@ -56,8 +59,10 @@ export const WatchNextPage = () => {
     getEpisodeKey,
     handleSwipeDragStart,
     handleSwipeDrag,
-    handleSwipeDragEnd,
+    handleSwipeCleanup,
+    handleEpisodeComplete,
   } = useWatchNextSwipe({ user, seriesList });
+  const navigate = useNavigate();
 
   // Extract unique providers from watchlist series
   const availableProviders = useMemo(() => {
@@ -200,6 +205,8 @@ export const WatchNextPage = () => {
       setEditModeActive(false);
     }
   };
+
+  const isMobile = window.innerWidth < 768;
 
   const theme = {
     primary: currentTheme.primary,
@@ -410,32 +417,205 @@ export const WatchNextPage = () => {
               <AnimatePresence mode="popLayout">
                 {actualNextEpisodes
                   .filter((episode) => !hiddenEpisodes.has(getEpisodeKey(episode)))
-                  .map((episode, index) => {
+                  .map((episode, index, arr) => {
                     const episodeKey = getEpisodeKey(episode);
+                    // Show separator between rewatches and normal episodes
+                    const prevEpisode = index > 0 ? arr[index - 1] : null;
+                    const showSeparator = prevEpisode?.isRewatch && !episode.isRewatch;
                     return (
-                      <EpisodeCard
-                        key={episodeKey}
-                        episode={episode}
-                        index={index}
-                        theme={theme}
-                        isEditMode={editModeActive}
-                        isSwiping={swipingEpisodes.has(episodeKey)}
-                        isCompleting={completingEpisodes.has(episodeKey)}
-                        dragOffset={dragOffsets[episodeKey] || 0}
-                        swipeDirection={swipeDirections[episodeKey]}
-                        draggedIndex={draggedIndex}
-                        currentTouchIndex={currentTouchIndex}
-                        onSwipeDragStart={handleSwipeDragStart}
-                        onSwipeDrag={handleSwipeDrag}
-                        onSwipeDragEnd={handleSwipeDragEnd}
-                        onDragStart={handleDragStart}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                        episodeKey={episodeKey}
-                      />
+                      <React.Fragment key={episodeKey}>
+                        {showSeparator && (
+                          <div
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '8px 4px 4px',
+                            }}
+                          >
+                            <div
+                              style={{
+                                flex: 1,
+                                height: '1px',
+                                background: `linear-gradient(90deg, ${currentTheme.status.success}40, transparent)`,
+                              }}
+                            />
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: currentTheme.status.success,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Weiterschauen
+                            </span>
+                            <div
+                              style={{
+                                flex: 1,
+                                height: '1px',
+                                background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}40)`,
+                              }}
+                            />
+                          </div>
+                        )}
+                        <SwipeableEpisodeRow
+                          itemKey={episodeKey}
+                          poster={episode.poster}
+                          posterAlt={episode.seriesTitle}
+                          accentColor={
+                            episode.isRewatch ? currentTheme.accent : currentTheme.status.success
+                          }
+                          isCompleting={completingEpisodes.has(episodeKey)}
+                          isSwiping={swipingEpisodes.has(episodeKey)}
+                          dragOffset={dragOffsets[episodeKey] || 0}
+                          swipeDirection={swipeDirections[episodeKey]}
+                          onSwipeStart={() => handleSwipeDragStart(episodeKey)}
+                          onSwipeDrag={(offset) =>
+                            handleSwipeDrag(episodeKey, { offset: { x: offset, y: 0 } } as never)
+                          }
+                          onSwipeEnd={() => handleSwipeCleanup(episodeKey)}
+                          onComplete={(dir) => handleEpisodeComplete(episode, dir)}
+                          onPosterClick={() =>
+                            navigate(
+                              `/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`
+                            )
+                          }
+                          posterOverlay={
+                            episode.providerLogo ? (
+                              <img
+                                src={`https://image.tmdb.org/t/p/w92${episode.providerLogo}`}
+                                alt={episode.providerName || ''}
+                                style={{
+                                  position: 'absolute',
+                                  bottom: -3,
+                                  right: -3,
+                                  width: 26,
+                                  height: 26,
+                                  borderRadius: 7,
+                                  objectFit: 'cover',
+                                  boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                                  border: '1.5px solid rgba(15,20,35,1)',
+                                }}
+                              />
+                            ) : undefined
+                          }
+                          index={index}
+                          isEditMode={editModeActive}
+                          draggedIndex={draggedIndex}
+                          currentTouchIndex={currentTouchIndex}
+                          onDragStart={handleDragStart}
+                          onDragOver={handleDragOver}
+                          onDrop={handleDrop}
+                          onTouchStart={handleTouchStart}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                          content={
+                            <>
+                              <h2
+                                style={{
+                                  fontSize: isMobile ? '13px' : '16px',
+                                  fontWeight: 700,
+                                  margin: '0 0 2px 0',
+                                  letterSpacing: '-0.01em',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {episode.seriesTitle}
+                              </h2>
+                              <p
+                                style={{
+                                  fontSize: isMobile ? '11px' : '14px',
+                                  fontWeight: 500,
+                                  margin: 0,
+                                  color: episode.chipType
+                                    ? chipColor(episode.chipType)
+                                    : episode.isRewatch
+                                      ? currentTheme.accent
+                                      : currentTheme.status.success,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                S{(episode.seasonNumber ?? 0) + 1} E{episode.episodeNumber}
+                                {episode.isRewatch
+                                  ? ` \u2022 ${episode.currentWatchCount}x \u2192 ${episode.targetWatchCount}x`
+                                  : episode.episodeName
+                                    ? ` \u2022 ${episode.episodeName}`
+                                    : ''}
+                                {episode.chipType && (
+                                  <span
+                                    style={{
+                                      fontSize: '11px',
+                                      fontWeight: 700,
+                                      padding: '1px 5px',
+                                      borderRadius: 4,
+                                      marginLeft: 6,
+                                      background: `${chipColor(episode.chipType)}20`,
+                                      color: chipColor(episode.chipType),
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.3px',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {chipLabel(episode.chipType)}
+                                  </span>
+                                )}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: isMobile ? '10px' : '13px',
+                                  margin: '2px 0 0 0',
+                                  color: currentTheme.text.muted,
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}
+                              >
+                                {episode.remainingEpisodes > 0
+                                  ? `${episode.currentSeasonOf} \u00b7 ${episode.remainingEpisodes} \u00fcbrig${episode.estimatedMinutesLeft >= 60 ? ` \u00b7 ~${Math.round(episode.estimatedMinutesLeft / 60)}h` : episode.estimatedMinutesLeft > 0 ? ` \u00b7 ~${episode.estimatedMinutesLeft}min` : ''}`
+                                  : episode.isRewatch
+                                    ? episode.currentSeasonOf
+                                    : 'Wartet auf neue Folgen'}
+                              </p>
+                              <div
+                                style={{
+                                  marginTop: '6px',
+                                  height: '3px',
+                                  background: 'rgba(255,255,255,0.08)',
+                                  borderRadius: '2px',
+                                  overflow: 'hidden',
+                                  position: 'relative',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    height: '100%',
+                                    width: `${episode.progress}%`,
+                                    background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                                    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                  }}
+                                />
+                              </div>
+                            </>
+                          }
+                          action={
+                            <EpisodeDiscussionButton
+                              seriesId={episode.seriesId}
+                              seasonNumber={episode.seasonNumber + 1}
+                              episodeNumber={episode.episodeNumber}
+                            />
+                          }
+                        />
+                      </React.Fragment>
                     );
                   })}
               </AnimatePresence>

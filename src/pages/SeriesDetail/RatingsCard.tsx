@@ -70,7 +70,7 @@ export const RatingsCard = memo<RatingsCardProps>(
 
     return (
       <div
-        className="ratings-card"
+        className="detail-ratings-card"
         style={{
           gap: isMobile ? '8px' : '12px',
           marginBottom: noMargin ? 0 : isMobile ? '12px' : '12px',
@@ -82,7 +82,7 @@ export const RatingsCard = memo<RatingsCardProps>(
             href={badge.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="ratings-card__badge"
+            className="detail-ratings-card__badge"
             style={{
               padding: isMobile ? '4px 8px' : '4px 10px',
               background: badge.pillBg,
@@ -93,7 +93,7 @@ export const RatingsCard = memo<RatingsCardProps>(
             }}
           >
             <span
-              className="ratings-card__label"
+              className="detail-ratings-card__label"
               style={{ background: badge.labelBg, color: badge.labelColor }}
             >
               {badge.label}

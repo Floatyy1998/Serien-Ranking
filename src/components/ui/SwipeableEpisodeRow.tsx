@@ -1,65 +1,57 @@
 /**
- * SwipeableEpisodeRow - Shared horizontal swipe-to-complete row.
+ * SwipeableEpisodeRow - Unified cinematic episode card.
  *
- * Used by ContinueWatchingSection, RewatchSection, TodayEpisodesSection.
- * Handles the outer animation wrapper, swipe overlay, card container,
- * swipe indicator, poster, and the completing/action AnimatePresence.
- *
- * Layout: [poster][content (flex:1)][action]
+ * Used everywhere: ContinueWatching, TodayEpisodes, Rewatches, WatchNext.
+ * Supports swipe-to-complete, drag-to-reorder (edit mode), ambient poster bg.
  */
 
-import { Check } from '@mui/icons-material';
+import { Check, DragHandle } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { memo } from 'react';
 
 interface SwipeableEpisodeRowProps {
-  /** Unique key for this row (used in state maps) */
   itemKey: string;
-
-  /** Poster image URL */
   poster: string;
   posterAlt: string;
-
-  /** Accent color (hex/rgb) for background tinting, border, and swipe indicator */
   accentColor: string;
 
-  /** State */
+  // Swipe state
   isCompleting: boolean;
   isSwiping: boolean;
   dragOffset: number;
   swipeDirection?: 'left' | 'right';
 
-  /**
-   * Optional static background override when not dragging.
-   * Use for e.g. "already watched" state.
-   */
+  // Static overrides (e.g. watched episodes)
   staticBackground?: string;
   staticBorder?: string;
-
-  /** Whether a swipe should trigger onComplete (default: true) */
   canSwipe?: boolean;
 
-  /** Swipe handlers */
+  // Swipe handlers
   onSwipeStart: () => void;
   onSwipeDrag: (offset: number) => void;
   onSwipeEnd: () => void;
   onComplete: (direction: 'left' | 'right') => void;
 
-  /** Poster click handler */
+  // Poster
   onPosterClick?: () => void;
+  posterOverlay?: React.ReactNode;
 
-  /** Middle content (title, meta, progress bar etc.) */
+  // Content & actions
   content: React.ReactNode;
-
-  /** Right action content (icons etc.) */
   action: React.ReactNode;
-
-  /**
-   * When true, the action is wrapped in a motion.div that shifts right
-   * while swiping. Set to false for states without swipe feedback (e.g. watched).
-   * Default: true.
-   */
   animateAction?: boolean;
+
+  // ── Edit mode / reorder (optional) ──
+  index?: number;
+  isEditMode?: boolean;
+  draggedIndex?: number | null;
+  currentTouchIndex?: number | null;
+  onDragStart?: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>, index: number) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>, index: number) => Promise<void>;
+  onTouchStart?: (e: React.TouchEvent, index: number) => void;
+  onTouchMove?: (e: React.TouchEvent) => void;
+  onTouchEnd?: () => Promise<void>;
 }
 
 export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
@@ -80,178 +72,323 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     onSwipeEnd,
     onComplete,
     onPosterClick,
+    posterOverlay,
     content,
     action,
     animateAction = true,
+    index,
+    isEditMode = false,
+    draggedIndex = null,
+    currentTouchIndex = null,
+    onDragStart,
+    onDragOver,
+    onDrop,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
   }) => {
-    // Dynamic background and border based on drag offset
+    const isMobile = window.innerWidth < 768;
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
-    const bgOpacityHex = Math.round(dragRatio * 25)
-      .toString(16)
-      .padStart(2, '0');
-    const borderOpacityHex = Math.round(51 + dragRatio * 77)
-      .toString(16)
-      .padStart(2, '0');
+    const isDragTarget =
+      index != null &&
+      currentTouchIndex === index &&
+      draggedIndex !== null &&
+      draggedIndex !== index;
+    const isDragged = index != null && draggedIndex === index;
 
-    const background = isCompleting
-      ? `linear-gradient(90deg, ${accentColor}33, ${accentColor}0D)`
-      : (staticBackground ??
-        (dragOffset
-          ? `${accentColor}${bgOpacityHex}`
-          : 'var(--theme-surface, rgba(255,255,255,0.05))'));
-
-    const border = `1px solid ${
-      isCompleting ? `${accentColor}80` : (staticBorder ?? `${accentColor}${borderOpacityHex}`)
-    }`;
+    const borderColor = isCompleting
+      ? `${accentColor}50`
+      : (staticBorder ??
+        (isDragTarget ? accentColor : `rgba(255,255,255,${(0.07 + dragRatio * 0.15).toFixed(2)})`));
 
     return (
       <motion.div
         key={itemKey}
         data-block-swipe
-        initial={{ opacity: 0, y: 20 }}
+        data-index={index}
+        layout={isEditMode ? true : undefined}
+        initial={{ opacity: 0, y: 14 }}
         animate={{
           opacity: isCompleting ? 0.5 : 1,
           y: 0,
-          scale: isCompleting ? 0.95 : 1,
+          scale: isCompleting ? 0.97 : 1,
         }}
         exit={{
           opacity: 0,
           x: swipeDirection === 'left' ? -300 : 300,
-          transition: { duration: 0.3 },
+          transition: { duration: 0.28, ease: [0.32, 0, 0.67, 0] },
         }}
+        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         style={{ position: 'relative' }}
       >
-        {/* Invisible swipe overlay (sits on top, triggers drag) */}
-        <motion.div
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          dragSnapToOrigin
-          onDragStart={() => onSwipeStart()}
-          onDrag={(_event, info: PanInfo) => onSwipeDrag(info.offset.x)}
-          onDragEnd={(event, info: PanInfo) => {
-            event.stopPropagation();
-            onSwipeEnd();
-            if (canSwipe && Math.abs(info.offset.x) > 100) {
-              onComplete(info.offset.x > 0 ? 'right' : 'left');
-            }
-          }}
-          whileDrag={{ scale: 1.02 }}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: '70px',
-            right: 0,
-            bottom: 0,
-            zIndex: 1,
-          }}
-        />
-
-        {/* Card container */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            background,
-            border,
-            boxShadow: '0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)',
-            transition: dragOffset ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            borderRadius: '14px',
-            padding: '12px',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Swipe glow indicator */}
+        {/* Swipe hit area — only when NOT in edit mode */}
+        {!isEditMode && (
           <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            dragSnapToOrigin
+            onDragStart={() => onSwipeStart()}
+            onDrag={(_event, info: PanInfo) => onSwipeDrag(info.offset.x)}
+            onDragEnd={(event, info: PanInfo) => {
+              event.stopPropagation();
+              onSwipeEnd();
+              if (canSwipe && Math.abs(info.offset.x) > 100) {
+                onComplete(info.offset.x > 0 ? 'right' : 'left');
+              }
+            }}
+            whileDrag={{ scale: 1.015 }}
             style={{
               position: 'absolute',
               top: 0,
-              left: 0,
-              right: 0,
+              left: '90px',
+              right: '50px',
               bottom: 0,
-              background: `linear-gradient(90deg, transparent, ${accentColor}4D)`,
-              opacity: 0,
-              pointerEvents: 'none',
-            }}
-            animate={{ opacity: isSwiping ? 1 : 0 }}
-          />
-
-          {/* Poster */}
-          <img
-            src={poster}
-            alt={posterAlt}
-            decoding="async"
-            onClick={onPosterClick}
-            style={{
-              width: '50px',
-              height: '75px',
-              objectFit: 'cover',
-              borderRadius: '10px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
-              cursor: onPosterClick ? 'pointer' : 'default',
-              position: 'relative',
-              zIndex: 2,
-              flexShrink: 0,
+              zIndex: 4,
             }}
           />
+        )}
 
-          {/* Middle content */}
-          <div
-            style={{
-              flex: 1,
-              minWidth: 0,
-              pointerEvents: 'none',
-              position: 'relative',
-              zIndex: 2,
-              overflow: 'hidden',
-            }}
-          >
-            {content}
+        {/* ── Card ── */}
+        <div
+          draggable={isEditMode}
+          onDragStart={
+            isEditMode && onDragStart && index != null
+              ? (e: React.DragEvent<HTMLDivElement>) => onDragStart(e, index)
+              : undefined
+          }
+          onDragOver={
+            isEditMode && onDragOver && index != null ? (e) => onDragOver(e, index) : undefined
+          }
+          onDrop={
+            isEditMode && onDrop && index != null
+              ? (e: React.DragEvent<HTMLDivElement>) => onDrop(e, index)
+              : undefined
+          }
+          onTouchStart={
+            isEditMode && onTouchStart && index != null ? (e) => onTouchStart(e, index) : undefined
+          }
+          onTouchMove={isEditMode && onTouchMove ? onTouchMove : undefined}
+          onTouchEnd={isEditMode && onTouchEnd ? onTouchEnd : undefined}
+          style={{
+            position: 'relative',
+            borderRadius: isMobile ? '14px' : '18px',
+            overflow: 'hidden',
+            border: `1px solid ${borderColor}`,
+            boxShadow: isDragged
+              ? `0 8px 24px ${accentColor}40`
+              : isDragTarget
+                ? `0 4px 12px ${accentColor}30`
+                : isSwiping
+                  ? '0 12px 44px rgba(0,0,0,0.55)'
+                  : '0 6px 28px rgba(0,0,0,0.4)',
+            cursor: isEditMode ? 'move' : undefined,
+            opacity: isDragged ? 0.6 : 1,
+            transform: isDragged ? 'scale(1.05)' : isDragTarget ? 'scale(1.02)' : undefined,
+            transition: dragOffset ? 'none' : 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+        >
+          {/* ── Ambient poster background ── */}
+          <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
+            <img
+              src={poster}
+              alt=""
+              aria-hidden
+              decoding="async"
+              style={{
+                position: 'absolute',
+                top: '-30%',
+                left: '-15%',
+                width: '75%',
+                height: '160%',
+                objectFit: 'cover',
+                filter: 'blur(32px) saturate(1.8) brightness(0.5)',
+                opacity: staticBackground ? 0.25 : 0.7,
+                transform: 'scale(1.15)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  staticBackground ||
+                  'linear-gradient(105deg, rgba(6,9,15,0.3) 0%, rgba(6,9,15,0.75) 40%, rgba(6,9,15,0.93) 70%, rgba(6,9,15,0.97) 100%)',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background:
+                  'linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.1) 40%, rgba(255,255,255,0.03))',
+              }}
+            />
           </div>
 
-          {/* Right action with AnimatePresence */}
-          <AnimatePresence mode="wait">
-            {isCompleting ? (
-              <motion.div
-                key="check"
-                initial={{ scale: 0, rotate: -180 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0, rotate: 180 }}
-                style={{ position: 'relative', zIndex: 2 }}
-              >
-                <Check style={{ fontSize: '24px', color: accentColor }} />
-              </motion.div>
-            ) : animateAction ? (
-              <motion.div
-                key="action"
-                animate={{ x: isSwiping ? 10 : 0 }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  position: 'relative',
-                  zIndex: 2,
-                }}
-              >
-                {action}
-              </motion.div>
-            ) : (
+          {/* Swipe glow */}
+          <motion.div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: `radial-gradient(ellipse at ${dragOffset > 0 ? '10%' : '90%'} 50%, ${accentColor}30 0%, transparent 60%)`,
+              opacity: 0,
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+            animate={{ opacity: isSwiping ? 1 : 0 }}
+            transition={{ duration: 0.2 }}
+          />
+
+          {/* ── Content row ── */}
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: isMobile ? '12px' : '16px',
+              padding: isMobile ? '8px 12px 8px 8px' : '12px 16px 12px 12px',
+              minHeight: isMobile ? undefined : '96px',
+            }}
+          >
+            {/* ── Poster ── */}
+            <div
+              onClick={onPosterClick}
+              style={{
+                position: 'relative',
+                flexShrink: 0,
+                cursor: onPosterClick ? 'pointer' : 'default',
+                zIndex: 3,
+              }}
+            >
               <div
-                key="action-static"
+                style={{
+                  width: isMobile ? '52px' : '76px',
+                  height: isMobile ? '76px' : '110px',
+                  borderRadius: isMobile ? '10px' : '12px',
+                  overflow: 'hidden',
+                  boxShadow:
+                    '0 6px 24px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)',
+                }}
+              >
+                <img
+                  src={poster}
+                  alt={posterAlt}
+                  decoding="async"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '35%',
+                    background: 'linear-gradient(to bottom, rgba(255,255,255,0.1), transparent)',
+                    pointerEvents: 'none',
+                  }}
+                />
+              </div>
+              {posterOverlay}
+            </div>
+
+            {/* ── Content ── */}
+            <div
+              style={{
+                flex: 1,
+                minWidth: 0,
+                pointerEvents: isEditMode ? 'auto' : 'none',
+                position: 'relative',
+                zIndex: 2,
+                overflow: 'hidden',
+              }}
+            >
+              {content}
+            </div>
+
+            {/* ── Edit mode drag handle ── */}
+            {isEditMode && (
+              <div
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  position: 'relative',
-                  zIndex: 2,
+                  padding: '12px 4px',
+                  cursor: 'grab',
                 }}
               >
-                {action}
+                <DragHandle style={{ fontSize: '24px', opacity: 0.5 }} />
               </div>
             )}
-          </AnimatePresence>
+
+            {/* ── Actions ── */}
+            {!isEditMode && (
+              <AnimatePresence mode="wait">
+                {isCompleting ? (
+                  <motion.div
+                    key="check"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    style={{
+                      position: 'relative',
+                      zIndex: 2,
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: `linear-gradient(135deg, ${accentColor}, ${accentColor}bb)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: `0 4px 16px ${accentColor}40`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Check style={{ fontSize: '20px', color: '#fff' }} />
+                  </motion.div>
+                ) : animateAction ? (
+                  <motion.div
+                    key="action"
+                    animate={{ x: isSwiping ? 8 : 0, opacity: isSwiping ? 0.4 : 1 }}
+                    transition={{ duration: 0.2 }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      position: 'relative',
+                      zIndex: 2,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {action}
+                  </motion.div>
+                ) : (
+                  <div
+                    key="action-static"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      position: 'relative',
+                      zIndex: 2,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {action}
+                  </div>
+                )}
+              </AnimatePresence>
+            )}
+          </div>
         </div>
       </motion.div>
     );

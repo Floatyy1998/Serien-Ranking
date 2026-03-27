@@ -6,10 +6,14 @@ import {
   LocalFireDepartment,
   Navigation,
   NewReleases,
+  PauseCircle,
   PlaylistAddCheck,
   Replay,
+  SmartDisplay,
   Sort,
+  Today,
   TrendingUp,
+  Tune,
   ViewQuilt,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -46,6 +50,63 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'März 2026 – QoL Update',
+      date: '2026-03-27',
+      features: [
+        {
+          icon: <Today />,
+          color: '#6366f1',
+          title: 'Kalender: Auto-Scroll zum heutigen Tag',
+          description:
+            'Auf dem Handy scrollt der Kalender jetzt automatisch zum heutigen Wochentag – kein manuelles Suchen mehr.',
+          link: { label: 'Kalender öffnen', path: '/calendar' },
+        },
+        {
+          icon: <PauseCircle />,
+          color: '#a78bfa',
+          title: 'Kalender: Staffelpause & Staffelende Chips',
+          description:
+            'Neue Badges zeigen dir direkt im Kalender ob eine Serie in die Pause geht oder das Staffelfinale kommt. Erkennt auch Pausen wenn kommende Folgen noch kein Datum haben.',
+          link: { label: 'Kalender öffnen', path: '/calendar' },
+        },
+        {
+          icon: <SmartDisplay />,
+          color: '#00cec9',
+          title: 'Provider-Badge auf allen Karten',
+          description:
+            'Kleine Streaming-Logos (Crunchyroll, Netflix, etc.) auf dem Poster – überall: Weiterschauen, Heute Neu, Rewatches und Watchlist.',
+        },
+        {
+          icon: <Tune />,
+          color: '#10b981',
+          title: 'Smarter Status-Badge',
+          description:
+            'Der Status-Badge im Serien-Detail zeigt jetzt den Ausstrahlungsrhythmus: "Läuft · Sonntags neue Folge" oder "Läuft · Alle 2 Wochen" statt nur "Fortlaufend".',
+        },
+        {
+          icon: <CalendarMonth />,
+          color: currentTheme.accent,
+          title: 'Nächste Folge im Hero',
+          description:
+            'Neuer Chip im Serien-Detail zeigt sofort die nächste Episode mit Datum an – ohne scrollen zu müssen.',
+        },
+        {
+          icon: <Replay />,
+          color: '#f59e0b',
+          title: '"Zuletzt gesehen" in Weiterschauen',
+          description:
+            'Jede Karte in Weiterschauen zeigt jetzt wann du die Serie zuletzt geschaut hast – hilft beim Priorisieren.',
+        },
+        {
+          icon: <PlaylistAddCheck />,
+          color: '#ec4899',
+          title: 'Staffel & Tab merken',
+          description:
+            'Wenn du in einem Serien-Detail eine Staffel oder Tab (Info/Besetzung/KI-Guide) wählst und zurücknavigierst, landest du wieder an der gleichen Stelle.',
+        },
+      ],
+    },
     {
       version: 'März 2026 – Update 3',
       date: '2026-03-27',

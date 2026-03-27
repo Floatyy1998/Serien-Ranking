@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useEffect, useRef, forwardRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';
@@ -34,78 +34,86 @@ interface CalendarGridProps {
 // ── DayCell ──────────────────────────────────────────────────────
 
 const DayCell = memo(
-  ({
-    dateKey,
-    dayIndex,
-    todayKey,
-    groups,
-    backdrops,
-    expandedGroups,
-    onToggleGroup,
-    onMarkWatched,
-  }: DayCellProps) => {
-    const { currentTheme } = useTheme();
-    const isToday = dateKey === todayKey;
-    const hasEpisodes = groups.length > 0;
-    const dayDate = new Date(dateKey + 'T00:00:00');
+  forwardRef<HTMLDivElement, DayCellProps>(
+    (
+      {
+        dateKey,
+        dayIndex,
+        todayKey,
+        groups,
+        backdrops,
+        expandedGroups,
+        onToggleGroup,
+        onMarkWatched,
+      },
+      ref
+    ) => {
+      const { currentTheme } = useTheme();
+      const isToday = dateKey === todayKey;
+      const hasEpisodes = groups.length > 0;
+      const dayDate = new Date(dateKey + 'T00:00:00');
 
-    return (
-      <div className={`cal-day ${isToday ? 'is-today' : ''} ${!hasEpisodes ? 'is-empty' : ''}`}>
-        {/* Day header */}
-        <div className="cal-day-label">
-          <span
-            className={`cal-day-weekday ${isToday ? 'is-today' : ''}`}
-            style={isToday ? { color: currentTheme.primary } : {}}
-          >
-            {WEEKDAYS_SHORT[dayIndex]}
-          </span>
-          <span
-            className={`cal-day-number ${isToday ? 'is-today' : ''}`}
-            style={
-              isToday
-                ? { background: currentTheme.primary, color: currentTheme.text.secondary }
-                : { color: currentTheme.text.primary }
-            }
-          >
-            {dayDate.getDate()}
-          </span>
-          {!hasEpisodes && <span className="cal-day-none">&mdash;</span>}
-        </div>
+      return (
+        <div
+          ref={ref}
+          className={`cal-day ${isToday ? 'is-today' : ''} ${!hasEpisodes ? 'is-empty' : ''}`}
+        >
+          {/* Day header */}
+          <div className="cal-day-label">
+            <span
+              className={`cal-day-weekday ${isToday ? 'is-today' : ''}`}
+              style={isToday ? { color: currentTheme.primary } : {}}
+            >
+              {WEEKDAYS_SHORT[dayIndex]}
+            </span>
+            <span
+              className={`cal-day-number ${isToday ? 'is-today' : ''}`}
+              style={
+                isToday
+                  ? { background: currentTheme.primary, color: currentTheme.text.secondary }
+                  : { color: currentTheme.text.primary }
+              }
+            >
+              {dayDate.getDate()}
+            </span>
+            {!hasEpisodes && <span className="cal-day-none">&mdash;</span>}
+          </div>
 
-        {/* Episodes */}
-        {hasEpisodes && (
-          <div className="cal-day-episodes">
-            {groups.map((group) => {
-              const groupKey = `${dateKey}-${group.seriesId}`;
-              const isSingle = group.episodes.length === 1;
+          {/* Episodes */}
+          {hasEpisodes && (
+            <div className="cal-day-episodes">
+              {groups.map((group) => {
+                const groupKey = `${dateKey}-${group.seriesId}`;
+                const isSingle = group.episodes.length === 1;
 
-              if (isSingle) {
+                if (isSingle) {
+                  return (
+                    <SingleEpisodeCard
+                      key={groupKey}
+                      ep={group.episodes[0]}
+                      backdropSrc={backdrops[group.seriesId]}
+                      onMarkWatched={onMarkWatched}
+                    />
+                  );
+                }
+
                 return (
-                  <SingleEpisodeCard
+                  <EpisodeGroupCard
                     key={groupKey}
-                    ep={group.episodes[0]}
+                    group={group}
                     backdropSrc={backdrops[group.seriesId]}
+                    isExpanded={expandedGroups.has(groupKey)}
+                    onToggle={() => onToggleGroup(groupKey)}
                     onMarkWatched={onMarkWatched}
                   />
                 );
-              }
-
-              return (
-                <EpisodeGroupCard
-                  key={groupKey}
-                  group={group}
-                  backdropSrc={backdrops[group.seriesId]}
-                  isExpanded={expandedGroups.has(groupKey)}
-                  onToggle={() => onToggleGroup(groupKey)}
-                  onMarkWatched={onMarkWatched}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-    );
-  }
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+  )
 );
 DayCell.displayName = 'DayCell';
 
@@ -120,11 +128,28 @@ export const CalendarGrid = memo(
     onToggleGroup,
     onMarkWatched,
   }: CalendarGridProps) => {
+    const todayRef = useRef<HTMLDivElement>(null);
+    const hasScrolled = useRef(false);
+
+    // Auto-scroll to today on mobile (< 768px)
+    useEffect(() => {
+      if (hasScrolled.current || window.innerWidth >= 768) return;
+      // Small delay to ensure DOM has rendered
+      const timer = setTimeout(() => {
+        if (todayRef.current) {
+          todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          hasScrolled.current = true;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }, [groupedSchedule, todayKey]);
+
     return (
       <div className="cal-content">
         {Array.from(groupedSchedule.entries()).map(([dateKey, groups], dayIndex) => (
           <DayCell
             key={dateKey}
+            ref={dateKey === todayKey ? todayRef : undefined}
             dateKey={dateKey}
             dayIndex={dayIndex}
             todayKey={todayKey}
