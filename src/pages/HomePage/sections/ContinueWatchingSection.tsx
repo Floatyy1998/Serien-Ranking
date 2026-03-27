@@ -82,7 +82,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
 }: ContinueWatchingSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.accent;
+  const accentColor = currentTheme.primary;
   const isMobile = window.innerWidth < 768;
 
   if (items.length === 0) return null;
