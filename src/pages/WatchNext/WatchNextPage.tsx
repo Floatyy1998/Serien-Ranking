@@ -488,7 +488,7 @@ export const WatchNextPage = () => {
                           poster={episode.poster}
                           posterAlt={episode.seriesTitle}
                           accentColor={
-                            episode.isRewatch ? currentTheme.accent : currentTheme.status.success
+                            episode.isRewatch ? currentTheme.accent : currentTheme.primary
                           }
                           isCompleting={completingEpisodes.has(episodeKey)}
                           isSwiping={swipingEpisodes.has(episodeKey)}
