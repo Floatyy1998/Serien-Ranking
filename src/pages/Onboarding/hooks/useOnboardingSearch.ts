@@ -178,7 +178,7 @@ export function useOnboardingSearch() {
     }
 
     setSearchLoading(true);
-    const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+    const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
 
     debounceRef.current = setTimeout(async () => {
       try {

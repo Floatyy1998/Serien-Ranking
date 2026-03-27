@@ -54,7 +54,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
-      .map((line) => line.replace(/^[•\-\*]\s*/, '').replace(/\*\*/g, ''));
+      .map((line) => line.replace(/^[•\-*]\s*/, '').replace(/\*\*/g, ''));
   };
 
   return (

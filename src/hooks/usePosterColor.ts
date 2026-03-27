@@ -94,18 +94,17 @@ function extractDominantColor(img: HTMLImageElement): string {
 }
 
 export function usePosterColor(posterUrl: string | undefined, fallback: string): string {
-  const [color, setColor] = useState<string>(() => {
-    if (posterUrl && colorCache.has(posterUrl)) return colorCache.get(posterUrl)!;
-    return fallback;
-  });
+  const cached = posterUrl ? colorCache.get(posterUrl) : undefined;
+  const [color, setColor] = useState<string>(cached ?? fallback);
+
+  // Sync cached value when posterUrl changes (cache may have been populated by another instance)
+  const currentCached = posterUrl ? colorCache.get(posterUrl) : undefined;
+  if (currentCached && currentCached !== color) {
+    setColor(currentCached);
+  }
 
   useEffect(() => {
-    if (!posterUrl) return;
-
-    if (colorCache.has(posterUrl)) {
-      setColor(colorCache.get(posterUrl)!);
-      return;
-    }
+    if (!posterUrl || colorCache.has(posterUrl)) return;
 
     const img = new Image();
     img.crossOrigin = 'anonymous';

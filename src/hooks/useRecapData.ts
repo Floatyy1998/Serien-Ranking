@@ -297,7 +297,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
     } finally {
       setAiLoading(false);
     }
-  }, [series, recapEpisodes]);
+  }, [series, recapEpisodes, user?.uid]);
 
   const [questionAnswer, setQuestionAnswer] = useState<string | null>(null);
   const [questionLoading, setQuestionLoading] = useState(false);
@@ -347,7 +347,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
         setQuestionLoading(false);
       }
     },
-    [series, recapEpisodes]
+    [series, recapEpisodes, user?.uid]
   );
 
   return {

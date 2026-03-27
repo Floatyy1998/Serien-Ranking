@@ -16,7 +16,7 @@ function parseBulletPoints(text: string): string[] {
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
-    .map((line) => line.replace(/^[•\-\*]\s*/, '').replace(/\*\*/g, ''));
+    .map((line) => line.replace(/^[•\-*]\s*/, '').replace(/\*\*/g, ''));
 }
 
 export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
@@ -40,7 +40,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
       : `Staffel ${current.seasonNumber} wird ${current.startsToday ? 'heute' : 'morgen'} fortgesetzt!`;
 
   const hasContent = current.recap && !current.loading;
-  const points = hasContent ? parseBulletPoints(current.recap!) : [];
+  const points = hasContent ? parseBulletPoints(current.recap ?? '') : [];
 
   return (
     <AnimatePresence mode="wait">

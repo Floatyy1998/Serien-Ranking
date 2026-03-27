@@ -181,7 +181,7 @@ export const useSearchPage = (): UseSearchPageResult => {
 
       const apiKey = import.meta.env.VITE_API_TMDB;
       const encoded = encodeURIComponent(query);
-      const hasNonLatin = (text: string) => /[^\u0000-\u024F\u1E00-\u1EFF]/.test(text);
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
 
       try {
         const results: SearchResult[] = [];

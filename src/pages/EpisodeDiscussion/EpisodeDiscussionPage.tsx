@@ -1,6 +1,6 @@
 import { Check, SkipNext } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
-import { memo } from 'react';
+import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
+import { memo, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import {
@@ -48,6 +48,18 @@ export const EpisodeDiscussionPage = memo(() => {
     getStillUrl,
     getProfileUrl,
   } = useEpisodeDiscussion();
+
+  const handleSwipeNav = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      if (Math.abs(info.offset.x) < 60 || Math.abs(info.velocity.x) < 100) return;
+      if (info.offset.x < 0 && navigation.hasNextEpisode) {
+        navigation.goToNextEpisode();
+      } else if (info.offset.x > 0 && navigation.hasPrevEpisode) {
+        navigation.goToPrevEpisode();
+      }
+    },
+    [navigation]
+  );
 
   if (loading) {
     return <LoadingState currentTheme={currentTheme} />;
@@ -147,58 +159,68 @@ export const EpisodeDiscussionPage = memo(() => {
         )}
       </AnimatePresence>
 
-      <HeroSection
-        currentTheme={currentTheme}
-        stillPath={stillPath}
-        backdropPath={seriesInfo?.backdrop_path}
-        episodeName={episodeName}
-        seriesTitle={seriesTitle}
-        seriesId={seriesId}
-        seasonNumber={seasonNumber}
-        episodeNumber={episodeNumber}
-        episodeRating={episodeRating}
-        episodeAirDate={episodeAirDate}
-        episodeRuntime={episodeRuntime}
-        formattedAirDate={formattedAirDate}
-        formattedFirstWatchedAt={formattedFirstWatchedAt}
-        isWatched={isWatched}
-        getStillUrl={getStillUrl}
-        navigate={navigate}
-      />
-
-      <QuickActions
-        currentTheme={currentTheme}
-        hasUser={hasUser}
-        hasSeries={hasSeries}
-        isWatched={isWatched}
-        seriesId={seriesId}
-        onToggleWatched={handleToggleWatched}
-        navigate={navigate}
-      />
-
-      <EpisodeNavigation currentTheme={currentTheme} navigation={navigation} />
-
-      <div className="ed-content">
-        <OverviewSection currentTheme={currentTheme} episodeOverview={episodeOverview} />
-
-        <CrewSection currentTheme={currentTheme} directors={directors} writers={writers} />
-
-        <GuestStarsSection
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.3}
+        dragMomentum={false}
+        dragSnapToOrigin
+        onDragEnd={handleSwipeNav}
+        style={{ touchAction: 'pan-y' }}
+      >
+        <HeroSection
           currentTheme={currentTheme}
-          guestStars={guestStars}
-          getProfileUrl={getProfileUrl}
-        />
-
-        <DiscussionSection
+          stillPath={stillPath}
+          backdropPath={seriesInfo?.backdrop_path}
+          episodeName={episodeName}
+          seriesTitle={seriesTitle}
           seriesId={seriesId}
           seasonNumber={seasonNumber}
           episodeNumber={episodeNumber}
-          seriesTitle={seriesTitle}
-          episodeName={episodeName}
-          posterPath={seriesInfo?.poster_path}
+          episodeRating={episodeRating}
+          episodeAirDate={episodeAirDate}
+          episodeRuntime={episodeRuntime}
+          formattedAirDate={formattedAirDate}
+          formattedFirstWatchedAt={formattedFirstWatchedAt}
           isWatched={isWatched}
+          getStillUrl={getStillUrl}
+          navigate={navigate}
         />
-      </div>
+
+        <QuickActions
+          currentTheme={currentTheme}
+          hasUser={hasUser}
+          hasSeries={hasSeries}
+          isWatched={isWatched}
+          seriesId={seriesId}
+          onToggleWatched={handleToggleWatched}
+          navigate={navigate}
+        />
+
+        <EpisodeNavigation currentTheme={currentTheme} navigation={navigation} />
+
+        <div className="ed-content">
+          <OverviewSection currentTheme={currentTheme} episodeOverview={episodeOverview} />
+
+          <CrewSection currentTheme={currentTheme} directors={directors} writers={writers} />
+
+          <GuestStarsSection
+            currentTheme={currentTheme}
+            guestStars={guestStars}
+            getProfileUrl={getProfileUrl}
+          />
+
+          <DiscussionSection
+            seriesId={seriesId}
+            seasonNumber={seasonNumber}
+            episodeNumber={episodeNumber}
+            seriesTitle={seriesTitle}
+            episodeName={episodeName}
+            posterPath={seriesInfo?.poster_path}
+            isWatched={isWatched}
+          />
+        </div>
+      </motion.div>
     </div>
   );
 });
