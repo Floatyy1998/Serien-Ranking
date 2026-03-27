@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
+import type { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface TodayEpisode {
@@ -14,6 +15,7 @@ interface TodayEpisode {
   episodeId: number;
   episodeName: string;
   watched: boolean;
+  provider: Series['provider'];
 }
 
 export const useTodayEpisodes = () => {
@@ -62,6 +64,7 @@ export const useTodayEpisodes = () => {
               episodeId: episode.id,
               episodeName: episode.name,
               watched: episode.watched,
+              provider: series.provider,
             });
           }
         }

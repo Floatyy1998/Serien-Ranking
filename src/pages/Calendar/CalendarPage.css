@@ -207,6 +207,22 @@
   letter-spacing: 0.3px;
 }
 
+/* Break badge (Staffelpause / Staffelende) */
+.cal-ep-break-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Desktop break overlay — hidden on mobile, shown on desktop */
+.cal-ep-break-overlay {
+  display: none;
+}
+
 /* Episode card */
 .cal-ep {
   display: flex;
@@ -659,6 +675,26 @@
     color: #fff;
     letter-spacing: 0.3px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Break badge overlay — top left (same position as premiere) */
+  .cal-ep-break-overlay {
+    display: block;
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    z-index: 3;
+    font-size: 13px;
+    font-weight: 800;
+    padding: 5px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Hide break inline badge on desktop (using overlay instead) */
+  .cal-ep-break-badge {
+    display: none;
   }
 
   /* Watch status overlay — top right */

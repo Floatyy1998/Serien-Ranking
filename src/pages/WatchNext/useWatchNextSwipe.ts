@@ -190,6 +190,19 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     }, 300);
   };
 
+  const handleSwipeCleanup = (episodeKey: string) => {
+    setSwipingEpisodes((prev) => {
+      const s = new Set(prev);
+      s.delete(episodeKey);
+      return s;
+    });
+    setDragOffsets((prev) => {
+      const o = { ...prev };
+      delete o[episodeKey];
+      return o;
+    });
+  };
+
   return {
     swipingEpisodes,
     completingEpisodes,
@@ -200,6 +213,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     handleSwipeDragStart,
     handleSwipeDrag,
     handleSwipeDragEnd,
+    handleSwipeCleanup,
     handleEpisodeComplete,
   };
 };

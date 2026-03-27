@@ -91,16 +91,29 @@ export const SeriesDetailPage = memo(() => {
     }
   }, [recap.shouldShowRecap, recap.loading, recap.recapEpisodes.length]);
 
-  // Auto-select most relevant season tab
+  // Auto-select most relevant season tab, or restore from session
   useEffect(() => {
     if (!series?.seasons || series.seasons.length === 0) return;
 
+    // Try to restore saved selection (back-navigation)
+    const saved = sessionStorage.getItem(`series_${id}_season`);
+    if (saved !== null) {
+      const idx = parseInt(saved, 10);
+      if (idx >= 0 && idx < series.seasons.length) {
+        setSelectedSeasonIndex(idx);
+        return;
+      }
+    }
+
+    // Otherwise auto-select the most relevant season
     if (hasActiveRewatch(series)) {
       const nextEp = getNextRewatchEpisode(series);
       if (nextEp) {
         const idx = series.seasons.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
-        if (idx >= 0) setSelectedSeasonIndex(idx);
-        return;
+        if (idx >= 0) {
+          setSelectedSeasonIndex(idx);
+          return;
+        }
       }
     }
 
@@ -117,6 +130,30 @@ export const SeriesDetailPage = memo(() => {
     setSelectedSeasonIndex(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series?.id]);
+
+  // Restore tab selection after series data is loaded
+  useEffect(() => {
+    if (!series) return;
+    const savedTab = sessionStorage.getItem(`series_${id}_tab`) as
+      | 'info'
+      | 'cast'
+      | 'characters'
+      | null;
+    if (savedTab && savedTab !== 'info') {
+      setActiveTab(savedTab);
+    }
+  }, [id, series?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist season and tab selection for back-navigation (only after series loaded)
+  useEffect(() => {
+    if (!series) return;
+    sessionStorage.setItem(`series_${id}_season`, String(selectedSeasonIndex));
+  }, [id, selectedSeasonIndex, series]);
+
+  useEffect(() => {
+    if (!series) return;
+    sessionStorage.setItem(`series_${id}_tab`, activeTab);
+  }, [id, activeTab, series]);
 
   // Episode discussion counts
   const selectedSeasonData = series?.seasons?.[selectedSeasonIndex];

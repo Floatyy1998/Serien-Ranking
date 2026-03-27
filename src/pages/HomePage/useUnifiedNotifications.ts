@@ -65,6 +65,14 @@ export const ANNOUNCEMENTS: Announcement[] = [
     timestamp: new Date('2026-03-27T18:00:00+01:00').getTime(),
     navigateTo: '/patch-notes',
   },
+  {
+    id: 'announcement_qol-update-2026-03',
+    title: 'QoL-Update: Kalender, Detail & Provider',
+    message:
+      'Auto-Scroll zum heutigen Tag, Staffelpause/Staffelende-Chips, Provider-Badges auf allen Karten, smarter Status-Badge und mehr!',
+    timestamp: new Date('2026-03-27T13:30:00+01:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
 ];
 
 export interface UseUnifiedNotificationsReturn {

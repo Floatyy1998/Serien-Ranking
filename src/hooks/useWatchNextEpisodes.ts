@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { Series } from '../types/Series';
 import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
+import { detectEpisodeChip, type EpisodeChipType } from '../utils/episodeChips';
 import {
   getNextRewatchEpisode,
   getRewatchProgress,
@@ -37,6 +38,9 @@ export interface NextEpisode {
   estimatedMinutesLeft: number;
   // Provider
   providerNames: string[];
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: EpisodeChipType;
 }
 
 export const useWatchNextEpisodes = (
@@ -83,6 +87,7 @@ export const useWatchNextEpisodes = (
       const { totalAiredEpisodes, watchedEpisodes, remainingEpisodes, progress } =
         calculateSeriesMetrics(series);
       const providerNames = series.provider?.provider?.map((p) => p.name) || [];
+      const firstProvider = series.provider?.provider?.[0];
 
       // Collect rewatch episodes for series with active rewatches
       if (hasActiveRewatch(series)) {
@@ -122,6 +127,13 @@ export const useWatchNextEpisodes = (
               estimatedMinutesLeft:
                 rewatchRemaining * (series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
               providerNames,
+              providerLogo: firstProvider?.logo,
+              providerName: firstProvider?.name,
+              chipType: detectEpisodeChip(
+                seasonsArray[seasonIndex]?.episodes || [],
+                rewatchEpisode.episodeIndex,
+                series.production?.production !== false
+              ),
             });
           }
         }
@@ -160,6 +172,13 @@ export const useWatchNextEpisodes = (
                 remainingEpisodes *
                 (episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
               providerNames,
+              providerLogo: firstProvider?.logo,
+              providerName: firstProvider?.name,
+              chipType: detectEpisodeChip(
+                season.episodes || [],
+                episodeIndex,
+                series.production?.production !== false
+              ),
             });
             foundUnwatched = true;
             break;

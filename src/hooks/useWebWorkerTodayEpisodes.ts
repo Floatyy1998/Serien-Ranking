@@ -19,6 +19,9 @@ export interface TodayEpisode {
   runtime: number;
   seriesGenre?: string[];
   seriesProviders?: string[];
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 }
 
 interface EpisodesWorkerInput {

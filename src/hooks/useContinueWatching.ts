@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getImageUrl } from '../utils/imageUrl';
 import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
+import { detectEpisodeChip, type EpisodeChipType } from '../utils/episodeChips';
 import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
@@ -27,6 +28,7 @@ export const useContinueWatching = () => {
     provider: Series['provider'];
     episodeRuntime: number;
     seasons: Series['seasons'];
+    chipType?: EpisodeChipType;
   }
 
   const continueWatching = useMemo(() => {
@@ -50,6 +52,9 @@ export const useContinueWatching = () => {
           for (let k = 0; k < episodes2.length; k++) {
             const episode = episodes2[k];
             if (!episode?.watched && hasEpisodeAired(episode)) {
+              const isInProduction = series.production?.production !== false;
+              const chipType = detectEpisodeChip(episodes2, k, isInProduction);
+
               items.push({
                 type: 'series',
                 id: series.id,
@@ -70,6 +75,7 @@ export const useContinueWatching = () => {
                 seasons: series.seasons,
                 provider: series.provider,
                 episodeRuntime: episode.runtime || series.episodeRuntime,
+                chipType,
               });
               foundNext = true;
               break;

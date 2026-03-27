@@ -1,10 +1,12 @@
-import { CheckCircle, NewReleases, PlayCircle } from '@mui/icons-material';
+import { NewReleases } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { chipLabel, chipColor } from '../../../utils/episodeChips';
+import type { Series } from '../../../types/Series';
 
 interface TodayEpisode {
   seriesId: string;
@@ -19,6 +21,10 @@ interface TodayEpisode {
   episodeName: string;
   watched: boolean;
   runtime: number;
+  provider?: Series['provider'];
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 }
 
 interface TodayEpisodesSectionProps {
@@ -51,6 +57,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.status.success;
+  const isMobile = window.innerWidth < 768;
 
   if (episodes.length === 0) return null;
 
@@ -87,6 +94,28 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   poster={episode.poster}
                   posterAlt={episode.seriesTitle}
                   accentColor={accentColor}
+                  posterOverlay={(() => {
+                    const logo = episode.providerLogo || episode.provider?.provider?.[0]?.logo;
+                    const name =
+                      episode.providerName || episode.provider?.provider?.[0]?.name || '';
+                    return logo ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w92${logo}`}
+                        alt={name}
+                        style={{
+                          position: 'absolute',
+                          bottom: -3,
+                          right: -3,
+                          width: 26,
+                          height: 26,
+                          borderRadius: 6,
+                          objectFit: 'cover',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                          border: '1.5px solid rgba(15,20,35,1)',
+                        }}
+                      />
+                    ) : undefined;
+                  })()}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}
                   dragOffset={dragOffsets[episodeKey] || 0}
@@ -110,49 +139,60 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                     <>
                       <h3
                         style={{
-                          fontSize: '15px',
-                          fontWeight: 600,
+                          fontSize: isMobile ? '13px' : '16px',
+                          fontWeight: 700,
                           margin: '0 0 2px 0',
+                          letterSpacing: '-0.01em',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {episode.seriesTitle}
                       </h3>
                       <p
                         style={{
-                          fontSize: '13px',
+                          fontSize: isMobile ? '11px' : '14px',
                           margin: 0,
-                          color: episode.watched ? accentColor : currentTheme.accent,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
+                          color: episode.chipType
+                            ? chipColor(episode.chipType)
+                            : episode.watched
+                              ? accentColor
+                              : currentTheme.accent,
+                          whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         S{episode.seasonNumber} E{episode.episodeNumber} • {episode.episodeName}
+                        {episode.chipType && (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              padding: '1px 5px',
+                              borderRadius: 4,
+                              marginLeft: 6,
+                              background: `${chipColor(episode.chipType)}20`,
+                              color: chipColor(episode.chipType),
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.3px',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {chipLabel(episode.chipType)}
+                          </span>
+                        )}
                       </p>
                     </>
                   }
                   animateAction={!episode.watched}
                   action={
-                    episode.watched ? (
-                      <>
-                        <EpisodeDiscussionButton
-                          seriesId={Number(episode.seriesId)}
-                          seasonNumber={episode.seasonNumber}
-                          episodeNumber={episode.episodeNumber}
-                        />
-                        <CheckCircle style={{ fontSize: '20px', color: accentColor }} />
-                      </>
-                    ) : (
-                      <>
-                        <EpisodeDiscussionButton
-                          seriesId={Number(episode.seriesId)}
-                          seasonNumber={episode.seasonNumber}
-                          episodeNumber={episode.episodeNumber}
-                        />
-                        <PlayCircle style={{ fontSize: '20px', color: currentTheme.accent }} />
-                      </>
-                    )
+                    <EpisodeDiscussionButton
+                      seriesId={Number(episode.seriesId)}
+                      seasonNumber={episode.seasonNumber}
+                      episodeNumber={episode.episodeNumber}
+                    />
                   }
                 />
               );
