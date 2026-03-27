@@ -23,10 +23,25 @@ export interface UserThemeConfig {
 }
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
+const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
+function safeHex(color: string | undefined, fallback: string): string {
+  return color && VALID_HEX.test(color) ? color : fallback;
+}
+
 export function generateDynamicTheme(config: UserThemeConfig) {
+  // Sanitize: ungültige/leere Farbwerte durch Defaults ersetzen
+  const safeConfig: UserThemeConfig = {
+    ...config,
+    primaryColor: safeHex(config.primaryColor, '#00fed7'),
+    backgroundColor: safeHex(config.backgroundColor, '#06090f'),
+    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#0e1420') : undefined,
+    accentColor: config.accentColor ? safeHex(config.accentColor, '#ff6b6b') : undefined,
+    textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
+  };
+
   // Smarte Normalisierung: korrigiert schlechte Farbkombinationen für die Darstellung.
   // Die originalen gespeicherten Werte in localStorage/Firebase bleiben unverändert.
-  const normalized = normalizeThemeColors(config);
+  const normalized = normalizeThemeColors(safeConfig);
   const { primaryColor, backgroundColor, surfaceColor, accentColor, textColor } = normalized;
 
   // Automatische Palette-Generierung
