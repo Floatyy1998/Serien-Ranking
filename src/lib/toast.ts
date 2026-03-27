@@ -43,8 +43,9 @@ function ensureToastStyles(): void {
       left: 50%;
       transform: translateX(-50%);
       z-index: 99999;
-      min-width: 200px;
+      min-width: min(90vw, 200px);
       max-width: calc(100vw - 48px);
+      width: 90vw;
       padding: 14px 18px;
       background: linear-gradient(
         135deg,
@@ -205,7 +206,7 @@ export function showUndoToast(message: string, onUndo: () => void, duration = 40
 
   const undoBtn = document.createElement('button');
   undoBtn.className = 'toast-undo-btn';
-  undoBtn.textContent = 'Undo';
+  undoBtn.textContent = 'Rückgängig';
   undoBtn.addEventListener('click', () => {
     onUndo();
     clearActiveToast();

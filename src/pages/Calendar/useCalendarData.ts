@@ -7,6 +7,7 @@ import { trackEpisodeWatched } from '../../firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
@@ -148,27 +149,33 @@ export const useCalendarData = () => {
   const handleMarkWatched = useCallback(
     async (seriesNmr: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
+      const db = firebase.database();
+      const basePath = `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+
       try {
-        const basePath = `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        // Snapshot vorher
+        const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
+          db.ref(`${basePath}/watchCount`).once('value'),
+          db.ref(`${basePath}/firstWatchedAt`).once('value'),
+          db.ref(`${basePath}/lastWatchedAt`).once('value'),
+          db.ref(`${basePath}/watched`).once('value'),
+        ]);
+        const prevCount: number = watchCountSnap.val() || 0;
+        const prevFirstWatchedAt: string | null = firstSnap.val() || null;
+        const prevLastWatchedAt: string | null = lastSnap.val() || null;
+        const prevWatched: boolean = !!watchedSnap.val();
+
+        // Schreiben
         const now = new Date().toISOString();
         const updates: Record<string, unknown> = {};
         updates[`${basePath}/watched`] = true;
-        updates[`${basePath}/watchCount`] = firebase.database.ServerValue.increment(1);
+        updates[`${basePath}/watchCount`] = prevCount + 1;
         updates[`${basePath}/lastWatchedAt`] = now;
-
-        const firstRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
-          );
-        const snap = await firstRef.once('value');
-        if (!snap.val()) {
+        if (!prevFirstWatchedAt) {
           updates[`${basePath}/firstWatchedAt`] = now;
         }
+        await db.ref().update(updates);
 
-        await firebase.database().ref().update(updates);
-
-        // GA4 Analytics: episode watched with full data
         const series = seriesList.find((s) => s.nmr === seriesNmr);
         if (series) {
           trackEpisodeWatched(
@@ -179,13 +186,35 @@ export const useCalendarData = () => {
               tmdbId: series.id,
               genres: series.genre?.genres,
               runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              isRewatch: !snap.val() ? false : true,
+              isRewatch: prevCount > 0,
               source: 'calendar',
             }
           );
         }
+
+        const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
+        const title = series?.title || series?.name || '';
+        showUndoToast(`${title} ${label} als gesehen markiert`, async () => {
+          try {
+            await db.ref(`${basePath}/watched`).set(prevWatched);
+            await db.ref(`${basePath}/watchCount`).set(prevCount);
+            if (prevFirstWatchedAt) {
+              await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+            } else {
+              await db.ref(`${basePath}/firstWatchedAt`).remove();
+            }
+            if (prevLastWatchedAt) {
+              await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
+            } else {
+              await db.ref(`${basePath}/lastWatchedAt`).remove();
+            }
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
+          }
+        });
       } catch (error) {
         console.error('Failed to mark episode:', error);
+        showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
     [user, seriesList]

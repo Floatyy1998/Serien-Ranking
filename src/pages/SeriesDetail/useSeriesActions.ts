@@ -15,6 +15,7 @@ import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { trackSeriesAdded, trackSeriesDeleted } from '../../firebase/analytics';
+import { showToast, showUndoToast } from '../../lib/toast';
 
 interface DialogState {
   open: boolean;
@@ -156,13 +157,18 @@ export function useSeriesActions(
         );
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
+        const db = firebase.database();
         const episodePath = `${userId}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
-        const newWatchCount = (episode.watchCount || 1) + 1;
+        const prevWatchCount = episode.watchCount || 1;
+        const [lastSnap] = await Promise.all([
+          db.ref(`${episodePath}/lastWatchedAt`).once('value'),
+        ]);
+        const prevLastWatchedAt: string | null = lastSnap.val() || null;
 
-        await firebase.database().ref(`${episodePath}/watchCount`).set(newWatchCount);
-        await firebase.database().ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+        const newWatchCount = prevWatchCount + 1;
+        await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
+        await db.ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
 
-        // Pet XP with genre bonus (rewatches count too)
         await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
@@ -178,7 +184,7 @@ export function useSeriesActions(
           series.provider?.provider?.map((p) => p.name)
         );
 
-        // Auto-complete rewatch check
+        let rewatchRemoved = false;
         if (series.rewatch?.active) {
           const targetCount = Math.max(2, (series.rewatch.round || 0) + 1);
           let allDone = true;
@@ -193,11 +199,28 @@ export function useSeriesActions(
             if (!allDone) break;
           }
           if (allDone && newWatchCount >= targetCount) {
-            await firebase.database().ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+            await db.ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
             showSnackbar(`Rewatch #${series.rewatch.round} abgeschlossen!`);
+            rewatchRemoved = true;
           }
         }
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
+
+        showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, async () => {
+          try {
+            await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
+            if (prevLastWatchedAt) {
+              await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
+            } else {
+              await db.ref(`${episodePath}/lastWatchedAt`).remove();
+            }
+            if (rewatchRemoved && series.rewatch) {
+              await db.ref(`${userId}/serien/${series.nmr}/rewatch`).set(series.rewatch);
+            }
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
+          }
+        });
       } catch {
         setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });
       }
@@ -217,19 +240,49 @@ export function useSeriesActions(
         );
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
+        const db = firebase.database();
         const episodePath = `${userId}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+
+        // Snapshot vorher
+        const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
+          db.ref(`${episodePath}/watchCount`).once('value'),
+          db.ref(`${episodePath}/firstWatchedAt`).once('value'),
+          db.ref(`${episodePath}/lastWatchedAt`).once('value'),
+          db.ref(`${episodePath}/watched`).once('value'),
+        ]);
+        const prevWatchCount: number = watchCountSnap.val() || 0;
+        const prevFirstWatchedAt: string | null = firstSnap.val() || null;
+        const prevLastWatchedAt: string | null = lastSnap.val() || null;
+        const prevWatched: boolean = !!watchedSnap.val();
+
         if (episode.watchCount && episode.watchCount > 1) {
-          await firebase
-            .database()
-            .ref(`${episodePath}/watchCount`)
-            .set(episode.watchCount - 1);
+          await db.ref(`${episodePath}/watchCount`).set(episode.watchCount - 1);
         } else {
-          await firebase.database().ref(`${episodePath}/watched`).remove();
-          await firebase.database().ref(`${episodePath}/watchCount`).remove();
-          await firebase.database().ref(`${episodePath}/firstWatchedAt`).remove();
-          await firebase.database().ref(`${episodePath}/lastWatchedAt`).remove();
+          await db.ref(`${episodePath}/watched`).remove();
+          await db.ref(`${episodePath}/watchCount`).remove();
+          await db.ref(`${episodePath}/firstWatchedAt`).remove();
+          await db.ref(`${episodePath}/lastWatchedAt`).remove();
         }
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
+
+        const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
+        showUndoToast(
+          `S${seasonNumber}E${episodeIndex + 1} als nicht gesehen markiert`,
+          async () => {
+            try {
+              await db.ref(`${episodePath}/watched`).set(prevWatched);
+              await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
+              if (prevFirstWatchedAt) {
+                await db.ref(`${episodePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+              }
+              if (prevLastWatchedAt) {
+                await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
+              }
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
+            }
+          }
+        );
       } catch {
         setDialog({
           open: true,

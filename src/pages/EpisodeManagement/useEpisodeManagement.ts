@@ -11,6 +11,7 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
+import { showToast, showUndoToast } from '../../lib/toast';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 
@@ -147,6 +148,7 @@ export const useEpisodeManagement = () => {
     try {
       const currentWatchCount = episode.watchCount || 0;
       const isWatched = episode.watched;
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
 
       let newWatched: boolean;
       let newWatchCount: number;
@@ -266,8 +268,19 @@ export const useEpisodeManagement = () => {
           showQuickRating(series, series.seasons[seasonIndex].seasonNumber + 1);
         }, 500);
       }
+
+      const label = `S${season.seasonNumber + 1}E${episodeIndex + 1}`;
+      const action = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
+      showUndoToast(`${series.title} ${label} ${action}`, async () => {
+        try {
+          await seasonsRef.set(prevSeasons);
+        } catch {
+          showToast('Undo fehlgeschlagen', 2000, 'error');
+        }
+      });
     } catch (error) {
       console.error('Failed to toggle episode watch status:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
@@ -291,6 +304,7 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
 
     try {
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
       const now = new Date().toISOString();
       const updatedSeasons = series.seasons.map((season, sIdx) => {
         const eps = Array.isArray(season.episodes)
@@ -335,10 +349,18 @@ export const useEpisodeManagement = () => {
 
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
-
       setSelectedSeason(targetSeasonIndex);
+
+      showUndoToast(`Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`, async () => {
+        try {
+          await seasonsRef.set(prevSeasons);
+        } catch {
+          showToast('Undo fehlgeschlagen', 2000, 'error');
+        }
+      });
     } catch (error) {
       console.error('Failed to catch up episodes:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
@@ -399,6 +421,7 @@ export const useEpisodeManagement = () => {
         return s;
       });
 
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
@@ -414,8 +437,24 @@ export const useEpisodeManagement = () => {
           }
         }
       }
+
+      const seasonLabel = `Staffel ${season.seasonNumber + 1}`;
+      const modeLabel =
+        mode === 'unwatch'
+          ? 'als nicht gesehen markiert'
+          : mode === 'rewatch'
+            ? 'Rewatch markiert'
+            : 'als gesehen markiert';
+      showUndoToast(`${series.title} ${seasonLabel} ${modeLabel}`, async () => {
+        try {
+          await seasonsRef.set(prevSeasons);
+        } catch {
+          showToast('Undo fehlgeschlagen', 2000, 'error');
+        }
+      });
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
