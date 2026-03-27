@@ -114,11 +114,12 @@ export function extractProviders(item: Series | Movie): { name: string; logo: st
 }
 
 function extractGenres(item: Series | Movie): string | undefined {
-  const genres = item.genre?.genres;
+  const genres = item.genre?.genres?.filter((g) => g.toLowerCase() !== 'all');
   if (genres && genres.length > 0) return genres.slice(0, 2).join(', ');
   const tmdbGenres = item.genres;
   if (tmdbGenres && tmdbGenres.length > 0)
     return tmdbGenres
+      .filter((g) => g.name.toLowerCase() !== 'all')
       .slice(0, 2)
       .map((g) => g.name)
       .join(', ');

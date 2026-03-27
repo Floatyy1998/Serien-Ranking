@@ -106,7 +106,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     }}
                   />
 
-                  {/* Corner cutout with rank number — curved edge */}
+                  {/* Corner cutout with liquid glass rank number */}
                   {(() => {
                     const isDouble = index + 1 >= 10;
                     const size = isMobile ? (isDouble ? 96 : 76) : isDouble ? 135 : 110;
@@ -143,25 +143,26 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                             </linearGradient>
                           </defs>
                           <path
-                            d={`M0,0 L${size},0 Q${size * 0.38},${size * 0.38} 0,${size} Z`}
+                            d={`M14,0 L${size},0 Q${size * 0.38},${size * 0.38} 0,${size} L0,14 Q0,0 14,0 Z`}
                             fill={`url(#corner-grad-${index})`}
                           />
                         </svg>
                         <span
                           style={{
                             position: 'absolute',
-                            top: '28%',
-                            left: '28%',
+                            top: '25%',
+                            left: '25%',
                             transform: 'translate(-50%, -50%)',
                             zIndex: 1,
                             fontSize: isMobile ? '34px' : '48px',
                             fontWeight: 900,
                             fontFamily: 'var(--font-display)',
                             lineHeight: 1,
-                            color: '#fff',
+                            color: 'rgba(255,255,255,0.9)',
                             userSelect: 'none',
                             letterSpacing: '-2px',
-                            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+                            textShadow:
+                              '0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3), 0 2px 4px rgba(0,0,0,0.3)',
                           }}
                         >
                           {index + 1}
@@ -367,7 +368,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                       gap: '4px',
                     }}
                   >
-                    {/* Left: seasonal badge or rating badge */}
+                    {/* Left: seasonal badge or top-rated rank */}
                     <div style={{ minWidth: 0, flex: '1 1 auto' }}>
                       {variant === 'seasonal' && (
                         <div
