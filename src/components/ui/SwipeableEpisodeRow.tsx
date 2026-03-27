@@ -176,7 +176,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             borderRadius: isMobile ? '14px' : '18px',
             overflow: 'hidden',
             border: `1px solid ${borderColor}`,
-            borderLeft: staticBorder ? undefined : `3px solid ${color}`,
+            borderLeft: staticBorder ? undefined : `1px solid transparent`,
             boxShadow: isDragged
               ? `0 8px 24px ${color}40`
               : isDragTarget
@@ -190,6 +190,22 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             transition: dragOffset ? 'none' : 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
+          {/* ── Left accent bar ── */}
+          {!staticBorder && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                width: '3px',
+                background: color,
+                zIndex: 3,
+                borderRadius: `${isMobile ? '14px' : '18px'} 0 0 ${isMobile ? '14px' : '18px'}`,
+              }}
+            />
+          )}
+
           {/* ── Ambient poster background ── */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
             <img

@@ -4,11 +4,12 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { trackRecentlyAdded } from '../../lib/recentlyAdded';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 
@@ -59,29 +60,56 @@ export interface UseSearchPageResult {
 
 export const useSearchPage = (): UseSearchPageResult => {
   const navigate = useNavigate();
+  const [urlParams, setUrlParams] = useSearchParams();
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   const isReturning = window.history.state?.usr?.returning === true;
 
-  const [searchQuery, setSearchQuery] = useState(() => {
-    if (isReturning) {
-      return sessionStorage.getItem('searchQuery') || '';
-    }
-    sessionStorage.removeItem('searchQuery');
-    sessionStorage.removeItem('searchType');
-    sessionStorage.removeItem('searchResults');
-    return '';
+  const [searchQuery, setSearchQueryState] = useState(() => {
+    return urlParams.get('q') || '';
   });
 
-  const [searchType, setSearchType] = useState<SearchTypeFilter>(() => {
-    if (isReturning) {
-      const saved = sessionStorage.getItem('searchType');
-      return (saved as SearchTypeFilter) || 'all';
-    }
-    return 'all';
+  const setSearchQuery = useCallback(
+    (query: string) => {
+      setSearchQueryState(query);
+      setUrlParams(
+        (prev) => {
+          if (query) {
+            prev.set('q', query);
+          } else {
+            prev.delete('q');
+          }
+          return prev;
+        },
+        { replace: true }
+      );
+    },
+    [setUrlParams]
+  );
+
+  const [searchType, setSearchTypeState] = useState<SearchTypeFilter>(() => {
+    return (urlParams.get('type') as SearchTypeFilter) || 'all';
   });
+
+  const setSearchType = useCallback(
+    (type: SearchTypeFilter) => {
+      setSearchTypeState(type);
+      setUrlParams(
+        (prev) => {
+          if (type && type !== 'all') {
+            prev.set('type', type);
+          } else {
+            prev.delete('type');
+          }
+          return prev;
+        },
+        { replace: true }
+      );
+    },
+    [setUrlParams]
+  );
 
   const [searchResults, setSearchResults] = useState<SearchResult[]>(() => {
     if (isReturning) {
@@ -120,15 +148,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     }
   }, []);
 
-  // Persist search state to sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem('searchQuery', searchQuery);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    sessionStorage.setItem('searchType', searchType);
-  }, [searchType]);
-
+  // Cache results in sessionStorage for back-navigation
   useEffect(() => {
     sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
   }, [searchResults]);
@@ -337,7 +357,14 @@ export const useSearchPage = (): UseSearchPageResult => {
         if (response.ok) {
           setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
 
-          const title = item.title || item.name;
+          const title = item.title || item.name || '';
+          trackRecentlyAdded({
+            id: item.id,
+            title,
+            poster: item.poster_path || undefined,
+            type: item.type,
+          });
+
           setSnackbar({
             open: true,
             message: `"${title}" wurde erfolgreich hinzugefügt!`,
