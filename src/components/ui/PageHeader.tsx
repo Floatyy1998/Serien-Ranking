@@ -13,6 +13,7 @@ interface PageHeaderProps {
   icon?: React.ReactNode;
   actions?: React.ReactNode;
   sticky?: boolean;
+  showBack?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -24,6 +25,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon,
   actions,
   sticky = true,
+  showBack = true,
   style,
 }) => {
   const { currentTheme } = useTheme();
@@ -75,7 +77,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           gap: '16px',
         }}
       >
-        <BackButton />
+        {showBack && <BackButton />}
         <div style={{ flex: 1 }}>
           <GradientText
             as="h1"

@@ -314,17 +314,17 @@
 /* ---------- Episode Navigation ---------- */
 .ed-nav {
   display: flex;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: 8px;
+  padding: 12px 20px;
 }
 
 .ed-nav-btn {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px;
-  border-radius: 16px;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
   text-align: left;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -345,16 +345,17 @@
 }
 
 .ed-nav-icon-wrap {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .ed-nav-icon {
-  font-size: 24px !important;
+  font-size: 18px !important;
 }
 
 .ed-nav-text {
@@ -363,16 +364,16 @@
 }
 
 .ed-nav-label {
-  font-size: 12px;
+  font-size: 10px;
   margin: 0;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .ed-nav-episode {
-  font-size: 15px;
-  margin: 3px 0 0 0;
+  font-size: 13px;
+  margin: 2px 0 0 0;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
