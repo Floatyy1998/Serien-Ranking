@@ -57,6 +57,14 @@ export const ANNOUNCEMENTS: Announcement[] = [
     timestamp: new Date('2026-03-26T22:00:00+01:00').getTime(),
     navigateTo: '/patch-notes',
   },
+  {
+    id: 'announcement_card-redesign-2026-03',
+    title: 'Neues Design: Trending & Co.',
+    message:
+      'Trending, Saisonal und Bestbewertet haben ein neues Kino-Design mit Rang-Nummern, Genres und Ratings bekommen!',
+    timestamp: new Date('2026-03-27T18:00:00+01:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
 ];
 
 export interface UseUnifiedNotificationsReturn {

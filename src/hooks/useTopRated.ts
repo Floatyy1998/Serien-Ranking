@@ -12,6 +12,8 @@ export interface TopRatedItem {
   title: string;
   poster: string;
   rating: number;
+  genres: string;
+  year?: string;
 }
 
 const TOP_N = 10;
@@ -30,13 +32,22 @@ function collectTopRated<T extends Series | Movie>(
     }
   }
   rated.sort((a, b) => b.rating - a.rating);
-  return rated.slice(0, limit).map(({ item, rating }) => ({
-    type,
-    id: item.id,
-    title: item.title,
-    poster: getImageUrl(item.poster),
-    rating,
-  }));
+  return rated.slice(0, limit).map(({ item, rating }) => {
+    const genres = (item.genre?.genres ?? []).slice(0, 2).join(', ');
+    const dateStr =
+      type === 'series'
+        ? (item as Series).first_air_date || (item as Series).release_date
+        : (item as Movie).release_date;
+    return {
+      type,
+      id: item.id,
+      title: item.title,
+      poster: getImageUrl(item.poster),
+      rating,
+      genres,
+      year: dateStr ? String(dateStr).slice(0, 4) : undefined,
+    };
+  });
 }
 
 export const useTopRated = (): TopRatedItem[] => {

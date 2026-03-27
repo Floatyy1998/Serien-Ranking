@@ -3,6 +3,7 @@ import {
   AutoAwesome,
   CalendarMonth,
   FilterAlt,
+  LocalFireDepartment,
   Navigation,
   NewReleases,
   PlaylistAddCheck,
@@ -45,6 +46,19 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'März 2026 – Update 3',
+      date: '2026-03-27',
+      features: [
+        {
+          icon: <LocalFireDepartment />,
+          color: '#f97316',
+          title: 'Trending, Saisonal & Bestbewertet Redesign',
+          description:
+            'Komplett neues Card-Design im Kino-Stil: Trending-Cards mit Rang-Nummer in abgerundeter Ecke, Genre-Anzeige, TMDB-Rating und Erscheinungsjahr – einheitlich für alle drei Sektionen.',
+        },
+      ],
+    },
     {
       version: 'März 2026 – Update 2',
       date: '2026-03-26',

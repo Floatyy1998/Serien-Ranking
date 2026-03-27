@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
+import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface SeasonConfig {
@@ -19,6 +20,8 @@ export interface SeasonalItem {
   rating: number;
   voteCount: number;
   releaseDate?: string;
+  genres: string;
+  year?: string;
 }
 
 interface TMDBDiscoverItem {
@@ -32,6 +35,7 @@ interface TMDBDiscoverItem {
   vote_count: number;
   first_air_date?: string;
   release_date?: string;
+  genre_ids?: number[];
 }
 
 function getSeasonConfig(): SeasonConfig {
@@ -118,18 +122,21 @@ function mapDiscoverItem(item: TMDBDiscoverItem, type: 'series' | 'movie'): Seas
     type === 'series'
       ? (item.name ?? item.original_name ?? '')
       : (item.title ?? item.original_title ?? '');
+  const dateStr = type === 'series' ? item.first_air_date : item.release_date;
   return {
     type,
     id: item.id,
     title,
-    poster: getImageUrl(item.poster_path),
+    poster: getImageUrl(item.poster_path, 'w500'),
     rating: item.vote_average,
     voteCount: item.vote_count,
-    releaseDate: type === 'series' ? item.first_air_date : item.release_date,
+    releaseDate: dateStr,
+    genres: mapGenreIds(item.genre_ids ?? []),
+    year: dateStr ? dateStr.slice(0, 4) : undefined,
   };
 }
 
-const CACHE_KEY = 'seasonal_recommendations_v5';
+const CACHE_KEY = 'seasonal_recommendations_v6';
 
 interface UseSeasonalRecommendationsResult {
   items: SeasonalItem[];
