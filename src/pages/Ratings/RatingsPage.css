@@ -1,4 +1,4 @@
-/* RatingsPage - Performance-optimized styles */
+/* RatingsPage - Cinematic card styles */
 
 /* ─── Page Container ──────────────────────────────────────────────────── */
 
@@ -97,27 +97,28 @@
   z-index: 1;
 }
 
-/* ─── Responsive Grid (via media queries, no JS window.innerWidth) ──── */
+/* ─── Responsive Grid ─────────────────────────────────────────────────── */
 
 .ratings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 14px;
 }
 
 @media (min-width: 768px) {
   .ratings-grid {
     grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
   }
 }
 
 @media (min-width: 1200px) {
   .ratings-grid {
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
 }
 
-/* ─── Grid Item (native browser virtualization) ───────────────────────── */
+/* ─── Grid Item ───────────────────────────────────────────────────────── */
 
 .ratings-grid-item {
   content-visibility: auto;
@@ -136,48 +137,221 @@
   transform: scale(0.97);
 }
 
-/* ─── Poster ──────────────────────────────────────────────────────────── */
+/* ─── Cinematic Card ──────────────────────────────────────────────────── */
 
-.ratings-poster-wrap {
+.ratings-card {
   position: relative;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 4px 16px -4px rgba(0, 0, 0, 0.4),
-    0 2px 6px -2px rgba(0, 0, 0, 0.3);
-  transition: box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.ratings-grid-item:hover .ratings-poster-wrap {
-  box-shadow:
-    0 8px 24px -4px rgba(0, 0, 0, 0.5),
-    0 4px 10px -2px rgba(0, 0, 0, 0.35);
-}
-
-.ratings-poster-img {
-  width: 100%;
+  border-radius: 14px;
   aspect-ratio: 2 / 3;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.ratings-card-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 14px;
 }
 
-/* ─── Provider Badges ─────────────────────────────────────────────────── */
+/* ─── Overlay ─────────────────────────────────────────────────────────── */
+
+.ratings-card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* ─── Top Row ─────────────────────────────────────────────────────────── */
+
+.ratings-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 6px;
+  gap: 4px;
+}
+
+.ratings-card-top-left {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ratings-card-top-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+
+/* ─── Watchlist Badge ─────────────────────────────────────────────────── */
+
+.ratings-card-watchlist-badge {
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+/* ─── Bottom Section ──────────────────────────────────────────────────── */
+
+.ratings-card-bottom {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.92) 0%,
+    rgba(0, 0, 0, 0.6) 45%,
+    transparent 100%
+  );
+  padding: 32px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 40%;
+  justify-content: flex-end;
+}
+
+/* ─── Title ───────────────────────────────────────────────────────────── */
+
+.ratings-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+@media (min-width: 768px) {
+  .ratings-card-title {
+    font-size: 15px;
+  }
+}
+
+/* ─── Meta Row ────────────────────────────────────────────────────────── */
+
+.ratings-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+@media (min-width: 768px) {
+  .ratings-card-meta {
+    font-size: 11px;
+    gap: 5px;
+  }
+}
+
+.ratings-card-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ratings-card-meta-icon {
+  font-size: 10px !important;
+}
+
+@media (min-width: 768px) {
+  .ratings-card-meta-icon {
+    font-size: 11px !important;
+  }
+}
+
+.ratings-card-dot {
+  opacity: 0.4;
+}
+
+.ratings-card-genres {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ─── Progress Bar ────────────────────────────────────────────────────── */
+
+.ratings-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.ratings-card-progress-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ratings-card-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  position: relative;
+}
+
+.ratings-card-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  animation: progressShimmer 2s ease-in-out infinite;
+}
+
+@keyframes progressShimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.ratings-card-progress-text {
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ─── Provider Badges (positioned inside overlay top-left) ────────────── */
 
 .ratings-provider-badges {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  z-index: 3;
   display: flex;
   gap: 3px;
+  pointer-events: auto;
 }
 
 .ratings-provider-badge {
   border-radius: 8px;
   padding: 3px;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -185,8 +359,8 @@
 }
 
 .ratings-provider-badge img {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 6px;
   object-fit: cover;
 }
@@ -275,109 +449,6 @@
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-}
-
-/* ─── Rating Badge ────────────────────────────────────────────────────── */
-
-.ratings-rating-badge {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  background: linear-gradient(135deg, rgba(10, 14, 26, 0.92), rgba(20, 24, 36, 0.92));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 5px 9px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.ratings-star-icon {
-  font-size: 15px;
-  color: #fbbf24;
-}
-
-.ratings-rating-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-}
-
-/* ─── Watchlist Badge ─────────────────────────────────────────────────── */
-
-.ratings-watchlist-badge {
-  position: absolute;
-  right: 6px;
-  border-radius: 8px;
-  padding: 6px 8px;
-  display: flex;
-  align-items: center;
-}
-
-.ratings-watchlist-icon {
-  font-size: 16px;
-  color: #fff;
-}
-
-/* ─── Progress Bar ────────────────────────────────────────────────────── */
-
-.ratings-progress-track {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: rgba(10, 14, 26, 0.6);
-}
-
-.ratings-progress-fill {
-  height: 100%;
-  border-radius: 0 3px 3px 0;
-  position: relative;
-}
-
-.ratings-progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.25) 50%,
-    transparent 100%
-  );
-  animation: progressShimmer 2s ease-in-out infinite;
-}
-
-@keyframes progressShimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-/* ─── Item Title & Meta ───────────────────────────────────────────────── */
-
-.ratings-grid-item .ratings-item-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin: 6px 0 0 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.3;
-}
-
-.ratings-grid-item .ratings-item-meta {
-  font-size: 13px;
-  margin: 2px 0 0 0;
 }
 
 /* ─── Grid Spacer ─────────────────────────────────────────────────────── */

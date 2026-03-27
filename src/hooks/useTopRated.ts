@@ -34,10 +34,28 @@ function collectTopRated<T extends Series | Movie>(
   rated.sort((a, b) => b.rating - a.rating);
   return rated.slice(0, limit).map(({ item, rating }) => {
     const genres = (item.genre?.genres ?? []).slice(0, 2).join(', ');
-    const dateStr =
-      type === 'series'
-        ? (item as Series).first_air_date || (item as Series).release_date
-        : (item as Movie).release_date;
+    let dateStr: string | undefined;
+    if (type === 'series') {
+      const s = item as Series;
+      dateStr = s.first_air_date || s.release_date || undefined;
+      // Fallback: first episode air_date
+      if (!dateStr && s.seasons) {
+        for (const season of s.seasons) {
+          if (!season.episodes) continue;
+          for (const ep of season.episodes) {
+            if (!ep) continue;
+            const d = ep.air_date || ep.airDate || ep.firstAired;
+            if (d) {
+              dateStr = d;
+              break;
+            }
+          }
+          if (dateStr) break;
+        }
+      }
+    } else {
+      dateStr = (item as Movie).release_date;
+    }
     return {
       type,
       id: item.id,
