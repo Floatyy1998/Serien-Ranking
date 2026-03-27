@@ -57,7 +57,7 @@ export const RewatchSection = React.memo(function RewatchSection({
 }: RewatchSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.accent || currentTheme.status?.warning || '#f59e0b';
+  const accentColor = currentTheme.accent;
   const isMobile = window.innerWidth < 768;
 
   if (episodes.length === 0) return null;

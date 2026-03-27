@@ -56,7 +56,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
 }: TodayEpisodesSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.status.success;
+  const accentColor = currentTheme.status?.warning || '#f59e0b';
   const isMobile = window.innerWidth < 768;
 
   if (episodes.length === 0) return null;

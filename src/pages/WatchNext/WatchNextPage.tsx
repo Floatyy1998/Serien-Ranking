@@ -423,7 +423,7 @@ export const WatchNextPage = () => {
                     const prevEpisode = index > 0 ? arr[index - 1] : null;
                     const showSeparator = prevEpisode?.isRewatch && !episode.isRewatch;
                     return (
-                      <React.Fragment key={episodeKey}>
+                      <div key={episodeKey}>
                         {showSeparator && (
                           <div
                             style={{
@@ -615,7 +615,7 @@ export const WatchNextPage = () => {
                             />
                           }
                         />
-                      </React.Fragment>
+                      </div>
                     );
                   })}
               </AnimatePresence>

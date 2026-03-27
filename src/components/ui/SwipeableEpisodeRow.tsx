@@ -8,7 +8,6 @@
 import { Check, DragHandle } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { memo } from 'react';
-import { usePosterColor } from '../../hooks/usePosterColor';
 
 interface SwipeableEpisodeRowProps {
   itemKey: string;
@@ -89,8 +88,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     onTouchEnd,
   }) => {
     const isMobile = window.innerWidth < 768;
-    const posterAccent = usePosterColor(poster, accentColor);
-    const color = posterAccent;
+    const color = accentColor;
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
     const isDragTarget =
       index != null &&
