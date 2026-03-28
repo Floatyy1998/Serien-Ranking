@@ -7,6 +7,7 @@ import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { showToast, showUndoToast } from '../lib/toast';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRating';
 import type { Series } from '../types/Series';
@@ -144,6 +145,7 @@ function scheduleEpisodeHide(
 export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
   const authContext = useAuth();
   const user = authContext?.user ?? null;
+  const { seriesList } = useSeriesList();
   const continueWatching = useContinueWatching();
   const todayEpisodes = useWebWorkerTodayEpisodes();
   const {
@@ -242,25 +244,17 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         });
 
         // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel
-        if (item.seasons) {
-          const seriesLike = {
-            seasons: item.seasons,
-            rating: {},
-            rewatch: undefined,
-            genre: item.genre,
-            title: item.title,
-            id: item.id,
-            nmr: item.nmr,
-          } as unknown as Series;
+        const fullSeries = seriesList.find((s) => s.id === item.id);
+        if (fullSeries?.seasons) {
           if (
             shouldTriggerQuickRate(
-              seriesLike,
+              fullSeries,
               item.nextEpisode.seasonIndex,
               item.nextEpisode.episodeIndex
             )
           ) {
             setTimeout(() => {
-              showQuickRating(seriesLike, item.nextEpisode.seasonNumber);
+              showQuickRating(fullSeries, item.nextEpisode.seasonNumber);
             }, 500);
           }
         }
