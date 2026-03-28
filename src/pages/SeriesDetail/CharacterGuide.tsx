@@ -1,7 +1,9 @@
 import { AutoAwesome, Send } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { SpeakButton } from '../../components/ui/SpeakButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { CharacterDescription } from '../../hooks/useCharacterDescriptions';
 
 interface CharacterGuideProps {
@@ -27,6 +29,7 @@ interface QuestionInputProps {
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   isMobile: boolean;
   userProgress: { season: number; episode: number } | null;
+  ttsAnswer: ReturnType<typeof useTextToSpeech>;
 }
 
 const QuestionInput: React.FC<QuestionInputProps> = ({
@@ -40,6 +43,7 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
   currentTheme,
   isMobile,
   userProgress,
+  ttsAnswer,
 }) => (
   <div style={{ marginTop: '20px', padding: `0 ${isMobile ? '0' : '0'}` }}>
     <div
@@ -144,6 +148,20 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
           borderTop: lastAsked ? 'none' : undefined,
         }}
       >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginBottom: '6px',
+          }}
+        >
+          <SpeakButton
+            state={ttsAnswer.state}
+            onClick={() => ttsAnswer.speak(questionAnswer ?? '')}
+            accent={accent}
+            size={24}
+          />
+        </div>
         <p
           style={{
             fontSize: isMobile ? '13px' : '14px',
@@ -175,6 +193,8 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
   const pad = isMobile ? '12px' : '20px';
   const [question, setQuestion] = useState('');
   const [lastAsked, setLastAsked] = useState('');
+  const ttsAnswer = useTextToSpeech();
+  const ttsChar = useTextToSpeech();
 
   const handleAsk = () => {
     if (!question.trim() || questionLoading) return;
@@ -244,6 +264,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
           currentTheme={currentTheme}
           isMobile={isMobile}
           userProgress={userProgress}
+          ttsAnswer={ttsAnswer}
         />
       </div>
     );
@@ -334,6 +355,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
           currentTheme={currentTheme}
           isMobile={isMobile}
           userProgress={userProgress}
+          ttsAnswer={ttsAnswer}
         />
       </div>
     );
@@ -467,17 +489,32 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
                   {char.name}
                 </div>
               )}
-              <p
+              <div
                 style={{
-                  fontSize: isMobile ? '13px' : '14px',
-                  lineHeight: 1.6,
-                  color: currentTheme.text.secondary,
-                  margin: 0,
-                  opacity: 0.85,
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '8px',
                 }}
               >
-                {char.description}
-              </p>
+                <p
+                  style={{
+                    fontSize: isMobile ? '13px' : '14px',
+                    lineHeight: 1.6,
+                    color: currentTheme.text.secondary,
+                    margin: 0,
+                    opacity: 0.85,
+                    flex: 1,
+                  }}
+                >
+                  {char.description}
+                </p>
+                <SpeakButton
+                  state={ttsChar.state}
+                  onClick={() => ttsChar.speak(`${char.character}. ${char.description}`)}
+                  accent={accent}
+                  size={24}
+                />
+              </div>
             </div>
           </motion.div>
         ))}
@@ -494,6 +531,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
         currentTheme={currentTheme}
         isMobile={isMobile}
         userProgress={userProgress}
+        ttsAnswer={ttsAnswer}
       />
     </div>
   );
