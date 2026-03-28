@@ -2,8 +2,10 @@ import { AutoAwesome, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { RecapEpisode } from '../../hooks/useRecapData';
 import { BottomSheet } from './BottomSheet';
+import { SpeakButton } from './SpeakButton';
 
 interface RecapSheetProps {
   isOpen: boolean;
@@ -41,6 +43,8 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
   const { currentTheme } = useTheme();
   const accent = currentTheme.accent || currentTheme.primary;
   const [question, setQuestion] = useState('');
+  const tts = useTextToSpeech();
+  const ttsAnswer = useTextToSpeech();
 
   const handleAsk = () => {
     if (!question.trim() || questionLoading) return;
@@ -154,10 +158,16 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                     textTransform: 'uppercase',
                     letterSpacing: '1.5px',
                     color: accent,
+                    flex: 1,
                   }}
                 >
                   KI-Recap
                 </span>
+                <SpeakButton
+                  state={tts.state}
+                  onClick={() => tts.speak(aiRecap ?? '')}
+                  accent={accent}
+                />
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {parseBulletPoints(aiRecap).map((point, i) => (
@@ -528,10 +538,17 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                       textTransform: 'uppercase',
                       letterSpacing: '1px',
                       color: accent,
+                      flex: 1,
                     }}
                   >
                     Antwort
                   </span>
+                  <SpeakButton
+                    state={ttsAnswer.state}
+                    onClick={() => ttsAnswer.speak(questionAnswer ?? '')}
+                    accent={accent}
+                    size={24}
+                  />
                 </div>
                 <p
                   style={{

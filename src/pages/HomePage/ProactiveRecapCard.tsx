@@ -2,7 +2,9 @@ import { AutoAwesome, Close, ExpandMore, ExpandLess, ChevronRight } from '@mui/i
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SpeakButton } from '../../components/ui/SpeakButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 
 interface ProactiveRecapCardProps {
@@ -29,6 +31,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [expanded, setExpanded] = useState(false);
   const accent = currentTheme.accent || currentTheme.primary;
+  const tts = useTextToSpeech();
 
   if (recaps.length === 0) return null;
   const current = recaps[Math.min(currentIndex, recaps.length - 1)];
@@ -280,11 +283,25 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
               >
                 <div
                   style={{
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent, ${accent}25, transparent)`,
-                    marginBottom: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
                   }}
-                />
+                >
+                  <div
+                    style={{
+                      height: '1px',
+                      flex: 1,
+                      background: `linear-gradient(90deg, transparent, ${accent}25, transparent)`,
+                    }}
+                  />
+                  <SpeakButton
+                    state={tts.state}
+                    onClick={() => tts.speak(current.recap ?? '')}
+                    accent={accent}
+                    size={26}
+                  />
+                </div>
                 {points.map((point, i) => (
                   <motion.div
                     key={i}
