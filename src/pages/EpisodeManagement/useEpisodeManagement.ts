@@ -212,56 +212,6 @@ export const useEpisodeManagement = () => {
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
-      // Analytics & badge system logging for episode changes
-      if (newWatched) {
-        trackEpisodeWatched(series.title, season.seasonNumber + 1, episodeIndex + 1, {
-          tmdbId: series.id,
-          genres: series.genre?.genres,
-          runtime: getEpisodeRuntime(series, episode),
-          isRewatch: (episode as Record<string, unknown>).watchCount
-            ? Number((episode as Record<string, unknown>).watchCount) > 0
-            : false,
-          source: 'episode_management',
-        });
-      } else {
-        trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
-      }
-      if (!episode.watched && newWatched) {
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(user.uid, false, episode.air_date);
-
-        await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
-
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title,
-          season.seasonNumber + 1,
-          episodeIndex + 1,
-          getEpisodeRuntime(series, episode),
-          false,
-          series.genre?.genres,
-          [...new Set(series.provider?.provider?.map((p) => p.name))]
-        );
-      } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(user.uid, true, episode.air_date);
-
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title,
-          season.seasonNumber + 1,
-          episodeIndex + 1,
-          getEpisodeRuntime(series, episode),
-          true,
-          series.genre?.genres,
-          [...new Set(series.provider?.provider?.map((p) => p.name))]
-        );
-      }
-
       // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel markiert
       if (newWatched && shouldTriggerQuickRate(series, seasonIndex, episodeIndex)) {
         setTimeout(() => {
@@ -271,12 +221,61 @@ export const useEpisodeManagement = () => {
 
       const label = `S${season.seasonNumber + 1}E${episodeIndex + 1}`;
       const action = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
-      showUndoToast(`${series.title} ${label} ${action}`, async () => {
-        try {
-          await seasonsRef.set(prevSeasons);
-        } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
-        }
+      showUndoToast(`${series.title} ${label} ${action}`, {
+        onUndo: async () => {
+          try {
+            await seasonsRef.set(prevSeasons);
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
+          }
+        },
+        onCommit: async () => {
+          if (newWatched) {
+            trackEpisodeWatched(series.title, season.seasonNumber + 1, episodeIndex + 1, {
+              tmdbId: series.id,
+              genres: series.genre?.genres,
+              runtime: getEpisodeRuntime(series, episode),
+              isRewatch: (episode as Record<string, unknown>).watchCount
+                ? Number((episode as Record<string, unknown>).watchCount) > 0
+                : false,
+              source: 'episode_management',
+            });
+          } else {
+            trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
+          }
+          if (!episode.watched && newWatched) {
+            const { updateEpisodeCounters } =
+              await import('../../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, false, episode.air_date);
+            await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
+            WatchActivityService.logEpisodeWatch(
+              user.uid,
+              series.id,
+              series.title,
+              season.seasonNumber + 1,
+              episodeIndex + 1,
+              getEpisodeRuntime(series, episode),
+              false,
+              series.genre?.genres,
+              [...new Set(series.provider?.provider?.map((p) => p.name))]
+            );
+          } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
+            const { updateEpisodeCounters } =
+              await import('../../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, true, episode.air_date);
+            WatchActivityService.logEpisodeWatch(
+              user.uid,
+              series.id,
+              series.title,
+              season.seasonNumber + 1,
+              episodeIndex + 1,
+              getEpisodeRuntime(series, episode),
+              true,
+              series.genre?.genres,
+              [...new Set(series.provider?.provider?.map((p) => p.name))]
+            );
+          }
+        },
       });
     } catch (error) {
       console.error('Failed to toggle episode watch status:', error);

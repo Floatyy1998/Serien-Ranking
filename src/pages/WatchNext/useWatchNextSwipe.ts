@@ -106,75 +106,71 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       const prevLastWatchedAt: string | null = lastSnap.val() || null;
       const prevWatched: boolean = !!watchedSnap.val();
 
-      // Schreiben
+      // Sofort: nur Episode-Daten in Firebase schreiben (damit nächste Episode erscheint)
       await db.ref(`${basePath}/watched`).set(true);
       await db.ref(`${basePath}/watchCount`).set(prevCount + 1);
       await db.ref(`${basePath}/lastWatchedAt`).set(nowIso);
-
-      if (episode.isRewatch) {
-        await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(uid, true, episode.airDate);
-      } else {
-        if (!prevFirstWatchedAt) {
-          await db.ref(`${basePath}/firstWatchedAt`).set(nowIso);
-        }
-        await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(uid, false, episode.airDate);
+      if (!episode.isRewatch && !prevFirstWatchedAt) {
+        await db.ref(`${basePath}/firstWatchedAt`).set(nowIso);
       }
 
-      trackEpisodeWatched(
-        series.title || series.name || 'Unbekannte Serie',
-        episode.seasonIndex + 1,
-        episode.episodeIndex + 1,
-        {
-          tmdbId: series.id,
-          genres: series.genre?.genres,
-          runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-          isRewatch: episode.isRewatch || false,
-          source: 'watch_next_swipe',
-        }
-      );
-
-      WatchActivityService.logEpisodeWatch(
-        uid,
-        series.id,
-        series.title || series.name || 'Unbekannte Serie',
-        episode.seasonIndex + 1,
-        episode.episodeIndex + 1,
-        episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-        episode.isRewatch || false,
-        series.genre?.genres,
-        series.provider?.provider?.map((p) => p.name)
-      );
-
-      // Show undo toast — exakten vorherigen Zustand wiederherstellen
-      showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, async () => {
-        // UI sofort wiederherstellen
-        setHiddenEpisodes((prev) => {
-          const s = new Set(prev);
-          s.delete(episodeKey);
-          return s;
-        });
-        try {
-          await db.ref(`${basePath}/watched`).set(prevWatched);
-          await db.ref(`${basePath}/watchCount`).set(prevCount);
-          if (prevFirstWatchedAt) {
-            await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-          } else {
-            await db.ref(`${basePath}/firstWatchedAt`).remove();
+      // Undo-Toast mit verzögerten Side-Effects
+      showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
+        onUndo: async () => {
+          setHiddenEpisodes((prev) => {
+            const s = new Set(prev);
+            s.delete(episodeKey);
+            return s;
+          });
+          try {
+            await db.ref(`${basePath}/watched`).set(prevWatched);
+            await db.ref(`${basePath}/watchCount`).set(prevCount);
+            if (prevFirstWatchedAt) {
+              await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+            } else {
+              await db.ref(`${basePath}/firstWatchedAt`).remove();
+            }
+            if (prevLastWatchedAt) {
+              await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
+            } else {
+              await db.ref(`${basePath}/lastWatchedAt`).remove();
+            }
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
           }
-          if (prevLastWatchedAt) {
-            await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
-          } else {
-            await db.ref(`${basePath}/lastWatchedAt`).remove();
-          }
-        } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
-        }
+        },
+        onCommit: async () => {
+          // Side-Effects erst nach Ablauf des Undo-Fensters
+          await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
+          const { updateEpisodeCounters } =
+            await import('../../features/badges/minimalActivityLogger');
+          await updateEpisodeCounters(uid, episode.isRewatch || false, episode.airDate);
+
+          trackEpisodeWatched(
+            series.title || series.name || 'Unbekannte Serie',
+            episode.seasonIndex + 1,
+            episode.episodeIndex + 1,
+            {
+              tmdbId: series.id,
+              genres: series.genre?.genres,
+              runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: episode.isRewatch || false,
+              source: 'watch_next_swipe',
+            }
+          );
+
+          WatchActivityService.logEpisodeWatch(
+            uid,
+            series.id,
+            series.title || series.name || 'Unbekannte Serie',
+            episode.seasonIndex + 1,
+            episode.episodeIndex + 1,
+            episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+            episode.isRewatch || false,
+            series.genre?.genres,
+            series.provider?.provider?.map((p) => p.name)
+          );
+        },
       });
     } catch (error) {
       console.error('Failed to mark episode as watched:', error);

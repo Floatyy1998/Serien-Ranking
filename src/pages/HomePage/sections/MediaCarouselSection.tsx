@@ -10,6 +10,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 
 interface MediaItem {
   id: number;
@@ -43,7 +44,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 }: MediaCarouselSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const isMobile = window.innerWidth < 768;
+  const { isMobile } = useDeviceType();
   const cardWidth = isMobile ? '155px' : '240px';
 
   if (items.length === 0) return null;

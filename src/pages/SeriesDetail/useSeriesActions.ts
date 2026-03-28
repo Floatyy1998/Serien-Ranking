@@ -169,20 +169,7 @@ export function useSeriesActions(
         await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
         await db.ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
 
-        await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
-
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
-        WatchActivityService.logEpisodeWatch(
-          userId,
-          series.id,
-          series.title || series.name || 'Unbekannte Serie',
-          seasonNumber,
-          episodeIndex + 1,
-          episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-          true,
-          series.genre?.genres,
-          series.provider?.provider?.map((p) => p.name)
-        );
 
         let rewatchRemoved = false;
         if (series.rewatch?.active) {
@@ -206,20 +193,36 @@ export function useSeriesActions(
         }
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
-        showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, async () => {
-          try {
-            await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
-            if (prevLastWatchedAt) {
-              await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
-            } else {
-              await db.ref(`${episodePath}/lastWatchedAt`).remove();
+        showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, {
+          onUndo: async () => {
+            try {
+              await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
+              if (prevLastWatchedAt) {
+                await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
+              } else {
+                await db.ref(`${episodePath}/lastWatchedAt`).remove();
+              }
+              if (rewatchRemoved && series.rewatch) {
+                await db.ref(`${userId}/serien/${series.nmr}/rewatch`).set(series.rewatch);
+              }
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
             }
-            if (rewatchRemoved && series.rewatch) {
-              await db.ref(`${userId}/serien/${series.nmr}/rewatch`).set(series.rewatch);
-            }
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
+          },
+          onCommit: async () => {
+            await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
+            WatchActivityService.logEpisodeWatch(
+              userId,
+              series.id,
+              series.title || series.name || 'Unbekannte Serie',
+              seasonNumber,
+              episodeIndex + 1,
+              episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              true,
+              series.genre?.genres,
+              series.provider?.provider?.map((p) => p.name)
+            );
+          },
         });
       } catch {
         setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });

@@ -177,40 +177,43 @@ export const useCalendarData = () => {
         await db.ref().update(updates);
 
         const series = seriesList.find((s) => s.nmr === seriesNmr);
-        if (series) {
-          trackEpisodeWatched(
-            series.title || series.name || '',
-            seasonIndex + 1,
-            episodeIndex + 1,
-            {
-              tmdbId: series.id,
-              genres: series.genre?.genres,
-              runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              isRewatch: prevCount > 0,
-              source: 'calendar',
-            }
-          );
-        }
-
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
-        showUndoToast(`${title} ${label} als gesehen markiert`, async () => {
-          try {
-            await db.ref(`${basePath}/watched`).set(prevWatched);
-            await db.ref(`${basePath}/watchCount`).set(prevCount);
-            if (prevFirstWatchedAt) {
-              await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-            } else {
-              await db.ref(`${basePath}/firstWatchedAt`).remove();
+        showUndoToast(`${title} ${label} als gesehen markiert`, {
+          onUndo: async () => {
+            try {
+              await db.ref(`${basePath}/watched`).set(prevWatched);
+              await db.ref(`${basePath}/watchCount`).set(prevCount);
+              if (prevFirstWatchedAt) {
+                await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+              } else {
+                await db.ref(`${basePath}/firstWatchedAt`).remove();
+              }
+              if (prevLastWatchedAt) {
+                await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
+              } else {
+                await db.ref(`${basePath}/lastWatchedAt`).remove();
+              }
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
             }
-            if (prevLastWatchedAt) {
-              await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
-            } else {
-              await db.ref(`${basePath}/lastWatchedAt`).remove();
+          },
+          onCommit: () => {
+            if (series) {
+              trackEpisodeWatched(
+                series.title || series.name || '',
+                seasonIndex + 1,
+                episodeIndex + 1,
+                {
+                  tmdbId: series.id,
+                  genres: series.genre?.genres,
+                  runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  isRewatch: prevCount > 0,
+                  source: 'calendar',
+                }
+              );
             }
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
+          },
         });
       } catch (error) {
         console.error('Failed to mark episode:', error);

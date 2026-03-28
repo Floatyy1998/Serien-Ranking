@@ -12,15 +12,17 @@ export function useAdminHealthAlert() {
   useEffect(() => {
     if (!user || user.uid !== ADMIN_UID) return;
 
+    const IGNORED_TYPES = new Set(['missing-all-genre', 'missing-all-rating']);
+
     const ref = firebase.database().ref('admin/dataIntegrityIssues');
     ref.once('value').then((snap) => {
       const data = snap.val();
       if (!data) return;
 
-      const totalIssues = Object.values(data).reduce(
-        (sum: number, u: unknown) => sum + ((u as { issues?: unknown[] }).issues?.length || 0),
-        0
-      );
+      const totalIssues = Object.values(data).reduce((sum: number, u: unknown) => {
+        const issues = (u as { issues?: { type?: string }[] }).issues || [];
+        return sum + issues.filter((i) => !IGNORED_TYPES.has(i.type || '')).length;
+      }, 0);
 
       if (totalIssues > 0) {
         showToast(`⚠ ${totalIssues} Data Health Probleme`, 3000);

@@ -190,52 +190,55 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           item.nextEpisode.seasonIndex,
           item.nextEpisode.episodeIndex
         );
-        trackEpisodeWatched(
-          item.title,
-          item.nextEpisode.seasonNumber,
-          item.nextEpisode.episodeNumber,
-          {
-            tmdbId: item.id,
-            genres: item.genre?.genres,
-            runtime: item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-            isRewatch: snap.previousCount > 0,
-            source: 'continue_watching_swipe',
-          }
-        );
-        await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
-        if (snap.previousCount === 0) {
-          const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
-          WatchActivityService.logEpisodeWatch(
-            user.uid,
-            item.id,
-            item.title,
-            item.nextEpisode.seasonIndex + 1,
-            item.nextEpisode.episodeIndex + 1,
-            item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-            false,
-            item.genre?.genres,
-            providers
-          );
-        }
 
-        // Show undo toast — revert Firebase on undo
-        showUndoToast(`${item.title} ${label} als gesehen markiert`, async () => {
-          setHiddenContinueEpisodes((prev) => {
-            const s = new Set(prev);
-            s.delete(episodeKey);
-            return s;
-          });
-          try {
-            await revertEpisodeWatch(
-              user.uid,
-              item.nmr,
-              item.nextEpisode.seasonIndex,
-              item.nextEpisode.episodeIndex,
-              snap
+        showUndoToast(`${item.title} ${label} als gesehen markiert`, {
+          onUndo: async () => {
+            setHiddenContinueEpisodes((prev) => {
+              const s = new Set(prev);
+              s.delete(episodeKey);
+              return s;
+            });
+            try {
+              await revertEpisodeWatch(
+                user.uid,
+                item.nmr,
+                item.nextEpisode.seasonIndex,
+                item.nextEpisode.episodeIndex,
+                snap
+              );
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
+            }
+          },
+          onCommit: async () => {
+            trackEpisodeWatched(
+              item.title,
+              item.nextEpisode.seasonNumber,
+              item.nextEpisode.episodeNumber,
+              {
+                tmdbId: item.id,
+                genres: item.genre?.genres,
+                runtime: item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: snap.previousCount > 0,
+                source: 'continue_watching_swipe',
+              }
             );
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
+            await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
+            if (snap.previousCount === 0) {
+              const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
+              WatchActivityService.logEpisodeWatch(
+                user.uid,
+                item.id,
+                item.title,
+                item.nextEpisode.seasonIndex + 1,
+                item.nextEpisode.episodeIndex + 1,
+                item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                false,
+                item.genre?.genres,
+                providers
+              );
+            }
+          },
         });
 
         // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel
@@ -287,46 +290,49 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           episode.seasonIndex,
           episode.episodeIndex
         );
-        trackEpisodeWatched(episode.seriesTitle, episode.seasonNumber, episode.episodeNumber, {
-          tmdbId: episode.seriesId,
-          genres: episode.seriesGenre,
-          runtime: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-          isRewatch: snap.previousCount > 0,
-          source: 'today_episodes_swipe',
-        });
-        await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
-        if (snap.previousCount === 0) {
-          WatchActivityService.logEpisodeWatch(
-            user.uid,
-            Number(episode.seriesId),
-            episode.seriesTitle,
-            episode.seasonNumber,
-            episode.episodeNumber,
-            episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-            false,
-            episode.seriesGenre,
-            episode.seriesProviders
-          );
-        }
 
-        // Show undo toast — revert Firebase on undo
-        showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, async () => {
-          setHiddenEpisodes((prev) => {
-            const s = new Set(prev);
-            s.delete(episodeKey);
-            return s;
-          });
-          try {
-            await revertEpisodeWatch(
-              user.uid,
-              episode.seriesNmr,
-              episode.seasonIndex,
-              episode.episodeIndex,
-              snap
-            );
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
+        showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
+          onUndo: async () => {
+            setHiddenEpisodes((prev) => {
+              const s = new Set(prev);
+              s.delete(episodeKey);
+              return s;
+            });
+            try {
+              await revertEpisodeWatch(
+                user.uid,
+                episode.seriesNmr,
+                episode.seasonIndex,
+                episode.episodeIndex,
+                snap
+              );
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
+            }
+          },
+          onCommit: async () => {
+            trackEpisodeWatched(episode.seriesTitle, episode.seasonNumber, episode.episodeNumber, {
+              tmdbId: episode.seriesId,
+              genres: episode.seriesGenre,
+              runtime: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: snap.previousCount > 0,
+              source: 'today_episodes_swipe',
+            });
+            await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
+            if (snap.previousCount === 0) {
+              WatchActivityService.logEpisodeWatch(
+                user.uid,
+                Number(episode.seriesId),
+                episode.seriesTitle,
+                episode.seasonNumber,
+                episode.episodeNumber,
+                episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                false,
+                episode.seriesGenre,
+                episode.seriesProviders
+              );
+            }
+          },
         });
       } catch (error) {
         console.error('Error marking episode as watched:', error);

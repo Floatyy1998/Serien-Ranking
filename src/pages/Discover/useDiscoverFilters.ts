@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverFiltersResult {
@@ -39,7 +40,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const { isDesktop } = useDeviceType();
   const [headerHeight, setHeaderHeight] = useState(220);
 
   // Refs to allow fetch hooks to be called from restore logic
@@ -58,7 +59,6 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     updateHeaderHeight();
     const handleResize = () => {
       updateHeaderHeight();
-      setIsDesktop(window.innerWidth >= 768);
     };
 
     window.addEventListener('resize', handleResize);
