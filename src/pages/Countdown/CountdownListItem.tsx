@@ -53,7 +53,8 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
           {item.title}
         </h3>
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
-          Staffel {item.seasonNumber} &middot; {formatDate(item.nextDate)}
+          {item.type === 'mid-season-return' ? 'Rückkehr' : 'Staffel ' + item.seasonNumber} &middot;{' '}
+          {formatDate(item.nextDate)}
         </p>
       </div>
 

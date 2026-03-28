@@ -9,6 +9,7 @@ import type {
 } from '../types/Discussion';
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
+import { getUserDisplayData } from '../lib/firebase/userDisplayData';
 
 interface EditReplyInput {
   content?: string;
@@ -85,11 +86,7 @@ export const useDiscussionReplies = (
       if (!user?.uid || !discussionId) return false;
 
       try {
-        // Get user data (displayName is stored at users/{uid}, not users/{uid}/profile)
-        const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-        const userData = userSnapshot.val() || {};
-        const username =
-          userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym';
+        const { username, photoURL } = await getUserDisplayData(user);
 
         const newReply: Omit<DiscussionReply, 'id'> = {
           userId: user.uid,
@@ -100,7 +97,6 @@ export const useDiscussionReplies = (
           ...(isSpoiler && { isSpoiler: true }),
         };
         // Only add userPhotoURL if it exists (Firebase doesn't accept undefined)
-        const photoURL = userData.photoURL || user.photoURL;
         if (photoURL) {
           (newReply as Omit<DiscussionReply, 'id'> & { userPhotoURL?: string }).userPhotoURL =
             photoURL;
@@ -247,9 +243,7 @@ export const useDiscussionReplies = (
 
         // Send notification to reply owner if non-owner flagged as spoiler
         if (!isOwner && input.isSpoiler === true && reply?.userId) {
-          const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-          const userData = userSnapshot.val() || {};
-          const username = userData.displayName || user.displayName || 'Jemand';
+          const { username } = await getUserDisplayData(user);
 
           await sendNotificationToUser(reply.userId, {
             type: 'spoiler_flag',
@@ -327,9 +321,7 @@ export const useDiscussionReplies = (
             .once('value');
           const reply = replySnapshot.val();
           if (reply && reply.userId !== user.uid) {
-            const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-            const userData = userSnapshot.val() || {};
-            const username = userData.displayName || user.displayName || 'Jemand';
+            const { username } = await getUserDisplayData(user);
 
             await sendNotificationToUser(reply.userId, {
               type: 'discussion_like',

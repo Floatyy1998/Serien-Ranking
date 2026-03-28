@@ -38,7 +38,7 @@
   font-size: 13px;
   cursor: pointer;
   padding: 6px 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .hl-reset-icon {
@@ -52,7 +52,7 @@
 }
 
 .hl-section-list {
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 12px;
   margin-bottom: 100px;
 }
@@ -69,7 +69,7 @@
 /* DraggableSectionItem */
 
 .hl-section-item {
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: grab;
   transition: opacity 0.2s;
@@ -142,7 +142,7 @@
   align-items: center;
   gap: 10px;
   padding: 9px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: grab;
   transition: opacity 0.2s;
 }
@@ -185,8 +185,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 24px;
+  transition: all 0.3s var(--ease-default);
+  border-radius: var(--radius-2xl);
 }
 
 .hl-toggle-thumb {

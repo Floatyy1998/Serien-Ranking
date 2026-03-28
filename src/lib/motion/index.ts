@@ -9,4 +9,12 @@ export {
   slideDown,
   fadeIn,
   popIn,
+  tapScale,
+  tapScaleSmall,
+  tapScaleTight,
+  hoverScale,
+  hoverLift,
+  springs,
+  contentSwap,
+  scaleButton,
 } from './variants';

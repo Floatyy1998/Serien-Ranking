@@ -175,14 +175,14 @@
 .wj-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   gap: 16px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -202,7 +202,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 18px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: none;
   color: white;
   font-size: 15px;
@@ -212,7 +212,7 @@
 
 .wj-year-btn--empty {
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 .wj-year-dropdown {
@@ -228,14 +228,14 @@
   display: flex;
   gap: 10px;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   flex-wrap: wrap;
   justify-content: center;
 }
 
 .wj-year-option {
   padding: 14px 28px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -260,7 +260,7 @@
   gap: 0;
   padding: 0;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.06);
   width: 100%;
   overflow: hidden;
@@ -279,7 +279,7 @@
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 /* ===== Active Tab Title ===== */

@@ -206,7 +206,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               style={{
                 width: '32px',
                 height: '32px',
-                borderRadius: '8px',
+                borderRadius: 'var(--radius-sm)',
                 border: 'none',
                 background: Math.round(rating) === v ? accent : currentTheme.background.surface,
                 color:
@@ -225,22 +225,24 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
 
         {/* Actions */}
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.96 }}
             onClick={handleClose}
             style={{
               flex: 1,
               padding: '14px',
               background: 'transparent',
               border: `1px solid ${currentTheme.border?.default || 'rgba(255,255,255,0.1)'}`,
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-md)',
               color: currentTheme.text.secondary,
               fontSize: '14px',
               fontWeight: 500,
               cursor: 'pointer',
+              transition: 'background var(--duration-fast) ease',
             }}
           >
             Später
-          </button>
+          </motion.button>
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={handleSave}
@@ -250,7 +252,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               padding: '14px',
               background: rating > 0 ? accent : `${accent}30`,
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-md)',
               color: rating > 0 ? currentTheme.background.default : `${accent}60`,
               fontSize: '14px',
               fontWeight: 700,

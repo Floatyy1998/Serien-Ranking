@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';
@@ -146,7 +147,7 @@ export const useWeeklyEpisodes = (
             if (prevAirDate) {
               const gapDays =
                 (airDateDay.getTime() - prevAirDate.getTime()) / (1000 * 60 * 60 * 24);
-              if (gapDays > 14) {
+              if (gapDays > SEASON_BREAK_GAP_DAYS) {
                 premiereType = 'mid-season-return';
               }
             }
@@ -177,7 +178,7 @@ export const useWeeklyEpisodes = (
               const nextDay = new Date(nextAirDate);
               nextDay.setHours(0, 0, 0, 0);
               const gapDays = (nextDay.getTime() - airDateDay.getTime()) / (1000 * 60 * 60 * 24);
-              if (gapDays > 14) {
+              if (gapDays > SEASON_BREAK_GAP_DAYS) {
                 breakType = 'season-break';
               }
             } else if (remaining.length > 1) {

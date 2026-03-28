@@ -67,7 +67,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
         {/* Info */}
         <div className="cd-hero-info">
           <p className="cd-hero-eyebrow" style={{ color: ACCENT }}>
-            Als nächstes
+            {item.type === 'mid-season-return' ? 'Rückkehr' : 'Neue Staffel'}
           </p>
           <h2 className="cd-hero-title">{item.title}</h2>
           <p className="cd-hero-season">Staffel {item.seasonNumber}</p>

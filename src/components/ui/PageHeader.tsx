@@ -41,10 +41,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           ? {
               position: 'sticky',
               top: 0,
-              zIndex: 100,
+              zIndex: 'var(--z-sticky)' as string,
               background: `${currentTheme.background.default}e8`,
-              backdropFilter: 'blur(28px) saturate(1.4)',
-              WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+              backdropFilter: 'blur(24px) saturate(1.4)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
               borderBottom: 'none',
             }
           : {}),

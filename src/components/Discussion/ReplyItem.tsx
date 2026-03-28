@@ -1,4 +1,4 @@
-import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
+import { Delete, Edit, Favorite, FavoriteBorder, Flag, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
+import { SpoilerReveal } from '../ui/SpoilerReveal';
+import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
 const ReplyItemInner: React.FC<{
@@ -66,38 +68,12 @@ const ReplyItemInner: React.FC<{
       }}
     >
       {/* Avatar */}
-      <button
-        onClick={() => navigate(`/friend/${reply.userId}`)}
-        aria-label={`Profil von ${reply.username} anzeigen`}
-        style={{
-          width: '30px',
-          height: '30px',
-          borderRadius: '50%',
-          flexShrink: 0,
-          cursor: 'pointer',
-          border: `2px solid ${currentTheme.border.default}`,
-          padding: 0,
-          ...(reply.userPhotoURL
-            ? {
-                backgroundImage: `url("${reply.userPhotoURL}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : {
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }),
-        }}
-      >
-        {!reply.userPhotoURL && (
-          <Person
-            style={{ fontSize: '15px', color: currentTheme.text.primary }}
-            aria-hidden="true"
-          />
-        )}
-      </button>
+      <UserAvatar
+        userId={reply.userId}
+        username={reply.username}
+        photoURL={reply.userPhotoURL}
+        size={30}
+      />
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -239,26 +215,7 @@ const ReplyItemInner: React.FC<{
             </div>
           </div>
         ) : reply.isSpoiler && !showSpoiler ? (
-          <button
-            onClick={() => setShowSpoiler(true)}
-            style={{
-              padding: '10px 14px',
-              background: `${currentTheme.status.warning}15`,
-              border: `1px dashed ${currentTheme.status.warning}40`,
-              borderRadius: '8px',
-              color: currentTheme.status.warning,
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: '8px',
-            }}
-          >
-            <Warning style={{ fontSize: '16px' }} />
-            Spoiler anzeigen
-          </button>
+          <SpoilerReveal onReveal={() => setShowSpoiler(true)} compact />
         ) : (
           <>
             {text && (

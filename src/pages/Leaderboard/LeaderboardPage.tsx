@@ -10,7 +10,7 @@ import {
 import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BackButton, GradientText } from '../../components/ui';
+import { PageHeader } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { LeaderboardCategory } from '../../types/Leaderboard';
 import { CelebrationModal } from './CelebrationModal';
@@ -122,22 +122,11 @@ export const LeaderboardPage = () => {
           flexDirection: 'column',
         }}
       >
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="lb-header"
-          style={{ background: `${currentTheme.background.default}90` }}
-        >
-          <BackButton />
-          <GradientText
-            as="h1"
-            from={currentTheme.accent}
-            to={currentTheme.status?.error || '#ef4444'}
-            style={{ margin: 0, fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)' }}
-          >
-            Rangliste
-          </GradientText>
-        </motion.div>
+        <PageHeader
+          title="Rangliste"
+          gradientFrom={currentTheme.accent}
+          gradientTo={currentTheme.status?.error || '#ef4444'}
+        />
 
         <ModeToggle mode={mode} onModeChange={setMode} />
 
@@ -201,31 +190,12 @@ export const LeaderboardPage = () => {
 
       <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
         {/* Sticky Header */}
-        <motion.div
-          className="lb-header"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          style={{ background: `${currentTheme.background.default}90` }}
-        >
-          <BackButton />
-          <div style={{ flex: 1 }}>
-            <GradientText
-              as="h1"
-              from={currentTheme.accent}
-              to={currentTheme.status?.error || '#ef4444'}
-              style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
-            >
-              Rangliste
-            </GradientText>
-            <p
-              style={{ margin: 0, fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}
-            >
-              {activeCat?.label}
-              {activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}
-              {mode === 'global' ? ' · Alle Nutzer' : ''}
-            </p>
-          </div>
-        </motion.div>
+        <PageHeader
+          title="Rangliste"
+          gradientFrom={currentTheme.accent}
+          gradientTo={currentTheme.status?.error || '#ef4444'}
+          subtitle={`${activeCat?.label}${activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}${mode === 'global' ? ' · Alle Nutzer' : ''}`}
+        />
 
         {/* Mode Toggle */}
         <ModeToggle mode={mode} onModeChange={setMode} />

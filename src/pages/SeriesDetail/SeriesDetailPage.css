@@ -57,8 +57,8 @@
 .hero-section__add-btn {
   position: absolute;
   z-index: 10;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 24px;
@@ -91,7 +91,7 @@
   right: 0;
   max-width: 100%;
   background: var(--color-background-default, #06090f);
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
   padding-top: 20px;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -152,7 +152,7 @@
     var(--theme-secondary-gradient, #8b5cf6)
   );
   height: 100%;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.5s var(--ease-default);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #00d4aa) 50%, transparent);
   position: relative;
   overflow: hidden;
@@ -183,7 +183,7 @@
 .status-badge {
   background: rgba(var(--status-badge-color-rgb, 158, 158, 158), 0.2);
   border: 1px solid;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 4px 10px;
   font-size: 13px;
   font-weight: 500;
@@ -210,7 +210,7 @@
   align-items: center;
   gap: 6px;
   border: 1px solid;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: white;
 }
@@ -243,7 +243,7 @@
   padding: 16px;
   background: rgba(220, 53, 69, 0.1);
   border: 1px solid rgba(220, 53, 69, 0.3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: #ff6b6b;
   font-size: 16px;
   font-weight: 600;
@@ -260,7 +260,7 @@
   overflow-x: auto;
   padding: 12px;
   margin-bottom: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.08);
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -284,7 +284,7 @@
   min-width: auto;
   background: transparent;
   font-size: 14px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-normal) var(--ease-out);
 }
 
 .season-tabs__number {
@@ -307,7 +307,7 @@
 .episode-cell {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -338,9 +338,9 @@
   align-items: center;
   gap: 14px;
   padding: 12px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s var(--ease-out);
   border: 1px solid transparent;
   position: relative;
 }
@@ -377,7 +377,7 @@
 .episode-list-number {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -455,7 +455,7 @@
 .episode-action-btn {
   padding: 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -530,5 +530,5 @@
   left: 0;
   top: 0;
   height: 100%;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.3s var(--ease-default);
 }

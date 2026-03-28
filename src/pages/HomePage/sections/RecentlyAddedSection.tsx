@@ -1,9 +1,9 @@
 import AddCircleOutline from '@mui/icons-material/AddCircleOutline';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
-import { getRecentlyAdded, type RecentlyAddedItem } from '../../../lib/recentlyAdded';
+import { getRecentlyAdded } from '../../../lib/recentlyAdded';
 
 function formatRelative(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -19,11 +19,7 @@ function formatRelative(iso: string): string {
 export const RecentlyAddedSection: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const [items, setItems] = useState<RecentlyAddedItem[]>([]);
-
-  useEffect(() => {
-    setItems(getRecentlyAdded());
-  }, []);
+  const items = getRecentlyAdded();
 
   if (items.length === 0) return null;
 

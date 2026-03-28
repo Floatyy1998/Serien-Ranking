@@ -30,9 +30,9 @@
 .ratings-sticky-header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: var(--z-dropdown);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
 }
 
 .ratings-header-inner {
@@ -56,18 +56,18 @@
 
 .ratings-stat-card {
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid;
   display: flex;
   align-items: center;
   gap: 8px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
 }
 
 .ratings-stat-card--average {
-  background: #fbbf2415;
-  border-color: #fbbf2430;
+  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
+  border-color: color-mix(in srgb, var(--theme-accent) 18%, transparent);
 }
 
 .ratings-stat-value {
@@ -76,12 +76,12 @@
 }
 
 .ratings-stat-value--average {
-  color: #fbbf24;
+  color: var(--theme-accent);
 }
 
 .ratings-stat-star {
   font-size: 18px;
-  color: #fbbf24;
+  color: var(--theme-accent);
 }
 
 .ratings-stat-label {
@@ -125,7 +125,7 @@
   contain-intrinsic-block-size: auto 320px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform var(--duration-normal) var(--ease-out);
   will-change: transform;
 }
 
@@ -141,9 +141,9 @@
 
 .ratings-card {
   position: relative;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   aspect-ratio: 2 / 3;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-cinematic);
 }
 
 .ratings-card-poster {
@@ -153,7 +153,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
 /* ─── Overlay ─────────────────────────────────────────────────────────── */
@@ -166,7 +166,7 @@
   flex-direction: column;
   justify-content: space-between;
   pointer-events: none;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -197,7 +197,7 @@
 /* ─── Watchlist Badge ─────────────────────────────────────────────────── */
 
 .ratings-card-watchlist-badge {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 4px;
   display: flex;
   align-items: center;
@@ -348,7 +348,7 @@
 }
 
 .ratings-provider-badge {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 3px;
   width: 36px;
   height: 36px;
@@ -405,14 +405,14 @@
 
 .ratings-provider-popup {
   position: fixed;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   min-width: 130px;
   width: max-content;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255, 255, 255, 0.1);
   z-index: 9999;
   animation: ratings-popup-in 0.15s ease-out;

@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
+import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
+
+export type CountdownType = 'season-start' | 'mid-season-return';
 
 export interface SeriesCountdown {
   seriesId: number;
@@ -9,6 +12,7 @@ export interface SeriesCountdown {
   nextDate: string;
   daysUntil: number;
   seasonNumber: number;
+  type: CountdownType;
 }
 
 export function useSeriesCountdowns() {
@@ -21,35 +25,77 @@ export function useSeriesCountdowns() {
     today.setHours(0, 0, 0, 0);
     const results: SeriesCountdown[] = [];
 
+    const GAP_THRESHOLD_DAYS = SEASON_BREAK_GAP_DAYS;
+
     for (const series of seriesList) {
       if (!series.id || !series.seasons) continue;
 
       let best: SeriesCountdown | null = null;
+      const seriesTitle = series.title || series.name || series.original_name || '';
+      const posterUrl = series.poster?.poster || '';
 
       for (const season of series.seasons) {
         if (!season) continue;
         const seasonNum = season.seasonNumber ?? season.season_number ?? 0;
         if (seasonNum < 0 || !season.episodes?.length) continue;
 
-        // Use first episode's air_date as season start date
-        const firstEp = season.episodes[0];
-        const dateStr = getEpisodeAirDateStr(firstEp);
-        if (!dateStr) continue;
+        const episodes = season.episodes;
 
-        const airDate = getEpisodeAirDate(firstEp);
-        if (!airDate) continue;
-        airDate.setHours(0, 0, 0, 0);
-        const daysUntil = Math.round((airDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        // Check season start (first episode in the future)
+        const firstEp = episodes[0];
+        const firstDateStr = getEpisodeAirDateStr(firstEp);
+        if (firstDateStr) {
+          const firstAirDate = getEpisodeAirDate(firstEp);
+          if (firstAirDate) {
+            firstAirDate.setHours(0, 0, 0, 0);
+            const daysUntil = Math.round(
+              (firstAirDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            if (daysUntil >= 0 && (!best || daysUntil < best.daysUntil)) {
+              best = {
+                seriesId: series.id,
+                title: seriesTitle,
+                posterUrl,
+                nextDate: firstDateStr,
+                daysUntil,
+                seasonNumber: seasonNum + 1,
+                type: 'season-start',
+              };
+            }
+          }
+        }
 
-        if (daysUntil >= 0 && (!best || daysUntil < best.daysUntil)) {
-          best = {
-            seriesId: series.id,
-            title: series.title || series.name || series.original_name || '',
-            posterUrl: series.poster?.poster || '',
-            nextDate: dateStr,
-            daysUntil,
-            seasonNumber: seasonNum + 1,
-          };
+        // Check for mid-season returns (episode after a >14 day gap, in the future)
+        for (let i = 1; i < episodes.length; i++) {
+          const ep = episodes[i];
+          const prevEp = episodes[i - 1];
+          const epDate = getEpisodeAirDate(ep);
+          const prevDate = getEpisodeAirDate(prevEp);
+          if (!epDate || !prevDate) continue;
+
+          epDate.setHours(0, 0, 0, 0);
+          prevDate.setHours(0, 0, 0, 0);
+
+          const gapDays = (epDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (gapDays <= GAP_THRESHOLD_DAYS) continue;
+
+          const daysUntil = Math.round(
+            (epDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (daysUntil >= 0 && (!best || daysUntil < best.daysUntil)) {
+            const dateStr = getEpisodeAirDateStr(ep);
+            if (dateStr) {
+              best = {
+                seriesId: series.id,
+                title: seriesTitle,
+                posterUrl,
+                nextDate: dateStr,
+                daysUntil,
+                seasonNumber: seasonNum + 1,
+                type: 'mid-season-return',
+              };
+            }
+          }
         }
       }
 

@@ -1,6 +1,6 @@
 import { BarChart, CalendarToday, Person, PlayCircle } from '@mui/icons-material';
 import { Badge } from '@mui/material';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -192,7 +192,17 @@ export const BottomNavigation = () => {
                     <div className="nav-icon">{item.icon}</div>
                   )}
                   {/* Active dot */}
-                  {active && <div className="nav-active-dot" />}
+                  <AnimatePresence>
+                    {active && (
+                      <motion.div
+                        className="nav-active-dot"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <span className="nav-label">{item.label}</span>

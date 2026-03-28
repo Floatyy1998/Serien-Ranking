@@ -8,12 +8,13 @@ import PlayCircle from '@mui/icons-material/PlayCircle';
 import Repeat from '@mui/icons-material/Repeat';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
-import { useNavigate, useNavigationType, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
@@ -31,7 +32,6 @@ export const WatchNextPage = () => {
   const { seriesList } = useSeriesList();
   const { currentTheme } = useTheme();
   const [searchParams] = useSearchParams();
-  const navigationType = useNavigationType(); // 'POP' = back button, 'PUSH' = fresh navigation
 
   const [, startTransition] = useTransition();
 
@@ -126,41 +126,7 @@ export const WatchNextPage = () => {
     providerFilter
   );
 
-  // Scroll position restore — nur bei "Zurück"-Navigation (POP), nicht bei direktem Seitenaufruf
-  const scrollRestoredRef = useRef(false);
-  useEffect(() => {
-    const saved = sessionStorage.getItem('watchNext-scroll');
-    if (saved && !scrollRestoredRef.current && navigationType === 'POP') {
-      scrollRestoredRef.current = true;
-      const scrollY = parseInt(saved, 10);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
-          if (container) container.scrollTop = scrollY;
-        });
-      });
-    }
-    if (navigationType !== 'POP') {
-      sessionStorage.removeItem('watchNext-scroll');
-    }
-  }, [navigationType]);
-
-  useEffect(() => {
-    const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
-    if (!container) return;
-    let timeout: ReturnType<typeof setTimeout>;
-    const handleScroll = () => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        sessionStorage.setItem('watchNext-scroll', String(container.scrollTop));
-      }, 100);
-    };
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      clearTimeout(timeout);
-      container.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
+  useScrollRestore('watchNext-scroll', '.episodes-scroll-container', { restoreOnPop: true });
 
   // Save preferences to localStorage (initial sync)
   useEffect(() => {
