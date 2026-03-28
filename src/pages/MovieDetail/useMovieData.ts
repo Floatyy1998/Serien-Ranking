@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
@@ -49,15 +50,7 @@ export const useMovieData = () => {
   const [isAdding, setIsAdding] = useState(false);
 
   // --- Responsive state ---
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { isMobile } = useDeviceType();
 
   // --- UI feedback state ---
   const [dialog, setDialog] = useState<DialogState>({

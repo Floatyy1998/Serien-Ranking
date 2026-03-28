@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
@@ -83,7 +84,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.primary;
-  const isMobile = window.innerWidth < 768;
+  const { isMobile } = useDeviceType();
 
   if (items.length === 0) return null;
 

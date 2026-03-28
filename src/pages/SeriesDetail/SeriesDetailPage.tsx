@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -35,12 +36,7 @@ export const SeriesDetailPage = memo(() => {
   const [activeTab, setActiveTab] = useState<'info' | 'cast' | 'characters'>('info');
 
   // Responsive state
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { isMobile } = useDeviceType();
 
   // Data hook
   const {

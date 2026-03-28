@@ -1,6 +1,7 @@
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 export function CountdownBanner({
   countdown,
@@ -12,6 +13,7 @@ export function CountdownBanner({
   navigate: (path: string) => void;
 }) {
   const { currentTheme: _ct } = useTheme();
+  const { isDesktop } = useDeviceType();
   const countdownColor = _ct.accent;
   const daysText =
     countdown.daysUntil === 0
@@ -27,7 +29,7 @@ export function CountdownBanner({
       style={{
         margin: '0 20px 16px',
         borderRadius: '14px',
-        padding: '12px 14px',
+        padding: isDesktop ? '14px 18px' : '12px 14px',
         cursor: 'pointer',
         position: 'relative',
         overflow: 'hidden',
@@ -64,8 +66,8 @@ export function CountdownBanner({
           alt=""
           style={{
             position: 'relative',
-            width: 44,
-            height: 66,
+            width: isDesktop ? 50 : 44,
+            height: isDesktop ? 75 : 66,
             borderRadius: '8px',
             objectFit: 'cover',
             flexShrink: 0,
@@ -75,7 +77,7 @@ export function CountdownBanner({
       )}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-          <CalendarMonth style={{ fontSize: '16px', color: countdownColor }} />
+          <CalendarMonth style={{ fontSize: isDesktop ? '18px' : '16px', color: countdownColor }} />
           <span
             style={{
               fontSize: '12px',
@@ -106,7 +108,7 @@ export function CountdownBanner({
         <h2
           style={{
             margin: '0 0 1px 0',
-            fontSize: '15px',
+            fontSize: isDesktop ? '16px' : '15px',
             fontWeight: 700,
             fontFamily: 'var(--font-display)',
             color: _ct.text.secondary,
@@ -117,15 +119,21 @@ export function CountdownBanner({
         >
           {countdown.title}
         </h2>
-        <p style={{ margin: 0, fontSize: '13px', color: 'rgba(255,255,255,0.7)' }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: isDesktop ? '14px' : '13px',
+            color: 'rgba(255,255,255,0.7)',
+          }}
+        >
           Staffel {countdown.seasonNumber} &middot; {daysText}
         </p>
       </div>
       <div
         style={{
           position: 'relative',
-          width: 46,
-          height: 46,
+          width: isDesktop ? 52 : 46,
+          height: isDesktop ? 52 : 46,
           borderRadius: '50%',
           background: `${countdownColor}30`,
           border: `2px solid ${countdownColor}80`,
@@ -153,7 +161,7 @@ export function CountdownBanner({
           <>
             <span
               style={{
-                fontSize: '16px',
+                fontSize: isDesktop ? '18px' : '16px',
                 fontWeight: 800,
                 color: _ct.text.secondary,
                 lineHeight: 1,

@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef, forwardRef } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';
 import { WEEKDAYS_SHORT } from './useCalendarData';
@@ -130,10 +131,11 @@ export const CalendarGrid = memo(
   }: CalendarGridProps) => {
     const todayRef = useRef<HTMLDivElement>(null);
     const hasScrolled = useRef(false);
+    const { isDesktop } = useDeviceType();
 
     // Auto-scroll to today on mobile (< 768px)
     useEffect(() => {
-      if (hasScrolled.current || window.innerWidth >= 768) return;
+      if (hasScrolled.current || isDesktop) return;
       // Small delay to ensure DOM has rendered
       const timer = setTimeout(() => {
         if (todayRef.current) {
@@ -142,7 +144,7 @@ export const CalendarGrid = memo(
         }
       }, 100);
       return () => clearTimeout(timer);
-    }, [groupedSchedule, todayKey]);
+    }, [groupedSchedule, todayKey, isDesktop]);
 
     return (
       <div className="cal-content">

@@ -13,6 +13,7 @@ import { useNavigate, useNavigationType, useSearchParams } from 'react-router-do
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
@@ -220,7 +221,7 @@ export const WatchNextPage = () => {
     }
   }, [showSwipeHint, actualNextEpisodes.length]);
 
-  const isMobile = window.innerWidth < 768;
+  const { isMobile } = useDeviceType();
 
   const theme = {
     primary: currentTheme.primary,

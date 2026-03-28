@@ -1,8 +1,9 @@
 import { ExpandMore, MovieFilter, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { SerienTabRanking } from './SerienTabRanking';
 import {
@@ -26,16 +27,10 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   const bgSurface = currentTheme.background.surface;
   const primaryColor = currentTheme.primary;
 
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const { isMobile } = useDeviceType();
   const [showAllTimeline, setShowAllTimeline] = useState(false);
   const [monthRangeStart, setMonthRangeStart] = useState(1);
   const [monthRangeEnd, setMonthRangeEnd] = useState(12);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const { seriesStats, timelineSeries, totalEpisodes, uniqueSeriesCount, avgEpisodesPerSeries } =
     useTimelineSeries(data.seriesStats, data.year, monthRangeStart, monthRangeEnd);

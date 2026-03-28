@@ -6,6 +6,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
@@ -130,7 +131,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     open: false,
     message: '',
   });
-  const [isDesktop] = useState(window.innerWidth >= 768);
+  const { isDesktop } = useDeviceType();
   const [popularSearches] = useState([
     'Breaking Bad',
     'The Last of Us',

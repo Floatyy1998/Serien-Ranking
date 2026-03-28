@@ -62,13 +62,11 @@ export function useRewatchHandler() {
       const prevWatched: boolean = !!watchedSnap.val();
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
-      // Schreiben
+      // Sofort: nur Episode-Daten schreiben
       const newWatchCount = prevCount + 1;
       await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
       await db.ref(`${episodePath}/lastWatchedAt`).set(nowIso);
       await db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).set(nowIso);
-
-      await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
 
       if (!prevWatched) {
         await db.ref(`${episodePath}/watched`).set(true);
@@ -77,22 +75,7 @@ export function useRewatchHandler() {
         }
       }
 
-      WatchActivityService.logEpisodeWatch(
-        user.uid,
-        item.id,
-        item.title,
-        item.seasonNumber,
-        item.episodeNumber,
-        item.episodeRuntime,
-        true,
-        item.genre?.genres,
-        item.provider?.provider?.map((p: { name: string }) => p.name)
-      );
-
-      const { updateEpisodeCounters } = await import('../../features/badges/minimalActivityLogger');
-      await updateEpisodeCounters(user.uid, true);
-
-      // Auto-complete rewatch check
+      // Auto-complete rewatch check (muss sofort passieren, da es Episode-Daten ändert)
       const series = seriesList.find((s) => s.id === item.id);
       let rewatchRemoved = false;
       if (series?.rewatch?.active) {
@@ -119,40 +102,57 @@ export function useRewatchHandler() {
         }
       }
 
-      // Show undo toast — exakten vorherigen Zustand wiederherstellen
-      showUndoToast(`${item.title} ${label} Rewatch als gesehen markiert`, async () => {
-        setHiddenRewatches((prev) => {
-          const s = new Set(prev);
-          s.delete(key);
-          return s;
-        });
-        try {
-          await db.ref(`${episodePath}/watchCount`).set(prevCount);
-          await db.ref(`${episodePath}/watched`).set(prevWatched);
-
-          if (prevFirstWatchedAt) {
-            await db.ref(`${episodePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-          } else {
-            await db.ref(`${episodePath}/firstWatchedAt`).remove();
+      showUndoToast(`${item.title} ${label} Rewatch als gesehen markiert`, {
+        onUndo: async () => {
+          setHiddenRewatches((prev) => {
+            const s = new Set(prev);
+            s.delete(key);
+            return s;
+          });
+          try {
+            await db.ref(`${episodePath}/watchCount`).set(prevCount);
+            await db.ref(`${episodePath}/watched`).set(prevWatched);
+            if (prevFirstWatchedAt) {
+              await db.ref(`${episodePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+            } else {
+              await db.ref(`${episodePath}/firstWatchedAt`).remove();
+            }
+            if (prevLastWatchedAt) {
+              await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
+            } else {
+              await db.ref(`${episodePath}/lastWatchedAt`).remove();
+            }
+            if (prevRewatchLastWatchedAt) {
+              await db
+                .ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`)
+                .set(prevRewatchLastWatchedAt);
+            } else {
+              await db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).remove();
+            }
+            if (rewatchRemoved && series?.rewatch) {
+              await db.ref(`${user.uid}/serien/${item.nmr}/rewatch`).set(series.rewatch);
+            }
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
           }
-          if (prevLastWatchedAt) {
-            await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
-          } else {
-            await db.ref(`${episodePath}/lastWatchedAt`).remove();
-          }
-          if (prevRewatchLastWatchedAt) {
-            await db
-              .ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`)
-              .set(prevRewatchLastWatchedAt);
-          } else {
-            await db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).remove();
-          }
-          if (rewatchRemoved && series?.rewatch) {
-            await db.ref(`${user.uid}/serien/${item.nmr}/rewatch`).set(series.rewatch);
-          }
-        } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
-        }
+        },
+        onCommit: async () => {
+          await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
+          WatchActivityService.logEpisodeWatch(
+            user.uid,
+            item.id,
+            item.title,
+            item.seasonNumber,
+            item.episodeNumber,
+            item.episodeRuntime,
+            true,
+            item.genre?.genres,
+            item.provider?.provider?.map((p: { name: string }) => p.name)
+          );
+          const { updateEpisodeCounters } =
+            await import('../../features/badges/minimalActivityLogger');
+          await updateEpisodeCounters(user.uid, true);
+        },
       });
     } catch (error) {
       console.error('Error completing rewatch episode:', error);

@@ -43,9 +43,8 @@ function ensureToastStyles(): void {
       left: 50%;
       transform: translateX(-50%);
       z-index: 99999;
-      min-width: min(90vw, 200px);
-      max-width: calc(100vw - 48px);
       width: 90vw;
+      max-width: 600px;
       padding: 14px 18px;
       background: linear-gradient(
         135deg,
@@ -185,9 +184,27 @@ export function showToast(
   activeDismissTimer = setTimeout(() => dismissToast(toast), duration);
 }
 
-export function showUndoToast(message: string, onUndo: () => void, duration = 4000): void {
+interface UndoToastOptions {
+  onUndo: () => void;
+  onCommit?: () => void;
+  duration?: number;
+}
+
+export function showUndoToast(
+  message: string,
+  undoOrOptions: (() => void) | UndoToastOptions,
+  maybeDuration?: number
+): void {
+  const opts: UndoToastOptions =
+    typeof undoOrOptions === 'function'
+      ? { onUndo: undoOrOptions, duration: maybeDuration ?? 4000 }
+      : undoOrOptions;
+  const { onUndo, onCommit, duration = 4000 } = opts;
+
   clearActiveToast();
   ensureToastStyles();
+
+  let undone = false;
 
   const toast = document.createElement('div');
   toast.id = 'app-toast';
@@ -208,6 +225,7 @@ export function showUndoToast(message: string, onUndo: () => void, duration = 40
   undoBtn.className = 'toast-undo-btn';
   undoBtn.textContent = 'Rückgängig';
   undoBtn.addEventListener('click', () => {
+    undone = true;
     onUndo();
     clearActiveToast();
   });
@@ -245,5 +263,8 @@ export function showUndoToast(message: string, onUndo: () => void, duration = 40
   activeDismissTimer = setTimeout(() => {
     cancelAnimationFrame(rafId);
     dismissToast(toast);
+    if (!undone && onCommit) {
+      onCommit();
+    }
   }, duration);
 }

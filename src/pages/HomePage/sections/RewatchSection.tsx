@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
@@ -58,7 +59,7 @@ export const RewatchSection = React.memo(function RewatchSection({
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.accent;
-  const isMobile = window.innerWidth < 768;
+  const { isMobile } = useDeviceType();
 
   if (episodes.length === 0) return null;
 
