@@ -44,10 +44,10 @@
 .episode-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   background: var(--color-background-default-alpha-90, rgba(10, 14, 26, 0.75));
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
   display: flex;
   align-items: center;
@@ -111,26 +111,26 @@
   display: flex;
   align-items: center;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .tab-nav-button {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--color-text-muted);
   padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -161,12 +161,12 @@
 .season-tab {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 10px 18px;
   color: var(--color-text-primary);
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,9 +209,9 @@
   margin: 16px 16px 0;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .progress-header {
@@ -294,12 +294,12 @@
   padding: 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -317,7 +317,7 @@
   padding: 10px;
   background: transparent;
   border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
   font-size: 14px;
   font-weight: 500;
@@ -346,7 +346,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .episodes-list {
@@ -362,9 +362,9 @@
   margin-bottom: 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-normal) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -397,7 +397,7 @@
     var(--color-primary),
     var(--theme-secondary-gradient, #8b5cf6)
   );
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -448,7 +448,7 @@
 
 .episode-discussion-btn {
   background: rgba(255, 255, 255, 0.05) !important;
-  border-radius: 10px !important;
+  border-radius: var(--radius-md) !important;
   transition: all 0.3s ease !important;
 }
 
@@ -464,7 +464,7 @@
   width: 36px;
   height: 36px;
   background: linear-gradient(135deg, var(--color-success), #10b981);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -485,7 +485,7 @@
   font-size: 11px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
 }
 
@@ -493,9 +493,9 @@
   width: 36px;
   height: 36px;
   border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.03);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .status-unwatched:hover {
@@ -510,15 +510,15 @@
   left: 0;
   right: 0;
   background: rgba(10, 14, 26, 0.85);
-  backdrop-filter: blur(20px) saturate(1.4);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: var(--blur-lg) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
   gap: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-  z-index: 100;
+  z-index: var(--z-dropdown);
 }
 
 .action-button {
@@ -526,7 +526,7 @@
   padding: 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   display: flex;
   align-items: center;
@@ -535,7 +535,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -562,19 +562,19 @@
   right: 0;
   bottom: 0;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: var(--z-nav);
   padding: 20px;
 }
 
 .watch-dialog {
   background: var(--color-background-surface);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
   padding: 28px;
   width: 100%;
   max-width: 400px;
@@ -643,11 +643,11 @@
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -728,13 +728,13 @@
   display: flex;
   align-items: center;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 /* Animated episode list wrapper */

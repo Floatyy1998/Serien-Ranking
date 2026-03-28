@@ -139,3 +139,48 @@ export const popIn: Variants = {
     transition: { type: 'spring', stiffness: 450, damping: 18 },
   },
 };
+
+// --- Shared tap/hover presets for consistency ---
+export const tapScale = { scale: 0.96 } as const;
+export const tapScaleSmall = { scale: 0.98 } as const;
+export const tapScaleTight = { scale: 0.92 } as const;
+export const hoverScale = { scale: 1.03 } as const;
+export const hoverLift = { y: -2, scale: 1.01 } as const;
+
+// Spring presets re-exported for component use
+export const springs = {
+  default: springDefault,
+  snappy: springSnappy,
+  cinematic: springCinematic,
+  gentle: { type: 'spring', stiffness: 200, damping: 22 } as Transition,
+} as const;
+
+// --- Content swap (carousel items, tab content) ---
+export const contentSwap: Variants = {
+  initial: { opacity: 0, x: 20 },
+  animate: {
+    opacity: 1,
+    x: 0,
+    transition: { duration: 0.25, ease: [0.16, 1, 0.3, 1] },
+  },
+  exit: {
+    opacity: 0,
+    x: -20,
+    transition: { duration: 0.15 },
+  },
+};
+
+// --- Scale button (clear buttons, icon buttons) ---
+export const scaleButton: Variants = {
+  hidden: { opacity: 0, scale: 0.7 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 400, damping: 25 },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.7,
+    transition: { duration: 0.12 },
+  },
+};

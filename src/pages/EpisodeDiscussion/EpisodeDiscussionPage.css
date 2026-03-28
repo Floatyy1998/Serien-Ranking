@@ -50,7 +50,7 @@
 .ed-not-found-card {
   text-align: center;
   padding: 40px;
-  border-radius: 24px;
+  border-radius: var(--radius-2xl);
 }
 
 .ed-not-found-icon {
@@ -72,7 +72,7 @@
 .ed-not-found-btn {
   padding: 14px 32px;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: #fff;
   cursor: pointer;
   font-weight: 700;
@@ -126,9 +126,10 @@
   gap: 8px;
   padding: 10px 18px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(20, 20, 40, 0.5));
-  backdrop-filter: blur(20px);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: #fff;
   cursor: pointer;
   font-size: 14px;
@@ -154,8 +155,9 @@
   gap: 8px;
   padding: 8px 14px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-radius: var(--radius-md);
   margin-bottom: 14px;
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -183,7 +185,7 @@
 
 .ed-season-badge {
   padding: 6px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 700;
   color: #fff;
@@ -195,7 +197,7 @@
   gap: 4px;
   padding: 6px 12px;
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 193, 7, 0.15));
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   color: #ffd700;
@@ -210,7 +212,7 @@
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
 }
@@ -261,7 +263,7 @@
   justify-content: center;
   gap: 10px;
   padding: 14px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-size: 15px;
   font-weight: 700;
@@ -288,12 +290,12 @@
   justify-content: center;
   gap: 8px;
   padding: 14px 18px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -324,10 +326,10 @@
   align-items: center;
   gap: 8px;
   padding: 10px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   text-align: left;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition: transform 0.2s ease;
 }
@@ -347,7 +349,7 @@
 .ed-nav-icon-wrap {
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -389,11 +391,11 @@
 .ed-overview {
   margin-bottom: 24px;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -419,7 +421,7 @@
 .ed-overview-icon-wrap {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -445,9 +447,9 @@
 
 .ed-crew-card {
   padding: 18px;
-  border-radius: 16px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition:
     transform 0.2s ease,
@@ -480,7 +482,7 @@
 .ed-guest-stars {
   margin-bottom: 24px;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -497,7 +499,7 @@
   font-size: 14px;
   font-weight: 600;
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .ed-guest-stars-scroll {

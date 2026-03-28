@@ -3,11 +3,17 @@
  * Slim composition component. Business logic in useSearchPage, UI in subcomponents.
  */
 
-import { CalendarToday, Check, Close, Movie, Search } from '@mui/icons-material';
+import { CalendarToday, Close, Movie, Search } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { Dialog, LoadingSpinner, PageHeader, ScrollToTopButton } from '../../components/ui';
+import {
+  Dialog,
+  LoadingSpinner,
+  PageHeader,
+  ScrollToTopButton,
+  Snackbar,
+} from '../../components/ui';
 import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchPage } from './useSearchPage';
@@ -228,23 +234,7 @@ export const SearchPage = memo(() => {
       </div>
 
       {/* Success Snackbar */}
-      <AnimatePresence>
-        {snackbar.open && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="search-snackbar"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
-              boxShadow: `0 8px 24px ${currentTheme.status.success}40`,
-            }}
-          >
-            <Check style={{ fontSize: '22px' }} />
-            <span className="search-snackbar-text">{snackbar.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       <Dialog
         open={dialog.open}

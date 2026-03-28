@@ -3,17 +3,16 @@
   top: 60px;
   left: 0;
   right: 0;
-  margin: 0 auto; /* Zentriert das Element */
-  z-index: 1000;
+  margin: 0 auto;
+  z-index: var(--z-overlay);
   max-width: 480px;
   width: calc(100% - 32px);
   padding: 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
 }
 
 .close-button {
@@ -28,7 +27,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color var(--duration-normal) var(--ease-default);
 }
 
 .close-button:hover {
@@ -85,17 +84,15 @@
   gap: 12px;
   padding: 10px;
   background: rgba(0, 0, 0, 0.15);
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 
 .series-poster {
   width: 50px;
   height: 75px;
   object-fit: cover;
-  border-radius: 10px;
-  box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.25),
-    0 1px 4px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
   flex-shrink: 0;
 }
 

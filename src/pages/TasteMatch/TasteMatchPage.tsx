@@ -16,7 +16,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { BackButton, GradientText } from '../../components/ui';
+import { PageHeader } from '../../components/ui';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 import { StatRing } from './StatRing';
 import { ScoreHeader } from './ScoreHeader';
@@ -178,46 +178,28 @@ export const TasteMatchPage: React.FC = () => {
       </div>
 
       <div className="tm-content">
-        {/* Premium Glassmorphism Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="tm-header"
-          style={{ background: `${bgDefault}90` }}
-        >
-          <BackButton />
-
-          <div className="tm-header__title">
-            <AutoAwesome style={{ fontSize: 18, color: ACCENT_COLORS.match }} />
-            <GradientText
-              as="h1"
-              from={USER_COLOR}
-              to={FRIEND_COLOR}
+        {/* Header */}
+        <PageHeader
+          title="Taste Match"
+          icon={<AutoAwesome style={{ fontSize: 22, color: ACCENT_COLORS.match }} />}
+          gradientFrom={USER_COLOR}
+          gradientTo={FRIEND_COLOR}
+          actions={
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={handleShare}
+              className="tm-header__share-btn"
               style={{
-                margin: 0,
-                fontSize: 20,
-                fontFamily: 'var(--font-display)',
-                fontWeight: 800,
+                background: `linear-gradient(135deg, ${primaryColor}20, ${ACCENT_COLORS.match}20)`,
+                border: `1px solid ${primaryColor}30`,
+                color: textPrimary,
+                boxShadow: `0 4px 15px ${primaryColor}20`,
               }}
             >
-              Taste Match
-            </GradientText>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={handleShare}
-            className="tm-header__share-btn"
-            style={{
-              background: `linear-gradient(135deg, ${primaryColor}20, ${ACCENT_COLORS.match}20)`,
-              border: `1px solid ${primaryColor}30`,
-              color: textPrimary,
-              boxShadow: `0 4px 15px ${primaryColor}20`,
-            }}
-          >
-            <Share style={{ fontSize: 20 }} />
-          </motion.button>
-        </motion.div>
+              <Share style={{ fontSize: 20 }} />
+            </motion.button>
+          }
+        />
 
         {/* Premium Score Section */}
         <ScoreHeader

@@ -232,7 +232,7 @@ function detectChipType(
   const prevDate = parseEpisodeDateLocal(episodes[idx - 1]);
   if (prevDate) {
     const gap = (airDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
-    if (gap > 14) return 'mid-season-return';
+    if (gap > 28) return 'mid-season-return'; // SEASON_BREAK_GAP_DAYS from lib/episode/constants
   }
 
   const isLast = idx === episodes.length - 1;
@@ -243,7 +243,7 @@ function detectChipType(
     const nextDate = parseEpisodeDateLocal(remaining[0]);
     if (nextDate) {
       const gap = (nextDate.getTime() - airDate.getTime()) / (1000 * 60 * 60 * 24);
-      if (gap > 14) return 'season-break';
+      if (gap > 28) return 'season-break'; // SEASON_BREAK_GAP_DAYS from lib/episode/constants
     } else if (remaining.length > 1 && !remaining.some((e) => parseEpisodeDateLocal(e))) {
       return 'season-break';
     }

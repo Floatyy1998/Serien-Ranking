@@ -1,6 +1,5 @@
 import {
   CalendarToday,
-  Check,
   FilterList,
   Movie as MovieIcon,
   NewReleases,
@@ -23,6 +22,7 @@ import {
   LoadingSpinner,
   PageLayout,
   ScrollToTopButton,
+  Snackbar,
   TabSwitcher,
 } from '../../components/ui';
 import './DiscoverPage.css';
@@ -146,13 +146,15 @@ export const DiscoverPage = memo(() => {
                 alignItems: 'center',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <BackButton />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BackButton showHome={false} />
                 <GradientText
                   as="h1"
                   style={{
-                    fontSize: '20px',
+                    fontSize: '22px',
                     fontWeight: 800,
+                    fontFamily: 'var(--font-display)',
+                    letterSpacing: '-0.03em',
                     margin: 0,
                   }}
                 >
@@ -452,46 +454,7 @@ export const DiscoverPage = memo(() => {
       </div>
 
       {/* Premium Snackbar for success feedback */}
-      <AnimatePresence>
-        {snackbar.open && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            style={{
-              position: 'fixed',
-              bottom: '100px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
-              color: currentTheme.text.secondary,
-              padding: '14px 24px',
-              borderRadius: '16px',
-              boxShadow: `0 12px 40px -8px ${currentTheme.status.success}50, 0 4px 12px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)`,
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              maxWidth: 'calc(100% - 40px)',
-            }}
-          >
-            <div
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Check style={{ fontSize: '18px' }} />
-            </div>
-            <span style={{ fontSize: '15px', fontWeight: 600 }}>{snackbar.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       {/* Dialog for alerts */}
       <Dialog

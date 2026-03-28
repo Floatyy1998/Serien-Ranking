@@ -10,12 +10,13 @@ import PersonAdd from '@mui/icons-material/PersonAdd';
 import Timeline from '@mui/icons-material/Timeline';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { BackButton, GradientText, IconContainer, ScrollToTopButton } from '../../components/ui';
+import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
 import { ActivityFeedTab } from './tabs/ActivityFeedTab';
@@ -61,30 +62,7 @@ export const ActivityPage = () => {
   const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  const scrollRestoredRef = useRef(false);
-
-  useEffect(() => {
-    if (scrollRestoredRef.current) return;
-    scrollRestoredRef.current = true;
-
-    const savedPosition = sessionStorage.getItem('activity-scroll');
-    if (savedPosition) {
-      const pos = parseInt(savedPosition, 10);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const container = document.querySelector('.mobile-content') as HTMLElement;
-          if (container) container.scrollTo({ top: pos });
-        });
-      });
-    }
-  }, []);
-
-  const saveScrollPosition = useCallback(() => {
-    const container = document.querySelector('.mobile-content') as HTMLElement;
-    if (container && container.scrollTop > 0) {
-      sessionStorage.setItem('activity-scroll', String(container.scrollTop));
-    }
-  }, []);
+  const { saveNow: saveScrollPosition } = useScrollRestore('activity-scroll', '.mobile-content');
 
   const { friendProfiles, requestProfiles } = useActivityFriendProfiles(friends, friendRequests);
 
@@ -162,34 +140,11 @@ export const ActivityPage = () => {
       />
 
       {/* Header */}
-      <header
-        className="activity-header"
-        style={{
-          background: `${currentTheme.background.default}ee`,
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="activity-header__row"
-        >
-          <div className="activity-header__left">
-            <BackButton />
-            <GradientText
-              as="h1"
-              from={currentTheme.text.primary}
-              to={currentTheme.primary}
-              style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                margin: 0,
-              }}
-            >
-              Aktivität
-            </GradientText>
-          </div>
-
+      <PageHeader
+        title="Aktivität"
+        gradientFrom={currentTheme.text.primary}
+        gradientTo={currentTheme.primary}
+        actions={
           <Tooltip title="Freund hinzufügen" arrow>
             <motion.button
               whileTap={{ scale: 0.9 }}
@@ -203,8 +158,8 @@ export const ActivityPage = () => {
               <PersonAdd style={{ fontSize: '22px' }} />
             </motion.button>
           </Tooltip>
-        </motion.div>
-      </header>
+        }
+      />
 
       {/* Tabs */}
       <motion.div

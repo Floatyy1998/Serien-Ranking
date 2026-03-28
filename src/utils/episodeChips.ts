@@ -1,3 +1,4 @@
+import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { getEpisodeAirDate } from './episodeDate';
 
 export type EpisodeChipType =
@@ -37,7 +38,7 @@ export function detectEpisodeChip(
     const prevDay = new Date(prevAirDate);
     prevDay.setHours(0, 0, 0, 0);
     const gapDays = (airDay.getTime() - prevDay.getTime()) / (1000 * 60 * 60 * 24);
-    if (gapDays > 14) {
+    if (gapDays > SEASON_BREAK_GAP_DAYS) {
       return 'mid-season-return';
     }
   }
@@ -58,7 +59,7 @@ export function detectEpisodeChip(
       const nextDay = new Date(nextAirDate);
       nextDay.setHours(0, 0, 0, 0);
       const gapDays = (nextDay.getTime() - airDay.getTime()) / (1000 * 60 * 60 * 24);
-      if (gapDays > 14) {
+      if (gapDays > SEASON_BREAK_GAP_DAYS) {
         return 'season-break';
       }
     } else if (remaining.length > 1) {

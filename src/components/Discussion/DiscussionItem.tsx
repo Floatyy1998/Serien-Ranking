@@ -1,4 +1,4 @@
-import { Favorite, FavoriteBorder, Person, Warning } from '@mui/icons-material';
+import { Favorite, FavoriteBorder, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
@@ -9,6 +9,8 @@ import { DiscussionActions } from './DiscussionActions';
 import { DiscussionEditForm } from './DiscussionEditForm';
 import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
+import { SpoilerReveal } from '../ui/SpoilerReveal';
+import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
 const DiscussionItemInner: React.FC<{
@@ -82,39 +84,12 @@ const DiscussionItemInner: React.FC<{
       {/* Header */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
         {/* Avatar */}
-        <button
-          onClick={() => navigate(`/friend/${discussion.userId}`)}
-          aria-label={`Profil von ${discussion.username} anzeigen`}
-          style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            flexShrink: 0,
-            cursor: 'pointer',
-            border: `2px solid ${currentTheme.primary}40`,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            padding: 0,
-            ...(discussion.userPhotoURL
-              ? {
-                  backgroundImage: `url("${discussion.userPhotoURL}")`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }
-              : {
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }),
-          }}
-        >
-          {!discussion.userPhotoURL && (
-            <Person
-              style={{ fontSize: '20px', color: currentTheme.text.primary }}
-              aria-hidden="true"
-            />
-          )}
-        </button>
+        <UserAvatar
+          userId={discussion.userId}
+          username={discussion.username}
+          photoURL={discussion.userPhotoURL}
+          size={40}
+        />
 
         {/* Title & Meta */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -234,28 +209,7 @@ const DiscussionItemInner: React.FC<{
       {/* Content */}
       {!isEditing &&
         (discussion.isSpoiler && !showSpoiler ? (
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowSpoiler(true)}
-            style={{
-              width: '100%',
-              padding: '20px',
-              background: `linear-gradient(135deg, ${currentTheme.status.warning}15, ${currentTheme.status.warning}08)`,
-              border: `2px dashed ${currentTheme.status.warning}40`,
-              borderRadius: '12px',
-              color: currentTheme.status.warning,
-              cursor: 'pointer',
-              fontSize: '15px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-            }}
-          >
-            <Warning style={{ fontSize: '20px' }} />
-            Spoiler anzeigen
-          </motion.button>
+          <SpoilerReveal onReveal={() => setShowSpoiler(true)} />
         ) : (
           <>
             {text && (

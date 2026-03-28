@@ -8,6 +8,7 @@ import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { showToast, showUndoToast } from '../../lib/toast';
+import { WatchActivityService } from '../../services/watchActivityService';
 import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
@@ -212,6 +213,20 @@ export const useCalendarData = () => {
                   source: 'calendar',
                 }
               );
+              if (prevCount === 0) {
+                const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
+                WatchActivityService.logEpisodeWatch(
+                  user.uid,
+                  series.id,
+                  series.title || series.name || '',
+                  seasonIndex + 1,
+                  episodeIndex + 1,
+                  series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  false,
+                  series.genre?.genres,
+                  providers
+                );
+              }
             }
           },
         });

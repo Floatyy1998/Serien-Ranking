@@ -244,75 +244,84 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
               <h3>{config.headerText(series.length)}</h3>
             </div>
 
-            <div className="series-info">
-              {currentSeries.poster?.poster && (
-                <img
-                  src={currentSeries.poster.poster}
-                  alt={currentSeries.title || currentSeries.original_name}
-                  loading="lazy"
-                  decoding="async"
-                  className="series-poster"
-                />
-              )}
-
-              <div className="series-details">
-                <h4>{currentSeries.title || currentSeries.original_name || 'Serie'}</h4>
-                <p className="season-info">
-                  <DetailIcon fontSize="small" />
-                  <span>{config.detailText(currentSeries)}</span>
-                </p>
-              </div>
-
-              <div className="action-buttons">
-                {!isActioned ? (
-                  <Tooltip title={config.actionLabel} arrow>
-                    <button
-                      className="watchlist-button"
-                      onClick={() => handleAction(currentSeries)}
-                      style={{
-                        backgroundColor: currentTheme.background.paper,
-                        color: variant === 'new-season' ? currentTheme.text.primary : color,
-                        border: `1px solid ${color}40`,
-                      }}
-                    >
-                      <ActionIcon />
-                      <span>{config.actionLabel}</span>
-                    </button>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title={config.actionDoneLabel} arrow>
-                    <span>
-                      <button
-                        className="watchlist-button added"
-                        disabled
-                        style={{
-                          backgroundColor: currentTheme.status.success + '20',
-                          color: currentTheme.status.success,
-                          border: `1px solid ${currentTheme.status.success}40`,
-                        }}
-                      >
-                        {variant === 'new-season' && <Check />}
-                        <span>{config.actionDoneLabel}</span>
-                      </button>
-                    </span>
-                  </Tooltip>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                className="series-info"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {currentSeries.poster?.poster && (
+                  <img
+                    src={currentSeries.poster.poster}
+                    alt={currentSeries.title || currentSeries.original_name}
+                    loading="lazy"
+                    decoding="async"
+                    className="series-poster"
+                  />
                 )}
 
-                <Tooltip title="Serie ansehen" arrow>
-                  <button
-                    className="view-button"
-                    onClick={() => handleNavigate(currentSeries)}
-                    style={{
-                      backgroundColor: currentTheme.primary,
-                      color: currentTheme.background.default,
-                    }}
-                  >
-                    Ansehen
-                    <ChevronRight />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
+                <div className="series-details">
+                  <h4>{currentSeries.title || currentSeries.original_name || 'Serie'}</h4>
+                  <p className="season-info">
+                    <DetailIcon fontSize="small" />
+                    <span>{config.detailText(currentSeries)}</span>
+                  </p>
+                </div>
+
+                <div className="action-buttons">
+                  {!isActioned ? (
+                    <Tooltip title={config.actionLabel} arrow>
+                      <button
+                        className="watchlist-button"
+                        onClick={() => handleAction(currentSeries)}
+                        style={{
+                          backgroundColor: currentTheme.background.paper,
+                          color: variant === 'new-season' ? currentTheme.text.primary : color,
+                          border: `1px solid ${color}40`,
+                        }}
+                      >
+                        <ActionIcon />
+                        <span>{config.actionLabel}</span>
+                      </button>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title={config.actionDoneLabel} arrow>
+                      <span>
+                        <button
+                          className="watchlist-button added"
+                          disabled
+                          style={{
+                            backgroundColor: currentTheme.status.success + '20',
+                            color: currentTheme.status.success,
+                            border: `1px solid ${currentTheme.status.success}40`,
+                          }}
+                        >
+                          {variant === 'new-season' && <Check />}
+                          <span>{config.actionDoneLabel}</span>
+                        </button>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  <Tooltip title="Serie ansehen" arrow>
+                    <button
+                      className="view-button"
+                      onClick={() => handleNavigate(currentSeries)}
+                      style={{
+                        backgroundColor: currentTheme.primary,
+                        color: currentTheme.background.default,
+                      }}
+                    >
+                      Ansehen
+                      <ChevronRight />
+                    </button>
+                  </Tooltip>
+                </div>
+              </motion.div>
+            </AnimatePresence>
 
             {series.length > 1 && (
               <div className="navigation-dots">

@@ -13,6 +13,7 @@ import {
   deleteDiscussionFeedEntries,
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
+import { getUserDisplayData } from '../lib/firebase/userDisplayData';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';
@@ -109,9 +110,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       }
 
       try {
-        // Get user data for username (displayName is stored at users/{uid}, not users/{uid}/profile)
-        const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-        const userData = userSnapshot.val() || {};
+        const { username, photoURL } = await getUserDisplayData(user);
 
         const newDiscussion: Omit<Discussion, 'id'> = {
           itemId,
@@ -119,9 +118,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           ...(seasonNumber !== undefined && { seasonNumber }),
           ...(episodeNumber !== undefined && { episodeNumber }),
           userId: user.uid,
-          username:
-            userData.displayName || user.displayName || user.email?.split('@')[0] || 'Anonym',
-          userPhotoURL: userData.photoURL || user.photoURL || undefined,
+          username,
+          userPhotoURL: photoURL,
           title: input.title,
           content: input.content,
           createdAt: Date.now(),
@@ -204,9 +202,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
         // Send notification to discussion owner if non-owner flagged as spoiler
         if (!isOwner && input.isSpoiler === true && discussion?.userId) {
-          const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-          const userData = userSnapshot.val() || {};
-          const username = userData.displayName || user.displayName || 'Jemand';
+          const { username } = await getUserDisplayData(user);
 
           await sendNotificationToUser(discussion.userId, {
             type: 'spoiler_flag',
@@ -284,9 +280,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
             .once('value');
           const discussion = discussionSnapshot.val();
           if (discussion && discussion.userId !== user.uid) {
-            const userSnapshot = await firebase.database().ref(`users/${user.uid}`).once('value');
-            const userData = userSnapshot.val() || {};
-            const username = userData.displayName || user.displayName || 'Jemand';
+            const { username } = await getUserDisplayData(user);
 
             await sendNotificationToUser(discussion.userId, {
               type: 'discussion_like',

@@ -94,9 +94,9 @@
 .profile-stats-card {
   margin: 0 20px 24px;
   padding: 20px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
 }
 
 .profile-stats-time {
@@ -130,10 +130,10 @@
 
 .profile-stat-item {
   padding: 14px 12px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-fast) ease;
 }
 
 .profile-stat-item:hover {
@@ -182,11 +182,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition:
-    transform 0.2s ease,
-    background 0.2s ease;
+    transform var(--duration-fast) ease,
+    background var(--duration-fast) ease;
 }
 
 .profile-featured-item:hover {
@@ -206,7 +206,7 @@
 .profile-featured-icon-wrap {
   width: 42px;
   height: 42px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -225,7 +225,7 @@
 
 /* Grouped Menu Items (secondary, settings) */
 .profile-menu-group {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -239,8 +239,8 @@
   border: none;
   cursor: pointer;
   transition:
-    background 0.2s ease,
-    transform 0.2s ease;
+    background var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
 .profile-menu-item:hover {
@@ -264,7 +264,7 @@
 .profile-menu-icon-wrap {
   width: 36px;
   height: 36px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,7 +283,7 @@
 
 /* Badge */
 .profile-badge {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   min-width: 24px;
   text-align: center;
@@ -313,13 +313,13 @@
   justify-content: center;
   gap: 10px;
   padding: 16px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
   transition:
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    box-shadow var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
 }
 
 .profile-logout-btn:hover {

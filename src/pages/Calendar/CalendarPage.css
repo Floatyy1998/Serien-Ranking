@@ -15,7 +15,7 @@
 .cal-arrow-btn {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: inherit;
   padding: 6px;
   cursor: pointer;
@@ -36,14 +36,14 @@
 .cal-week-chip {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: inherit;
   padding: 6px 14px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .cal-week-chip.is-current {
@@ -91,7 +91,7 @@
   font-size: 13px;
   font-weight: 600;
   padding: 3px 10px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.5);
 }
@@ -229,10 +229,10 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-left: 3px solid transparent;
   cursor: pointer;
@@ -262,9 +262,9 @@
   height: 54px;
   object-fit: cover;
   object-position: center top;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .cal-ep-poster {
@@ -272,7 +272,7 @@
   height: 54px;
   object-fit: cover;
   object-position: center top;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -335,9 +335,9 @@
   right: -3px;
   width: 24px;
   height: 24px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-sm);
   border: 2px solid rgba(15, 20, 35, 1);
 }
 
@@ -372,7 +372,7 @@
   cursor: pointer;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .cal-ep-mark:active {
@@ -390,7 +390,7 @@
 
 /* Group */
 .cal-ep-group {
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-left: 3px solid transparent;
   background: rgba(255, 255, 255, 0.04);
@@ -522,7 +522,7 @@
     gap: 6px;
     padding: 10px;
     border-top: none;
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     min-height: 80px;
@@ -566,7 +566,7 @@
     border-left: none;
     border: none;
     background: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     transition:
       transform 0.2s,
@@ -575,7 +575,7 @@
 
   .cal-ep:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-lg);
   }
 
   .cal-ep:active {
@@ -586,7 +586,7 @@
   .cal-ep-poster-wrap {
     display: block;
     position: relative;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
@@ -621,8 +621,8 @@
     padding: 8px;
     z-index: 2;
     background: rgba(10, 14, 26, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
   }
 
   /* Reserve space when provider badge is present */
@@ -671,10 +671,10 @@
     font-size: 13px;
     font-weight: 800;
     padding: 5px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     color: #fff;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-sm);
   }
 
   /* Break badge overlay — top left (same position as premiere) */
@@ -687,9 +687,9 @@
     font-size: 13px;
     font-weight: 800;
     padding: 5px 10px;
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--shadow-sm);
   }
 
   /* Hide break inline badge on desktop (using overlay instead) */
@@ -734,13 +734,14 @@
     border-radius: 50%;
     border: 2px solid;
     background: rgba(10, 14, 26, 0.4);
-    backdrop-filter: blur(8px);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
     cursor: pointer;
     padding: 0;
     margin: 0;
     -webkit-appearance: none;
     appearance: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s var(--ease-default);
   }
 
   .cal-ep-mark-overlay:hover {
@@ -764,7 +765,7 @@
     border-top: none;
     border: none;
     background: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     overflow: hidden;
   }
 
@@ -774,17 +775,17 @@
   }
 
   .cal-ep-group .cal-ep-group-header .cal-ep-poster-wrap {
-    border-radius: 10px 10px 0 0;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
 
   .cal-ep-group.is-open .cal-ep-group-header .cal-ep-poster-wrap {
-    border-radius: 10px 10px 0 0;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
 
   .cal-ep-group .cal-ep-group-list {
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-top: none;
-    border-radius: 0 0 10px 10px;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
 }

@@ -50,8 +50,8 @@
 }
 
 .md-hero__action-btn {
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 24px;
   cursor: pointer;
@@ -63,8 +63,8 @@
   width: 40px;
   height: 40px;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .md-hero__action-btn:hover {
@@ -145,7 +145,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   font-size: 14px;
   text-decoration: none;
   color: white;
@@ -227,7 +227,7 @@
 .md-rate-btn {
   flex: 1;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: white;
   font-size: 16px;
   font-weight: 600;
@@ -239,8 +239,8 @@
   position: relative;
   border: none;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .md-rate-btn:hover {
@@ -266,7 +266,7 @@
 .md-add-btn {
   width: 100%;
   padding: 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -313,7 +313,7 @@
   flex: 1;
   padding: 10px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: white;
   font-size: 15px;
   font-weight: 500;
@@ -390,7 +390,7 @@
   border-radius: 9999px;
   font-size: 13px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: background 0.2s ease;
+  transition: background var(--duration-fast) ease;
 }
 
 .md-genre-tag:hover {
@@ -406,14 +406,14 @@
 
 .md-info-card {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--blur-sm));
+  -webkit-backdrop-filter: blur(var(--blur-sm));
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   padding: 14px;
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+    transform var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
 }
 
 .md-info-card:hover {
@@ -446,11 +446,9 @@
   transform: translateX(-50%);
   color: white;
   padding: 12px 20px;
-  border-radius: 12px;
-  box-shadow:
-    0 4px 16px -4px rgba(0, 0, 0, 0.4),
-    0 2px 6px -2px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  z-index: var(--z-nav);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -480,10 +478,10 @@
 .md-not-found__btn {
   margin-top: 24px;
   padding: 12px 24px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .md-loading {

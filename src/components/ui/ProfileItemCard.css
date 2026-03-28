@@ -20,10 +20,8 @@
   width: 100%;
   aspect-ratio: 2/3;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow:
-    0 4px 16px -4px rgba(0, 0, 0, 0.4),
-    0 2px 6px -2px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
 }
 
 /* Provider badges */
@@ -37,9 +35,10 @@
 
 .pic-provider-badge {
   background: linear-gradient(135deg, rgba(10, 14, 26, 0.75), rgba(20, 20, 40, 0.8));
-  backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 3px;
   width: 32px;
   height: 32px;
@@ -51,7 +50,7 @@
 .pic-provider-logo {
   width: 26px;
   height: 26px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
   object-fit: cover;
 }
 
@@ -61,8 +60,9 @@
   top: 6px;
   right: 6px;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border-radius: var(--radius-md);
   padding: 4px 8px;
   display: flex;
   align-items: center;
