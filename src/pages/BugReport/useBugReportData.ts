@@ -4,7 +4,7 @@ import 'firebase/compat/storage';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
-import type { BugTicket, TicketComment, TicketType } from './types';
+import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 
 const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 const AUTO_DELETE_DAYS = 5;
@@ -32,32 +32,6 @@ export function useBugReportData() {
         }
         setLoading(false);
       });
-
-    // Auto-Cleanup: gelöste/geschlossene Tickets nach 5 Tagen löschen
-    const cleanupRef = firebase.database().ref('bugTickets');
-    cleanupRef.once('value').then((snap) => {
-      const all = snap.val();
-      if (!all) return;
-      const cutoff = Date.now() - AUTO_DELETE_DAYS * 24 * 60 * 60 * 1000;
-      Object.entries(all as Record<string, BugTicket>).forEach(([id, t]) => {
-        if (
-          (t.status === 'resolved' || t.status === 'closed') &&
-          new Date(t.updatedAt).getTime() < cutoff
-        ) {
-          // Screenshots löschen
-          if (t.screenshots?.length) {
-            t.screenshots.forEach((url) => {
-              try {
-                firebase.storage().refFromURL(url).delete();
-              } catch {
-                // ignorieren
-              }
-            });
-          }
-          firebase.database().ref(`bugTickets/${id}`).remove();
-        }
-      });
-    });
 
     return () => ref.off('value', handler);
   }, [user]);
@@ -88,6 +62,7 @@ export function useBugReportData() {
       stepsToReproduce: string;
       screenshots: string[];
       consoleErrors?: string;
+      priority: TicketPriority;
     }): Promise<boolean> => {
       if (!user) return false;
       try {
@@ -103,7 +78,7 @@ export function useBugReportData() {
           stepsToReproduce: data.stepsToReproduce,
           screenshots: data.screenshots,
           status: 'open',
-          priority: 'medium',
+          priority: data.priority,
           createdBy: user.uid,
           createdByName: displayName,
           createdAt: new Date().toISOString(),
@@ -176,7 +151,56 @@ export function useBugReportData() {
     [user]
   );
 
-  return { tickets, loading, uploadScreenshot, createTicket, addComment };
+  const updateTicket = useCallback(
+    async (
+      ticketId: string,
+      updates: { title?: string; description?: string }
+    ): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        await firebase
+          .database()
+          .ref(`bugTickets/${ticketId}`)
+          .update({ ...updates, updatedAt: new Date().toISOString() });
+        return true;
+      } catch (error) {
+        console.error('Ticket update failed:', error);
+        return false;
+      }
+    },
+    [user]
+  );
+
+  return { tickets, loading, uploadScreenshot, createTicket, addComment, updateTicket };
+}
+
+/** Auto-Cleanup: abgeschlossene Tickets nach 5 Tagen löschen (inkl. Screenshots) */
+export async function cleanupOldTickets() {
+  try {
+    const snap = await firebase.database().ref('bugTickets').once('value');
+    const all = snap.val();
+    if (!all) return;
+    const cutoff = Date.now() - AUTO_DELETE_DAYS * 24 * 60 * 60 * 1000;
+    for (const [id, t] of Object.entries(all as Record<string, BugTicket>)) {
+      if (
+        ['done', 'rejected', 'obsolete'].includes(t.status) &&
+        new Date(t.updatedAt).getTime() < cutoff
+      ) {
+        if (t.screenshots?.length) {
+          for (const url of t.screenshots) {
+            try {
+              await firebase.storage().refFromURL(url).delete();
+            } catch {
+              // ignorieren
+            }
+          }
+        }
+        await firebase.database().ref(`bugTickets/${id}`).remove();
+      }
+    }
+  } catch {
+    // Silent fail
+  }
 }
 
 async function getUserDisplayName(uid: string): Promise<string> {

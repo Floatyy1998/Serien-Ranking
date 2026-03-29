@@ -1,4 +1,4 @@
-export type TicketStatus = 'open' | 'in-progress' | 'resolved' | 'closed';
+export type TicketStatus = 'open' | 'in-progress' | 'done' | 'rejected' | 'obsolete';
 export type TicketPriority = 'low' | 'medium' | 'high';
 export type TicketType = 'bug' | 'feature';
 
@@ -33,8 +33,9 @@ export interface BugTicket {
 export const STATUS_CONFIG: Record<TicketStatus, { label: string; color: string }> = {
   open: { label: 'Offen', color: '#f59e0b' },
   'in-progress': { label: 'In Bearbeitung', color: '#3b82f6' },
-  resolved: { label: 'Gelöst', color: '#22c55e' },
-  closed: { label: 'Geschlossen', color: '#6b7280' },
+  done: { label: 'Erledigt', color: '#22c55e' },
+  rejected: { label: 'Abgelehnt', color: '#ef4444' },
+  obsolete: { label: 'Hinfällig', color: '#78716c' },
 };
 
 export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: string }> = {
