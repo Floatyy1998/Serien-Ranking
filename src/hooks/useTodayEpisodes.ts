@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
+import { getEpisodeAirDate } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
 
 interface TodayEpisode {
@@ -18,13 +19,33 @@ interface TodayEpisode {
   provider: Series['provider'];
 }
 
+function getTodayKey() {
+  return new Date().toDateString();
+}
+
 export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
+  const [todayKey, setTodayKey] = useState(getTodayKey);
+
+  // Check for date change every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = getTodayKey();
+      setTodayKey((prev) => (prev !== now ? now : prev));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const todayEpisodes = useMemo(() => {
+    void todayKey;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowTime = tomorrow.getTime();
 
     const episodes: TodayEpisode[] = [];
 
@@ -41,14 +62,17 @@ export const useTodayEpisodes = () => {
 
         for (let k = 0; k < seasonEpisodes.length; k++) {
           const episode = seasonEpisodes[k];
-          if (!episode.air_date || episode.watched) continue;
+          if (episode.watched) continue;
 
-          // Parse air_date as local date (not UTC) to avoid timezone offset issues
-          const parts = episode.air_date.split('-');
-          const episodeDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
-          if (isNaN(episodeDate.getTime())) continue;
+          const airDate = getEpisodeAirDate(episode);
+          if (!airDate) continue;
 
-          if (episodeDate.getTime() === todayTime) {
+          // Compare date portion in local timezone
+          const epDay = new Date(airDate);
+          epDay.setHours(0, 0, 0, 0);
+          const epTime = epDay.getTime();
+
+          if (epTime >= todayTime && epTime < tomorrowTime) {
             const actualSeasonIndex =
               series.seasons?.findIndex((s) => s.seasonNumber === season.seasonNumber) ?? 0;
 
@@ -72,7 +96,7 @@ export const useTodayEpisodes = () => {
     }
 
     return episodes;
-  }, [seriesList]);
+  }, [seriesList, todayKey]);
 
   return todayEpisodes;
 };
