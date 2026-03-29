@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TopMovieEntry } from '../../types/Wrapped';
+import type { TopMovieEntry } from '../../types/Wrapped';
 
 interface TopMoviesSlideProps {
   topMovies: TopMovieEntry[];

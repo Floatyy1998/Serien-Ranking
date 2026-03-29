@@ -49,14 +49,14 @@
 .lb-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   gap: 16px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -65,7 +65,7 @@
   display: flex;
   gap: 0;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
   margin: 0 16px 12px;
@@ -82,7 +82,7 @@
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 /* ── Category Pills ── */
@@ -104,17 +104,17 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s var(--ease-default);
 }
 .lb-cat-pill--active {
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  background: var(--gradient-warm);
   border-color: transparent;
   color: white;
   box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
@@ -178,7 +178,7 @@
   gap: 2px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 .lb-podium-block::after {
   content: '';
@@ -212,7 +212,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.06);
   transition:
     transform 0.2s ease,
@@ -273,8 +273,8 @@
 .lb-trophy-icon-wrap {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #ffd700, #ffa500);
+  border-radius: var(--radius-md);
+  background: var(--gradient-warm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -294,9 +294,9 @@
 }
 .lb-trophy-card {
   min-width: 260px;
-  border-radius: 18px;
+  border-radius: var(--radius-xl);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-lg);
 }
 .lb-trophy-card-header {
   background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 165, 0, 0.06));
@@ -314,7 +314,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 .lb-trophy-medal {
   border-radius: 50%;
@@ -341,9 +341,9 @@
 .lb-celebration {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: var(--z-modal);
   background: rgba(10, 14, 26, 0.8);
-  backdrop-filter: blur(12px);
+  backdrop-filter: var(--blur-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -365,13 +365,14 @@
   justify-content: center;
   cursor: pointer;
   color: rgba(255, 255, 255, 0.7);
-  z-index: 10001;
-  backdrop-filter: blur(8px);
+  z-index: var(--z-skip-nav);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 .lb-confetti {
   position: fixed;
   pointer-events: none;
-  z-index: 10000;
+  z-index: var(--z-skip-nav);
 }
 
 /* ── Loading / Empty ── */
@@ -389,7 +390,7 @@
   height: 56px;
   border-radius: 50%;
   border: 3px solid rgba(245, 158, 11, 0.15);
-  border-top-color: #f59e0b;
+  border-top-color: var(--theme-accent);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -2,8 +2,8 @@ import { Visibility } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -54,7 +54,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 style={{
                   padding: '6px 12px',
                   borderRadius: '20px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
                   border: `1px solid ${currentTheme.primary}40`,
                   fontSize: '14px',
                   fontWeight: 600,
@@ -86,7 +86,7 @@ export const HiddenSeriesPage: React.FC = () => {
                 width: '100px',
                 height: '100px',
                 borderRadius: '50px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -135,7 +135,9 @@ export const HiddenSeriesPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0, overflow: 'hidden' }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  onClick={() => navigate(`/series/${series.id}`)}
+                  onClick={() => {
+                    navigate(`/series/${series.id}`);
+                  }}
                   style={{
                     display: 'flex',
                     gap: '14px',
@@ -223,7 +225,7 @@ export const HiddenSeriesPage: React.FC = () => {
                         style={{
                           height: '100%',
                           borderRadius: '2px',
-                          background: `linear-gradient(90deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                         }}
                       />
                     </div>

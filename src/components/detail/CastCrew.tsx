@@ -1,99 +1,17 @@
-import { ChevronRight, Movie, OpenInNew, Person, Star, Tv } from '@mui/icons-material';
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { getFormattedDate } from '../../lib/date/date.utils';
-import { HorizontalScrollContainer } from '../ui';
-
-interface CastMember {
-  id: number;
-  name: string;
-  character?: string;
-  job?: string;
-  profile_path?: string;
-  order?: number;
-  known_for_department?: string;
-}
-
-interface SeriesDataProp {
-  name?: string;
-  title?: string;
-  genres?: { id: number; name: string }[];
-  genre?: { genres?: string[] };
-  origin_country?: string[];
-}
-
-interface AnimeCharacterData {
-  character: {
-    name: string;
-    native?: string;
-    image?: string;
-  };
-  role: string;
-  voice_actors?: VoiceActorRef[];
-}
-
-interface VoiceActorRef {
-  person: {
-    id: number;
-    name: string;
-    native?: string;
-    image?: string;
-  };
-  language: string;
-}
-
-interface PersonDetailsData {
-  name: string;
-  profile_path?: string;
-  known_for_department?: string;
-  birthday?: string;
-  credits: CreditItem[];
-}
-
-interface CreditItem {
-  id: number;
-  title?: string;
-  name?: string;
-  character?: string;
-  job?: string;
-  poster_path?: string;
-  media_type?: string;
-  vote_average?: number;
-  popularity?: number;
-  release_date?: string;
-  first_air_date?: string;
-}
-
-interface VoiceActorDetailsData {
-  name: { full: string; native?: string };
-  image?: { large?: string };
-  age?: number;
-  dateOfBirth?: { year?: number; month?: number; day?: number };
-  characterMedia?: {
-    edges?: CharacterMediaEdge[];
-  };
-}
-
-interface CharacterMediaEdge {
-  node: {
-    id: number;
-    title: { romaji?: string; english?: string };
-    type?: string;
-    coverImage?: { large?: string };
-    startDate?: { year?: number };
-    meanScore?: number;
-  };
-  characters?: { id: number; name: { full: string } }[];
-  characterRole?: string;
-}
-
-interface CastCrewProps {
-  tmdbId: number;
-  mediaType: 'tv' | 'movie';
-  onPersonClick?: (personId: number) => void;
-  seriesData?: SeriesDataProp;
-}
+import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type {
+  AnimeCharacterData,
+  CastCrewProps,
+  CastMember,
+  CreditItem,
+  PersonDetailsData,
+  VoiceActorDetailsData,
+  VoiceActorRef,
+} from './CastCrew.types';
+import { CastCrewListView } from './CastCrewListView';
+import { PersonDetailsView } from './PersonDetailsView';
+import { VoiceActorDetailsView } from './VoiceActorDetailsView';
 
 export const CastCrew: React.FC<CastCrewProps> = ({
   tmdbId,
@@ -136,22 +54,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     isAnime ? 'characters' : 'cast'
   );
 
-  useEffect(() => {
-    if (isAnime && mediaType === 'tv') {
-      fetchAnimeCharacters();
-      setActiveTab('characters'); // Switch to characters tab when anime is detected
-    }
-    fetchCredits();
-  }, [tmdbId, mediaType, isAnime]);
-
-  // Update active tab when anime characters are loaded
-  useEffect(() => {
-    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
-      setActiveTab('characters');
-    }
-  }, [animeCharacters, isAnime]);
-
-  const fetchAnimeCharacters = async () => {
+  const fetchAnimeCharacters = useCallback(async () => {
     try {
       const query = `
         query ($search: String) {
@@ -232,7 +135,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
               image: edge.node.image?.large,
             },
             role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
-            voice_actors: edge.voiceActors!.map((va) => ({
+            voice_actors: edge.voiceActors?.map((va) => ({
               person: {
                 id: va.id,
                 name: `${va.name.first || ''} ${va.name.last || ''}`.trim(),
@@ -247,9 +150,9 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     } catch (error) {
       console.error('Failed to fetch anime characters from AniList:', error);
     }
-  };
+  }, [seriesData?.name, seriesData?.title]);
 
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       setLoading(true);
       const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
@@ -287,7 +190,22 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [mediaType, tmdbId]);
+
+  useEffect(() => {
+    if (isAnime && mediaType === 'tv') {
+      fetchAnimeCharacters();
+      setActiveTab('characters');
+    }
+    fetchCredits();
+  }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
+
+  // Update active tab when anime characters are loaded
+  useEffect(() => {
+    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
+      setActiveTab('characters');
+    }
+  }, [animeCharacters, isAnime, activeTab]);
 
   const fetchPersonDetails = async (personId: number) => {
     try {
@@ -423,787 +341,41 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   // Voice Actor Details View
   if (selectedVoiceActor && voiceActorDetails) {
     return (
-      <div style={{ padding: '20px' }}>
-        <button
-          onClick={() => {
-            setSelectedVoiceActor(null);
-            setVoiceActorDetails(null);
-          }}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            borderRadius: '20px',
-            padding: '8px 16px',
-            color: 'white',
-            fontSize: '14px',
-            marginBottom: '20px',
-            cursor: 'pointer',
-          }}
-        >
-          ← Zurück
-        </button>
-
-        {voiceActorLoading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div style={{ color: currentTheme.text.muted }}>Lade Sprecher-Details...</div>
-          </div>
-        ) : (
-          <>
-            {/* Voice Actor Info */}
-            <div
-              style={{
-                display: 'flex',
-                gap: '16px',
-                marginBottom: '24px',
-              }}
-            >
-              {voiceActorDetails.image?.large ? (
-                <img
-                  src={voiceActorDetails.image.large}
-                  alt={voiceActorDetails.name.full}
-                  style={{
-                    width: '80px',
-                    height: '120px',
-                    objectFit: 'cover',
-                    borderRadius: '12px',
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '80px',
-                    height: '120px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    borderRadius: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <Person style={{ fontSize: '32px', color: currentTheme.text.muted }} />
-                </div>
-              )}
-
-              <div style={{ flex: 1 }}>
-                <h3
-                  style={{
-                    fontSize: '18px',
-                    fontWeight: 700,
-                    margin: '0 0 8px 0',
-                  }}
-                >
-                  {voiceActorDetails.name.full}
-                </h3>
-                {voiceActorDetails.name.native && (
-                  <p
-                    style={{
-                      fontSize: '14px',
-                      color: 'rgba(255, 255, 255, 0.6)',
-                      margin: '0 0 4px 0',
-                    }}
-                  >
-                    {voiceActorDetails.name.native}
-                  </p>
-                )}
-                <p
-                  style={{
-                    fontSize: '14px',
-                    color: 'rgba(255, 255, 255, 0.6)',
-                    margin: '0 0 4px 0',
-                  }}
-                >
-                  Voice Acting
-                </p>
-                {voiceActorDetails.dateOfBirth && (
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      color: 'rgba(255, 255, 255, 0.5)',
-                      margin: 0,
-                    }}
-                  >
-                    Geboren: {voiceActorDetails.dateOfBirth.day || '??'}.
-                    {voiceActorDetails.dateOfBirth.month || '??'}.
-                    {voiceActorDetails.dateOfBirth.year || '????'}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Known For */}
-            <div>
-              <h4
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  marginBottom: '12px',
-                }}
-              >
-                Bekannt aus
-              </h4>
-
-              <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
-                {voiceActorDetails.characterMedia?.edges?.map((edge, index) => (
-                  <div
-                    key={`${edge.node.id}-${index}`}
-                    style={{
-                      minWidth: '100px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <div
-                      style={{
-                        position: 'relative',
-                        marginBottom: '6px',
-                      }}
-                    >
-                      {edge.node.coverImage?.large ? (
-                        <img
-                          src={edge.node.coverImage.large}
-                          alt={edge.node.title.english || edge.node.title.romaji}
-                          style={{
-                            width: '100px',
-                            height: '150px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: '100px',
-                            height: '150px',
-                            background:
-                              'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                            borderRadius: '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                          }}
-                        >
-                          {edge.node.type === 'ANIME' ? (
-                            <Tv style={{ fontSize: '28px', color: currentTheme.text.muted }} />
-                          ) : (
-                            <Movie style={{ fontSize: '28px', color: currentTheme.text.muted }} />
-                          )}
-                        </div>
-                      )}
-
-                      {/* Rating Badge */}
-                      {edge.node.meanScore && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '6px',
-                            right: '6px',
-                            background: 'rgba(0, 0, 0, 0.8)',
-                            borderRadius: '12px',
-                            padding: '2px 6px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                          }}
-                        >
-                          <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
-                          {(edge.node.meanScore / 10).toFixed(1)}
-                        </div>
-                      )}
-
-                      {/* Year Badge */}
-                      {edge.node.startDate?.year && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: '6px',
-                            left: '6px',
-                            background: 'rgba(0, 0, 0, 0.8)',
-                            borderRadius: '8px',
-                            padding: '2px 6px',
-                            fontSize: '11px',
-                            fontWeight: 500,
-                          }}
-                        >
-                          {edge.node.startDate.year}
-                        </div>
-                      )}
-                    </div>
-
-                    <p
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 500,
-                        margin: '0 0 2px 0',
-                        color: 'rgba(255, 255, 255, 0.9)',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {edge.node.title.english || edge.node.title.romaji}
-                    </p>
-                    {edge.characters?.[0] && (
-                      <p
-                        style={{
-                          fontSize: '11px',
-                          margin: 0,
-                          color: 'rgba(255, 255, 255, 0.5)',
-                        }}
-                      >
-                        als {edge.characters[0].name.full}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </HorizontalScrollContainer>
-            </div>
-          </>
-        )}
-      </div>
+      <VoiceActorDetailsView
+        voiceActorDetails={voiceActorDetails}
+        voiceActorLoading={voiceActorLoading}
+        onBack={() => {
+          setSelectedVoiceActor(null);
+          setVoiceActorDetails(null);
+        }}
+      />
     );
   }
 
   // Person Details View
   if (selectedPersonId && personDetails) {
     return (
-      <div style={{ padding: '20px' }}>
-        <button
-          onClick={() => {
-            setSelectedPersonId(null);
-            setPersonDetails(null);
-          }}
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: 'none',
-            borderRadius: '20px',
-            padding: '8px 16px',
-            color: 'white',
-            fontSize: '14px',
-            marginBottom: '20px',
-            cursor: 'pointer',
-          }}
-        >
-          ← Zurück
-        </button>
-
-        {/* Person Info */}
-        <div
-          style={{
-            display: 'flex',
-            gap: '16px',
-            marginBottom: '24px',
-          }}
-        >
-          {personDetails.profile_path ? (
-            <img
-              src={`https://image.tmdb.org/t/p/w185${personDetails.profile_path}`}
-              alt={personDetails.name}
-              style={{
-                width: '80px',
-                height: '120px',
-                objectFit: 'cover',
-                borderRadius: '12px',
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: '80px',
-                height: '120px',
-                background: 'rgba(255, 255, 255, 0.1)',
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Person style={{ fontSize: '32px', color: 'rgba(255, 255, 255, 0.3)' }} />
-            </div>
-          )}
-
-          <div style={{ flex: 1 }}>
-            <h3
-              style={{
-                fontSize: '18px',
-                fontWeight: 700,
-                margin: '0 0 8px 0',
-              }}
-            >
-              {personDetails.name}
-            </h3>
-            {personDetails.known_for_department && (
-              <p
-                style={{
-                  fontSize: '14px',
-                  color: 'rgba(255, 255, 255, 0.6)',
-                  margin: '0 0 4px 0',
-                }}
-              >
-                {personDetails.known_for_department}
-              </p>
-            )}
-            {personDetails.birthday && (
-              <p
-                style={{
-                  fontSize: '13px',
-                  color: 'rgba(255, 255, 255, 0.5)',
-                  margin: 0,
-                }}
-              >
-                Geboren: {getFormattedDate(personDetails.birthday)}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Known For */}
-        <div>
-          <h4
-            style={{
-              fontSize: '16px',
-              fontWeight: 600,
-              marginBottom: '12px',
-            }}
-          >
-            Bekannt aus
-          </h4>
-
-          <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
-            {personDetails.credits.map((credit, index) => (
-              <div
-                key={`${credit.id}-${index}`}
-                style={{
-                  minWidth: '100px',
-                  cursor: 'pointer',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'relative',
-                    marginBottom: '6px',
-                  }}
-                >
-                  {credit.poster_path ? (
-                    <img
-                      src={`https://image.tmdb.org/t/p/w185${credit.poster_path}`}
-                      alt={credit.title || credit.name}
-                      style={{
-                        width: '100px',
-                        height: '150px',
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                      }}
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100px',
-                        height: '150px',
-                        background:
-                          'linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-                        borderRadius: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                      }}
-                    >
-                      {credit.media_type === 'movie' ? (
-                        <Movie style={{ fontSize: '28px', color: currentTheme.text.muted }} />
-                      ) : (
-                        <Tv style={{ fontSize: '28px', color: currentTheme.text.muted }} />
-                      )}
-                    </div>
-                  )}
-
-                  {/* Rating Badge */}
-                  {credit.vote_average != null && credit.vote_average > 0 && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '6px',
-                        right: '6px',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        borderRadius: '12px',
-                        padding: '2px 6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Star style={{ fontSize: '11px', color: currentTheme.status.warning }} />
-                      {credit.vote_average.toFixed(1)}
-                    </div>
-                  )}
-
-                  {/* Year Badge */}
-                  {(credit.release_date || credit.first_air_date) && (
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '6px',
-                        left: '6px',
-                        background: 'rgba(0, 0, 0, 0.8)',
-                        borderRadius: '8px',
-                        padding: '2px 6px',
-                        fontSize: '11px',
-                        fontWeight: 500,
-                      }}
-                    >
-                      {new Date((credit.release_date || credit.first_air_date)!).getFullYear()}
-                    </div>
-                  )}
-                </div>
-
-                <p
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    margin: '0 0 2px 0',
-                    color: 'rgba(255, 255, 255, 0.9)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    lineHeight: '1.3',
-                  }}
-                >
-                  {credit.title || credit.name}
-                </p>
-
-                {credit.character && (
-                  <p
-                    style={{
-                      fontSize: '11px',
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.5)',
-                    }}
-                  >
-                    als {credit.character}
-                  </p>
-                )}
-              </div>
-            ))}
-          </HorizontalScrollContainer>
-        </div>
-      </div>
+      <PersonDetailsView
+        personDetails={personDetails}
+        onBack={() => {
+          setSelectedPersonId(null);
+          setPersonDetails(null);
+        }}
+      />
     );
   }
 
   // Cast & Crew List View
   return (
-    <div>
-      {/* Tabs */}
-      <div
-        style={{
-          display: 'flex',
-          gap: '8px',
-          padding: '0 20px',
-          marginBottom: '16px',
-        }}
-      >
-        {isAnime && animeCharacters.length > 0 && (
-          <button
-            onClick={() => setActiveTab('characters')}
-            style={{
-              flex: 1,
-              padding: '10px',
-              background:
-                activeTab === 'characters'
-                  ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-              border: 'none',
-              borderRadius: '12px',
-              color: 'white',
-              fontSize: '15px',
-              fontWeight: activeTab === 'characters' ? 600 : 500,
-              cursor: 'pointer',
-            }}
-          >
-            Charaktere ({animeCharacters.length})
-          </button>
-        )}
-
-        <button
-          onClick={() => setActiveTab('cast')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'cast'
-                ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-            border: 'none',
-            borderRadius: '12px',
-            color: 'white',
-            fontSize: '15px',
-            fontWeight: activeTab === 'cast' ? 600 : 500,
-            cursor: 'pointer',
-          }}
-        >
-          Besetzung ({cast.length})
-        </button>
-
-        <button
-          onClick={() => setActiveTab('crew')}
-          style={{
-            flex: 1,
-            padding: '10px',
-            background:
-              activeTab === 'crew'
-                ? 'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-            border: 'none',
-            borderRadius: '12px',
-            color: 'white',
-            fontSize: '15px',
-            fontWeight: activeTab === 'crew' ? 600 : 500,
-            cursor: 'pointer',
-          }}
-        >
-          Crew ({crew.length})
-        </button>
-      </div>
-
-      {/* List */}
-      <div style={{ padding: '0 20px' }}>
-        {activeTab === 'characters'
-          ? // Anime Characters Display
-            animeCharacters.map((char, index) => (
-              <div
-                key={index}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  borderRadius: '12px',
-                  marginBottom: '8px',
-                  cursor: char.voice_actors?.[0]?.person?.id ? 'pointer' : 'default',
-                  transition: 'background 0.2s',
-                }}
-                onClick={() => {
-                  // Klick auf Voice Actor - zeige Details
-                  handleVoiceActorClick(char.voice_actors?.[0]);
-                }}
-                onMouseEnter={(e) => {
-                  if (char.voice_actors?.[0]?.person?.id) {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.02)';
-                }}
-              >
-                {/* Character Image */}
-                {char.character.image ? (
-                  <img
-                    src={char.character.image}
-                    alt={char.character.name}
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Person style={{ fontSize: '20px', color: currentTheme.text.muted }} />
-                  </div>
-                )}
-
-                {/* Character Info */}
-                <div style={{ flex: 1 }}>
-                  <p
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: 500,
-                      margin: 0,
-                      color: 'white',
-                    }}
-                  >
-                    {char.character.name}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: '12px',
-                      margin: '2px 0 0 0',
-                      color: '#00d4aa',
-                    }}
-                  >
-                    {char.role}
-                  </p>
-                </div>
-
-                {/* Voice Actor */}
-                {char.voice_actors?.[0] && (
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    <div style={{ textAlign: 'right' }}>
-                      <p
-                        style={{
-                          fontSize: '13px',
-                          margin: 0,
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          justifyContent: 'flex-end',
-                        }}
-                      >
-                        {char.voice_actors[0].person.name}
-                        {char.voice_actors[0].person.id && (
-                          <OpenInNew
-                            style={{
-                              fontSize: '11px',
-                              opacity: 0.5,
-                            }}
-                          />
-                        )}
-                      </p>
-                      <p
-                        style={{
-                          fontSize: '11px',
-                          margin: '2px 0 0 0',
-                          color: 'rgba(255, 255, 255, 0.4)',
-                        }}
-                      >
-                        Sprecher
-                      </p>
-                    </div>
-                    {char.voice_actors[0].person.image ? (
-                      <img
-                        src={char.voice_actors[0].person.image}
-                        alt={char.voice_actors[0].person.name}
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          objectFit: 'cover',
-                          borderRadius: '50%',
-                        }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: '40px',
-                          height: '40px',
-                          background: 'rgba(255, 255, 255, 0.1)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Person style={{ fontSize: '16px', color: currentTheme.text.muted }} />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))
-          : // Regular Cast/Crew Display
-            (activeTab === 'cast' ? cast : crew).map((member, index) => (
-              <motion.div
-                key={`${member.id}-${member.character || member.job}-${index}`}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handlePersonClick(member.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '12px',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  borderRadius: '12px',
-                  marginBottom: '8px',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s ease',
-                }}
-              >
-                {member.profile_path ? (
-                  <img
-                    src={`https://image.tmdb.org/t/p/w92${member.profile_path}`}
-                    alt={member.name}
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <Person style={{ fontSize: '20px', color: 'rgba(255, 255, 255, 0.3)' }} />
-                  </div>
-                )}
-
-                <div style={{ flex: 1 }}>
-                  <p
-                    style={{
-                      fontSize: '15px',
-                      fontWeight: 500,
-                      margin: 0,
-                      color: 'white',
-                    }}
-                  >
-                    {member.name}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.5)',
-                    }}
-                  >
-                    {member.character || member.job}
-                  </p>
-                </div>
-
-                <ChevronRight
-                  style={{
-                    fontSize: '20px',
-                    color: 'rgba(255, 255, 255, 0.3)',
-                  }}
-                />
-              </motion.div>
-            ))}
-      </div>
-    </div>
+    <CastCrewListView
+      isAnime={!!isAnime}
+      animeCharacters={animeCharacters}
+      cast={cast}
+      crew={crew}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      onPersonClick={handlePersonClick}
+      onVoiceActorClick={handleVoiceActorClick}
+    />
   );
 };

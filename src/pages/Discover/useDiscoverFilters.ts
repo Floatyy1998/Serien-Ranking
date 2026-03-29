@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { genreIdMapForMovies, genreIdMapForSeries } from '../../config/menuItems';
-import type { DiscoverItem } from './DiscoverItemCard';
+import { useDeviceType } from '../../hooks/useDeviceType';
+import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverFiltersResult {
   activeTab: 'series' | 'movies';
@@ -23,8 +24,8 @@ interface UseDiscoverFiltersResult {
   headerHeight: number;
   genres: { id: number; name: string }[];
   handleItemClick: (item: DiscoverItem) => void;
-  fetchRecommendationsOnRestore: React.MutableRefObject<(() => void) | null>;
-  fetchFromTMDBOnRestore: React.MutableRefObject<(() => void) | null>;
+  fetchRecommendationsOnRestoreRef: React.MutableRefObject<(() => void) | null>;
+  fetchFromTMDBOnRestoreRef: React.MutableRefObject<(() => void) | null>;
 }
 
 export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
@@ -39,14 +40,12 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isRestoring, setIsRestoring] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const { isDesktop } = useDeviceType();
   const [headerHeight, setHeaderHeight] = useState(220);
 
   // Refs to allow fetch hooks to be called from restore logic
-  const fetchRecommendationsOnRestore = { current: null } as React.MutableRefObject<
-    (() => void) | null
-  >;
-  const fetchFromTMDBOnRestore = { current: null } as React.MutableRefObject<(() => void) | null>;
+  const fetchRecommendationsOnRestoreRef = useRef<(() => void) | null>(null);
+  const fetchFromTMDBOnRestoreRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const updateHeaderHeight = () => {
@@ -60,7 +59,6 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     updateHeaderHeight();
     const handleResize = () => {
       updateHeaderHeight();
-      setIsDesktop(window.innerWidth >= 768);
     };
 
     window.addEventListener('resize', handleResize);
@@ -78,39 +76,37 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     if (isComingFromDetail) {
       const savedState = sessionStorage.getItem('discoverFilters');
       if (savedState) {
-        setIsRestoring(true);
         const filters = JSON.parse(savedState);
-        setActiveTab(filters.activeTab || 'series');
-        setActiveCategory(filters.activeCategory || 'trending');
-        setSelectedGenre(filters.selectedGenre || null);
-        setShowFilters(filters.showFilters || false);
-        setSearchQuery(filters.searchQuery || '');
-        setShowSearch(filters.showSearch || false);
 
+        // Batch state restoration via setTimeout to avoid synchronous setState in effect
         setTimeout(() => {
-          setIsRestoring(false);
+          setIsRestoring(true);
+          setActiveTab(filters.activeTab || 'series');
+          setActiveCategory(filters.activeCategory || 'trending');
+          setSelectedGenre(filters.selectedGenre || null);
+          setShowFilters(filters.showFilters || false);
+          setSearchQuery(filters.searchQuery || '');
+          setShowSearch(filters.showSearch || false);
+
           setTimeout(() => {
-            if (!showSearch) {
-              if (filters.activeCategory === 'recommendations') {
-                fetchRecommendationsOnRestore.current?.();
-              } else {
-                fetchFromTMDBOnRestore.current?.();
+            setIsRestoring(false);
+            setTimeout(() => {
+              if (!filters.showSearch) {
+                if (filters.activeCategory === 'recommendations') {
+                  fetchRecommendationsOnRestoreRef.current?.();
+                } else {
+                  fetchFromTMDBOnRestoreRef.current?.();
+                }
               }
-            }
+            }, 100);
           }, 100);
-        }, 100);
+        }, 0);
       }
       sessionStorage.removeItem('comingFromDetail');
       sessionStorage.removeItem('discoverFilters');
-    } else {
-      setActiveTab('series');
-      setActiveCategory('trending');
-      setSelectedGenre(null);
-      setShowFilters(false);
-      setSearchQuery('');
-      setShowSearch(false);
     }
-  }, []);
+    // Default state is already set via useState initializers, no need to reset
+  }, [fetchFromTMDBOnRestoreRef, fetchRecommendationsOnRestoreRef]);
 
   const handleItemClick = (item: DiscoverItem) => {
     const filterState = {
@@ -149,7 +145,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     headerHeight,
     genres,
     handleItemClick,
-    fetchRecommendationsOnRestore,
-    fetchFromTMDBOnRestore,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
   };
 };

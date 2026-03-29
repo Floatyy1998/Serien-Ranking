@@ -3,15 +3,20 @@
  * Composition component using extracted tab subcomponents
  */
 
-import { ChatBubbleOutline, Group, MailOutline, PersonAdd, Timeline } from '@mui/icons-material';
+import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline';
+import Group from '@mui/icons-material/Group';
+import MailOutline from '@mui/icons-material/MailOutline';
+import PersonAdd from '@mui/icons-material/PersonAdd';
+import Timeline from '@mui/icons-material/Timeline';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
+import { useScrollRestore } from '../../hooks/useScrollRestore';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
 import { ActivityFeedTab } from './tabs/ActivityFeedTab';
@@ -57,38 +62,12 @@ export const ActivityPage = () => {
   const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
-  // Scroll position management
-  const scrollRestoredRef = useRef(false);
-
-  useEffect(() => {
-    if (scrollRestoredRef.current) return;
-    scrollRestoredRef.current = true;
-
-    const savedPosition = sessionStorage.getItem('activity-scroll');
-    if (savedPosition) {
-      const pos = parseInt(savedPosition, 10);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const container = document.querySelector('.mobile-content') as HTMLElement;
-          if (container) container.scrollTo({ top: pos });
-        });
-      });
-    }
-  }, []);
-
-  const saveScrollPosition = useCallback(() => {
-    const container = document.querySelector('.mobile-content') as HTMLElement;
-    if (container && container.scrollTop > 0) {
-      sessionStorage.setItem('activity-scroll', String(container.scrollTop));
-    }
-  }, []);
+  const { saveNow: saveScrollPosition } = useScrollRestore('activity-scroll', '.mobile-content');
 
   const { friendProfiles, requestProfiles } = useActivityFriendProfiles(friends, friendRequests);
 
-  // Badge counts
   const unreadDiscussionsCount = discussionNotifications.filter((n) => !n.read).length;
 
-  // Mark as read on tab switch
   useEffect(() => {
     if (activeTab === 'activity' && unreadActivitiesCount > 0) {
       markActivitiesAsRead();
@@ -97,7 +76,16 @@ export const ActivityPage = () => {
     } else if (activeTab === 'discussions' && unreadDiscussionsCount > 0) {
       discussionNotifications.filter((n) => !n.read).forEach((n) => markAsRead(n.id));
     }
-  }, [activeTab, unreadActivitiesCount, unreadRequestsCount, unreadDiscussionsCount]);
+  }, [
+    activeTab,
+    unreadActivitiesCount,
+    unreadRequestsCount,
+    unreadDiscussionsCount,
+    discussionNotifications,
+    markActivitiesAsRead,
+    markAsRead,
+    markRequestsAsRead,
+  ]);
 
   const handleRemoveFriend = useCallback(
     async (uid: string) => {
@@ -136,168 +124,92 @@ export const ActivityPage = () => {
     },
   ];
 
+  const isActive = (id: TabId) => activeTab === id;
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: currentTheme.background.default,
-        position: 'relative',
-        paddingBottom: '100px',
-      }}
-    >
+    <div className="activity-page" style={{ background: currentTheme.background.default }}>
       {/* Decorative Background */}
       <div
+        className="activity-bg"
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '400px',
           background: `
             radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
-            radial-gradient(ellipse 60% 40% at 80% 10%, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)), transparent)
+            radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.accent}20, transparent)
           `,
-          pointerEvents: 'none',
-          zIndex: 0,
         }}
       />
 
       {/* Header */}
-      <header
-        style={{
-          padding: '20px',
-          paddingTop: 'calc(20px + env(safe-area-inset-top))',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          background: `${currentTheme.background.default}ee`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <BackButton />
-            <GradientText
-              as="h1"
-              from={currentTheme.text.primary}
-              to={currentTheme.primary}
-              style={{
-                fontSize: '26px',
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                margin: 0,
-              }}
-            >
-              Aktivität
-            </GradientText>
-          </div>
-
+      <PageHeader
+        title="Aktivität"
+        gradientFrom={currentTheme.text.primary}
+        gradientTo={currentTheme.primary}
+        actions={
           <Tooltip title="Freund hinzufügen" arrow>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowAddFriend(true)}
+              className="activity-add-btn"
               style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '14px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
-                border: 'none',
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 boxShadow: currentTheme.shadow.card,
               }}
             >
               <PersonAdd style={{ fontSize: '22px' }} />
             </motion.button>
           </Tooltip>
-        </motion.div>
-      </header>
+        }
+      />
 
       {/* Tabs */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        style={{
-          display: 'flex',
-          margin: '0 20px 20px',
-          gap: '8px',
-          position: 'relative',
-          zIndex: 1,
-        }}
+        className="activity-tabs"
       >
         {tabs.map((tab) => (
           <motion.button
             key={tab.id}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveTab(tab.id)}
+            className="activity-tab"
             style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: '12px 8px',
-              background:
-                activeTab === tab.id
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
-                  : currentTheme.background.surface,
-              border: activeTab === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '14px',
-              color: activeTab === tab.id ? 'white' : currentTheme.text.secondary,
-              cursor: 'pointer',
-              position: 'relative',
-              boxShadow: activeTab === tab.id ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              background: isActive(tab.id)
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                : currentTheme.background.surface,
+              border: isActive(tab.id) ? 'none' : `1px solid ${currentTheme.border.default}`,
+              color: isActive(tab.id) ? currentTheme.text.secondary : currentTheme.text.muted,
+              boxShadow: isActive(tab.id) ? `0 4px 15px ${currentTheme.primary}40` : 'none',
             }}
           >
-            <div style={{ position: 'relative', display: 'flex' }}>
+            <div className="activity-tab__icon-wrap">
               {tab.icon}
               {tab.badge && (
                 <span
+                  className="activity-tab__badge-dot"
                   style={{
-                    position: 'absolute',
-                    top: '-4px',
-                    right: '-6px',
-                    width: '8px',
-                    height: '8px',
-                    background: activeTab === tab.id ? 'white' : currentTheme.status.error,
-                    borderRadius: '50%',
+                    background: isActive(tab.id)
+                      ? currentTheme.text.secondary
+                      : currentTheme.status.error,
                   }}
                 />
               )}
               {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
                 <span
+                  className="activity-tab__badge-count"
                   style={{
-                    position: 'absolute',
-                    top: '-6px',
-                    right: '-10px',
-                    minWidth: '16px',
-                    height: '16px',
-                    padding: '0 4px',
-                    background: activeTab === tab.id ? 'white' : currentTheme.status.error,
-                    color: activeTab === tab.id ? currentTheme.primary : 'white',
-                    borderRadius: '8px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    background: isActive(tab.id)
+                      ? currentTheme.text.secondary
+                      : currentTheme.status.error,
+                    color: isActive(tab.id) ? currentTheme.primary : currentTheme.text.secondary,
                   }}
                 >
                   {tab.badgeCount}
                 </span>
               )}
             </div>
-            <span style={{ fontSize: '12px', fontWeight: 600 }}>{tab.label}</span>
+            <span className="activity-tab__label">{tab.label}</span>
           </motion.button>
         ))}
       </motion.div>
@@ -308,47 +220,36 @@ export const ActivityPage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
         onClick={() => navigate('/discussions')}
+        className="activity-banner"
         style={{
-          margin: '0 20px 16px',
-          padding: '14px 18px',
-          background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)))`,
+          background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
           border: `1px solid ${currentTheme.primary}30`,
-          borderRadius: '16px',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '14px',
-          position: 'relative',
-          zIndex: 1,
         }}
       >
-        <div
-          style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
+        <IconContainer
+          color={currentTheme.primary}
+          secondaryColor="${currentTheme.accent}"
+          size={42}
         >
-          <ChatBubbleOutline style={{ fontSize: '22px', color: 'white' }} />
-        </div>
+          <ChatBubbleOutline style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
+        </IconContainer>
+
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '15px', fontWeight: 700, color: currentTheme.text.primary }}>
+          <div className="activity-banner__text-title" style={{ color: currentTheme.text.primary }}>
             Diskussions-Feed
           </div>
-          <div style={{ fontSize: '13px', color: currentTheme.text.muted, marginTop: '2px' }}>
+          <div className="activity-banner__text-sub" style={{ color: currentTheme.text.muted }}>
             Alle Diskussionen an einem Ort
           </div>
         </div>
-        <div style={{ color: currentTheme.text.muted, fontSize: '20px' }}>›</div>
+
+        <div className="activity-banner__arrow" style={{ color: currentTheme.text.muted }}>
+          ›
+        </div>
       </motion.div>
 
       {/* Tab Content */}
-      <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
+      <div className="activity-content">
         <AnimatePresence mode="wait">
           {activeTab === 'activity' && (
             <ActivityFeedTab

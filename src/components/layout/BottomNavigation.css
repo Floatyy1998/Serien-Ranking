@@ -1,19 +1,32 @@
-/* === Floating Dock Navigation === */
+/* === Floating Dock Navigation – Liquid Glass === */
 .mobile-bottom-navigation {
   position: fixed;
   bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
-  z-index: 1000;
-  background: color-mix(in srgb, var(--theme-surface, #0e1420) 55%, transparent);
-  backdrop-filter: blur(50px) saturate(1.8);
-  -webkit-backdrop-filter: blur(50px) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 22px;
+  z-index: var(--z-nav);
+
+  /* Liquid Glass: sehr transparent mit leichtem Tint */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  -webkit-backdrop-filter: var(--blur-xl);
+  backdrop-filter: var(--blur-xl);
+
+  /* Doppelte Borders für Lichtbrechungs-Effekt */
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-xl);
+
+  /* Tiefe + innerer Glanz */
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.35),
-    inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+    var(--shadow-lg),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.05);
 }
 
 .nav-container {
@@ -29,7 +42,7 @@
   flex: 1;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.55);
   padding: 4px 0;
   display: flex;
   flex-direction: column;
@@ -38,21 +51,12 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   position: relative;
-  z-index: 1;
+  isolation: isolate;
   transition: color 0.2s ease;
 }
 
 .nav-item.active {
   color: var(--color-primary);
-}
-
-/* No special center treatment - same as others */
-.nav-item.nav-center {
-  /* intentionally empty - same as other items */
-}
-
-.nav-item.nav-center .nav-label {
-  /* show label just like other items */
 }
 
 /* --- Nav Icon --- */
@@ -72,6 +76,20 @@
 
 .nav-icon svg {
   font-size: 24px !important;
+}
+
+/* --- Active Pill (solid glass highlight behind active tab) --- */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  inset: 2px 4px;
+  border-radius: 14px;
+  background: var(--color-primary-15);
+  border: 1px solid var(--color-primary-15);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  pointer-events: none;
+  z-index: -1;
 }
 
 /* --- Active Dot Indicator --- */
@@ -97,23 +115,6 @@
 
 .nav-item.active .nav-label {
   font-weight: 700;
-}
-
-/* Badge animation */
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgba(255, 107, 107, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
-  }
-}
-
-.MuiBadge-badge {
-  animation: pulse 2s infinite;
 }
 
 /* Tablet/Desktop - still 90% but cap at a reasonable max */

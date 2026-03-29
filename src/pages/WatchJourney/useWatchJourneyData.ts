@@ -1,23 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
+import type { MultiYearTrendsData, WatchJourneyData } from '../../services/watchJourneyService';
 import {
   calculateMultiYearTrends,
   calculateWatchJourney,
-  MultiYearTrendsData,
-  WatchJourneyData,
 } from '../../services/watchJourneyService';
-import { TabType } from './types';
+import type { TabType } from './types';
 
-// Available years (from current year down to 2026)
-const getAvailableYears = (): number[] => {
+// Available years (from current year down to 2026) — computed once at module level
+const availableYears: number[] = (() => {
   const currentYear = new Date().getFullYear();
   const years: number[] = [];
   for (let y = currentYear; y >= 2026; y--) {
     years.push(y);
   }
   return years;
-};
+})();
 
 const VALID_TABS: TabType[] = [
   'genre',
@@ -47,7 +46,7 @@ export interface UseWatchJourneyDataResult {
 }
 
 export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<WatchJourneyData | null>(null);
@@ -61,8 +60,6 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
   const [chartWidth, setChartWidth] = useState(window.innerWidth - 40);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showYearPicker, setShowYearPicker] = useState(false);
-
-  const availableYears = getAvailableYears();
 
   // Load watch journey data
   useEffect(() => {
@@ -112,7 +109,9 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
     data,
     trendsData,
     activeTab,
-    setActiveTab,
+    setActiveTab: (tab: TabType) => {
+      setActiveTab(tab);
+    },
     selectedYear,
     setSelectedYear,
     showYearPicker,

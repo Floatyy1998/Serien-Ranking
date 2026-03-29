@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TopGenreEntry } from '../../types/Wrapped';
+import type { TopGenreEntry } from '../../types/Wrapped';
 
 interface TopGenresSlideProps {
   topGenres: TopGenreEntry[];

@@ -5,7 +5,7 @@ export { drawCat } from './drawCat';
 export { drawDog } from './drawDog';
 export { drawDragon } from './drawDragon';
 export { drawFox } from './drawFox';
-export { AnimatedPet } from './AnimatedPet';
+
 export { EvolvingPixelPet } from './EvolvingPixelPet';
 export { PetHungerToast } from './PetHungerToast';
 export { PetWidget } from './PetWidget';

@@ -6,7 +6,7 @@ import { Favorite, LocalFireDepartment } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { GradientText } from '../../components/ui';
-import { TasteMatchResult } from '../../services/tasteMatchService';
+import type { TasteMatchResult } from '../../services/tasteMatchService';
 import {
   USER_COLOR,
   USER_GRADIENT,
@@ -182,7 +182,7 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           {result.overallMatch >= 60 && (
             <LocalFireDepartment style={{ fontSize: 18, color: scoreColor }} />
           )}
-          <span style={{ color: 'white', fontSize: 15, fontWeight: 600 }}>
+          <span style={{ fontSize: 15, fontWeight: 600 }}>
             {getScoreMessage(result.overallMatch)}
           </span>
         </motion.div>

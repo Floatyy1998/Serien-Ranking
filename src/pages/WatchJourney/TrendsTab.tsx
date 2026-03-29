@@ -8,16 +8,34 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { useTheme } from '../../contexts/ThemeContext';
-import { MultiYearTrendsData } from '../../services/watchJourneyService';
-import { ACCENT_COLORS } from './ActivityTab';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { MultiYearTrendsData } from '../../services/watchJourneyService';
+import { GENRE_COLORS, getColor } from '../../services/watchJourneyTypes';
+import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 import { CustomTooltip } from './CustomTooltip';
+import { TrendsYearCards } from './TrendsYearCards';
+
+const TrendIcon = ({
+  trend,
+  successColor,
+  errorColor,
+  secondaryColor,
+}: {
+  trend: 'up' | 'down' | 'stable';
+  successColor: string;
+  errorColor: string;
+  secondaryColor: string;
+}) => {
+  if (trend === 'up') return <ArrowUpward style={{ color: successColor, fontSize: 20 }} />;
+  if (trend === 'down') return <ArrowDownward style={{ color: errorColor, fontSize: 20 }} />;
+  return <Remove style={{ color: secondaryColor, fontSize: 20 }} />;
+};
 
 interface TrendsTabProps {
   data: MultiYearTrendsData;
@@ -30,7 +48,9 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
   const bgSurface = currentTheme.background.surface;
   const primaryColor = currentTheme.primary;
 
-  // Chart data for yearly comparison
+  const isSingleYear = data.yearlyData.length === 1;
+  const currentMonth = new Date().getMonth() + 1;
+
   const yearlyChartData = useMemo(() => {
     return data.yearlyData.map((yd) => ({
       name: yd.year.toString(),
@@ -40,7 +60,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
     }));
   }, [data]);
 
-  // Genre evolution per year
   const genreEvolutionData = useMemo(() => {
     const topGenres = data.allTimeTopGenres.slice(0, 5).map((g) => g.genre);
     return data.yearlyData.map((yd) => {
@@ -60,11 +79,19 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
     return colors;
   }, [data]);
 
-  const TrendIcon = ({ trend }: { trend: 'up' | 'down' | 'stable' }) => {
-    if (trend === 'up') return <ArrowUpward style={{ color: '#00b894', fontSize: 20 }} />;
-    if (trend === 'down') return <ArrowDownward style={{ color: '#e17055', fontSize: 20 }} />;
-    return <Remove style={{ color: textSecondary, fontSize: 20 }} />;
-  };
+  // Single year: genre ranking from distribution
+  const singleYearGenreRanking = useMemo(() => {
+    if (!isSingleYear) return [];
+    const yd = data.yearlyData[0];
+    return Object.entries(yd.genreDistribution)
+      .map(([genre, hours], i) => ({
+        genre,
+        hours: Math.round(hours),
+        color: getColor(genre, GENRE_COLORS, i),
+      }))
+      .filter((g) => g.hours > 0)
+      .sort((a, b) => b.hours - a.hours);
+  }, [data, isSingleYear]);
 
   if (data.yearlyData.length === 0) {
     return (
@@ -78,9 +105,25 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
     );
   }
 
+  const cardStyle = {
+    margin: '0 20px 24px',
+    padding: '20px',
+    borderRadius: '20px',
+    background: bgSurface,
+    border: `1px solid ${currentTheme.border.default}`,
+  };
+
+  const headingStyle = {
+    color: textPrimary,
+    fontSize: 16,
+    fontFamily: 'var(--font-display)',
+    fontWeight: 700 as const,
+    margin: '0 0 20px',
+  };
+
   return (
     <div>
-      {/* Hero Stats - All Time */}
+      {/* Hero Stats */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -107,7 +150,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             filter: 'blur(60px)',
           }}
         />
-
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p
             style={{
@@ -118,9 +160,10 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               marginBottom: 16,
             }}
           >
-            GESAMT ÜBER {data.years.length} JAHR{data.years.length > 1 ? 'E' : ''}
+            {isSingleYear
+              ? `JAHRESÜBERSICHT ${data.years[0]}`
+              : `GESAMT ÜBER ${data.years.length} JAHRE`}
           </p>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 32, fontWeight: 800 }}>
@@ -144,432 +187,327 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Yearly Comparison Bar Chart */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
-      >
-        <h3
-          style={{
-            color: textPrimary,
-            fontSize: 16,
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            margin: '0 0 20px',
-          }}
-        >
-          Aktivität pro Jahr
-        </h3>
-
-        <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
-            <BarChart data={yearlyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="trendsEpisodenGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={ACCENT_COLORS.episodes} stopOpacity={0.9} />
-                  <stop offset="95%" stopColor={ACCENT_COLORS.episodes} stopOpacity={0.5} />
-                </linearGradient>
-                <linearGradient id="trendsFilmeGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={ACCENT_COLORS.movies} stopOpacity={0.9} />
-                  <stop offset="95%" stopColor={ACCENT_COLORS.movies} stopOpacity={0.5} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis
-                dataKey="name"
-                tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
-                axisLine={{ stroke: `${textSecondary}30` }}
-              />
-              <YAxis
-                tick={{ fill: textSecondary, fontSize: 11 }}
-                axisLine={{ stroke: `${textSecondary}30` }}
-              />
-              <Tooltip
-                content={<ActivityTooltip />}
-                cursor={{ fill: `${ACCENT_COLORS.episodes}10` }}
-              />
-              <Legend
-                wrapperStyle={{ paddingTop: 20 }}
-                formatter={(value) => (
-                  <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
-                )}
-              />
-              <Bar
-                dataKey="Episoden"
-                fill="url(#trendsEpisodenGradient)"
-                radius={[0, 0, 0, 0]}
-                animationDuration={800}
-                style={{ outline: 'none' }}
-              />
-              <Bar
-                dataKey="Filme"
-                fill="url(#trendsFilmeGradient)"
-                radius={[4, 4, 0, 0]}
-                animationDuration={800}
-                style={{ outline: 'none' }}
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
-
-      {/* Watch Hours Line Chart */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: 20,
-          }}
-        >
-          <h3
-            style={{
-              color: textPrimary,
-              fontSize: 16,
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              margin: 0,
-            }}
+      {isSingleYear ? (
+        <>
+          {/* Single Year: Durchschnitte */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            style={cardStyle}
           >
-            Watch-Zeit Trend
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <TrendIcon trend={data.hoursTrend} />
-            <span
-              style={{
-                color:
-                  data.hoursTrend === 'up'
-                    ? '#00b894'
-                    : data.hoursTrend === 'down'
-                      ? '#e17055'
-                      : textSecondary,
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              {data.hoursTrend === 'up'
-                ? 'Steigend'
-                : data.hoursTrend === 'down'
-                  ? 'Fallend'
-                  : 'Stabil'}
-            </span>
-          </div>
-        </div>
+            <h3 style={headingStyle}>Dein Jahr in Zahlen</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              {[
+                {
+                  label: 'Ø pro Monat',
+                  value: `${Math.round(data.totalHours / Math.max(currentMonth, 1))}h`,
+                  color: ACCENT_COLORS.time,
+                },
+                {
+                  label: 'Ø pro Woche',
+                  value: `${Math.round(((data.totalHours / Math.max(currentMonth, 1)) * 12) / 52)}h`,
+                  color: ACCENT_COLORS.episodes,
+                },
+                {
+                  label: 'Ø Episoden/Monat',
+                  value: Math.round(data.totalEpisodes / Math.max(currentMonth, 1)).toString(),
+                  color: ACCENT_COLORS.movies,
+                },
+                {
+                  label: 'Ø Filme/Monat',
+                  value: (data.totalMovies / Math.max(currentMonth, 1)).toFixed(1),
+                  color: ACCENT_COLORS.fire,
+                },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '16px',
+                    background: `${stat.color}10`,
+                    border: `1px solid ${stat.color}25`,
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ color: stat.color, fontSize: 28, fontWeight: 800 }}>
+                    {stat.value}
+                  </div>
+                  <div style={{ color: textSecondary, fontSize: 12, marginTop: 4 }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
 
-        <div style={{ width: '100%', height: 200 }}>
-          <ResponsiveContainer>
-            <AreaChart data={yearlyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="hoursGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={ACCENT_COLORS.time} stopOpacity={0.8} />
-                  <stop offset="95%" stopColor={ACCENT_COLORS.time} stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-              <XAxis
-                dataKey="name"
-                tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
-                axisLine={{ stroke: `${textSecondary}30` }}
-              />
-              <YAxis
-                tick={{ fill: textSecondary, fontSize: 11 }}
-                axisLine={{ stroke: `${textSecondary}30` }}
-              />
-              <Tooltip
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    return (
+          {/* Single Year: Genre-Ranking */}
+          {singleYearGenreRanking.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+              style={cardStyle}
+            >
+              <h3 style={headingStyle}>Genre-Ranking</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {singleYearGenreRanking.map((g, i) => {
+                  const maxHours = singleYearGenreRanking[0].hours;
+                  const pct = maxHours > 0 ? (g.hours / maxHours) * 100 : 0;
+                  return (
+                    <div key={g.genre}>
                       <div
                         style={{
-                          background: bgSurface,
-                          border: `1px solid ${ACCENT_COLORS.time}50`,
-                          borderRadius: 12,
-                          padding: '12px 16px',
-                          boxShadow:
-                            '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginBottom: 4,
                         }}
                       >
-                        <p
-                          style={{
-                            color: ACCENT_COLORS.time,
-                            fontWeight: 700,
-                            margin: 0,
-                            fontSize: 15,
-                          }}
-                        >
-                          {payload[0].payload.name}
-                        </p>
-                        <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
-                          {payload[0].value} Stunden
-                        </p>
+                        <span style={{ color: textPrimary, fontSize: 13, fontWeight: 600 }}>
+                          {i + 1}. {g.genre}
+                        </span>
+                        <span style={{ color: g.color, fontSize: 13, fontWeight: 700 }}>
+                          {g.hours}h
+                        </span>
                       </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              <Area
-                type="monotone"
-                dataKey="Stunden"
-                stroke={ACCENT_COLORS.time}
-                strokeWidth={3}
-                fill="url(#hoursGradient)"
-                style={{ outline: 'none' }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </motion.div>
-
-      {/* Genre Evolution */}
-      {data.allTimeTopGenres.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          style={{
-            margin: '0 20px 24px',
-            padding: '20px',
-            borderRadius: '20px',
-            background: bgSurface,
-            border: `1px solid ${currentTheme.border.default}`,
-          }}
-        >
-          <h3
-            style={{
-              color: textPrimary,
-              fontSize: 16,
-              fontFamily: 'var(--font-display)',
-              fontWeight: 700,
-              margin: '0 0 20px',
-            }}
+                      <div
+                        style={{
+                          height: 8,
+                          borderRadius: 4,
+                          background: `${textSecondary}15`,
+                          overflow: 'hidden',
+                        }}
+                      >
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.8, delay: i * 0.05 }}
+                          style={{ height: '100%', borderRadius: 4, background: g.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </>
+      ) : (
+        <>
+          {/* Multi-Year: Yearly Comparison */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            style={cardStyle}
           >
-            Genre-Entwicklung
-          </h3>
-
-          <div style={{ width: '100%', height: 280 }}>
-            <ResponsiveContainer>
-              <AreaChart
-                data={genreEvolutionData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <defs>
-                  {data.allTimeTopGenres.slice(0, 5).map((g) => (
-                    <linearGradient
-                      key={g.genre}
-                      id={`trend-gradient-${g.genre.replace(/\s+/g, '-')}`}
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor={g.color} stopOpacity={0.8} />
-                      <stop offset="95%" stopColor={g.color} stopOpacity={0.2} />
+            <h3 style={headingStyle}>Aktivität pro Jahr</h3>
+            <div style={{ width: '100%', height: 280 }}>
+              <SafeResponsiveContainer minWidth={0} minHeight={0}>
+                <BarChart
+                  data={yearlyChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="trendsEpisodenGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={ACCENT_COLORS.episodes} stopOpacity={0.9} />
+                      <stop offset="95%" stopColor={ACCENT_COLORS.episodes} stopOpacity={0.5} />
                     </linearGradient>
-                  ))}
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
-                <XAxis
-                  dataKey="name"
-                  tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
-                  axisLine={{ stroke: `${textSecondary}30` }}
-                />
-                <YAxis
-                  tick={{ fill: textSecondary, fontSize: 11 }}
-                  axisLine={{ stroke: `${textSecondary}30` }}
-                  tickFormatter={(v) => `${v}h`}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                {data.allTimeTopGenres.slice(0, 5).map((g) => (
-                  <Area
-                    key={g.genre}
-                    type="monotone"
-                    dataKey={g.genre}
-                    stackId="1"
-                    stroke={g.color}
-                    fill={`url(#trend-gradient-${g.genre.replace(/\s+/g, '-')})`}
-                    strokeWidth={2}
+                    <linearGradient id="trendsFilmeGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={ACCENT_COLORS.movies} stopOpacity={0.9} />
+                      <stop offset="95%" stopColor={ACCENT_COLORS.movies} stopOpacity={0.5} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                    axisLine={{ stroke: `${textSecondary}30` }}
+                  />
+                  <YAxis
+                    tick={{ fill: textSecondary, fontSize: 11 }}
+                    axisLine={{ stroke: `${textSecondary}30` }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    content={<ActivityTooltip />}
+                    shared={false}
+                    cursor={{ fill: `${ACCENT_COLORS.episodes}10` }}
+                  />
+                  <Legend
+                    wrapperStyle={{ paddingTop: 20 }}
+                    formatter={(value) => (
+                      <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
+                    )}
+                  />
+                  <Bar
+                    dataKey="Episoden"
+                    fill="url(#trendsEpisodenGradient)"
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={800}
                     style={{ outline: 'none' }}
                   />
-                ))}
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+                  <Bar
+                    dataKey="Filme"
+                    fill="url(#trendsFilmeGradient)"
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={800}
+                    style={{ outline: 'none' }}
+                  />
+                </BarChart>
+              </SafeResponsiveContainer>
+            </div>
+          </motion.div>
 
-          {/* Legend */}
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 12,
-              justifyContent: 'center',
-              marginTop: 16,
-            }}
+          {/* Multi-Year: Watch-Zeit Trend */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            style={cardStyle}
           >
-            {data.allTimeTopGenres.slice(0, 5).map((g) => (
-              <div key={g.genre} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: g.color }} />
-                <span style={{ color: textSecondary, fontSize: 12 }}>{g.genre}</span>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 20,
+              }}
+            >
+              <h3 style={{ ...headingStyle, margin: 0 }}>Watch-Zeit Trend</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <TrendIcon
+                  trend={data.hoursTrend}
+                  successColor={currentTheme.status?.success || '#00b894'}
+                  errorColor={currentTheme.status?.error || '#e17055'}
+                  secondaryColor={textSecondary}
+                />
+                <span
+                  style={{
+                    color:
+                      data.hoursTrend === 'up'
+                        ? currentTheme.status?.success || '#00b894'
+                        : data.hoursTrend === 'down'
+                          ? currentTheme.status?.error || '#e17055'
+                          : textSecondary,
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  {data.hoursTrend === 'up'
+                    ? 'Steigend'
+                    : data.hoursTrend === 'down'
+                      ? 'Fallend'
+                      : 'Stabil'}
+                </span>
               </div>
-            ))}
-          </div>
-        </motion.div>
+            </div>
+            <div style={{ width: '100%', height: 200 }}>
+              <SafeResponsiveContainer minWidth={0} minHeight={0}>
+                <AreaChart
+                  data={yearlyChartData}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="hoursGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={ACCENT_COLORS.time} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={ACCENT_COLORS.time} stopOpacity={0.1} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                    axisLine={{ stroke: `${textSecondary}30` }}
+                  />
+                  <YAxis
+                    tick={{ fill: textSecondary, fontSize: 11 }}
+                    axisLine={{ stroke: `${textSecondary}30` }}
+                    tickFormatter={(v) => `${v}h`}
+                  />
+                  <Tooltip content={<CustomTooltip unit="hours" />} />
+                  <Area
+                    type="monotone"
+                    dataKey="Stunden"
+                    stroke={ACCENT_COLORS.time}
+                    strokeWidth={3}
+                    fill="url(#hoursGradient)"
+                    style={{ outline: 'none' }}
+                  />
+                </AreaChart>
+              </SafeResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Multi-Year: Genre Evolution */}
+          {data.allTimeTopGenres.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              style={cardStyle}
+            >
+              <h3 style={headingStyle}>Genre-Entwicklung</h3>
+              <div style={{ width: '100%', height: 280 }}>
+                <SafeResponsiveContainer minWidth={0} minHeight={0}>
+                  <BarChart
+                    data={genreEvolutionData}
+                    margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      {data.allTimeTopGenres.slice(0, 5).map((g) => (
+                        <linearGradient
+                          key={g.genre}
+                          id={`trend-gradient-${g.genre.replace(/\s+/g, '-')}`}
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop offset="5%" stopColor={g.color} stopOpacity={0.9} />
+                          <stop offset="95%" stopColor={g.color} stopOpacity={0.5} />
+                        </linearGradient>
+                      ))}
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: textSecondary, fontSize: 13, fontWeight: 600 }}
+                      axisLine={{ stroke: `${textSecondary}30` }}
+                    />
+                    <YAxis
+                      tick={{ fill: textSecondary, fontSize: 11 }}
+                      axisLine={{ stroke: `${textSecondary}30` }}
+                      tickFormatter={(v) => `${v}h`}
+                      allowDecimals={false}
+                    />
+                    <Tooltip content={<CustomTooltip unit="hours" />} shared={false} />
+                    <Legend
+                      wrapperStyle={{ paddingTop: 16 }}
+                      formatter={(value) => (
+                        <span style={{ color: textSecondary, fontSize: 12 }}>{value}</span>
+                      )}
+                    />
+                    {data.allTimeTopGenres.slice(0, 5).map((g) => (
+                      <Bar
+                        key={g.genre}
+                        dataKey={g.genre}
+                        fill={`url(#trend-gradient-${g.genre.replace(/\s+/g, '-')})`}
+                        radius={[4, 4, 0, 0]}
+                        animationDuration={800}
+                        style={{ outline: 'none' }}
+                      />
+                    ))}
+                  </BarChart>
+                </SafeResponsiveContainer>
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
 
       {/* Year-by-Year Cards */}
-      <div style={{ padding: '0 20px' }}>
-        <h3
-          style={{
-            color: textPrimary,
-            fontSize: 16,
-            fontFamily: 'var(--font-display)',
-            fontWeight: 700,
-            margin: '0 0 16px',
-          }}
-        >
-          Jahr für Jahr
-        </h3>
-
-        {data.yearlyData
-          .slice()
-          .reverse()
-          .map((yd, i) => (
-            <motion.div
-              key={yd.year}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + i * 0.1 }}
-              style={{
-                padding: '20px',
-                marginBottom: 12,
-                borderRadius: '16px',
-                background: bgSurface,
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 16,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '12px',
-                      background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <span style={{ color: 'white', fontSize: 16, fontWeight: 800 }}>
-                      {yd.year.toString().slice(-2)}
-                    </span>
-                  </div>
-                  <div>
-                    <div style={{ color: textPrimary, fontSize: 20, fontWeight: 700 }}>
-                      {yd.year}
-                    </div>
-                    <div style={{ color: textSecondary, fontSize: 13 }}>
-                      {yd.totalHours}h Watchtime
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-                <div
-                  style={{
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: `${ACCENT_COLORS.episodes}15`,
-                  }}
-                >
-                  <div style={{ color: ACCENT_COLORS.episodes, fontSize: 20, fontWeight: 700 }}>
-                    {yd.episodes}
-                  </div>
-                  <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
-                </div>
-                <div
-                  style={{
-                    padding: '12px',
-                    borderRadius: '12px',
-                    background: `${ACCENT_COLORS.movies}15`,
-                  }}
-                >
-                  <div style={{ color: ACCENT_COLORS.movies, fontSize: 20, fontWeight: 700 }}>
-                    {yd.movies}
-                  </div>
-                  <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
-                </div>
-              </div>
-
-              {(yd.topGenre !== '-' || yd.topProvider !== '-') && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
-                  {yd.topGenre !== '-' && (
-                    <div
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        background: `${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}20`,
-                        border: `1px solid ${topGenreColors[yd.topGenre] || ACCENT_COLORS.trending}40`,
-                      }}
-                    >
-                      <span
-                        style={{
-                          color: topGenreColors[yd.topGenre] || ACCENT_COLORS.trending,
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        Top: {yd.topGenre}
-                      </span>
-                    </div>
-                  )}
-                  {yd.topProvider !== '-' && (
-                    <div
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        background: `${textSecondary}15`,
-                        border: `1px solid ${textSecondary}30`,
-                      }}
-                    >
-                      <span style={{ color: textSecondary, fontSize: 12, fontWeight: 600 }}>
-                        via {yd.topProvider}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-            </motion.div>
-          ))}
-      </div>
+      <TrendsYearCards yearlyData={data.yearlyData} topGenreColors={topGenreColors} />
     </div>
   );
 };

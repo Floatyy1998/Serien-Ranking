@@ -10,6 +10,7 @@ import {
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
 
 interface ActionButtonsProps {
@@ -36,6 +37,7 @@ export const ActionButtons = memo<ActionButtonsProps>(
     onHideToggle,
     onDelete,
   }) => {
+    const { currentTheme } = useTheme();
     const iconSize = isMobile ? '18px' : '20px';
     const hasRating = parseFloat(overallRating) > 0;
     const pad = isMobile ? '10px' : '12px';
@@ -61,9 +63,8 @@ export const ActionButtons = memo<ActionButtonsProps>(
             style={{
               flex: 1,
               padding: pad,
-              background:
-                'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
-              border: '1px solid rgba(0, 212, 170, 0.5)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.accent}CC 100%)`,
+              border: `1px solid ${currentTheme.primary}80`,
               borderRadius: radius,
               fontSize,
             }}
@@ -89,7 +90,12 @@ export const ActionButtons = memo<ActionButtonsProps>(
               fontSize,
             }}
           >
-            <Star style={{ fontSize: iconSize, color: hasRating ? '#ffd700' : 'white' }} />
+            <Star
+              style={{
+                fontSize: iconSize,
+                color: hasRating ? currentTheme.accent : currentTheme.text.secondary,
+              }}
+            />
             <span>Bewerten</span>
           </motion.button>
         </div>
@@ -105,20 +111,21 @@ export const ActionButtons = memo<ActionButtonsProps>(
                 flex: 1,
                 padding: pad,
                 background: series.watchlist
-                  ? 'linear-gradient(135deg, rgba(0, 212, 170, 0.2) 0%, rgba(0, 180, 216, 0.2) 100%)'
+                  ? `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.primary}33 100%)`
                   : 'rgba(255, 255, 255, 0.05)',
                 border: series.watchlist
-                  ? '1px solid rgba(0, 212, 170, 0.4)'
+                  ? `1px solid ${currentTheme.primary}66`
                   : '1px solid rgba(255, 255, 255, 0.1)',
                 borderRadius: radius,
                 fontSize,
               }}
             >
               {series.watchlist ? (
-                <BookmarkRemove style={{ fontSize: iconSize }} />
+                <BookmarkRemove style={{ fontSize: iconSize, color: currentTheme.primary }} />
               ) : (
-                <BookmarkAdd style={{ fontSize: iconSize }} />
+                <BookmarkAdd style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
               )}
+              <span>{series.watchlist ? 'Watchlist ✓' : 'Watchlist'}</span>
             </motion.button>
           </Tooltip>
 
@@ -141,10 +148,13 @@ export const ActionButtons = memo<ActionButtonsProps>(
               }}
             >
               {series.hidden ? (
-                <Visibility style={{ fontSize: iconSize }} />
+                <Visibility
+                  style={{ fontSize: iconSize, color: currentTheme.status?.warning || '#f59e0b' }}
+                />
               ) : (
-                <VisibilityOff style={{ fontSize: iconSize }} />
+                <VisibilityOff style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
               )}
+              <span>{series.hidden ? 'Sichtbar' : 'Verstecken'}</span>
             </motion.button>
           </Tooltip>
 
@@ -165,7 +175,9 @@ export const ActionButtons = memo<ActionButtonsProps>(
                 fontSize,
               }}
             >
-              <Delete style={{ fontSize: iconSize, color: '#ff6b6b' }} />
+              <Delete
+                style={{ fontSize: iconSize, color: currentTheme.status?.error || '#ef4444' }}
+              />
             </motion.button>
           </Tooltip>
         </div>

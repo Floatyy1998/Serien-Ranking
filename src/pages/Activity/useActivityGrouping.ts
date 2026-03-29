@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';
 import type { ActivityFilterType } from './types';
@@ -11,6 +11,23 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
 
   const [filterType, setFilterType] = useState<ActivityFilterType>('all');
   const [tmdbPosters, setTmdbPosters] = useState<Record<string, string>>({});
+
+  const seriesListRef = useRef(seriesList);
+  const movieListRef = useRef(movieList);
+  const tmdbPostersRef = useRef(tmdbPosters);
+  const friendActivitiesRef = useRef(friendActivities);
+  useEffect(() => {
+    seriesListRef.current = seriesList;
+  }, [seriesList]);
+  useEffect(() => {
+    movieListRef.current = movieList;
+  }, [movieList]);
+  useEffect(() => {
+    tmdbPostersRef.current = tmdbPosters;
+  }, [tmdbPosters]);
+  useEffect(() => {
+    friendActivitiesRef.current = friendActivities;
+  }, [friendActivities]);
 
   const getItemDetails = (activity: FriendActivity) => {
     const tmdbId = activity.tmdbId || activity.itemId;
@@ -96,7 +113,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
       if (!groups.has(userId)) {
         groups.set(userId, []);
       }
-      groups.get(userId)!.push(activity);
+      groups.get(userId)?.push(activity);
     });
 
     groups.forEach((activities) => {
@@ -114,25 +131,30 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
-    if (!apiKey || friendActivities.length === 0) return;
+    const currentActivities = friendActivitiesRef.current;
+    if (!apiKey || currentActivities.length === 0) return;
 
     const fetchMissingPosters = async () => {
       const postersToFetch: { id: string; type: 'series' | 'movie' }[] = [];
 
-      for (const activity of friendActivities) {
+      for (const activity of currentActivities) {
         const tmdbId = activity.tmdbId || activity.itemId;
         const itemType = activity.itemType;
 
         if (!tmdbId) continue;
 
         const cacheKey = `${itemType}_${tmdbId}`;
-        if (tmdbPosters[cacheKey]) continue;
+        if (tmdbPostersRef.current[cacheKey]) continue;
 
         if (itemType === 'series') {
-          const series = seriesList.find((s) => s.id === tmdbId || s.id === Number(tmdbId));
+          const series = seriesListRef.current.find(
+            (s) => s.id === tmdbId || s.id === Number(tmdbId)
+          );
           if (series?.poster?.poster) continue;
         } else {
-          const movie = movieList.find((m) => m.id === tmdbId || m.id === Number(tmdbId));
+          const movie = movieListRef.current.find(
+            (m) => m.id === tmdbId || m.id === Number(tmdbId)
+          );
           if (movie?.poster?.poster) continue;
         }
 
@@ -160,7 +182,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
                 newPosters[`${type}_${id}`] = data.poster_path;
               }
             }
-          } catch (error) {
+          } catch {
             // Silent fail
           }
         })
@@ -180,9 +202,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     const cacheKey = `${itemType}_${tmdbId}`;
     const tmdbPoster = tmdbPosters[cacheKey];
     const item = getItemDetails(activity);
-    const posterUrl = tmdbPoster
-      ? `https://image.tmdb.org/t/p/w342${tmdbPoster}`
-      : getImageUrl(item?.poster);
+    const posterUrl = tmdbPoster ? getImageUrl(tmdbPoster) : getImageUrl(item?.poster);
     return posterUrl;
   };
 

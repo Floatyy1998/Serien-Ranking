@@ -12,133 +12,21 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { calculateOverallRating } from '../../lib/rating/rating';
-import type { Series } from '../../types/Series';
-import type { Movie } from '../../types/Movie';
+import { useAuth } from '../../AuthContext';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import {
+  getRating,
+  getSeriesProgress,
+  hasWatchedEpisodes,
+  prepareSeriesItem,
+  prepareMovieItem,
+} from './ratingsHelpers';
+import type { UseRatingsDataResult } from './ratingsHelpers';
 
-// ─── Types ──────────────────────────────────────────────────────────────
-
-export interface PreparedItem {
-  id: number;
-  title: string;
-  posterUrl: string;
-  rating: number;
-  progress: number;
-  isMovie: boolean;
-  watchlist: boolean;
-  releaseDate?: string;
-  providers: { name: string; logo: string }[];
-}
-
-export interface RatingsStats {
-  count: number;
-  average: number;
-}
-
-export interface UseRatingsDataResult {
-  /** Auth - null when context or user is not available */
-  user: NonNullable<ReturnType<typeof useAuth>>['user'];
-  /** Current active tab */
-  activeTab: 'series' | 'movies';
-  /** Items to render (progressive) */
-  itemsToRender: PreparedItem[];
-  /** All current items (after filter/sort) */
-  currentItems: PreparedItem[];
-  /** Counts per tab */
-  seriesCount: number;
-  moviesCount: number;
-  /** Rating stats */
-  stats: RatingsStats;
-  /** QuickFilter integration */
-  filters: {
-    sortBy: string;
-    genre?: string;
-    provider?: string;
-    quickFilter?: string;
-    search?: string;
-  };
-  /** Handlers */
-  handleTabChange: (id: string) => void;
-  handleQuickFilterChange: (newFilters: {
-    sortBy?: string;
-    genre?: string;
-    provider?: string;
-    quickFilter?: string;
-    search?: string;
-  }) => void;
-  handleGridClick: (e: React.MouseEvent) => void;
-  /** Ref to attach to the scroll container */
-  scrollRef: React.MutableRefObject<HTMLDivElement | null>;
-  /** Quick filter active state for empty message */
-  quickFilter: string | null;
-}
-
-// ─── Helpers (pure functions, created once) ─────────────────────────────
-
-function getImageUrl(posterObj: string | { poster?: string } | null | undefined): string {
-  if (!posterObj) return '';
-  const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-  if (!path) return '';
-  if (path.startsWith('http')) return path;
-  return `https://image.tmdb.org/t/p/w342${path}`;
-}
-
-function getRating(item: Series | Movie): number {
-  const r = parseFloat(calculateOverallRating(item));
-  return isNaN(r) ? 0 : r;
-}
-
-function getSeriesProgress(series: Series): number {
-  if (!series.seasons) return 0;
-  const now = Date.now();
-  let aired = 0;
-  let watched = 0;
-  for (const season of series.seasons) {
-    if (!season.episodes) continue;
-    for (const ep of season.episodes) {
-      if (!ep) continue;
-      if (ep.air_date && new Date(ep.air_date).getTime() <= now) {
-        aired++;
-        if (ep.watched) watched++;
-      }
-    }
-  }
-  return aired > 0 ? (watched / aired) * 100 : 0;
-}
-
-function hasWatchedEpisodes(series: Series): boolean {
-  if (!series.seasons) return false;
-  const now = Date.now();
-  for (const season of series.seasons) {
-    if (!season.episodes) continue;
-    for (const ep of season.episodes) {
-      if (!ep) continue;
-      if (ep.air_date && new Date(ep.air_date).getTime() <= now && ep.watched) return true;
-    }
-  }
-  return false;
-}
-
-export function extractProviders(item: Series | Movie): { name: string; logo: string }[] {
-  const result: { name: string; logo: string }[] = [];
-  if (!item.provider?.provider?.length) return result;
-  const seen = new Set<string>();
-  for (const p of item.provider.provider) {
-    if (!seen.has(p.name) && result.length < 2) {
-      seen.add(p.name);
-      result.push({ name: p.name, logo: p.logo });
-    }
-  }
-  return result;
-}
-
-// ─── Progressive rendering constants ────────────────────────────────────
-
-const INITIAL_RENDER = 30;
-const RENDER_BATCH = 50;
+// Re-export types for backward compatibility
+export type { PreparedItem, RatingsStats, UseRatingsDataResult } from './ratingsHelpers';
+export { extractProviders } from './ratingsHelpers';
 
 // ─── Hook ───────────────────────────────────────────────────────────────
 
@@ -168,12 +56,15 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const [, startTransition] = useTransition();
   const isUpdatingFromQuickFilter = useRef(false);
   const searchParamsRef = useRef(searchParams);
-  searchParamsRef.current = searchParams;
+
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
 
   // ─── URL Sync ───────────────────────────────────────
   const updateURL = useCallback(
     (updates: Record<string, string | null | undefined>) => {
-      const newParams = new URLSearchParams(searchParams);
+      const newParams = new URLSearchParams(searchParamsRef.current);
       const defaults: Record<string, string> = {
         tab: 'series',
         sort: 'rating-desc',
@@ -190,7 +81,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
 
       setSearchParams(newParams, { replace: true });
     },
-    [searchParams, setSearchParams]
+    [setSearchParams]
   );
 
   // Handle browser back/forward
@@ -211,10 +102,12 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // ─── Tab Change Handler ────────────────────────────
   const handleTabChange = useCallback(
     (id: string) => {
-      setActiveTab(id as 'series' | 'movies');
+      startTransition(() => {
+        setActiveTab(id as 'series' | 'movies');
+      });
       updateURL({ tab: id });
     },
-    [updateURL]
+    [updateURL, startTransition]
   );
 
   // ─── QuickFilter Integration ────────────────────────
@@ -317,6 +210,9 @@ export const useRatingsData = (): UseRatingsDataResult => {
   // Event delegation: single click handler for the entire grid
   const handleGridClick = useCallback(
     (e: React.MouseEvent) => {
+      // Ignore clicks on provider overflow badge (tooltip trigger)
+      if ((e.target as HTMLElement).closest('.ratings-provider-badges')) return;
+
       const gridItem = (e.target as HTMLElement).closest(
         '.ratings-grid-item'
       ) as HTMLElement | null;
@@ -345,10 +241,8 @@ export const useRatingsData = (): UseRatingsDataResult => {
   );
 
   const preparedSeries = useMemo(() => {
-    // Step 1: Pre-compute ratings (once per item)
     let items = seriesList.map((s) => ({ s, r: getRating(s) }));
 
-    // Step 2: Filter
     if (selectedGenre !== 'Alle') {
       const gl = selectedGenre.toLowerCase();
       items = items.filter(({ s }) => {
@@ -390,7 +284,6 @@ export const useRatingsData = (): UseRatingsDataResult => {
       });
     }
 
-    // Step 3: Sort (uses pre-computed rating)
     items.sort((a, b) => {
       switch (effectiveSortBy) {
         case 'rating-desc':
@@ -408,19 +301,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
       }
     });
 
-    // Step 4: Prepare for rendering (compute progress, providers once)
-    return items.map(
-      ({ s, r }): PreparedItem => ({
-        id: s.id,
-        title: s.title || '',
-        posterUrl: getImageUrl(s.poster),
-        rating: r,
-        progress: getSeriesProgress(s),
-        isMovie: false,
-        watchlist: s.watchlist === true,
-        providers: extractProviders(s),
-      })
-    );
+    return items.map(({ s, r }) => prepareSeriesItem(s, r));
   }, [seriesList, selectedGenre, selectedProvider, searchQuery, quickFilter, effectiveSortBy]);
 
   const preparedMovies = useMemo(() => {
@@ -472,44 +353,38 @@ export const useRatingsData = (): UseRatingsDataResult => {
       }
     });
 
-    return items.map(
-      ({ m, r }): PreparedItem => ({
-        id: m.id,
-        title: m.title || '',
-        posterUrl: getImageUrl(m.poster),
-        rating: r,
-        progress: 0,
-        isMovie: true,
-        watchlist: m.watchlist === true,
-        releaseDate: m.release_date,
-        providers: extractProviders(m),
-      })
-    );
+    return items.map(({ m, r }) => prepareMovieItem(m, r));
   }, [movieList, selectedGenre, selectedProvider, searchQuery, quickFilter, effectiveSortBy]);
 
   const currentItems = activeTab === 'series' ? preparedSeries : preparedMovies;
 
-  // ─── Progressive Rendering ────────────────────────
-  const [renderCount, setRenderCount] = useState(INITIAL_RENDER);
+  // Progressive rendering via derived state pattern:
+  // When the filter fingerprint changes, reset to initial batch.
+  // Then rAF fills in remaining items without blocking the UI.
+  const filterKey = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
+  const [renderState, setRenderState] = useState({ key: filterKey, count: 60 });
 
-  // Reset when items change (tab switch, filter change)
-  const filterFingerprint = `${activeTab}\0${quickFilter}\0${selectedGenre}\0${selectedProvider}\0${searchQuery}\0${effectiveSortBy}`;
-  const prevFingerprintRef = useRef(filterFingerprint);
-  if (prevFingerprintRef.current !== filterFingerprint) {
-    prevFingerprintRef.current = filterFingerprint;
-    setRenderCount(INITIAL_RENDER);
+  // Derived state: reset count when filters change (React-safe setState during render)
+  if (renderState.key !== filterKey) {
+    setRenderState({ key: filterKey, count: 60 });
   }
 
-  // Progressively render remaining items via rAF
+  const renderCount = renderState.key === filterKey ? renderState.count : 60;
+
+  // Progressively render remaining items
   useEffect(() => {
     if (renderCount >= currentItems.length) return;
     const id = requestAnimationFrame(() => {
-      setRenderCount((c) => Math.min(c + RENDER_BATCH, currentItems.length));
+      setRenderState((prev) => ({
+        ...prev,
+        count: Math.min(prev.count + 80, currentItems.length),
+      }));
     });
     return () => cancelAnimationFrame(id);
   }, [renderCount, currentItems.length]);
 
-  const itemsToRender = currentItems.slice(0, renderCount);
+  const itemsToRender =
+    renderCount >= currentItems.length ? currentItems : currentItems.slice(0, renderCount);
 
   // ─── Stats (cheap: ratings are pre-computed) ────────
   const stats = useMemo(() => {

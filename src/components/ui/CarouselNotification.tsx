@@ -12,18 +12,20 @@ import {
   PlaylistRemove,
   Check,
   Stop,
+  StarOutline,
+  Star,
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Series } from '../../types/Series';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Series } from '../../types/Series';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import './CarouselNotification.css';
 
-type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch';
+type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch' | 'unrated';
 
 interface VariantConfig {
   themeColor: (theme: ReturnType<typeof useTheme>['currentTheme']) => string;
@@ -92,6 +94,19 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     firebasePath: 'inactiveRewatchNotifications',
     watchlistValue: true, // not used for rewatch
   },
+  unrated: {
+    themeColor: (t) => t.primary,
+    HeaderIcon: StarOutline,
+    DetailIcon: Star,
+    headerText: (n) => `${n} Serie${n > 1 ? 'n' : ''} noch nicht bewertet`,
+    detailText: () => 'Staffel fertig geschaut — jetzt bewerten?',
+    actionLabel: 'Bewerten',
+    actionDoneLabel: 'Bewertet',
+    ActionIcon: Star,
+    counterSuffix: 'unbewerteten Serien',
+    firebasePath: 'unratedSeriesNotifications',
+    watchlistValue: true, // not used
+  },
 };
 
 interface CarouselNotificationProps {
@@ -107,19 +122,15 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { refetchSeries } = useSeriesList();
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(series.length > 0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [actionedIds, setActionedIds] = useState<Set<number>>(new Set());
   const dotsContainerRef = useRef<HTMLDivElement>(null);
 
   const config = variantConfigs[variant];
   const color = config.themeColor(currentTheme);
-
-  useEffect(() => {
-    if (series.length > 0) setIsVisible(true);
-  }, [series]);
 
   useEffect(() => {
     if (dotsContainerRef.current && series.length > 1) {
@@ -159,7 +170,13 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const handleAction = async (seriesItem: Series) => {
     if (!user) return;
     try {
-      if (variant === 'inactive-rewatch') {
+      if (variant === 'unrated') {
+        // Zur Bewertungsseite navigieren
+        navigate(`/rating/series/${seriesItem.id}`);
+        await markAsNotified([seriesItem.id]);
+        onDismiss();
+        return;
+      } else if (variant === 'inactive-rewatch') {
         // Rewatch beenden statt Watchlist ändern
         await firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/rewatch`).remove();
       } else {
@@ -170,9 +187,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
       }
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));
-
-      const idx = series.findIndex((s) => s.id === seriesItem.id);
-      if (idx !== -1) series[idx].watchlist = config.watchlistValue;
 
       setTimeout(() => refetchSeries(), 100);
       await markAsNotified([seriesItem.id]);
@@ -220,77 +234,94 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
           <div className="notification-content">
             <div className="notification-header">
-              <HeaderIcon className="new-icon pulse" style={{ color }} />
+              <motion.div
+                animate={variant !== 'unrated' ? { scale: [1, 1.15, 1], opacity: [1, 0.8, 1] } : {}}
+                transition={{ repeat: Infinity, duration: 2 }}
+                style={{ display: 'flex' }}
+              >
+                <HeaderIcon className="new-icon" style={{ color }} />
+              </motion.div>
               <h3>{config.headerText(series.length)}</h3>
             </div>
 
-            <div className="series-info">
-              {currentSeries.poster?.poster && (
-                <img
-                  src={currentSeries.poster.poster}
-                  alt={currentSeries.title || currentSeries.original_name}
-                  className="series-poster"
-                />
-              )}
-
-              <div className="series-details">
-                <h4>{currentSeries.title || currentSeries.original_name || 'Serie'}</h4>
-                <p className="season-info">
-                  <DetailIcon fontSize="small" />
-                  <span>{config.detailText(currentSeries)}</span>
-                </p>
-              </div>
-
-              <div className="action-buttons">
-                {!isActioned ? (
-                  <Tooltip title={config.actionLabel} arrow>
-                    <button
-                      className="watchlist-button"
-                      onClick={() => handleAction(currentSeries)}
-                      style={{
-                        backgroundColor: currentTheme.background.paper,
-                        color: variant === 'new-season' ? currentTheme.text.primary : color,
-                        border: `1px solid ${color}40`,
-                      }}
-                    >
-                      <ActionIcon />
-                      <span>{config.actionLabel}</span>
-                    </button>
-                  </Tooltip>
-                ) : (
-                  <Tooltip title={config.actionDoneLabel} arrow>
-                    <span>
-                      <button
-                        className="watchlist-button added"
-                        disabled
-                        style={{
-                          backgroundColor: currentTheme.status.success + '20',
-                          color: currentTheme.status.success,
-                          border: `1px solid ${currentTheme.status.success}40`,
-                        }}
-                      >
-                        {variant === 'new-season' && <Check />}
-                        <span>{config.actionDoneLabel}</span>
-                      </button>
-                    </span>
-                  </Tooltip>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                className="series-info"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {currentSeries.poster?.poster && (
+                  <img
+                    src={currentSeries.poster.poster}
+                    alt={currentSeries.title || currentSeries.original_name}
+                    loading="lazy"
+                    decoding="async"
+                    className="series-poster"
+                  />
                 )}
 
-                <Tooltip title="Serie ansehen" arrow>
-                  <button
-                    className="view-button"
-                    onClick={() => handleNavigate(currentSeries)}
-                    style={{
-                      backgroundColor: currentTheme.primary,
-                      color: currentTheme.text.onPrimary,
-                    }}
-                  >
-                    Ansehen
-                    <ChevronRight />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
+                <div className="series-details">
+                  <h4>{currentSeries.title || currentSeries.original_name || 'Serie'}</h4>
+                  <p className="season-info">
+                    <DetailIcon fontSize="small" />
+                    <span>{config.detailText(currentSeries)}</span>
+                  </p>
+                </div>
+
+                <div className="action-buttons">
+                  {!isActioned ? (
+                    <Tooltip title={config.actionLabel} arrow>
+                      <button
+                        className="watchlist-button"
+                        onClick={() => handleAction(currentSeries)}
+                        style={{
+                          backgroundColor: currentTheme.background.paper,
+                          color: variant === 'new-season' ? currentTheme.text.primary : color,
+                          border: `1px solid ${color}40`,
+                        }}
+                      >
+                        <ActionIcon />
+                        <span>{config.actionLabel}</span>
+                      </button>
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title={config.actionDoneLabel} arrow>
+                      <span>
+                        <button
+                          className="watchlist-button added"
+                          disabled
+                          style={{
+                            backgroundColor: currentTheme.status.success + '20',
+                            color: currentTheme.status.success,
+                            border: `1px solid ${currentTheme.status.success}40`,
+                          }}
+                        >
+                          {variant === 'new-season' && <Check />}
+                          <span>{config.actionDoneLabel}</span>
+                        </button>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  <Tooltip title="Serie ansehen" arrow>
+                    <button
+                      className="view-button"
+                      onClick={() => handleNavigate(currentSeries)}
+                      style={{
+                        backgroundColor: currentTheme.primary,
+                        color: currentTheme.background.default,
+                      }}
+                    >
+                      Ansehen
+                      <ChevronRight />
+                    </button>
+                  </Tooltip>
+                </div>
+              </motion.div>
+            </AnimatePresence>
 
             {series.length > 1 && (
               <div className="navigation-dots">
@@ -307,15 +338,31 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   </span>
                 </Tooltip>
 
-                <div className="dots" ref={dotsContainerRef}>
-                  {series.map((_, index) => (
+                <div
+                  className="dots"
+                  ref={dotsContainerRef}
+                  role="tablist"
+                  aria-label="Serie auswählen"
+                >
+                  {series.map((s, index) => (
                     <span
                       key={index}
+                      role="tab"
+                      aria-selected={index === currentIndex}
+                      aria-label={`${s.title || s.original_name || 'Serie'} (${index + 1} von ${series.length})`}
+                      tabIndex={0}
                       className={`dot ${index === currentIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setCurrentIndex(index);
+                        }
+                      }}
                       style={{
                         backgroundColor:
                           index === currentIndex ? color : currentTheme.text.primary + '30',
+                        cursor: 'pointer',
                       }}
                     />
                   ))}

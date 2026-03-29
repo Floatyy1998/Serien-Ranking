@@ -3,7 +3,13 @@
  */
 
 import { motion } from 'framer-motion';
-import { PlayCircle, Theaters, Star, TrendingUp, Schedule, ArrowBack } from '@mui/icons-material';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import PlayCircle from '@mui/icons-material/PlayCircle';
+import Schedule from '@mui/icons-material/Schedule';
+import Star from '@mui/icons-material/Star';
+import Theaters from '@mui/icons-material/Theaters';
+import TrendingUp from '@mui/icons-material/TrendingUp';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface Props {
   year: number;
@@ -45,6 +51,7 @@ const FloatingIcon: React.FC<{
 );
 
 export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
+  const { currentTheme } = useTheme();
   return (
     <div
       style={{
@@ -77,8 +84,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           width: '120px',
           height: '120px',
           borderRadius: '50%',
-          background:
-            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+          background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -202,8 +208,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         whileTap={{ scale: 0.98 }}
         onClick={onBack}
         style={{
-          background:
-            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+          background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           border: 'none',
           borderRadius: '12px',
           padding: '14px 32px',

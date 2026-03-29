@@ -20,9 +20,6 @@ export const useDiscussionFeed = (
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-
     const ref = firebase.database().ref('discussionFeed');
     let query: firebase.database.Query;
 
@@ -57,6 +54,8 @@ export const useDiscussionFeed = (
 
     return () => {
       query.off('value', listener);
+      setLoading(true);
+      setError(null);
     };
   }, [filter, limit]);
 

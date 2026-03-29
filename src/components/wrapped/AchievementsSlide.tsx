@@ -4,7 +4,18 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { WrappedAchievement } from '../../types/Wrapped';
+import { seededRandom } from '../../utils/seededRandom';
+
+// Pre-compute particle data outside the component to avoid impure calls during render
+const _rand = seededRandom(42);
+const SPARKLE_DATA = Array.from({ length: 15 }, () => ({
+  duration: 2 + _rand() * 2,
+  delay: _rand() * 3,
+  top: `${_rand() * 100}%`,
+  left: `${_rand() * 100}%`,
+  size: 12 + _rand() * 8,
+}));
+import type { WrappedAchievement } from '../../types/Wrapped';
 
 interface AchievementsSlideProps {
   achievements: WrappedAchievement[];
@@ -134,6 +145,8 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
   const unlockedAchievements = achievements.filter((a) => a.unlocked);
   const lockedAchievements = achievements.filter((a) => !a.unlocked);
 
+  const sparkleData = SPARKLE_DATA;
+
   return (
     <div
       style={{
@@ -152,7 +165,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
     >
       {/* Sparkle Effect */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        {[...Array(15)].map((_, i) => (
+        {sparkleData.map((s, i) => (
           <motion.div
             key={i}
             animate={{
@@ -160,17 +173,17 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
               scale: [0.5, 1, 0.5],
             }}
             transition={{
-              duration: 2 + Math.random() * 2,
+              duration: s.duration,
               repeat: Infinity,
-              delay: Math.random() * 3,
+              delay: s.delay,
             }}
             style={{
               position: 'absolute',
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
+              top: s.top,
+              left: s.left,
             }}
           >
-            <SparkleIcon size={12 + Math.random() * 8} />
+            <SparkleIcon size={s.size} />
           </motion.div>
         ))}
       </div>

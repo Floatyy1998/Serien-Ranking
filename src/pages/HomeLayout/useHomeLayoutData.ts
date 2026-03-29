@@ -6,7 +6,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 
 // --- Constants ---
 
@@ -27,6 +27,7 @@ export const DEFAULT_SECTION_ORDER = [
 
 export const DEFAULT_FOR_YOU_ORDER = [
   'watch-streak',
+  'taste-profile',
   'taste-match',
   'watch-journey',
   'catch-up',
@@ -35,7 +36,7 @@ export const DEFAULT_FOR_YOU_ORDER = [
 
 export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
 
-export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'calendar', 'history', 'friends'];
+export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
@@ -56,6 +57,7 @@ export const SECTION_LABELS: Record<string, string> = {
 
 export const FOR_YOU_LABELS: Record<string, string> = {
   'watch-streak': 'Watch Streak',
+  'taste-profile': 'KI-Empfehlungen',
   'taste-match': 'Taste Match',
   'watch-journey': 'Watch Journey',
   'catch-up': 'Backlog',
@@ -69,7 +71,7 @@ export const MAIN_ACTIONS_LABELS: Record<string, string> = {
 
 export const QUICK_ACTIONS_LABELS: Record<string, string> = {
   ratings: 'Ratings',
-  calendar: 'Kalender',
+  discover: 'Entdecken',
   history: 'Verlauf',
   friends: 'Freunde',
 };
@@ -209,7 +211,8 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
           setSectionOrder(mergeOrder(data.sectionOrder, DEFAULT_SECTION_ORDER, SECTION_LABELS));
         if (data?.hiddenSections)
           setHiddenSections(filterValid(data.hiddenSections, SECTION_LABELS));
-        if (data?.forYouOrder) setForYouOrder(filterValid(data.forYouOrder, FOR_YOU_LABELS));
+        if (data?.forYouOrder)
+          setForYouOrder(mergeOrder(data.forYouOrder, DEFAULT_FOR_YOU_ORDER, FOR_YOU_LABELS));
         if (data?.hiddenForYou) setHiddenForYou(filterValid(data.hiddenForYou, FOR_YOU_LABELS));
         if (data?.mainActionsOrder)
           setMainActionsOrder(

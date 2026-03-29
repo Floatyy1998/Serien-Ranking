@@ -196,8 +196,11 @@ export function normalizeThemeColors(config: {
   backgroundColor: string;
   surfaceColor?: string;
   accentColor?: string;
+  textColor?: string;
 }): typeof config {
   let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
+  if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#00fed7';
+  if (!backgroundColor || !/^#?[0-9a-fA-F]{6}$/.test(backgroundColor)) backgroundColor = '#06090f';
 
   // 1. Background darf maximal L=22% haben (cinematic dark look)
   try {
@@ -250,7 +253,8 @@ export function normalizeThemeColors(config: {
  * Gibt h: 0-360, s: 0-100, l: 0-100 zurück
  */
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
-  const clean = hex.replace('#', '');
+  const clean = (hex || '').replace('#', '');
+  if (clean.length < 6) return { h: 0, s: 0, l: 50 };
   const r = parseInt(clean.substring(0, 2), 16) / 255;
   const g = parseInt(clean.substring(2, 4), 16) / 255;
   const b = parseInt(clean.substring(4, 6), 16) / 255;
@@ -279,9 +283,7 @@ export function hslToHex(h: number, s: number, l: number): string {
   const c = (1 - Math.abs(2 * lN - 1)) * sN;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = lN - c / 2;
-  let r = 0,
-    g = 0,
-    b = 0;
+  let r: number, g: number, b: number;
   if (h < 60) {
     r = c;
     g = x;

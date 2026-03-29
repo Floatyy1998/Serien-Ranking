@@ -26,11 +26,6 @@ export const initFirebase = () => {
   }
 
   if (!Firebase.apps.length) {
-    try {
-      Firebase.initializeApp(config);
-    } catch (error) {
-      // console.error('Fehler bei Firebase-Initialisierung:', error);
-      throw error;
-    }
+    Firebase.initializeApp(config);
   }
 };

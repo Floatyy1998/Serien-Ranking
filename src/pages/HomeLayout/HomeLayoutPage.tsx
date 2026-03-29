@@ -6,7 +6,7 @@
 import { RestartAlt, ViewQuilt } from '@mui/icons-material';
 import { motion, Reorder } from 'framer-motion';
 import { PageHeader, PageLayout } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { DraggableSectionItem } from './DraggableSectionItem';
 import { useHomeLayoutData } from './useHomeLayoutData';
 import './HomeLayoutPage.css';
@@ -39,7 +39,7 @@ export const HomeLayoutPage = () => {
           className="hl-toolbar"
         >
           <div className="hl-toolbar-left">
-            <ViewQuilt className="hl-toolbar-icon" style={{ color: currentTheme.primary }} />
+            <ViewQuilt className="hl-toolbar-icon" style={{ color: currentTheme.accent }} />
             <h2 className="hl-toolbar-title" style={{ color: currentTheme.text.primary }}>
               Sektionen
             </h2>

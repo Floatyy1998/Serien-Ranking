@@ -3,8 +3,9 @@
  */
 
 import React from 'react';
+import { seededRandom } from '../../utils/seededRandom';
 import { motion } from 'framer-motion';
-import { TimeOfDayStats, DayOfWeekStats } from '../../types/Wrapped';
+import type { TimeOfDayStats, DayOfWeekStats } from '../../types/Wrapped';
 
 interface TimePatternSlideProps {
   favoriteTimeOfDay: TimeOfDayStats;
@@ -82,10 +83,16 @@ const TimeIcon: React.FC<{ timeOfDay: string }> = ({ timeOfDay }) => {
   );
 };
 
+// Pre-compute random data outside component for render purity
+const _randTP = seededRandom(202);
+const RANDOM_VALUES_TP = Array.from({ length: 9 }, () => _randTP());
+
 export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
   favoriteTimeOfDay,
   favoriteDayOfWeek,
 }) => {
+  let _ri = 0;
+  const nextRandom = () => RANDOM_VALUES_TP[_ri++ % RANDOM_VALUES_TP.length];
   const timeOfDay = favoriteTimeOfDay.timeOfDay;
   const accentColor = TIME_COLORS[timeOfDay] || 'var(--theme-primary, #667eea)';
 
@@ -120,14 +127,14 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
               key={i}
               animate={{ opacity: [0.3, 1, 0.3] }}
               transition={{
-                duration: 2 + Math.random() * 2,
+                duration: 2 + nextRandom() * 2,
                 repeat: Infinity,
-                delay: Math.random() * 2,
+                delay: nextRandom() * 2,
               }}
               style={{
                 position: 'absolute',
-                top: `${Math.random() * 60}%`,
-                left: `${Math.random() * 100}%`,
+                top: `${nextRandom() * 60}%`,
+                left: `${nextRandom() * 100}%`,
                 width: '4px',
                 height: '4px',
                 background: 'white',

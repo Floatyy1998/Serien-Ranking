@@ -3,9 +3,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../../App';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import {
   IconButton,
   EmptyState,
@@ -60,50 +60,52 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
 
         if (users) {
           // Process users in parallel with Promise.all for better performance
-          const userPromises = Object.entries(users).map(async ([uid, userData]: [string, any]) => {
-            // Skip current user
-            if (uid === user?.uid) return null;
+          const userPromises = (Object.entries(users) as [string, Record<string, unknown>][]).map(
+            async ([uid, userData]) => {
+              // Skip current user
+              if (uid === user?.uid) return null;
 
-            const username = userData.username?.toLowerCase() || '';
-            const displayName = userData.displayName?.toLowerCase() || '';
-            const query = searchQuery.toLowerCase();
+              const username = String(userData.username ?? '').toLowerCase();
+              const displayName = String(userData.displayName ?? '').toLowerCase();
+              const query = searchQuery.toLowerCase();
 
-            // Search in username and display name
-            if (username.includes(query) || displayName.includes(query)) {
-              // Fetch series and movies counts from separate Firebase nodes
-              let seriesCount = 0;
-              let moviesCount = 0;
+              // Search in username and display name
+              if (username.includes(query) || displayName.includes(query)) {
+                // Fetch series and movies counts from separate Firebase nodes
+                let seriesCount = 0;
+                let moviesCount = 0;
 
-              try {
-                const [seriesSnapshot, moviesSnapshot] = await Promise.all([
-                  firebase.database().ref(`${uid}/serien`).once('value'),
-                  firebase.database().ref(`${uid}/filme`).once('value'),
-                ]);
+                try {
+                  const [seriesSnapshot, moviesSnapshot] = await Promise.all([
+                    firebase.database().ref(`${uid}/serien`).once('value'),
+                    firebase.database().ref(`${uid}/filme`).once('value'),
+                  ]);
 
-                const seriesData = seriesSnapshot.val();
-                const moviesData = moviesSnapshot.val();
+                  const seriesData = seriesSnapshot.val();
+                  const moviesData = moviesSnapshot.val();
 
-                seriesCount = seriesData ? Object.keys(seriesData).length : 0;
-                moviesCount = moviesData ? Object.keys(moviesData).length : 0;
-              } catch (error) {
-                // If we can't fetch counts, continue with 0
+                  seriesCount = seriesData ? Object.keys(seriesData).length : 0;
+                  moviesCount = moviesData ? Object.keys(moviesData).length : 0;
+                } catch {
+                  // If we can't fetch counts, continue with 0
+                }
+
+                return {
+                  uid,
+                  username: userData.username || 'Unknown',
+                  displayName: userData.displayName || userData.username || 'Unknown',
+                  photoURL: userData.photoURL,
+                  bio: userData.bio,
+                  seriesCount,
+                  moviesCount,
+                  isAlreadyFriend: friends.some((f) => f.uid === uid),
+                  hasPendingRequest:
+                    sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
+                };
               }
-
-              return {
-                uid,
-                username: userData.username || 'Unknown',
-                displayName: userData.displayName || userData.username || 'Unknown',
-                photoURL: userData.photoURL,
-                bio: userData.bio,
-                seriesCount,
-                moviesCount,
-                isAlreadyFriend: friends.some((f) => f.uid === uid),
-                hasPendingRequest:
-                  sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
-              };
+              return null;
             }
-            return null;
-          });
+          );
 
           const processedResults = await Promise.all(userPromises);
           const validResults = processedResults.filter(
@@ -342,7 +344,9 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                       flexShrink: 0,
                     }}
                   >
-                    {!result.photoURL && <Person style={{ fontSize: '24px', color: 'white' }} />}
+                    {!result.photoURL && (
+                      <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+                    )}
                   </div>
 
                   {/* User Info */}
@@ -370,8 +374,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                       <div
                         style={{
                           fontSize: '13px',
-                          color: currentTheme.text.secondary,
-                          opacity: 0.8,
+                          color: currentTheme.text.muted,
                         }}
                       >
                         {result.seriesCount || 0} Serien • {result.moviesCount || 0} Filme
@@ -426,7 +429,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 padding: '12px 24px',
                 background: currentTheme.status.success,
                 borderRadius: '12px',
-                color: 'white',
+                color: currentTheme.text.secondary,
                 fontWeight: 600,
                 boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                 zIndex: 1001,

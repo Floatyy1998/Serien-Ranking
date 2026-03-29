@@ -11,7 +11,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -49,13 +49,13 @@ export const ProfileAvatar = memo(
         <div
           className="ps-avatar-glow"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}40, var(--theme-secondary-gradient-40, rgba(139, 92, 246, 0.25)))`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}40, ${currentTheme.accent}40)`,
           }}
         />
         <div
           className="ps-avatar-circle"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
           }}
         >
           {photoURL ? (
@@ -65,7 +65,7 @@ export const ProfileAvatar = memo(
               className="ps-avatar-img"
             />
           ) : (
-            <PersonOutline style={{ fontSize: '48px', color: 'white' }} />
+            <PersonOutline style={{ fontSize: '48px', color: currentTheme.text.secondary }} />
           )}
         </div>
 
@@ -76,11 +76,14 @@ export const ProfileAvatar = memo(
           aria-label="Profilbild hochladen"
           className="ps-avatar-upload-btn"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             cursor: uploading ? 'not-allowed' : 'pointer',
           }}
         >
-          <PhotoCamera style={{ fontSize: '18px', color: 'white' }} aria-hidden="true" />
+          <PhotoCamera
+            style={{ fontSize: '18px', color: currentTheme.text.secondary }}
+            aria-hidden="true"
+          />
         </motion.button>
 
         <input
@@ -162,8 +165,10 @@ export const EditableField = memo(
         placeholder={placeholder}
         className="ps-input"
         style={{
-          background: editable ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.03)',
-          border: `1px solid ${editable ? `${currentTheme.primary}40` : 'rgba(255, 255, 255, 0.1)'}`,
+          background: editable
+            ? currentTheme.background.surfaceHover
+            : currentTheme.background.surface,
+          border: `1px solid ${editable ? `${currentTheme.primary}40` : currentTheme.border.default}`,
           color: currentTheme.text.primary,
         }}
       />
@@ -210,7 +215,7 @@ export const PrivacyToggleCard = memo(
             style={{
               background: isPublic
                 ? `${currentTheme.status.success}20`
-                : 'rgba(255, 255, 255, 0.05)',
+                : currentTheme.background.surface,
             }}
           >
             {isPublic ? (
@@ -235,7 +240,7 @@ export const PrivacyToggleCard = memo(
           style={{
             background: isPublic
               ? `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`
-              : 'rgba(255, 255, 255, 0.15)',
+              : `${currentTheme.text.muted}30`,
             boxShadow: isPublic ? `0 2px 10px ${currentTheme.status.success}40` : 'none',
           }}
         >
@@ -255,8 +260,8 @@ export const PrivacyToggleCard = memo(
           onClick={onShareLink}
           className="ps-share-btn"
           style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary}15, var(--theme-secondary-gradient-15, rgba(139, 92, 246, 0.08)))`,
-            border: `1px solid ${currentTheme.primary}30`,
+            background: currentTheme.background.surface,
+            border: `1px solid ${currentTheme.border.default}`,
             color: currentTheme.primary,
           }}
         >
@@ -298,11 +303,10 @@ export const NavigationOptions = memo(
           <div
             className="ps-option-icon-box"
             style={{
-              background:
-                'linear-gradient(135deg, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)), rgba(168, 85, 247, 0.12))',
+              background: `linear-gradient(135deg, ${currentTheme.accent}1f, ${currentTheme.accent}1f)`,
             }}
           >
-            <Palette style={{ fontSize: '20px', color: '#a855f7' }} />
+            <Palette style={{ fontSize: '20px', color: currentTheme.accent }} />
           </div>
           <span className="ps-option-label">Theme Editor</span>
         </div>
@@ -319,7 +323,7 @@ export const NavigationOptions = memo(
           <div
             className="ps-option-icon-box"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.info.main}20, #06b6d420)`,
+              background: `linear-gradient(135deg, ${currentTheme.status.info.main}20, ${currentTheme.status.info.main}20)`,
             }}
           >
             <Tour style={{ fontSize: '20px', color: currentTheme.status.info.main }} />

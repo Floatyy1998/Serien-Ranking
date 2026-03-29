@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { getTVDBIdFromTMDB, getTVDBSeasons } from '../../services/tvdbService';
-import { Series } from '../../types/Series';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+
+import type { Series } from '../../types/Series';
 import type { TMDBSeason, TMDBEpisode, TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
 
 interface UseSeriesDataResult {
@@ -43,121 +44,107 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
+    if (!id || !apiKey) return;
 
     // ALWAYS fetch backdrop and providers from TMDB
-    if (id && apiKey) {
-      // Fetch backdrop and TMDB rating
-      fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.backdrop_path) {
-            setTmdbBackdrop(data.backdrop_path);
-          }
-          // Store TMDB rating data
-          if (data.vote_average && data.vote_count) {
-            setTmdbRating({
-              vote_average: data.vote_average,
-              vote_count: data.vote_count,
-            });
-          }
-          // Store first_air_date
-          if (data.first_air_date) {
-            setTmdbFirstAirDate(data.first_air_date);
-          }
-          // Store overview for description
-          if (data.overview) {
-            setTmdbOverview(data.overview);
-          }
-        })
-        .catch(() => {
-          // Handle error silently
-        });
+    // Fetch backdrop and TMDB rating
+    fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.backdrop_path) {
+          setTmdbBackdrop(data.backdrop_path);
+        }
+        // Store TMDB rating data
+        if (data.vote_average && data.vote_count) {
+          setTmdbRating({
+            vote_average: data.vote_average,
+            vote_count: data.vote_count,
+          });
+        }
+        // Store first_air_date
+        if (data.first_air_date) {
+          setTmdbFirstAirDate(data.first_air_date);
+        }
+        // Store overview for description
+        if (data.overview) {
+          setTmdbOverview(data.overview);
+        }
+      })
+      .catch(() => {
+        // Handle error silently
+      });
 
-      // Fetch providers
-      fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.results?.DE?.flatrate) {
-            setProviders(data.results.DE.flatrate);
-          }
-        })
-        .catch(() => {
-          // Handle error silently
-        });
-    }
+    // Fetch providers
+    fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.results?.DE?.flatrate) {
+          setProviders(
+            data.results.DE.flatrate.filter((p: { provider_name: string }) =>
+              SUPPORTED_PROVIDERS.has(p.provider_name)
+            )
+          );
+        }
+      })
+      .catch(() => {
+        // Handle error silently
+      });
 
     // Full fetch if not found locally
-    if (!localSeries && id && apiKey && !tmdbSeries) {
-      setLoading(true);
-      fetch(
-        `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-      )
-        .then((res) => res.json())
-        .then(async (data) => {
+    if (!localSeries && !tmdbSeries) {
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
+      const fetchFullData = async () => {
+        setLoading(true);
+        try {
+          const [res, resEN] = await Promise.all([
+            fetch(
+              `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
+            ),
+            fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`),
+          ]);
+          const [data, dataEN] = await Promise.all([res.json(), resEN.json()]);
+          const bestName =
+            data.name && !hasNonLatin(data.name) ? data.name : dataEN.name || data.name;
           if (data.id) {
-            // Get TVDB ID and fetch episodes from TVDB (TVDB already filters out Season 0)
-            let seasonsWithEpisodes: SeriesSeason[] = [];
-            try {
-              const tvdbId = await getTVDBIdFromTMDB(Number(id));
-              if (tvdbId) {
-                const tvdbSeasons = await getTVDBSeasons(tvdbId);
-                seasonsWithEpisodes = tvdbSeasons.map((season) => ({
-                  seasonNumber: season.seasonNumber - 1, // Convert to 0-based to match local data format
-                  episodes: season.episodes.map((ep) => ({
-                    id: ep.id,
-                    name: ep.name || '',
-                    episode_number: ep.number,
-                    air_date: ep.aired || '',
-                    watched: false,
-                    watchCount: 0,
-                  })),
-                }));
-              }
-            } catch (error) {
-              console.error('Error fetching TVDB data:', error);
-            }
+            // Episoden von TMDB holen (deutsche Titel)
+            const regularSeasons = (data.seasons || []).filter(
+              (s: TMDBSeason) => s.season_number > 0
+            );
+            const seasonsWithEpisodes: SeriesSeason[] = await Promise.all(
+              regularSeasons.map(async (season: TMDBSeason) => {
+                try {
+                  const seasonResponse = await fetch(
+                    `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
+                  );
+                  const seasonData = await seasonResponse.json();
 
-            // Fallback to TMDB if TVDB fails
-            if (seasonsWithEpisodes.length === 0) {
-              const regularSeasons = (data.seasons || []).filter(
-                (s: TMDBSeason) => s.season_number > 0
-              );
-              seasonsWithEpisodes = await Promise.all(
-                regularSeasons.map(async (season: TMDBSeason) => {
-                  try {
-                    const seasonResponse = await fetch(
-                      `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
-                    );
-                    const seasonData = await seasonResponse.json();
-
-                    return {
-                      seasonNumber: season.season_number - 1,
-                      episodes:
-                        seasonData.episodes?.map((ep: TMDBEpisode) => ({
-                          id: ep.id,
-                          name: ep.name,
-                          episode_number: ep.episode_number,
-                          air_date: ep.air_date || '',
-                          watched: false,
-                          watchCount: 0,
-                        })) || [],
-                    };
-                  } catch (error) {
-                    return {
-                      seasonNumber: season.season_number - 1,
-                      episodes: [],
-                    };
-                  }
-                })
-              );
-            }
+                  return {
+                    seasonNumber: season.season_number - 1,
+                    episodes:
+                      seasonData.episodes?.map((ep: TMDBEpisode) => ({
+                        id: ep.id,
+                        name: ep.name,
+                        episode_number: ep.episode_number,
+                        air_date: ep.air_date || '',
+                        watched: false,
+                        watchCount: 0,
+                      })) || [],
+                  };
+                } catch {
+                  return {
+                    seasonNumber: season.season_number - 1,
+                    episodes: [],
+                  };
+                }
+              })
+            );
 
             // Transform TMDB data to match our Series type
             const series: Series = {
               id: data.id,
               nmr: 0, // No nmr for non-user series
-              title: data.name,
-              name: data.name,
+              title: bestName,
+              name: bestName,
               poster: { poster: data.poster_path },
               genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
               provider: { provider: [] },
@@ -187,9 +174,13 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             };
             setTmdbSeries(series);
           }
-        })
-        .catch((_err) => {})
-        .finally(() => setLoading(false));
+        } catch {
+          // Handle error silently
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchFullData();
     }
   }, [localSeries, id, tmdbSeries]); // Remove loading dependency, add tmdbSeries to prevent re-fetching
 

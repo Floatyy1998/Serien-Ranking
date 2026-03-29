@@ -141,14 +141,14 @@
 .tm-header {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-dropdown);
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -161,7 +161,7 @@
 .tm-header__share-btn {
   width: 42px;
   height: 42px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   border: none;
   display: flex;
   align-items: center;
@@ -261,7 +261,7 @@
 
 .tm-name-pill {
   padding: 6px 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-weight: 700;
   font-size: 15px;
 }
@@ -290,7 +290,7 @@
   align-items: center;
   gap: 8px;
   padding: 8px 18px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   position: relative;
   z-index: 1;
 }
@@ -314,7 +314,7 @@
   gap: 4px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.04);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: visible;
 }
@@ -324,13 +324,13 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   border: none;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .tm-tab-btn--active {
@@ -361,7 +361,7 @@
   gap: 10px;
   margin-bottom: 16px;
   padding: 12px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
 .tm-section-header__text {
@@ -377,14 +377,14 @@
   gap: 4px;
   font-size: 13px;
   padding: 4px 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 /* ==================== Empty State ==================== */
 .tm-empty-state {
   text-align: center;
   padding: 60px 30px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -413,7 +413,7 @@
 
 /* ==================== Overview: Providers Card ==================== */
 .tm-providers-card {
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 18px;
   margin-bottom: 16px;
   position: relative;
@@ -450,7 +450,7 @@
 
 .tm-provider-chip {
   padding: 8px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 14px;
   font-weight: 600;
   color: white;
@@ -493,7 +493,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   margin-bottom: 10px;
 }
 
@@ -518,9 +518,9 @@
   gap: 32px;
   margin-bottom: 20px;
   padding: 14px 20px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .tm-genre-legend__item {
@@ -532,7 +532,7 @@
 .tm-genre-legend__swatch {
   width: 24px;
   height: 24px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;

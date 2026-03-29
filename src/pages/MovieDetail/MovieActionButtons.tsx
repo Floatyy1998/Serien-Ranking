@@ -1,8 +1,9 @@
-import { Delete, Star } from '@mui/icons-material';
+import Delete from '@mui/icons-material/Delete';
+import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;
@@ -38,10 +39,10 @@ export const MovieActionButtons = memo(
             className={`md-add-btn ${isMobile ? 'md-add-btn--mobile' : ''}`}
             style={{
               background: isAdding
-                ? 'rgba(0, 212, 170, 0.5)'
-                : 'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
-              border: '1px solid rgba(0, 212, 170, 0.5)',
-              color: currentTheme.text.primary,
+                ? `${currentTheme.primary}80`
+                : `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.primary}CC 100%)`,
+              border: `1px solid ${currentTheme.primary}80`,
+              color: currentTheme.text.secondary,
             }}
           >
             {isAdding ? 'Wird hinzugefugt...' : 'Film hinzufugen'}
@@ -69,7 +70,7 @@ export const MovieActionButtons = memo(
           <Star
             style={{
               fontSize: isMobile ? '16px' : '18px',
-              color: isWatched ? '#ffd700' : 'white',
+              color: isWatched ? currentTheme.accent : currentTheme.text.secondary,
             }}
           />
           Bewerten
@@ -88,7 +89,12 @@ export const MovieActionButtons = memo(
               fontSize: isMobile ? '13px' : '16px',
             }}
           >
-            <Delete style={{ fontSize: isMobile ? '18px' : '20px', color: '#ff6b6b' }} />
+            <Delete
+              style={{
+                fontSize: isMobile ? '18px' : '20px',
+                color: currentTheme.status?.error || '#ef4444',
+              }}
+            />
           </motion.button>
         </Tooltip>
       </div>

@@ -2,8 +2,9 @@ import { Tooltip } from '@mui/material';
 import { memo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis } from '../../components/detail';
+import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
-import { StatusBadge } from './StatusBadge';
+import { StatusBadge, NextEpisodeChip } from './StatusBadge';
 
 interface HeroSectionProps {
   series: Series;
@@ -16,7 +17,7 @@ interface HeroSectionProps {
   isReadOnlyTmdbSeries: boolean;
   isAdding: boolean;
   isMobile: boolean;
-  currentTheme: { status: { success: string } };
+  currentTheme: { status: { success: string }; accent: string };
   onAddSeries: () => void;
 }
 
@@ -53,6 +54,8 @@ export const HeroSection = memo<HeroSectionProps>(
             className="hero-section__backdrop"
             src={getBackdropUrl(tmdbBackdrop)}
             alt={series.title}
+            decoding="async"
+            fetchPriority="low"
           />
         )}
 
@@ -96,7 +99,14 @@ export const HeroSection = memo<HeroSectionProps>(
 
         {/* Series Info Overlay */}
         <div className="hero-section__info" style={{ padding: isMobile ? '0 16px' : '0 20px' }}>
-          <h1 className="hero-section__title" style={{ fontSize: isMobile ? '20px' : '28px' }}>
+          <h1
+            className="hero-section__title"
+            style={{ fontSize: isMobile ? '20px' : '28px', cursor: 'pointer' }}
+            onClick={() => {
+              navigator.clipboard.writeText(series.title);
+              showToast('Titel kopiert');
+            }}
+          >
             {series.title}
           </h1>
 
@@ -124,7 +134,7 @@ export const HeroSection = memo<HeroSectionProps>(
               </span>
             )}
             {parseFloat(overallRating) > 0 && (
-              <span style={{ color: '#ffd700' }}>&bull; &#11088; {overallRating}</span>
+              <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
             )}
             {series && (
               <>
@@ -140,6 +150,7 @@ export const HeroSection = memo<HeroSectionProps>(
             style={{ gap: isMobile ? '6px' : '8px', marginBottom: isMobile ? '12px' : '12px' }}
           >
             <StatusBadge series={series} />
+            <NextEpisodeChip series={series} />
             {genres.slice(0, maxGenres).map((genre, i) => (
               <span key={i} className="hero-section__genre-tag">
                 {genre}

@@ -1,8 +1,8 @@
 import { LocalFireDepartment, Replay, Timer } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 
 interface InsightsTabProps {
   data: WatchJourneyData;
@@ -13,6 +13,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
+  const bingeColor = '#ff4d6d'; // Coral – distinct from genre/provider/accent
+  const rewatchColor = '#7b2cbf'; // Deep purple – distinct from genre/provider/accent
+  const runtimeColor = '#4cc9f0'; // Sky blue – distinct from genre/provider/accent
+  const recordAccent = '#7b2cbf';
+  const recordSuccess = '#4cc9f0';
+  const recordSecondary = '#ff4d6d';
 
   // Runtime distribution for histogram
   const runtimeDistribution = useMemo(() => {
@@ -26,7 +32,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
 
     data.seriesStats.forEach((series) => {
       const bucket = buckets.find((b) => series.avgRuntime >= b.min && series.avgRuntime < b.max);
-      if (bucket) bucket.count += series.episodes;
+      if (bucket) bucket.count += 1;
     });
 
     const maxCount = Math.max(...buckets.map((b) => b.count));
@@ -62,8 +68,8 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           margin: '0 20px 24px',
           padding: '24px',
           borderRadius: '24px',
-          background: 'linear-gradient(135deg, #e9456030, #e9456010)',
-          border: '1px solid #e9456050',
+          background: `linear-gradient(135deg, ${bingeColor}30, ${bingeColor}10)`,
+          border: `1px solid ${bingeColor}50`,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -76,7 +82,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             width: 120,
             height: 120,
             borderRadius: '50%',
-            background: '#e94560',
+            background: bingeColor,
             opacity: 0.15,
             filter: 'blur(30px)',
           }}
@@ -84,7 +90,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <LocalFireDepartment style={{ color: '#e94560', fontSize: 32 }} />
+            <LocalFireDepartment style={{ color: bingeColor, fontSize: 32 }} />
             <div>
               <p
                 style={{
@@ -108,11 +114,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: `${currentTheme.text.muted}08`,
                 borderRadius: 12,
               }}
             >
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.bingeEpisodeCount}
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Episoden gebinged</div>
@@ -121,11 +127,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: `${currentTheme.text.muted}08`,
                 borderRadius: 12,
               }}
             >
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.avgBingeLength}
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Ø pro Session</div>
@@ -134,11 +140,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: `${currentTheme.text.muted}08`,
                 borderRadius: 12,
               }}
             >
-              <div style={{ color: '#e94560', fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.longestBinge}
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Längste Session</div>
@@ -160,17 +166,17 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       alignItems: 'center',
                       gap: 12,
                       padding: '8px 12px',
-                      background: 'rgba(255, 255, 255, 0.04)',
+                      background: `${currentTheme.text.muted}08`,
                       borderRadius: 8,
                     }}
                   >
-                    <span style={{ color: '#e94560', fontWeight: 700, width: 20 }}>
+                    <span style={{ color: bingeColor, fontWeight: 700, width: 20 }}>
                       {index + 1}
                     </span>
                     <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>
                       {series.title}
                     </span>
-                    <span style={{ color: '#e94560', fontWeight: 600, fontSize: 13 }}>
+                    <span style={{ color: bingeColor, fontWeight: 600, fontSize: 13 }}>
                       {series.bingeEpisodes} Ep.
                     </span>
                   </div>
@@ -190,8 +196,8 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           margin: '0 20px 24px',
           padding: '24px',
           borderRadius: '24px',
-          background: 'linear-gradient(135deg, #a29bfe30, #a29bfe10)',
-          border: '1px solid #a29bfe50',
+          background: `linear-gradient(135deg, ${rewatchColor}30, ${rewatchColor}10)`,
+          border: `1px solid ${rewatchColor}50`,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -204,7 +210,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             width: 120,
             height: 120,
             borderRadius: '50%',
-            background: '#a29bfe',
+            background: rewatchColor,
             opacity: 0.15,
             filter: 'blur(30px)',
           }}
@@ -212,7 +218,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
 
         <div style={{ position: 'relative', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-            <Replay style={{ color: '#a29bfe', fontSize: 32 }} />
+            <Replay style={{ color: rewatchColor, fontSize: 32 }} />
             <div>
               <p
                 style={{
@@ -236,11 +242,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: `${currentTheme.text.muted}08`,
                 borderRadius: 12,
               }}
             >
-              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: rewatchColor, fontSize: 24, fontWeight: 700 }}>
                 {Math.round(data.rewatchMinutes / 60)}h
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>Rewatch-Zeit</div>
@@ -249,11 +255,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               style={{
                 textAlign: 'center',
                 padding: '16px',
-                background: 'rgba(255, 255, 255, 0.04)',
+                background: `${currentTheme.text.muted}08`,
                 borderRadius: 12,
               }}
             >
-              <div style={{ color: '#a29bfe', fontSize: 24, fontWeight: 700 }}>
+              <div style={{ color: rewatchColor, fontSize: 24, fontWeight: 700 }}>
                 {data.rewatchPercentage}%
               </div>
               <div style={{ color: textSecondary, fontSize: 11 }}>deiner Zeit</div>
@@ -275,17 +281,17 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       alignItems: 'center',
                       gap: 12,
                       padding: '8px 12px',
-                      background: 'rgba(255, 255, 255, 0.04)',
+                      background: `${currentTheme.text.muted}08`,
                       borderRadius: 8,
                     }}
                   >
-                    <span style={{ color: '#a29bfe', fontWeight: 700, width: 20 }}>
+                    <span style={{ color: rewatchColor, fontWeight: 700, width: 20 }}>
                       {index + 1}
                     </span>
                     <span style={{ color: textPrimary, flex: 1, fontSize: 13 }}>
                       {series.title}
                     </span>
-                    <span style={{ color: '#a29bfe', fontWeight: 600, fontSize: 13 }}>
+                    <span style={{ color: rewatchColor, fontWeight: 600, fontSize: 13 }}>
                       {series.rewatchEpisodes}× rewatch
                     </span>
                   </div>
@@ -310,7 +316,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <Timer style={{ color: '#00cec9', fontSize: 28 }} />
+          <Timer style={{ color: runtimeColor, fontSize: 28 }} />
           <div>
             <h3
               style={{
@@ -338,14 +344,16 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                 animate={{ height: `${bucket.percentage}%` }}
                 transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
                 style={{
-                  background: `linear-gradient(180deg, #00cec9, #00cec960)`,
+                  background: `linear-gradient(180deg, ${runtimeColor}, ${runtimeColor}60)`,
                   borderRadius: '8px 8px 0 0',
                   minHeight: bucket.count > 0 ? 20 : 4,
                   marginBottom: 8,
                 }}
               />
               <div style={{ color: textSecondary, fontSize: 11 }}>{bucket.label}</div>
-              <div style={{ color: '#00cec9', fontSize: 12, fontWeight: 600 }}>{bucket.count}</div>
+              <div style={{ color: runtimeColor, fontSize: 12, fontWeight: 600 }}>
+                {bucket.count} {bucket.count === 1 ? 'Serie' : 'Serien'}
+              </div>
             </div>
           ))}
         </div>
@@ -384,12 +392,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             style={{
               padding: 16,
               borderRadius: 12,
-              background: '#fdcb6e15',
-              border: '1px solid #fdcb6e30',
+              background: bgSurface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#fdcb6e', fontSize: 28, fontWeight: 700 }}>
+            <div style={{ color: recordAccent, fontSize: 28, fontWeight: 700 }}>
               {data.totalEpisodes}
             </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Episoden insgesamt</div>
@@ -399,12 +407,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             style={{
               padding: 16,
               borderRadius: 12,
-              background: '#00b89415',
-              border: '1px solid #00b89430',
+              background: bgSurface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#00b894', fontSize: 28, fontWeight: 700 }}>
+            <div style={{ color: recordSuccess, fontSize: 28, fontWeight: 700 }}>
               {Math.round(data.totalMinutes / 60)}h
             </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Watchtime</div>
@@ -414,12 +422,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             style={{
               padding: 16,
               borderRadius: 12,
-              background: '#7c6ef015',
-              border: '1px solid #7c6ef030',
+              background: bgSurface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#7c6ef0', fontSize: 28, fontWeight: 700 }}>
+            <div style={{ color: recordSecondary, fontSize: 28, fontWeight: 700 }}>
               {data.uniqueSeriesCount}
             </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Verschiedene Serien</div>
@@ -429,12 +437,12 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             style={{
               padding: 16,
               borderRadius: 12,
-              background: '#e9456015',
-              border: '1px solid #e9456030',
+              background: bgSurface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <div style={{ color: '#e94560', fontSize: 28, fontWeight: 700 }}>
+            <div style={{ color: bingeColor, fontSize: 28, fontWeight: 700 }}>
               {data.longestBinge}
             </div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Längste Binge-Session</div>

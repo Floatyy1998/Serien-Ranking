@@ -15,7 +15,7 @@ export const HeroSection = () => (
         Serien & Film Tracker
       </div>
 
-      <GradientText as="h1" from="#a855f7" to="#f97316" style={{ marginBottom: '24px' }}>
+      <GradientText as="h1" style={{ marginBottom: '24px' }}>
         <span className="start-hero-title">TV-RANK</span>
       </GradientText>
 

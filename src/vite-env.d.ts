@@ -10,7 +10,6 @@ interface ImportMetaEnv {
   readonly VITE_APPID: string;
   readonly VITE_MEASUREMENTID: string;
   readonly VITE_API_TMDB: string;
-  readonly VITE_API_TVDB: string;
 }
 
 interface ImportMeta {

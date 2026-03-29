@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search } from '@mui/icons-material';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { OnboardingItemCard } from '../components/OnboardingItemCard';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
 
@@ -280,9 +280,9 @@ export const AddContentStep: React.FC<Props> = ({
             border: 'none',
             background:
               addedCount > 0
-                ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
-            color: addedCount > 0 ? 'white' : currentTheme.text.muted,
+            color: addedCount > 0 ? currentTheme.text.secondary : currentTheme.text.muted,
             fontSize: 16,
             fontWeight: 700,
             cursor: 'pointer',

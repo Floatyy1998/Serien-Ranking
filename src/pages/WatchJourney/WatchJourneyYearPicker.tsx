@@ -1,6 +1,6 @@
 import { ExpandMore } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface YearPickerButtonProps {
   selectedYear: number;
@@ -96,7 +96,7 @@ const YearPickerDropdown: React.FC<YearPickerDropdownProps> = ({
                   border:
                     selectedYear === year ? 'none' : `1px solid ${currentTheme.border.default}`,
                   background: selectedYear === year ? primaryColor : bgSurface,
-                  color: selectedYear === year ? 'white' : textPrimary,
+                  color: selectedYear === year ? currentTheme.text.secondary : textPrimary,
                   boxShadow: selectedYear === year ? `0 4px 15px ${primaryColor}40` : 'none',
                 }}
               >

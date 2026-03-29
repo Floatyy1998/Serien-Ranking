@@ -1,42 +1,88 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { useAuth } from '../App';
+import type { ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../AuthContext';
+import type { UserThemeConfig } from '../theme/dynamicTheme';
 import {
   createMuiTheme,
   defaultThemeConfig,
   generateDynamicTheme,
-  UserThemeConfig,
   validateThemeConfig,
 } from '../theme/dynamicTheme';
+import { ThemeContext } from './ThemeContextDef';
+import type { ThemeContextType } from './ThemeContextDef';
 
-// Theme-Context Interface
-interface ThemeContextType {
-  currentTheme: ReturnType<typeof generateDynamicTheme>;
-  userConfig: UserThemeConfig;
-  updateTheme: (config: Partial<UserThemeConfig>) => void;
-  resetTheme: () => void;
-  saveTheme: () => void;
-  loadTheme: () => void;
-  syncMode: 'local' | 'cloud';
-  setSyncMode: (mode: 'local' | 'cloud') => void;
-  getMobilePageBackground: () => string; // Neue Funktion für dynamische Transparenz
-  getMobilePageStyle: () => React.CSSProperties; // Erweiterte Funktion für Glaseffekt
-  getMobileHeaderStyle: (gradientColor?: string) => React.CSSProperties; // Header-Style mit Glaseffekt
+// Zentrale Funktion zum Setzen aller CSS-Variablen
+function applyCSSVariables(
+  theme: ReturnType<typeof generateDynamicTheme>,
+  config: UserThemeConfig,
+  isMobileDevice: boolean
+) {
+  const root = document.documentElement;
+
+  // Primäre Farben
+  root.style.setProperty('--color-primary', theme.primary);
+  root.style.setProperty('--color-primary-hover', theme.primaryHover);
+  root.style.setProperty('--color-primary-dark', theme.primaryDark);
+  root.style.setProperty('--color-primary-06', `${theme.primary}0f`);
+  root.style.setProperty('--color-primary-10', `${theme.primary}1a`);
+  root.style.setProperty('--color-primary-15', `${theme.primary}26`);
+
+  // Theme-Variablen (für CSS-Nutzung)
+  root.style.setProperty('--theme-primary', theme.primary);
+  root.style.setProperty('--theme-primary-hover', theme.primaryHover);
+  root.style.setProperty('--theme-background', theme.background.default);
+  root.style.setProperty('--theme-surface', theme.background.surface);
+  root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
+  root.style.setProperty('--theme-secondary-gradient', theme.secondary);
+
+  // Hintergrundfarben
+  root.style.setProperty('--color-background-default', theme.background.default);
+  root.style.setProperty('--color-background-surface', theme.background.surface);
+  root.style.setProperty('--color-background-dialog', theme.background.dialog);
+  root.style.setProperty('--color-background-elevated', theme.background.surfaceElevated);
+
+  // Textfarben
+  root.style.setProperty('--color-text-primary', theme.text.primary);
+  root.style.setProperty('--color-text-secondary', theme.text.secondary);
+  root.style.setProperty('--color-text-muted', theme.text.muted);
+  root.style.setProperty('--color-text-accent', theme.text.accent);
+
+  // Accent-Farbe
+  root.style.setProperty('--theme-accent', theme.accent);
+
+  // Border-Farben
+  root.style.setProperty('--color-border-default', theme.border.default);
+  root.style.setProperty('--color-border-primary', theme.border.primary);
+
+  // Status-Farben
+  root.style.setProperty('--color-error', theme.status.error);
+  root.style.setProperty('--color-warning', theme.status.warning);
+  root.style.setProperty('--color-success', theme.status.success);
+
+  // Dynamische Glow-Variablen (theme-responsiv)
+  root.style.setProperty('--glow-accent', `0 0 20px ${theme.accent}66, 0 0 40px ${theme.accent}33`);
+
+  // Hintergrundbild - skip on mobile devices
+  if (config.backgroundImage && !isMobileDevice) {
+    root.style.setProperty('--background-image', `url(${config.backgroundImage})`);
+    root.style.setProperty(
+      '--background-image-opacity',
+      String(config.backgroundImageOpacity || 0.3)
+    );
+    root.style.setProperty('--background-image-blur', `${config.backgroundImageBlur || 0}px`);
+  } else {
+    root.style.removeProperty('--background-image');
+    root.style.removeProperty('--background-image-opacity');
+    root.style.removeProperty('--background-image-blur');
+  }
 }
 
-// Theme-Context erstellen
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-// Custom Hook für Theme-Zugriff
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+function isMobile(): boolean {
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+}
 
 // Theme-Provider-Komponente
 interface ThemeProviderProps {
@@ -46,16 +92,23 @@ interface ThemeProviderProps {
 export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const { user } = useAuth() || {};
 
-  // Initialisiere Theme aus localStorage beim Start
+  // Initialisiere Theme aus localStorage beim Start — mit Auto-Recovery bei kaputten Werten
   const getInitialConfig = (): UserThemeConfig => {
     try {
       const savedConfig = localStorage.getItem('customTheme');
       if (savedConfig) {
         const parsed = JSON.parse(savedConfig);
-        return validateThemeConfig(parsed);
+        const validated = validateThemeConfig(parsed);
+        // Repariertes Theme zurückschreiben falls es korrigiert wurde
+        const repaired = JSON.stringify(validated);
+        if (repaired !== savedConfig) {
+          localStorage.setItem('customTheme', repaired);
+        }
+        return validated;
       }
-    } catch (error) {
-      // console.error('Fehler beim Laden des initialen Themes:', error);
+    } catch {
+      // localStorage ist korrupt — aufräumen
+      localStorage.removeItem('customTheme');
     }
     return defaultThemeConfig;
   };
@@ -63,59 +116,17 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   const initialConfig = getInitialConfig();
   const [userConfig, setUserConfig] = useState<UserThemeConfig>(initialConfig);
   const [currentTheme, setCurrentTheme] = useState(() => {
-    const theme = generateDynamicTheme(initialConfig);
-    const isMobileDevice =
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
-    // Setze CSS-Variablen sofort beim Start
-    setTimeout(() => {
-      const root = document.documentElement;
-      // Primäre Farben
-      root.style.setProperty('--color-primary', theme.primary);
-      root.style.setProperty('--color-primary-hover', theme.primaryHover);
-      root.style.setProperty('--color-primary-dark', theme.primaryDark);
-
-      // Theme-Variablen (für CSS-Nutzung)
-      root.style.setProperty('--theme-primary', theme.primary);
-      root.style.setProperty('--theme-primary-hover', theme.primaryHover);
-      root.style.setProperty('--theme-background', theme.background.default);
-      root.style.setProperty('--theme-surface', theme.background.surface);
-      root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
-      root.style.setProperty('--theme-secondary-gradient', theme.secondary);
-
-      // Hintergrundfarben
-      root.style.setProperty('--color-background-default', theme.background.default);
-      root.style.setProperty('--color-background-surface', theme.background.surface);
-      root.style.setProperty('--color-background-dialog', theme.background.dialog);
-      root.style.setProperty('--color-background-elevated', theme.background.surfaceElevated);
-
-      // Textfarben
-      root.style.setProperty('--color-text-primary', theme.text.primary);
-      root.style.setProperty('--color-text-secondary', theme.text.secondary);
-      root.style.setProperty('--color-text-muted', theme.text.muted);
-
-      // Border-Farben
-      root.style.setProperty('--color-border-default', theme.border.default);
-      root.style.setProperty('--color-border-primary', theme.border.primary);
-
-      // Status-Farben
-      root.style.setProperty('--color-error', theme.status.error);
-      root.style.setProperty('--color-warning', theme.status.warning);
-      root.style.setProperty('--color-success', theme.status.success);
-
-      // Hintergrundbild - skip on mobile devices
-      if (initialConfig.backgroundImage && !isMobileDevice) {
-        root.style.setProperty('--background-image', `url(${initialConfig.backgroundImage})`);
-        root.style.setProperty(
-          '--background-image-opacity',
-          String(initialConfig.backgroundImageOpacity || 0.3)
-        );
-        root.style.setProperty(
-          '--background-image-blur',
-          `${initialConfig.backgroundImageBlur || 0}px`
-        );
-      }
-    }, 0);
-    return theme;
+    try {
+      const theme = generateDynamicTheme(initialConfig);
+      setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
+      return theme;
+    } catch {
+      // Fallback auf Default-Theme wenn alles schiefgeht
+      localStorage.removeItem('customTheme');
+      const fallback = generateDynamicTheme(defaultThemeConfig);
+      setTimeout(() => applyCSSVariables(fallback, defaultThemeConfig, isMobile()), 0);
+      return fallback;
+    }
   });
 
   const [syncMode, setSyncModeState] = useState<'local' | 'cloud'>(() => {
@@ -124,28 +135,38 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     return (savedMode as 'local' | 'cloud') || 'local';
   });
 
-  // Theme aus localStorage laden (mit Firebase als Fallback)
-  useEffect(() => {
-    loadTheme();
-  }, [user]);
+  // CSS-Variablen für globale Verwendung setzen
+  const updateCSSVariables = useCallback(
+    (theme: ReturnType<typeof generateDynamicTheme>, config?: UserThemeConfig) => {
+      applyCSSVariables(theme, config || userConfig, isMobile());
+    },
+    [userConfig]
+  );
 
-  // Theme aktualisieren
-  const updateTheme = (newConfig: Partial<UserThemeConfig>) => {
-    const validatedConfig = validateThemeConfig({ ...userConfig, ...newConfig });
-    setUserConfig(validatedConfig);
+  // Theme-Config direkt speichern (für updateTheme)
+  const saveThemeConfig = useCallback(
+    async (config: UserThemeConfig) => {
+      // Speichere IMMER lokal (wie im Desktop ThemeEditor)
+      // WICHTIG: Verwende 'customTheme' als Key, genau wie Desktop!
+      localStorage.setItem('customTheme', JSON.stringify(config));
 
-    const newTheme = generateDynamicTheme(validatedConfig);
-    setCurrentTheme(newTheme);
-
-    // CSS-Variablen für dynamisches Styling setzen (mit Config übergeben)
-    updateCSSVariables(newTheme, validatedConfig);
-
-    // Auto-save with the new config directly
-    saveThemeConfig(validatedConfig);
-  };
+      // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
+      if (syncMode === 'cloud' && user?.uid) {
+        try {
+          await firebase
+            .database()
+            .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
+            .set(config);
+        } catch {
+          // console.error('Fehler beim Speichern des Themes in Firebase:', error);
+        }
+      }
+    },
+    [syncMode, user?.uid]
+  );
 
   // Theme zurücksetzen
-  const resetTheme = async () => {
+  const resetTheme = useCallback(async () => {
     setUserConfig(defaultThemeConfig);
     const newTheme = generateDynamicTheme(defaultThemeConfig);
     setCurrentTheme(newTheme);
@@ -159,44 +180,14 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
           .database()
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
           .remove();
-      } catch (error) {
+      } catch {
         // console.error('Fehler beim Löschen des Themes aus Firebase:', error);
       }
     }
-  };
-
-  // Sync-Mode setzen und speichern
-  const setSyncMode = (mode: 'local' | 'cloud') => {
-    setSyncModeState(mode);
-    localStorage.setItem('themeSyncMode', mode);
-  };
-
-  // Theme-Config direkt speichern (für updateTheme)
-  const saveThemeConfig = async (config: UserThemeConfig) => {
-    // Speichere IMMER lokal (wie im Desktop ThemeEditor)
-    // WICHTIG: Verwende 'customTheme' als Key, genau wie Desktop!
-    localStorage.setItem('customTheme', JSON.stringify(config));
-
-    // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
-    if (syncMode === 'cloud' && user?.uid) {
-      try {
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .set(config);
-      } catch (error) {
-        // console.error('Fehler beim Speichern des Themes in Firebase:', error);
-      }
-    }
-  };
-
-  // Theme speichern (verwendet aktuellen State)
-  const saveTheme = async () => {
-    await saveThemeConfig(userConfig);
-  };
+  }, [user?.uid, updateCSSVariables]);
 
   // Theme laden (localStorage hat IMMER Priorität, dann Firebase als Fallback)
-  const loadTheme = async () => {
+  const loadTheme = useCallback(async () => {
     try {
       let loadedConfig = null;
 
@@ -206,7 +197,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       if (savedConfig) {
         try {
           loadedConfig = JSON.parse(savedConfig);
-        } catch (error) {
+        } catch {
           // console.error('Fehler beim Parsen des lokalen Themes:', error);
         }
       }
@@ -232,133 +223,112 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
         const newTheme = generateDynamicTheme(validatedConfig);
         setCurrentTheme(newTheme);
-        updateCSSVariables(newTheme);
+        updateCSSVariables(newTheme, validatedConfig);
       } else {
         // Ensure CSS variables are set even with default theme
         updateCSSVariables(currentTheme);
       }
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Laden des Themes:', error);
       resetTheme();
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid, updateCSSVariables, resetTheme]);
 
-  // CSS-Variablen für globale Verwendung setzen
-  const updateCSSVariables = (
-    theme: ReturnType<typeof generateDynamicTheme>,
-    config?: UserThemeConfig
-  ) => {
-    const root = document.documentElement;
-    const configToUse = config || userConfig;
-    const isMobileDevice =
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  // Theme aus localStorage laden (mit Firebase als Fallback)
+  useEffect(() => {
+    loadTheme();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
-    // Primäre Farben
-    root.style.setProperty('--color-primary', theme.primary);
-    root.style.setProperty('--color-primary-hover', theme.primaryHover);
-    root.style.setProperty('--color-primary-dark', theme.primaryDark);
+  // Theme aktualisieren
+  const updateTheme = useCallback(
+    (newConfig: Partial<UserThemeConfig>) => {
+      const validatedConfig = validateThemeConfig({ ...userConfig, ...newConfig });
+      setUserConfig(validatedConfig);
 
-    // Theme-Variablen (für CSS-Nutzung)
-    root.style.setProperty('--theme-primary', theme.primary);
-    root.style.setProperty('--theme-primary-hover', theme.primaryHover);
-    root.style.setProperty('--theme-background', theme.background.default);
-    root.style.setProperty('--theme-surface', theme.background.surface);
-    root.style.setProperty('--theme-surface-elevated', theme.background.surfaceElevated);
+      const newTheme = generateDynamicTheme(validatedConfig);
+      setCurrentTheme(newTheme);
 
-    // Hintergrundfarben
-    root.style.setProperty('--color-background-default', theme.background.default);
-    root.style.setProperty('--color-background-surface', theme.background.surface);
-    root.style.setProperty('--color-background-dialog', theme.background.dialog);
-    root.style.setProperty('--color-background-elevated', theme.background.surfaceElevated);
+      // CSS-Variablen für dynamisches Styling setzen (mit Config übergeben)
+      updateCSSVariables(newTheme, validatedConfig);
 
-    // Textfarben
-    root.style.setProperty('--color-text-primary', theme.text.primary);
-    root.style.setProperty('--color-text-secondary', theme.text.secondary);
-    root.style.setProperty('--color-text-muted', theme.text.muted);
+      // Auto-save with the new config directly
+      saveThemeConfig(validatedConfig);
+    },
+    [userConfig, updateCSSVariables, saveThemeConfig]
+  );
 
-    // Border-Farben
-    root.style.setProperty('--color-border-default', theme.border.default);
-    root.style.setProperty('--color-border-primary', theme.border.primary);
+  // Theme speichern (verwendet aktuellen State)
+  const saveTheme = useCallback(async () => {
+    await saveThemeConfig(userConfig);
+  }, [saveThemeConfig, userConfig]);
 
-    // Weitere wichtige Farben
-    root.style.setProperty('--color-error', theme.status.error);
-    root.style.setProperty('--color-warning', theme.status.warning);
-    root.style.setProperty('--color-success', theme.status.success);
-
-    // Dynamische Glow-Variablen (theme-responsiv)
-    root.style.setProperty('--theme-secondary-gradient', theme.secondary);
-    root.style.setProperty(
-      '--glow-accent',
-      `0 0 20px ${theme.accent}66, 0 0 40px ${theme.accent}33`
-    );
-
-    // Hintergrundbild - skip on mobile devices
-    if (configToUse.backgroundImage && !isMobileDevice) {
-      root.style.setProperty('--background-image', `url(${configToUse.backgroundImage})`);
-      root.style.setProperty(
-        '--background-image-opacity',
-        String(configToUse.backgroundImageOpacity || 0.3)
-      );
-      root.style.setProperty(
-        '--background-image-blur',
-        `${configToUse.backgroundImageBlur || 0}px`
-      );
-
-      // Don't set glassy variables
-    } else {
-      root.style.removeProperty('--background-image');
-      root.style.removeProperty('--background-image-opacity');
-      root.style.removeProperty('--background-image-blur');
-    }
-  };
+  // Sync-Mode setzen und speichern
+  const setSyncMode = useCallback((mode: 'local' | 'cloud') => {
+    setSyncModeState(mode);
+    localStorage.setItem('themeSyncMode', mode);
+  }, []);
 
   // Funktion für dynamische Mobile-Hintergründe
-  const getMobilePageBackground = (): string => {
+  const getMobilePageBackground = useCallback((): string => {
     // Auf Mobile immer undurchsichtiger Hintergrund (kein Background-Image Support)
     return currentTheme.background.default;
-  };
+  }, [currentTheme.background.default]);
 
   // Einfache Style-Funktion ohne minHeight oder flex
-  const getMobilePageStyle = (): React.CSSProperties => {
+  const getMobilePageStyle = useCallback((): React.CSSProperties => {
     return {};
-  };
+  }, []);
 
   // Header-Style - no glass effect on mobile
-  const getMobileHeaderStyle = (gradientColor?: string): React.CSSProperties => {
-    // Always use normal gradient on mobile (no glass effect)
-    return {
-      background: gradientColor
-        ? `linear-gradient(180deg, ${gradientColor}33 0%, transparent 100%)`
-        : `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
-    };
-  };
+  const getMobileHeaderStyle = useCallback(
+    (gradientColor?: string): React.CSSProperties => {
+      // Always use normal gradient on mobile (no glass effect)
+      return {
+        background: gradientColor
+          ? `linear-gradient(180deg, ${gradientColor}33 0%, transparent 100%)`
+          : `linear-gradient(180deg, ${currentTheme.primary}33 0%, transparent 100%)`,
+      };
+    },
+    [currentTheme.primary]
+  );
 
-  // Material-UI Theme erstellen
-  const muiTheme = createTheme(createMuiTheme(currentTheme));
+  // Material-UI Theme erstellen - nur neu wenn sich currentTheme ändert
+  const muiTheme = useMemo(() => createTheme(createMuiTheme(currentTheme)), [currentTheme]);
 
-  const contextValue: ThemeContextType = {
-    currentTheme,
-    userConfig,
-    updateTheme,
-    resetTheme,
-    saveTheme,
-    loadTheme,
-    syncMode,
-    setSyncMode,
-    getMobilePageBackground,
-    getMobilePageStyle,
-    getMobileHeaderStyle,
-  };
+  const contextValue = useMemo<ThemeContextType>(
+    () => ({
+      currentTheme,
+      userConfig,
+      updateTheme,
+      resetTheme,
+      saveTheme,
+      loadTheme,
+      syncMode,
+      setSyncMode,
+      getMobilePageBackground,
+      getMobilePageStyle,
+      getMobileHeaderStyle,
+    }),
+    [
+      currentTheme,
+      userConfig,
+      updateTheme,
+      resetTheme,
+      saveTheme,
+      loadTheme,
+      syncMode,
+      setSyncMode,
+      getMobilePageBackground,
+      getMobilePageStyle,
+      getMobileHeaderStyle,
+    ]
+  );
 
   return (
     <ThemeContext.Provider value={contextValue}>
       <MuiThemeProvider theme={muiTheme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
   );
-};
-
-// Hook für direkten Theme-Zugriff in Komponenten
-export const useCurrentTheme = () => {
-  const { currentTheme } = useTheme();
-  return currentTheme;
 };

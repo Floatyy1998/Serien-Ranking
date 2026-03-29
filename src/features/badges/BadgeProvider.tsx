@@ -1,18 +1,12 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { EarnedBadge } from './badgeDefinitions';
+import { useAuth } from '../../AuthContext';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from './BadgeNotification';
-
-interface BadgeContextType {
-  showBadgeOverview: () => void;
-  newBadges: EarnedBadge[];
-  clearNewBadges: () => void;
-  unreadBadgesCount: number;
-}
-
-const BadgeContext = createContext<BadgeContextType | null>(null);
+import { BadgeContext } from './BadgeContextDef';
+import type { BadgeContextType } from './BadgeContextDef';
+import type { EarnedBadge } from './badgeDefinitions';
 
 interface BadgeProviderProps {
   children: ReactNode;
@@ -113,7 +107,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
       try {
         const { badgeCounterService } = await import('./badgeCounterService');
         await badgeCounterService.ensureCurrentMarathonWeek(user.uid);
-      } catch (error) {
+      } catch {
         // console.warn(
         //   'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
         //   error
@@ -127,7 +121,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         const { getOfflineBadgeSystem } = await import('./offlineBadgeSystem');
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
-      } catch (error) {
+      } catch {
         // console.warn(
         //   'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
         //   error
@@ -167,14 +161,6 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
       />
     </BadgeContext.Provider>
   );
-};
-
-export const useBadges = (): BadgeContextType => {
-  const context = useContext(BadgeContext);
-  if (!context) {
-    throw new Error('useBadges must be used within a BadgeProvider');
-  }
-  return context;
 };
 
 export default BadgeProvider;

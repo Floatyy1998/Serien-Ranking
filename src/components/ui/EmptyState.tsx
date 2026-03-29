@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -74,7 +74,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             fontSize: '52px',
             color: color,
             marginBottom: '24px',
-            opacity: 0.7,
             display: 'flex',
             justifyContent: 'center',
             position: 'relative',
@@ -141,7 +140,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               marginLeft: 'auto',
               marginRight: 'auto',
               lineHeight: 1.6,
-              opacity: 0.8,
             }}
           >
             {description}
@@ -158,10 +156,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             style={{
               marginTop: '24px',
               padding: '13px 32px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, var(--theme-secondary-gradient, #8b5cf6)))`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
               border: 'none',
               borderRadius: '14px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '14px',
               fontWeight: 700,
               cursor: 'pointer',

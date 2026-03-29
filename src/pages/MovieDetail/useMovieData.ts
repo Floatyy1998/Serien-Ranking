@@ -2,10 +2,14 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
+import { useAuth } from '../../AuthContext';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
-import { Movie } from '../../types/Movie';
+import type { Movie } from '../../types/Movie';
+import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
+import { getImageUrl } from '../../utils/imageUrl';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -36,7 +40,7 @@ export interface SnackbarState {
 export const useMovieData = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { movieList } = useMovieList();
 
   // --- Core state ---
@@ -47,15 +51,7 @@ export const useMovieData = () => {
   const [isAdding, setIsAdding] = useState(false);
 
   // --- Responsive state ---
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { isMobile } = useDeviceType();
 
   // --- UI feedback state ---
   const [dialog, setDialog] = useState<DialogState>({
@@ -107,11 +103,8 @@ export const useMovieData = () => {
   }, [movie]);
 
   // --- Helpers ---
-  const getBackdropUrl = (backdropPath: string | undefined): string => {
-    if (!backdropPath) return '';
-    if (backdropPath.startsWith('http')) return backdropPath;
-    return `https://image.tmdb.org/t/p/original${backdropPath}`;
-  };
+  const getBackdropUrl = (backdropPath: string | undefined): string =>
+    getImageUrl(backdropPath, 'original', '');
 
   const formatRuntime = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
@@ -148,7 +141,11 @@ export const useMovieData = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.results?.DE?.flatrate) {
-            setProviders(data.results.DE.flatrate);
+            setProviders(
+              data.results.DE.flatrate.filter((p: { provider_name: string }) =>
+                SUPPORTED_PROVIDERS.has(p.provider_name)
+              )
+            );
           }
         })
         .catch(() => {});
@@ -156,17 +153,24 @@ export const useMovieData = () => {
 
     // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
       setLoading(true);
-      fetch(
-        `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-      )
-        .then((res) => res.json())
-        .then((data) => {
+      Promise.all([
+        fetch(
+          `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
+        ).then((r) => r.json()),
+        fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`).then(
+          (r) => r.json()
+        ),
+      ])
+        .then(([data, dataEN]) => {
+          const bestTitle =
+            data.title && !hasNonLatin(data.title) ? data.title : dataEN.title || data.title;
           if (data.id) {
             const movie: Movie = {
               id: data.id,
               nmr: 0,
-              title: data.title,
+              title: bestTitle,
               poster: { poster: data.poster_path },
               genre: {
                 genres: data.genres?.map((g: TMDBGenre) => g.name) || [],
@@ -236,6 +240,7 @@ export const useMovieData = () => {
         }
         await logMovieAdded(user.uid, movie.title || 'Unbekannter Film', movie.id, posterPath);
 
+        trackMovieAdded(String(movie.id), movie.title || '', 'detail_page');
         setSnackbar({ open: true, message: 'Film erfolgreich hinzugefügt!' });
         setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
@@ -271,7 +276,7 @@ export const useMovieData = () => {
 
       const movieRef = firebase.database().ref(`${user.uid}/filme/${movie.nmr}`);
       await movieRef.remove();
-
+      trackMovieDeleted(String(movie.id), movie.title || '');
       setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
@@ -315,7 +320,9 @@ export const useMovieData = () => {
 
     // UI state
     activeTab,
-    setActiveTab,
+    setActiveTab: (tab: 'info' | 'cast') => {
+      setActiveTab(tab);
+    },
     isMobile,
     showDeleteConfirm,
     setShowDeleteConfirm,

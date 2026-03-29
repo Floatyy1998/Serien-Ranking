@@ -10,8 +10,8 @@ import {
 import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BackButton, GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { PageHeader } from '../../components/ui';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { LeaderboardCategory } from '../../types/Leaderboard';
 import { CelebrationModal } from './CelebrationModal';
 import './LeaderboardPage.css';
@@ -67,7 +67,7 @@ export const LeaderboardPage = () => {
   } = useLeaderboardData();
 
   const activeCat = useMemo(
-    () => CATEGORIES.find((c) => c.id === activeCategory)!,
+    () => CATEGORIES.find((c) => c.id === activeCategory),
     [activeCategory]
   );
   const topThree = rankings.slice(0, 3);
@@ -89,13 +89,13 @@ export const LeaderboardPage = () => {
               width: 40,
               height: 40,
               borderRadius: '50%',
-              background: 'rgba(245, 158, 11, 0.1)',
+              background: `${currentTheme.accent}18`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <EmojiEvents style={{ fontSize: 24, color: '#f59e0b' }} />
+            <EmojiEvents style={{ fontSize: 24, color: currentTheme.accent }} />
           </motion.div>
         </motion.div>
         <div style={{ textAlign: 'center' }}>
@@ -122,28 +122,17 @@ export const LeaderboardPage = () => {
           flexDirection: 'column',
         }}
       >
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="lb-header"
-          style={{ background: `${currentTheme.background.default}90` }}
-        >
-          <BackButton />
-          <GradientText
-            as="h1"
-            from="#f59e0b"
-            to="#ef4444"
-            style={{ margin: 0, fontSize: 22, fontWeight: 800, fontFamily: 'var(--font-display)' }}
-          >
-            Rangliste
-          </GradientText>
-        </motion.div>
+        <PageHeader
+          title="Rangliste"
+          gradientFrom={currentTheme.accent}
+          gradientTo={currentTheme.status?.error || '#ef4444'}
+        />
 
         <ModeToggle mode={mode} onModeChange={setMode} />
 
         <div className="lb-empty">
           <div className="lb-empty-icon">
-            <Group style={{ fontSize: 36, color: '#f59e0b' }} />
+            <Group style={{ fontSize: 36, color: currentTheme.accent }} />
           </div>
           <h2
             style={{
@@ -169,8 +158,8 @@ export const LeaderboardPage = () => {
               padding: '12px 24px',
               borderRadius: 12,
               border: 'none',
-              background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-              color: 'white',
+              background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`,
+              color: currentTheme.text.secondary,
               fontSize: 14,
               fontWeight: 700,
               cursor: 'pointer',
@@ -201,31 +190,12 @@ export const LeaderboardPage = () => {
 
       <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
         {/* Sticky Header */}
-        <motion.div
-          className="lb-header"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          style={{ background: `${currentTheme.background.default}90` }}
-        >
-          <BackButton />
-          <div style={{ flex: 1 }}>
-            <GradientText
-              as="h1"
-              from="#f59e0b"
-              to="#ef4444"
-              style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
-            >
-              Rangliste
-            </GradientText>
-            <p
-              style={{ margin: 0, fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}
-            >
-              {activeCat.label}
-              {activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}
-              {mode === 'global' ? ' · Alle Nutzer' : ''}
-            </p>
-          </div>
-        </motion.div>
+        <PageHeader
+          title="Rangliste"
+          gradientFrom={currentTheme.accent}
+          gradientTo={currentTheme.status?.error || '#ef4444'}
+          subtitle={`${activeCat?.label}${activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}${mode === 'global' ? ' · Alle Nutzer' : ''}`}
+        />
 
         {/* Mode Toggle */}
         <ModeToggle mode={mode} onModeChange={setMode} />
@@ -245,7 +215,7 @@ export const LeaderboardPage = () => {
                     ? undefined
                     : {
                         background: 'rgba(255, 255, 255, 0.05)',
-                        color: currentTheme.text.secondary,
+                        color: currentTheme.text.muted,
                       }
                 }
               >
@@ -257,10 +227,10 @@ export const LeaderboardPage = () => {
         </div>
 
         {/* Podium */}
-        <PodiumSection topThree={topThree} category={activeCategory} unit={activeCat.unit} />
+        <PodiumSection topThree={topThree} category={activeCategory} unit={activeCat?.unit ?? ''} />
 
         {/* Rest of Rankings */}
-        <RankingList entries={rest} category={activeCategory} unit={activeCat.unit} />
+        <RankingList entries={rest} category={activeCategory} unit={activeCat?.unit ?? ''} />
 
         {/* Trophy History */}
         <TrophyHistory trophies={trophies} currentUserId={user?.uid} />
@@ -279,6 +249,7 @@ const ModeToggle = React.memo(function ModeToggle({
   mode: 'friends' | 'global';
   onModeChange: (m: 'friends' | 'global') => void;
 }) {
+  const { currentTheme } = useTheme();
   const options = [
     { id: 'friends' as const, label: 'Freunde', icon: <Group sx={{ fontSize: 16 }} /> },
     { id: 'global' as const, label: 'Alle', icon: <Public sx={{ fontSize: 16 }} /> },
@@ -295,9 +266,11 @@ const ModeToggle = React.memo(function ModeToggle({
             onClick={() => onModeChange(opt.id)}
             className="lb-mode-btn"
             style={{
-              background: isActive ? 'linear-gradient(135deg, #f59e0b, #ef4444)' : 'transparent',
-              color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
-              boxShadow: isActive ? '0 2px 8px rgba(245, 158, 11, 0.4)' : 'none',
+              background: isActive
+                ? `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`
+                : 'transparent',
+              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
+              boxShadow: isActive ? `0 2px 8px ${currentTheme.accent}66` : 'none',
             }}
           >
             {opt.icon}

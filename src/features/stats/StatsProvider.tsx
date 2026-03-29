@@ -1,11 +1,13 @@
 import 'firebase/compat/database';
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useAuth } from '../../App';
-import { StatsData } from '../../types/StatsData';
+import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
+import { useAuth } from '../../AuthContext';
+import { isSupportedProvider } from '../../config/menuItems';
+import type { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
+import { StatsContext } from './StatsContextDef';
 
 interface StatsEpisode {
   watched: boolean;
@@ -26,44 +28,34 @@ interface StatsListItem {
   provider?: { provider?: { name: string }[] };
 }
 
-interface StatsContextType {
-  seriesStatsData: StatsData | null;
-  movieStatsData: StatsData | null;
+// Pure Hilfsfunktion - außerhalb des Components damit sie nicht bei jedem Render neu erstellt wird
+function secondsToString(minutes: number) {
+  let value = minutes;
+  const units: { [key: string]: number } = {
+    Jahre: 24 * 60 * 365,
+    Monate: 24 * 60 * 30,
+    Tage: 24 * 60,
+    Stunden: 60,
+    Minuten: 1,
+  };
+  const result: string[] = [];
+  for (const name in units) {
+    const p = Math.floor(value / units[name]);
+    if (p > 0) result.push(p + ' ' + name);
+    value %= units[name];
+  }
+  return result;
 }
 
-export const StatsContext = createContext<StatsContextType>({
-  seriesStatsData: null,
-  movieStatsData: null,
-});
-
 export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
-  const [, setSeriesList] = useState<StatsListItem[]>([]);
-  const [, setMovieList] = useState<StatsListItem[]>([]);
+  const { user } = useAuth() || {};
   const [seriesStatsData, setSeriesStatsData] = useState<StatsData | null>(null);
   const [movieStatsData, setMovieStatsData] = useState<StatsData | null>(null);
-  const { allSeriesList: seriesList } = useSeriesList();
+  const [, startTransition] = useTransition();
+  const { seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
-  function secondsToString(minutes: number) {
-    let value = minutes;
-    const units: { [key: string]: number } = {
-      Jahre: 24 * 60 * 365,
-      Monate: 24 * 60 * 30,
-      Tage: 24 * 60,
-      Stunden: 60,
-      Minuten: 1,
-    };
-    const result: string[] = [];
-    for (const name in units) {
-      const p = Math.floor(value / units[name]);
-      if (p > 0) result.push(p + ' ' + name);
-      value %= units[name];
-    }
-    return result;
-  }
-
-  const computeStats = (list: StatsListItem[]): StatsData => {
+  const computeStats = useCallback((list: StatsListItem[]): StatsData => {
     const genres: {
       [key: string]: {
         count: number;
@@ -93,7 +85,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           (count: number, season: StatsSeason) =>
             count +
             (season.episodes?.reduce((episodeCount: number, episode: StatsEpisode) => {
-              if (episode.watched) {
+              if (episode?.watched) {
                 return episodeCount + (episode.watchCount || 1);
               }
               return episodeCount;
@@ -105,7 +97,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           (time: number, season: StatsSeason) =>
             time +
             (season.episodes?.reduce((episodeTime: number, episode: StatsEpisode) => {
-              if (episode.watched) {
+              if (episode?.watched) {
                 return episodeTime + (episode.watchCount || 1) * (episode.runtime || seriesRuntime);
               }
               return episodeTime;
@@ -126,6 +118,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           }
         });
         item.provider?.provider?.forEach((provider) => {
+          if (!isSupportedProvider(provider.name)) return;
           if (!providers[provider.name]) {
             providers[provider.name] = {
               count: 0,
@@ -161,32 +154,30 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
         watchtimeTotal: watchtime,
       },
     };
-  };
+  }, []); // Pure Funktion - keine Dependencies
 
   useEffect(() => {
-    if (user) {
+    if (!user) return;
+    startTransition(() => {
       if (seriesList) {
         const seriesArray = (
           Array.isArray(seriesList) ? seriesList : Object.values(seriesList || {})
         ) as StatsListItem[];
-        setSeriesList(seriesArray);
         setSeriesStatsData(computeStats(seriesArray));
       }
       if (movieList) {
         const movieArray = (
           Array.isArray(movieList) ? movieList : Object.values(movieList || {})
         ) as StatsListItem[];
-        setMovieList(movieArray);
         setMovieStatsData(computeStats(movieArray));
       }
-    }
-  }, [user, seriesList, movieList]);
+    });
+  }, [user, seriesList, movieList, computeStats]);
 
-  return (
-    <StatsContext.Provider value={{ seriesStatsData, movieStatsData }}>
-      {children}
-    </StatsContext.Provider>
+  const contextValue = useMemo(
+    () => ({ seriesStatsData, movieStatsData }),
+    [seriesStatsData, movieStatsData]
   );
-};
 
-export const useStats = () => useContext(StatsContext);
+  return <StatsContext.Provider value={contextValue}>{children}</StatsContext.Provider>;
+};

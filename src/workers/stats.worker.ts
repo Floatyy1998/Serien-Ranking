@@ -1,7 +1,8 @@
 // Web Worker for heavy statistics calculations
-// Workers can't import modules, so define local interfaces
+import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 interface WorkerEpisode {
   air_date?: string;
+  airstamp?: string;
   id: number;
   name?: string;
   watched: boolean | number | string;
@@ -10,6 +11,23 @@ interface WorkerEpisode {
   lastWatchedAt?: string;
   runtime?: number;
   episode_number?: number;
+}
+
+/** Parse episode date as local midnight. Prefers airstamp for timezone accuracy. */
+function parseEpisodeDateLocal(episode: WorkerEpisode): Date | null {
+  if (episode.airstamp) {
+    const d = new Date(episode.airstamp);
+    if (!isNaN(d.getTime())) {
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+  }
+  if (episode.air_date) {
+    const p = episode.air_date.split('-');
+    const d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
 }
 
 interface WorkerSeason {
@@ -29,6 +47,7 @@ interface WorkerSeries {
   poster?: string | { poster?: string };
   genre?: { genres?: string[] };
   provider?: { provider?: { id: number; name: string; logo: string }[] };
+  production?: { production?: boolean };
 }
 
 interface WorkerMovie {
@@ -52,21 +71,26 @@ interface WorkerProcessedEpisode {
   seriesGenre: string[] | undefined;
   seriesProviders: string[] | undefined;
   runtime: number;
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 }
 
 self.addEventListener('message', (event) => {
   const { type, data } = event.data;
 
   switch (type) {
-    case 'CALCULATE_STATS':
+    case 'CALCULATE_STATS': {
       const stats = calculateStats(data);
       self.postMessage({ type: 'STATS_RESULT', data: stats });
       break;
+    }
 
-    case 'PROCESS_EPISODES':
+    case 'PROCESS_EPISODES': {
       const episodes = processEpisodes(data);
       self.postMessage({ type: 'EPISODES_RESULT', data: episodes });
       break;
+    }
   }
 });
 
@@ -82,8 +106,9 @@ function calculateStats(data: {
 
   let totalSeries = 0;
   let watchlistCount = 0;
-  let watchedEpisodes = 0;
-  let totalAiredEpisodes = 0;
+  let watchedEpisodes = 0; // all series incl. hidden (for episode chip)
+  let totalAiredEpisodes = 0; // non-hidden only (denominator for progress %)
+  let watchedEpisodesVisible = 0; // non-hidden only (numerator for progress %)
   let todayTotalEpisodes = 0;
 
   // Process series in worker thread
@@ -95,8 +120,13 @@ function calculateStats(data: {
     totalSeries++;
     if (series.watchlist === true) watchlistCount++;
 
+    const isHidden = series.hidden === true;
     const seasons = series.seasons;
     if (!seasons) continue;
+
+    // Per-series counters — only add to progress if series has been started (>0 watched)
+    let seriesWatchedVisible = 0;
+    let seriesTotalVisible = 0;
 
     for (let j = 0; j < seasons.length; j++) {
       const season = seasons[j];
@@ -107,40 +137,38 @@ function calculateStats(data: {
         const episode = episodes[k];
         if (!episode) continue;
 
-        // Episode is watched if it has firstWatchedAt OR watched: true OR watchCount > 0
-        const isWatched = !!(
-          episode.firstWatchedAt ||
-          episode.watched === true ||
-          (episode.watched as unknown) === 1 ||
-          (episode.watched as unknown) === 'true' ||
-          (episode.watchCount && episode.watchCount > 0)
-        );
+        const isWatched = isEpisodeWatched(episode);
 
-        if (episode.air_date) {
-          const airDate = new Date(episode.air_date);
-          if (!isNaN(airDate.getTime())) {
-            airDate.setHours(0, 0, 0, 0);
+        if (episode.air_date || episode.airstamp) {
+          const airDate = parseEpisodeDateLocal(episode);
+          if (airDate) {
             const airDateTime = airDate.getTime();
 
             if (airDateTime <= todayTime) {
-              totalAiredEpisodes++;
-              if (isWatched) {
-                watchedEpisodes++;
-              }
+              if (isWatched) watchedEpisodes++;
 
-              if (airDateTime === todayTime && !series.hidden) {
-                todayTotalEpisodes++;
+              if (!isHidden) {
+                seriesTotalVisible++;
+                if (isWatched) seriesWatchedVisible++;
+                if (airDateTime === todayTime) todayTotalEpisodes++;
               }
             }
           }
         } else {
           // No air_date means it's probably an old episode that's already aired
-          totalAiredEpisodes++;
-          if (isWatched) {
-            watchedEpisodes++;
+          if (isWatched) watchedEpisodes++;
+          if (!isHidden) {
+            seriesTotalVisible++;
+            if (isWatched) seriesWatchedVisible++;
           }
         }
       }
+    }
+
+    // Only count in progress ring if at least 1 episode has been watched (serie begonnen)
+    if (!isHidden && seriesWatchedVisible > 0) {
+      totalAiredEpisodes += seriesTotalVisible;
+      watchedEpisodesVisible += seriesWatchedVisible;
     }
   }
 
@@ -164,12 +192,13 @@ function calculateStats(data: {
   }
 
   const progress =
-    totalAiredEpisodes > 0 ? Math.round((watchedEpisodes / totalAiredEpisodes) * 100) : 0;
+    totalAiredEpisodes > 0 ? Math.round((watchedEpisodesVisible / totalAiredEpisodes) * 100) : 0;
 
   return {
     totalSeries,
     totalMovies,
     watchedEpisodes,
+    watchedEpisodesActive: watchedEpisodesVisible,
     totalEpisodes: totalAiredEpisodes,
     watchedMovies,
     watchlistCount,
@@ -186,6 +215,41 @@ const getImageUrl = (posterObj: string | { poster?: string } | null | undefined)
   if (path.startsWith('http')) return path;
   return `https://image.tmdb.org/t/p/w342${path}`;
 };
+
+/** Detect episode chip type inline (worker can't import modules) */
+function detectChipType(
+  episodes: WorkerEpisode[],
+  idx: number,
+  isInProduction: boolean
+): WorkerProcessedEpisode['chipType'] {
+  const ep = episodes[idx];
+  if (!ep) return undefined;
+  const airDate = parseEpisodeDateLocal(ep);
+  if (!airDate) return undefined;
+
+  if (idx === 0) return 'season-start';
+
+  const prevDate = parseEpisodeDateLocal(episodes[idx - 1]);
+  if (prevDate) {
+    const gap = (airDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (gap > 28) return 'mid-season-return'; // SEASON_BREAK_GAP_DAYS from lib/episode/constants
+  }
+
+  const isLast = idx === episodes.length - 1;
+  if (isLast) {
+    if (episodes.length >= 4 || !isInProduction) return 'season-finale';
+  } else {
+    const remaining = episodes.slice(idx + 1);
+    const nextDate = parseEpisodeDateLocal(remaining[0]);
+    if (nextDate) {
+      const gap = (nextDate.getTime() - airDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (gap > 28) return 'season-break'; // SEASON_BREAK_GAP_DAYS from lib/episode/constants
+    } else if (remaining.length > 1 && !remaining.some((e) => parseEpisodeDateLocal(e))) {
+      return 'season-break';
+    }
+  }
+  return undefined;
+}
 
 function processEpisodes(data: { seriesList: WorkerSeries[] }) {
   const { seriesList } = data;
@@ -207,12 +271,10 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
 
       for (let k = 0; k < seasonEpisodes.length; k++) {
         const episode = seasonEpisodes[k];
-        if (!episode || !episode.air_date || episode.watched) continue;
+        if (!episode || (!episode.air_date && !episode.airstamp) || episode.watched) continue;
 
-        const episodeDate = new Date(episode.air_date);
-        if (isNaN(episodeDate.getTime())) continue;
-
-        episodeDate.setHours(0, 0, 0, 0);
+        const episodeDate = parseEpisodeDateLocal(episode);
+        if (!episodeDate) continue;
 
         if (episodeDate.getTime() === todayTime) {
           const actualSeasonIndex =
@@ -221,6 +283,7 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             ) ?? 0;
           const seasonNum = (season.seasonNumber ?? 0) + 1;
           const epNum = k + 1;
+          const isInProduction = series.production?.production !== false;
           episodes.push({
             seriesId: series.id,
             seriesNmr: series.nmr,
@@ -237,7 +300,10 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             seriesProviders: series.provider?.provider?.map(
               (p: { id: number; name: string; logo: string }) => p.name
             ),
-            runtime: episode.runtime || series.episodeRuntime || 45,
+            runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+            providerLogo: series.provider?.provider?.[0]?.logo,
+            providerName: series.provider?.provider?.[0]?.name,
+            chipType: detectChipType(seasonEpisodes, k, isInProduction),
           });
         }
       }

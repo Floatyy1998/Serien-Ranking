@@ -3,7 +3,7 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 
 interface UserSettingsData {
@@ -39,7 +39,7 @@ export interface ProfileSettingsState {
 
 export const useProfileSettings = (): ProfileSettingsState => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState('');

@@ -8,32 +8,16 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WatchJourneyData } from '../../services/watchJourneyService';
+import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 
 interface ActivityTabProps {
   data: WatchJourneyData;
 }
-
-// Accent Farben für Abwechslung
-export const ACCENT_COLORS = {
-  episodes: '#7c6ef0', // Lila für Episoden (theme-softened)
-  movies: '#f093fb', // Pink für Filme
-  time: '#00cec9', // Cyan für Zeit
-  fire: '#fdcb6e', // Gold für Highlights
-  trending: '#00b894', // Grün für Trends
-};
 
 export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
   const { currentTheme } = useTheme();
@@ -121,7 +105,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <Tv style={{ color: 'white', fontSize: 26 }} />
+                <Tv style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 28, fontWeight: 800 }}>
                 {data.totalEpisodes}
@@ -145,7 +129,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <LocalMovies style={{ color: 'white', fontSize: 26 }} />
+                <LocalMovies style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.movies, fontSize: 28, fontWeight: 800 }}>
                 {data.totalMovies}
@@ -169,7 +153,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                   margin: '0 auto 8px',
                 }}
               >
-                <Schedule style={{ color: 'white', fontSize: 26 }} />
+                <Schedule style={{ color: currentTheme.text.secondary, fontSize: 26 }} />
               </motion.div>
               <div style={{ color: ACCENT_COLORS.time, fontSize: 28, fontWeight: 800 }}>
                 {totalHours}h
@@ -206,7 +190,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         </h3>
 
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="episodenGradient" x1="0" y1="0" x2="0" y2="1">
@@ -227,6 +211,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
+                allowDecimals={false}
               />
               <Tooltip
                 content={<ActivityTooltip />}
@@ -255,7 +240,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
                 style={{ outline: 'none' }}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 

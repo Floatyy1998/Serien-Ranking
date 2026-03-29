@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { FirebaseService, PrivacyData } from './usePrivacyData';
 
 /* ─── Generic Section Card ─── */
@@ -98,12 +98,26 @@ export const DataCollectionSection = memo(({ data }: DataCollectionSectionProps)
         {data.subsections.localData.text}
       </p>
 
-      <h3 className="priv-subtitle" style={{ color: currentTheme.text.primary }}>
-        {data.subsections.noTracking.title}
-      </h3>
-      <p className="priv-card-text" style={{ color: currentTheme.text.secondary }}>
-        {data.subsections.noTracking.text}
-      </p>
+      {data.subsections.cookies && (
+        <>
+          <h3 className="priv-subtitle" style={{ color: currentTheme.text.primary }}>
+            {data.subsections.cookies.title}
+          </h3>
+          <p className="priv-card-text" style={{ color: currentTheme.text.secondary }}>
+            {data.subsections.cookies.text}
+          </p>
+        </>
+      )}
+      {data.subsections.noTracking && (
+        <>
+          <h3 className="priv-subtitle" style={{ color: currentTheme.text.primary }}>
+            {data.subsections.noTracking.title}
+          </h3>
+          <p className="priv-card-text" style={{ color: currentTheme.text.secondary }}>
+            {data.subsections.noTracking.text}
+          </p>
+        </>
+      )}
     </PrivacySection>
   );
 });
@@ -127,6 +141,11 @@ export const FirebaseServiceBlock = memo(({ service }: FirebaseServiceBlockProps
       <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
         Zweck: {service.purpose}
       </p>
+      {service.legal && (
+        <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
+          {service.legal}
+        </p>
+      )}
       <p className="priv-service-label" style={{ color: currentTheme.text.secondary }}>
         Verarbeitete Daten:
       </p>
@@ -135,6 +154,26 @@ export const FirebaseServiceBlock = memo(({ service }: FirebaseServiceBlockProps
           <li key={idx}>{item}</li>
         ))}
       </ul>
+      {service.cookies && (
+        <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
+          {service.cookies}
+        </p>
+      )}
+      {service.thirdCountry && (
+        <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
+          {service.thirdCountry}
+        </p>
+      )}
+      {service.consent && (
+        <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
+          {service.consent}
+        </p>
+      )}
+      {service.optOut && (
+        <p className="priv-service-purpose" style={{ color: currentTheme.text.secondary }}>
+          {service.optOut}
+        </p>
+      )}
     </div>
   );
 });
@@ -149,7 +188,7 @@ interface FirebaseSectionProps {
 
 export const FirebaseSection = memo(({ data }: FirebaseSectionProps) => {
   const { currentTheme } = useTheme();
-  const serviceKeys = ['auth', 'database', 'storage', 'hosting'] as const;
+  const serviceKeys = ['auth', 'database', 'storage', 'analytics', 'hosting'] as const;
 
   return (
     <PrivacySection title={data.title}>

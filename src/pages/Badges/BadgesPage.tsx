@@ -3,46 +3,26 @@
  * Beautiful badge showcase with animated progress
  */
 
-import {
-  EmojiEvents,
-  Explore,
-  Groups,
-  LocalFireDepartment,
-  Movie,
-  Refresh,
-  Speed,
-  Star,
-  TrendingUp,
-} from '@mui/icons-material';
+import { EmojiEvents, Refresh } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
-import {
-  BADGE_DEFINITIONS,
-  Badge,
-  BadgeCategory,
-  BadgeProgress,
-  EarnedBadge,
-} from '../../features/badges/badgeDefinitions';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
+import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
+import {
+  categories,
+  getEarnedCount,
+  getTotalCount,
+  getCategoryBadges,
+  getNextTierInfo,
+} from './badgesPageHelpers';
 import './BadgesPage.css';
 
-const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
-  { key: 'all', label: 'Alle', icon: <EmojiEvents /> },
-  { key: 'binge', label: 'Binge', icon: <Movie /> },
-  { key: 'quickwatch', label: 'Quick', icon: <Speed /> },
-  { key: 'marathon', label: 'Marathon', icon: <LocalFireDepartment /> },
-  { key: 'streak', label: 'Streak', icon: <TrendingUp /> },
-  { key: 'rewatch', label: 'Rewatch', icon: <Refresh /> },
-  { key: 'series_explorer', label: 'Explorer', icon: <Explore /> },
-  { key: 'collector', label: 'Collector', icon: <Star /> },
-  { key: 'social', label: 'Social', icon: <Groups /> },
-];
-
 export const BadgesPage = () => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [earnedBadges, setEarnedBadges] = useState<EarnedBadge[]>([]);
@@ -54,90 +34,7 @@ export const BadgesPage = () => {
   } | null>(null);
   const [, setRefreshTick] = useState(0);
 
-  useEffect(() => {
-    if (user) {
-      loadBadgeData();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const handleBadgeUpdate = async (event: CustomEvent) => {
-      const { newBadges } = event.detail;
-      if (newBadges && newBadges.length > 0) {
-        const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
-        const badgeSystem = getOfflineBadgeSystem(user!.uid);
-        badgeSystem.invalidateCache();
-
-        setEarnedBadges((prevBadges) => {
-          const existingIds = new Set(prevBadges.map((b) => b.id));
-          const uniqueNewBadges = newBadges.filter(
-            (badge: EarnedBadge) => !existingIds.has(badge.id)
-          );
-          if (uniqueNewBadges.length > 0) {
-            return [...prevBadges, ...uniqueNewBadges];
-          }
-          return prevBadges;
-        });
-
-        window.dispatchEvent(
-          new CustomEvent('badgeDialogOpened', {
-            detail: { userId: user!.uid, newBadges },
-          })
-        );
-
-        loadBadgeData();
-      }
-    };
-
-    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
-
-    return () => {
-      window.removeEventListener(
-        'badgeProgressUpdate',
-        handleBadgeUpdate as unknown as EventListener
-      );
-    };
-  }, [user]);
-
-  useEffect(() => {
-    const hasActiveSessions = Object.values(badgeProgress).some((p) => p.sessionActive);
-    if (!hasActiveSessions) return;
-
-    const interval = setInterval(() => {
-      setRefreshTick((tick) => tick + 1);
-      loadBadgeData();
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [badgeProgress]);
-
-  const checkForNewBadges = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
-      const badgeSystem = getOfflineBadgeSystem(user.uid);
-      badgeSystem.invalidateCache();
-      const newBadges = await badgeSystem.checkForNewBadges();
-
-      if (newBadges.length > 0) {
-        window.dispatchEvent(
-          new CustomEvent('badgeProgressUpdate', {
-            detail: { newBadges },
-          })
-        );
-      }
-
-      await loadBadgeData();
-    } catch (error) {
-      console.error('Fehler beim Badge-Check:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadBadgeData = async () => {
+  const loadBadgeData = useCallback(async () => {
     if (!user) return;
 
     const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
@@ -172,86 +69,95 @@ export const BadgesPage = () => {
         setLoadingProgress(null);
       }
     }
+  }, [user]);
+
+  const loadBadgeDataRef = useRef(loadBadgeData);
+  loadBadgeDataRef.current = loadBadgeData;
+
+  useEffect(() => {
+    if (user) {
+      loadBadgeData();
+    }
+  }, [user, loadBadgeData]);
+
+  useEffect(() => {
+    const handleBadgeUpdate = async (event: CustomEvent) => {
+      const { newBadges } = event.detail;
+      if (newBadges && newBadges.length > 0) {
+        const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
+        const badgeSystem = getOfflineBadgeSystem(user?.uid ?? '');
+        badgeSystem.invalidateCache();
+
+        setEarnedBadges((prevBadges) => {
+          const existingIds = new Set(prevBadges.map((b) => b.id));
+          const uniqueNewBadges = newBadges.filter(
+            (badge: EarnedBadge) => !existingIds.has(badge.id)
+          );
+          if (uniqueNewBadges.length > 0) {
+            return [...prevBadges, ...uniqueNewBadges];
+          }
+          return prevBadges;
+        });
+
+        window.dispatchEvent(
+          new CustomEvent('badgeDialogOpened', {
+            detail: { userId: user?.uid, newBadges },
+          })
+        );
+
+        loadBadgeDataRef.current();
+      }
+    };
+
+    window.addEventListener('badgeProgressUpdate', handleBadgeUpdate as unknown as EventListener);
+
+    return () => {
+      window.removeEventListener(
+        'badgeProgressUpdate',
+        handleBadgeUpdate as unknown as EventListener
+      );
+    };
+  }, [user]);
+
+  useEffect(() => {
+    const hasActiveSessions = Object.values(badgeProgress).some((p) => p.sessionActive);
+    if (!hasActiveSessions) return;
+
+    const interval = setInterval(() => {
+      setRefreshTick((tick) => tick + 1);
+      loadBadgeDataRef.current();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [badgeProgress]);
+
+  const checkForNewBadges = async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
+      const badgeSystem = getOfflineBadgeSystem(user.uid);
+      badgeSystem.invalidateCache();
+      const newBadges = await badgeSystem.checkForNewBadges();
+
+      if (newBadges.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent('badgeProgressUpdate', {
+            detail: { newBadges },
+          })
+        );
+      }
+
+      await loadBadgeData();
+    } catch (error) {
+      console.error('Fehler beim Badge-Check:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isBadgeEarned = (badgeId: string) => {
     return earnedBadges.some((b) => b.id === badgeId);
-  };
-
-  const getNextTierInfo = (badge: Badge, earned: boolean) => {
-    if (earned) return null;
-
-    const sameCategoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === badge.category);
-    const badgeGroups: Record<string, typeof sameCategoryBadges> = {};
-
-    sameCategoryBadges.forEach((b) => {
-      const reqKey = Object.keys(b.requirements)
-        .filter((k) => k !== 'timeframe')
-        .sort()
-        .join('_');
-
-      if (!badgeGroups[reqKey]) {
-        badgeGroups[reqKey] = [];
-      }
-      badgeGroups[reqKey].push(b);
-    });
-
-    const myReqKey = Object.keys(badge.requirements)
-      .filter((k) => k !== 'timeframe')
-      .sort()
-      .join('_');
-
-    const myGroup = badgeGroups[myReqKey];
-    if (!myGroup || myGroup.length <= 1) return null;
-
-    const tierOrder: Record<string, number> = {
-      bronze: 1,
-      silver: 2,
-      gold: 3,
-      platinum: 4,
-      diamond: 5,
-    };
-
-    myGroup.sort((a, b) => {
-      const aValue =
-        a.requirements.episodes || a.requirements.series || a.requirements.seasons || 0;
-      const bValue =
-        b.requirements.episodes || b.requirements.series || b.requirements.seasons || 0;
-      if (aValue !== bValue) return aValue - bValue;
-      return (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0);
-    });
-
-    const currentIndex = myGroup.findIndex((b) => b.id === badge.id);
-    if (currentIndex === -1 || currentIndex === 0) return null;
-
-    const previousBadges = myGroup.slice(0, currentIndex);
-    const earnedPreviousBadges = previousBadges.filter((b) => isBadgeEarned(b.id));
-
-    if (earnedPreviousBadges.length === previousBadges.length) {
-      return { isNextTier: true };
-    }
-
-    return null;
-  };
-
-  const getEarnedCount = (category: BadgeCategory | 'all') => {
-    const categoryBadges =
-      category === 'all'
-        ? BADGE_DEFINITIONS
-        : BADGE_DEFINITIONS.filter((b) => b.category === category);
-    return categoryBadges.filter((b) => isBadgeEarned(b.id)).length;
-  };
-
-  const getTotalCount = (category: BadgeCategory | 'all') => {
-    return category === 'all'
-      ? BADGE_DEFINITIONS.length
-      : BADGE_DEFINITIONS.filter((b) => b.category === category).length;
-  };
-
-  const getCategoryBadges = (category: BadgeCategory | 'all') => {
-    return category === 'all'
-      ? BADGE_DEFINITIONS
-      : BADGE_DEFINITIONS.filter((b) => b.category === category);
   };
 
   const progressPercent = Math.round((earnedBadges.length / BADGE_DEFINITIONS.length) * 100);
@@ -280,8 +186,8 @@ export const BadgesPage = () => {
               onClick={checkForNewBadges}
               disabled={loading}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
-                color: '#fff',
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                color: currentTheme.text.secondary,
                 border: 'none',
                 borderRadius: '12px',
                 padding: '10px 16px',
@@ -343,7 +249,7 @@ export const BadgesPage = () => {
           <ProgressBar
             value={progressPercent}
             color={currentTheme.status.warning}
-            toColor="#fbbf24"
+            toColor={currentTheme.accent}
           />
           <p style={{ fontSize: '13px', color: currentTheme.text.muted, marginTop: '8px' }}>
             {earnedBadges.length} von {BADGE_DEFINITIONS.length} Badges freigeschaltet
@@ -362,7 +268,7 @@ export const BadgesPage = () => {
           }}
         >
           {categories.map((category, index) => {
-            const earnedCount = getEarnedCount(category.key);
+            const earnedCount = getEarnedCount(category.key, earnedBadges);
             const totalCount = getTotalCount(category.key);
             const isActive = tabValue === index;
             const hasEarned = earnedCount > 0;
@@ -371,21 +277,23 @@ export const BadgesPage = () => {
               <motion.button
                 key={category.key}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setTabValue(index)}
+                onClick={() => {
+                  setTabValue(index);
+                }}
                 className={`mobile-badges-tab ${isActive ? 'active' : ''}`}
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                     : hasEarned
                       ? `${currentTheme.primary}10`
-                      : currentTheme.background.surface,
+                      : `rgba(255,255,255,0.05)`,
                   border: isActive
                     ? 'none'
                     : hasEarned
                       ? `1px solid ${currentTheme.primary}30`
                       : `1px solid ${currentTheme.border.default}`,
                   color: isActive
-                    ? 'white'
+                    ? currentTheme.text.secondary
                     : hasEarned
                       ? currentTheme.primary
                       : currentTheme.text.muted,
@@ -399,7 +307,7 @@ export const BadgesPage = () => {
                     className="mobile-badges-tab-count"
                     style={{
                       color: isActive
-                        ? 'rgba(255,255,255,0.8)'
+                        ? currentTheme.text.secondary
                         : hasEarned
                           ? currentTheme.primary
                           : currentTheme.text.muted,
@@ -441,7 +349,7 @@ export const BadgesPage = () => {
                 <ProgressBar
                   value={(loadingProgress.current / loadingProgress.total) * 100}
                   color={currentTheme.status.warning}
-                  toColor="#fbbf24"
+                  toColor={currentTheme.accent}
                   height={6}
                 />
                 <p
@@ -472,7 +380,7 @@ export const BadgesPage = () => {
                     <div className="badges-grid">
                       {getCategoryBadges(category.key).map((badge, badgeIndex) => {
                         const earned = isBadgeEarned(badge.id);
-                        const nextTierInfo = getNextTierInfo(badge, earned);
+                        const nextTierInfo = getNextTierInfo(badge, earned, isBadgeEarned);
                         return (
                           <BadgeCard
                             key={badge.id}

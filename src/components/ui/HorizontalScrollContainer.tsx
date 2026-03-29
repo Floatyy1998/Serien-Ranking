@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import { useDeviceType } from '../../hooks/useDeviceType';
 
 interface HorizontalScrollContainerProps {
   children: React.ReactNode;
@@ -20,16 +21,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
-
-  // Check if we're on desktop
-  useEffect(() => {
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { isDesktop } = useDeviceType();
 
   // Check scroll position
   const checkScroll = () => {
@@ -130,7 +122,6 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
           overflowY: 'hidden',
           scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
-          WebkitTransform: 'translateZ(0)',
           ...(shouldShowArrows && canScrollLeft ? { paddingLeft: '40px' } : {}),
           ...(shouldShowArrows && canScrollRight ? { paddingRight: '40px' } : {}),
         }}

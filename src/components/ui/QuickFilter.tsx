@@ -1,17 +1,10 @@
-import {
-  FilterList,
-  NewReleases,
-  PlaylistAdd,
-  Schedule,
-  Star,
-  Bookmark,
-} from '@mui/icons-material';
+import { FilterList } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
-import { SearchInput } from './SearchInput';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BottomSheet } from './BottomSheet';
-import { GradientText } from './GradientText';
+import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';
+import { QuickFilterPanel } from './QuickFilterPanel';
 
 interface QuickFilterProps {
   onFilterChange: (filters: {
@@ -23,7 +16,7 @@ interface QuickFilterProps {
   }) => void;
   isMovieMode?: boolean;
   isRatingsMode?: boolean;
-  hasBottomNav?: boolean; // Optional prop to adjust FAB position
+  hasBottomNav?: boolean;
   initialFilters?: {
     genre?: string;
     provider?: string;
@@ -33,35 +26,14 @@ interface QuickFilterProps {
   };
 }
 
-const seriesQuickFilters = [
-  { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
-  { value: 'new-episodes', label: 'Neue Episoden', icon: NewReleases },
-  { value: 'started', label: 'Begonnen', icon: Schedule },
-  { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
-];
-
-const movieQuickFilters = [
-  { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
-  { value: 'unreleased', label: 'Unveröffentlicht', icon: Schedule },
-  { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
-];
-
-const ratingsQuickFilters = [
-  { value: 'watchlist', label: 'Watchlist', icon: Bookmark },
-  { value: 'unrated', label: 'Ohne Bewertung', icon: Star },
-  { value: 'started', label: 'Begonnen', icon: Schedule },
-  { value: 'not-started', label: 'Noch nicht begonnen', icon: Schedule },
-  { value: 'ongoing', label: 'Fortlaufend', icon: Schedule },
-  { value: 'recently-added', label: 'Zuletzt Hinzugefügt', icon: PlaylistAdd },
-];
-
 export const QuickFilter: React.FC<QuickFilterProps> = ({
   onFilterChange,
   isMovieMode = false,
   isRatingsMode = false,
-  hasBottomNav = true, // Default to true for most pages
+  hasBottomNav = true,
   initialFilters = {},
 }) => {
+  const { currentTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState<string>(initialFilters.genre || '');
   const [selectedProvider, setSelectedProvider] = useState<string>(initialFilters.provider || '');
@@ -136,14 +108,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       search: searchQuery,
       sortBy: selectedSort,
     });
-  }, [
-    selectedGenre,
-    selectedProvider,
-    selectedQuickFilter,
-    searchQuery,
-    selectedSort,
-    onFilterChange,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- onFilterChange is a callback, not a synced value
+  }, [selectedGenre, selectedProvider, selectedQuickFilter, searchQuery, selectedSort]);
 
   const clearFilters = () => {
     setSelectedGenre('');
@@ -163,8 +129,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             position: 'fixed',
             bottom: hasBottomNav ? '95px' : '30px',
             right: '20px',
-            background:
-              'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)',
+            background: `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`,
             border: 'none',
             borderRadius: '50%',
             width: '56px',
@@ -172,8 +137,8 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'white',
-            boxShadow: '0 4px 20px rgba(139, 92, 246, 0.35), 0 2px 8px rgba(0, 0, 0, 0.2)',
+            color: currentTheme.text.secondary,
+            boxShadow: `0 4px 20px ${currentTheme.accent}50, 0 2px 8px rgba(0, 0, 0, 0.2)`,
             cursor: 'pointer',
             zIndex: 1000,
           }}
@@ -185,7 +150,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
                 position: 'absolute',
                 top: '-4px',
                 right: '-4px',
-                background: '#ff4757',
+                background: currentTheme.accent,
                 borderRadius: '50%',
                 width: '20px',
                 height: '20px',
@@ -204,334 +169,24 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
 
       {/* Filter Panel */}
       <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} bottomOffset="0px">
-        <div
-          style={{
-            width: '90%',
-            alignSelf: 'center',
-            paddingBottom: hasBottomNav ? '90px' : '24px',
-            overflowY: 'auto',
-            flex: 1,
-            minHeight: 0,
-          }}
-        >
-          {/* Header */}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '24px',
-            }}
-          >
-            <GradientText
-              as="h2"
-              from="var(--theme-secondary-gradient, #8b5cf6)"
-              to="var(--theme-tertiary-gradient, #6d28d9)"
-              style={{
-                fontSize: '20px',
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                margin: 0,
-              }}
-            >
-              Filter & Sortierung
-            </GradientText>
-
-            {activeFiltersCount > 0 && (
-              <button
-                onClick={clearFilters}
-                style={{
-                  background: 'rgba(255, 71, 87, 0.1)',
-                  border: '1px solid rgba(255, 71, 87, 0.3)',
-                  borderRadius: '14px',
-                  padding: '6px 12px',
-                  color: '#ff4757',
-                  fontSize: '14px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Zurücksetzen
-              </button>
-            )}
-          </div>
-
-          {/* Search */}
-          <div style={{ marginBottom: '24px' }}>
-            <label
-              style={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
-                display: 'block',
-                marginBottom: '8px',
-              }}
-            >
-              Suche
-            </label>
-            <SearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
-            />
-          </div>
-
-          {/* Quick Filters */}
-          <div style={{ marginBottom: '24px' }}>
-            <label
-              style={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
-                display: 'block',
-                marginBottom: '12px',
-              }}
-            >
-              Schnellfilter
-            </label>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '8px',
-              }}
-            >
-              {quickFilters.map((filter) => {
-                const Icon = filter.icon;
-                const isActive = selectedQuickFilter === filter.value;
-
-                return (
-                  <button
-                    key={filter.value}
-                    onClick={() => setSelectedQuickFilter(isActive ? '' : filter.value)}
-                    style={{
-                      padding: '12px',
-                      background: isActive
-                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
-                      borderRadius: '14px',
-                      color: 'white',
-                      fontSize: '14px',
-                      fontWeight: isActive ? 600 : 500,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      backdropFilter: isActive ? 'none' : 'blur(8px)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  >
-                    <Icon style={{ fontSize: '16px' }} />
-                    {filter.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Sort Options - Only for Ratings Mode */}
-          {isRatingsMode && (
-            <div style={{ marginBottom: '24px' }}>
-              <label
-                style={{
-                  fontSize: '15px',
-                  fontWeight: 600,
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  display: 'block',
-                  marginBottom: '12px',
-                }}
-              >
-                Sortierung
-              </label>
-              <select
-                value={selectedSort}
-                onChange={(e) => setSelectedSort(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  borderRadius: '14px',
-                  color: 'white',
-                  fontSize: '15px',
-                }}
-              >
-                <option
-                  value="rating-desc"
-                  style={{
-                    background: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Beste zuerst
-                </option>
-                <option
-                  value="rating-asc"
-                  style={{
-                    background: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Schlechteste zuerst
-                </option>
-                <option
-                  value="name-asc"
-                  style={{
-                    background: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Name A-Z
-                </option>
-                <option
-                  value="name-desc"
-                  style={{
-                    background: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Name Z-A
-                </option>
-                <option
-                  value="date-desc"
-                  style={{
-                    background: 'var(--color-background-surface)',
-                    color: 'var(--color-text-primary)',
-                  }}
-                >
-                  Neueste zuerst
-                </option>
-              </select>
-            </div>
-          )}
-
-          {/* Genre Filter */}
-          <div style={{ marginBottom: '24px' }}>
-            <label
-              style={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
-                display: 'block',
-                marginBottom: '12px',
-              }}
-            >
-              Genre
-            </label>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '8px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-              }}
-            >
-              {genreMenuItems.map((genre) => {
-                const isActive = selectedGenre === genre.value;
-
-                return (
-                  <button
-                    key={genre.value}
-                    onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
-                    style={{
-                      padding: '10px',
-                      background: isActive
-                        ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                        : 'rgba(255, 255, 255, 0.04)',
-                      border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
-                      borderRadius: '14px',
-                      color: 'white',
-                      fontSize: '13px',
-                      fontWeight: isActive ? 600 : 500,
-                      cursor: 'pointer',
-                      backdropFilter: isActive ? 'none' : 'blur(8px)',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    }}
-                  >
-                    {genre.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Provider Filter */}
-          <div>
-            <label
-              style={{
-                fontSize: '15px',
-                fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.7)',
-                display: 'block',
-                marginBottom: '12px',
-              }}
-            >
-              Streaming-Anbieter
-            </label>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '8px',
-              }}
-            >
-              {providerMenuItems.map((provider) => {
-                const isActive = selectedProvider === provider.value;
-
-                return (
-                  <Tooltip key={provider.value} title={provider.label} arrow>
-                    <button
-                      onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
-                      style={{
-                        padding: '12px',
-                        background: isActive
-                          ? 'linear-gradient(135deg, var(--theme-secondary-gradient, #8b5cf6) 0%, var(--theme-tertiary-gradient, #6d28d9) 100%)'
-                          : 'rgba(255, 255, 255, 0.04)',
-                        border: `1px solid ${isActive ? 'transparent' : 'rgba(255, 255, 255, 0.08)'}`,
-                        borderRadius: '14px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                        backdropFilter: isActive ? 'none' : 'blur(8px)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {(provider as { icon?: string }).icon ? (
-                        <img
-                          src={(provider as { icon?: string }).icon}
-                          alt={provider.label}
-                          style={{
-                            width: '24px',
-                            height: '24px',
-                            objectFit: 'contain',
-                            filter: isActive ? 'brightness(1.2)' : 'none',
-                          }}
-                        />
-                      ) : (
-                        <span
-                          style={{
-                            fontSize: '13px',
-                            fontWeight: 600,
-                            color: 'white',
-                            textAlign: 'center',
-                            lineHeight: '1.2',
-                          }}
-                        >
-                          {provider.label}
-                        </span>
-                      )}
-                    </button>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <QuickFilterPanel
+          isMovieMode={isMovieMode}
+          isRatingsMode={isRatingsMode}
+          hasBottomNav={hasBottomNav}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          selectedGenre={selectedGenre}
+          setSelectedGenre={setSelectedGenre}
+          selectedProvider={selectedProvider}
+          setSelectedProvider={setSelectedProvider}
+          selectedQuickFilter={selectedQuickFilter}
+          setSelectedQuickFilter={setSelectedQuickFilter}
+          selectedSort={selectedSort}
+          setSelectedSort={setSelectedSort}
+          quickFilters={quickFilters}
+          activeFiltersCount={activeFiltersCount}
+          clearFilters={clearFilters}
+        />
       </BottomSheet>
     </>
   );

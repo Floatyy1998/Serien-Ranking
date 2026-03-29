@@ -5,12 +5,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CompareArrows, Person, ChevronRight, Close } from '@mui/icons-material';
+import CompareArrows from '@mui/icons-material/CompareArrows';
+import Person from '@mui/icons-material/Person';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import Close from '@mui/icons-material/Close';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { IconButton } from '../../components/ui';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { IconButton, IconContainer, NavCard } from '../../components/ui';
 
 interface FriendProfile {
   photoURL?: string;
@@ -25,7 +28,6 @@ export const TasteMatchCard: React.FC = () => {
   const [showSelector, setShowSelector] = useState(false);
   const [friendProfiles, setFriendProfiles] = useState<Record<string, FriendProfile>>({});
 
-  // Lade aktuelle Profilbilder von Firebase
   useEffect(() => {
     if (friends.length === 0) return;
 
@@ -43,7 +45,7 @@ export const TasteMatchCard: React.FC = () => {
                 username: data.username,
               };
             }
-          } catch (error) {
+          } catch {
             // Fallback to cached data
           }
         })
@@ -54,7 +56,6 @@ export const TasteMatchCard: React.FC = () => {
     loadProfiles();
   }, [friends]);
 
-  // Keine Freunde = keine Karte anzeigen
   if (friends.length === 0) return null;
 
   const handleSelectFriend = (friendId: string) => {
@@ -64,44 +65,15 @@ export const TasteMatchCard: React.FC = () => {
 
   return (
     <>
-      {/* Main Card */}
-      <motion.button
-        whileTap={{ scale: 0.98 }}
+      <NavCard
         onClick={() => setShowSelector(true)}
+        accentColor={currentTheme.primary}
         aria-label="Taste Match: Geschmack mit Freunden vergleichen"
-        style={{
-          margin: '0 20px',
-          padding: '12px 14px',
-          borderRadius: '14px',
-          background: `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.primary}05)`,
-          border: `1px solid ${currentTheme.primary}30`,
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-          width: 'calc(100% - 40px)',
-          textAlign: 'left',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-        }}
       >
-        {/* Icon */}
-        <div
-          style={{
-            width: 40,
-            height: 40,
-            borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #764ba2))`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
+        <IconContainer color={currentTheme.primary} secondaryColor={currentTheme.accent}>
           <CompareArrows style={{ fontSize: 20, color: 'white' }} />
-        </div>
+        </IconContainer>
 
-        {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <h2
             style={{
@@ -189,7 +161,7 @@ export const TasteMatchCard: React.FC = () => {
           style={{ color: currentTheme.text.secondary, fontSize: 20 }}
           aria-hidden="true"
         />
-      </motion.button>
+      </NavCard>
 
       {/* Friend Selector Modal */}
       <AnimatePresence>
@@ -227,7 +199,6 @@ export const TasteMatchCard: React.FC = () => {
                 overflowY: 'auto',
               }}
             >
-              {/* Header */}
               <div
                 style={{
                   display: 'flex',
@@ -256,7 +227,6 @@ export const TasteMatchCard: React.FC = () => {
                 />
               </div>
 
-              {/* Friend List */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {friends.map((friend, i) => (
                   <motion.button
@@ -278,19 +248,12 @@ export const TasteMatchCard: React.FC = () => {
                       textAlign: 'left',
                     }}
                   >
-                    {/* Avatar */}
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: '50%',
-                        background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #764ba2))`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        flexShrink: 0,
-                      }}
+                    <IconContainer
+                      color={currentTheme.primary}
+                      secondaryColor={currentTheme.accent}
+                      size={44}
+                      borderRadius="50%"
+                      style={{ overflow: 'hidden' }}
                     >
                       {friendProfiles[friend.uid]?.photoURL || friend.photoURL ? (
                         <img
@@ -301,9 +264,8 @@ export const TasteMatchCard: React.FC = () => {
                       ) : (
                         <Person style={{ fontSize: 24, color: 'white' }} />
                       )}
-                    </div>
+                    </IconContainer>
 
-                    {/* Name */}
                     <div style={{ flex: 1 }}>
                       <div
                         style={{
@@ -319,12 +281,7 @@ export const TasteMatchCard: React.FC = () => {
                       </div>
                       {(friendProfiles[friend.uid]?.username || friend.username) &&
                         (friendProfiles[friend.uid]?.displayName || friend.displayName) && (
-                          <div
-                            style={{
-                              fontSize: 13,
-                              color: currentTheme.text.secondary,
-                            }}
-                          >
+                          <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>
                             @{friendProfiles[friend.uid]?.username || friend.username}
                           </div>
                         )}

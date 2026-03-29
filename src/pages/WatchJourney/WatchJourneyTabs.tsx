@@ -8,8 +8,8 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { TabType } from './types';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { TabType } from './types';
 
 interface TabDefinition {
   id: TabType;
@@ -51,9 +51,9 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
                 className="wj-tab-btn"
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`
+                    ? `linear-gradient(135deg, ${primaryColor}, ${currentTheme.accent})`
                     : 'transparent',
-                  color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                  color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
                   boxShadow: isActive ? `0 2px 8px ${primaryColor}40` : 'none',
                 }}
               >

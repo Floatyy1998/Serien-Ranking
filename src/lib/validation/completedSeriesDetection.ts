@@ -1,6 +1,7 @@
 import firebase from 'firebase/compat/app';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface CompletedSeriesData {
   seriesId: number;
@@ -18,7 +19,7 @@ export const getStoredCompletedData = async (
   try {
     const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
     const snapshot = await ref.once('value');
-    return snapshot.val() || {};
+    return (snapshot.val() as Record<string, CompletedSeriesData> | null) || {};
   } catch {
     return {};
   }
@@ -27,17 +28,17 @@ export const getStoredCompletedData = async (
 export const storeCompletedData = async (
   userId: string,
   data: Record<string, CompletedSeriesData>
-) => {
+): Promise<void> => {
   try {
     const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
     await ref.set(data);
   } catch (error) {
-    console.error('Error storing completed series data:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[CompletedSeriesDetection] Failed to store completed data: ${message}`);
   }
 };
 
 const areAllEpisodesWatched = (series: Series): boolean => {
-  const today = new Date();
   let hasAiredEpisodes = false;
   let allWatched = true;
 
@@ -45,14 +46,10 @@ const areAllEpisodesWatched = (series: Series): boolean => {
     for (const season of series.seasons) {
       if (season.episodes) {
         for (const episode of season.episodes) {
-          // Nur ausgestrahlte Episoden zählen
-          if (episode.air_date) {
-            const airDate = new Date(episode.air_date);
-            if (airDate <= today) {
-              hasAiredEpisodes = true;
-              if (!episode.watched) {
-                allWatched = false;
-              }
+          if (hasEpisodeAired(episode)) {
+            hasAiredEpisodes = true;
+            if (!episode.watched) {
+              allWatched = false;
             }
           }
         }
@@ -82,7 +79,9 @@ export const detectCompletedSeries = async (
   // Lade bereits abgewiesene Benachrichtigungen
   const notificationsRef = firebase.database().ref(`users/${userId}/completedSeriesNotifications`);
   const notificationsSnapshot = await notificationsRef.once('value');
-  const dismissedNotifications = notificationsSnapshot.val() || {};
+  const dismissedNotifications =
+    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
+    {};
 
   for (const series of seriesList) {
     // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
@@ -154,7 +153,10 @@ export const detectCompletedSeries = async (
   return completedSeries;
 };
 
-export const markCompletedSeriesAsNotified = async (seriesId: number, userId: string) => {
+export const markCompletedSeriesAsNotified = async (
+  seriesId: number,
+  userId: string
+): Promise<void> => {
   const storedData = await getStoredCompletedData(userId);
   const seriesKey = seriesId.toString();
 

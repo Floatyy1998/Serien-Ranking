@@ -3,11 +3,17 @@
  * Slim composition component. Business logic in useSearchPage, UI in subcomponents.
  */
 
-import { CalendarToday, Check, Close, Movie, Search } from '@mui/icons-material';
+import { CalendarToday, Close, Movie, Search } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Dialog, LoadingSpinner, PageHeader, ScrollToTopButton } from '../../components/ui';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import {
+  Dialog,
+  LoadingSpinner,
+  PageHeader,
+  ScrollToTopButton,
+  Snackbar,
+} from '../../components/ui';
 import { SearchResultCard } from './SearchResultCard';
 import { SearchSuggestions } from './SearchSuggestions';
 import { useSearchPage } from './useSearchPage';
@@ -45,19 +51,19 @@ export const SearchPage = memo(() => {
       key: 'all',
       label: 'Alle',
       icon: null,
-      gradient: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'series',
       label: 'Serien',
       icon: CalendarToday,
-      gradient: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #667eea))`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'movies',
       label: 'Filme',
       icon: Movie,
-      gradient: `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`,
+      gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
   ];
 
@@ -96,9 +102,10 @@ export const SearchPage = memo(() => {
             style={{
               background: currentTheme.background.surface,
               border: `1px solid ${currentTheme.border.default}`,
+              outline: 'none',
             }}
           >
-            <Search style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+            <Search style={{ fontSize: '22px', color: currentTheme.text.muted, flexShrink: 0 }} />
             <input
               type="text"
               value={searchQuery}
@@ -106,23 +113,21 @@ export const SearchPage = memo(() => {
               placeholder="Suche nach Serien & Filmen..."
               autoFocus
               className="search-input"
-              style={{ color: currentTheme.text.primary }}
+              style={{ color: currentTheme.text.primary, outline: 'none' }}
             />
-            {searchQuery && (
-              <motion.button
-                initial={{ scale: 0, borderRadius: '50%' }}
-                animate={{ scale: 1, borderRadius: '50%' }}
-                whileTap={{ scale: 0.9, borderRadius: '50%' }}
-                onClick={() => setSearchQuery('')}
-                className="search-clear-btn"
-                style={{
-                  background: `${currentTheme.text.muted}20`,
-                  color: currentTheme.text.muted,
-                }}
-              >
-                <Close style={{ fontSize: '16px' }} />
-              </motion.button>
-            )}
+            <button
+              onClick={() => searchQuery && setSearchQuery('')}
+              className="search-clear-btn"
+              style={{
+                background: searchQuery ? `${currentTheme.text.muted}20` : 'transparent',
+                color: currentTheme.text.muted,
+                opacity: searchQuery ? 1 : 0,
+                pointerEvents: searchQuery ? 'auto' : 'none',
+                transition: 'opacity 0.15s ease',
+              }}
+            >
+              <Close style={{ fontSize: '16px' }} />
+            </button>
           </div>
         </motion.div>
 
@@ -142,7 +147,8 @@ export const SearchPage = memo(() => {
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
                 border:
                   searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
-                color: searchType === tab.key ? 'white' : currentTheme.text.secondary,
+                color:
+                  searchType === tab.key ? currentTheme.text.secondary : currentTheme.text.muted,
                 boxShadow: searchType === tab.key ? `0 4px 15px ${currentTheme.primary}40` : 'none',
               }}
             >
@@ -228,23 +234,7 @@ export const SearchPage = memo(() => {
       </div>
 
       {/* Success Snackbar */}
-      <AnimatePresence>
-        {snackbar.open && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="search-snackbar"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
-              boxShadow: `0 8px 24px ${currentTheme.status.success}40`,
-            }}
-          >
-            <Check style={{ fontSize: '22px' }} />
-            <span className="search-snackbar-text">{snackbar.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       <Dialog
         open={dialog.open}

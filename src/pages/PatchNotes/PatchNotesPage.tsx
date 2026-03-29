@@ -1,18 +1,25 @@
 import {
   ArrowForward,
+  AutoAwesome,
   CalendarMonth,
   FilterAlt,
+  LocalFireDepartment,
+  Navigation,
   NewReleases,
+  PauseCircle,
   PlaylistAddCheck,
   Replay,
+  SmartDisplay,
   Sort,
+  Today,
   TrendingUp,
+  Tune,
   ViewQuilt,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import './PatchNotesPage.css';
 
 interface Feature {
@@ -44,6 +51,104 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: 'März 2026 – QoL Update',
+      date: '2026-03-27',
+      features: [
+        {
+          icon: <Today />,
+          color: '#6366f1',
+          title: 'Kalender: Auto-Scroll zum heutigen Tag',
+          description:
+            'Auf dem Handy scrollt der Kalender jetzt automatisch zum heutigen Wochentag – kein manuelles Suchen mehr.',
+          link: { label: 'Kalender öffnen', path: '/calendar' },
+        },
+        {
+          icon: <PauseCircle />,
+          color: '#a78bfa',
+          title: 'Kalender: Staffelpause & Staffelende Chips',
+          description:
+            'Neue Badges zeigen dir direkt im Kalender ob eine Serie in die Pause geht oder das Staffelfinale kommt. Erkennt auch Pausen wenn kommende Folgen noch kein Datum haben.',
+          link: { label: 'Kalender öffnen', path: '/calendar' },
+        },
+        {
+          icon: <SmartDisplay />,
+          color: '#00cec9',
+          title: 'Provider-Badge auf allen Karten',
+          description:
+            'Kleine Streaming-Logos (Crunchyroll, Netflix, etc.) auf dem Poster – überall: Weiterschauen, Heute Neu, Rewatches und Watchlist.',
+        },
+        {
+          icon: <Tune />,
+          color: '#10b981',
+          title: 'Smarter Status-Badge',
+          description:
+            'Der Status-Badge im Serien-Detail zeigt jetzt den Ausstrahlungsrhythmus: "Läuft · Sonntags neue Folge" oder "Läuft · Alle 2 Wochen" statt nur "Fortlaufend".',
+        },
+        {
+          icon: <CalendarMonth />,
+          color: currentTheme.accent,
+          title: 'Nächste Folge im Hero',
+          description:
+            'Neuer Chip im Serien-Detail zeigt sofort die nächste Episode mit Datum an – ohne scrollen zu müssen.',
+        },
+        {
+          icon: <Replay />,
+          color: '#f59e0b',
+          title: '"Zuletzt gesehen" in Weiterschauen',
+          description:
+            'Jede Karte in Weiterschauen zeigt jetzt wann du die Serie zuletzt geschaut hast – hilft beim Priorisieren.',
+        },
+        {
+          icon: <PlaylistAddCheck />,
+          color: '#ec4899',
+          title: 'Staffel & Tab merken',
+          description:
+            'Wenn du in einem Serien-Detail eine Staffel oder Tab (Info/Besetzung/KI-Guide) wählst und zurücknavigierst, landest du wieder an der gleichen Stelle.',
+        },
+      ],
+    },
+    {
+      version: 'März 2026 – Update 3',
+      date: '2026-03-27',
+      features: [
+        {
+          icon: <LocalFireDepartment />,
+          color: '#f97316',
+          title: 'Trending, Saisonal & Bestbewertet Redesign',
+          description:
+            'Komplett neues Card-Design im Kino-Stil: Trending-Cards mit Rang-Nummer in abgerundeter Ecke, Genre-Anzeige, TMDB-Rating und Erscheinungsjahr – einheitlich für alle drei Sektionen.',
+        },
+      ],
+    },
+    {
+      version: 'März 2026 – Update 2',
+      date: '2026-03-26',
+      features: [
+        {
+          icon: <AutoAwesome />,
+          color: '#a855f7',
+          title: 'KI-Empfehlungen',
+          description:
+            'Personalisierte Serien- und Film-Empfehlungen basierend auf deinen Bewertungen, Binge-Verhalten, Genre-Vorlieben und Watch-Patterns. Mit Poster, TMDB-Rating und Streaming-Anbietern – klick auf eine Empfehlung um direkt zur Serie zu gelangen.',
+          link: { label: 'Empfehlungen ansehen', path: '/taste-profile' },
+        },
+        {
+          icon: <AutoAwesome />,
+          color: '#ec4899',
+          title: 'Proaktive Recaps verbessert',
+          description:
+            'Recaps werden nicht mehr automatisch geladen – erst wenn du auf "Recap lesen" klickst. Spart KI-Anfragen und lädt schneller.',
+        },
+        {
+          icon: <Navigation />,
+          color: '#00cec9',
+          title: 'Navbar Redesign',
+          description:
+            'Neue Glassmorphism-Navigation mit Glow-Effekt auf dem aktiven Tab. Bessere Lesbarkeit der inaktiven Icons.',
+        },
+      ],
+    },
+    {
       version: 'März 2026',
       date: '2026-03-01',
       features: [
@@ -65,7 +170,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Sort />,
-          color: '#f59e0b',
+          color: currentTheme.accent,
           title: 'Neue Sortierung',
           description:
             'Sortiere deine Watchlist nach Fortschritt oder verbleibenden Episoden – finde schnell was fast fertig ist.',
@@ -89,7 +194,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <PlaylistAddCheck />,
-          color: 'var(--theme-secondary-gradient, #8b5cf6)',
+          color: currentTheme.accent,
           title: '"Ich bin bei…" Markierung',
           description:
             'Wähle Staffel und Episode – alles davor wird automatisch als gesehen markiert. Perfekt für Serien die du woanders geschaut hast.',
@@ -102,7 +207,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <ViewQuilt />,
-          color: '#a855f7',
+          color: currentTheme.accent,
           title: 'Homepage Layout',
           description:
             'Sektionen auf der Homepage sortieren, ausblenden und nach deinem Geschmack anpassen.',
@@ -117,7 +222,7 @@ export const PatchNotesPage = () => {
       <PageHeader
         title="Patch Notes"
         gradientTo={currentTheme.primary}
-        icon={<NewReleases style={{ fontSize: 22, color: currentTheme.primary }} />}
+        icon={<NewReleases style={{ fontSize: 22, color: currentTheme.accent }} />}
       />
 
       <div className="pn-releases">
@@ -152,7 +257,13 @@ export const PatchNotesPage = () => {
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: releaseIdx * 0.15 + featureIdx * 0.06 }}
-                  onClick={feature.link ? () => navigate(feature.link!.path) : undefined}
+                  onClick={
+                    feature.link
+                      ? () => {
+                          navigate(feature.link?.path ?? '/');
+                        }
+                      : undefined
+                  }
                   style={{ cursor: feature.link ? 'pointer' : 'default' }}
                 >
                   <div

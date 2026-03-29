@@ -2,8 +2,10 @@ import { Repeat } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
@@ -56,7 +58,8 @@ export const RewatchSection = React.memo(function RewatchSection({
 }: RewatchSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const accentColor = currentTheme.status?.warning || '#f59e0b';
+  const accentColor = currentTheme.accent;
+  const { isMobile } = useDeviceType();
 
   if (episodes.length === 0) return null;
 
@@ -96,6 +99,25 @@ export const RewatchSection = React.memo(function RewatchSection({
                   poster={item.poster}
                   posterAlt={item.title}
                   accentColor={accentColor}
+                  posterOverlay={
+                    item.provider?.provider?.[0]?.logo ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w92${item.provider.provider[0].logo}`}
+                        alt={item.provider.provider[0].name}
+                        style={{
+                          position: 'absolute',
+                          bottom: -3,
+                          right: -3,
+                          width: 26,
+                          height: 26,
+                          borderRadius: 6,
+                          objectFit: 'cover',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                          border: '1.5px solid rgba(15,20,35,1)',
+                        }}
+                      />
+                    ) : undefined
+                  }
                   isCompleting={completingRewatches.has(key)}
                   isSwiping={swipingRewatches.has(key)}
                   dragOffset={dragOffsets[key] || 0}
@@ -115,31 +137,37 @@ export const RewatchSection = React.memo(function RewatchSection({
                     <>
                       <h3
                         style={{
-                          fontSize: '15px',
-                          fontWeight: 600,
+                          fontSize: isMobile ? '13px' : '16px',
+                          fontWeight: 700,
                           margin: '0 0 2px 0',
+                          letterSpacing: '-0.01em',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {item.title}
                       </h3>
                       <p
                         style={{
-                          fontSize: '13px',
+                          fontSize: isMobile ? '11px' : '14px',
                           margin: 0,
                           color: accentColor,
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
+                          whiteSpace: 'nowrap',
                           overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}
                       </p>
                       <p
                         style={{
-                          fontSize: '12px',
+                          fontSize: isMobile ? '10px' : '13px',
                           margin: '2px 0 0 0',
                           color: currentTheme.text.muted,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
                         }}
                       >
                         {item.currentWatchCount}x → {item.targetWatchCount}x
@@ -161,14 +189,20 @@ export const RewatchSection = React.memo(function RewatchSection({
                             top: 0,
                             height: '100%',
                             width: `${item.progress}%`,
-                            background: `linear-gradient(90deg, ${accentColor}, #f59e0b)`,
+                            background: `linear-gradient(90deg, ${accentColor}, ${accentColor})`,
                             transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           }}
                         />
                       </div>
                     </>
                   }
-                  action={<Repeat style={{ fontSize: '20px', color: accentColor }} />}
+                  action={
+                    <EpisodeDiscussionButton
+                      seriesId={item.id}
+                      seasonNumber={item.seasonNumber}
+                      episodeNumber={item.episodeNumber}
+                    />
+                  }
                 />
               );
             })}

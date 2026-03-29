@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Badge, IconButton, Tooltip, keyframes } from '@mui/material';
 import { EmojiEvents } from '@mui/icons-material';
-import { useBadges } from './BadgeProvider';
+import { useBadges } from './BadgeContextDef';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const pulseAnimation = keyframes`
   0% {
@@ -17,15 +18,19 @@ const pulseAnimation = keyframes`
 
 const BadgeButton = () => {
   const { showBadgeOverview, newBadges } = useBadges();
+  const { currentTheme } = useTheme();
   const [animate, setAnimate] = useState(false);
 
   // Animiere Button wenn neue Badges da sind
   useEffect(() => {
-    if (newBadges.length > 0) {
-      setAnimate(true);
-      const timer = setTimeout(() => setAnimate(false), 3000);
-      return () => clearTimeout(timer);
-    }
+    if (newBadges.length === 0) return;
+
+    const startTimer = setTimeout(() => setAnimate(true), 0);
+    const stopTimer = setTimeout(() => setAnimate(false), 3000);
+    return () => {
+      clearTimeout(startTimer);
+      clearTimeout(stopTimer);
+    };
   }, [newBadges.length]);
 
   return (
@@ -33,10 +38,10 @@ const BadgeButton = () => {
       <IconButton
         onClick={showBadgeOverview}
         sx={{
-          color: '#ffd700',
+          color: currentTheme.accent,
           animation: animate ? `${pulseAnimation} 1s ease-in-out infinite` : 'none',
           '&:hover': {
-            color: '#ffed4e',
+            color: currentTheme.accent,
             transform: 'scale(1.1)',
             transition: 'all 0.2s ease',
           },
@@ -47,8 +52,8 @@ const BadgeButton = () => {
           color="error"
           sx={{
             '& .MuiBadge-badge': {
-              backgroundColor: '#ff4444',
-              color: 'white',
+              backgroundColor: currentTheme.status?.error || '#ff4444',
+              color: currentTheme.text.secondary,
               fontWeight: 'bold',
             },
           }}

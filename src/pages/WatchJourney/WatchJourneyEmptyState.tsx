@@ -1,5 +1,5 @@
 import { TrendingUp } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { BackButton } from '../../components/ui';
 import { WatchJourneyYearPicker } from './WatchJourneyYearPicker';
 

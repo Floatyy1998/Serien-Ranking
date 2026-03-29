@@ -12,9 +12,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DiscussionFeedMetadata } from '../../types/Discussion';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
 import { ReplyItem } from './ReplyItem';
 
@@ -198,6 +198,8 @@ export const RepliesSection: React.FC<{
                             <img
                               src={img}
                               alt="Bild"
+                              loading="lazy"
+                              decoding="async"
                               style={{
                                 maxWidth: '150px',
                                 maxHeight: '100px',
@@ -217,7 +219,7 @@ export const RepliesSection: React.FC<{
                                 borderRadius: '50%',
                                 background: currentTheme.status.error,
                                 border: 'none',
-                                color: '#fff',
+                                color: currentTheme.text.primary,
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -322,7 +324,7 @@ export const RepliesSection: React.FC<{
                           : currentTheme.background.surface,
                       color:
                         newReply.trim() || replyImages.length > 0
-                          ? '#fff'
+                          ? currentTheme.text.primary
                           : currentTheme.text.muted,
                       cursor: newReply.trim() || replyImages.length > 0 ? 'pointer' : 'default',
                       display: 'flex',

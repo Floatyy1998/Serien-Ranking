@@ -4,53 +4,26 @@
 
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { TrendingUp, ChevronRight } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import TrendingUp from '@mui/icons-material/TrendingUp';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { IconContainer, NavCard } from '../../components/ui';
 
 export const WatchJourneyCard: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-
   const primaryColor = currentTheme.primary;
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
+    <NavCard
       onClick={() => navigate('/watch-journey')}
+      accentColor={primaryColor}
       aria-label="Watch Journey: Trends und Entwicklung anzeigen"
-      style={{
-        margin: '0 20px',
-        padding: '12px 14px',
-        borderRadius: '14px',
-        background: `linear-gradient(135deg, ${primaryColor}15, ${primaryColor}05)`,
-        border: `1px solid ${primaryColor}30`,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        width: 'calc(100% - 40px)',
-        textAlign: 'left',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-      }}
     >
-      {/* Icon */}
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: '12px',
-          background: `linear-gradient(135deg, ${primaryColor}, ${primaryColor}cc)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
+      <IconContainer color={primaryColor} secondaryColor={currentTheme.accent}>
         <TrendingUp style={{ fontSize: 20, color: 'white' }} />
-      </div>
+      </IconContainer>
 
-      {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <h2
           style={{
@@ -88,7 +61,7 @@ export const WatchJourneyCard: React.FC = () => {
               width: 4,
               maxHeight: 24,
               borderRadius: 2,
-              background: `linear-gradient(180deg, ${primaryColor}, ${primaryColor}cc)`,
+              background: `linear-gradient(180deg, ${primaryColor}, ${currentTheme.accent || primaryColor}cc)`,
               opacity: 0.3 + i * 0.1,
             }}
           />
@@ -99,7 +72,7 @@ export const WatchJourneyCard: React.FC = () => {
         style={{ color: currentTheme.text.secondary, fontSize: 20 }}
         aria-hidden="true"
       />
-    </motion.button>
+    </NavCard>
   );
 };
 

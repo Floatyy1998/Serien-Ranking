@@ -6,8 +6,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { calculateTasteMatch, TasteMatchResult } from '../../services/tasteMatchService';
+import { useAuth } from '../../AuthContext';
+import type { TasteMatchResult } from '../../services/tasteMatchService';
+import { calculateTasteMatch } from '../../services/tasteMatchService';
 
 export const getScoreColor = (score: number): string => {
   if (score >= 80) return '#00cec9';
@@ -37,7 +38,7 @@ export interface TasteMatchData {
 
 export const useTasteMatchData = (): TasteMatchData => {
   const { friendId } = useParams<{ friendId: string }>();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<TasteMatchResult | null>(null);

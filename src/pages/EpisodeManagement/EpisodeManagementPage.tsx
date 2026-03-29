@@ -2,6 +2,7 @@ import { ExpandLess, ExpandMore, Refresh } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { PageHeader, CatchUpDialog } from '../../components/ui';
+import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { BulkActionBar } from './BulkActionBar';
 import { EpisodeListItem } from './EpisodeListItem';
 import { useEpisodeManagement } from './useEpisodeManagement';
@@ -33,6 +34,11 @@ export const EpisodeManagementPage = () => {
     handleWatchDialogIncrease,
     handleWatchDialogDecrease,
     closeWatchDialog,
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    closeQuickRating,
+    saveQuickRating,
   } = useEpisodeManagement();
 
   if (!series) {
@@ -118,6 +124,15 @@ export const EpisodeManagementPage = () => {
         onIncrease={handleWatchDialogIncrease}
         onDecrease={handleWatchDialogDecrease}
         onClose={closeWatchDialog}
+      />
+
+      {/* Quick Rating Sheet */}
+      <QuickRatingSheet
+        isOpen={quickRatingOpen}
+        onClose={closeQuickRating}
+        seriesTitle={quickRatingSeries?.title || ''}
+        seasonNumber={quickRatingSeasonNumber}
+        onRate={saveQuickRating}
       />
     </div>
   );

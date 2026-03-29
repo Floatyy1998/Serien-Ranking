@@ -1,6 +1,5 @@
 import {
   CalendarToday,
-  Check,
   FilterList,
   Movie as MovieIcon,
   NewReleases,
@@ -12,17 +11,18 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { staggerContainerFast, staggerItemFast } from '../../lib/motion';
-import { ItemCard } from './DiscoverItemCard';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
+import { DiscoverContent } from './DiscoverContent';
 import {
+  BackButton,
   Dialog,
   GradientText,
   LoadingSpinner,
   PageLayout,
   ScrollToTopButton,
+  Snackbar,
   TabSwitcher,
 } from '../../components/ui';
 import './DiscoverPage.css';
@@ -48,8 +48,8 @@ export const DiscoverPage = memo(() => {
     headerHeight,
     genres,
     handleItemClick,
-    fetchRecommendationsOnRestore,
-    fetchFromTMDBOnRestore,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
   } = useDiscoverFilters();
 
   const {
@@ -78,9 +78,14 @@ export const DiscoverPage = memo(() => {
 
   // Wire up restore callbacks
   useEffect(() => {
-    fetchRecommendationsOnRestore.current = () => fetchRecommendations(true);
-    fetchFromTMDBOnRestore.current = () => fetchFromTMDB(true);
-  }, [fetchRecommendations, fetchFromTMDB]);
+    fetchRecommendationsOnRestoreRef.current = () => fetchRecommendations(true);
+    fetchFromTMDBOnRestoreRef.current = () => fetchFromTMDB(true);
+  }, [
+    fetchRecommendations,
+    fetchFromTMDB,
+    fetchRecommendationsOnRestoreRef,
+    fetchFromTMDBOnRestoreRef,
+  ]);
 
   // Setup scroll listener
   useEffect(() => {
@@ -91,7 +96,7 @@ export const DiscoverPage = memo(() => {
   const categories = [
     { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
     { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
-    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.status.warning },
+    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.accent },
     {
       id: 'upcoming',
       label: activeTab === 'movies' ? 'Neu' : 'Läuft',
@@ -102,7 +107,7 @@ export const DiscoverPage = memo(() => {
       id: 'recommendations',
       label: 'Für dich',
       icon: Recommend,
-      color: 'var(--theme-secondary-gradient, #8b5cf6)',
+      color: currentTheme.accent,
     },
   ] as const;
 
@@ -141,17 +146,21 @@ export const DiscoverPage = memo(() => {
                 alignItems: 'center',
               }}
             >
-              <GradientText
-                as="h1"
-                to="#8b5cf6"
-                style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  margin: 0,
-                }}
-              >
-                Entdecken
-              </GradientText>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BackButton showHome={false} />
+                <GradientText
+                  as="h1"
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-display)',
+                    letterSpacing: '-0.03em',
+                    margin: 0,
+                  }}
+                >
+                  Entdecken
+                </GradientText>
+              </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
                 {!showSearch && activeCategory !== 'recommendations' && (
@@ -161,11 +170,13 @@ export const DiscoverPage = memo(() => {
                     style={{
                       padding: '10px',
                       background: selectedGenre
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                         : currentTheme.background.surface,
                       border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '12px',
-                      color: selectedGenre ? '#fff' : currentTheme.text.primary,
+                      color: selectedGenre
+                        ? currentTheme.text.secondary
+                        : currentTheme.text.primary,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -185,19 +196,20 @@ export const DiscoverPage = memo(() => {
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
-                    setShowSearch(!showSearch);
-                    if (!showSearch) {
+                    const newValue = !showSearch;
+                    setShowSearch(newValue);
+                    if (newValue) {
                       setShowFilters(false);
                     }
                   }}
                   style={{
                     padding: '10px',
                     background: showSearch
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                       : currentTheme.background.surface,
                     border: showSearch ? 'none' : `1px solid ${currentTheme.border.default}`,
                     borderRadius: '12px',
-                    color: showSearch ? '#fff' : currentTheme.text.primary,
+                    color: showSearch ? currentTheme.text.secondary : currentTheme.text.primary,
                     cursor: 'pointer',
                     boxShadow: showSearch ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                   }}
@@ -221,7 +233,9 @@ export const DiscoverPage = memo(() => {
                   type="text"
                   placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                  }}
                   autoFocus
                   style={{
                     width: '100%',
@@ -273,7 +287,9 @@ export const DiscoverPage = memo(() => {
                   <motion.button
                     key={cat.id}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setActiveCategory(cat.id)}
+                    onClick={() => {
+                      setActiveCategory(cat.id);
+                    }}
                     style={{
                       padding: '10px 4px',
                       background: isActive
@@ -406,198 +422,21 @@ export const DiscoverPage = memo(() => {
         <div style={{ height: `${headerHeight}px` }} />
 
         <div style={{ padding: '16px 20px' }}>
-          {activeCategory === 'recommendations' ? (
-            recommendationsLoading && recommendations.length === 0 ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <LoadingSpinner size={50} text="Lade Empfehlungen..." />
-              </motion.div>
-            ) : !recommendationsLoading && recommendations.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                style={{
-                  textAlign: 'center',
-                  padding: '60px 20px',
-                  background: currentTheme.background.surface,
-                  borderRadius: '20px',
-                  border: `1px solid ${currentTheme.border.default}`,
-                }}
-              >
-                <Recommend
-                  style={{
-                    fontSize: '56px',
-                    marginBottom: '16px',
-                    color: currentTheme.text.muted,
-                  }}
-                />
-                <p
-                  style={{
-                    fontSize: '16px',
-                    color: currentTheme.text.secondary,
-                    marginBottom: '8px',
-                    fontWeight: 600,
-                  }}
-                >
-                  Keine Empfehlungen verfügbar
-                </p>
-                <p style={{ fontSize: '14px', color: currentTheme.text.muted }}>
-                  {/* seriesList/movieList length check handled by fetch hook */}
-                </p>
-              </motion.div>
-            ) : (
-              <div>
-                <p
-                  style={{
-                    fontSize: '14px',
-                    color: currentTheme.text.muted,
-                    marginBottom: '20px',
-                    textAlign: 'center',
-                    fontWeight: 500,
-                  }}
-                >
-                  Basierend auf deiner Liste
-                </p>
-                <motion.div
-                  variants={staggerContainerFast}
-                  initial="hidden"
-                  animate="visible"
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isDesktop
-                      ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                      : 'repeat(2, 1fr)',
-                    gap: isDesktop ? '24px' : '16px',
-                    maxWidth: '100%',
-                    margin: '0',
-                  }}
-                >
-                  {recommendations.map((item) => (
-                    <motion.div key={`rec-${item.type}-${item.id}`} variants={staggerItemFast}>
-                      <ItemCard
-                        item={item}
-                        onItemClick={handleItemClick}
-                        onAddToList={addToList}
-                        addingItem={addingItem}
-                        currentTheme={currentTheme}
-                        isDesktop={isDesktop}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </div>
-            )
-          ) : showSearch ? (
-            <div>
-              {searchLoading ? (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <LoadingSpinner size={50} text="Suche läuft..." />
-                </motion.div>
-              ) : searchResults.length === 0 && searchQuery.trim() ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{
-                    textAlign: 'center',
-                    padding: '60px 20px',
-                    background: currentTheme.background.surface,
-                    borderRadius: '20px',
-                    border: `1px solid ${currentTheme.border.default}`,
-                  }}
-                >
-                  <Search
-                    style={{
-                      fontSize: '56px',
-                      marginBottom: '16px',
-                      color: currentTheme.text.muted,
-                    }}
-                  />
-                  <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                    Keine Ergebnisse für "{searchQuery}"
-                  </p>
-                </motion.div>
-              ) : searchResults.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  style={{
-                    textAlign: 'center',
-                    padding: '60px 20px',
-                    background: currentTheme.background.surface,
-                    borderRadius: '20px',
-                    border: `1px solid ${currentTheme.border.default}`,
-                  }}
-                >
-                  <Search
-                    style={{
-                      fontSize: '56px',
-                      marginBottom: '16px',
-                      color: currentTheme.text.muted,
-                    }}
-                  />
-                  <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                    Gib einen Suchbegriff ein...
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  variants={staggerContainerFast}
-                  initial="hidden"
-                  animate="visible"
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: isDesktop
-                      ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                      : 'repeat(2, 1fr)',
-                    gap: isDesktop ? '24px' : '16px',
-                    maxWidth: '100%',
-                    margin: '0',
-                  }}
-                >
-                  {searchResults.map((item) => (
-                    <motion.div key={`search-${item.type}-${item.id}`} variants={staggerItemFast}>
-                      <ItemCard
-                        item={item}
-                        onItemClick={handleItemClick}
-                        onAddToList={addToList}
-                        addingItem={addingItem}
-                        currentTheme={currentTheme}
-                        isDesktop={isDesktop}
-                      />
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <motion.div
-              variants={staggerContainerFast}
-              initial="hidden"
-              animate="visible"
-              key={`grid-${activeCategory}`}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isDesktop
-                  ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                  : 'repeat(2, 1fr)',
-                gap: isDesktop ? '24px' : '16px',
-                maxWidth: '100%',
-                margin: '0',
-              }}
-            >
-              {results.map((item) => (
-                <motion.div key={`${item.type}-${item.id}`} variants={staggerItemFast}>
-                  <ItemCard
-                    item={item}
-                    onItemClick={handleItemClick}
-                    onAddToList={addToList}
-                    addingItem={addingItem}
-                    currentTheme={currentTheme}
-                    isDesktop={isDesktop}
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
+          <DiscoverContent
+            activeCategory={activeCategory}
+            showSearch={showSearch}
+            searchQuery={searchQuery}
+            isDesktop={isDesktop}
+            currentTheme={currentTheme}
+            results={results}
+            searchResults={searchResults}
+            searchLoading={searchLoading}
+            recommendations={recommendations}
+            recommendationsLoading={recommendationsLoading}
+            addingItem={addingItem}
+            handleItemClick={handleItemClick}
+            addToList={addToList}
+          />
 
           {/* Premium Loading indicator */}
           {((loading && !showSearch && activeCategory !== 'recommendations') ||
@@ -615,46 +454,7 @@ export const DiscoverPage = memo(() => {
       </div>
 
       {/* Premium Snackbar for success feedback */}
-      <AnimatePresence>
-        {snackbar.open && (
-          <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            style={{
-              position: 'fixed',
-              bottom: '100px',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, #10b981)`,
-              color: 'white',
-              padding: '14px 24px',
-              borderRadius: '16px',
-              boxShadow: `0 12px 40px -8px ${currentTheme.status.success}50, 0 4px 12px -4px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)`,
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              maxWidth: 'calc(100% - 40px)',
-            }}
-          >
-            <div
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Check style={{ fontSize: '18px' }} />
-            </div>
-            <span style={{ fontSize: '15px', fontWeight: 600 }}>{snackbar.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       {/* Dialog for alerts */}
       <Dialog

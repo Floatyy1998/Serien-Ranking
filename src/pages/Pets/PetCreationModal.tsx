@@ -5,7 +5,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_TYPE_NAMES, PET_TYPES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
@@ -34,7 +34,7 @@ export const PetCreationModal = memo(function PetCreationModal({
         className="pet-create-bg"
         style={{
           background: `
-            radial-gradient(ellipse 80% 50% at 50% 20%, #ec489930, transparent),
+            radial-gradient(ellipse 80% 50% at 50% 20%, ${currentTheme.accent}30, transparent),
             radial-gradient(ellipse 60% 40% at 80% 60%, ${currentTheme.primary}20, transparent)
           `,
         }}
@@ -52,8 +52,7 @@ export const PetCreationModal = memo(function PetCreationModal({
         >
           <GradientText
             as="h2"
-            from="#ec4899"
-            to={currentTheme.primary}
+            from={currentTheme.primary}
             style={{
               fontSize: '28px',
               fontWeight: 800,
@@ -92,11 +91,14 @@ export const PetCreationModal = memo(function PetCreationModal({
                   style={{
                     background:
                       selectedType === type
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                         : currentTheme.background.default,
                     border:
                       selectedType === type ? 'none' : `1px solid ${currentTheme.border.default}`,
-                    color: selectedType === type ? 'white' : currentTheme.text.primary,
+                    color:
+                      selectedType === type
+                        ? currentTheme.text.secondary
+                        : currentTheme.text.primary,
                     boxShadow:
                       selectedType === type ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                   }}
@@ -114,11 +116,11 @@ export const PetCreationModal = memo(function PetCreationModal({
             className="pet-create-submit"
             style={{
               background: petName.trim()
-                ? `linear-gradient(135deg, #ec4899, var(--theme-secondary-gradient, #8b5cf6))`
+                ? `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.accent})`
                 : currentTheme.background.default,
-              color: petName.trim() ? '#fff' : currentTheme.text.muted,
+              color: petName.trim() ? currentTheme.text.secondary : currentTheme.text.muted,
               cursor: petName.trim() ? 'pointer' : 'not-allowed',
-              boxShadow: petName.trim() ? '0 8px 24px rgba(236,72,153,0.4)' : 'none',
+              boxShadow: petName.trim() ? `0 8px 24px ${currentTheme.accent}40` : 'none',
             }}
           >
             Pet erschaffen!

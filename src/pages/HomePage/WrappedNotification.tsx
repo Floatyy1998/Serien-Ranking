@@ -6,7 +6,7 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 
 // Floating Icon Component
@@ -61,7 +61,7 @@ export const WrappedNotification: React.FC = () => {
         marginBottom: '8px',
         padding: '16px 20px',
         borderRadius: '16px',
-        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, var(--theme-secondary-gradient, #764ba2) 50%, #f093fb 100%)`,
+        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, #f093fb 100%)`,
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',

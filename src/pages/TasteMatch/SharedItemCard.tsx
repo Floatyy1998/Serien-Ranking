@@ -2,7 +2,7 @@ import { Favorite, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SharedItem } from '../../services/tasteMatchService';
+import type { SharedItem } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
 // Shared Item Card - Premium Version
@@ -22,7 +22,9 @@ export const SharedItemCard: React.FC<{
       transition={{ delay: index * 0.04 }}
       whileTap={{ scale: 0.97 }}
       whileHover={{ scale: 1.01, y: -2 }}
-      onClick={() => navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`)}
+      onClick={() => {
+        navigate(`/${type === 'series' ? 'series' : 'movie'}/${item.id}`);
+      }}
       aria-label={`${item.title} – ${type === 'series' ? 'Serie' : 'Film'} Details anzeigen`}
       style={{
         display: 'flex',
@@ -84,9 +86,9 @@ export const SharedItemCard: React.FC<{
           }}
         >
           {type === 'series' ? (
-            <Tv style={{ fontSize: 26, color: 'rgba(255,255,255,0.25)' }} />
+            <Tv style={{ fontSize: 26, color: `${ACCENT_COLORS.series}40` }} />
           ) : (
-            <Movie style={{ fontSize: 26, color: 'rgba(255,255,255,0.25)' }} />
+            <Movie style={{ fontSize: 26, color: `${ACCENT_COLORS.movies}40` }} />
           )}
         </div>
       )}
@@ -95,7 +97,6 @@ export const SharedItemCard: React.FC<{
           style={{
             fontSize: 15,
             fontWeight: 700,
-            color: 'white',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',

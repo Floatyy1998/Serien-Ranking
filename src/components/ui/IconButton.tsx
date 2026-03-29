@@ -1,6 +1,8 @@
 import { Tooltip } from '@mui/material';
+import { motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleTight } from '../../lib/motion';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -29,7 +31,8 @@ export const IconButton: React.FC<IconButtonProps> = ({
     glass: {
       background: 'rgba(255, 255, 255, 0.06)',
       border: '1px solid rgba(255, 255, 255, 0.1)',
-      backdropFilter: 'blur(12px)',
+      backdropFilter: 'var(--blur-sm)',
+      WebkitBackdropFilter: 'var(--blur-sm)',
       color: 'white',
     },
     surface: {
@@ -53,8 +56,10 @@ export const IconButton: React.FC<IconButtonProps> = ({
   }
 
   const button = (
-    <button
+    <motion.button
       onClick={onClick}
+      whileTap={tapScaleTight}
+      transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       aria-label={effectiveAriaLabel}
       style={{
         width: size,
@@ -64,7 +69,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: 'background 0.2s ease, border-color 0.2s ease, color 0.2s ease',
         padding: 0,
         flexShrink: 0,
         ...variantStyles[variant],
@@ -72,7 +77,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
       }}
     >
       {icon}
-    </button>
+    </motion.button>
   );
 
   if (tooltip) {

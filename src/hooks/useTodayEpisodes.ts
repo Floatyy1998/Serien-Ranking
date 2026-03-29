@@ -1,43 +1,51 @@
-import { useMemo, useRef } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useEffect, useMemo, useState } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
+import type { Series } from '../types/Series';
+import { getEpisodeAirDate } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
+
+interface TodayEpisode {
+  seriesId: number;
+  seriesNmr: number;
+  seriesTitle: string;
+  poster: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  seasonIndex: number;
+  episodeIndex: number;
+  episodeId: number;
+  episodeName: string;
+  watched: boolean;
+  provider: Series['provider'];
+}
+
+function getTodayKey() {
+  return new Date().toDateString();
+}
 
 export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
-  interface TodayEpisode {
-    seriesId: number;
-    seriesNmr: number;
-    seriesTitle: string;
-    poster: string;
-    seasonNumber: number;
-    episodeNumber: number;
-    seasonIndex: number;
-    episodeIndex: number;
-    episodeId: number;
-    episodeName: string;
-    watched: boolean;
-  }
+  const [todayKey, setTodayKey] = useState(getTodayKey);
 
-  const cacheRef = useRef<{ episodes: TodayEpisode[] | null; deps: string; date: string }>({
-    episodes: null,
-    deps: '',
-    date: '',
-  });
+  // Check for date change every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = getTodayKey();
+      setTodayKey((prev) => (prev !== now ? now : prev));
+    }, 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const todayEpisodes = useMemo(() => {
+    void todayKey;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayTime = today.getTime();
-    const todayString = today.toDateString();
-    const depsString = `${seriesList.length}`;
 
-    if (
-      cacheRef.current.episodes &&
-      cacheRef.current.deps === depsString &&
-      cacheRef.current.date === todayString
-    ) {
-      return cacheRef.current.episodes;
-    }
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowTime = tomorrow.getTime();
 
     const episodes: TodayEpisode[] = [];
 
@@ -54,14 +62,17 @@ export const useTodayEpisodes = () => {
 
         for (let k = 0; k < seasonEpisodes.length; k++) {
           const episode = seasonEpisodes[k];
-          if (!episode.air_date || episode.watched) continue;
+          if (episode.watched) continue;
 
-          const episodeDate = new Date(episode.air_date);
-          if (isNaN(episodeDate.getTime())) continue;
+          const airDate = getEpisodeAirDate(episode);
+          if (!airDate) continue;
 
-          episodeDate.setHours(0, 0, 0, 0);
+          // Compare date portion in local timezone
+          const epDay = new Date(airDate);
+          epDay.setHours(0, 0, 0, 0);
+          const epTime = epDay.getTime();
 
-          if (episodeDate.getTime() === todayTime) {
+          if (epTime >= todayTime && epTime < tomorrowTime) {
             const actualSeasonIndex =
               series.seasons?.findIndex((s) => s.seasonNumber === season.seasonNumber) ?? 0;
 
@@ -77,15 +88,15 @@ export const useTodayEpisodes = () => {
               episodeId: episode.id,
               episodeName: episode.name,
               watched: episode.watched,
+              provider: series.provider,
             });
           }
         }
       }
     }
 
-    cacheRef.current = { episodes, deps: depsString, date: todayString };
     return episodes;
-  }, [seriesList]);
+  }, [seriesList, todayKey]);
 
   return todayEpisodes;
 };

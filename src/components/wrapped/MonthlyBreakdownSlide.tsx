@@ -4,7 +4,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MonthStats } from '../../types/Wrapped';
+import type { MonthStats } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MonthlyBreakdownSlideProps {
   monthlyBreakdown: MonthStats[];
@@ -13,8 +14,10 @@ interface MonthlyBreakdownSlideProps {
 
 export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
   monthlyBreakdown,
+
   mostActiveMonth,
 }) => {
+  const { currentTheme } = useTheme();
   // Finde den maximalen Wert für die Skalierung
   const maxMinutes = Math.max(...monthlyBreakdown.map((m) => m.minutesWatched), 1);
 
@@ -106,8 +109,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         style={{
-          background:
-            'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+          background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           borderRadius: '20px',
           padding: '20px 35px',
           marginBottom: '35px',
@@ -182,7 +184,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
                     width: '100%',
                     height: `${Math.max(height, 8)}%`,
                     background: isTopMonth
-                      ? 'linear-gradient(180deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)'
+                      ? `linear-gradient(180deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
                       : 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 100%)',
                     borderRadius: '4px 4px 0 0',
                     minHeight: '8px',

@@ -1,4 +1,5 @@
 import {
+  BugReport,
   Cancel,
   ChatBubbleOutline,
   Check,
@@ -6,6 +7,7 @@ import {
   Favorite,
   Flag,
   Group,
+  Lightbulb,
   Movie as MovieIcon,
   NewReleases,
   Notifications,
@@ -18,7 +20,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { UnifiedNotification } from './useUnifiedNotifications';
 import { formatNotificationTime } from './useUnifiedNotifications';
 
@@ -43,18 +45,23 @@ const ICON_MAP: Record<
   watchlist: (t) => <PlayCircle style={{ fontSize: '18px', color: t.primary }} />,
   person: (t) => <PersonAdd style={{ fontSize: '18px', color: t.status.success }} />,
   chat: (t) => <ChatBubbleOutline style={{ fontSize: '18px', color: t.primary }} />,
-  heart: () => <Favorite style={{ fontSize: '18px', color: '#ff6b6b' }} />,
+  heart: (t) => <Favorite style={{ fontSize: '18px', color: t.status?.error || '#ef4444' }} />,
   flag: (t) => <Flag style={{ fontSize: '18px', color: t.status.warning }} />,
-  announcement: () => <NewReleases style={{ fontSize: '18px', color: '#a855f7' }} />,
+  announcement: (t) => <NewReleases style={{ fontSize: '18px', color: t.accent }} />,
+  bug: (t) => <BugReport style={{ fontSize: '18px', color: t.status.warning }} />,
+  feature: (_t) => <Lightbulb style={{ fontSize: '18px', color: '#8b5cf6' }} />,
 };
 
 const ICON_BG_MAP: Record<string, (t: ReturnType<typeof useTheme>['currentTheme']) => string> = {
   person: (t) => `linear-gradient(135deg, ${t.status.success}20, ${t.status.success}08)`,
   star: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
-  heart: () => 'linear-gradient(135deg, #ff6b6b20, #ff6b6b08)',
+  heart: (t) =>
+    `linear-gradient(135deg, ${t.status?.error || '#ef4444'}20, ${t.status?.error || '#ef4444'}08)`,
   flag: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
   movie: (t) => `linear-gradient(135deg, ${t.status.error}20, ${t.status.error}08)`,
-  announcement: () => 'linear-gradient(135deg, #a855f720, #a855f708)',
+  announcement: (t) => `linear-gradient(135deg, ${t.accent}20, ${t.accent}08)`,
+  bug: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
+  feature: (_t) => `linear-gradient(135deg, #8b5cf620, #8b5cf608)`,
 };
 
 export const NotificationSheet = React.memo(function NotificationSheet({
@@ -146,9 +153,9 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   width: '40px',
                   height: '40px',
                   borderRadius: '12px',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   border: 'none',
-                  color: 'white',
+                  color: currentTheme.text.secondary,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -226,7 +233,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                         ? `1px solid ${currentTheme.border.default}40`
                         : 'none',
                     position: 'relative',
-                    background: !item.read ? `${currentTheme.primary}08` : 'transparent',
+                    background: !item.read ? currentTheme.background.surface : 'transparent',
                     borderRadius: '12px',
                     marginBottom: index < notifications.length - 1 ? '2px' : 0,
                   }}
@@ -241,7 +248,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                         bottom: '14px',
                         width: '3px',
                         borderRadius: '2px',
-                        background: `linear-gradient(180deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                        background: `linear-gradient(180deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                       }}
                     />
                   )}
@@ -303,7 +310,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                               width: '7px',
                               height: '7px',
                               borderRadius: '50%',
-                              background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                               flexShrink: 0,
                             }}
                           />
@@ -331,14 +338,14 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onAcceptRequest(item.requestId!);
+                            onAcceptRequest(item.requestId ?? '');
                           }}
                           style={{
                             padding: '8px 16px',
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                             border: 'none',
                             borderRadius: '12px',
-                            color: 'white',
+                            color: currentTheme.text.secondary,
                             fontSize: '14px',
                             fontWeight: 600,
                             cursor: 'pointer',
@@ -356,7 +363,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                           whileTap={{ scale: 0.9 }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            onDeclineRequest(item.requestId!);
+                            onDeclineRequest(item.requestId ?? '');
                           }}
                           style={{
                             padding: '8px 16px',
@@ -394,8 +401,8 @@ export const NotificationSheet = React.memo(function NotificationSheet({
               style={{
                 width: '100%',
                 padding: '14px',
-                background: `linear-gradient(135deg, ${currentTheme.primary}12, rgba(139, 92, 246, 0.07))`,
-                border: `1px solid ${currentTheme.primary}25`,
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
                 borderRadius: '14px',
                 color: currentTheme.primary,
                 fontSize: '15px',

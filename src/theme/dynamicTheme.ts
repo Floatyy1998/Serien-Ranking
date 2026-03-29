@@ -15,6 +15,7 @@ export interface UserThemeConfig {
   backgroundColor: string;
   surfaceColor?: string;
   accentColor?: string;
+  textColor?: string;
   backgroundImage?: string;
   backgroundImageOpacity?: number;
   backgroundImageBlur?: number;
@@ -22,11 +23,26 @@ export interface UserThemeConfig {
 }
 
 // Generiert ein vollständiges Theme basierend auf Benutzer-Eingaben
+const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
+function safeHex(color: string | undefined, fallback: string): string {
+  return color && VALID_HEX.test(color) ? color : fallback;
+}
+
 export function generateDynamicTheme(config: UserThemeConfig) {
+  // Sanitize: ungültige/leere Farbwerte durch Defaults ersetzen
+  const safeConfig: UserThemeConfig = {
+    ...config,
+    primaryColor: safeHex(config.primaryColor, '#00fed7'),
+    backgroundColor: safeHex(config.backgroundColor, '#06090f'),
+    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#0e1420') : undefined,
+    accentColor: config.accentColor ? safeHex(config.accentColor, '#ff6b6b') : undefined,
+    textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
+  };
+
   // Smarte Normalisierung: korrigiert schlechte Farbkombinationen für die Darstellung.
   // Die originalen gespeicherten Werte in localStorage/Firebase bleiben unverändert.
-  const normalized = normalizeThemeColors(config);
-  const { primaryColor, backgroundColor, surfaceColor, accentColor } = normalized;
+  const normalized = normalizeThemeColors(safeConfig);
+  const { primaryColor, backgroundColor, surfaceColor, accentColor, textColor } = normalized;
 
   // Automatische Palette-Generierung
   const primaryPalette = generateColorPalette(primaryColor);
@@ -34,7 +50,6 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
   // Automatische Surface-Farbe falls nicht angegeben
   const autoSurfaceColor = surfaceColor || lightenColor(backgroundColor, 0.1);
-  const surfaceTextColors = createAccessibleTextColors(autoSurfaceColor);
 
   // Accent-Farbe als Fallback auf aufgehellte Primärfarbe
   const finalAccentColor = accentColor || lightenColor(primaryColor, 0.2);
@@ -74,15 +89,18 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       },
     },
 
-    // Automatische Textfarben basierend auf Kontrast
+    /**
+     * Semantische Textfarben:
+     * - primary: Accent/highlight color (the theme's primary color)
+     * - secondary: Main readable body text color
+     * - muted: Dimmed/secondary text color
+     * - accent: Secondary accent for special highlights
+     */
     text: {
       primary: primaryColor,
-      secondary: backgroundTextColors.secondary,
-      muted: backgroundTextColors.muted,
-      onPrimary: primaryPalette.textOnPrimary,
-      onSurface: surfaceTextColors.primary,
-      white: '#ffffff',
-      black: '#000000',
+      secondary: textColor || backgroundTextColors.secondary,
+      muted: textColor ? withOpacity(textColor, 0.6) : backgroundTextColors.muted,
+      accent: finalAccentColor,
     },
 
     // Statusfarben - bleiben konsistent aber mit Theme-Anpassung
@@ -153,16 +171,20 @@ export const defaultThemeConfig: UserThemeConfig = {
   backgroundIsVideo: false,
 };
 
+/** The shape returned by generateDynamicTheme */
+export type DynamicTheme = ReturnType<typeof generateDynamicTheme>;
+
 // Generiert das Standard-Theme
 export const defaultDynamicTheme = generateDynamicTheme(defaultThemeConfig);
 
 // Theme-Validierung
 export function validateThemeConfig(config: Partial<UserThemeConfig>): UserThemeConfig {
   return {
-    primaryColor: config.primaryColor || defaultThemeConfig.primaryColor,
-    backgroundColor: config.backgroundColor || defaultThemeConfig.backgroundColor,
-    surfaceColor: config.surfaceColor || defaultThemeConfig.surfaceColor,
-    accentColor: config.accentColor || defaultThemeConfig.accentColor,
+    primaryColor: safeHex(config.primaryColor, defaultThemeConfig.primaryColor),
+    backgroundColor: safeHex(config.backgroundColor, defaultThemeConfig.backgroundColor),
+    surfaceColor: safeHex(config.surfaceColor, defaultThemeConfig.surfaceColor || '#0e1420'),
+    accentColor: safeHex(config.accentColor, defaultThemeConfig.accentColor || '#ff6b6b'),
+    textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
     backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
     backgroundImageOpacity:
       config.backgroundImageOpacity ?? defaultThemeConfig.backgroundImageOpacity,

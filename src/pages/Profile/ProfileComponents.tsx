@@ -15,7 +15,7 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
@@ -72,7 +72,7 @@ export const ProfileHeader = memo(
                 }
           }
         >
-          {!photoURL && <Person style={{ fontSize: '50px', color: 'white' }} />}
+          {!photoURL && <Person style={{ fontSize: '50px', color: currentTheme.text.secondary }} />}
         </div>
       </motion.div>
 
@@ -211,7 +211,7 @@ export const ProfileFeaturedNav = memo(
       transition={{ delay: animationDelay }}
       className="profile-menu-section"
     >
-      <h2 className="profile-section-title" style={{ color: currentTheme.text.muted }}>
+      <h2 className="profile-section-title" style={{ color: currentTheme.text.primary }}>
         {title}
       </h2>
       <div className="profile-featured-list">
@@ -237,7 +237,7 @@ export const ProfileFeaturedNav = memo(
                   background: `linear-gradient(135deg, ${item.color}, ${item.color}cc)`,
                 }}
               >
-                <item.icon style={{ fontSize: '22px', color: 'white' }} />
+                <item.icon style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
               </div>
               <span className="profile-featured-label">{item.label}</span>
             </div>
@@ -280,7 +280,7 @@ export const ProfileMenuGroup = memo(
       transition={{ delay: animationDelay }}
       className="profile-menu-section"
     >
-      <h2 className="profile-section-title" style={{ color: currentTheme.text.muted }}>
+      <h2 className="profile-section-title" style={{ color: currentTheme.text.primary }}>
         {title}
       </h2>
       <div

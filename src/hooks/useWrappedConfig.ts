@@ -40,7 +40,7 @@ export const useWrappedConfig = (): WrappedConfig => {
             enabled: FEATURES.WRAPPED_ENABLED,
             year: FEATURES.WRAPPED_YEAR,
           });
-        } catch (err) {
+        } catch {
           // Config could not be created in Firebase, using local config
         }
 

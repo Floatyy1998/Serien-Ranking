@@ -1,19 +1,10 @@
+import { TheaterComedy } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { useTheme } from '../../contexts/ThemeContext';
-import { normalizeMonthlyData, WatchJourneyData } from '../../services/watchJourneyService';
+import { Area, AreaChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 
 interface GenreTabProps {
@@ -26,13 +17,18 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
 
-  // Prepare data for stacked area chart
+  // Prepare data for stacked area chart (absolute hours)
   const chartData = useMemo(() => {
-    const normalized = normalizeMonthlyData(data.genreMonths, data.topGenres);
-    return normalized.map((month) => ({
-      name: month.monthName,
-      ...month.values,
-    }));
+    return data.genreMonths.map((month) => {
+      const hoursValues: Record<string, number> = {};
+      data.topGenres.forEach((genre) => {
+        hoursValues[genre] = Math.round(((month.values[genre] || 0) / 60) * 10) / 10;
+      });
+      return {
+        name: month.monthName,
+        ...hoursValues,
+      };
+    });
   }, [data]);
 
   // Prepare data for pie chart
@@ -46,7 +42,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
     return data.topGenres.map((genre) => ({
       name: genre,
       value: Math.round((totals[genre] || 0) / 60),
-      color: data.genreColors[genre],
+      fill: data.genreColors[genre],
     }));
   }, [data]);
 
@@ -69,6 +65,18 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
   }, [data]);
 
   const topGenre = genreStats[0];
+
+  if (data.topGenres.length === 0) {
+    return (
+      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
+        <TheaterComedy style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
+        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Genre-Daten</h3>
+        <p style={{ color: textSecondary, fontSize: 14 }}>
+          Genres werden beim Markieren von Episoden erfasst
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -158,7 +166,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           Genre-Verteilung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <PieChart>
               <Pie
                 data={pieData}
@@ -170,16 +178,9 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 dataKey="value"
                 animationBegin={0}
                 animationDuration={800}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={entry.color}
-                    stroke="transparent"
-                    style={{ outline: 'none' }}
-                  />
-                ))}
-              </Pie>
+                stroke="transparent"
+                style={{ outline: 'none' }}
+              />
               <Tooltip
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
@@ -188,14 +189,14 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                       <div
                         style={{
                           background: bgSurface,
-                          border: `1px solid ${item.color}50`,
+                          border: `1px solid ${item.fill}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
                           boxShadow:
                             '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
-                        <p style={{ color: item.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p style={{ color: item.fill, fontWeight: 700, margin: 0, fontSize: 15 }}>
                           {item.name}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
@@ -208,7 +209,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 }}
               />
             </PieChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
 
         {/* Legend */}
@@ -223,7 +224,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         >
           {pieData.slice(0, 6).map((item) => (
             <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.fill }} />
               <span style={{ color: textSecondary, fontSize: 12 }}>{item.name}</span>
             </div>
           ))}
@@ -255,8 +256,8 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           Genre-Entwicklung
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 {data.topGenres.map((genre) => (
                   <linearGradient
@@ -281,23 +282,23 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
-                tickFormatter={(v) => `${v}%`}
+                tickFormatter={(v) => `${v}h`}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip unit="hours" />} />
               {data.topGenres.map((genre) => (
                 <Area
                   key={genre}
                   type="monotone"
                   dataKey={genre}
-                  stackId="1"
                   stroke={data.genreColors[genre]}
                   fill={`url(#gradient-${genre.replace(/\s+/g, '-')})`}
+                  fillOpacity={0.15}
                   strokeWidth={2}
                   style={{ outline: 'none' }}
                 />
               ))}
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 
@@ -332,7 +333,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                 <div
                   style={{ width: 10, height: 10, borderRadius: '50%', background: stat.color }}
                 />
-                <span style={{ color: 'white', fontSize: 14, fontWeight: 600, flex: 1 }}>
+                <span style={{ color: textPrimary, fontSize: 14, fontWeight: 600, flex: 1 }}>
                   {stat.genre}
                 </span>
               </div>
@@ -341,7 +342,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                   {stat.hours}h
                 </span>
                 <span
-                  style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, alignSelf: 'flex-end' }}
+                  style={{ color: currentTheme.text.muted, fontSize: 14, alignSelf: 'flex-end' }}
                 >
                   {stat.percentage}%
                 </span>

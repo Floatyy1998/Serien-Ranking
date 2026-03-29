@@ -5,7 +5,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from '@mui/icons-material';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 export interface PresetTheme {
   name: string;
@@ -51,7 +51,7 @@ export const ThemePreviewCard = memo(
       >
         {isActive && (
           <div className="theme-preset-check" style={{ background: currentTheme.status.success }}>
-            <Check style={{ fontSize: 11, color: 'white' }} />
+            <Check style={{ fontSize: 11, color: currentTheme.text.secondary }} />
           </div>
         )}
         <div className="theme-preset-dots">

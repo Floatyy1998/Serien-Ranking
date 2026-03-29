@@ -2,14 +2,14 @@ import { Person, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useAuth } from '../../AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { Series } from '../../types/Series';
-import { Movie } from '../../types/Movie';
+import type { Series } from '../../types/Series';
+import type { Movie } from '../../types/Movie';
 
 interface FriendWithItem {
   uid: string;
@@ -23,8 +23,8 @@ interface FriendsWhoHaveThisProps {
   mediaType: 'series' | 'movie';
 }
 
-export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
-  const { user } = useAuth()!;
+const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, mediaType }) => {
+  const { user } = useAuth() || {};
   const { friends } = useOptimizedFriends();
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -158,9 +158,9 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                   justifyContent: 'center',
                   fontSize: '13px',
                   fontWeight: 700,
-                  color: 'white',
+                  color: currentTheme.text.primary,
                   border: hasRating
-                    ? `2px solid ${isHighRating ? '#FFD700' : '#FFA500'}`
+                    ? `2px solid ${currentTheme.accent}`
                     : '2px solid rgba(255, 255, 255, 0.4)',
                   boxShadow: hasRating
                     ? isHighRating
@@ -182,8 +182,8 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                     left: '50%',
                     transform: 'translateX(-50%)',
                     background: isHighRating
-                      ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
-                      : 'linear-gradient(135deg, #FFA500 0%, #FF8C00 100%)',
+                      ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`
+                      : `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`,
                     borderRadius: '8px',
                     padding: '1px 5px',
                     display: 'flex',
@@ -199,7 +199,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                   <Star
                     style={{
                       fontSize: '8px',
-                      color: '#000',
+                      color: currentTheme.background.default,
                       filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.4))',
                     }}
                   />
@@ -207,7 +207,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
                     style={{
                       fontSize: '9px',
                       fontWeight: 900,
-                      color: '#000',
+                      color: currentTheme.background.default,
                       lineHeight: 1,
                       textShadow: '0 0 3px rgba(255,255,255,0.3)',
                     }}
@@ -237,7 +237,7 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
               justifyContent: 'center',
               fontSize: '11px',
               fontWeight: 800,
-              color: 'white',
+              color: currentTheme.text.primary,
               boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
               cursor: 'default',
             }}
@@ -249,3 +249,6 @@ export const FriendsWhoHaveThis: React.FC<FriendsWhoHaveThisProps> = ({ itemId, 
     </div>
   );
 };
+
+export const FriendsWhoHaveThis = memo(FriendsWhoHaveThisInner);
+FriendsWhoHaveThis.displayName = 'FriendsWhoHaveThis';

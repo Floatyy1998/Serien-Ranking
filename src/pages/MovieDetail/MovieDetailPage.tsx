@@ -1,9 +1,11 @@
-import { Info, People, Star } from '@mui/icons-material';
+import Info from '@mui/icons-material/Info';
+import People from '@mui/icons-material/People';
+import Star from '@mui/icons-material/Star';
 import { memo } from 'react';
 import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew } from '../../components/detail';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';
 import { MovieInfoTab } from './MovieInfoTab';
@@ -196,8 +198,9 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       style={{
         background:
           activeTab === 'info'
-            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, var(--theme-secondary-gradient, #8b5cf6) 100%)`
+            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
             : 'rgba(255, 255, 255, 0.05)',
+        color: activeTab === 'info' ? currentTheme.text.secondary : currentTheme.text.muted,
       }}
     >
       <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />
@@ -210,8 +213,9 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       style={{
         background:
           activeTab === 'cast'
-            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, var(--theme-secondary-gradient, #8b5cf6) 100%)`
+            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
             : 'rgba(255, 255, 255, 0.05)',
+        color: activeTab === 'cast' ? currentTheme.text.secondary : currentTheme.text.muted,
       }}
     >
       <People style={{ fontSize: isMobile ? '16px' : '18px' }} />

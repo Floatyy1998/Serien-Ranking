@@ -5,7 +5,7 @@
 
 import { Check, Logout } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
 import { ProfileSection } from './ProfileSection';
@@ -54,7 +54,7 @@ export const SettingsPage = () => {
         style={{
           background: `
             radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.primary}35, transparent),
-            radial-gradient(ellipse 60% 40% at 80% 10%, var(--theme-secondary-gradient-20, rgba(139, 92, 246, 0.12)), transparent)
+            radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.accent}1f, transparent)
           `,
         }}
       />
@@ -134,7 +134,7 @@ export const SettingsPage = () => {
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             className="settings-snackbar"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
             }}
           >
             <Check style={{ fontSize: '20px' }} />

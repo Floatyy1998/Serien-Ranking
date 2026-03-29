@@ -1,7 +1,7 @@
 import { CompareArrows, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import {
   EmptyState,
   LoadingSpinner,
@@ -131,7 +131,7 @@ export const FriendProfilePage = memo(() => {
                     item.provider?.provider && item.provider.provider.length > 0
                       ? Array.from(new Set(item.provider.provider.map((p) => p.name)))
                           .slice(0, 2)
-                          .map((name) => item.provider!.provider.find((p) => p.name === name))
+                          .map((name) => item.provider?.provider.find((p) => p.name === name))
                           .filter(Boolean)
                       : []
                   ) as ProfileCardProvider[];

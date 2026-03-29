@@ -1,9 +1,10 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
-import { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
-import { contrastTextColor, SeriesGroup } from './useCalendarData';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
+import type { SeriesGroup } from './useCalendarData';
+import { contrastTextColor } from './useCalendarData';
 
 // ── Shared helpers ───────────────────────────────────────────────
 
@@ -11,9 +12,53 @@ function formatEpisodeCode(seasonNumber: number, episodeNumber: number): string 
   return `S${String(seasonNumber).padStart(2, '0')}E${String(episodeNumber).padStart(2, '0')}`;
 }
 
+function formatAirTime(airstamp?: string): string | null {
+  if (!airstamp) return null;
+  try {
+    const date = new Date(airstamp);
+    return date.toLocaleTimeString('de-DE', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Europe/Berlin',
+    });
+  } catch {
+    return null;
+  }
+}
+
 function premiereLabel(type: WeeklyEpisode['premiereType']): string {
   return type === 'season-start' ? 'Staffelstart' : 'Rückkehr';
 }
+
+function breakLabel(type: NonNullable<WeeklyEpisode['breakType']>): string {
+  return type === 'season-finale' ? 'Staffelende' : 'Staffelpause';
+}
+
+/** Fixed violet colors for break chips */
+const BREAK_COLORS = {
+  'season-break': '#a78bfa', // soft lavender — "we'll be back"
+  'season-finale': '#7c3aed', // deep violet — "it's over"
+} as const;
+
+function breakColor(type: NonNullable<WeeklyEpisode['breakType']>): string {
+  return BREAK_COLORS[type];
+}
+
+// ── Provider badge (single logo) ─────────────────────────────────
+
+const ProviderBadge = memo(
+  ({ provider, className }: { provider: WeeklyEpisodeProvider; className: string }) => (
+    <img
+      src={`https://image.tmdb.org/t/p/w92${provider.logo}`}
+      alt={provider.name}
+      title={provider.name}
+      loading="lazy"
+      decoding="async"
+      className={className}
+    />
+  )
+);
+ProviderBadge.displayName = 'ProviderBadge';
 
 // ── Premiere overlay (desktop poster) ────────────────────────────
 
@@ -25,7 +70,7 @@ const PremiereOverlay = memo(
     type: NonNullable<WeeklyEpisode['premiereType']>;
     themePrimary: string;
   }) => {
-    const bg = type === 'season-start' ? themePrimary : '#e67e22';
+    const bg = type === 'season-start' ? themePrimary : themePrimary;
     return (
       <span
         className="cal-ep-premiere-overlay"
@@ -81,27 +126,52 @@ WatchIndicator.displayName = 'WatchIndicator';
 interface PosterWrapProps {
   posterSrc: string;
   premiereType?: WeeklyEpisode['premiereType'];
+  breakType?: WeeklyEpisode['breakType'];
   watched: boolean;
   onMark?: () => void;
+  provider?: WeeklyEpisodeProvider;
   children: React.ReactNode; // poster-info content
 }
 
 const PosterWrap = memo(
-  ({ posterSrc, premiereType, watched, onMark, children }: PosterWrapProps) => {
+  ({
+    posterSrc,
+    premiereType,
+    breakType,
+    watched,
+    onMark,
+    provider,
+    children,
+  }: PosterWrapProps) => {
     const { currentTheme } = useTheme();
 
     return (
       <div className="cal-ep-poster-wrap">
-        <img src={posterSrc} alt="" className="cal-ep-poster" />
+        <img src={posterSrc} alt="" decoding="async" className="cal-ep-poster" />
 
         {premiereType && (
           <PremiereOverlay type={premiereType} themePrimary={currentTheme.primary} />
         )}
 
+        {!premiereType && breakType && (
+          <span
+            className="cal-ep-break-overlay"
+            style={{
+              background: breakColor(breakType),
+              color: contrastTextColor(breakColor(breakType)),
+            }}
+          >
+            {breakLabel(breakType)}
+          </span>
+        )}
+
         {watched ? (
           <div
             className="cal-ep-status-overlay"
-            style={{ background: `${currentTheme.status.success}cc`, color: '#fff' }}
+            style={{
+              background: `${currentTheme.status.success}cc`,
+              color: currentTheme.text.secondary,
+            }}
           >
             <Check style={{ fontSize: '15px' }} />
           </div>
@@ -112,16 +182,31 @@ const PosterWrap = memo(
               e.stopPropagation();
               onMark();
             }}
-            style={{ borderColor: 'rgba(255,255,255,0.5)' }}
+            style={{ borderColor: `${currentTheme.text.muted}80` }}
           />
         ) : null}
 
-        <div className="cal-ep-poster-info">{children}</div>
+        <div className={`cal-ep-poster-info${provider ? ' has-provider' : ''}`}>
+          {children}
+          {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge" />}
+        </div>
       </div>
     );
   }
 );
 PosterWrap.displayName = 'PosterWrap';
+
+// ── Mobile poster with provider overlay ──────────────────────────
+
+const MobilePoster = memo(
+  ({ src, provider }: { src: string; provider?: WeeklyEpisodeProvider }) => (
+    <div className="cal-ep-poster-mobile-wrap">
+      <img src={src} alt="" decoding="async" className="cal-ep-poster cal-ep-poster-mobile" />
+      {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge-mobile" />}
+    </div>
+  )
+);
+MobilePoster.displayName = 'MobilePoster';
 
 // ── Single Episode Card ──────────────────────────────────────────
 
@@ -138,17 +223,21 @@ export const SingleEpisodeCard = memo(
 
     const borderColor = ep.premiereType
       ? currentTheme.status.warning
-      : ep.watched
-        ? currentTheme.status.success
-        : currentTheme.primary;
+      : ep.breakType
+        ? breakColor(ep.breakType)
+        : ep.watched
+          ? currentTheme.status.success
+          : currentTheme.primary;
 
     const handleClick = () =>
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
     const handleMark = () => onMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex);
+    const airTime = formatAirTime(ep.airstamp);
+    const provider = ep.providers[0];
 
     return (
       <div
-        className={`cal-ep${ep.premiereType ? ' cal-ep-premiere' : ''}`}
+        className={`cal-ep${ep.premiereType ? ' cal-ep-premiere' : ''}${ep.breakType ? ' cal-ep-break' : ''}`}
         style={{ borderLeftColor: borderColor }}
         onClick={handleClick}
       >
@@ -156,17 +245,29 @@ export const SingleEpisodeCard = memo(
         <PosterWrap
           posterSrc={backdropSrc || ep.poster}
           premiereType={ep.premiereType}
+          breakType={ep.breakType}
           watched={ep.watched}
           onMark={!ep.watched ? handleMark : undefined}
+          provider={provider}
         >
           <span className="cal-ep-title">{ep.seriesTitle}</span>
           <span
             className="cal-ep-episode"
             style={{
-              color: ep.premiereType ? currentTheme.status.warning : 'rgba(255,255,255,0.7)',
+              color: ep.premiereType
+                ? currentTheme.status.warning
+                : ep.breakType
+                  ? breakColor(ep.breakType)
+                  : currentTheme.text.muted,
             }}
           >
             {formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)}
+            {airTime && (
+              <span className="cal-ep-airtime" style={{ color: currentTheme.text.muted }}>
+                {' · '}
+                {airTime}
+              </span>
+            )}
             {ep.premiereType && (
               <span
                 className="cal-ep-premiere-badge"
@@ -178,12 +279,23 @@ export const SingleEpisodeCard = memo(
                 {premiereLabel(ep.premiereType)}
               </span>
             )}
+            {!ep.premiereType && ep.breakType && (
+              <span
+                className="cal-ep-break-badge"
+                style={{
+                  background: `${breakColor(ep.breakType)}20`,
+                  color: breakColor(ep.breakType),
+                }}
+              >
+                {breakLabel(ep.breakType)}
+              </span>
+            )}
           </span>
           <span className="cal-ep-name">{ep.episodeName}</span>
         </PosterWrap>
 
         {/* Mobile: poster + info */}
-        <img src={ep.poster} alt="" className="cal-ep-poster cal-ep-poster-mobile" />
+        <MobilePoster src={ep.poster} provider={provider} />
         <div className="cal-ep-info cal-ep-info-mobile">
           <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
             {ep.seriesTitle}
@@ -191,10 +303,20 @@ export const SingleEpisodeCard = memo(
           <span
             className="cal-ep-episode"
             style={{
-              color: ep.premiereType ? currentTheme.status.warning : currentTheme.primary,
+              color: ep.premiereType
+                ? currentTheme.status.warning
+                : ep.breakType
+                  ? breakColor(ep.breakType)
+                  : currentTheme.primary,
             }}
           >
             {formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)}
+            {airTime && (
+              <span style={{ color: currentTheme.text.muted }}>
+                {' · '}
+                {airTime}
+              </span>
+            )}
             {ep.premiereType && (
               <span
                 className="cal-ep-premiere-badge"
@@ -204,6 +326,17 @@ export const SingleEpisodeCard = memo(
                 }}
               >
                 {premiereLabel(ep.premiereType)}
+              </span>
+            )}
+            {!ep.premiereType && ep.breakType && (
+              <span
+                className="cal-ep-break-badge"
+                style={{
+                  background: `${breakColor(ep.breakType)}20`,
+                  color: breakColor(ep.breakType),
+                }}
+              >
+                {breakLabel(ep.breakType)}
               </span>
             )}
           </span>
@@ -242,19 +375,23 @@ export const EpisodeGroupCard = memo(
     const watchedInGroup = group.episodes.filter((e) => e.watched).length;
     const allWatched = watchedInGroup === group.episodes.length;
     const groupPremiereType = group.episodes.find((ep) => ep.premiereType)?.premiereType;
+    const groupBreakType = group.episodes[group.episodes.length - 1]?.breakType;
 
     const borderColor = groupPremiereType
       ? currentTheme.status.warning
-      : allWatched
-        ? currentTheme.status.success
-        : currentTheme.primary;
+      : groupBreakType
+        ? breakColor(groupBreakType)
+        : allWatched
+          ? currentTheme.status.success
+          : currentTheme.primary;
 
     const episodeRange = `S${String(firstEp.seasonNumber).padStart(2, '0')} E${String(firstEp.episodeNumber).padStart(2, '0')}–E${String(lastEp.episodeNumber).padStart(2, '0')}`;
     const countLabel = `${group.episodes.length} Folgen · ${watchedInGroup} gesehen`;
+    const provider = firstEp.providers[0];
 
     return (
       <div
-        className={`cal-ep-group${groupPremiereType ? ' cal-ep-premiere' : ''} ${isExpanded ? 'is-open' : ''}`}
+        className={`cal-ep-group${groupPremiereType ? ' cal-ep-premiere' : ''}${groupBreakType ? ' cal-ep-break' : ''} ${isExpanded ? 'is-open' : ''}`}
         style={{ borderLeftColor: borderColor }}
       >
         {/* Group header */}
@@ -263,24 +400,39 @@ export const EpisodeGroupCard = memo(
           <PosterWrap
             posterSrc={backdropSrc || firstEp.poster}
             premiereType={groupPremiereType}
+            breakType={groupBreakType}
             watched={allWatched}
+            provider={provider}
           >
             <span className="cal-ep-title">{group.seriesTitle}</span>
             <span
               className="cal-ep-episode"
               style={{
-                color: groupPremiereType ? currentTheme.status.warning : 'rgba(255,255,255,0.7)',
+                color: groupPremiereType
+                  ? currentTheme.status.warning
+                  : groupBreakType
+                    ? breakColor(groupBreakType)
+                    : currentTheme.text.muted,
               }}
             >
               {episodeRange}
+              {!groupPremiereType && groupBreakType && (
+                <span
+                  className="cal-ep-break-badge"
+                  style={{
+                    background: `${breakColor(groupBreakType)}20`,
+                    color: breakColor(groupBreakType),
+                  }}
+                >
+                  {breakLabel(groupBreakType)}
+                </span>
+              )}
             </span>
             <span className="cal-ep-name">{countLabel}</span>
           </PosterWrap>
 
           {/* Mobile: poster + info */}
-          {firstEp.poster && (
-            <img src={firstEp.poster} alt="" className="cal-ep-poster cal-ep-poster-mobile" />
-          )}
+          <MobilePoster src={firstEp.poster} provider={provider} />
           <div className="cal-ep-info cal-ep-info-mobile">
             <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
               {group.seriesTitle}
@@ -288,7 +440,11 @@ export const EpisodeGroupCard = memo(
             <span
               className="cal-ep-episode"
               style={{
-                color: groupPremiereType ? currentTheme.status.warning : currentTheme.primary,
+                color: groupPremiereType
+                  ? currentTheme.status.warning
+                  : groupBreakType
+                    ? breakColor(groupBreakType)
+                    : currentTheme.primary,
               }}
             >
               {episodeRange}
@@ -301,6 +457,17 @@ export const EpisodeGroupCard = memo(
                   }}
                 >
                   {premiereLabel(groupPremiereType)}
+                </span>
+              )}
+              {!groupPremiereType && groupBreakType && (
+                <span
+                  className="cal-ep-break-badge"
+                  style={{
+                    background: `${breakColor(groupBreakType)}20`,
+                    color: breakColor(groupBreakType),
+                  }}
+                >
+                  {breakLabel(groupBreakType)}
                 </span>
               )}
             </span>
@@ -348,6 +515,13 @@ export const EpisodeGroupCard = memo(
                 </span>
                 <span className="cal-ep-sub-name" style={{ color: currentTheme.text.secondary }}>
                   {ep.episodeName}
+                  {formatAirTime(ep.airstamp) && (
+                    <span
+                      style={{ color: currentTheme.text.muted, marginLeft: 6, fontSize: '0.85em' }}
+                    >
+                      {formatAirTime(ep.airstamp)}
+                    </span>
+                  )}
                 </span>
                 <WatchIndicator
                   watched={ep.watched}

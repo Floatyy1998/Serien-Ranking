@@ -23,12 +23,15 @@ import {
   LateNightSlide,
   HeatmapSlide,
 } from '../../components/wrapped';
-import { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
+import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
-// === Gradient background used by loading + error states ===
+// === Gradient background helper ===
 
-const WRAPPED_GRADIENT =
-  'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 50%, #f093fb 100%)';
+const useWrappedGradient = () => {
+  const { currentTheme } = useTheme();
+  return `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, #f093fb 100%)`;
+};
 
 // === Loading State ===
 
@@ -36,25 +39,28 @@ interface WrappedLoadingStateProps {
   year: number;
 }
 
-export const WrappedLoadingState = memo<WrappedLoadingStateProps>(({ year }) => (
-  <div className="wrapped-fullscreen" style={{ background: WRAPPED_GRADIENT }}>
-    <div className="wrapped-loading-orb wrapped-loading-orb--top" />
-    <div className="wrapped-loading-orb wrapped-loading-orb--bottom" />
+export const WrappedLoadingState = memo<WrappedLoadingStateProps>(({ year }) => {
+  const wrappedGradient = useWrappedGradient();
+  return (
+    <div className="wrapped-fullscreen" style={{ background: wrappedGradient }}>
+      <div className="wrapped-loading-orb wrapped-loading-orb--top" />
+      <div className="wrapped-loading-orb wrapped-loading-orb--bottom" />
 
-    <div className="wrapped-loading-content">
-      <div className="wrapped-loading-year">{year}</div>
+      <div className="wrapped-loading-content">
+        <div className="wrapped-loading-year">{year}</div>
 
-      <div className="wrapped-loading-ring">
-        <div className="wrapped-loading-ring-track" />
-        <div className="wrapped-loading-ring-outer" />
-        <div className="wrapped-loading-ring-inner" />
+        <div className="wrapped-loading-ring">
+          <div className="wrapped-loading-ring-track" />
+          <div className="wrapped-loading-ring-outer" />
+          <div className="wrapped-loading-ring-inner" />
+        </div>
+
+        <p className="wrapped-loading-title">Lade deinen Jahresrückblick...</p>
+        <p className="wrapped-loading-subtitle">Wir analysieren deine Statistiken</p>
       </div>
-
-      <p className="wrapped-loading-title">Lade deinen Jahresrückblick...</p>
-      <p className="wrapped-loading-subtitle">Wir analysieren deine Statistiken</p>
     </div>
-  </div>
-));
+  );
+});
 
 WrappedLoadingState.displayName = 'WrappedLoadingState';
 
@@ -65,37 +71,40 @@ interface WrappedErrorStateProps {
   onBack: () => void;
 }
 
-export const WrappedErrorState = memo<WrappedErrorStateProps>(({ error, onBack }) => (
-  <div className="wrapped-fullscreen" style={{ background: WRAPPED_GRADIENT, padding: '20px' }}>
-    <div className="wrapped-error-decoration" />
+export const WrappedErrorState = memo<WrappedErrorStateProps>(({ error, onBack }) => {
+  const wrappedGradient = useWrappedGradient();
+  return (
+    <div className="wrapped-fullscreen" style={{ background: wrappedGradient, padding: '20px' }}>
+      <div className="wrapped-error-decoration" />
 
-    <div className="wrapped-error-content">
-      <div className="wrapped-error-icon-circle">
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
+      <div className="wrapped-error-content">
+        <div className="wrapped-error-icon-circle">
+          <svg
+            width="48"
+            height="48"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+        </div>
+        <h2 className="wrapped-error-heading">{error}</h2>
+        <p className="wrapped-error-message">Versuche es später noch einmal</p>
+        <button
+          onClick={onBack}
+          className="wrapped-error-button"
+          style={{ color: 'var(--theme-primary, #667eea)' }}
         >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
+          Zurück zur Startseite
+        </button>
       </div>
-      <h2 className="wrapped-error-heading">{error}</h2>
-      <p className="wrapped-error-message">Versuche es später noch einmal</p>
-      <button
-        onClick={onBack}
-        className="wrapped-error-button"
-        style={{ color: 'var(--theme-primary, #667eea)' }}
-      >
-        Zurück zur Startseite
-      </button>
     </div>
-  </div>
-));
+  );
+});
 
 WrappedErrorState.displayName = 'WrappedErrorState';
 

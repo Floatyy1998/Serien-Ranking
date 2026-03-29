@@ -7,11 +7,12 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
+import { trackLogout } from '../../firebase/analytics';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -57,7 +58,7 @@ export const useSettingsData = () => {
           setIsPublicProfile(false);
           setPublicProfileId('');
         }
-      } catch (error) {
+      } catch {
         // Silent fail
       }
     };
@@ -73,9 +74,10 @@ export const useSettingsData = () => {
   const handleLogout = useCallback(async () => {
     if (window.confirm('Möchtest du dich wirklich abmelden?')) {
       try {
+        trackLogout();
         await firebase.auth().signOut();
         navigate('/');
-      } catch (error) {
+      } catch {
         // Silent fail
       }
     }
@@ -105,7 +107,7 @@ export const useSettingsData = () => {
 
         setPhotoURL(downloadURL);
         showSnackbar('Profilbild erfolgreich hochgeladen!');
-      } catch (error) {
+      } catch {
         setDialog({
           open: true,
           message: 'Fehler beim Hochladen des Bildes',
@@ -126,7 +128,7 @@ export const useSettingsData = () => {
       await firebase.database().ref(`users/${user.uid}/username`).set(username);
       setUsernameEditable(false);
       showSnackbar('Benutzername gespeichert!');
-    } catch (error) {
+    } catch {
       setDialog({
         open: true,
         message: 'Fehler beim Speichern des Benutzernamens',
@@ -147,7 +149,7 @@ export const useSettingsData = () => {
       await user.reload();
       setDisplayNameEditable(false);
       showSnackbar('Anzeigename gespeichert!');
-    } catch (error) {
+    } catch {
       setDialog({
         open: true,
         message: 'Fehler beim Speichern des Anzeigenamens',
@@ -186,7 +188,7 @@ export const useSettingsData = () => {
         setPublicProfileId(enabled ? newPublicProfileId : '');
 
         if (navigator.vibrate) navigator.vibrate(50);
-      } catch (error) {
+      } catch {
         // Silent fail
       } finally {
         setIsLoadingProfile(false);
@@ -219,7 +221,7 @@ export const useSettingsData = () => {
       setPublicProfileId(newPublicProfileId);
 
       if (navigator.vibrate) navigator.vibrate(100);
-    } catch (error) {
+    } catch {
       // Silent fail
     } finally {
       setIsLoadingProfile(false);

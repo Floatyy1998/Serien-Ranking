@@ -4,8 +4,8 @@
 
 import { useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Palette, ColorLens, Brightness6, Wallpaper } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
@@ -84,6 +84,12 @@ const colorCategories: ColorCategory[] = [
     icon: <Brightness6 />,
     description: 'Hintergrundfarbe',
   },
+  {
+    key: 'textColor',
+    name: 'Text',
+    icon: <FormatColorText />,
+    description: 'Textfarbe',
+  },
   { key: 'surfaceColor', name: 'Surface', icon: <Wallpaper />, description: 'Kartenfarben' },
   { key: 'accentColor', name: 'Accent', icon: <Palette />, description: 'Akzentfarbe' },
 ];
@@ -119,14 +125,14 @@ export const ThemePage = () => {
 
   return (
     <PageLayout
-      gradientColors={[currentTheme.primary, 'var(--theme-secondary-gradient, #8b5cf6)']}
+      gradientColors={[currentTheme.primary, currentTheme.accent]}
       style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
     >
       <PageHeader
         title="Design"
         icon={<Palette style={{ fontSize: 28 }} />}
         gradientFrom={currentTheme.primary}
-        gradientTo="#8b5cf6"
+        gradientTo={currentTheme.accent}
       />
 
       <div className="theme-content">
@@ -179,7 +185,7 @@ export const ThemePage = () => {
                 category={category}
                 color={
                   (userConfig[category.key as keyof typeof userConfig] as string) ||
-                  'var(--theme-secondary-gradient, #667eea)'
+                  (category.key === 'textColor' ? currentTheme.text.secondary : currentTheme.accent)
                 }
                 currentTheme={currentTheme}
                 onColorChange={handleColorChange}

@@ -2,7 +2,7 @@ import { AutoAwesome, OpenInNew, Star, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { LoadingSpinner } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -50,13 +50,13 @@ export const RecommendationsTab = ({
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.primary}20, var(--theme-secondary-gradient, #8b5cf6)20)`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <TrendingUp style={{ color: currentTheme.primary, fontSize: '22px' }} />
+          <TrendingUp style={{ color: currentTheme.accent, fontSize: '22px' }} />
         </div>
         <h2
           style={{
@@ -136,7 +136,7 @@ export const RecommendationsTab = ({
                   borderRadius: '10px',
                   background: rec.series.poster
                     ? `url(${TMDB_IMAGE_BASE}${rec.series.poster})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}40, var(--theme-secondary-gradient, #8b5cf6)40)`,
+                    : `linear-gradient(135deg, ${currentTheme.primary}40, ${currentTheme.accent}40)`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   flexShrink: 0,
@@ -171,15 +171,14 @@ export const RecommendationsTab = ({
                       display: 'flex',
                       alignItems: 'center',
                       gap: '3px',
-                      background:
-                        'linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 152, 0, 0.15))',
+                      background: `${currentTheme.accent}20`,
                       padding: '3px 8px',
                       borderRadius: '8px',
                       flexShrink: 0,
                     }}
                   >
-                    <Star style={{ fontSize: '13px', color: '#ffc107' }} />
-                    <span style={{ fontSize: '13px', color: '#ffc107', fontWeight: 600 }}>
+                    <Star style={{ fontSize: '13px', color: currentTheme.accent }} />
+                    <span style={{ fontSize: '13px', color: currentTheme.accent, fontWeight: 600 }}>
                       {rec.series.voteAverage.toFixed(1)}
                     </span>
                   </div>
@@ -232,7 +231,6 @@ export const RecommendationsTab = ({
               <OpenInNew
                 style={{
                   fontSize: '18px',
-                  opacity: 0.3,
                   alignSelf: 'center',
                   color: currentTheme.text.muted,
                 }}

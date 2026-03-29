@@ -1,7 +1,7 @@
 import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useState, useCallback, useEffect } from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface ScrollToTopButtonProps {
   /** CSS selector for the scroll container, or 'window' to use window scroll */
@@ -22,11 +22,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const [show, setShow] = useState(false);
-  const [hasNav, setHasNav] = useState(false);
-
-  useEffect(() => {
-    setHasNav(!!document.querySelector('.mobile-content.with-nav'));
-  }, []);
+  const [hasNav] = useState(() => !!document.querySelector('.mobile-content.with-nav'));
 
   const getContainer = useCallback((): HTMLElement | Window | null => {
     if (scrollContainerRef?.current) return scrollContainerRef.current;
@@ -87,10 +83,10 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
             height: '48px',
             borderRadius: '50%',
             border: '1px solid rgba(255, 255, 255, 0.1)',
-            background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
-            boxShadow: `0 4px 16px ${currentTheme.primary}60, 0 0 20px ${currentTheme.primary}20`,
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            boxShadow: `0 4px 16px ${currentTheme.primary}60, 0 0 20px ${currentTheme.accent || currentTheme.primary}20`,
             backdropFilter: 'blur(12px)',
-            color: '#fff',
+            color: currentTheme.text.secondary,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

@@ -1,4 +1,4 @@
-import { PetAccessory } from '../../types/pet.types';
+import type { PetAccessory } from '../../types/pet.types';
 
 export const drawAccessory = (
   ctx: CanvasRenderingContext2D,

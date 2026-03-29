@@ -11,7 +11,7 @@
 
 /* Section cards */
 .theme-section {
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   padding: 20px;
   margin-bottom: 16px;
 }
@@ -40,7 +40,7 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   position: relative;
   text-align: left;
@@ -87,14 +87,14 @@
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
 .theme-color-picker-wrap {
   position: relative;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -127,7 +127,7 @@
 .theme-color-hex {
   width: 80px;
   padding: 6px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 13px;
   font-family: monospace;
   outline: none;
@@ -142,7 +142,7 @@
   align-items: center;
   gap: 12px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: left;
 }
@@ -168,7 +168,7 @@
   flex: 1;
   padding: 14px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -177,7 +177,7 @@
 .theme-cancel-btn {
   flex: 1;
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
