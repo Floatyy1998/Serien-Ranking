@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
@@ -140,7 +141,11 @@ export const useMovieData = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.results?.DE?.flatrate) {
-            setProviders(data.results.DE.flatrate);
+            setProviders(
+              data.results.DE.flatrate.filter((p: { provider_name: string }) =>
+                SUPPORTED_PROVIDERS.has(p.provider_name)
+              )
+            );
           }
         })
         .catch(() => {});

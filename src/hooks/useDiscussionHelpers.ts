@@ -19,7 +19,12 @@ export const getDiscussionPath = (
 export const sendNotificationToUser = async (
   targetUserId: string,
   notification: {
-    type: 'discussion_reply' | 'discussion_like' | 'spoiler_flag';
+    type:
+      | 'discussion_reply'
+      | 'discussion_like'
+      | 'spoiler_flag'
+      | 'bug_ticket_reply'
+      | 'bug_ticket_status';
     title: string;
     message: string;
     data?: Record<string, unknown>;

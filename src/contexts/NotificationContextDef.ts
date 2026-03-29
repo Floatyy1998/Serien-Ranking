@@ -11,7 +11,9 @@ export interface AppNotification {
     | 'discussion_reply'
     | 'discussion_like'
     | 'spoiler_flag'
-    | 'trophy_won';
+    | 'trophy_won'
+    | 'bug_ticket_reply'
+    | 'bug_ticket_status';
   title: string;
   message: string;
   timestamp: number;

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 
 import type { Series } from '../../types/Series';
@@ -78,7 +79,11 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
       .then((res) => res.json())
       .then((data) => {
         if (data.results?.DE?.flatrate) {
-          setProviders(data.results.DE.flatrate);
+          setProviders(
+            data.results.DE.flatrate.filter((p: { provider_name: string }) =>
+              SUPPORTED_PROVIDERS.has(p.provider_name)
+            )
+          );
         }
       })
       .catch(() => {

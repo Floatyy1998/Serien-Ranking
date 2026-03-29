@@ -1,4 +1,5 @@
 import {
+  BugReport,
   Cancel,
   ChatBubbleOutline,
   Check,
@@ -46,6 +47,7 @@ const ICON_MAP: Record<
   heart: (t) => <Favorite style={{ fontSize: '18px', color: t.status?.error || '#ef4444' }} />,
   flag: (t) => <Flag style={{ fontSize: '18px', color: t.status.warning }} />,
   announcement: (t) => <NewReleases style={{ fontSize: '18px', color: t.accent }} />,
+  bug: (t) => <BugReport style={{ fontSize: '18px', color: t.status.warning }} />,
 };
 
 const ICON_BG_MAP: Record<string, (t: ReturnType<typeof useTheme>['currentTheme']) => string> = {
@@ -56,6 +58,7 @@ const ICON_BG_MAP: Record<string, (t: ReturnType<typeof useTheme>['currentTheme'
   flag: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
   movie: (t) => `linear-gradient(135deg, ${t.status.error}20, ${t.status.error}08)`,
   announcement: (t) => `linear-gradient(135deg, ${t.accent}20, ${t.accent}08)`,
+  bug: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
 };
 
 export const NotificationSheet = React.memo(function NotificationSheet({

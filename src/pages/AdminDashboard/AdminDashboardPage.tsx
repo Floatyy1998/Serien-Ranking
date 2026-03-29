@@ -7,10 +7,12 @@
 import {
   Assessment,
   BugReport,
+  ConfirmationNumber,
   Extension,
   Groups,
   HealthAndSafety,
   History,
+  Message,
   Refresh,
   Speed,
   Timeline,
@@ -28,6 +30,8 @@ import { RealtimeTab } from './tabs/RealtimeTab';
 import { UsersTab } from './tabs/UsersTab';
 import { BackendErrorsTab } from './tabs/BackendErrorsTab';
 import { DataHealthTab } from './tabs/DataHealthTab';
+import { MessagesTab } from './tabs/MessagesTab';
+import { TicketsTab } from './tabs/TicketsTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -38,6 +42,8 @@ const TABS = [
   { id: 'activity', label: 'Activity', icon: <History style={{ fontSize: 16 }} /> },
   { id: 'events', label: 'Events', icon: <Timeline style={{ fontSize: 16 }} /> },
   { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
+  { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumber style={{ fontSize: 16 }} /> },
+  { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
   { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
 ] as const;
@@ -136,6 +142,8 @@ export function AdminDashboardPage() {
               {activeTab === 'activity' && <ActivityTab data={data} theme={currentTheme} />}
               {activeTab === 'events' && <EventsTab data={data} theme={currentTheme} />}
               {activeTab === 'extension' && <ExtensionTab data={data} theme={currentTheme} />}
+              {activeTab === 'tickets' && <TicketsTab theme={currentTheme} />}
+              {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
             </motion.div>

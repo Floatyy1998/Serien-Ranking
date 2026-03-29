@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../AuthContext';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -274,6 +275,7 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
             const de = provData.results?.DE;
             const flatrate = de?.flatrate || [];
             providers = flatrate
+              .filter((p: { provider_name: string }) => SUPPORTED_PROVIDERS.has(p.provider_name))
               .slice(0, 3)
               .map((p: { provider_name: string; logo_path: string }) => ({
                 name: p.provider_name,

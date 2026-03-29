@@ -8,6 +8,7 @@ import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics
 import {
   AutoAwesome,
   EmojiEvents,
+  Forum,
   Group,
   History,
   Leaderboard,
@@ -234,6 +235,12 @@ export const useProfileData = (): UseProfileDataResult => {
         icon: Settings,
         color: currentTheme.text.secondary,
         path: '/settings',
+      },
+      {
+        label: 'Ideen & Probleme',
+        icon: Forum,
+        color: '#3b82f6',
+        path: '/bug-report',
       },
     ],
     [currentTheme]

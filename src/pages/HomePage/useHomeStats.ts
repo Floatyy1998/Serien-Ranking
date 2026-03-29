@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { formatMinutesToString } from '../../lib/date';
 import { useAuth } from '../../AuthContext';
+import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -171,7 +172,7 @@ export function useHomeStats() {
 
         providers.forEach((provider: { id: number; logo: string; name: string }) => {
           const name = provider.name;
-          if (name && typeof name === 'string') {
+          if (name && typeof name === 'string' && isSupportedProvider(name)) {
             providerCounts[name] = (providerCounts[name] || 0) + 1;
           }
         });

@@ -4,7 +4,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 
 export interface UnifiedNotification {
   id: string;
-  kind: 'activity' | 'request' | 'discussion' | 'announcement';
+  kind: 'activity' | 'request' | 'discussion' | 'announcement' | 'bug_ticket';
   title: string;
   message: string;
   timestamp: number;
@@ -19,7 +19,8 @@ export interface UnifiedNotification {
     | 'chat'
     | 'heart'
     | 'flag'
-    | 'announcement';
+    | 'announcement'
+    | 'bug';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
@@ -197,17 +198,19 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         }
       }
 
+      const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
       items.push({
         id: `notif_${n.id}`,
-        kind: 'discussion',
+        kind: isBugTicket ? 'bug_ticket' : 'discussion',
         title: n.title,
         message: n.message,
         timestamp: n.timestamp,
         read: n.read,
-        navigateTo,
+        navigateTo: isBugTicket ? '/bug-report' : navigateTo,
         notificationId: n.id,
-        icon:
-          n.type === 'discussion_reply'
+        icon: isBugTicket
+          ? 'bug'
+          : n.type === 'discussion_reply'
             ? 'chat'
             : n.type === 'spoiler_flag'
               ? 'flag'

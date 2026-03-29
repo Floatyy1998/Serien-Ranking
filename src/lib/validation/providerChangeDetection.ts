@@ -1,4 +1,5 @@
 import firebase from 'firebase/compat/app';
+import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import type { Series } from '../../types/Series';
 
 export interface ProviderChangeInfo {
@@ -48,7 +49,9 @@ async function fetchTMDBProviders(tmdbId: number): Promise<string[]> {
     const data = await res.json();
     const flatrate = data.results?.DE?.flatrate;
     if (!Array.isArray(flatrate)) return [];
-    return flatrate.map((p: { provider_name: string }) => p.provider_name);
+    return flatrate
+      .map((p: { provider_name: string }) => p.provider_name)
+      .filter((name: string) => SUPPORTED_PROVIDERS.has(name));
   } catch {
     return [];
   }
@@ -103,8 +106,9 @@ export const detectProviderChanges = async (
           return null;
         }
 
-        const addedProviders = currentProviders.filter((p) => !known.providers.includes(p));
-        const removedProviders = known.providers.filter((p) => !currentProviders.includes(p));
+        const knownFiltered = known.providers.filter((p) => SUPPORTED_PROVIDERS.has(p));
+        const addedProviders = currentProviders.filter((p) => !knownFiltered.includes(p));
+        const removedProviders = knownFiltered.filter((p) => !currentProviders.includes(p));
 
         updatedKnown[key] = { providers: currentProviders, lastChecked: now };
 
@@ -120,9 +124,19 @@ export const detectProviderChanges = async (
     });
   }
 
-  // Aktualisierte Provider in Firebase speichern
+  // Aktualisierte Provider + auto-dismiss in Firebase speichern
   try {
-    await firebase.database().ref(`users/${userId}/knownProviders`).set(updatedKnown);
+    const updates: Record<string, unknown> = {
+      [`users/${userId}/knownProviders`]: updatedKnown,
+    };
+    // Auto-dismiss detected changes so they don't reappear on next app start
+    changes.forEach((c) => {
+      updates[`users/${userId}/providerChangeNotifications/${c.series.id}`] = {
+        dismissed: true,
+        timestamp: Date.now(),
+      };
+    });
+    await firebase.database().ref().update(updates);
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to store providers:', error);
   }
