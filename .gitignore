@@ -23,8 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
-.firebase*
-firebase.json
+.firebase/
 database.rules.json
 
 # Service Worker Builds
