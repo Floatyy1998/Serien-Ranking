@@ -1,6 +1,7 @@
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useAuth } from '../../AuthContext';
+import { isSupportedProvider } from '../../config/menuItems';
 import type { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { useMovieList } from '../../contexts/MovieListContext';
@@ -117,6 +118,7 @@ export const StatsProvider = ({ children }: { children: React.ReactNode }) => {
           }
         });
         item.provider?.provider?.forEach((provider) => {
+          if (!isSupportedProvider(provider.name)) return;
           if (!providers[provider.name]) {
             providers[provider.name] = {
               count: 0,

@@ -169,6 +169,15 @@ export const HomePage: React.FC = () => {
     return count;
   }, [seriesList]);
 
+  const [adminMessage, setAdminMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const ref = firebase.database().ref(`admin/userMessages/${user.uid}/text`);
+    ref.on('value', (snap) => setAdminMessage(snap.val() || null));
+    return () => ref.off('value');
+  }, [user]);
+
   // Early returns after all hooks
   if (!authContext || !user) {
     return <div>Redirecting...</div>;
@@ -379,67 +388,64 @@ export const HomePage: React.FC = () => {
     <div style={{ overflowY: 'auto', position: 'relative' }}>
       <WrappedNotification />
 
-      {proactiveRecaps.recaps.length > 0 && (
+      {adminMessage && (
+        <div
+          style={{
+            margin: '16px',
+            padding: '16px',
+            borderRadius: '12px',
+            background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.default})`,
+            border: `1px solid ${currentTheme.accent || currentTheme.primary}30`,
+            textAlign: 'center',
+            fontSize: '15px',
+            fontWeight: 600,
+            color: currentTheme.accent || currentTheme.primary,
+          }}
+        >
+          {adminMessage}
+        </div>
+      )}
+
+      {/* Notification queue: only one at a time, by priority */}
+      {proactiveRecaps.recaps.length > 0 ? (
         <ProactiveRecapCard
           recaps={proactiveRecaps.recaps}
           onDismiss={proactiveRecaps.dismiss}
           onFetchRecap={proactiveRecaps.fetchRecap}
         />
-      )}
-
-      {seriesWithNewSeasons && seriesWithNewSeasons.length > 0 && (
+      ) : providerChanges && providerChanges.length > 0 ? (
+        <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />
+      ) : seriesWithNewSeasons && seriesWithNewSeasons.length > 0 ? (
         <CarouselNotification
           variant="new-season"
           series={seriesWithNewSeasons}
           onDismiss={clearNewSeasons}
         />
-      )}
-      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-        inactiveSeries &&
-        inactiveSeries.length > 0 && (
-          <CarouselNotification
-            variant="inactive"
-            series={inactiveSeries}
-            onDismiss={clearInactiveSeries}
-          />
-        )}
-      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-        (!inactiveSeries || inactiveSeries.length === 0) &&
-        inactiveRewatches &&
-        inactiveRewatches.length > 0 && (
-          <CarouselNotification
-            variant="inactive-rewatch"
-            series={inactiveRewatches}
-            onDismiss={clearInactiveRewatches}
-          />
-        )}
-      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-        (!inactiveSeries || inactiveSeries.length === 0) &&
-        (!inactiveRewatches || inactiveRewatches.length === 0) &&
-        completedSeries &&
-        completedSeries.length > 0 && (
-          <CarouselNotification
-            variant="completed"
-            series={completedSeries}
-            onDismiss={clearCompletedSeries}
-          />
-        )}
-      {(!seriesWithNewSeasons || seriesWithNewSeasons.length === 0) &&
-        (!inactiveSeries || inactiveSeries.length === 0) &&
-        (!inactiveRewatches || inactiveRewatches.length === 0) &&
-        (!completedSeries || completedSeries.length === 0) &&
-        unratedSeries &&
-        unratedSeries.length > 0 && (
-          <CarouselNotification
-            variant="unrated"
-            series={unratedSeries}
-            onDismiss={clearUnratedSeries}
-          />
-        )}
-
-      {providerChanges && providerChanges.length > 0 && (
-        <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />
-      )}
+      ) : inactiveSeries && inactiveSeries.length > 0 ? (
+        <CarouselNotification
+          variant="inactive"
+          series={inactiveSeries}
+          onDismiss={clearInactiveSeries}
+        />
+      ) : inactiveRewatches && inactiveRewatches.length > 0 ? (
+        <CarouselNotification
+          variant="inactive-rewatch"
+          series={inactiveRewatches}
+          onDismiss={clearInactiveRewatches}
+        />
+      ) : completedSeries && completedSeries.length > 0 ? (
+        <CarouselNotification
+          variant="completed"
+          series={completedSeries}
+          onDismiss={clearCompletedSeries}
+        />
+      ) : unratedSeries && unratedSeries.length > 0 ? (
+        <CarouselNotification
+          variant="unrated"
+          series={unratedSeries}
+          onDismiss={clearUnratedSeries}
+        />
+      ) : null}
 
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}

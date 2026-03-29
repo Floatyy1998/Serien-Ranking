@@ -155,6 +155,11 @@ export const AdminDashboardPage = lazy(() =>
     default: m.AdminDashboardPage,
   }))
 );
+export const BugReportPage = lazy(() =>
+  import(/* webpackChunkName: "bug-report" */ './pages/BugReport').then((m) => ({
+    default: m.BugReportPage,
+  }))
+);
 
 // Preload all lazy route chunks when the browser is idle
 // so that first navigation to any page feels instant

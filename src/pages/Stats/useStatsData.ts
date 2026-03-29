@@ -5,6 +5,7 @@
 
 import { useMemo } from 'react';
 import { useAuth } from '../../AuthContext';
+import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -282,7 +283,8 @@ export const useStatsData = (): StatsData => {
         if (item.provider?.provider && Array.isArray(item.provider.provider)) {
           item.provider.provider.forEach((p: { id: number; logo: string; name: string }) => {
             const name = p.name;
-            if (name) providerCounts[name] = (providerCounts[name] || 0) + 1;
+            if (name && isSupportedProvider(name))
+              providerCounts[name] = (providerCounts[name] || 0) + 1;
           });
         }
       }

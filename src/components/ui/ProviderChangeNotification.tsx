@@ -71,7 +71,10 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
     <CarouselShell
       itemCount={changes.length}
       color={color}
-      onDismissAll={() => markAsDismissed(changes.map((c) => c.series.id))}
+      onDismissAll={async () => {
+        await markAsDismissed(changes.map((c) => c.series.id));
+        onDismiss();
+      }}
       counterSuffix="Provider-Änderungen"
       headerContent={
         <div className="notification-header">

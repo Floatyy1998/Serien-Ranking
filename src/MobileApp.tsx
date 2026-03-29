@@ -48,6 +48,7 @@ import {
   LeaderboardPage,
   PatchNotesPage,
   AdminDashboardPage,
+  BugReportPage,
   preloadRoutes,
 } from './lazyRoutes';
 
@@ -389,6 +390,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <AdminDashboardPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/bug-report"
+            element={
+              <Layout hideNav>
+                <BugReportPage />
               </Layout>
             }
           />

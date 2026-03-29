@@ -134,3 +134,11 @@ export const providerMenuItems = [
   { value: 'RTL+', label: 'RTL+' },
   { value: 'WOW', label: 'WOW' },
 ];
+
+/** Set of supported provider names (excludes 'All') */
+export const SUPPORTED_PROVIDERS = new Set(
+  providerMenuItems.filter((p) => p.value !== 'All').map((p) => p.value)
+);
+
+/** Check if a provider name is supported */
+export const isSupportedProvider = (name: string): boolean => SUPPORTED_PROVIDERS.has(name);
