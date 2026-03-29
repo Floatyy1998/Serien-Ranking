@@ -10,16 +10,19 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import type { BugTicket, TicketType } from './types';
+import type { BugTicket, TicketPriority, TicketType } from './types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from './types';
 import { useBugReportData } from './useBugReportData';
 
 export const BugReportPage = memo(() => {
   const { currentTheme } = useTheme();
-  const { tickets, loading, uploadScreenshot, createTicket, addComment } = useBugReportData();
-  const [showForm, setShowForm] = useState(false);
+  const [searchParams] = useSearchParams();
+  const { tickets, loading, uploadScreenshot, createTicket, addComment, updateTicket } =
+    useBugReportData();
+  const [showForm, setShowForm] = useState(() => searchParams.get('create') === 'true');
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
 
   return (
@@ -126,6 +129,7 @@ export const BugReportPage = memo(() => {
                   setExpandedTicket((prev) => (prev === ticket.id ? null : ticket.id))
                 }
                 onAddComment={(text) => addComment(ticket.id, text)}
+                onUpdate={(updates) => updateTicket(ticket.id, updates)}
               />
             ))}
           </AnimatePresence>
@@ -153,11 +157,13 @@ function NewTicketForm({
     stepsToReproduce: string;
     screenshots: string[];
     consoleErrors?: string;
+    priority: TicketPriority;
   }) => Promise<boolean>;
   onCancel: () => void;
   onUpload: (file: File) => Promise<string | null>;
 }) {
   const [ticketType, setTicketType] = useState<TicketType>('bug');
+  const [priority, setPriority] = useState<TicketPriority>('low');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [consoleErrors, setConsoleErrors] = useState('');
@@ -211,6 +217,7 @@ function NewTicketForm({
       stepsToReproduce: steps.trim(),
       screenshots,
       consoleErrors: consoleErrors.trim() || undefined,
+      priority,
     });
     if (!success) setSubmitting(false);
   };
@@ -294,6 +301,45 @@ function NewTicketForm({
               </button>
             );
           })}
+        </div>
+
+        {/* Priorität */}
+        <div>
+          <label
+            style={{
+              fontSize: '12px',
+              color: theme.text.muted,
+              marginBottom: '4px',
+              display: 'block',
+            }}
+          >
+            Priorität
+          </label>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            {(['low', 'medium', 'high'] as const).map((p) => {
+              const cfg = PRIORITY_CONFIG[p];
+              const active = priority === p;
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPriority(p)}
+                  style={{
+                    flex: 1,
+                    padding: '7px',
+                    borderRadius: '8px',
+                    border: active ? `2px solid ${cfg.color}` : '1px solid rgba(255,255,255,0.08)',
+                    background: active ? `${cfg.color}15` : theme.background.default,
+                    color: active ? cfg.color : theme.text.muted,
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {cfg.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div>
@@ -544,17 +590,23 @@ function TicketCard({
   expanded,
   onToggle,
   onAddComment,
+  onUpdate,
 }: {
   ticket: BugTicket;
   theme: ReturnType<typeof useTheme>['currentTheme'];
   expanded: boolean;
   onToggle: () => void;
   onAddComment: (text: string) => Promise<boolean>;
+  onUpdate: (updates: { title?: string; description?: string }) => Promise<boolean>;
 }) {
   const [commentText, setCommentText] = useState('');
   const [sending, setSending] = useState(false);
-  const statusCfg = STATUS_CONFIG[ticket.status];
-  const priorityCfg = PRIORITY_CONFIG[ticket.priority];
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(ticket.title);
+  const [editDesc, setEditDesc] = useState(ticket.description);
+  const canEdit = ticket.status === 'open' || ticket.status === 'in-progress';
+  const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.done;
+  const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
   const typeCfg = TYPE_CONFIG[ticket.ticketType || 'bug'];
   const comments = ticket.comments ? Object.values(ticket.comments) : [];
   comments.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
@@ -691,24 +743,164 @@ function TicketCard({
                 borderTop: `1px solid rgba(255,255,255,0.04)`,
               }}
             >
-              {/* Description */}
-              <div style={{ marginTop: '12px' }}>
+              {/* Edit / Description */}
+              {editing ? (
                 <div
                   style={{
-                    fontSize: '11px',
-                    color: theme.text.muted,
-                    marginBottom: '4px',
-                    fontWeight: 600,
+                    marginTop: '12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
                   }}
                 >
-                  Beschreibung
+                  <div>
+                    <label
+                      style={{
+                        fontSize: '11px',
+                        color: theme.text.muted,
+                        marginBottom: '4px',
+                        display: 'block',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Titel
+                    </label>
+                    <input
+                      type="text"
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        background: theme.background.default,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        color: theme.text.secondary,
+                        fontSize: '13px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: '11px',
+                        color: theme.text.muted,
+                        marginBottom: '4px',
+                        display: 'block',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Beschreibung
+                    </label>
+                    <textarea
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      rows={4}
+                      style={{
+                        width: '100%',
+                        padding: '8px 12px',
+                        background: theme.background.default,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        color: theme.text.secondary,
+                        fontSize: '13px',
+                        outline: 'none',
+                        boxSizing: 'border-box',
+                        resize: 'vertical',
+                        fontFamily: 'inherit',
+                      }}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      onClick={() => {
+                        setEditing(false);
+                        setEditTitle(ticket.title);
+                        setEditDesc(ticket.description);
+                      }}
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        borderRadius: '8px',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        background: 'transparent',
+                        color: theme.text.muted,
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Abbrechen
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const success = await onUpdate({
+                          title: editTitle.trim(),
+                          description: editDesc.trim(),
+                        });
+                        if (success) setEditing(false);
+                      }}
+                      disabled={!editTitle.trim() || !editDesc.trim()}
+                      style={{
+                        flex: 1,
+                        padding: '8px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background:
+                          editTitle.trim() && editDesc.trim()
+                            ? theme.primary
+                            : `${theme.primary}30`,
+                        color: editTitle.trim() && editDesc.trim() ? '#fff' : `${theme.primary}60`,
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: editTitle.trim() && editDesc.trim() ? 'pointer' : 'default',
+                      }}
+                    >
+                      Speichern
+                    </button>
+                  </div>
                 </div>
-                <div
-                  style={{ fontSize: '13px', color: theme.text.secondary, whiteSpace: 'pre-wrap' }}
-                >
-                  {ticket.description}
+              ) : (
+                <div style={{ marginTop: '12px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    <div style={{ fontSize: '11px', color: theme.text.muted, fontWeight: 600 }}>
+                      Beschreibung
+                    </div>
+                    {canEdit && (
+                      <button
+                        onClick={() => setEditing(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: theme.primary,
+                          fontSize: '11px',
+                          cursor: 'pointer',
+                          padding: '2px 6px',
+                        }}
+                      >
+                        Bearbeiten
+                      </button>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '13px',
+                      color: theme.text.secondary,
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {ticket.description}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Steps */}
               {ticket.stepsToReproduce && (
@@ -837,46 +1029,44 @@ function TicketCard({
                 </div>
               )}
 
-              {/* Add Comment (only for open/in-progress tickets) */}
-              {(ticket.status === 'open' || ticket.status === 'in-progress') && (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
-                    placeholder="Kommentar schreiben..."
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      background: theme.background.default,
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '8px',
-                      color: theme.text.secondary,
-                      fontSize: '13px',
-                      outline: 'none',
-                    }}
-                  />
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleSendComment}
-                    disabled={!commentText.trim() || sending}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background:
-                        commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
-                      color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
-                      cursor: commentText.trim() && !sending ? 'pointer' : 'default',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Send style={{ fontSize: 16 }} />
-                  </motion.button>
-                </div>
-              )}
+              {/* Add Comment */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
+                  placeholder="Kommentar schreiben..."
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    background: theme.background.default,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '8px',
+                    color: theme.text.secondary,
+                    fontSize: '13px',
+                    outline: 'none',
+                  }}
+                />
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleSendComment}
+                  disabled={!commentText.trim() || sending}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background:
+                      commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
+                    color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
+                    cursor: commentText.trim() && !sending ? 'pointer' : 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Send style={{ fontSize: 16 }} />
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         )}

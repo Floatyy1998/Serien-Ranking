@@ -147,9 +147,10 @@ export const MobileApp = () => {
 
   useAdminHealthAlert();
 
-  // Preload lazy route chunks in the background once app is stable
+  // Preload lazy route chunks + cleanup old tickets in the background
   useEffect(() => {
     preloadRoutes();
+    import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
   }, []);
 
   // Redirect to onboarding if not complete

@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useAuth } from '../../AuthContext';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+
+const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 
 export interface UnifiedNotification {
   id: string;
@@ -97,6 +100,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     acceptFriendRequest,
     declineFriendRequest,
   } = useOptimizedFriends();
+  const { user } = useAuth() || {};
+  const isAdmin = user?.uid === ADMIN_UID;
   const {
     notifications,
     unreadCount: notificationUnreadCount,
@@ -206,7 +211,11 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         message: n.message,
         timestamp: n.timestamp,
         read: n.read,
-        navigateTo: isBugTicket ? '/bug-report' : navigateTo,
+        navigateTo: isBugTicket
+          ? isAdmin
+            ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
+            : '/bug-report'
+          : navigateTo,
         notificationId: n.id,
         icon: isBugTicket
           ? 'bug'
@@ -230,6 +239,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     unreadActivitiesCount,
     unreadRequestsCount,
     dismissedAnnouncements,
+    isAdmin,
   ]);
 
   const totalUnreadBadge =

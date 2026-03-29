@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import './AdminDashboardPage.css';
@@ -53,7 +54,12 @@ type TabId = (typeof TABS)[number]['id'];
 export function AdminDashboardPage() {
   const { isAdmin, checking } = useAdminGuard();
   const { currentTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<TabId>(() => {
+    const param = searchParams.get('tab');
+    const valid = TABS.some((t) => t.id === param);
+    return valid ? (param as TabId) : 'overview';
+  });
   const data = useAdminDashboardData(30);
 
   const handleRefresh = useCallback(() => data.refresh(), [data]);

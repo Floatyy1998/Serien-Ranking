@@ -13,6 +13,7 @@ import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteTracker } from './components/RouteTracker';
 
 import './styles/performance.css';
@@ -102,12 +103,14 @@ export function App() {
   }
 
   return (
-    <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
-      <CookieConsentBanner />
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+        <CookieConsentBanner />
+      </Router>
+    </ErrorBoundary>
   );
 }
 
