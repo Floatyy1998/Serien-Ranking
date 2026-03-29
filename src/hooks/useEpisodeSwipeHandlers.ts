@@ -263,7 +263,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
-    [user, showQuickRating]
+    [user, showQuickRating, seriesList]
   );
 
   const handleEpisodeComplete = useCallback(
