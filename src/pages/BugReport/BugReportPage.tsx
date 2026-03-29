@@ -1031,12 +1031,17 @@ function TicketCard({
 
               {/* Add Comment */}
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <input
-                  type="text"
+                <textarea
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendComment()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendComment();
+                    }
+                  }}
                   placeholder="Kommentar schreiben..."
+                  rows={1}
                   style={{
                     flex: 1,
                     padding: '8px 12px',
@@ -1046,6 +1051,8 @@ function TicketCard({
                     color: theme.text.secondary,
                     fontSize: '13px',
                     outline: 'none',
+                    resize: 'vertical',
+                    fontFamily: 'inherit',
                   }}
                 />
                 <motion.button
