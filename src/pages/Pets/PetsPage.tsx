@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
@@ -22,7 +22,7 @@ export const PetsPage: React.FC = () => {
     pets,
     pet,
     selectedPetIndex,
-    canAddSecondPet,
+    canAddNewPet,
     isLoading,
     showCreateModal,
     petName,
@@ -82,21 +82,25 @@ export const PetsPage: React.FC = () => {
         className="pet-page-bg"
         style={{
           background: `
-            radial-gradient(ellipse 80% 50% at 50% -10%, #ec489935, transparent),
+            radial-gradient(ellipse 80% 50% at 50% -10%, ${currentTheme.accent}35, transparent),
             radial-gradient(ellipse 60% 40% at 20% 20%, ${currentTheme.primary}25, transparent),
-            radial-gradient(ellipse 50% 30% at 80% 30%, #8b5cf620, transparent)
+            radial-gradient(ellipse 50% 30% at 80% 30%, ${currentTheme.accent}20, transparent)
           `,
         }}
       />
 
       {/* Header */}
-      <PageHeader title="Meine Pets" gradientFrom="#ec4899" gradientTo={currentTheme.primary} />
+      <PageHeader
+        title="Meine Pets"
+        gradientFrom={currentTheme.accent}
+        gradientTo={currentTheme.primary}
+      />
 
       {/* Pet Selector */}
       <PetSelector
         pets={pets}
         selectedPetIndex={selectedPetIndex}
-        canAddSecondPet={canAddSecondPet}
+        canAddNewPet={canAddNewPet}
         onSelectPet={selectPet}
         onOpenCreateModal={openCreateModal}
       />

@@ -5,7 +5,7 @@
 
 import { Add, Check, Star } from '@mui/icons-material';
 import { memo, useMemo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { SearchResult } from './useSearchPage';
 
 export interface SearchResultCardProps {
@@ -30,8 +30,8 @@ export const SearchResultCard = memo(
 
     const typeBadgeGradient =
       item.type === 'series'
-        ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #667eea))`
-        : `linear-gradient(135deg, ${currentTheme.status.error}, #ff9a00)`;
+        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+        : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
 
     return (
       <div className="search-result-item" style={{ position: 'relative' }}>
@@ -55,7 +55,7 @@ export const SearchResultCard = memo(
               <Star
                 style={{
                   fontSize: isDesktop ? '12px' : '10px',
-                  color: currentTheme.status.warning,
+                  color: currentTheme.accent,
                 }}
               />
               {item.vote_average.toFixed(1)}
@@ -79,21 +79,31 @@ export const SearchResultCard = memo(
                 onAddToList(item);
               }}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 boxShadow: `0 4px 12px ${currentTheme.primary}50`,
               }}
             >
-              <Add style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
+              <Add
+                style={{
+                  fontSize: isDesktop ? '20px' : '18px',
+                  color: currentTheme.text.secondary,
+                }}
+              />
             </button>
           ) : (
             <div
               className={`search-check-badge ${isDesktop ? 'search-check-badge--desktop' : ''}`}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
                 boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
               }}
             >
-              <Check style={{ fontSize: isDesktop ? '20px' : '18px', color: 'white' }} />
+              <Check
+                style={{
+                  fontSize: isDesktop ? '20px' : '18px',
+                  color: currentTheme.text.secondary,
+                }}
+              />
             </div>
           )}
         </div>

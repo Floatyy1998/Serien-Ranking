@@ -4,14 +4,14 @@
 
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 
 interface PetSelectorProps {
   pets: Pet[];
   selectedPetIndex: number;
-  canAddSecondPet: boolean;
+  canAddNewPet: boolean;
   onSelectPet: (index: number) => void;
   onOpenCreateModal: () => void;
 }
@@ -19,7 +19,7 @@ interface PetSelectorProps {
 export const PetSelector = memo(function PetSelector({
   pets,
   selectedPetIndex,
-  canAddSecondPet,
+  canAddNewPet,
   onSelectPet,
   onOpenCreateModal,
 }: PetSelectorProps) {
@@ -42,11 +42,15 @@ export const PetSelector = memo(function PetSelector({
           style={{
             background:
               idx === selectedPetIndex
-                ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
-            border: idx === selectedPetIndex ? 'none' : `1px solid ${currentTheme.border.default}`,
-            color: idx === selectedPetIndex ? '#fff' : currentTheme.text.primary,
-            boxShadow: idx === selectedPetIndex ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+            border:
+              idx === selectedPetIndex
+                ? '1px solid transparent'
+                : `1px solid ${currentTheme.border.default}`,
+            color:
+              idx === selectedPetIndex ? currentTheme.text.secondary : currentTheme.text.primary,
+            boxShadow: idx === selectedPetIndex ? `0 0 12px ${currentTheme.primary}40` : 'none',
           }}
         >
           {p.name}
@@ -54,34 +58,35 @@ export const PetSelector = memo(function PetSelector({
         </motion.button>
       ))}
 
-      {/* Add second pet */}
-      {pets.length < 2 &&
-        (canAddSecondPet ? (
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.05 }}
-            onClick={onOpenCreateModal}
-            className="pet-selector-add-btn"
-            style={{
-              background: `linear-gradient(135deg, #ec4899, var(--theme-secondary-gradient, #8b5cf6))`,
-              color: '#fff',
-              boxShadow: '0 4px 15px rgba(236,72,153,0.35)',
-            }}
-          >
-            +
-          </motion.button>
-        ) : (
-          <div
-            className="pet-selector-locked"
-            style={{
-              background: currentTheme.background.surface,
-              border: `1px dashed ${currentTheme.border.default}`,
-              color: currentTheme.text.muted,
-            }}
-          >
-            2. Pet ab Lv.15
-          </div>
-        ))}
+      {/* Add new pet */}
+      {canAddNewPet ? (
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05 }}
+          onClick={onOpenCreateModal}
+          className="pet-selector-add-btn"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+            color: currentTheme.text.secondary,
+            boxShadow: `0 4px 15px ${currentTheme.primary}40`,
+          }}
+        >
+          +
+        </motion.button>
+      ) : (
+        <button
+          className="pet-selector-locked"
+          style={{
+            background: currentTheme.background.surface,
+            border: `1px dashed ${currentTheme.border.default}`,
+            color: currentTheme.text.muted,
+            cursor: 'default',
+          }}
+          disabled
+        >
+          Neues Pet ab Lv.15
+        </button>
+      )}
     </motion.div>
   );
 });

@@ -5,10 +5,9 @@
  * Slim composition component - business logic in useWatchJourneyData hook.
  */
 
-import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
-import { BackButton, GradientText } from '../../components/ui';
-import { ACCENT_COLORS } from './ActivityTab';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { PageHeader } from '../../components/ui';
+import { ACCENT_COLORS } from './accentColors';
 import { useWatchJourneyData } from './useWatchJourneyData';
 import { WatchJourneyEmptyState } from './WatchJourneyEmptyState';
 import { WatchJourneyLoadingState } from './WatchJourneyLoadingState';
@@ -36,7 +35,6 @@ export const WatchJourneyPage: React.FC = () => {
 
   const primaryColor = currentTheme.primary;
   const bgDefault = currentTheme.background.default;
-  const textSecondary = currentTheme.text.secondary;
 
   if (loading) {
     return <WatchJourneyLoadingState />;
@@ -79,35 +77,21 @@ export const WatchJourneyPage: React.FC = () => {
       </div>
 
       <div className="wj-content">
-        {/* Premium Glassmorphism Header */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="wj-header"
-          style={{ background: `${bgDefault}90` }}
-        >
-          <BackButton />
-          <div className="wj-header-info">
-            <GradientText
-              as="h1"
-              to={ACCENT_COLORS.movies}
-              style={{ margin: 0, fontSize: 22, fontWeight: 800 }}
-            >
-              Watch Journey
-            </GradientText>
-            <p className="wj-header-subtitle" style={{ color: textSecondary }}>
-              Deine Trends & Insights
-            </p>
-          </div>
-
-          <WatchJourneyYearPicker
-            selectedYear={selectedYear}
-            showYearPicker={showYearPicker}
-            availableYears={availableYears}
-            toggleYearPicker={toggleYearPicker}
-            selectYear={selectYear}
-          />
-        </motion.div>
+        {/* Header */}
+        <PageHeader
+          title="Watch Journey"
+          gradientTo={ACCENT_COLORS.movies}
+          subtitle="Deine Trends & Insights"
+          actions={
+            <WatchJourneyYearPicker
+              selectedYear={selectedYear}
+              showYearPicker={showYearPicker}
+              availableYears={availableYears}
+              toggleYearPicker={toggleYearPicker}
+              selectYear={selectYear}
+            />
+          }
+        />
 
         {/* Year Picker Dropdown */}
         <WatchJourneyYearPicker.Dropdown
@@ -123,7 +107,7 @@ export const WatchJourneyPage: React.FC = () => {
         {/* Tab Content */}
         <WatchJourneyTabContent
           activeTab={activeTab}
-          data={data!}
+          data={data ?? ({} as NonNullable<typeof data>)}
           trendsData={trendsData}
           chartWidth={chartWidth}
         />

@@ -2,11 +2,11 @@
  * usePetsData - Custom hook for all PetsPage state & business logic
  */
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '../../App';
+import { useCallback, useEffect, useState } from 'react';
+import { useAuth } from '../../AuthContext';
 import { petService } from '../../services/petService';
-import { petMoodService } from '../../services/petMoodService';
-import { PET_CONFIG } from '../../services/petConstants';
+import { petMoodService } from '../../services/pet/petMoodService';
+import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 
@@ -16,7 +16,7 @@ export function usePetsData() {
 
   const [pets, setPets] = useState<Pet[]>([]);
   const [selectedPetIndex, setSelectedPetIndex] = useState(0);
-  const [canAddSecondPet, setCanAddSecondPet] = useState(false);
+  const [canAddNewPet, setCanAddSecondPet] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [petName, setPetName] = useState('');
@@ -45,13 +45,7 @@ export function usePetsData() {
     : '';
 
   // --- Load pets on mount ---
-  useEffect(() => {
-    if (user) {
-      loadPets();
-    }
-  }, [user]);
-
-  const loadPets = async () => {
+  const loadPets = useCallback(async () => {
     if (!user) return;
     try {
       const updatedPets = await petService.updateAllPetsStatus(user.uid);
@@ -69,14 +63,20 @@ export function usePetsData() {
         setShowCreateModal(true);
       }
 
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error loading pets:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, selectedPetIndex]);
+
+  useEffect(() => {
+    if (user) {
+      loadPets();
+    }
+  }, [user, loadPets]);
 
   const createPet = async () => {
     if (!user || !petName.trim()) return;
@@ -86,7 +86,7 @@ export function usePetsData() {
       setSelectedPetIndex(pets.length); // neues Pet auswählen
       setShowCreateModal(false);
       setPetName('');
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error creating pet:', error);
@@ -140,7 +140,7 @@ export function usePetsData() {
         setShowCreateModal(true);
       }
 
-      const canAdd = await petService.canCreateSecondPet(user.uid);
+      const canAdd = await petService.canCreateNewPet(user.uid);
       setCanAddSecondPet(canAdd);
     } catch (error) {
       console.error('Error releasing pet:', error);
@@ -164,7 +164,6 @@ export function usePetsData() {
 
   const toggleAccessory = async (accessoryId: string) => {
     if (!user || !pet) return;
-
     const currentAccessories = pet.accessories || [];
     const accessoryIndex = currentAccessories.findIndex((acc) => acc.id === accessoryId);
 
@@ -219,7 +218,7 @@ export function usePetsData() {
     pets,
     pet,
     selectedPetIndex,
-    canAddSecondPet,
+    canAddNewPet,
     isLoading,
     showCreateModal,
     petName,

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { HorizontalScrollContainer } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
-import { Actor } from '../../hooks/useActorUniverse';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { Actor } from '../../hooks/useActorUniverse';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -53,7 +53,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 gap: '14px',
                 padding: '14px',
                 background: isTop3
-                  ? `linear-gradient(135deg, ${currentTheme.primary}15, var(--theme-secondary-gradient, #8b5cf6)15)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}15, ${currentTheme.accent}15)`
                   : currentTheme.background.card,
                 borderRadius: '16px',
                 cursor: 'pointer',
@@ -82,7 +82,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                   fontSize: '16px',
                   fontWeight: 800,
                   flexShrink: 0,
-                  color: isTop3 ? '#000' : currentTheme.text.primary,
+                  color: isTop3 ? currentTheme.background.default : currentTheme.text.primary,
                   boxShadow: isTop3 ? `0 2px 8px ${rankColors[index]}40` : 'none',
                 }}
               >
@@ -97,7 +97,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                   borderRadius: '50%',
                   background: actor.profilePath
                     ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                    : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                    : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   flexShrink: 0,
@@ -155,7 +155,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
         style={{
           margin: '36px 0 18px 0',
           fontSize: '16px',
-          color: currentTheme.text.secondary,
+          color: currentTheme.text.primary,
           fontWeight: 700,
           fontFamily: 'var(--font-display)',
         }}
@@ -185,7 +185,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 margin: '0 auto 10px',
                 background: actor.profilePath
                   ? `url(${TMDB_IMAGE_BASE}${actor.profilePath})`
-                  : `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 border: `2px solid ${currentTheme.border.default}`,

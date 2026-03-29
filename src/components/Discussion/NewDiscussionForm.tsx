@@ -2,11 +2,11 @@ import { AddPhotoAlternate, Close, Warning } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
+import { memo, useRef, useState } from 'react';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
-export const NewDiscussionForm: React.FC<{
+const NewDiscussionFormInner: React.FC<{
   onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
   onCancel: () => void;
 }> = ({ onSubmit, onCancel }) => {
@@ -153,7 +153,7 @@ export const NewDiscussionForm: React.FC<{
                     borderRadius: '50%',
                     background: currentTheme.status.error,
                     border: 'none',
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -292,7 +292,7 @@ export const NewDiscussionForm: React.FC<{
                   : currentTheme.background.surface,
               color:
                 title.trim() && (content.trim() || previewImages.length > 0)
-                  ? '#fff'
+                  ? currentTheme.text.primary
                   : currentTheme.text.muted,
               cursor:
                 title.trim() && (content.trim() || previewImages.length > 0)
@@ -313,3 +313,6 @@ export const NewDiscussionForm: React.FC<{
     </motion.div>
   );
 };
+
+export const NewDiscussionForm = memo(NewDiscussionFormInner);
+NewDiscussionForm.displayName = 'NewDiscussionForm';

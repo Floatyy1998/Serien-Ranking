@@ -6,26 +6,12 @@
 import { Lock } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { Badge, BadgeProgress } from '../../features/badges/badgeDefinitions';
+import type { Badge, BadgeProgress } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
+import { getRarityColor } from './badgeCardHelpers';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
-
-export const getRarityColor = (rarity: string, theme: ThemeColors): string => {
-  switch (rarity) {
-    case 'common':
-      return theme.text.muted;
-    case 'rare':
-      return theme.primary;
-    case 'epic':
-      return 'var(--theme-secondary-gradient, #8b5cf6)';
-    case 'legendary':
-      return theme.status.warning;
-    default:
-      return theme.text.muted;
-  }
-};
 
 const getRarityLabel = (rarity: string): string => {
   switch (rarity) {
@@ -72,6 +58,7 @@ export const BadgeCard = React.memo(
         transition={{ duration: 0.3, delay: index * 0.03 }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
+        onClick={() => {}}
         className="badge-card-wrapper"
         style={{
           background: earned
@@ -142,7 +129,7 @@ export const BadgeCard = React.memo(
                 width: '24px',
                 height: '24px',
                 borderRadius: '50%',
-                background: `linear-gradient(135deg, ${theme.status.success}, #22c55e)`,
+                background: `linear-gradient(135deg, ${theme.status.success}, ${theme.status.success}cc)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -160,7 +147,7 @@ export const BadgeCard = React.memo(
                 background: `linear-gradient(135deg, ${badge.color}, ${badge.color}cc)`,
                 fontSize: '9px',
                 fontWeight: 700,
-                color: 'white',
+                color: theme.text.secondary,
               }}
             >
               NEXT
@@ -194,7 +181,7 @@ export const BadgeCard = React.memo(
               badgeId={badge.id}
               sx={{
                 fontSize: '2.8rem',
-                color: earned ? 'white' : theme.text.muted,
+                color: earned ? theme.text.secondary : theme.text.muted,
                 opacity: earned ? 1 : 0.5,
               }}
             />

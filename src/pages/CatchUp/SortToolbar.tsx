@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SortOption, SortDirection } from './useCatchUpData';
 
 interface SortToolbarProps {
@@ -43,7 +43,7 @@ export const SortToolbar = memo<SortToolbarProps>(
                     background: isActive
                       ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                       : 'transparent',
-                    color: isActive ? 'white' : 'rgba(255, 255, 255, 0.5)',
+                    color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
                     boxShadow: isActive ? `0 2px 8px ${currentTheme.primary}40` : 'none',
                   }}
                 >

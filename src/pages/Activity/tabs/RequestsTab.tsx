@@ -2,9 +2,12 @@
  * RequestsTab - Incoming and sent friend requests
  */
 
-import { Cancel, CheckCircle, Person, PersonAdd } from '@mui/icons-material';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import Person from '@mui/icons-material/Person';
+import PersonAdd from '@mui/icons-material/PersonAdd';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
@@ -64,8 +67,8 @@ export const RequestsTab = ({
                     alignItems: 'center',
                     gap: '12px',
                     padding: '14px',
-                    background: `linear-gradient(135deg, ${currentTheme.primary}10, ${currentTheme.primary}05)`,
-                    border: `1px solid ${currentTheme.primary}30`,
+                    background: currentTheme.background.surface,
+                    border: `1px solid ${currentTheme.border.default}`,
                     borderRadius: '14px',
                   }}
                 >
@@ -81,7 +84,7 @@ export const RequestsTab = ({
                             backgroundSize: 'cover',
                           }
                         : {
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                           }),
                       display: 'flex',
                       alignItems: 'center',
@@ -89,7 +92,7 @@ export const RequestsTab = ({
                     }}
                   >
                     {!requestProfile.photoURL && (
-                      <Person style={{ fontSize: '22px', color: 'white' }} />
+                      <Person style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
                     )}
                   </div>
 
@@ -111,7 +114,7 @@ export const RequestsTab = ({
                         margin: 0,
                       }}
                     >
-                      {formatTimeAgo(request.timestamp || request.sentAt || Date.now())}
+                      {formatTimeAgo(request.timestamp || request.sentAt || 0)}
                     </p>
                   </div>
 
@@ -124,7 +127,7 @@ export const RequestsTab = ({
                         background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
                         border: 'none',
                         borderRadius: '10px',
-                        color: 'white',
+                        color: currentTheme.text.secondary,
                         cursor: 'pointer',
                       }}
                     >
@@ -138,7 +141,7 @@ export const RequestsTab = ({
                         background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
                         border: 'none',
                         borderRadius: '10px',
-                        color: 'white',
+                        color: currentTheme.text.secondary,
                         cursor: 'pointer',
                       }}
                     >

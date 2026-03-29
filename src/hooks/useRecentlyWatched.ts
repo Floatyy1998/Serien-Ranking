@@ -1,52 +1,40 @@
-import { useMemo, useRef } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMemo, useState } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { getImageUrl } from '../utils/imageUrl';
 
-export const useRecentlyWatched = () => {
+export interface RecentlyWatchedItem {
+  type: 'series';
+  id: number;
+  title: string;
+  poster: string;
+  rating: number;
+}
+
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_ITEMS = 10;
+
+export const useRecentlyWatched = (): RecentlyWatchedItem[] => {
   const { seriesList } = useSeriesList();
-  interface RecentlyWatchedItem {
-    type: 'series';
-    id: number;
-    title: string;
-    poster: string;
-    rating: number;
-  }
+  // Use state initializer to avoid impure Date.now() during render
+  const [sevenDaysAgo] = useState(() => Date.now() - SEVEN_DAYS_MS);
 
-  const cacheRef = useRef<{ items: RecentlyWatchedItem[] | null; deps: string }>({
-    items: null,
-    deps: '',
-  });
-
-  const recentlyWatched = useMemo(() => {
-    const depsString = `${seriesList.length}`;
-
-    if (cacheRef.current.items && cacheRef.current.deps === depsString) {
-      return cacheRef.current.items;
-    }
-
+  return useMemo(() => {
     const items: RecentlyWatchedItem[] = [];
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-    for (let i = 0; i < seriesList.length; i++) {
-      const series = seriesList[i];
+    for (const series of seriesList) {
       const seasons = series.seasons;
       if (!seasons) continue;
 
       let hasRecent = false;
 
-      for (let j = 0; j < seasons.length && !hasRecent; j++) {
-        const episodes = seasons[j].episodes;
+      outer: for (const season of seasons) {
+        const episodes = season.episodes;
         if (!episodes) continue;
-
-        for (let k = 0; k < episodes.length; k++) {
-          const ep = episodes[k];
-          if (ep.firstWatchedAt) {
-            const watchTime = new Date(ep.firstWatchedAt).getTime();
-            if (watchTime >= sevenDaysAgo) {
-              hasRecent = true;
-              break;
-            }
+        for (const ep of episodes) {
+          if (ep.firstWatchedAt && new Date(ep.firstWatchedAt).getTime() >= sevenDaysAgo) {
+            hasRecent = true;
+            break outer;
           }
         }
       }
@@ -62,10 +50,6 @@ export const useRecentlyWatched = () => {
       }
     }
 
-    const result = items.slice(0, 10);
-    cacheRef.current = { items: result, deps: depsString };
-    return result;
-  }, [seriesList]);
-
-  return recentlyWatched;
+    return items.slice(0, MAX_ITEMS);
+  }, [seriesList, sevenDaysAgo]);
 };

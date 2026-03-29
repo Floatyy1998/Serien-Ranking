@@ -2,15 +2,16 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
+import { useAuth } from '../../AuthContext';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { Movie as MovieType } from '../../types/Movie';
-import { Series } from '../../types/Series';
+import type { Movie as MovieType } from '../../types/Movie';
+import { trackRatingSaved, trackRatingDeleted } from '../../firebase/analytics';
+import type { Series } from '../../types/Series';
 
 export interface UseRatingDataResult {
   item: (Series | MovieType) | undefined;
@@ -29,7 +30,7 @@ export interface UseRatingDataResult {
 
 export const useRatingData = (): UseRatingDataResult => {
   const { id, type } = useParams<{ id: string; type: 'series' | 'movie' }>();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
@@ -53,8 +54,8 @@ export const useRatingData = (): UseRatingDataResult => {
     if (item && user) {
       const allPossibleGenres =
         type === 'movie'
-          ? genreMenuItemsForMovies.filter((g) => g.value !== 'All').map((g) => g.label)
-          : genreMenuItems.filter((g) => g.value !== 'All').map((g) => g.label);
+          ? genreMenuItemsForMovies.map((g) => g.value)
+          : genreMenuItems.map((g) => g.value);
 
       const loadedRatings: Record<string, number> = {};
       allPossibleGenres.forEach((genre) => {
@@ -175,9 +176,10 @@ export const useRatingData = (): UseRatingDataResult => {
           );
         }
 
+        trackRatingSaved(String(item.id), type || 'unknown', overallRating);
         showSnackbar(`Bewertung für "${item.title}" wurde gespeichert!`);
       }
-    } catch (error) {
+    } catch {
       showSnackbar('Fehler beim Speichern der Bewertung.');
     } finally {
       setIsSaving(false);
@@ -196,8 +198,9 @@ export const useRatingData = (): UseRatingDataResult => {
         .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
 
       await ratingRef.remove();
+      trackRatingDeleted(String(item.id), type || 'unknown');
       showSnackbar(`Bewertung für "${item.title}" wurde gelöscht!`);
-    } catch (error) {
+    } catch {
       showSnackbar('Fehler beim Löschen der Bewertung.');
     } finally {
       setIsSaving(false);

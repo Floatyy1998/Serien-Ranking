@@ -2,17 +2,21 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
+import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { Series } from '../../types/Series';
+import type { Series } from '../../types/Series';
+import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
+import { showToast, showUndoToast } from '../../lib/toast';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 
 function getEpisodeRuntime(series: Series, episode: Episode): number {
-  return episode.runtime || series.episodeRuntime || 45;
+  return episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 }
 
 export interface SelectedEpisode {
@@ -31,8 +35,18 @@ export interface SeasonProgress {
 
 export const useEpisodeManagement = () => {
   const { id } = useParams();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
+
+  // --- Quick Rating ---
+  const {
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    showQuickRating,
+    closeQuickRating,
+    saveQuickRating,
+  } = useQuickSeasonRating();
 
   // --- State ---
   const [selectedSeason, setSelectedSeason] = useState(0);
@@ -129,11 +143,12 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
 
     const season = series.seasons[seasonIndex];
-    const episode = season.episodes![episodeIndex];
+    const episode = season.episodes[episodeIndex];
 
     try {
       const currentWatchCount = episode.watchCount || 0;
       const isWatched = episode.watched;
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
 
       let newWatched: boolean;
       let newWatchCount: number;
@@ -154,7 +169,7 @@ export const useEpisodeManagement = () => {
         newWatchCount = 1;
       }
 
-      const updatedEpisodes = season.episodes!.map((e, idx) => {
+      const updatedEpisodes = season.episodes?.map((e, idx) => {
         if (idx === episodeIndex) {
           if (newWatched && newWatchCount < 1) {
             newWatchCount = 1;
@@ -172,7 +187,12 @@ export const useEpisodeManagement = () => {
               lastWatchedAt: new Date().toISOString(),
             };
           } else {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = e;
+            const {
+              watchCount: _watchCount,
+              firstWatchedAt: _firstWatchedAt,
+              lastWatchedAt: _lastWatchedAt,
+              ...episodeWithoutFields
+            } = e;
             return {
               ...episodeWithoutFields,
               watched: false,
@@ -192,44 +212,74 @@ export const useEpisodeManagement = () => {
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
 
-      // Badge system logging for episode changes
-      if (!episode.watched && newWatched) {
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(user.uid, false, episode.air_date);
-
-        await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
-
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title,
-          season.seasonNumber + 1,
-          episodeIndex + 1,
-          getEpisodeRuntime(series, episode),
-          false,
-          series.genre?.genres,
-          [...new Set(series.provider?.provider?.map((p) => p.name))]
-        );
-      } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
-        const { updateEpisodeCounters } =
-          await import('../../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(user.uid, true, episode.air_date);
-
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title,
-          season.seasonNumber + 1,
-          episodeIndex + 1,
-          getEpisodeRuntime(series, episode),
-          true,
-          series.genre?.genres,
-          [...new Set(series.provider?.provider?.map((p) => p.name))]
-        );
+      // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel markiert
+      if (newWatched && shouldTriggerQuickRate(series, seasonIndex, episodeIndex)) {
+        setTimeout(() => {
+          showQuickRating(series, series.seasons[seasonIndex].seasonNumber + 1);
+        }, 500);
       }
+
+      const label = `S${season.seasonNumber + 1}E${episodeIndex + 1}`;
+      const action = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
+      showUndoToast(`${series.title} ${label} ${action}`, {
+        onUndo: async () => {
+          try {
+            await seasonsRef.set(prevSeasons);
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
+          }
+        },
+        onCommit: async () => {
+          if (newWatched) {
+            trackEpisodeWatched(series.title, season.seasonNumber + 1, episodeIndex + 1, {
+              tmdbId: series.id,
+              genres: series.genre?.genres,
+              runtime: getEpisodeRuntime(series, episode),
+              isRewatch: (episode as Record<string, unknown>).watchCount
+                ? Number((episode as Record<string, unknown>).watchCount) > 0
+                : false,
+              source: 'episode_management',
+            });
+          } else {
+            trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
+          }
+          if (!episode.watched && newWatched) {
+            const { updateEpisodeCounters } =
+              await import('../../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, false, episode.air_date);
+            await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
+            WatchActivityService.logEpisodeWatch(
+              user.uid,
+              series.id,
+              series.title,
+              season.seasonNumber + 1,
+              episodeIndex + 1,
+              getEpisodeRuntime(series, episode),
+              false,
+              series.genre?.genres,
+              [...new Set(series.provider?.provider?.map((p) => p.name))]
+            );
+          } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
+            const { updateEpisodeCounters } =
+              await import('../../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, true, episode.air_date);
+            WatchActivityService.logEpisodeWatch(
+              user.uid,
+              series.id,
+              series.title,
+              season.seasonNumber + 1,
+              episodeIndex + 1,
+              getEpisodeRuntime(series, episode),
+              true,
+              series.genre?.genres,
+              [...new Set(series.provider?.provider?.map((p) => p.name))]
+            );
+          }
+        },
+      });
     } catch (error) {
       console.error('Failed to toggle episode watch status:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
@@ -253,6 +303,7 @@ export const useEpisodeManagement = () => {
     if (!series || !user) return;
 
     try {
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
       const now = new Date().toISOString();
       const updatedSeasons = series.seasons.map((season, sIdx) => {
         const eps = Array.isArray(season.episodes)
@@ -297,10 +348,18 @@ export const useEpisodeManagement = () => {
 
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
-
       setSelectedSeason(targetSeasonIndex);
+
+      showUndoToast(`Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`, async () => {
+        try {
+          await seasonsRef.set(prevSeasons);
+        } catch {
+          showToast('Undo fehlgeschlagen', 2000, 'error');
+        }
+      });
     } catch (error) {
       console.error('Failed to catch up episodes:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
@@ -318,7 +377,12 @@ export const useEpisodeManagement = () => {
     try {
       const updatedEpisodes = season.episodes?.map((ep) => {
         if (mode === 'unwatch') {
-          const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+          const {
+            watchCount: _watchCount,
+            firstWatchedAt: _firstWatchedAt,
+            lastWatchedAt: _lastWatchedAt,
+            ...episodeWithoutFields
+          } = ep;
           return { ...episodeWithoutFields, watched: false };
         } else if (mode === 'rewatch') {
           return {
@@ -338,7 +402,12 @@ export const useEpisodeManagement = () => {
               lastWatchedAt: new Date().toISOString(),
             };
           } else {
-            const { watchCount, firstWatchedAt, lastWatchedAt, ...episodeWithoutFields } = ep;
+            const {
+              watchCount: _watchCount,
+              firstWatchedAt: _firstWatchedAt,
+              lastWatchedAt: _lastWatchedAt,
+              ...episodeWithoutFields
+            } = ep;
             return { ...episodeWithoutFields, watched: false };
           }
         }
@@ -351,10 +420,40 @@ export const useEpisodeManagement = () => {
         return s;
       });
 
+      const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
       const seasonsRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`);
       await seasonsRef.set(updatedSeasons);
+
+      // Quick-Rate: Trigger wenn letzte Staffel komplett markiert
+      if (mode !== 'unwatch') {
+        const lastSeasonIndex = series.seasons.length - 1;
+        if (seasonIndex === lastSeasonIndex) {
+          const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
+          if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {
+            setTimeout(() => {
+              showQuickRating(series, season.seasonNumber + 1);
+            }, 500);
+          }
+        }
+      }
+
+      const seasonLabel = `Staffel ${season.seasonNumber + 1}`;
+      const modeLabel =
+        mode === 'unwatch'
+          ? 'als nicht gesehen markiert'
+          : mode === 'rewatch'
+            ? 'Rewatch markiert'
+            : 'als gesehen markiert';
+      showUndoToast(`${series.title} ${seasonLabel} ${modeLabel}`, async () => {
+        try {
+          await seasonsRef.set(prevSeasons);
+        } catch {
+          showToast('Undo fehlgeschlagen', 2000, 'error');
+        }
+      });
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
     }
   };
 
@@ -421,5 +520,12 @@ export const useEpisodeManagement = () => {
     handleWatchDialogIncrease,
     handleWatchDialogDecrease,
     closeWatchDialog,
+
+    // Quick rating
+    quickRatingOpen,
+    quickRatingSeries,
+    quickRatingSeasonNumber,
+    closeQuickRating,
+    saveQuickRating,
   };
 };

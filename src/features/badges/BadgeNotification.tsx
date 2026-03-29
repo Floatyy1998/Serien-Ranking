@@ -1,6 +1,6 @@
 import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
-import { EarnedBadge } from './badgeDefinitions';
+import type { EarnedBadge } from './badgeDefinitions';
 import { BadgeIcon } from './BadgeIcons';
 
 interface BadgeNotificationProps {

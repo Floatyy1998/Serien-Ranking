@@ -5,7 +5,7 @@
 import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 
 interface ResetSectionProps {
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
@@ -68,7 +68,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
               className="theme-confirm-btn"
               style={{
                 background: currentTheme.status.error,
-                color: 'white',
+                color: currentTheme.text.secondary,
               }}
             >
               Zurücksetzen

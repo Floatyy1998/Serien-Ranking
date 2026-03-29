@@ -1,93 +1,56 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Layout, ScrollToTop } from './components/layout';
-import { useAuth } from './App';
-import { useOptimizedFriends } from './contexts/OptimizedFriendsProvider';
-import { useNotifications } from './contexts/NotificationContext';
+import { useAuth } from './AuthContext';
+import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
+import { useNotifications } from './contexts/NotificationContextDef';
+import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
+import { useNetworkStatus } from './hooks/useNetworkStatus';
 import './styles/App.css';
 
-// Lazy load all pages for better code splitting
-const HomePage = lazy(() => import('./pages/HomePage').then((m) => ({ default: m.HomePage })));
-const WatchNextPage = lazy(() =>
-  import('./pages/WatchNext').then((m) => ({ default: m.WatchNextPage }))
-);
-const RatingsPage = lazy(() => import('./pages/Ratings').then((m) => ({ default: m.RatingsPage })));
-const ProfilePage = lazy(() => import('./pages/Profile').then((m) => ({ default: m.ProfilePage })));
-const RecentlyWatchedPage = lazy(() =>
-  import('./pages/RecentlyWatched').then((m) => ({ default: m.RecentlyWatchedPage }))
-);
-const DiscoverPage = lazy(() =>
-  import('./pages/Discover').then((m) => ({ default: m.DiscoverPage }))
-);
-const ActivityPage = lazy(() =>
-  import('./pages/Activity').then((m) => ({ default: m.ActivityPage }))
-);
-const SearchPage = lazy(() => import('./pages/Search').then((m) => ({ default: m.SearchPage })));
-const BadgesPage = lazy(() => import('./pages/Badges').then((m) => ({ default: m.BadgesPage })));
-const PetsPage = lazy(() => import('./pages/Pets').then((m) => ({ default: m.PetsPage })));
-const ThemePage = lazy(() => import('./pages/Theme').then((m) => ({ default: m.ThemePage })));
-const HomeLayoutPage = lazy(() =>
-  import('./pages/HomeLayout').then((m) => ({ default: m.HomeLayoutPage }))
-);
-const StatsPage = lazy(() => import('./pages/Stats').then((m) => ({ default: m.StatsPage })));
-const WrappedPage = lazy(() => import('./pages/Wrapped').then((m) => ({ default: m.WrappedPage })));
-const ActorUniversePage = lazy(() =>
-  import('./pages/ActorUniverse').then((m) => ({ default: m.ActorUniversePage }))
-);
-const SettingsPage = lazy(() =>
-  import('./pages/Settings').then((m) => ({ default: m.SettingsPage }))
-);
-const ProfileSettingsPage = lazy(() =>
-  import('./pages/ProfileSettings').then((m) => ({ default: m.ProfileSettingsPage }))
-);
-const SeriesDetailPage = lazy(() =>
-  import('./pages/SeriesDetail').then((m) => ({ default: m.SeriesDetailPage }))
-);
-const EpisodeManagementPage = lazy(() =>
-  import('./pages/EpisodeManagement').then((m) => ({ default: m.EpisodeManagementPage }))
-);
-const EpisodeDiscussionPage = lazy(() =>
-  import('./pages/EpisodeDiscussion').then((m) => ({ default: m.EpisodeDiscussionPage }))
-);
-const RatingPage = lazy(() => import('./pages/Rating').then((m) => ({ default: m.RatingPage })));
-const MovieDetailPage = lazy(() =>
-  import('./pages/MovieDetail').then((m) => ({ default: m.MovieDetailPage }))
-);
-const FriendProfilePage = lazy(() =>
-  import('./pages/FriendProfile').then((m) => ({ default: m.FriendProfilePage }))
-);
-const TasteMatchPage = lazy(() =>
-  import('./pages/TasteMatch').then((m) => ({ default: m.TasteMatchPage }))
-);
-const WatchJourneyPage = lazy(() =>
-  import('./pages/WatchJourney').then((m) => ({ default: m.WatchJourneyPage }))
-);
-const CatchUpPage = lazy(() => import('./pages/CatchUp').then((m) => ({ default: m.CatchUpPage })));
-const HiddenSeriesPage = lazy(() =>
-  import('./pages/HiddenSeries').then((m) => ({ default: m.HiddenSeriesPage }))
-);
-const ImpressumPage = lazy(() =>
-  import('./pages/Impressum').then((m) => ({ default: m.ImpressumPage }))
-);
-const PrivacyPage = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.PrivacyPage })));
-const DiscussionFeedPage = lazy(() =>
-  import('./pages/DiscussionFeed').then((m) => ({ default: m.DiscussionFeedPage }))
-);
-const CountdownPage = lazy(() =>
-  import('./pages/Countdown').then((m) => ({ default: m.CountdownPage }))
-);
-const CalendarPage = lazy(() =>
-  import('./pages/Calendar').then((m) => ({ default: m.CalendarPage }))
-);
-const OnboardingPage = lazy(() =>
-  import('./pages/Onboarding').then((m) => ({ default: m.OnboardingPage }))
-);
-const LeaderboardPage = lazy(() =>
-  import('./pages/Leaderboard').then((m) => ({ default: m.LeaderboardPage }))
-);
-const PatchNotesPage = lazy(() =>
-  import('./pages/PatchNotes').then((m) => ({ default: m.PatchNotesPage }))
-);
+// Main nav tabs: eager imports — these are always needed and must never show a loading spinner
+import { HomePage } from './pages/HomePage';
+import { WatchNextPage } from './pages/WatchNext';
+import { RatingsPage } from './pages/Ratings';
+import { ProfilePage } from './pages/Profile';
+import { SearchPage } from './pages/Search';
+
+import {
+  SeriesDetailPage,
+  MovieDetailPage,
+  DiscoverPage,
+  ActivityPage,
+  StatsPage,
+  RecentlyWatchedPage,
+  BadgesPage,
+  PetsPage,
+  ThemePage,
+  HomeLayoutPage,
+  WrappedPage,
+  ActorUniversePage,
+  SettingsPage,
+  ProfileSettingsPage,
+  EpisodeManagementPage,
+  EpisodeDiscussionPage,
+  RatingPage,
+  FriendProfilePage,
+  TasteMatchPage,
+  TasteProfilePage,
+  WatchJourneyPage,
+  CatchUpPage,
+  HiddenSeriesPage,
+  ImpressumPage,
+  PrivacyPage,
+  DiscussionFeedPage,
+  CountdownPage,
+  CalendarPage,
+  OnboardingPage,
+  LeaderboardPage,
+  PatchNotesPage,
+  AdminDashboardPage,
+  BugReportPage,
+  preloadRoutes,
+} from './lazyRoutes';
 
 const PageLoader = () => (
   <div
@@ -110,6 +73,8 @@ export const MobileApp = () => {
     useOptimizedFriends();
   const { unreadCount: notificationUnreadCount, notifications: generalNotifications } =
     useNotifications();
+
+  useNetworkStatus();
 
   const totalUnread = unreadActivitiesCount + unreadRequestsCount + notificationUnreadCount;
 
@@ -151,7 +116,10 @@ export const MobileApp = () => {
 
   const [tickerIndex, setTickerIndex] = useState(0);
   const tickerRef = useRef(tickerIndex);
-  tickerRef.current = tickerIndex;
+
+  useEffect(() => {
+    tickerRef.current = tickerIndex;
+  }, [tickerIndex]);
 
   // Cycle through ticker messages in the tab title
   useEffect(() => {
@@ -176,6 +144,14 @@ export const MobileApp = () => {
 
     return () => clearInterval(interval);
   }, [totalUnread, tickerMessages]);
+
+  useAdminHealthAlert();
+
+  // Preload lazy route chunks + cleanup old tickets in the background
+  useEffect(() => {
+    preloadRoutes();
+    import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
+  }, []);
 
   // Redirect to onboarding if not complete
   if (onboardingComplete === false && location.pathname !== '/onboarding') {
@@ -236,7 +212,7 @@ export const MobileApp = () => {
           <Route
             path="/discover"
             element={
-              <Layout>
+              <Layout hideNav>
                 <DiscoverPage />
               </Layout>
             }
@@ -302,6 +278,14 @@ export const MobileApp = () => {
             element={
               <Layout hideNav>
                 <StatsPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/taste-profile"
+            element={
+              <Layout hideNav>
+                <TasteProfilePage />
               </Layout>
             }
           />
@@ -403,9 +387,25 @@ export const MobileApp = () => {
             }
           />
           <Route
-            path="/calendar"
+            path="/admin"
             element={
               <Layout hideNav>
+                <AdminDashboardPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/bug-report"
+            element={
+              <Layout hideNav>
+                <BugReportPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/calendar"
+            element={
+              <Layout>
                 <CalendarPage />
               </Layout>
             }

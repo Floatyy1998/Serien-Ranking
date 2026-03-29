@@ -10,10 +10,10 @@
   justify-content: space-between;
   padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
   /* background wird inline in der Komponente gesetzt */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
   position: relative;
-  z-index: 100;
+  z-index: var(--z-dropdown);
 }
 
 .badges-header h1 {
@@ -38,7 +38,7 @@
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .refresh-button:active {
@@ -64,10 +64,10 @@
   margin: 16px;
   padding: 20px;
   background: var(--color-background-surface);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-default);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
 }
 
 .progress-header {
@@ -134,12 +134,12 @@
   align-items: center;
   gap: 10px;
   padding: 12px 18px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   font-size: 15px;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   flex-shrink: 0;
   min-height: 52px;
 }
@@ -194,13 +194,13 @@
 .badge-card {
   background: var(--color-background-surface);
   border: 1px solid var(--color-border-default);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
   position: relative;
   overflow: hidden;
 }
@@ -243,7 +243,7 @@
   font-size: 48px !important;
   color: var(--badge-color);
   opacity: 0.3;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .badge-card.earned .badge-icon-container svg {
@@ -375,7 +375,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--color-background-surface);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-default);
 }
 
 .tier-dot.earned {
@@ -388,7 +388,7 @@
   margin: 24px 16px 16px;
   padding: 16px;
   background: var(--color-background-surface);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-default);
 }
 
@@ -411,7 +411,7 @@
   gap: 8px;
   padding: 8px 12px;
   background: var(--color-background-surface);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 15px;
   color: var(--color-text-primary);
 }

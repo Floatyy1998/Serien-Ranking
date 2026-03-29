@@ -4,13 +4,15 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { Movie as MovieType } from '../../types/Movie';
-import { Series } from '../../types/Series';
+import { trackRecentlyAdded } from '../../lib/recentlyAdded';
+import type { Movie as MovieType } from '../../types/Movie';
+import type { Series } from '../../types/Series';
 
 export interface SearchResult {
   id: number;
@@ -59,29 +61,56 @@ export interface UseSearchPageResult {
 
 export const useSearchPage = (): UseSearchPageResult => {
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const [urlParams, setUrlParams] = useSearchParams();
+  const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
   const isReturning = window.history.state?.usr?.returning === true;
 
-  const [searchQuery, setSearchQuery] = useState(() => {
-    if (isReturning) {
-      return sessionStorage.getItem('searchQuery') || '';
-    }
-    sessionStorage.removeItem('searchQuery');
-    sessionStorage.removeItem('searchType');
-    sessionStorage.removeItem('searchResults');
-    return '';
+  const [searchQuery, setSearchQueryState] = useState(() => {
+    return urlParams.get('q') || '';
   });
 
-  const [searchType, setSearchType] = useState<SearchTypeFilter>(() => {
-    if (isReturning) {
-      const saved = sessionStorage.getItem('searchType');
-      return (saved as SearchTypeFilter) || 'all';
-    }
-    return 'all';
+  const setSearchQuery = useCallback(
+    (query: string) => {
+      setSearchQueryState(query);
+      setUrlParams(
+        (prev) => {
+          if (query) {
+            prev.set('q', query);
+          } else {
+            prev.delete('q');
+          }
+          return prev;
+        },
+        { replace: true }
+      );
+    },
+    [setUrlParams]
+  );
+
+  const [searchType, setSearchTypeState] = useState<SearchTypeFilter>(() => {
+    return (urlParams.get('type') as SearchTypeFilter) || 'all';
   });
+
+  const setSearchType = useCallback(
+    (type: SearchTypeFilter) => {
+      setSearchTypeState(type);
+      setUrlParams(
+        (prev) => {
+          if (type && type !== 'all') {
+            prev.set('type', type);
+          } else {
+            prev.delete('type');
+          }
+          return prev;
+        },
+        { replace: true }
+      );
+    },
+    [setUrlParams]
+  );
 
   const [searchResults, setSearchResults] = useState<SearchResult[]>(() => {
     if (isReturning) {
@@ -102,7 +131,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     open: false,
     message: '',
   });
-  const [isDesktop] = useState(window.innerWidth >= 768);
+  const { isDesktop } = useDeviceType();
   const [popularSearches] = useState([
     'Breaking Bad',
     'The Last of Us',
@@ -120,15 +149,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     }
   }, []);
 
-  // Persist search state to sessionStorage
-  useEffect(() => {
-    sessionStorage.setItem('searchQuery', searchQuery);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    sessionStorage.setItem('searchType', searchType);
-  }, [searchType]);
-
+  // Cache results in sessionStorage for back-navigation
   useEffect(() => {
     sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
   }, [searchResults]);
@@ -147,22 +168,27 @@ export const useSearchPage = (): UseSearchPageResult => {
         });
       }
     }
+  }, [isReturning]);
+
+  const saveToRecent = useCallback((query: string) => {
+    setRecentSearches((prev) => {
+      const updated = [query, ...prev.filter((s) => s !== query)].slice(0, 5);
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
+      return updated;
+    });
   }, []);
 
-  const saveToRecent = (query: string) => {
-    const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(0, 5);
-    setRecentSearches(updated);
-    localStorage.setItem('recentSearches', JSON.stringify(updated));
-  };
-
-  const isInList = (id: string | number, type: 'series' | 'movie') => {
-    const numId = typeof id === 'string' ? parseInt(id) : id;
-    if (type === 'series') {
-      return seriesList.some((s: Series) => s.id === numId);
-    } else {
-      return movieList.some((m: MovieType) => m.id === numId);
-    }
-  };
+  const isInList = useCallback(
+    (id: string | number, type: 'series' | 'movie') => {
+      const numId = typeof id === 'string' ? parseInt(id) : id;
+      if (type === 'series') {
+        return seriesList.some((s: Series) => s.id === numId);
+      } else {
+        return movieList.some((m: MovieType) => m.id === numId);
+      }
+    },
+    [seriesList, movieList]
+  );
 
   const searchTMDB = useCallback(
     async (query: string) => {
@@ -174,42 +200,83 @@ export const useSearchPage = (): UseSearchPageResult => {
       setLoading(true);
       saveToRecent(query);
 
+      const apiKey = import.meta.env.VITE_API_TMDB;
+      const encoded = encodeURIComponent(query);
+      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
+
       try {
         const results: SearchResult[] = [];
+        const wantSeries = searchType === 'all' || searchType === 'series';
+        const wantMovies = searchType === 'all' || searchType === 'movies';
 
-        const fetchSeries =
-          searchType === 'all' || searchType === 'series'
+        const [seriesDE, seriesEN, movieDE, movieEN] = await Promise.all([
+          wantSeries
             ? fetch(
-                `https://api.themoviedb.org/3/search/tv?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=de-DE`
               ).then((r) => r.json())
-            : Promise.resolve(null);
-
-        const fetchMovies =
-          searchType === 'all' || searchType === 'movies'
+            : Promise.resolve(null),
+          wantSeries
             ? fetch(
-                `https://api.themoviedb.org/3/search/movie?api_key=${import.meta.env.VITE_API_TMDB}&query=${encodeURIComponent(query)}&language=de-DE`
+                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=en-US`
               ).then((r) => r.json())
-            : Promise.resolve(null);
+            : Promise.resolve(null),
+          wantMovies
+            ? fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=de-DE`
+              ).then((r) => r.json())
+            : Promise.resolve(null),
+          wantMovies
+            ? fetch(
+                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=en-US`
+              ).then((r) => r.json())
+            : Promise.resolve(null),
+        ]);
 
-        const [seriesData, movieData] = await Promise.all([fetchSeries, fetchMovies]);
+        const enSeriesMap = new Map<number, string>();
+        if (seriesEN?.results) {
+          for (const item of seriesEN.results) {
+            enSeriesMap.set(item.id, item.name || item.title || '');
+          }
+        }
 
-        if (seriesData?.results) {
+        const enMovieMap = new Map<number, string>();
+        if (movieEN?.results) {
+          for (const item of movieEN.results) {
+            enMovieMap.set(item.id, item.title || item.name || '');
+          }
+        }
+
+        if (seriesDE?.results) {
           results.push(
-            ...seriesData.results.map((item: SearchResult) => ({
-              ...item,
-              type: 'series' as const,
-              inList: isInList(item.id, 'series'),
-            }))
+            ...seriesDE.results.map((item: SearchResult) => {
+              const deName = item.name || item.title || '';
+              const enName = enSeriesMap.get(item.id);
+              const name = hasNonLatin(deName) && enName ? enName : deName;
+              return {
+                ...item,
+                name,
+                title: name,
+                type: 'series' as const,
+                inList: isInList(item.id, 'series'),
+              };
+            })
           );
         }
 
-        if (movieData?.results) {
+        if (movieDE?.results) {
           results.push(
-            ...movieData.results.map((item: SearchResult) => ({
-              ...item,
-              type: 'movie' as const,
-              inList: isInList(item.id, 'movie'),
-            }))
+            ...movieDE.results.map((item: SearchResult) => {
+              const deTitle = item.title || item.name || '';
+              const enTitle = enMovieMap.get(item.id);
+              const title = hasNonLatin(deTitle) && enTitle ? enTitle : deTitle;
+              return {
+                ...item,
+                title,
+                name: title,
+                type: 'movie' as const,
+                inList: isInList(item.id, 'movie'),
+              };
+            })
           );
         }
 
@@ -222,7 +289,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         setLoading(false);
       }
     },
-    [searchType, seriesList, movieList]
+    [searchType, isInList, saveToRecent]
   );
 
   // Debounced search with skip-on-return logic
@@ -241,7 +308,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, searchTMDB]);
+  }, [searchQuery, searchTMDB, skipInitialSearch]);
 
   const handleItemClick = useCallback(
     (item: SearchResult) => {
@@ -291,7 +358,14 @@ export const useSearchPage = (): UseSearchPageResult => {
         if (response.ok) {
           setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
 
-          const title = item.title || item.name;
+          const title = item.title || item.name || '';
+          trackRecentlyAdded({
+            id: item.id,
+            title,
+            poster: item.poster_path || undefined,
+            type: item.type,
+          });
+
           setSnackbar({
             open: true,
             message: `"${title}" wurde erfolgreich hinzugefügt!`,

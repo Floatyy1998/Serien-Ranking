@@ -5,7 +5,7 @@
 import { ContentCopy, Link, Public, Refresh } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface PublicProfileSectionProps {
   isPublicProfile: boolean;
@@ -114,7 +114,7 @@ export const PublicProfileSection = memo(
                 disabled={isLoadingProfile}
                 className="settings-action-btn settings-action-btn--primary"
                 style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 }}
               >
                 <ContentCopy style={{ fontSize: '16px' }} />

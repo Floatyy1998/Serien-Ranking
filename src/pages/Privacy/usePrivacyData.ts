@@ -19,7 +19,11 @@ export interface PrivacyData {
           title: string;
           text: string;
         };
-        noTracking: {
+        noTracking?: {
+          title: string;
+          text: string;
+        };
+        cookies?: {
           title: string;
           text: string;
         };
@@ -32,6 +36,7 @@ export interface PrivacyData {
         auth: FirebaseService;
         database: FirebaseService;
         storage: FirebaseService;
+        analytics: FirebaseService;
         hosting: FirebaseService;
       };
       privacyLink: string;
@@ -75,6 +80,11 @@ export interface FirebaseService {
   title: string;
   purpose: string;
   data: string[];
+  legal?: string;
+  cookies?: string;
+  thirdCountry?: string;
+  consent?: string;
+  optOut?: string;
 }
 
 export const usePrivacyData = () => {

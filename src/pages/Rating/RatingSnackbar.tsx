@@ -1,5 +1,5 @@
 import { Check } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface RatingSnackbarProps {
   open: boolean;

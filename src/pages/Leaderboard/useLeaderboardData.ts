@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useAuth } from '../../AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import {
   checkAndArchiveMonth,
   fetchGlobalLeaderboard,
@@ -38,7 +38,7 @@ export interface CelebrationData {
 }
 
 export function useLeaderboardData() {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { friends } = useOptimizedFriends();
 
   const [mode, setMode] = useState<'friends' | 'global'>('friends');
@@ -131,7 +131,7 @@ export function useLeaderboardData() {
         setCelebration({
           place: idx + 1,
           monthLabel: MONTH_NAMES[m] || m,
-          score: entries[idx]!.score,
+          score: entries[idx]?.score ?? 0,
         });
       })
       .catch(() => {});
@@ -179,12 +179,20 @@ export function useLeaderboardData() {
     return entries;
   }, [statsData, profiles, activeCategory, user?.uid, mode, globalEntries]);
 
+  const handleSetMode = useCallback((newMode: 'friends' | 'global') => {
+    setMode(newMode);
+  }, []);
+
+  const handleSetActiveCategory = useCallback((newCategory: LeaderboardCategory) => {
+    setActiveCategory(newCategory);
+  }, []);
+
   return {
     user,
     mode,
-    setMode,
+    setMode: handleSetMode,
     activeCategory,
-    setActiveCategory,
+    setActiveCategory: handleSetActiveCategory,
     rankings,
     trophies,
     loading,

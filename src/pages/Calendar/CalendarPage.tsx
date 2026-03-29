@@ -1,4 +1,4 @@
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useCalendarData } from './useCalendarData';
 import { CalendarToolbar } from './CalendarToolbar';
@@ -31,8 +31,19 @@ export const CalendarPage = () => {
   return (
     <PageLayout>
       <div className="calendar-page">
-        <PageHeader title="TV-Kalender" />
-
+        <PageHeader
+          title="TV-Kalender"
+          showBack={false}
+          actions={
+            totalEpisodes > 0 ? (
+              <span style={{ fontSize: '13px', fontWeight: 600, color: currentTheme.text.muted }}>
+                <span style={{ color: currentTheme.status.success }}>{watchedCount}</span>
+                {' / '}
+                {totalEpisodes}
+              </span>
+            ) : undefined
+          }
+        />
         <CalendarToolbar
           kwNumber={kwNumber}
           monday={monday}

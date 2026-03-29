@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { EvolvingPixelPet } from '../../components/pet';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
@@ -48,21 +48,21 @@ export const PetCard = memo(function PetCard({
     {
       label: 'Hunger',
       value: hungerPercentage,
-      color: '#ff6b6b',
+      color: currentTheme.status?.error || '#ff6b6b',
       icon: '🍖',
       text: `${Math.round(hungerPercentage)}%`,
     },
     {
       label: 'Glück',
       value: happinessPercentage,
-      color: '#4ecdc4',
+      color: currentTheme.primary,
       icon: '😊',
       text: `${Math.round(happinessPercentage)}%`,
     },
     {
       label: 'XP',
       value: experiencePercentage,
-      color: '#8b5cf6',
+      color: currentTheme.accent,
       icon: '⭐',
       text: `${pet.experience}/${experienceNeeded}`,
     },
@@ -80,7 +80,7 @@ export const PetCard = memo(function PetCard({
         <GradientText
           as="h2"
           from={currentTheme.text.primary}
-          to="#ec4899"
+          to={currentTheme.accent}
           style={{
             fontSize: '36px',
             fontWeight: 800,
@@ -105,9 +105,9 @@ export const PetCard = memo(function PetCard({
           <div
             className="pet-card-badge"
             style={{
-              background: 'linear-gradient(135deg, #ec489920, #ec489910)',
-              border: '1px solid #ec489940',
-              color: '#ec4899',
+              background: `linear-gradient(135deg, ${currentTheme.accent}20, ${currentTheme.accent}10)`,
+              border: `1px solid ${currentTheme.accent}40`,
+              color: currentTheme.accent,
             }}
           >
             {PET_TYPE_NAMES[pet.type]}
@@ -116,9 +116,9 @@ export const PetCard = memo(function PetCard({
             <div
               className="pet-card-badge"
               style={{
-                background: 'linear-gradient(135deg, #fbbf2420, #fbbf2410)',
-                border: '1px solid #fbbf2440',
-                color: '#fbbf24',
+                background: `linear-gradient(135deg, ${currentTheme.accent}20, ${currentTheme.accent}10)`,
+                border: `1px solid ${currentTheme.accent}40`,
+                color: currentTheme.accent,
               }}
             >
               {pet.favoriteGenre}
@@ -152,7 +152,7 @@ export const PetCard = memo(function PetCard({
               <div
                 className="pet-card-dead-badge"
                 style={{
-                  background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
+                  background: `linear-gradient(135deg, ${currentTheme.status.error}, ${currentTheme.status?.error || '#ef4444'})`,
                 }}
               >
                 Tot

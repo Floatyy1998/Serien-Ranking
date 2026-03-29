@@ -2,7 +2,14 @@
  * EpisodeDataManager - Intelligent episode data manager
  * Handles caching, date grouping, and episode extraction from series data.
  */
+import {
+  isEpisodeWatched,
+  normalizeSeasons,
+  normalizeEpisodes,
+} from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export interface WatchedEpisode {
   seriesId: number;
@@ -75,11 +82,7 @@ export class EpisodeDataManager {
   }
 
   private getImageUrl(posterObj: string | { poster: string } | null | undefined): string {
-    if (!posterObj) return '/placeholder.jpg';
-    const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-    if (!path) return '/placeholder.jpg';
-    if (path.startsWith('http')) return path;
-    return `https://image.tmdb.org/t/p/w342${path}`;
+    return getImageUrl(posterObj);
   }
 
   async loadEpisodesForDateRange(startDate: string, endDate: string): Promise<void> {
@@ -105,45 +108,43 @@ export class EpisodeDataManager {
     for (const series of filteredSeries) {
       if (!series.seasons) continue;
 
-      const seasonsArray = Array.isArray(series.seasons)
-        ? series.seasons
-        : Object.values(series.seasons);
+      const seasonsArray = normalizeSeasons(series.seasons);
 
       for (let seasonIdx = 0; seasonIdx < seasonsArray.length; seasonIdx++) {
-        const season = seasonsArray[seasonIdx] as Series['seasons'][number];
+        const season = seasonsArray[seasonIdx];
         if (!season?.episodes) continue;
 
-        const episodesArray = Array.isArray(season.episodes)
-          ? season.episodes
-          : Object.values(season.episodes);
+        const episodesArray = normalizeEpisodes(season.episodes);
 
         for (let episodeIndex = 0; episodeIndex < episodesArray.length; episodeIndex++) {
           const episode = episodesArray[
             episodeIndex
           ] as Series['seasons'][number]['episodes'][number];
 
-          const isWatched = !!(
-            episode?.watched === true ||
-            (episode?.watched as unknown) === 1 ||
-            (episode?.watched as unknown) === 'true' ||
-            (episode?.watchCount && episode.watchCount > 0) ||
-            episode?.firstWatchedAt ||
-            episode?.lastWatchedAt
-          );
-
-          if (!isWatched) continue;
+          if (!episode || !isEpisodeWatched(episode)) continue;
 
           let watchedDate: Date;
           let dateSource: 'firstWatched' | 'lastWatched' | 'airDate' | 'estimated';
 
-          if (episode.firstWatchedAt) {
-            watchedDate = new Date(episode.firstWatchedAt);
-            dateSource = 'firstWatched';
+          if (episode.firstWatchedAt && episode.lastWatchedAt) {
+            // Immer den neueren Timestamp nehmen — deckt Rewatches mit watchCount >= 1 ab
+            const first = new Date(episode.firstWatchedAt);
+            const last = new Date(episode.lastWatchedAt);
+            if (last > first) {
+              watchedDate = last;
+              dateSource = 'lastWatched';
+            } else {
+              watchedDate = first;
+              dateSource = 'firstWatched';
+            }
           } else if (episode.lastWatchedAt) {
             watchedDate = new Date(episode.lastWatchedAt);
             dateSource = 'lastWatched';
-          } else if (episode.air_date) {
-            watchedDate = new Date(episode.air_date);
+          } else if (episode.firstWatchedAt) {
+            watchedDate = new Date(episode.firstWatchedAt);
+            dateSource = 'firstWatched';
+          } else if (episode.air_date || episode.airstamp) {
+            watchedDate = getEpisodeAirDate(episode) || new Date();
             dateSource = 'airDate';
           } else {
             watchedDate = new Date();

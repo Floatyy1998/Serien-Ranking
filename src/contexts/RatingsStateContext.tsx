@@ -1,22 +1,7 @@
-import React, { createContext, useContext, useRef, ReactNode } from 'react';
-
-interface RatingsState {
-  activeTab: 'series' | 'movies';
-  sortOption: string;
-  selectedGenre: string;
-  selectedProvider: string | null;
-  showUnrated: boolean;
-}
-
-interface RatingsStateContextType {
-  getRatingsState: () => RatingsState;
-  updateRatingsState: (updates: Partial<RatingsState>) => void;
-  saveScrollPosition: () => void;
-  restoreScrollPosition: () => void;
-  scrollRef: React.RefObject<HTMLDivElement | null>;
-}
-
-const RatingsStateContext = createContext<RatingsStateContextType | null>(null);
+import type { ReactNode } from 'react';
+import { useRef } from 'react';
+import { RatingsStateContext } from './RatingsStateContextDef';
+import type { RatingsState } from './RatingsStateContextDef';
 
 const STORAGE_KEY = 'ratingsPageState';
 const SCROLL_STORAGE_KEY = 'ratingsPageScroll';
@@ -35,7 +20,7 @@ const getStoredState = (): RatingsState => {
     const stored = sessionStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      const { scrollPosition, ...state } = parsed;
+      const { _scrollPosition, ...state } = parsed;
       return { ...DEFAULT_STATE, ...state };
     }
   } catch (error) {
@@ -105,12 +90,4 @@ export const RatingsStateProvider: React.FC<{ children: ReactNode }> = ({ childr
   return (
     <RatingsStateContext.Provider value={contextValue}>{children}</RatingsStateContext.Provider>
   );
-};
-
-export const useRatingsState = () => {
-  const context = useContext(RatingsStateContext);
-  if (!context) {
-    throw new Error('useRatingsState must be used within RatingsStateProvider');
-  }
-  return context;
 };

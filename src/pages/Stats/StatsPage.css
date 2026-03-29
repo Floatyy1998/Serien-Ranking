@@ -4,8 +4,9 @@
 .stats-hero {
   margin: 0 20px 24px;
   padding: 28px;
-  border-radius: 28px;
-  backdrop-filter: blur(20px);
+  border-radius: var(--radius-2xl);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
   border: 1px solid color-mix(in srgb, var(--color-primary, #00fed7) 15%, transparent);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
@@ -125,7 +126,7 @@
 .stats-quick-card {
   text-align: center;
   padding: 12px 8px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -152,7 +153,7 @@
 .stats-actor-banner {
   margin: 0 20px 24px;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -170,7 +171,7 @@
   align-items: center;
   gap: 16px;
   position: relative;
-  z-index: 1;
+  z-index: var(--z-base);
 }
 
 .stats-actor-icon-wrap {
@@ -202,7 +203,7 @@
 
 .stats-actor-badge {
   padding: 8px 14px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   font-size: 13px;
   font-weight: 600;
 }
@@ -211,7 +212,7 @@
 .stats-section {
   margin: 0 20px 24px;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
 }
 
 .stats-section:last-child {
@@ -237,7 +238,7 @@
 .stats-time-card {
   flex: 1;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
 }
 
 .stats-time-value {
@@ -258,14 +259,14 @@
 .stats-rating-card {
   flex: 1;
   padding: 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   text-align: center;
 }
 
 .stats-rating-value {
   font-size: 28px;
   font-weight: 800;
-  color: #fbbf24;
+  color: var(--theme-accent);
 }
 
 .stats-rating-label {
@@ -344,7 +345,7 @@
 
 .stats-provider-chip {
   padding: 10px 16px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -358,14 +359,14 @@
 .stats-provider-count {
   font-size: 12px;
   padding: 2px 6px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 /* This Week */
 .stats-week {
   margin: 0 20px 120px;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
 }
 
 .stats-week-content {
@@ -377,7 +378,7 @@
 .stats-week-icon {
   width: 56px;
   height: 56px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;

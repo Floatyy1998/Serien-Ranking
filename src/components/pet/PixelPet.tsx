@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Pet, PET_COLORS } from '../../types/pet.types';
+import type { Pet } from '../../types/pet.types';
+import { PET_COLORS } from '../../types/pet.types';
 
 interface PixelPetProps {
   pet: Pet;

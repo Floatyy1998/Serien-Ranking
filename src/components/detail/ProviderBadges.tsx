@@ -1,5 +1,6 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface Provider {
   provider_id?: number;
@@ -123,6 +124,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   tmdbId,
   mediaType: _mediaType, // Reserved for future JustWatch integration
 }) => {
+  const { currentTheme } = useTheme();
   if (!providers || (Array.isArray(providers) && providers.length === 0)) return null;
 
   // Allowed German streaming providers from config
@@ -231,6 +233,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
               <img
                 src={`https://image.tmdb.org/t/p/w500${logoPath}`}
                 alt={providerName}
+                loading="lazy"
+                decoding="async"
                 style={{
                   width: '100%',
                   height: '100%',
@@ -255,8 +259,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                 fontSize: style.fontSize,
                 fontWeight: 'bold',
                 color: 'white',
-                background:
-                  'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+                background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
               }}
             >
               {providerName.substring(0, 2).toUpperCase()}

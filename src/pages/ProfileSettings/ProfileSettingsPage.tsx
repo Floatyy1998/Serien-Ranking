@@ -1,7 +1,7 @@
 import { Settings } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader } from '../../components/ui';
 import {
   EditableField,
@@ -53,7 +53,7 @@ export const ProfileSettingsPage = memo(() => {
         <div
           className="ps-bg-blob-right"
           style={{
-            background: `radial-gradient(ellipse, var(--theme-secondary-gradient-15, rgba(139, 92, 246, 0.08)) 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse, ${currentTheme.accent}14 0%, transparent 70%)`,
           }}
         />
       </div>
@@ -61,7 +61,7 @@ export const ProfileSettingsPage = memo(() => {
       {/* Header */}
       <PageHeader
         title="Profil-Einstellungen"
-        icon={<Settings style={{ fontSize: 22, color: currentTheme.primary }} />}
+        icon={<Settings style={{ fontSize: 22, color: currentTheme.accent }} />}
         actions={
           usernameEditable || displayNameEditable ? (
             <motion.button
@@ -70,7 +70,7 @@ export const ProfileSettingsPage = memo(() => {
               disabled={saving}
               className="ps-save-btn"
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 cursor: saving ? 'not-allowed' : 'pointer',
                 opacity: saving ? 0.6 : 1,
               }}

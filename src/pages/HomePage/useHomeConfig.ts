@@ -1,12 +1,13 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Default orders
 export const DEFAULT_SECTION_ORDER = [
   'main-actions',
   'quick-actions',
   'secondary-actions',
+  'recently-added',
   'countdown',
   'continue-watching',
   'rewatches',
@@ -19,13 +20,14 @@ export const DEFAULT_SECTION_ORDER = [
 ];
 export const DEFAULT_FOR_YOU_ORDER = [
   'watch-streak',
+  'taste-profile',
   'taste-match',
   'watch-journey',
   'catch-up',
   'hidden-series',
 ];
 export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
-export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'calendar', 'history', 'friends'];
+export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
 export interface HomeConfig {
@@ -41,15 +43,32 @@ export interface HomeConfig {
   hiddenSecondaryActions: string[];
 }
 
+export interface UseHomeConfigReturn extends HomeConfig {
+  visibleSections: string[];
+}
+
 function readCachedConfig(): Partial<HomeConfig> | null {
   try {
-    return JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
+    const cached = JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
+    if (!cached) return null;
+
+    // Merge missing default items into cached lists so new features appear automatically
+    const merge = (cached: string[] | undefined, defaults: string[]) => {
+      if (!cached) return undefined;
+      const missing = defaults.filter((id) => !cached.includes(id));
+      return missing.length > 0 ? [...cached, ...missing] : cached;
+    };
+
+    cached.forYouOrder = merge(cached.forYouOrder, DEFAULT_FOR_YOU_ORDER);
+    cached.sectionOrder = merge(cached.sectionOrder, DEFAULT_SECTION_ORDER);
+
+    return cached;
   } catch {
     return null;
   }
 }
 
-export function useHomeConfig(uid: string | undefined) {
+export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
   const cachedConfig = readCachedConfig();
 
   const [sectionOrder, setSectionOrder] = useState<string[]>(
@@ -81,7 +100,8 @@ export function useHomeConfig(uid: string | undefined) {
     cachedConfig?.hiddenSecondaryActions || []
   );
 
-  const applyConfigData = (data: Record<string, unknown>) => {
+  // Stable reference via useCallback to avoid useEffect re-runs
+  const applyConfigData = useCallback((data: Record<string, unknown>) => {
     const applyList = (
       key: string,
       defaults: string[],
@@ -107,7 +127,7 @@ export function useHomeConfig(uid: string | undefined) {
       DEFAULT_FOR_YOU_ORDER,
       new Set(DEFAULT_FOR_YOU_ORDER),
       setForYouOrder,
-      false
+      true
     );
     applyList(
       'hiddenForYou',
@@ -165,7 +185,7 @@ export function useHomeConfig(uid: string | undefined) {
     } catch {
       /* ignore */
     }
-  };
+  }, []); // setter-Funktionen sind stabil, daher leeres Dependency-Array
 
   // Load homeConfig from Firebase (background sync)
   useEffect(() => {
@@ -182,9 +202,13 @@ export function useHomeConfig(uid: string | undefined) {
         if (data) applyConfigData(data);
         window.setAppReady?.('homeConfig', true);
       });
-  }, [uid]);
+  }, [uid, applyConfigData]);
 
-  const visibleSections = sectionOrder.filter((id) => !hiddenSections.includes(id));
+  // Memoize derived value to avoid re-computation on unrelated renders
+  const visibleSections = useMemo(
+    () => sectionOrder.filter((id) => !hiddenSections.includes(id)),
+    [sectionOrder, hiddenSections]
+  );
 
   return {
     sectionOrder,

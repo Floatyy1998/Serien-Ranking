@@ -1,11 +1,16 @@
 import { useMemo } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
 import {
   hasActiveRewatch,
   getNextRewatchEpisode,
   getRewatchProgress,
 } from '../lib/validation/rewatch.utils';
 import { getImageUrl } from '../utils/imageUrl';
+import {
+  DEFAULT_EPISODE_RUNTIME_MINUTES,
+  getSeriesLastWatchedAt,
+  normalizeSeasons,
+} from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
 export interface RewatchItem {
@@ -29,17 +34,6 @@ export interface RewatchItem {
   lastWatchedAt: string;
 }
 
-const getSeriesLastWatchedAt = (series: Series): string => {
-  let latest = '';
-  for (const season of series.seasons || []) {
-    for (const ep of season.episodes || []) {
-      if (ep.lastWatchedAt && ep.lastWatchedAt > latest) latest = ep.lastWatchedAt;
-      if (ep.firstWatchedAt && ep.firstWatchedAt > latest) latest = ep.firstWatchedAt;
-    }
-  }
-  return latest || '1900-01-01';
-};
-
 export const useRewatchEpisodes = (): RewatchItem[] => {
   const { seriesList } = useSeriesList();
 
@@ -54,9 +48,7 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
       const nextEp = getNextRewatchEpisode(series);
       if (!nextEp) continue;
 
-      const seasonsArray: Series['seasons'] = Array.isArray(series.seasons)
-        ? series.seasons
-        : (Object.values(series.seasons) as Series['seasons']);
+      const seasonsArray = normalizeSeasons(series.seasons);
       const seasonIndex = seasonsArray.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
       if (seasonIndex === -1) continue;
 
@@ -82,8 +74,8 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
         progressTotal: progress.total,
         genre: series.genre,
         provider: series.provider,
-        episodeRuntime: ep?.runtime || series.episodeRuntime || 45,
-        lastWatchedAt: getSeriesLastWatchedAt(series),
+        episodeRuntime: ep?.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+        lastWatchedAt: series.rewatch?.lastWatchedAt || getSeriesLastWatchedAt(series),
       });
     }
 

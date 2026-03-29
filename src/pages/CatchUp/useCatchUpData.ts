@@ -5,8 +5,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { Series } from '../../types/Series';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import type { Series } from '../../types/Series';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export interface CatchUpSeries {
   series: Series;
@@ -123,33 +125,28 @@ export const useCatchUpData = () => {
       let lastWatchedDate: string | undefined;
       let foundUnwatched = false;
       let remainingMinutes = 0;
-      const seriesRuntime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
 
         season.episodes.forEach((episode, epIndex) => {
-          const airDate = episode.air_date || episode.airDate || episode.firstAired;
-          if (!airDate) return;
-          const hasAired = new Date(airDate) <= new Date();
-
-          if (hasAired) {
-            totalEpisodes++;
-            if (episode.watched) {
-              watchedEpisodes++;
-              if (episode.lastWatchedAt || episode.firstWatchedAt) {
-                const watchDate = episode.lastWatchedAt || episode.firstWatchedAt;
-                if (!lastWatchedDate || watchDate! > lastWatchedDate) {
-                  lastWatchedDate = watchDate;
-                }
+          if (!hasEpisodeAired(episode)) return;
+          totalEpisodes++;
+          if (episode.watched) {
+            watchedEpisodes++;
+            if (episode.lastWatchedAt || episode.firstWatchedAt) {
+              const watchDate = episode.lastWatchedAt ?? episode.firstWatchedAt ?? '';
+              if (!lastWatchedDate || watchDate > lastWatchedDate) {
+                lastWatchedDate = watchDate;
               }
-            } else {
-              remainingMinutes += episode.runtime || seriesRuntime;
-              if (!foundUnwatched) {
-                currentSeason = season.seasonNumber || season.season_number || 1;
-                currentEpisode = episode.episode_number || epIndex + 1;
-                foundUnwatched = true;
-              }
+            }
+          } else {
+            remainingMinutes += episode.runtime || seriesRuntime;
+            if (!foundUnwatched) {
+              currentSeason = season.seasonNumber || season.season_number || 1;
+              currentEpisode = episode.episode_number || epIndex + 1;
+              foundUnwatched = true;
             }
           }
         });

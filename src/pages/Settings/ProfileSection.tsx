@@ -5,7 +5,7 @@
 import { Check, Edit, Person, PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface ProfileSectionProps {
   photoURL: string;
@@ -66,10 +66,10 @@ export const ProfileSection = memo(
               <div
                 className="settings-avatar-placeholder"
                 style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 }}
               >
-                <Person style={{ fontSize: '40px', color: 'white' }} />
+                <Person style={{ fontSize: '40px', color: currentTheme.text.secondary }} />
               </div>
             )}
             <motion.button
@@ -79,7 +79,7 @@ export const ProfileSection = memo(
               aria-label="Profilbild hochladen"
               className="settings-avatar-upload-btn"
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 borderColor: currentTheme.background.surface,
               }}
             >
@@ -128,7 +128,7 @@ export const ProfileSection = memo(
                     disabled={saving}
                     className="settings-field-save-btn"
                     style={{
-                      background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                      background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
                     }}
                   >
                     {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
@@ -182,7 +182,7 @@ export const ProfileSection = memo(
                     disabled={saving}
                     className="settings-field-save-btn"
                     style={{
-                      background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
+                      background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
                     }}
                   >
                     {saving ? '...' : <Check style={{ fontSize: '16px' }} />}

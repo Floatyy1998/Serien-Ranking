@@ -4,7 +4,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TopProviderEntry } from '../../types/Wrapped';
+import type { TopProviderEntry } from '../../types/Wrapped';
 
 interface TopProvidersSlideProps {
   topProviders: TopProviderEntry[];

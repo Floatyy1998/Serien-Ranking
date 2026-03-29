@@ -3,9 +3,10 @@ import 'firebase/compat/database';
 import { AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { useTheme } from '../../contexts/ThemeContext';
-import { OnboardingItem, useOnboardingSearch } from './hooks/useOnboardingSearch';
+import { useAuth } from '../../AuthContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { OnboardingItem } from './hooks/useOnboardingSearch';
+import { useOnboardingSearch } from './hooks/useOnboardingSearch';
 import { AddContentStep } from './steps/AddContentStep';
 import { CompletionStep } from './steps/CompletionStep';
 import { WelcomeStep } from './steps/WelcomeStep';
@@ -166,8 +167,6 @@ export const OnboardingPage: React.FC = () => {
             return;
           }
 
-          console.log(`✓ Serie ${tmdbId} gefunden als nmr ${seriesNmr}, setze Watch-Progress...`);
-
           // Set watchlist: true only for partially watched series (not "all")
           const shouldBeOnWatchlist = selection !== 'all';
           await firebase
@@ -193,10 +192,6 @@ export const OnboardingPage: React.FC = () => {
 
           // Determine which seasons to mark as watched
           const maxSeason = selection === 'all' ? numberOfSeasons : (selection as number);
-
-          console.log(
-            `Lade ${numberOfSeasons} Staffeln für Serie ${tmdbId}, markiere bis Staffel ${maxSeason} als watched...`
-          );
 
           // Fetch episodes for each season and build the structure
           const seasons = [];
@@ -233,12 +228,7 @@ export const OnboardingPage: React.FC = () => {
           }
 
           // Write seasons to Firebase
-          console.log(
-            `Schreibe ${seasons.length} Staffeln für Serie ${tmdbId} (nmr ${seriesNmr}) nach Firebase...`
-          );
           await firebase.database().ref(`${user.uid}/serien/${seriesNmr}/seasons`).set(seasons);
-
-          console.log(`✅ Watch-Progress für Serie ${tmdbId} erfolgreich gesetzt!`);
 
           // Update progress
           completedSeries++;
@@ -256,7 +246,6 @@ export const OnboardingPage: React.FC = () => {
 
       // Wait for all series to be processed
       await Promise.all(processPromises);
-      console.log(`🎉 Alle ${totalSeries} Serien verarbeitet!`);
     },
     [user?.uid, seasonSelections]
   );
@@ -268,8 +257,6 @@ export const OnboardingPage: React.FC = () => {
     setCompletionProgress(0);
 
     try {
-      console.log('Starte Onboarding-Abschluss...');
-
       const totalItems = pendingItems.size;
       const watchProgressCount = Array.from(seasonSelections.values()).filter(
         (sel) => sel !== 'none'
@@ -279,10 +266,8 @@ export const OnboardingPage: React.FC = () => {
       let currentStep = 0;
 
       // First: Add all pending items to backend
-      console.log(`Füge ${totalItems} Items zum Backend hinzu...`);
       for (const item of pendingItems.values()) {
         try {
-          console.log(`Füge ${item.type} "${item.title}" (ID: ${item.id}) hinzu...`);
           await addToList(item);
           currentStep++;
           setCompletionProgress(Math.round((currentStep / totalSteps) * 100));
@@ -293,14 +278,12 @@ export const OnboardingPage: React.FC = () => {
         }
       }
 
-      console.log('Alle Items hinzugefügt, warte 6 Sekunden für Backend-Verarbeitung...');
       // Wait longer for backend to process ALL items and write to Firebase
       await new Promise((resolve) => setTimeout(resolve, 10000));
       currentStep++;
       setCompletionProgress(Math.round((currentStep / totalSteps) * 100));
 
       // Second: Apply watch progress to series
-      console.log(`Setze Watch-Progress für ${seasonSelections.size} Serien...`);
       await applyWatchProgress((seriesProgress) => {
         const progressFromWatchProgress = seriesProgress * watchProgressCount;
         setCompletionProgress(
@@ -309,12 +292,10 @@ export const OnboardingPage: React.FC = () => {
       });
 
       // Finally: Set onboarding complete flag
-      console.log('Setze onboardingComplete Flag...');
       setCompletionProgress(100);
       await firebase.database().ref(`users/${user.uid}/onboardingComplete`).set(true);
       setOnboardingComplete?.(true);
 
-      console.log('Onboarding erfolgreich abgeschlossen!');
       navigate('/', { replace: true });
     } catch (error) {
       console.error('Fehler beim Abschließen des Onboardings:', error);
@@ -360,7 +341,7 @@ export const OnboardingPage: React.FC = () => {
           right: 0,
           bottom: 0,
           background: `radial-gradient(ellipse at 20% 10%, ${currentTheme.primary}12 0%, transparent 50%),
-                       radial-gradient(ellipse at 80% 90%, #a855f712 0%, transparent 50%)`,
+                       radial-gradient(ellipse at 80% 90%, ${currentTheme.accent}12 0%, transparent 50%)`,
           pointerEvents: 'none',
           zIndex: 0,
         }}
@@ -387,7 +368,7 @@ export const OnboardingPage: React.FC = () => {
               borderRadius: 4,
               background:
                 s === step
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : `${currentTheme.text.muted}30`,
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
@@ -425,8 +406,12 @@ export const OnboardingPage: React.FC = () => {
               onRemove={handleRemove}
               onSeasonSelect={handleSeasonSelect}
               onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('addMovies')}
-              onSkip={() => setStep('addMovies')}
+              onNext={() => {
+                setStep('addMovies');
+              }}
+              onSkip={() => {
+                setStep('addMovies');
+              }}
             />
           )}
           {step === 'addMovies' && (
@@ -445,8 +430,12 @@ export const OnboardingPage: React.FC = () => {
               onRemove={handleRemove}
               onSeasonSelect={handleSeasonSelect}
               onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('done')}
-              onSkip={() => setStep('done')}
+              onNext={() => {
+                setStep('done');
+              }}
+              onSkip={() => {
+                setStep('done');
+              }}
             />
           )}
           {step === 'done' && (

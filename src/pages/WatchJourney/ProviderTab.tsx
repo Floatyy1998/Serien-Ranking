@@ -1,19 +1,10 @@
 import { Subscriptions } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { normalizeMonthlyData, WatchJourneyData } from '../../services/watchJourneyService';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 
 interface ProviderTabProps {
@@ -21,13 +12,24 @@ interface ProviderTabProps {
 }
 
 export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
-  // Prepare data for stacked area chart
+  const { currentTheme } = useTheme();
+  const textPrimary = currentTheme.text.primary;
+  const textSecondary = currentTheme.text.secondary;
+  const textMuted = currentTheme.text.muted;
+  const bgSurface = currentTheme.background.surface;
+
+  // Prepare data for stacked area chart (absolute hours)
   const chartData = useMemo(() => {
-    const normalized = normalizeMonthlyData(data.providerMonths, data.topProviders);
-    return normalized.map((month) => ({
-      name: month.monthName,
-      ...month.values,
-    }));
+    return data.providerMonths.map((month) => {
+      const hoursValues: Record<string, number> = {};
+      data.topProviders.forEach((provider) => {
+        hoursValues[provider] = Math.round(((month.values[provider] || 0) / 60) * 10) / 10;
+      });
+      return {
+        name: month.monthName,
+        ...hoursValues,
+      };
+    });
   }, [data]);
 
   // Prepare data for horizontal bar chart
@@ -41,7 +43,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
     return data.topProviders.map((provider) => ({
       name: provider,
       hours: Math.round((totals[provider] || 0) / 60),
-      color: data.providerColors[provider],
+      fill: data.providerColors[provider],
     }));
   }, [data]);
 
@@ -67,9 +69,9 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
   if (data.topProviders.length === 0) {
     return (
       <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <Subscriptions style={{ fontSize: 64, color: 'rgba(255,255,255,0.2)', marginBottom: 16 }} />
-        <h3 style={{ color: 'white', fontSize: 18, marginBottom: 8 }}>Keine Provider-Daten</h3>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
+        <Subscriptions style={{ fontSize: 64, color: `${textMuted}30`, marginBottom: 16 }} />
+        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Provider-Daten</h3>
+        <p style={{ color: textSecondary, fontSize: 14 }}>
           Streaming-Dienste werden beim Markieren von Episoden erfasst
         </p>
       </div>
@@ -109,7 +111,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p
             style={{
-              color: 'rgba(255,255,255,0.6)',
+              color: textMuted,
               fontSize: 12,
               fontWeight: 600,
               letterSpacing: 1,
@@ -118,7 +120,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           >
             DEIN TOP STREAMING-DIENST
           </p>
-          <h2 style={{ color: 'white', fontSize: 28, fontWeight: 800, margin: '0 0 8px' }}>
+          <h2 style={{ color: textPrimary, fontSize: 28, fontWeight: 800, margin: '0 0 8px' }}>
             {topProvider?.provider}
           </h2>
           <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
@@ -126,18 +128,14 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
               <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
                 {topProvider?.hours}
               </span>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>
-                Stunden
-              </span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Stunden</span>
             </div>
-            <div style={{ width: 1, background: 'rgba(255,255,255,0.2)' }} />
+            <div style={{ width: 1, background: `${textSecondary}40` }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
                 {topProvider?.percentage}%
               </span>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginLeft: 4 }}>
-                deiner Zeit
-              </span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>deiner Zeit</span>
             </div>
           </div>
         </div>
@@ -152,13 +150,13 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           margin: '0 20px 24px',
           padding: '20px',
           borderRadius: '20px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
         }}
       >
         <h3
           style={{
-            color: 'white',
+            color: textPrimary,
             fontSize: 16,
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
@@ -168,7 +166,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           Stunden pro Streaming-Dienst
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart
               data={barData}
               layout="vertical"
@@ -176,43 +174,43 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(255,255,255,0.05)"
+                stroke={`${textSecondary}15`}
                 horizontal={false}
               />
               <XAxis
                 type="number"
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
               />
               <YAxis
                 dataKey="name"
                 type="category"
-                tick={{ fill: 'rgba(255,255,255,0.7)', fontSize: 12 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: textSecondary, fontSize: 12 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
                 width={100}
               />
               <Tooltip
-                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                cursor={{ fill: `${textSecondary}10` }}
                 content={({ active, payload }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
                       <div
                         style={{
-                          background: 'rgba(10, 14, 26, 0.95)',
-                          border: `1px solid ${data.color}50`,
+                          background: bgSurface,
+                          border: `1px solid ${data.fill}50`,
                           borderRadius: 12,
                           padding: '12px 16px',
                           boxShadow:
                             '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
-                        <p style={{ color: data.color, fontWeight: 700, margin: 0, fontSize: 15 }}>
+                        <p style={{ color: data.fill, fontWeight: 700, margin: 0, fontSize: 15 }}>
                           {data.name}
                         </p>
                         <p
                           style={{
-                            color: 'rgba(255,255,255,0.7)',
+                            color: textSecondary,
                             margin: '4px 0 0',
                             fontSize: 13,
                           }}
@@ -230,13 +228,9 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                 radius={[0, 8, 8, 0]}
                 animationDuration={800}
                 style={{ outline: 'none' }}
-              >
-                {barData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} style={{ outline: 'none' }} />
-                ))}
-              </Bar>
+              />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 
@@ -249,13 +243,13 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           margin: '0 20px 24px',
           padding: '20px',
           borderRadius: '20px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: bgSurface,
+          border: `1px solid ${currentTheme.border.default}`,
         }}
       >
         <h3
           style={{
-            color: 'white',
+            color: textPrimary,
             fontSize: 16,
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
@@ -265,7 +259,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           Streaming-Verlauf
         </h3>
         <div style={{ width: '100%', height: 280 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 {data.topProviders.map((provider) => (
@@ -286,32 +280,32 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                   </linearGradient>
                 ))}
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
               <XAxis
                 dataKey="name"
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
               />
               <YAxis
-                tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11 }}
-                axisLine={{ stroke: 'rgba(255,255,255,0.1)' }}
-                tickFormatter={(v) => `${v}%`}
+                tick={{ fill: textSecondary, fontSize: 11 }}
+                axisLine={{ stroke: `${textSecondary}30` }}
+                tickFormatter={(v) => `${v}h`}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip unit="hours" />} />
               {data.topProviders.map((provider) => (
                 <Area
                   key={provider}
                   type="monotone"
                   dataKey={provider}
-                  stackId="1"
                   stroke={data.providerColors[provider]}
                   fill={`url(#gradient-provider-${provider.replace(/\s+/g, '-')})`}
+                  fillOpacity={0.3}
                   strokeWidth={2}
                   style={{ outline: 'none' }}
                 />
               ))}
             </AreaChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
 
         {/* Legend */}
@@ -327,7 +321,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           {providerStats.map((item) => (
             <div key={item.provider} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.color }} />
-              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>{item.provider}</span>
+              <span style={{ color: textSecondary, fontSize: 12 }}>{item.provider}</span>
             </div>
           ))}
         </div>

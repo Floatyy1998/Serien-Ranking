@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarMonth, ChevronRight } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 
 export const SeriesCountdownCard: React.FC = () => {
@@ -23,8 +23,8 @@ export const SeriesCountdownCard: React.FC = () => {
         margin: '0 20px',
         padding: '12px 14px',
         borderRadius: '14px',
-        background: `linear-gradient(135deg, ${primary}15, ${primary}05)`,
-        border: `1px solid ${primary}30`,
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
@@ -41,7 +41,7 @@ export const SeriesCountdownCard: React.FC = () => {
           width: 40,
           height: 40,
           borderRadius: '12px',
-          background: `linear-gradient(135deg, ${primary}, #a855f7)`,
+          background: `linear-gradient(135deg, ${primary}, ${currentTheme.accent || '#a855f7'})`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

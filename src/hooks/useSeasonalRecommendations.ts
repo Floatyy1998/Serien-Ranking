@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
-import { useMovieList } from '../contexts/MovieListProvider';
+import { useSeriesList } from '../contexts/SeriesListContext';
+import { useMovieList } from '../contexts/MovieListContext';
+import { mapGenreIds } from '../utils/genreMap';
+import { getImageUrl } from '../utils/imageUrl';
 
 interface SeasonConfig {
   title: string;
@@ -10,7 +12,7 @@ interface SeasonConfig {
   keywords?: string;
 }
 
-interface TrendingItem {
+export interface SeasonalItem {
   type: 'series' | 'movie';
   id: number;
   title: string;
@@ -18,14 +20,29 @@ interface TrendingItem {
   rating: number;
   voteCount: number;
   releaseDate?: string;
+  genres: string;
+  year?: string;
+}
+
+interface TMDBDiscoverItem {
+  id: number;
+  name?: string;
+  original_name?: string;
+  title?: string;
+  original_title?: string;
+  poster_path: string | null;
+  vote_average: number;
+  vote_count: number;
+  first_air_date?: string;
+  release_date?: string;
+  genre_ids?: number[];
 }
 
 function getSeasonConfig(): SeasonConfig {
   const now = new Date();
-  const month = now.getMonth(); // 0-indexed
+  const month = now.getMonth();
   const day = now.getDate();
 
-  // Valentinstag: Feb 1-14
   if (month === 1 && day <= 14) {
     return {
       title: 'Valentinstag',
@@ -34,9 +51,7 @@ function getSeasonConfig(): SeasonConfig {
       genres: '10749',
     };
   }
-
   switch (month) {
-    // Jan-Feb: Winter-Abende
     case 0:
     case 1:
       return {
@@ -45,7 +60,6 @@ function getSeasonConfig(): SeasonConfig {
         badgeGradient: 'linear-gradient(135deg, #42a5f5, #90caf9)',
         genres: '18,878',
       };
-    // Mar-May: Frühlingsgefühle
     case 2:
     case 3:
     case 4:
@@ -55,7 +69,6 @@ function getSeasonConfig(): SeasonConfig {
         badgeGradient: 'linear-gradient(135deg, #66bb6a, #aed581)',
         genres: '10749,35',
       };
-    // Jun-Aug: Sommer-Blockbuster
     case 5:
     case 6:
     case 7:
@@ -65,7 +78,6 @@ function getSeasonConfig(): SeasonConfig {
         badgeGradient: 'linear-gradient(135deg, #ff9800, #ffcc02)',
         genres: '28,12',
       };
-    // Sep: Herbst-Krimis
     case 8:
       return {
         title: 'Herbst-Krimis',
@@ -73,7 +85,6 @@ function getSeasonConfig(): SeasonConfig {
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
         genres: '9648,53',
       };
-    // Oct: Halloween
     case 9:
       return {
         title: 'Halloween & Grusel',
@@ -82,7 +93,6 @@ function getSeasonConfig(): SeasonConfig {
         genres: '27',
         keywords: '3335',
       };
-    // Nov: Herbst-Krimis
     case 10:
       return {
         title: 'Herbst-Krimis',
@@ -90,7 +100,6 @@ function getSeasonConfig(): SeasonConfig {
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
         genres: '9648,53',
       };
-    // Dec: Weihnachten
     case 11:
       return {
         title: 'Weihnachts-Highlights',
@@ -108,22 +117,55 @@ function getSeasonConfig(): SeasonConfig {
   }
 }
 
-const CACHE_KEY = 'seasonal_recommendations_v5';
+function mapDiscoverItem(item: TMDBDiscoverItem, type: 'series' | 'movie'): SeasonalItem {
+  const title =
+    type === 'series'
+      ? (item.name ?? item.original_name ?? '')
+      : (item.title ?? item.original_title ?? '');
+  const dateStr = type === 'series' ? item.first_air_date : item.release_date;
+  return {
+    type,
+    id: item.id,
+    title,
+    poster: getImageUrl(item.poster_path, 'w500'),
+    rating: item.vote_average,
+    voteCount: item.vote_count,
+    releaseDate: dateStr,
+    genres: mapGenreIds(item.genre_ids ?? []),
+    year: dateStr ? dateStr.slice(0, 4) : undefined,
+  };
+}
 
-export const useSeasonalRecommendations = () => {
+const CACHE_KEY = 'seasonal_recommendations_v6';
+
+interface UseSeasonalRecommendationsResult {
+  items: SeasonalItem[];
+  loading: boolean;
+  title: string;
+  iconColor: string;
+  badgeGradient: string;
+}
+
+export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult => {
   const { allSeriesList } = useSeriesList();
   const { movieList } = useMovieList();
-  const [rawSeries, setRawSeries] = useState<TrendingItem[]>([]);
-  const [rawMovies, setRawMovies] = useState<TrendingItem[]>([]);
+  const [rawSeries, setRawSeries] = useState<SeasonalItem[]>([]);
+  const [rawMovies, setRawMovies] = useState<SeasonalItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const config = getSeasonConfig();
+
+  const config = useMemo(() => getSeasonConfig(), []);
 
   useEffect(() => {
-    // Check session cache (stores raw data)
+    let cancelled = false;
+
     const cached = sessionStorage.getItem(CACHE_KEY);
     if (cached) {
       try {
-        const parsed = JSON.parse(cached);
+        const parsed = JSON.parse(cached) as {
+          title: string;
+          series: SeasonalItem[];
+          movies: SeasonalItem[];
+        };
         if (parsed.title === config.title && parsed.series?.length > 0) {
           setRawSeries(parsed.series);
           setRawMovies(parsed.movies);
@@ -131,7 +173,7 @@ export const useSeasonalRecommendations = () => {
           return;
         }
       } catch {
-        // ignore
+        // Ungültiger Cache – ignorieren
       }
     }
 
@@ -152,78 +194,43 @@ export const useSeasonalRecommendations = () => {
         ]);
 
         const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
+        if (cancelled) return;
 
-        const series: TrendingItem[] = (tvData.results || []).map(
-          (item: {
-            id: number;
-            name?: string;
-            original_name?: string;
-            poster_path: string | null;
-            vote_average: number;
-            vote_count: number;
-            first_air_date?: string;
-          }) => ({
-            type: 'series' as const,
-            id: item.id,
-            title: item.name || item.original_name || '',
-            poster: item.poster_path
-              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-              : '/placeholder.jpg',
-            rating: item.vote_average,
-            voteCount: item.vote_count,
-            releaseDate: item.first_air_date,
-          })
+        const series: SeasonalItem[] = (tvData.results ?? []).map((item: TMDBDiscoverItem) =>
+          mapDiscoverItem(item, 'series')
         );
-
-        const movies: TrendingItem[] = (movieData.results || []).map(
-          (item: {
-            id: number;
-            title?: string;
-            original_title?: string;
-            poster_path: string | null;
-            vote_average: number;
-            vote_count: number;
-            release_date?: string;
-          }) => ({
-            type: 'movie' as const,
-            id: item.id,
-            title: item.title || item.original_title || '',
-            poster: item.poster_path
-              ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-              : '/placeholder.jpg',
-            rating: item.vote_average,
-            voteCount: item.vote_count,
-            releaseDate: item.release_date,
-          })
+        const movies: SeasonalItem[] = (movieData.results ?? []).map((item: TMDBDiscoverItem) =>
+          mapDiscoverItem(item, 'movie')
         );
 
         setRawSeries(series);
         setRawMovies(movies);
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ title: config.title, series, movies }));
       } catch {
+        if (cancelled) return;
         setRawSeries([]);
         setRawMovies([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchSeasonal();
-  }, [config.title, config.genres, config.keywords]);
+    return () => {
+      cancelled = true;
+    };
+  }, [config]);
 
   const items = useMemo(() => {
     const seriesIds = new Set(allSeriesList.map((s) => s.id));
     const movieIds = new Set(movieList.map((m) => m.id));
-
     const filteredSeries = rawSeries.filter((i) => !seriesIds.has(i.id));
     const filteredMovies = rawMovies.filter((i) => !movieIds.has(i.id));
-
     const targetEach = 10;
     const sCount = Math.min(filteredSeries.length, targetEach);
     const mCount = Math.min(filteredMovies.length, targetEach);
     const seriesFinal = sCount + Math.min(filteredSeries.length - sCount, targetEach - mCount);
     const movieFinal = mCount + Math.min(filteredMovies.length - mCount, targetEach - sCount);
-
     const combined = [
       ...filteredSeries.slice(0, seriesFinal),
       ...filteredMovies.slice(0, movieFinal),

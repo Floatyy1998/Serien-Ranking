@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
-
-const ACCENT = '#a855f7';
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -34,13 +32,18 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
     >
       {/* Poster */}
       {item.posterUrl ? (
-        <img src={item.posterUrl} alt={`Poster von ${item.title}`} className="cd-item-poster" />
+        <img
+          src={item.posterUrl}
+          alt={`Poster von ${item.title}`}
+          decoding="async"
+          className="cd-item-poster"
+        />
       ) : (
         <div
           className="cd-item-poster-placeholder"
           style={{ background: `${currentTheme.primary}15` }}
         >
-          <CalendarMonth style={{ fontSize: 20, color: currentTheme.primary, opacity: 0.4 }} />
+          <CalendarMonth style={{ fontSize: 20, color: currentTheme.text.muted }} />
         </div>
       )}
 
@@ -50,19 +53,20 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
           {item.title}
         </h3>
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
-          Staffel {item.seasonNumber} &middot; {formatDate(item.nextDate)}
+          {item.type === 'mid-season-return' ? 'Rückkehr' : 'Staffel ' + item.seasonNumber} &middot;{' '}
+          {formatDate(item.nextDate)}
         </p>
       </div>
 
       {/* Day count */}
       <div className="cd-item-days">
         {item.daysUntil === 0 ? (
-          <span className="cd-item-days-today" style={{ color: ACCENT }}>
+          <span className="cd-item-days-today" style={{ color: currentTheme.accent }}>
             Heute
           </span>
         ) : (
           <>
-            <span className="cd-item-days-number" style={{ color: ACCENT }}>
+            <span className="cd-item-days-number" style={{ color: currentTheme.accent }}>
               {item.daysUntil}
             </span>
             <span className="cd-item-days-label" style={{ color: currentTheme.text.muted }}>

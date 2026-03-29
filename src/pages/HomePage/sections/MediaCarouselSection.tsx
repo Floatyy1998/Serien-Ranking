@@ -9,7 +9,8 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 
 interface MediaItem {
   id: number;
@@ -19,6 +20,8 @@ interface MediaItem {
   rating?: number;
   voteCount?: number;
   releaseDate?: string;
+  genres?: string;
+  year?: string;
 }
 
 interface MediaCarouselSectionProps {
@@ -41,8 +44,8 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 }: MediaCarouselSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const isMobile = window.innerWidth < 768;
-  const cardWidth = isMobile ? '125px' : '215px';
+  const { isMobile } = useDeviceType();
+  const cardWidth = isMobile ? '155px' : '240px';
 
   if (items.length === 0) return null;
 
@@ -55,12 +58,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
       <Star />
     );
 
-  const sectionIconColor =
-    variant === 'seasonal'
-      ? iconColor || currentTheme.primary
-      : variant === 'trending'
-        ? currentTheme.status.error
-        : currentTheme.status.warning;
+  const sectionIconColor = iconColor || currentTheme.accent;
 
   return (
     <section style={{ marginBottom: '32px' }}>
@@ -72,7 +70,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
       />
       <HorizontalScrollContainer gap={14} style={{ padding: '0 20px' }}>
         {items.map((item, index) => {
-          // Trending Top 10 style — cinematic poster with bold gradient number
+          // Trending — Disney+ inspired cinematic cards
           if (variant === 'trending') {
             return (
               <motion.div
@@ -85,15 +83,13 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                   minWidth: cardWidth,
                 }}
               >
-                {/* Poster wrapper with overlay */}
                 <div
                   style={{
                     position: 'relative',
-                    marginBottom: '6px',
-                    borderRadius: '12px',
-                    overflow: 'hidden',
+                    borderRadius: '14px',
                     width: cardWidth,
                     aspectRatio: '2/3',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                   }}
                 >
                   <img
@@ -101,14 +97,87 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     alt={item.title}
                     decoding="async"
                     style={{
+                      position: 'absolute',
+                      inset: 0,
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
                       display: 'block',
+                      borderRadius: '14px',
                     }}
                   />
 
-                  {/* Overlay layer: vignette + number + badge */}
+                  {/* Corner cutout with liquid glass rank number */}
+                  {(() => {
+                    const isDouble = index + 1 >= 10;
+                    const size = isMobile ? (isDouble ? 96 : 76) : isDouble ? 135 : 110;
+                    return (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: size,
+                          height: size,
+                          zIndex: 2,
+                        }}
+                      >
+                        <svg
+                          width={size}
+                          height={size}
+                          viewBox={`0 0 ${size} ${size}`}
+                          style={{ position: 'absolute', top: 0, left: 0 }}
+                        >
+                          <defs>
+                            <linearGradient
+                              id={`corner-grad-${index}`}
+                              x1="0%"
+                              y1="0%"
+                              x2="100%"
+                              y2="100%"
+                            >
+                              <stop offset="0%" stopColor={currentTheme.primary} />
+                              <stop
+                                offset="100%"
+                                stopColor={currentTheme.primaryDark || currentTheme.primary}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <path
+                            d={`M14,0 L${size},0 Q${size * 0.38},${size * 0.38} 0,${size} L0,14 Q0,0 14,0 Z`}
+                            fill={`url(#corner-grad-${index})`}
+                          />
+                        </svg>
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '25%',
+                            left: '25%',
+                            transform: 'translate(-50%, -50%)',
+                            zIndex: 1,
+                            fontSize: isMobile ? '34px' : '48px',
+                            fontWeight: 900,
+                            fontFamily: 'var(--font-display)',
+                            lineHeight: 1,
+                            color: 'rgba(255,255,255,0.75)',
+                            userSelect: 'none',
+                            letterSpacing: '-2px',
+                            textShadow: `
+                              0 1px 0 rgba(255,255,255,0.3),
+                              0 2px 0 rgba(0,80,60,0.4),
+                              0 3px 0 rgba(0,70,50,0.3),
+                              0 4px 0 rgba(0,60,40,0.2),
+                              0 5px 10px rgba(0,0,0,0.35)
+                            `,
+                          }}
+                        >
+                          {index + 1}
+                        </span>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Full overlay */}
                   <div
                     style={{
                       position: 'absolute',
@@ -118,130 +187,152 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                       flexDirection: 'column',
                       justifyContent: 'space-between',
                       pointerEvents: 'none',
+                      borderRadius: '14px',
+                      overflow: 'hidden',
                     }}
                   >
-                    {/* Top: type badge */}
-                    <div style={{ padding: '6px' }}>
+                    {/* Top-right: type badge */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'flex-end',
+                        padding: isMobile ? '6px 8px' : '8px 10px',
+                      }}
+                    >
                       <div
                         style={{
-                          background:
-                            item.type === 'movie'
-                              ? 'rgba(255, 193, 7, 0.85)'
-                              : `${currentTheme.primary}D9`,
-                          color: 'white',
-                          borderRadius: '6px',
-                          padding: '2px 6px',
-                          fontSize: '11px',
-                          fontWeight: 600,
+                          background: 'rgba(0,0,0,0.55)',
+                          backdropFilter: 'blur(12px)',
+                          WebkitBackdropFilter: 'blur(12px)',
+                          borderRadius: '8px',
+                          padding: isMobile ? '3px 7px' : '4px 10px',
+                          fontSize: isMobile ? '10px' : '12px',
+                          fontWeight: 700,
                           display: 'inline-flex',
                           alignItems: 'center',
-                          gap: '2px',
-                          backdropFilter: 'blur(10px)',
-                          WebkitBackdropFilter: 'blur(10px)',
+                          gap: '3px',
+                          color:
+                            item.type === 'movie' ? 'rgba(255, 193, 7, 1)' : currentTheme.primary,
+                          border: `1px solid ${
+                            item.type === 'movie'
+                              ? 'rgba(255, 193, 7, 0.3)'
+                              : `${currentTheme.primary}50`
+                          }`,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
                           pointerEvents: 'auto',
                         }}
                       >
                         {item.type === 'movie' ? (
                           <>
-                            <MovieIcon style={{ fontSize: '11px' }} />
+                            <MovieIcon style={{ fontSize: isMobile ? '10px' : '12px' }} />
                             Film
                           </>
                         ) : (
                           <>
-                            <Tv style={{ fontSize: '11px' }} />
+                            <Tv style={{ fontSize: isMobile ? '10px' : '12px' }} />
                             Serie
                           </>
                         )}
                       </div>
                     </div>
 
-                    {/* Bottom: vignette + number */}
+                    {/* Bottom: gradient + title + meta */}
                     <div
                       style={{
                         background:
-                          'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
-                        padding: '0 6px 4px',
+                          'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+                        padding: isMobile ? '32px 10px 10px' : '48px 14px 12px',
                         display: 'flex',
-                        alignItems: 'flex-end',
-                        minHeight: '55%',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        minHeight: '40%',
+                        justifyContent: 'flex-end',
                       }}
                     >
-                      <span
+                      <h3
                         style={{
-                          fontSize: isMobile ? '48px' : '72px',
-                          fontWeight: 900,
-                          fontFamily: 'var(--font-display)',
-                          lineHeight: 1,
-                          background: `linear-gradient(180deg, #ffffff 20%, ${currentTheme.primary}90 100%)`,
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                          filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.8))',
-                          userSelect: 'none',
-                          letterSpacing: '-2px',
+                          fontSize: isMobile ? '15px' : '18px',
+                          fontWeight: 700,
+                          margin: 0,
+                          color: '#fff',
+                          lineHeight: 1.2,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          textShadow: '0 2px 8px rgba(0,0,0,0.6)',
                         }}
                       >
-                        {index + 1}
-                      </span>
+                        {item.title}
+                      </h3>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          fontSize: isMobile ? '11px' : '12px',
+                          color: 'rgba(255,255,255,0.6)',
+                          fontWeight: 500,
+                        }}
+                      >
+                        {item.rating != null && (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                              color: currentTheme.status.warning,
+                            }}
+                          >
+                            <Star style={{ fontSize: isMobile ? '11px' : '12px' }} />
+                            {item.rating.toFixed(1)}
+                          </span>
+                        )}
+                        {item.rating != null && item.year && (
+                          <span style={{ opacity: 0.4 }}>&bull;</span>
+                        )}
+                        {item.year && <span>{item.year}</span>}
+                        {item.year && item.genres && <span style={{ opacity: 0.4 }}>&bull;</span>}
+                        {item.genres && (
+                          <span
+                            style={{
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {item.genres}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Title */}
-                <h3
-                  style={{
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    margin: 0,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    width: cardWidth,
-                  }}
-                >
-                  {item.title}
-                </h3>
-                {/* Rating */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '13px',
-                    color: currentTheme.text.muted,
-                    marginTop: '2px',
-                  }}
-                >
-                  <Star style={{ fontSize: '13px', color: '#ffd43b' }} />
-                  <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
                 </div>
               </motion.div>
             );
           }
 
-          // Standard poster cards (seasonal + top-rated)
+          // Cinematic poster cards (seasonal + top-rated)
           return (
             <motion.div
               key={`${variant}-${item.type}-${item.id}`}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => navigate(`/${item.type}/${item.id}`)}
               style={{
                 flexShrink: 0,
-                flexGrow: 0,
                 cursor: 'pointer',
-                width: cardWidth,
-                maxWidth: cardWidth,
+                minWidth: cardWidth,
               }}
             >
-              {/* Poster wrapper with overlay */}
               <div
                 style={{
                   position: 'relative',
-                  marginBottom: '6px',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  width: '100%',
+                  borderRadius: '14px',
+                  width: cardWidth,
                   aspectRatio: '2/3',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
                 }}
               >
                 <img
@@ -249,14 +340,17 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                   alt={item.title}
                   decoding="async"
                   style={{
+                    position: 'absolute',
+                    inset: 0,
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                     display: 'block',
+                    borderRadius: '14px',
                   }}
                 />
 
-                {/* Overlay layer for badges */}
+                {/* Full overlay */}
                 <div
                   style={{
                     position: 'absolute',
@@ -265,128 +359,182 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    padding: '4px',
                     pointerEvents: 'none',
+                    borderRadius: '14px',
+                    overflow: 'hidden',
                   }}
                 >
-                  {/* Top row */}
+                  {/* Top row: left badge + right type badge */}
                   <div
                     style={{
                       display: 'flex',
-                      justifyContent: variant === 'top-rated' ? 'flex-end' : 'flex-start',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      padding: isMobile ? '6px 8px' : '8px 10px',
+                      gap: '4px',
                     }}
                   >
-                    {variant === 'seasonal' && (
-                      <div
-                        style={{
-                          background: badgeGradient,
-                          color: 'white',
-                          borderRadius: '6px',
-                          padding: '2px 6px',
-                          fontSize: isMobile ? '9px' : '11px',
-                          fontWeight: 600,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          maxWidth: '100%',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          pointerEvents: 'auto',
-                        }}
-                      >
-                        <AutoAwesome
-                          style={{ fontSize: isMobile ? '9px' : '11px', flexShrink: 0 }}
-                        />
-                        {title}
-                      </div>
-                    )}
-                    {variant === 'top-rated' && item.rating != null && (
-                      <div
-                        style={{
-                          background: 'rgba(10, 14, 26, 0.75)',
-                          backdropFilter: 'blur(8px)',
-                          borderRadius: '8px',
-                          padding: '4px 6px',
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          color: 'white',
-                          pointerEvents: 'auto',
-                        }}
-                      >
-                        <Star style={{ fontSize: '14px', color: currentTheme.status.warning }} />
-                        {item.rating.toFixed(1)}
-                      </div>
-                    )}
+                    {/* Left: seasonal badge or top-rated rank */}
+                    <div style={{ minWidth: 0, flex: '1 1 auto' }}>
+                      {variant === 'seasonal' && (
+                        <div
+                          style={{
+                            background: badgeGradient,
+                            color: currentTheme.text.secondary,
+                            borderRadius: '8px',
+                            padding: isMobile ? '3px 7px' : '4px 10px',
+                            fontSize: isMobile ? '10px' : '12px',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            pointerEvents: 'auto',
+                          }}
+                        >
+                          <AutoAwesome
+                            style={{
+                              fontSize: isMobile ? '10px' : '12px',
+                              flexShrink: 0,
+                            }}
+                          />
+                          {title}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right: type badge */}
+                    <div
+                      style={{
+                        background: 'rgba(0,0,0,0.55)',
+                        backdropFilter: 'blur(12px)',
+                        WebkitBackdropFilter: 'blur(12px)',
+                        borderRadius: '8px',
+                        padding: isMobile ? '3px 7px' : '4px 10px',
+                        fontSize: isMobile ? '10px' : '12px',
+                        fontWeight: 700,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        flexShrink: 0,
+                        color:
+                          item.type === 'movie' ? 'rgba(255, 193, 7, 1)' : currentTheme.primary,
+                        border: `1px solid ${
+                          item.type === 'movie'
+                            ? 'rgba(255, 193, 7, 0.3)'
+                            : `${currentTheme.primary}50`
+                        }`,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        pointerEvents: 'auto',
+                      }}
+                    >
+                      {item.type === 'movie' ? (
+                        <>
+                          <MovieIcon
+                            style={{
+                              fontSize: isMobile ? '10px' : '12px',
+                            }}
+                          />
+                          Film
+                        </>
+                      ) : (
+                        <>
+                          <Tv
+                            style={{
+                              fontSize: isMobile ? '10px' : '12px',
+                            }}
+                          />
+                          Serie
+                        </>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Bottom row */}
-                  <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                    {variant === 'seasonal' && (
-                      <div
-                        style={{
-                          background:
-                            item.type === 'movie'
-                              ? 'rgba(255, 193, 7, 0.9)'
-                              : `${currentTheme.primary}E6`,
-                          color: 'white',
-                          borderRadius: '6px',
-                          padding: '2px 6px',
-                          fontSize: '11px',
-                          fontWeight: 600,
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '2px',
-                          backdropFilter: 'blur(10px)',
-                          pointerEvents: 'auto',
-                        }}
-                      >
-                        {item.type === 'movie' ? (
-                          <>
-                            <MovieIcon style={{ fontSize: '11px' }} />
-                            Film
-                          </>
-                        ) : (
-                          <>
-                            <Tv style={{ fontSize: '11px' }} />
-                            Serie
-                          </>
-                        )}
-                      </div>
-                    )}
+                  {/* Bottom: gradient + title + rating */}
+                  <div
+                    style={{
+                      background:
+                        'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 45%, transparent 100%)',
+                      padding: isMobile ? '32px 10px 10px' : '48px 14px 12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                      minHeight: '40%',
+                      justifyContent: 'flex-end',
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: isMobile ? '15px' : '18px',
+                        fontWeight: 700,
+                        margin: 0,
+                        color: '#fff',
+                        lineHeight: 1.2,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: isMobile ? '11px' : '12px',
+                        color: 'rgba(255,255,255,0.6)',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {item.rating != null && (
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                            color: currentTheme.status.warning,
+                          }}
+                        >
+                          <Star
+                            style={{
+                              fontSize: isMobile ? '11px' : '12px',
+                            }}
+                          />
+                          {item.rating.toFixed(1)}
+                        </span>
+                      )}
+                      {item.rating != null && (item.year || item.releaseDate) && (
+                        <span style={{ opacity: 0.4 }}>&bull;</span>
+                      )}
+                      {(item.year || item.releaseDate) && (
+                        <span>{item.year || item.releaseDate?.slice(0, 4)}</span>
+                      )}
+                      {(item.year || item.releaseDate) && item.genres && (
+                        <span style={{ opacity: 0.4 }}>&bull;</span>
+                      )}
+                      {item.genres && (
+                        <span
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {item.genres}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-              <h3
-                style={{
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  margin: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.title}
-              </h3>
-              {variant !== 'top-rated' && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    fontSize: '13px',
-                    color: currentTheme.text.muted,
-                    marginTop: '2px',
-                  }}
-                >
-                  <Star style={{ fontSize: '13px', color: '#ffd43b' }} />
-                  <span>{item.rating ? item.rating.toFixed(1) : 'N/A'}</span>
-                </div>
-              )}
             </motion.div>
           );
         })}

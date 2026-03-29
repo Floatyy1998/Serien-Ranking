@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { WatchJourneyData, MultiYearTrendsData } from '../../services/watchJourneyService';
+import type { WatchJourneyData, MultiYearTrendsData } from '../../services/watchJourneyService';
 import { ActivityTab } from './ActivityTab';
 import { GenreTab } from './GenreTab';
 import { HeatmapTab } from './HeatmapTab';
@@ -7,7 +7,7 @@ import { InsightsTab } from './InsightsTab';
 import { ProviderTab } from './ProviderTab';
 import { SerienTab } from './SerienTab';
 import { TrendsTab } from './TrendsTab';
-import { TabType } from './types';
+import type { TabType } from './types';
 
 interface WatchJourneyTabContentProps {
   activeTab: TabType;

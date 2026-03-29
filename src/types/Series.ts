@@ -45,10 +45,11 @@ export interface Series {
       watchCount?: number;
       firstWatchedAt?: string;
       lastWatchedAt?: string;
-      runtime?: number; // Episodenlänge in Minuten (von TVDB)
+      runtime?: number;
       episode_number?: number; // TMDB format
       airDate?: string; // Alternative date format
       firstAired?: string; // Another alternative date format
+      airstamp?: string; // ISO 8601 UTC timestamp from TVMaze
     }[];
   }[];
   title: string;
@@ -62,6 +63,7 @@ export interface Series {
     active: boolean;
     round: number;
     startedAt?: string;
+    lastWatchedAt?: string;
   };
   release_date: string;
   media_type?: string;

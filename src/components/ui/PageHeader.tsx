@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { BackButton } from './BackButton';
 import { GradientText } from './GradientText';
@@ -13,6 +13,7 @@ interface PageHeaderProps {
   icon?: React.ReactNode;
   actions?: React.ReactNode;
   sticky?: boolean;
+  showBack?: boolean;
   style?: React.CSSProperties;
 }
 
@@ -24,6 +25,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   icon,
   actions,
   sticky = true,
+  showBack = true,
   style,
 }) => {
   const { currentTheme } = useTheme();
@@ -39,10 +41,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           ? {
               position: 'sticky',
               top: 0,
-              zIndex: 100,
+              zIndex: 'var(--z-sticky)' as string,
               background: `${currentTheme.background.default}e8`,
-              backdropFilter: 'blur(28px) saturate(1.4)',
-              WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+              backdropFilter: 'blur(24px) saturate(1.4)',
+              WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
               borderBottom: 'none',
             }
           : {}),
@@ -75,7 +77,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           gap: '16px',
         }}
       >
-        <BackButton />
+        {showBack && <BackButton />}
         <div style={{ flex: 1 }}>
           <GradientText
             as="h1"

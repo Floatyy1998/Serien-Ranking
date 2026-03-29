@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
 
 interface RatingsCardProps {
@@ -26,6 +27,7 @@ interface RatingBadge {
 
 export const RatingsCard = memo<RatingsCardProps>(
   ({ series, localSeries, tmdbRating, imdbRating, seriesId, isMobile, noMargin }) => {
+    const { currentTheme } = useTheme();
     const tmdbValue = (
       tmdbRating?.vote_average ||
       series?.vote_average ||
@@ -56,7 +58,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         key: 'imdb',
         label: 'IMDb',
         labelBg: '#F5C518',
-        labelColor: '#000',
+        labelColor: currentTheme.background.default,
         pillBg: 'rgba(245, 197, 24, 0.15)',
         pillBorder: 'rgba(245, 197, 24, 0.3)',
         value: `${imdbRating?.rating?.toFixed(1) || '0.0'}/10`,
@@ -68,7 +70,7 @@ export const RatingsCard = memo<RatingsCardProps>(
 
     return (
       <div
-        className="ratings-card"
+        className="detail-ratings-card"
         style={{
           gap: isMobile ? '8px' : '12px',
           marginBottom: noMargin ? 0 : isMobile ? '12px' : '12px',
@@ -80,7 +82,7 @@ export const RatingsCard = memo<RatingsCardProps>(
             href={badge.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="ratings-card__badge"
+            className="detail-ratings-card__badge"
             style={{
               padding: isMobile ? '4px 8px' : '4px 10px',
               background: badge.pillBg,
@@ -91,7 +93,7 @@ export const RatingsCard = memo<RatingsCardProps>(
             }}
           >
             <span
-              className="ratings-card__label"
+              className="detail-ratings-card__label"
               style={{ background: badge.labelBg, color: badge.labelColor }}
             >
               {badge.label}

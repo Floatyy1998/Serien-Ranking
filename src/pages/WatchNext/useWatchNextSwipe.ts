@@ -1,11 +1,14 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useState } from 'react';
-import { PanInfo } from 'framer-motion';
-import { Series } from '../../types/Series';
+import type { PanInfo } from 'framer-motion';
+import type { Series } from '../../types/Series';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
-import { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import { trackEpisodeWatched } from '../../firebase/analytics';
+import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { showToast, showUndoToast } from '../../lib/toast';
 
 interface UseWatchNextSwipeOptions {
   user: { uid: string } | null;
@@ -69,97 +72,6 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
-    // Mark episode as watched in Firebase
-    if (user) {
-      const series = seriesList.find((s) => s.id === episode.seriesId);
-      if (!series) return;
-
-      try {
-        const watchedRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watched`
-          );
-        await watchedRef.set(true);
-
-        // Handle rewatch: increment watchCount
-        if (episode.isRewatch) {
-          const watchCountRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-            );
-          const newCount = (episode.currentWatchCount || 0) + 1;
-          await watchCountRef.set(newCount);
-
-          // Update lastWatchedAt for rewatches
-          const lastWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
-            );
-          await lastWatchedRef.set(new Date().toISOString());
-
-          // Badge-System for Rewatch
-          const { updateEpisodeCounters } =
-            await import('../../features/badges/minimalActivityLogger');
-          await updateEpisodeCounters(user.uid, true, episode.airDate);
-        } else {
-          // Update firstWatchedAt if not set
-          const firstWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/firstWatchedAt`
-            );
-          const snapshot = await firstWatchedRef.once('value');
-          if (!snapshot.val()) {
-            await firstWatchedRef.set(new Date().toISOString());
-          }
-
-          // Always update lastWatchedAt
-          const lastWatchedRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
-            );
-          await lastWatchedRef.set(new Date().toISOString());
-
-          // Pet XP with genre bonus
-          await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
-
-          // Also update watchCount
-          const watchCountRef = firebase
-            .database()
-            .ref(
-              `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-            );
-          const watchCountSnapshot = await watchCountRef.once('value');
-          const currentCount = watchCountSnapshot.val() || 0;
-          await watchCountRef.set(currentCount + 1);
-
-          // Badge-System for normal episode
-          const { updateEpisodeCounters } =
-            await import('../../features/badges/minimalActivityLogger');
-          await updateEpisodeCounters(user.uid, false, episode.airDate);
-        }
-
-        // Wrapped 2026: Episode-Watch logging
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title || series.name || 'Unbekannte Serie',
-          episode.seasonIndex + 1,
-          episode.episodeIndex + 1,
-          episode.runtime || series.episodeRuntime || 45,
-          episode.isRewatch || false,
-          series.genre?.genres,
-          series.provider?.provider?.map((p) => p.name)
-        );
-      } catch (error) {
-        console.error('Failed to mark episode as watched:', error);
-      }
-    }
-
     // After animation, hide the episode
     setTimeout(() => {
       setHiddenEpisodes((prev) => new Set(prev).add(episodeKey));
@@ -169,6 +81,114 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
         return newSet;
       });
     }, 300);
+
+    if (!user) return;
+    const series = seriesList.find((s) => s.id === episode.seriesId);
+    if (!series) return;
+
+    const basePath = `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
+    const db = firebase.database();
+    const uid = user.uid;
+    const label = `S${episode.seasonIndex + 1}E${episode.episodeIndex + 1}`;
+    const nowIso = new Date().toISOString();
+
+    // Snapshot vorher lesen
+    try {
+      const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
+        db.ref(`${basePath}/watchCount`).once('value'),
+        db.ref(`${basePath}/firstWatchedAt`).once('value'),
+        db.ref(`${basePath}/lastWatchedAt`).once('value'),
+        db.ref(`${basePath}/watched`).once('value'),
+      ]);
+
+      const prevCount: number = watchCountSnap.val() || 0;
+      const prevFirstWatchedAt: string | null = firstSnap.val() || null;
+      const prevLastWatchedAt: string | null = lastSnap.val() || null;
+      const prevWatched: boolean = !!watchedSnap.val();
+
+      // Sofort: nur Episode-Daten in Firebase schreiben (damit nächste Episode erscheint)
+      await db.ref(`${basePath}/watched`).set(true);
+      await db.ref(`${basePath}/watchCount`).set(prevCount + 1);
+      await db.ref(`${basePath}/lastWatchedAt`).set(nowIso);
+      if (!episode.isRewatch && !prevFirstWatchedAt) {
+        await db.ref(`${basePath}/firstWatchedAt`).set(nowIso);
+      }
+
+      // Undo-Toast mit verzögerten Side-Effects
+      showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
+        onUndo: async () => {
+          setHiddenEpisodes((prev) => {
+            const s = new Set(prev);
+            s.delete(episodeKey);
+            return s;
+          });
+          try {
+            await db.ref(`${basePath}/watched`).set(prevWatched);
+            await db.ref(`${basePath}/watchCount`).set(prevCount);
+            if (prevFirstWatchedAt) {
+              await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+            } else {
+              await db.ref(`${basePath}/firstWatchedAt`).remove();
+            }
+            if (prevLastWatchedAt) {
+              await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
+            } else {
+              await db.ref(`${basePath}/lastWatchedAt`).remove();
+            }
+          } catch {
+            showToast('Undo fehlgeschlagen', 2000, 'error');
+          }
+        },
+        onCommit: async () => {
+          // Side-Effects erst nach Ablauf des Undo-Fensters
+          await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
+          const { updateEpisodeCounters } =
+            await import('../../features/badges/minimalActivityLogger');
+          await updateEpisodeCounters(uid, episode.isRewatch || false, episode.airDate);
+
+          trackEpisodeWatched(
+            series.title || series.name || 'Unbekannte Serie',
+            episode.seasonIndex + 1,
+            episode.episodeIndex + 1,
+            {
+              tmdbId: series.id,
+              genres: series.genre?.genres,
+              runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: episode.isRewatch || false,
+              source: 'watch_next_swipe',
+            }
+          );
+
+          WatchActivityService.logEpisodeWatch(
+            uid,
+            series.id,
+            series.title || series.name || 'Unbekannte Serie',
+            episode.seasonIndex + 1,
+            episode.episodeIndex + 1,
+            episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+            episode.isRewatch || false,
+            series.genre?.genres,
+            series.provider?.provider?.map((p) => p.name)
+          );
+        },
+      });
+    } catch (error) {
+      console.error('Failed to mark episode as watched:', error);
+      showToast('Fehler beim Speichern', 3000, 'error');
+    }
+  };
+
+  const handleSwipeCleanup = (episodeKey: string) => {
+    setSwipingEpisodes((prev) => {
+      const s = new Set(prev);
+      s.delete(episodeKey);
+      return s;
+    });
+    setDragOffsets((prev) => {
+      const o = { ...prev };
+      delete o[episodeKey];
+      return o;
+    });
   };
 
   return {
@@ -181,6 +201,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     handleSwipeDragStart,
     handleSwipeDrag,
     handleSwipeDragEnd,
+    handleSwipeCleanup,
     handleEpisodeComplete,
   };
 };

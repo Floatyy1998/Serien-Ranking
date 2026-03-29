@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { QuickFilter, ScrollToTopButton } from '../../components/ui';
 import { RatingItemCard } from './RatingItemCard';
 import { RatingsEmptyState } from './RatingsEmptyState';
@@ -72,7 +72,7 @@ export const RatingsPage: React.FC = () => {
         className="ratings-decorative-bg"
         style={{
           background: `
-            radial-gradient(ellipse 80% 50% at 50% -20%, #fbbf2430, transparent),
+            radial-gradient(ellipse 80% 50% at 50% -20%, ${currentTheme.accent}30, transparent),
             radial-gradient(ellipse 60% 40% at 80% 10%, ${currentTheme.primary}20, transparent)
           `,
         }}
@@ -93,7 +93,11 @@ export const RatingsPage: React.FC = () => {
         {itemsToRender.length > 0 ? (
           <div className="ratings-grid" onClick={handleGridClick}>
             {itemsToRender.map((item) => (
-              <RatingItemCard key={item.id} item={item} theme={currentTheme} />
+              <RatingItemCard
+                key={`${item.isMovie ? 'm' : 's'}-${item.id}`}
+                item={item}
+                theme={currentTheme}
+              />
             ))}
             <div className="ratings-spacer" />
           </div>

@@ -1,7 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { useSeriesList } from '../contexts/OptimizedSeriesListProvider';
+import { useMemo } from 'react';
+import { useSeriesList } from '../contexts/SeriesListContext';
+import type { Series } from '../types/Series';
+import { useWebWorker } from './useWebWorker';
 
-interface TodayEpisode {
+/** Episode die heute ausgestrahlt wird oder ausgestrahlt wurde und noch nicht gesehen wurde */
+export interface TodayEpisode {
   seriesId: string;
   seriesNmr: string;
   seriesTitle: string;
@@ -14,43 +17,52 @@ interface TodayEpisode {
   episodeName: string;
   watched: boolean;
   runtime: number;
+  seriesGenre?: string[];
+  seriesProviders?: string[];
+  providerLogo?: string;
+  providerName?: string;
+  chipType?: 'season-start' | 'mid-season-return' | 'season-finale' | 'season-break';
 }
+
+interface EpisodesWorkerInput {
+  seriesList: Series[];
+}
+
+const INITIAL_EPISODES: TodayEpisode[] = [];
+
+const createEpisodesWorker = () =>
+  new Worker(new URL('../workers/stats.worker.ts', import.meta.url), { type: 'module' });
 
 export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   const { seriesList } = useSeriesList();
-  const workerRef = useRef<Worker | null>(null);
-  const [episodes, setEpisodes] = useState<TodayEpisode[]>([]);
 
-  useEffect(() => {
-    // Initialize worker
-    if (!workerRef.current) {
-      workerRef.current = new Worker(new URL('../workers/stats.worker.ts', import.meta.url), {
-        type: 'module',
-      });
-
-      workerRef.current.addEventListener('message', (event) => {
-        if (event.data.type === 'EPISODES_RESULT') {
-          setEpisodes(event.data.data);
+  // depsKey muss sich ändern wenn Episoden als watched markiert werden
+  const watchedCount = useMemo(() => {
+    let count = 0;
+    for (const s of seriesList) {
+      if (!s.seasons) continue;
+      for (const season of s.seasons) {
+        if (!season.episodes) continue;
+        for (const ep of season.episodes) {
+          if (ep.watched) count++;
         }
-      });
-    }
-
-    // Send data to worker
-    if (workerRef.current && seriesList.length > 0) {
-      workerRef.current.postMessage({
-        type: 'PROCESS_EPISODES',
-        data: { seriesList },
-      });
-    }
-
-    // Cleanup on unmount
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-        workerRef.current = null;
       }
-    };
+    }
+    return count;
   }, [seriesList]);
+
+  const depsKey = `${seriesList.length}-${watchedCount}`;
+
+  const workerInput = useMemo<EpisodesWorkerInput>(() => ({ seriesList }), [seriesList]);
+
+  const { data: episodes } = useWebWorker<EpisodesWorkerInput, TodayEpisode[]>(INITIAL_EPISODES, {
+    workerFactory: createEpisodesWorker,
+    messageType: 'PROCESS_EPISODES',
+    resultType: 'EPISODES_RESULT',
+    data: workerInput,
+    depsKey,
+    enabled: seriesList.length > 0,
+  });
 
   return episodes;
 };

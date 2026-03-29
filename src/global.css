@@ -10,16 +10,53 @@
   --theme-text-secondary: #ffffff;
   --theme-secondary-gradient: #8b5cf6;
 
-  /* Design Tokens */
+  /* Design Tokens - Border Radius */
   --radius-xs: 6px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* Design Tokens - Shadows */
   --shadow-sm: 0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3);
   --shadow-cinematic: 0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 20px -5px rgba(0, 0, 0, 0.4);
+
+  /* Design Tokens - Z-Index Layers */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 500;
+  --z-modal-backdrop: 900;
+  --z-modal: 950;
+  --z-nav: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+  --z-skip-nav: 10000;
+
+  /* Design Tokens - Backdrop Blur */
+  --blur-sm: blur(8px);
+  --blur-md: blur(16px);
+  --blur-lg: blur(24px);
+  --blur-xl: blur(40px);
+
+  /* Design Tokens - Opacity */
+  --opacity-disabled: 0.5;
+  --opacity-muted: 0.6;
+  --opacity-subtle: 0.7;
+  --opacity-hover: 0.85;
+  --opacity-active: 0.9;
+
+  /* Design Tokens - Transitions */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 0.15s;
+  --duration-normal: 0.25s;
+  --duration-slow: 0.4s;
 
   /* Typografie */
   --font-body: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;

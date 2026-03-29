@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useCallback, useMemo, useState } from 'react';
+import { useAuth } from '../../AuthContext';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+
+const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 
 export interface UnifiedNotification {
   id: string;
-  kind: 'activity' | 'request' | 'discussion' | 'announcement';
+  kind: 'activity' | 'request' | 'discussion' | 'announcement' | 'bug_ticket';
   title: string;
   message: string;
   timestamp: number;
@@ -19,7 +22,9 @@ export interface UnifiedNotification {
     | 'chat'
     | 'heart'
     | 'flag'
-    | 'announcement';
+    | 'announcement'
+    | 'bug'
+    | 'feature';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
@@ -49,9 +54,43 @@ export const ANNOUNCEMENTS: Announcement[] = [
     timestamp: new Date('2026-03-01T12:00:00').getTime(),
     navigateTo: '/patch-notes',
   },
+  {
+    id: 'announcement_ki-empfehlungen-2026-03',
+    title: 'Neu: KI-Empfehlungen',
+    message:
+      'Personalisierte Serien- und Film-Vorschläge basierend auf deinem Geschmack. Jetzt unter "Für dich" auf der Startseite ausprobieren!',
+    timestamp: new Date('2026-03-26T22:00:00+01:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
+    id: 'announcement_card-redesign-2026-03',
+    title: 'Neues Design: Trending & Co.',
+    message:
+      'Trending, Saisonal und Bestbewertet haben ein neues Kino-Design mit Rang-Nummern, Genres und Ratings bekommen!',
+    timestamp: new Date('2026-03-27T18:00:00+01:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
+    id: 'announcement_qol-update-2026-03',
+    title: 'QoL-Update: Kalender, Detail & Provider',
+    message:
+      'Auto-Scroll zum heutigen Tag, Staffelpause/Staffelende-Chips, Provider-Badges auf allen Karten, smarter Status-Badge und mehr!',
+    timestamp: new Date('2026-03-27T13:30:00+01:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
 ];
 
-export function useUnifiedNotifications() {
+export interface UseUnifiedNotificationsReturn {
+  unifiedNotifications: UnifiedNotification[];
+  totalUnreadBadge: number;
+  dismissAnnouncement: (id: string) => void;
+  handleMarkAllNotificationsRead: () => void;
+  markAsRead: (id: string) => void;
+  acceptFriendRequest: (requestId: string) => void;
+  declineFriendRequest: (requestId: string) => void;
+}
+
+export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     unreadActivitiesCount,
     friendActivities,
@@ -62,6 +101,8 @@ export function useUnifiedNotifications() {
     acceptFriendRequest,
     declineFriendRequest,
   } = useOptimizedFriends();
+  const { user } = useAuth() || {};
+  const isAdmin = user?.uid === ADMIN_UID;
   const {
     notifications,
     unreadCount: notificationUnreadCount,
@@ -77,11 +118,13 @@ export function useUnifiedNotifications() {
     }
   });
 
-  const dismissAnnouncement = (id: string) => {
-    const updated = [...dismissedAnnouncements, id];
-    setDismissedAnnouncements(updated);
-    localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
-  };
+  const dismissAnnouncement = useCallback((id: string) => {
+    setDismissedAnnouncements((prev) => {
+      const updated = [...prev, id];
+      localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const unifiedNotifications = useMemo(() => {
     const items: UnifiedNotification[] = [];
@@ -135,7 +178,7 @@ export function useUnifiedNotifications() {
         kind: 'request',
         title: 'Freundschaftsanfrage',
         message: req.fromUsername || 'Unbekannt',
-        timestamp: req.timestamp || req.sentAt || Date.now(),
+        timestamp: req.timestamp || req.sentAt || 0,
         read: unreadRequestsCount === 0,
         requestId: req.id,
         fromUsername: req.fromUsername,
@@ -161,17 +204,25 @@ export function useUnifiedNotifications() {
         }
       }
 
+      const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
       items.push({
         id: `notif_${n.id}`,
-        kind: 'discussion',
+        kind: isBugTicket ? 'bug_ticket' : 'discussion',
         title: n.title,
         message: n.message,
         timestamp: n.timestamp,
         read: n.read,
-        navigateTo,
+        navigateTo: isBugTicket
+          ? isAdmin
+            ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
+            : '/bug-report'
+          : navigateTo,
         notificationId: n.id,
-        icon:
-          n.type === 'discussion_reply'
+        icon: isBugTicket
+          ? n.data?.ticketType === 'feature'
+            ? 'feature'
+            : 'bug'
+          : n.type === 'discussion_reply'
             ? 'chat'
             : n.type === 'spoiler_flag'
               ? 'flag'
@@ -191,6 +242,7 @@ export function useUnifiedNotifications() {
     unreadActivitiesCount,
     unreadRequestsCount,
     dismissedAnnouncements,
+    isAdmin,
   ]);
 
   const totalUnreadBadge =
@@ -198,7 +250,7 @@ export function useUnifiedNotifications() {
     notificationUnreadCount +
     ANNOUNCEMENTS.filter((a) => !dismissedAnnouncements.includes(a.id)).length;
 
-  const handleMarkAllNotificationsRead = () => {
+  const handleMarkAllNotificationsRead = useCallback(() => {
     markActivitiesAsRead();
     markRequestsAsRead();
     markAllAsRead();
@@ -206,7 +258,7 @@ export function useUnifiedNotifications() {
     const allIds = ANNOUNCEMENTS.map((a) => a.id);
     setDismissedAnnouncements(allIds);
     localStorage.setItem('dismissed_announcements', JSON.stringify(allIds));
-  };
+  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead]);
 
   return {
     unifiedNotifications,
@@ -219,7 +271,7 @@ export function useUnifiedNotifications() {
   };
 }
 
-export function formatNotificationTime(timestamp: number) {
+export function formatNotificationTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
   if (minutes < 1) return 'gerade eben';

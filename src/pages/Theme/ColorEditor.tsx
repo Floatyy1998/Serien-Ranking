@@ -2,8 +2,10 @@
  * ColorEditor - Single color row for editing a theme color
  */
 
-import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContext';
+import { memo, useEffect, useState } from 'react';
+import type { useTheme } from '../../contexts/ThemeContextDef';
+
+const VALID_HEX = /^#[0-9a-fA-F]{6}$/;
 
 export interface ColorCategory {
   key: string;
@@ -21,6 +23,20 @@ interface ColorEditorProps {
 
 export const ColorEditor = memo(
   ({ category, color, currentTheme, onColorChange }: ColorEditorProps) => {
+    const [draft, setDraft] = useState(color);
+
+    // Sync draft when color changes externally (preset, color picker)
+    useEffect(() => {
+      setDraft(color);
+    }, [color]);
+
+    const handleTextChange = (value: string) => {
+      setDraft(value);
+      if (VALID_HEX.test(value)) {
+        onColorChange(category.key, value);
+      }
+    };
+
     return (
       <div
         className="theme-color-row"
@@ -46,12 +62,12 @@ export const ColorEditor = memo(
         </div>
         <input
           type="text"
-          value={color}
-          onChange={(e) => onColorChange(category.key, e.target.value)}
+          value={draft}
+          onChange={(e) => handleTextChange(e.target.value)}
           className="theme-color-hex"
           style={{
             background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
+            border: `1px solid ${VALID_HEX.test(draft) ? currentTheme.border.default : currentTheme.status.error}`,
             color: currentTheme.text.secondary,
           }}
         />

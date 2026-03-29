@@ -57,8 +57,8 @@
 .hero-section__add-btn {
   position: absolute;
   z-index: 10;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   font-size: 24px;
@@ -91,7 +91,7 @@
   right: 0;
   max-width: 100%;
   background: var(--color-background-default, #06090f);
-  border-radius: 24px 24px 0 0;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
   padding-top: 20px;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -152,7 +152,7 @@
     var(--theme-secondary-gradient, #8b5cf6)
   );
   height: 100%;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.5s var(--ease-default);
   box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #00d4aa) 50%, transparent);
   position: relative;
   overflow: hidden;
@@ -183,7 +183,7 @@
 .status-badge {
   background: rgba(var(--status-badge-color-rgb, 158, 158, 158), 0.2);
   border: 1px solid;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 4px 10px;
   font-size: 13px;
   font-weight: 500;
@@ -199,22 +199,23 @@
 }
 
 /* Ratings Card */
-.ratings-card {
+.detail-ratings-card {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.ratings-card__badge {
+.detail-ratings-card__badge {
   display: flex;
   align-items: center;
   gap: 6px;
   border: 1px solid;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: white;
 }
 
-.ratings-card__label {
+.detail-ratings-card__label {
   font-weight: 900;
   font-size: 12px;
   padding: 2px 4px;
@@ -228,7 +229,7 @@
 }
 
 .action-btn {
-  color: white;
+  color: var(--color-text-secondary, #ffffff);
   font-weight: 600;
   cursor: pointer;
   display: flex;
@@ -242,7 +243,7 @@
   padding: 16px;
   background: rgba(220, 53, 69, 0.1);
   border: 1px solid rgba(220, 53, 69, 0.3);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   color: #ff6b6b;
   font-size: 16px;
   font-weight: 600;
@@ -257,8 +258,10 @@
   display: flex;
   gap: 6px;
   overflow-x: auto;
-  padding-bottom: 8px;
+  padding: 12px;
   margin-bottom: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -281,7 +284,7 @@
   min-width: auto;
   background: transparent;
   font-size: 14px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all var(--duration-normal) var(--ease-out);
 }
 
 .season-tabs__number {
@@ -304,13 +307,13 @@
 .episode-cell {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 600;
-  color: white;
+  color: var(--color-text-secondary, white);
   cursor: pointer;
   position: relative;
   transition:
@@ -327,52 +330,58 @@
 .episode-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .episode-list-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 12px;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s var(--ease-out);
+  border: 1px solid transparent;
+  position: relative;
 }
 
 .episode-list-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .episode-list-item:active {
-  transform: scale(0.98);
+  transform: scale(0.99);
 }
 
 .episode-list-item--watched {
-  background: rgba(0, 212, 170, 0.06);
-  border-color: rgba(0, 212, 170, 0.15);
+  background: var(--theme-surface, rgba(255, 255, 255, 0.03));
+  border-color: var(--color-border-default, rgba(255, 255, 255, 0.06));
 }
 
 .episode-list-item--watched:hover {
-  background: rgba(0, 212, 170, 0.1);
-  box-shadow: 0 0 12px rgba(0, 212, 170, 0.1);
+  background: var(--theme-surface-elevated, rgba(255, 255, 255, 0.05));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .episode-list-item--unwatched {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.episode-list-item--unwatched:hover {
+  background: var(--theme-surface, rgba(255, 255, 255, 0.03));
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .episode-list-number {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -380,19 +389,25 @@
 .episode-list-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .episode-list-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--color-text-primary, #fff);
+  letter-spacing: 0.01em;
 }
 
 .episode-list-subtitle {
   font-size: 12px;
-  opacity: 0.6;
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 400;
 }
 
 /* Info/Cast Tab Switcher */
@@ -419,4 +434,101 @@
     padding: 3px 10px;
     font-size: 11px;
   }
+}
+
+/* EpisodeActionSheet buttons */
+.episode-action-sheet__content {
+  padding: 0 20px 32px;
+}
+
+.episode-action-sheet__header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.episode-action-sheet__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.episode-action-btn {
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+}
+
+.episode-action-btn--rewatch {
+  background: linear-gradient(135deg, var(--color-status-warning, #f59e0b), #f59e0b);
+}
+
+.episode-action-btn--unwatch {
+  background: rgba(255, 107, 107, 0.15);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.episode-action-btn--discuss {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Section list container used in ContinueWatching, Rewatch, TodayEpisodes */
+.home-section-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 20px;
+  position: relative;
+}
+
+/* Home section wrapper */
+.home-section {
+  margin-bottom: 32px;
+}
+
+/* Episode row content text patterns */
+.episode-row__title {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.episode-row__subtitle {
+  font-size: 13px;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.episode-row__meta {
+  font-size: 12px;
+  margin: 2px 0 0 0;
+}
+
+/* Progress bar in episode rows */
+.episode-row__progress-track {
+  margin-top: 6px;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.episode-row__progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transition: width 0.3s var(--ease-default);
 }

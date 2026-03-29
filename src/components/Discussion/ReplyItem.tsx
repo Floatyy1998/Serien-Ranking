@@ -1,14 +1,16 @@
-import { Delete, Edit, Favorite, FavoriteBorder, Flag, Person, Warning } from '@mui/icons-material';
+import { Delete, Edit, Favorite, FavoriteBorder, Flag, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DiscussionReply } from '../../types/Discussion';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
+import { SpoilerReveal } from '../ui/SpoilerReveal';
+import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
 
-export const ReplyItem: React.FC<{
+const ReplyItemInner: React.FC<{
   reply: DiscussionReply;
   onDelete: () => void;
   onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
@@ -66,35 +68,12 @@ export const ReplyItem: React.FC<{
       }}
     >
       {/* Avatar */}
-      <button
-        onClick={() => navigate(`/friend/${reply.userId}`)}
-        aria-label={`Profil von ${reply.username} anzeigen`}
-        style={{
-          width: '30px',
-          height: '30px',
-          borderRadius: '50%',
-          flexShrink: 0,
-          cursor: 'pointer',
-          border: `2px solid ${currentTheme.border.default}`,
-          padding: 0,
-          ...(reply.userPhotoURL
-            ? {
-                backgroundImage: `url("${reply.userPhotoURL}")`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-              }
-            : {
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }),
-        }}
-      >
-        {!reply.userPhotoURL && (
-          <Person style={{ fontSize: '15px', color: 'white' }} aria-hidden="true" />
-        )}
-      </button>
+      <UserAvatar
+        userId={reply.userId}
+        username={reply.username}
+        photoURL={reply.userPhotoURL}
+        size={30}
+      />
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -225,7 +204,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.primary,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '13px',
                   }}
@@ -236,26 +215,7 @@ export const ReplyItem: React.FC<{
             </div>
           </div>
         ) : reply.isSpoiler && !showSpoiler ? (
-          <button
-            onClick={() => setShowSpoiler(true)}
-            style={{
-              padding: '10px 14px',
-              background: `${currentTheme.status.warning}15`,
-              border: `1px dashed ${currentTheme.status.warning}40`,
-              borderRadius: '8px',
-              color: currentTheme.status.warning,
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: '8px',
-            }}
-          >
-            <Warning style={{ fontSize: '16px' }} />
-            Spoiler anzeigen
-          </button>
+          <SpoilerReveal onReveal={() => setShowSpoiler(true)} compact />
         ) : (
           <>
             {text && (
@@ -295,7 +255,9 @@ export const ReplyItem: React.FC<{
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
               <button
-                onClick={onToggleLike}
+                onClick={() => {
+                  onToggleLike();
+                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -305,7 +267,7 @@ export const ReplyItem: React.FC<{
                   padding: '6px 10px',
                   borderRadius: '16px',
                   cursor: 'pointer',
-                  color: isLiked ? '#e91e63' : currentTheme.text.muted,
+                  color: isLiked ? currentTheme.accent : currentTheme.text.muted,
                   fontSize: '13px',
                   fontWeight: 600,
                   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -356,7 +318,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.status.warning,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 600,
@@ -438,7 +400,7 @@ export const ReplyItem: React.FC<{
                     borderRadius: '6px',
                     border: 'none',
                     background: currentTheme.status.error,
-                    color: '#fff',
+                    color: currentTheme.text.primary,
                     cursor: 'pointer',
                     fontSize: '12px',
                     fontWeight: 600,
@@ -468,3 +430,6 @@ export const ReplyItem: React.FC<{
     </motion.div>
   );
 };
+
+export const ReplyItem = memo(ReplyItemInner);
+ReplyItem.displayName = 'ReplyItem';

@@ -1,11 +1,12 @@
-import { BarChart, Person, PlayCircle, Star } from '@mui/icons-material';
+import { BarChart, CalendarToday, Person, PlayCircle } from '@mui/icons-material';
 import { Badge } from '@mui/material';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useNotifications } from '../../contexts/NotificationContext';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsProvider';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 
@@ -29,10 +30,13 @@ export const BottomNavigation = () => {
   const totalBadgeCount =
     (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
 
+  const todayEpisodes = useTodayEpisodes();
+  const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
+
   const getActiveIndex = () => {
     if (location.pathname === '/') return 0;
     if (location.pathname.startsWith('/watchlist')) return 1;
-    if (location.pathname.startsWith('/discover')) return 2;
+    if (location.pathname === '/calendar') return 2;
     if (location.pathname.startsWith('/ratings')) return 3;
     if (location.pathname.startsWith('/profile')) return 4;
     return 0;
@@ -70,10 +74,11 @@ export const BottomNavigation = () => {
       label: 'Weiter',
     },
     {
-      id: 'search',
-      path: '/discover',
-      icon: <Star />,
-      label: 'Entdecken',
+      id: 'calendar',
+      path: '/calendar',
+      icon: <CalendarToday />,
+      label: 'Kalender',
+      badge: unwatchedToday > 0 ? unwatchedToday : undefined,
     },
     {
       id: 'ratings',
@@ -113,8 +118,7 @@ export const BottomNavigation = () => {
     location.pathname.includes('/series/') ||
     location.pathname.includes('/movie/') ||
     location.pathname.includes('/rating/') ||
-    location.pathname.includes('/episodes') ||
-    location.pathname === '/calendar';
+    location.pathname.startsWith('/episodes/');
 
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
@@ -171,12 +175,14 @@ export const BottomNavigation = () => {
                       variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
                       sx={{
                         '& .MuiBadge-badge': {
-                          fontSize: '11px',
-                          height: '16px',
-                          minWidth: '16px',
-                          padding: '0 4px',
+                          fontSize: '9px',
+                          height: '14px',
+                          minWidth: '14px',
+                          padding: '0 3px',
+                          top: '1px',
+                          right: '-1px',
                           background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
-                          boxShadow: '0 2px 4px rgba(255, 107, 107, 0.3)',
+                          boxShadow: '0 1px 3px rgba(255, 107, 107, 0.3)',
                         },
                       }}
                     >
@@ -186,7 +192,17 @@ export const BottomNavigation = () => {
                     <div className="nav-icon">{item.icon}</div>
                   )}
                   {/* Active dot */}
-                  {active && <div className="nav-active-dot" />}
+                  <AnimatePresence>
+                    {active && (
+                      <motion.div
+                        className="nav-active-dot"
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                      />
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <span className="nav-label">{item.label}</span>

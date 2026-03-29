@@ -7,9 +7,9 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 20;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  z-index: var(--z-sticky);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
 }
 
 /* ── Search bar ───────────────────────────────────────────────────────────── */
@@ -23,7 +23,7 @@
 .rw-search-input {
   width: 100%;
   padding: 12px 12px 12px 44px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   font-size: 15px;
   outline: none;
   /* icon placeholder via absolute positioned Search icon in the parent */
@@ -114,7 +114,7 @@
   gap: 12px;
   margin-bottom: 12px;
   padding: 10px 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
 }
 
 .rw-date-title {
@@ -138,10 +138,15 @@
   display: flex;
   gap: 12px;
   padding: 12px;
-  border-radius: 16px;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 90px;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.rw-episode-card:active {
+  transform: scale(0.98);
 }
 
 .rw-episode-poster {
@@ -189,9 +194,9 @@
 .rw-badge-date-source {
   font-size: 11px;
   padding: 2px 6px;
-  border-radius: 4px;
-  background: #fbbf2415;
-  color: #fbbf24;
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--theme-accent) 8%, transparent);
+  color: var(--theme-accent);
 }
 
 .rw-episode-actions {
@@ -222,11 +227,9 @@
 /* ── Series accordion (multi-episode) ─────────────────────────────────────── */
 
 .rw-accordion {
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-md);
 }
 
 .rw-accordion-header {

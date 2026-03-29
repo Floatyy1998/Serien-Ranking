@@ -2,9 +2,10 @@ import { ChatBubbleOutline, Movie, Reply, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageLayout, PageHeader, LoadingSpinner, EmptyState } from '../../components/ui';
-import { useDiscussionFeed, FeedFilterType } from '../../hooks/useDiscussionFeed';
+import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
+import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
 
@@ -92,7 +93,7 @@ const FeedCard: React.FC<{
                     backgroundPosition: 'center',
                   }
                 : {
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   }),
             }}
           />
@@ -204,18 +205,20 @@ export const DiscussionFeedPage = () => {
           <motion.button
             key={tab.id}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setFilter(tab.id)}
+            onClick={() => {
+              setFilter(tab.id);
+            }}
             style={{
               flex: 1,
               padding: '12px',
               background:
                 filter === tab.id
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : currentTheme.background.card,
               border: filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: filter === tab.id ? 'white' : currentTheme.text.primary,
+              color: filter === tab.id ? currentTheme.text.secondary : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',

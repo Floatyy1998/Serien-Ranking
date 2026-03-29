@@ -4,8 +4,10 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { seededRandom } from '../../utils/seededRandom';
 import { GradientText } from '../ui';
-import { WrappedStats } from '../../types/Wrapped';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WrappedStats } from '../../types/Wrapped';
 
 interface SummarySlideProps {
   stats: WrappedStats;
@@ -90,7 +92,17 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
   Serien: <BookIcon />,
 };
 
+// Pre-compute confetti data outside the component for render purity
+const _randSS = seededRandom(456);
+const CONFETTI_DATA_SS = Array.from({ length: 20 }, () => ({
+  duration: 5 + _randSS() * 5,
+  delay: _randSS() * 5,
+  left: `${_randSS() * 100}%`,
+}));
+
 export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) => {
+  const confettiData = CONFETTI_DATA_SS;
+  const { currentTheme } = useTheme();
   const topSerie = stats.topSeries[0];
 
   // Confetti shapes - using colored divs instead of emojis
@@ -99,7 +111,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
     '#f5af19',
     '#e94560',
     '#fff',
-    'var(--theme-secondary-gradient, #764ba2)',
+    currentTheme.accent,
   ];
 
   return (
@@ -120,7 +132,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
     >
       {/* Confetti Effect - using colored shapes */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        {[...Array(20)].map((_, i) => (
+        {confettiData.map((c, i) => (
           <motion.div
             key={i}
             animate={{
@@ -129,15 +141,15 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
               rotate: [0, 360],
             }}
             transition={{
-              duration: 5 + Math.random() * 5,
+              duration: c.duration,
               repeat: Infinity,
-              delay: Math.random() * 5,
+              delay: c.delay,
               ease: 'linear',
             }}
             style={{
               position: 'absolute',
               top: '-20px',
-              left: `${Math.random() * 100}%`,
+              left: c.left,
               width: i % 2 === 0 ? '8px' : '12px',
               height: i % 2 === 0 ? '8px' : '12px',
               borderRadius: i % 3 === 0 ? '50%' : '2px',
@@ -161,7 +173,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
       >
         <GradientText
           as="h2"
-          from="#fff"
+          from={currentTheme.text.secondary}
           to="#e94560"
           style={{
             fontSize: 'clamp(2rem, 8vw, 3.5rem)',
@@ -266,8 +278,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
                   width: '60px',
                   height: '90px',
                   borderRadius: '8px',
-                  background:
-                    'linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary-gradient, #764ba2) 100%)',
+                  background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

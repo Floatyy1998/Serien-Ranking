@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { PageHeader, LoadingSpinner, EmptyState, PageLayout } from '../../components/ui';
+import { staggerContainer, staggerItem } from '../../lib/motion';
 import { CountdownHeroCard } from './CountdownHeroCard';
 import { CountdownListItem } from './CountdownListItem';
 import './CountdownPage.css';
@@ -17,7 +19,7 @@ export const CountdownPage: React.FC = () => {
 
   return (
     <PageLayout
-      gradientColors={[currentTheme.primary, 'var(--theme-secondary-gradient, #a855f7)']}
+      gradientColors={[currentTheme.primary, currentTheme.accent]}
       style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
     >
       <PageHeader title="Countdown" icon={<CalendarMonth style={{ fontSize: 28 }} />} />
@@ -35,25 +37,44 @@ export const CountdownPage: React.FC = () => {
         )}
 
         {!loading && hero && (
-          <div className="cd-list">
-            <CountdownHeroCard item={hero} onClick={() => navigate(`/series/${hero.seriesId}`)} />
+          <motion.div
+            className="cd-list"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={staggerItem}>
+              <CountdownHeroCard
+                item={hero}
+                onClick={() => {
+                  navigate(`/series/${hero.seriesId}`);
+                }}
+              />
+            </motion.div>
 
             {rest.length > 0 && (
               <>
-                <p className="cd-section-label" style={{ color: currentTheme.text.muted }}>
+                <motion.p
+                  variants={staggerItem}
+                  className="cd-section-label"
+                  style={{ color: currentTheme.text.muted }}
+                >
                   Weitere ({rest.length})
-                </p>
+                </motion.p>
                 {rest.map((item, i) => (
-                  <CountdownListItem
-                    key={item.seriesId}
-                    item={item}
-                    index={i}
-                    onClick={() => navigate(`/series/${item.seriesId}`)}
-                  />
+                  <motion.div key={item.seriesId} variants={staggerItem}>
+                    <CountdownListItem
+                      item={item}
+                      index={i}
+                      onClick={() => {
+                        navigate(`/series/${item.seriesId}`);
+                      }}
+                    />
+                  </motion.div>
                 ))}
               </>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
     </PageLayout>

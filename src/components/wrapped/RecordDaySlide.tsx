@@ -4,7 +4,8 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { DayStats } from '../../types/Wrapped';
+import { seededRandom } from '../../utils/seededRandom';
+import type { DayStats } from '../../types/Wrapped';
 
 interface RecordDaySlideProps {
   mostActiveDay: DayStats;
@@ -20,7 +21,16 @@ const TrophyIcon = () => (
   </svg>
 );
 
+// Pre-compute particle data outside the component for render purity
+const _randRD = seededRandom(123);
+const PARTICLE_DATA_RD = Array.from({ length: 12 }, () => ({
+  duration: 4 + _randRD() * 4,
+  delay: _randRD() * 4,
+  left: `${_randRD() * 100}%`,
+}));
+
 export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay }) => {
+  const particleData = PARTICLE_DATA_RD;
   const totalItems = mostActiveDay.episodesWatched + mostActiveDay.moviesWatched;
   const hours = Math.round(mostActiveDay.minutesWatched / 60);
 
@@ -50,7 +60,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
     >
       {/* Confetti-like particles */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-        {[...Array(12)].map((_, i) => (
+        {particleData.map((p, i) => (
           <motion.div
             key={i}
             animate={{
@@ -58,15 +68,15 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
               rotate: [0, 360],
             }}
             transition={{
-              duration: 4 + Math.random() * 4,
+              duration: p.duration,
               repeat: Infinity,
-              delay: Math.random() * 4,
+              delay: p.delay,
               ease: 'linear',
             }}
             style={{
               position: 'absolute',
               top: '-20px',
-              left: `${Math.random() * 100}%`,
+              left: p.left,
               width: '8px',
               height: '8px',
               borderRadius: i % 2 === 0 ? '50%' : '2px',

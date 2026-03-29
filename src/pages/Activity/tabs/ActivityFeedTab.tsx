@@ -6,7 +6,7 @@ import { ExpandMore, Person, Timeline } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { ActivityEntryCard } from '../ActivityEntryCard';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';
@@ -69,17 +69,20 @@ export const ActivityFeedTab = ({
           <button
             key={filter.key}
             className="activity-filter-btn"
-            onClick={() => setFilterType(filter.key as ActivityFilterType)}
+            onClick={() => {
+              setFilterType(filter.key as ActivityFilterType);
+            }}
             style={{
               padding: '10px 18px',
               background:
                 filterType === filter.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : currentTheme.background.surface,
               border:
                 filterType === filter.key ? 'none' : `1px solid ${currentTheme.border.default}`,
               borderRadius: '20px',
-              color: filterType === filter.key ? 'white' : currentTheme.text.primary,
+              color:
+                filterType === filter.key ? currentTheme.text.secondary : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
@@ -175,7 +178,7 @@ export const ActivityFeedTab = ({
                             backgroundSize: 'cover',
                           }
                         : {
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, #8b5cf6)`,
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                           }),
                       display: 'flex',
                       alignItems: 'center',
@@ -184,7 +187,7 @@ export const ActivityFeedTab = ({
                     }}
                   >
                     {!userProfile?.photoURL && (
-                      <Person style={{ fontSize: '24px', color: 'white' }} />
+                      <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
                     )}
                   </div>
 

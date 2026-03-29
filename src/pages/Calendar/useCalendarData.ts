@@ -1,9 +1,15 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useAuth } from '../../App';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { useWeeklyEpisodes, getWeekNumber, WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import { useAuth } from '../../AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { trackEpisodeWatched } from '../../firebase/analytics';
+import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
+import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { showToast, showUndoToast } from '../../lib/toast';
+import { WatchActivityService } from '../../services/watchActivityService';
+import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
 
@@ -46,7 +52,7 @@ export type GroupedSchedule = Map<string, SeriesGroup[]>;
 // ── Hook ─────────────────────────────────────────────────────────
 
 export const useCalendarData = () => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { seriesList } = useSeriesList();
 
   // Week navigation
@@ -106,7 +112,7 @@ export const useCalendarData = () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.backdrop_path) {
-            const url = `https://image.tmdb.org/t/p/w780${data.backdrop_path}`;
+            const url = getImageUrl(data.backdrop_path, 'w780');
             backdropCache.current[id] = url;
             setBackdrops((prev) => ({ ...prev, [id]: url }));
           }
@@ -144,37 +150,105 @@ export const useCalendarData = () => {
   const handleMarkWatched = useCallback(
     async (seriesNmr: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
+      const db = firebase.database();
+      const basePath = `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+
       try {
-        const basePath = `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        // Snapshot vorher
+        const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
+          db.ref(`${basePath}/watchCount`).once('value'),
+          db.ref(`${basePath}/firstWatchedAt`).once('value'),
+          db.ref(`${basePath}/lastWatchedAt`).once('value'),
+          db.ref(`${basePath}/watched`).once('value'),
+        ]);
+        const prevCount: number = watchCountSnap.val() || 0;
+        const prevFirstWatchedAt: string | null = firstSnap.val() || null;
+        const prevLastWatchedAt: string | null = lastSnap.val() || null;
+        const prevWatched: boolean = !!watchedSnap.val();
+
+        // Schreiben
         const now = new Date().toISOString();
         const updates: Record<string, unknown> = {};
         updates[`${basePath}/watched`] = true;
-        updates[`${basePath}/watchCount`] = firebase.database.ServerValue.increment(1);
+        updates[`${basePath}/watchCount`] = prevCount + 1;
         updates[`${basePath}/lastWatchedAt`] = now;
-
-        const firstRef = firebase
-          .database()
-          .ref(
-            `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`
-          );
-        const snap = await firstRef.once('value');
-        if (!snap.val()) {
+        if (!prevFirstWatchedAt) {
           updates[`${basePath}/firstWatchedAt`] = now;
         }
+        await db.ref().update(updates);
 
-        await firebase.database().ref().update(updates);
+        const series = seriesList.find((s) => s.nmr === seriesNmr);
+        const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
+        const title = series?.title || series?.name || '';
+        showUndoToast(`${title} ${label} als gesehen markiert`, {
+          onUndo: async () => {
+            try {
+              await db.ref(`${basePath}/watched`).set(prevWatched);
+              await db.ref(`${basePath}/watchCount`).set(prevCount);
+              if (prevFirstWatchedAt) {
+                await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
+              } else {
+                await db.ref(`${basePath}/firstWatchedAt`).remove();
+              }
+              if (prevLastWatchedAt) {
+                await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
+              } else {
+                await db.ref(`${basePath}/lastWatchedAt`).remove();
+              }
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
+            }
+          },
+          onCommit: () => {
+            if (series) {
+              trackEpisodeWatched(
+                series.title || series.name || '',
+                seasonIndex + 1,
+                episodeIndex + 1,
+                {
+                  tmdbId: series.id,
+                  genres: series.genre?.genres,
+                  runtime: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  isRewatch: prevCount > 0,
+                  source: 'calendar',
+                }
+              );
+              if (prevCount === 0) {
+                const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
+                WatchActivityService.logEpisodeWatch(
+                  user.uid,
+                  series.id,
+                  series.title || series.name || '',
+                  seasonIndex + 1,
+                  episodeIndex + 1,
+                  series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  false,
+                  series.genre?.genres,
+                  providers
+                );
+              }
+            }
+          },
+        });
       } catch (error) {
         console.error('Failed to mark episode:', error);
+        showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
-    [user]
+    [user, seriesList]
   );
 
   // ── Week navigation helpers ──────────────────────────────────
 
-  const goToPrevWeek = useCallback(() => setWeekOffset((o) => o - 1), []);
-  const goToNextWeek = useCallback(() => setWeekOffset((o) => o + 1), []);
-  const goToCurrentWeek = useCallback(() => setWeekOffset(0), []);
+  const goToPrevWeek = useCallback(() => {
+    setWeekOffset((o) => o - 1);
+  }, []);
+  const goToNextWeek = useCallback(() => {
+    setWeekOffset((o) => o + 1);
+  }, []);
+  const goToCurrentWeek = useCallback(() => {
+    setWeekOffset(0);
+  }, []);
 
   return {
     // Week navigation

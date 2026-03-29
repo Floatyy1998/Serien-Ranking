@@ -26,12 +26,18 @@ export const colors = {
     },
   },
 
-  // Textfarben
+  /**
+   * Semantische Textfarben:
+   * - primary: Accent/highlight color (the theme's primary color)
+   * - secondary: Main readable body text color
+   * - muted: Dimmed/secondary text color
+   * - accent: Secondary accent for special highlights
+   */
   text: {
-    primary: 'var(--theme-text-primary, #00fed7)',
-    secondary: 'var(--theme-text-secondary, #ffffff)',
-    muted: '#cccccc',
-    accent: 'var(--theme-accent, #ff6b6b)',
+    primary: 'var(--color-text-primary, #00fed7)',
+    secondary: 'var(--color-text-secondary, #ffffff)',
+    muted: 'var(--color-text-muted, #cccccc)',
+    accent: 'var(--color-text-accent, #ff6b6b)',
     placeholder: 'rgba(255, 255, 255, 0.5)',
   },
 

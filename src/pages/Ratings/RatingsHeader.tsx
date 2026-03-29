@@ -8,7 +8,7 @@ import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { GradientText, TabSwitcher } from '../../components/ui';
-import type { useTheme } from '../../contexts/ThemeContext';
+import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { RatingsStats } from './useRatingsData';
 
 interface RatingsHeaderProps {
@@ -33,7 +33,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           <GradientText
             as="h1"
             from={theme.text.primary}
-            to="#fbbf24"
+            to={theme.accent}
             style={{
               fontSize: 26,
               fontWeight: 800,
@@ -43,7 +43,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               gap: 12,
             }}
           >
-            <Star style={{ fontSize: 28, color: '#fbbf24', WebkitTextFillColor: 'initial' }} />
+            <Star style={{ fontSize: 28, color: theme.accent, WebkitTextFillColor: 'initial' }} />
             Meine Bewertungen
           </GradientText>
         </div>

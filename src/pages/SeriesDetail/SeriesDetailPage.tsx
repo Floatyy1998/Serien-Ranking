@@ -1,32 +1,28 @@
-/**
- * SeriesDetailPage - Composition component using extracted subcomponents + hooks
- */
-
-import { Check, GridView, Info, List, People, Repeat, VisibilityOff } from '@mui/icons-material';
+import Info from '@mui/icons-material/Info';
+import List from '@mui/icons-material/List';
+import People from '@mui/icons-material/People';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { Dialog, ProgressBar } from '../../components/ui';
-import { DiscussionThread } from '../../components/Discussion';
+import { useAuth } from '../../AuthContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, ProviderBadges, VideoGallery } from '../../components/detail';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useEpisodeDiscussionCounts } from '../../hooks/useDiscussionCounts';
+import { RecapSheet } from '../../components/ui/RecapSheet';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
+import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
+import { useRecapData } from '../../hooks/useRecapData';
+import { CharacterGuide } from './CharacterGuide';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { calculateWatchingPace, formatPaceLine } from '../../lib/paceCalculation';
-import {
-  getImplicitRewatchRound,
-  getNextRewatchEpisode,
-  getRewatchProgress,
-  getRewatchRound,
-  hasActiveRewatch,
-  isSeriesFullyWatched,
-} from '../../lib/validation/rewatch.utils';
+import { hasEpisodeAired } from '../../utils/episodeDate';
+import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
+import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { ActionButtons } from './ActionButtons';
-import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { HeroSection } from './HeroSection';
 import { RatingsCard } from './RatingsCard';
-import { SeasonTabs } from './SeasonTabs';
+import { SeasonsSection } from './SeasonsSection';
+import { SeriesDetailDialogs } from './SeriesDetailDialogs';
 import { useSeriesActions } from './useSeriesActions';
 import { useSeriesData } from './useSeriesData';
 import './SeriesDetailPage.css';
@@ -34,18 +30,13 @@ import './SeriesDetailPage.css';
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [selectedSeasonIndex, setSelectedSeasonIndex] = useState(0);
-  const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'cast' | 'characters'>('info');
 
   // Responsive state
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { isMobile } = useDeviceType();
 
   // Data hook
   const {
@@ -81,25 +72,52 @@ export const SeriesDetailPage = memo(() => {
     handleStopRewatch,
   } = useSeriesActions(series, user?.uid, tmdbSeries ?? undefined);
 
-  // Auto-select most relevant season tab
+  // Recap hook
+  const recap = useRecapData(localSeries ?? undefined);
+
+  // Character guide hook
+  const characterGuide = useCharacterDescriptions(localSeries ?? undefined);
+  const [showRecap, setShowRecap] = useState(false);
+
+  // Auto-show recap when data is ready
+  useEffect(() => {
+    if (recap.shouldShowRecap && !recap.loading && recap.recapEpisodes.length > 0) {
+      const timer = setTimeout(() => setShowRecap(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [recap.shouldShowRecap, recap.loading, recap.recapEpisodes.length]);
+
+  // Auto-select most relevant season tab, or restore from session
   useEffect(() => {
     if (!series?.seasons || series.seasons.length === 0) return;
 
-    if (hasActiveRewatch(series)) {
-      const nextEp = getNextRewatchEpisode(series);
-      if (nextEp) {
-        const idx = series.seasons.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
-        if (idx >= 0) setSelectedSeasonIndex(idx);
+    // Try to restore saved selection (back-navigation)
+    const saved = sessionStorage.getItem(`series_${id}_season`);
+    if (saved !== null) {
+      const idx = parseInt(saved, 10);
+      if (idx >= 0 && idx < series.seasons.length) {
+        setSelectedSeasonIndex(idx);
         return;
       }
     }
 
-    const today = new Date();
+    // Otherwise auto-select the most relevant season
+    if (hasActiveRewatch(series)) {
+      const nextEp = getNextRewatchEpisode(series);
+      if (nextEp) {
+        const idx = series.seasons.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
+        if (idx >= 0) {
+          setSelectedSeasonIndex(idx);
+          return;
+        }
+      }
+    }
+
     for (let i = 0; i < series.seasons.length; i++) {
       const eps = series.seasons[i].episodes;
       if (!eps) continue;
       for (const ep of eps) {
-        if (!ep.watched && ep.air_date && new Date(ep.air_date) <= today) {
+        if (!ep.watched && hasEpisodeAired(ep)) {
           setSelectedSeasonIndex(i);
           return;
         }
@@ -108,6 +126,30 @@ export const SeriesDetailPage = memo(() => {
     setSelectedSeasonIndex(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [series?.id]);
+
+  // Restore tab selection after series data is loaded
+  useEffect(() => {
+    if (!series) return;
+    const savedTab = sessionStorage.getItem(`series_${id}_tab`) as
+      | 'info'
+      | 'cast'
+      | 'characters'
+      | null;
+    if (savedTab && savedTab !== 'info') {
+      setActiveTab(savedTab);
+    }
+  }, [id, series?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Persist season and tab selection for back-navigation (only after series loaded)
+  useEffect(() => {
+    if (!series) return;
+    sessionStorage.setItem(`series_${id}_season`, String(selectedSeasonIndex));
+  }, [id, selectedSeasonIndex, series]);
+
+  useEffect(() => {
+    if (!series) return;
+    sessionStorage.setItem(`series_${id}_tab`, activeTab);
+  }, [id, activeTab, series]);
 
   // Episode discussion counts
   const selectedSeasonData = series?.seasons?.[selectedSeasonIndex];
@@ -125,12 +167,13 @@ export const SeriesDetailPage = memo(() => {
 
   const progressStats = useMemo(() => {
     if (!series?.seasons) return { watched: 0, total: 0, percentage: 0 };
-    const today = new Date();
     let watchedCount = 0;
     let airedCount = 0;
     series.seasons.forEach((season) => {
+      if (!season) return;
       season.episodes?.forEach((episode) => {
-        if (episode.air_date && new Date(episode.air_date) <= today) {
+        if (!episode || !episode.episode_number) return;
+        if (hasEpisodeAired(episode)) {
           airedCount++;
           if (episode.watched) watchedCount++;
         }
@@ -172,7 +215,7 @@ export const SeriesDetailPage = memo(() => {
             background: 'rgba(255,255,255,0.1)',
             border: '1px solid rgba(255,255,255,0.2)',
             borderRadius: '12px',
-            color: 'white',
+            color: currentTheme.text.secondary,
             fontSize: '16px',
             cursor: 'pointer',
           }}
@@ -191,7 +234,7 @@ export const SeriesDetailPage = memo(() => {
     );
   }
 
-  const warningColor = currentTheme.status?.warning || '#f59e0b';
+  const warningColor = currentTheme.accent;
 
   return (
     <div>
@@ -278,7 +321,7 @@ export const SeriesDetailPage = memo(() => {
             alignItems: 'center',
             gap: '8px',
             fontSize: '14px',
-            color: '#ffb74d',
+            color: currentTheme.status?.warning || '#f59e0b',
           }}
         >
           <VisibilityOff style={{ fontSize: '16px' }} />
@@ -303,17 +346,28 @@ export const SeriesDetailPage = memo(() => {
               icon: <People style={{ fontSize: isMobile ? '16px' : '18px' }} />,
               label: 'Besetzung',
             },
+            ...(!isReadOnlyTmdbSeries && characterGuide.userProgress
+              ? [
+                  {
+                    key: 'characters' as const,
+                    icon: <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />,
+                    label: 'KI-Guide',
+                  },
+                ]
+              : []),
           ] as const
         ).map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => {
+              setActiveTab(tab.key);
+            }}
             className="detail-tab-btn"
             style={{
               padding: isMobile ? '8px' : '10px',
               background:
                 activeTab === tab.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : 'rgba(255, 255, 255, 0.05)',
               borderRadius: isMobile ? '10px' : '12px',
               fontSize: isMobile ? '12px' : '14px',
@@ -327,7 +381,19 @@ export const SeriesDetailPage = memo(() => {
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'cast' ? (
+      {activeTab === 'characters' ? (
+        <CharacterGuide
+          characters={characterGuide.characters}
+          loading={characterGuide.loading}
+          error={characterGuide.error}
+          onGenerate={characterGuide.generate}
+          userProgress={characterGuide.userProgress}
+          isMobile={isMobile}
+          onAskQuestion={characterGuide.askQuestion}
+          questionAnswer={characterGuide.questionAnswer}
+          questionLoading={characterGuide.questionLoading}
+        />
+      ) : activeTab === 'cast' ? (
         <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
       ) : (
         <>
@@ -344,14 +410,16 @@ export const SeriesDetailPage = memo(() => {
                   gap: '8px',
                 }}
               >
-                <Info style={{ fontSize: isMobile ? '16px' : '20px' }} />
-                Beschreibung
+                <Info
+                  style={{ fontSize: isMobile ? '16px' : '20px', color: currentTheme.accent }}
+                />
+                <span style={{ color: currentTheme.text.primary }}>Beschreibung</span>
               </h3>
               <p
                 style={{
                   fontSize: isMobile ? '12px' : '14px',
                   lineHeight: isMobile ? 1.4 : 1.5,
-                  opacity: 0.8,
+                  color: currentTheme.text.secondary,
                   margin: 0,
                 }}
               >
@@ -362,18 +430,20 @@ export const SeriesDetailPage = memo(() => {
 
           {/* Seasons Overview */}
           {series.seasons && series.seasons.length > 0 && (
-            <SeasonsSection
-              series={series}
-              selectedSeasonIndex={selectedSeasonIndex}
-              setSelectedSeasonIndex={setSelectedSeasonIndex}
-              setShowRewatchDialog={setShowRewatchDialog}
-              episodeDiscussionCounts={episodeDiscussionCounts}
-              warningColor={warningColor}
-              currentTheme={currentTheme}
-              handleStopRewatch={handleStopRewatch}
-              handleStartRewatch={handleStartRewatch}
-              navigate={navigate}
-            />
+            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
+              <SeasonsSection
+                series={series}
+                selectedSeasonIndex={selectedSeasonIndex}
+                setSelectedSeasonIndex={setSelectedSeasonIndex}
+                setShowRewatchDialog={setShowRewatchDialog}
+                episodeDiscussionCounts={episodeDiscussionCounts}
+                warningColor={warningColor}
+                currentTheme={currentTheme}
+                handleStopRewatch={handleStopRewatch}
+                handleStartRewatch={handleStartRewatch}
+                navigate={navigate}
+              />
+            </div>
           )}
         </>
       )}
@@ -388,11 +458,10 @@ export const SeriesDetailPage = memo(() => {
             style={{
               width: '100%',
               padding: '16px',
-              background:
-                'linear-gradient(135deg, rgba(0, 212, 170, 0.8) 0%, rgba(0, 180, 216, 0.8) 100%)',
-              border: '1px solid rgba(0, 212, 170, 0.5)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}cc 0%, ${currentTheme.accent}cc 100%)`,
+              border: `1px solid ${currentTheme.primary}80`,
               borderRadius: '12px',
-              color: 'white',
+              color: currentTheme.text.secondary,
               fontSize: '16px',
               fontWeight: 600,
               cursor: isAdding ? 'not-allowed' : 'pointer',
@@ -408,595 +477,43 @@ export const SeriesDetailPage = memo(() => {
         </div>
       )}
 
-      {/* Episode Action Sheet */}
-      <EpisodeActionSheet
-        isOpen={showRewatchDialog.show}
-        episode={showRewatchDialog.item}
-        seriesTitle={series?.title || series?.name || ''}
-        seasonNumber={showRewatchDialog.seasonNumber || 1}
-        episodeNumber={showRewatchDialog.episodeNumber || 1}
-        onRewatch={handleEpisodeRewatch}
-        onUnwatch={handleEpisodeUnwatch}
-        onNavigateToDiscussion={() => {
-          const sn = showRewatchDialog.seasonNumber || 1;
-          const en = showRewatchDialog.episodeNumber || 1;
-          setShowRewatchDialog({ show: false, type: 'episode', item: null });
-          navigate(`/episode/${series?.id}/s/${sn}/e/${en}`);
+      <SeriesDetailDialogs
+        series={series}
+        showRewatchDialog={showRewatchDialog}
+        setShowRewatchDialog={setShowRewatchDialog}
+        handleEpisodeRewatch={handleEpisodeRewatch}
+        handleEpisodeUnwatch={handleEpisodeUnwatch}
+        dialog={dialog}
+        setDialog={setDialog}
+        snackbar={snackbar}
+        currentTheme={currentTheme}
+        navigate={navigate}
+      />
+
+      <RecapSheet
+        isOpen={showRecap}
+        onClose={() => {
+          setShowRecap(false);
+          recap.dismiss();
         }}
-        onClose={() => setShowRewatchDialog({ show: false, type: 'episode', item: null })}
+        onDismissPermanent={() => {
+          setShowRecap(false);
+          recap.dismissPermanent();
+        }}
+        seriesTitle={series?.title || localSeries?.title || ''}
+        daysSinceLastWatch={recap.daysSinceLastWatch}
+        recapEpisodes={recap.recapEpisodes}
+        aiRecap={recap.aiRecap}
+        aiLoading={recap.aiLoading}
+        aiError={recap.aiError}
+        onGenerateAiRecap={recap.generateAiRecap}
+        loading={recap.loading}
+        onAskQuestion={recap.askQuestion}
+        questionAnswer={recap.questionAnswer}
+        questionLoading={recap.questionLoading}
       />
-
-      {/* Discussion Thread */}
-      {series && (
-        <div style={{ padding: '0 20px 20px' }}>
-          <DiscussionThread
-            itemId={series.id}
-            itemType="series"
-            feedMetadata={{
-              itemTitle: series.title || series.name || 'Unbekannte Serie',
-              posterPath:
-                series.poster && typeof series.poster === 'object'
-                  ? series.poster.poster
-                  : undefined,
-            }}
-          />
-        </div>
-      )}
-
-      {/* Dialog */}
-      <Dialog
-        open={dialog.open}
-        onClose={() => setDialog({ ...dialog, open: false })}
-        title={
-          dialog.type === 'warning'
-            ? 'Bestätigung'
-            : dialog.type === 'error'
-              ? 'Fehler'
-              : 'Information'
-        }
-        message={dialog.message}
-        type={dialog.type}
-        actions={
-          dialog.onConfirm
-            ? [
-                {
-                  label: 'Abbrechen',
-                  onClick: () => setDialog({ ...dialog, open: false }),
-                  variant: 'secondary',
-                },
-                { label: 'Bestätigen', onClick: dialog.onConfirm, variant: 'primary' },
-              ]
-            : []
-        }
-      />
-
-      {/* Snackbar */}
-      {snackbar.open && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 'calc(20px + env(safe-area-inset-bottom))',
-            left: '20px',
-            right: '20px',
-            background: currentTheme.status.success,
-            color: 'white',
-            padding: '16px 20px',
-            borderRadius: '12px',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            zIndex: 1000,
-            fontSize: '15px',
-            fontWeight: 600,
-            boxShadow: currentTheme.shadow.card,
-          }}
-        >
-          <Check style={{ fontSize: '20px' }} />
-          <span>{snackbar.message}</span>
-        </div>
-      )}
     </div>
   );
 });
 
 SeriesDetailPage.displayName = 'SeriesDetailPage';
-
-/* ─── Inline SeasonsSection (keeps season/episode rendering close to page) ─── */
-
-interface SeasonsSectionProps {
-  series: NonNullable<ReturnType<typeof useSeriesData>['series']>;
-  selectedSeasonIndex: number;
-  setSelectedSeasonIndex: (i: number) => void;
-  setShowRewatchDialog: (d: {
-    show: boolean;
-    type: 'episode' | 'season';
-    item: any;
-    seasonNumber?: number;
-    episodeNumber?: number;
-  }) => void;
-  episodeDiscussionCounts: Record<number, number>;
-  warningColor: string;
-  currentTheme: any;
-  handleStopRewatch: () => void;
-  handleStartRewatch: (continueExisting?: boolean) => void;
-  navigate: ReturnType<typeof useNavigate>;
-}
-
-function SeasonsSection({
-  series,
-  selectedSeasonIndex,
-  setSelectedSeasonIndex,
-  setShowRewatchDialog,
-  episodeDiscussionCounts,
-  warningColor,
-  currentTheme,
-  handleStopRewatch,
-  handleStartRewatch,
-  navigate,
-}: SeasonsSectionProps) {
-  const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
-  const selectedSeason = series.seasons[selectedSeasonIndex];
-  const watchedEpisodes = selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
-  const totalEpisodes = selectedSeason?.episodes?.length || 0;
-  const seasonProgress =
-    totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
-
-  return (
-    <div style={{ padding: '0 20px 20px' }}>
-      {/* Section Header */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '12px',
-        }}
-      >
-        <h3
-          style={{
-            fontSize: '18px',
-            fontWeight: 600,
-            margin: 0,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-          }}
-        >
-          <List fontSize="small" />
-          Staffeln
-        </h3>
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => navigate(`/episodes/${series.id}`)}
-          style={{
-            padding: '6px 12px',
-            background: 'rgba(255,255,255,0.1)',
-            border: '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '8px',
-            color: 'white',
-            fontSize: '13px',
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          Alle verwalten
-        </motion.button>
-      </div>
-
-      {/* Rewatch Progress Banner */}
-      {hasActiveRewatch(series) && (
-        <RewatchBanner
-          series={series}
-          warningColor={warningColor}
-          currentTheme={currentTheme}
-          setSelectedSeasonIndex={setSelectedSeasonIndex}
-          setShowRewatchDialog={setShowRewatchDialog}
-          handleStopRewatch={handleStopRewatch}
-        />
-      )}
-
-      {/* Start Rewatch Button */}
-      {isSeriesFullyWatched(series) && !hasActiveRewatch(series) && (
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => handleStartRewatch()}
-          style={{
-            width: '100%',
-            padding: '12px',
-            background: `${warningColor}20`,
-            border: `1px solid ${warningColor}50`,
-            borderRadius: '10px',
-            color: warningColor,
-            fontSize: '15px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
-            marginBottom: '12px',
-          }}
-        >
-          <Repeat style={{ fontSize: '18px' }} />
-          Rewatch starten
-        </motion.button>
-      )}
-
-      {/* Implicit Rewatch Detection */}
-      {(() => {
-        const implicitRound = getImplicitRewatchRound(series);
-        if (implicitRound === 0) return null;
-        return (
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleStartRewatch(true)}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: `${warningColor}20`,
-              border: `1px solid ${warningColor}50`,
-              borderRadius: '10px',
-              color: warningColor,
-              fontSize: '15px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginBottom: '12px',
-            }}
-          >
-            <Repeat style={{ fontSize: '18px' }} />
-            Rewatch fortsetzen
-          </motion.button>
-        );
-      })()}
-
-      {/* Season Tabs */}
-      <SeasonTabs
-        seasons={series.seasons}
-        selectedSeasonIndex={selectedSeasonIndex}
-        onSelectSeason={setSelectedSeasonIndex}
-      />
-
-      {/* Selected Season Content */}
-      <div
-        style={{
-          background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '12px',
-          padding: '16px',
-        }}
-      >
-        {/* Season header with view toggle */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '12px',
-          }}
-        >
-          <div>
-            <div style={{ fontSize: '15px', fontWeight: 600 }}>
-              Staffel {selectedSeason.seasonNumber + 1}
-            </div>
-            <div style={{ fontSize: '13px', opacity: 0.7 }}>
-              {watchedEpisodes}/{totalEpisodes} Episoden
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* View toggle */}
-            <button
-              onClick={() => setEpisodeView(episodeView === 'list' ? 'grid' : 'list')}
-              style={{
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '8px',
-                padding: '4px',
-                color: 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title={episodeView === 'list' ? 'Grid-Ansicht' : 'Listen-Ansicht'}
-            >
-              {episodeView === 'list' ? (
-                <GridView style={{ fontSize: '16px' }} />
-              ) : (
-                <List style={{ fontSize: '16px' }} />
-              )}
-            </button>
-            <div
-              style={{
-                padding: '4px 10px',
-                borderRadius: '9999px',
-                fontSize: '13px',
-                fontWeight: 600,
-                background:
-                  seasonProgress === 100
-                    ? 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                    : 'rgba(255,255,255,0.1)',
-              }}
-            >
-              {seasonProgress}%
-            </div>
-          </div>
-        </div>
-
-        {/* Episode List View (default) */}
-        {episodeView === 'list' && (
-          <div className="episode-list">
-            {selectedSeason.episodes?.map((episode, episodeIndex) => {
-              const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
-              const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
-              return (
-                <div
-                  key={episode.id}
-                  onClick={() => {
-                    if (episode.watched) {
-                      setShowRewatchDialog({
-                        show: true,
-                        type: 'episode',
-                        item: episode,
-                        seasonNumber: selectedSeason.seasonNumber + 1,
-                        episodeNumber: episodeIndex + 1,
-                      });
-                    } else {
-                      navigate(
-                        `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                      );
-                    }
-                  }}
-                  className={`episode-list-item ${episode.watched ? 'episode-list-item--watched' : 'episode-list-item--unwatched'}`}
-                >
-                  {/* Number circle */}
-                  <div
-                    className="episode-list-number"
-                    style={{
-                      background: episode.watched
-                        ? isRewatched
-                          ? `${warningColor}30`
-                          : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                        : 'rgba(255,255,255,0.1)',
-                      border: isRewatched ? `2px solid ${warningColor}` : 'none',
-                      color: episode.watched ? '#fff' : 'rgba(255,255,255,0.7)',
-                    }}
-                  >
-                    {episode.watched ? <Check style={{ fontSize: '16px' }} /> : episodeIndex + 1}
-                  </div>
-
-                  {/* Episode info */}
-                  <div className="episode-list-info">
-                    <div className="episode-list-title">Episode {episodeIndex + 1}</div>
-                    {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
-                  </div>
-
-                  {/* Rewatch badge */}
-                  {isRewatched && (
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        color: warningColor,
-                      }}
-                    >
-                      ×{episode.watchCount}
-                    </span>
-                  )}
-
-                  {/* Discussion dot */}
-                  {discussionCount > 0 && (
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        background: currentTheme.primary,
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Episode Grid View (compact) */}
-        {episodeView === 'grid' && (
-          <div className="episode-grid">
-            {selectedSeason.episodes?.map((episode, episodeIndex) => {
-              const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
-              const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
-              return (
-                <motion.div
-                  key={episode.id}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    if (episode.watched) {
-                      setShowRewatchDialog({
-                        show: true,
-                        type: 'episode',
-                        item: episode,
-                        seasonNumber: selectedSeason.seasonNumber + 1,
-                        episodeNumber: episodeIndex + 1,
-                      });
-                    } else {
-                      navigate(
-                        `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                      );
-                    }
-                  }}
-                  className="episode-cell"
-                  style={{
-                    background: episode.watched
-                      ? isRewatched
-                        ? `${warningColor}30`
-                        : 'linear-gradient(135deg, #00d4aa 0%, #00b4d8 100%)'
-                      : 'rgba(255,255,255,0.1)',
-                    border: episode.watched
-                      ? isRewatched
-                        ? `2px solid ${warningColor}`
-                        : 'none'
-                      : '1px solid rgba(255,255,255,0.2)',
-                  }}
-                >
-                  {episodeIndex + 1}
-                  {isRewatched && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        top: '-5px',
-                        right: '-6px',
-                        background: warningColor,
-                        borderRadius: '6px',
-                        padding: '0 3px',
-                        height: '12px',
-                        fontSize: '8px',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#000',
-                        lineHeight: 1,
-                      }}
-                    >
-                      ×{episode.watchCount}
-                    </span>
-                  )}
-                  {discussionCount > 0 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        bottom: '-2px',
-                        left: '-2px',
-                        background: currentTheme.primary,
-                        borderRadius: '50%',
-                        width: '6px',
-                        height: '6px',
-                      }}
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Rewatch Banner subcomponent ─── */
-
-function RewatchBanner({
-  series,
-  warningColor,
-  currentTheme,
-  setSelectedSeasonIndex,
-  setShowRewatchDialog,
-  handleStopRewatch,
-}: {
-  series: any;
-  warningColor: string;
-  currentTheme: any;
-  setSelectedSeasonIndex: (i: number) => void;
-  setShowRewatchDialog: (d: any) => void;
-  handleStopRewatch: () => void;
-}) {
-  const rewatchRound = getRewatchRound(series);
-  const rewatchProgress = getRewatchProgress(series);
-  const rewatchPercent =
-    rewatchProgress.total > 0
-      ? Math.round((rewatchProgress.current / rewatchProgress.total) * 100)
-      : 0;
-  const nextEp = getNextRewatchEpisode(series);
-
-  return (
-    <div
-      style={{
-        background: `${warningColor}15`,
-        border: `1px solid ${warningColor}40`,
-        borderRadius: '12px',
-        padding: '12px 16px',
-        marginBottom: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Repeat style={{ fontSize: '16px', color: warningColor }} />
-          <span style={{ fontSize: '15px', fontWeight: 600 }}>Rewatch #{rewatchRound}</span>
-        </div>
-        <span
-          style={{
-            fontSize: '13px',
-            color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
-          }}
-        >
-          {rewatchProgress.current}/{rewatchProgress.total} Episoden
-        </span>
-      </div>
-      <ProgressBar value={rewatchPercent} color={warningColor} toColor="#f59e0b" height={6} />
-      {nextEp && (
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={() => {
-            const sIdx = series.seasons.findIndex(
-              (s: any) => s.seasonNumber === nextEp.seasonNumber
-            );
-            if (sIdx >= 0) {
-              setSelectedSeasonIndex(sIdx);
-              setShowRewatchDialog({
-                show: true,
-                type: 'episode',
-                item: series.seasons[sIdx].episodes[nextEp.episodeIndex],
-                seasonNumber: nextEp.seasonNumber + 1,
-                episodeNumber: nextEp.episodeIndex + 1,
-              });
-            }
-          }}
-          style={{
-            padding: '8px 14px',
-            background: `${warningColor}25`,
-            border: `1px solid ${warningColor}60`,
-            borderRadius: '8px',
-            color: warningColor,
-            fontSize: '14px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          Nächste: S{nextEp.seasonNumber + 1} E{nextEp.episodeIndex + 1} — {nextEp.name}
-        </motion.button>
-      )}
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={handleStopRewatch}
-        style={{
-          padding: '6px 12px',
-          background: 'transparent',
-          border: `1px solid ${warningColor}40`,
-          borderRadius: '8px',
-          color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
-          fontSize: '13px',
-          cursor: 'pointer',
-          alignSelf: 'flex-end',
-        }}
-      >
-        Rewatch beenden
-      </motion.button>
-    </div>
-  );
-}

@@ -1,6 +1,7 @@
 import { Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 const genreIcons: Record<string, React.ReactNode> = {
   Action: <Zap size={20} />,
@@ -12,15 +13,15 @@ const genreIcons: Record<string, React.ReactNode> = {
   Thriller: <TrendingUp size={20} />,
 };
 
-const genreColors: Record<string, string> = {
+const getGenreColors = (accent: string): Record<string, string> => ({
   Action: '#ff6b6b',
   Comedy: '#ffd43b',
-  Drama: 'var(--theme-secondary-gradient, #667eea)',
+  Drama: accent,
   Romance: '#f06292',
   'Sci-Fi': '#4ecdc4',
-  Fantasy: 'var(--theme-secondary-gradient, #764ba2)',
+  Fantasy: accent,
   Thriller: '#e74c3c',
-};
+});
 
 interface GenreRatingSectionProps {
   genreRatings: Record<string, number>;
@@ -31,6 +32,8 @@ export const GenreRatingSection = ({
   genreRatings,
   onGenreRatingChange,
 }: GenreRatingSectionProps) => {
+  const { currentTheme } = useTheme();
+  const genreColors = getGenreColors(currentTheme.accent);
   return (
     <motion.div
       key="genre"
@@ -40,40 +43,46 @@ export const GenreRatingSection = ({
       transition={{ duration: 0.2 }}
       className="rate-genre-list"
     >
-      {Object.keys(genreRatings).map((genre) => {
-        const color = genreColors[genre] || 'var(--theme-secondary-gradient, #667eea)';
-        return (
-          <div key={genre} className="rate-genre-item">
-            <div className="rate-genre-header">
-              <div className="rate-genre-info">
-                <div
-                  className="rate-genre-icon"
-                  style={{
-                    background: `${color}20`,
-                    color: color,
-                  }}
-                >
-                  {genreIcons[genre] || <Star />}
+      {Object.keys(genreRatings)
+        .sort((a, b) => {
+          if (a === 'All') return -1;
+          if (b === 'All') return 1;
+          return a.localeCompare(b);
+        })
+        .map((genre) => {
+          const color = genreColors[genre] || currentTheme.accent;
+          return (
+            <div key={genre} className="rate-genre-item">
+              <div className="rate-genre-header">
+                <div className="rate-genre-info">
+                  <div
+                    className="rate-genre-icon"
+                    style={{
+                      background: `${color}20`,
+                      color: color,
+                    }}
+                  >
+                    {genreIcons[genre] || <Star />}
+                  </div>
+                  <span className="rate-genre-name">{genre}</span>
                 </div>
-                <span className="rate-genre-name">{genre}</span>
+                <span className="rate-genre-value">{genreRatings[genre].toFixed(1)}</span>
               </div>
-              <span className="rate-genre-value">{genreRatings[genre].toFixed(1)}</span>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.1"
+                value={genreRatings[genre]}
+                onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
+                className="rate-genre-range"
+                style={{
+                  background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
+                }}
+              />
             </div>
-            <input
-              type="range"
-              min="0"
-              max="10"
-              step="0.1"
-              value={genreRatings[genre]}
-              onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
-              className="rate-genre-range"
-              style={{
-                background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
-              }}
-            />
-          </div>
-        );
-      })}
+          );
+        })}
     </motion.div>
   );
 };

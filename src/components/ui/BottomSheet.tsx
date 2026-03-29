@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
-import { AnimatePresence, motion, useDragControls, PanInfo } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import type { PanInfo } from 'framer-motion';
+import { AnimatePresence, motion, useDragControls } from 'framer-motion';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
@@ -64,7 +65,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             backdropFilter: 'blur(4px)',
           }}
           onClick={onClose}
-          aria-hidden="true"
         >
           <motion.div
             ref={sheetRef}
@@ -98,6 +98,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               boxShadow:
                 '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3)',
               marginBottom: bottomOffset,
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

@@ -14,6 +14,7 @@ interface ActivityEntryCardProps {
     background: { default: string };
     text: { primary: string; secondary: string; muted: string };
     primary: string;
+    accent: string;
     status: { error: string; warning: string };
   };
   onClick: () => void;
@@ -131,16 +132,16 @@ export const ActivityEntryCard = React.memo(
                   alignItems: 'center',
                   gap: '3px',
                   padding: '2px 8px',
-                  background: `${theme.status.warning}20`,
+                  background: `${theme.accent}20`,
                   borderRadius: '10px',
                 }}
               >
-                <Star style={{ fontSize: '13px', color: theme.status.warning }} />
+                <Star style={{ fontSize: '13px', color: theme.accent }} />
                 <span
                   style={{
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: theme.status.warning,
+                    color: theme.accent,
                   }}
                 >
                   {rating}

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContext';
+import { useTheme } from '../../../contexts/ThemeContextDef';
 import { GradientText } from '../../../components/ui';
 import type { Genre } from '../hooks/useOnboardingSearch';
 
@@ -41,7 +41,7 @@ export const WelcomeStep: React.FC<Props> = ({
         <GradientText
           as="h1"
           from={currentTheme.primary}
-          to="#a855f7"
+          to={currentTheme.accent}
           style={{ fontSize: 24, fontWeight: 800, margin: 0 }}
         >
           Willkommen, {username}!
@@ -157,9 +157,10 @@ export const WelcomeStep: React.FC<Props> = ({
             border: 'none',
             background:
               selectedGenres.length > 0
-                ? `linear-gradient(135deg, ${currentTheme.primary}, #a855f7)`
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                 : currentTheme.background.surface,
-            color: selectedGenres.length > 0 ? 'white' : currentTheme.text.muted,
+            color:
+              selectedGenres.length > 0 ? currentTheme.text.secondary : currentTheme.text.muted,
             fontSize: 16,
             fontWeight: 600,
             cursor: selectedGenres.length > 0 ? 'pointer' : 'not-allowed',

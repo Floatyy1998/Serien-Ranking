@@ -1,77 +1,30 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../App';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
-import {
-  detectInactiveSeries,
-  detectInactiveRewatches,
-} from '../lib/validation/inactiveSeriesDetection';
-import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
-import { Series } from '../types/Series';
+import type { Series } from '../types/Series';
+
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-
-interface SeriesListContextType {
-  seriesList: Series[];
-  allSeriesList: Series[];
-  hiddenSeriesList: Series[];
-  loading: boolean;
-  seriesWithNewSeasons: Series[];
-  inactiveSeries: Series[];
-  inactiveRewatches: Series[];
-  completedSeries: Series[];
-  clearNewSeasons: () => void;
-  clearInactiveSeries: () => void;
-  clearInactiveRewatches: () => void;
-  clearCompletedSeries: () => void;
-  recheckForNewSeasons: () => void;
-  refetchSeries: () => void;
-  toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
-  isOffline: boolean;
-  isStale: boolean;
-  // Test functions for development
-  simulateNewSeason?: (seriesId: number) => void;
-  forceDetection?: () => void;
-}
-
-export const SeriesListContext = createContext<SeriesListContextType>({
-  seriesList: [],
-  allSeriesList: [],
-  hiddenSeriesList: [],
-  loading: true,
-  seriesWithNewSeasons: [],
-  inactiveSeries: [],
-  inactiveRewatches: [],
-  completedSeries: [],
-  clearNewSeasons: () => {},
-  clearInactiveSeries: () => {},
-  clearInactiveRewatches: () => {},
-  clearCompletedSeries: () => {},
-  recheckForNewSeasons: () => {},
-  refetchSeries: () => {},
-  toggleHideSeries: async () => {},
-  isOffline: false,
-  isStale: false,
-});
+import {
+  getSessionStorageJSON,
+  fixMissingFirstWatchedAt,
+  createNewSeasonDetectionRunner,
+  createInactiveSeriesDetectionRunner,
+  createCompletedSeriesDetectionRunner,
+  createUnratedSeriesDetectionRunner,
+  createProviderChangeDetectionRunner,
+  type ProviderChangeInfo,
+} from './seriesListDetection';
+import { checkSeriesIntegrity } from './dataIntegrityChecker';
+import { SeriesListContext } from './SeriesListContext';
 
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth()!;
+  const { user } = useAuth() || {};
 
   // Verwende sessionStorage um State zwischen Re-Renders zu behalten
-  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('seriesWithNewSeasons');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          return parsed;
-        } catch (e) {
-          console.error('❌ Error parsing sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() =>
+    getSessionStorageJSON('seriesWithNewSeasons', [])
+  );
 
   // Listen for sessionStorage updates from other tabs via storage event
   useEffect(() => {
@@ -99,33 +52,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   });
 
   // State für inaktive Serien
-  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('inactiveSeries');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error('❌ Error parsing inactiveSeries from sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('inactiveSeries', [])
+  );
 
-  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('inactiveRewatches');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch {
-          /* ignore */
-        }
-      }
-    }
-    return [];
-  });
+  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() =>
+    getSessionStorageJSON('inactiveRewatches', [])
+  );
 
   const [hasCheckedForInactive, setHasCheckedForInactive] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -135,19 +68,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   });
 
   // State für komplett geschaute Serien
-  const [completedSeries, setCompletedSeries] = useState<Series[]>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('completedSeries');
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch (e) {
-          console.error('❌ Error parsing completedSeries from sessionStorage:', e);
-        }
-      }
-    }
-    return [];
-  });
+  const [completedSeries, setCompletedSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('completedSeries', [])
+  );
 
   const [hasCheckedForCompleted, setHasCheckedForCompleted] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -156,15 +79,42 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return false;
   });
 
+  // State für unbewertete Serien
+  const [unratedSeries, setUnratedSeries] = useState<Series[]>(() =>
+    getSessionStorageJSON('unratedSeries', [])
+  );
+
+  const [hasCheckedForUnrated, setHasCheckedForUnrated] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForUnrated') === 'true';
+    }
+    return false;
+  });
+
+  // State für Provider-Änderungen
+  const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>(() =>
+    getSessionStorageJSON('providerChanges', [])
+  );
+
+  const [hasCheckedForProviderChanges, setHasCheckedForProviderChanges] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('hasCheckedForProviderChanges') === 'true';
+    }
+    return false;
+  });
+
   const detectionRunRef = useRef(false);
   const inactiveDetectionRunRef = useRef(false);
   const completedDetectionRunRef = useRef(false);
+  const unratedDetectionRunRef = useRef(false);
+  const providerChangeDetectionRunRef = useRef(false);
   const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inactiveDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const unratedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const providerChangeDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const firstWatchedAtFixedRef = useRef(false);
 
-  // 🚀 Enhanced Cache mit Offline-Support für Serien
   const {
     data: seriesData,
     loading,
@@ -172,255 +122,114 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     isStale,
     isOffline,
   } = useEnhancedFirebaseCache<Record<string, Series>>(user ? `${user.uid}/serien` : '', {
-    ttl: 24 * 60 * 60 * 1000, // 24h Cache - offline kann eh nichts geändert werden
-    useRealtimeListener: true, // Realtime für sofortige Updates
-    enableOfflineSupport: true, // Offline-First Unterstützung
-    syncOnReconnect: true, // Auto-Sync bei Reconnect
+    ttl: 24 * 60 * 60 * 1000,
+    useRealtimeListener: true,
+    enableOfflineSupport: true,
+    syncOnReconnect: true,
   });
 
-  // Konvertiere Object zu Array und trenne sichtbare/versteckte Serien
-  // Firebase can return sparse arrays as objects - normalize seasons to arrays
-  const allSeries: Series[] = seriesData
-    ? Object.values(seriesData).map((s) => ({
-        ...s,
-        seasons: Array.isArray(s.seasons) ? s.seasons : s.seasons ? Object.values(s.seasons) : [],
-      }))
-    : [];
-  const seriesList = allSeries.filter((s) => !s.hidden);
-  const hiddenSeriesList = allSeries.filter((s) => s.hidden === true);
+  // Konvertiere Object zu Array, sanitize kaputte Daten, logge Probleme ins Admin-Panel
+  const allSeries: Series[] = useMemo(() => {
+    if (!seriesData || !user) return [];
 
-  // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
-  // Diese Funktion setzt das HEUTIGE Datum für alte Episoden - das verfälscht historische Daten!
-  // Für Wrapped 2026 werden die Daten korrekt über WatchActivityService gesammelt.
-  // Diese Funktion sollte NICHT mehr verwendet werden, außer für spezielle Migrations-Fälle.
-  const fixMissingFirstWatchedAt = useCallback(
-    async (userId: string, seriesData: Record<string, Series>) => {
-      console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
-      console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
-      console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
-      try {
-        const todayISO = new Date().toISOString();
-        const updates: Record<string, string | null> = {};
-        let totalUpdated = 0;
-        let totalWatchedEpisodes = 0;
-        let totalEpisodesWithFirstWatched = 0;
+    const { sanitized, issues } = checkSeriesIntegrity(seriesData, user.uid);
 
-        // Iterate through all series
-        Object.keys(seriesData).forEach((seriesKey) => {
-          const series: Series = seriesData[seriesKey];
-
-          if (!series.seasons) return;
-
-          // Iterate through all seasons
-          series.seasons.forEach((season, seasonIndex) => {
-            if (!season.episodes) return;
-
-            // Iterate through all episodes
-            season.episodes.forEach((episode, episodeIndex) => {
-              if (episode.watched) {
-                totalWatchedEpisodes++;
-
-                if (episode.firstWatchedAt) {
-                  totalEpisodesWithFirstWatched++;
-                } else {
-                  // Check if episode is watched but doesn't have firstWatchedAt
-                  const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
-                  updates[episodePath] = todayISO;
-                  totalUpdated++;
-                }
-              }
-            });
-          });
+    if (issues.length > 0) {
+      firebase
+        .database()
+        .ref(`admin/dataIntegrityIssues/${user.uid}`)
+        .set({
+          timestamp: new Date().toISOString(),
+          userName: user.displayName || user.email || user.uid,
+          issueCount: issues.length,
+          issues,
         });
+    } else {
+      firebase.database().ref(`admin/dataIntegrityIssues/${user.uid}`).remove();
+    }
 
-        // Apply all updates in a single batch
-        if (Object.keys(updates).length > 0) {
-          await firebase.database().ref().update(updates);
-        }
-      } catch (error) {
-        console.error('❌ Error fixing firstWatchedAt dates:', error);
-      }
-    },
-    []
-  );
+    return sanitized;
+  }, [seriesData, user]);
+  const seriesList = useMemo(() => allSeries.filter((s) => !s.hidden), [allSeries]);
+  const hiddenSeriesList = useMemo(() => allSeries.filter((s) => s.hidden === true), [allSeries]);
 
   // Make fix function available globally for manual execution
   useEffect(() => {
     if (user && seriesData && !loading) {
-      // Make function available in console
-      (window as any).fixFirstWatchedAt = () => {
+      (window as unknown as Record<string, unknown>).fixFirstWatchedAt = () => {
         fixMissingFirstWatchedAt(user.uid, seriesData);
       };
     } else {
-      // Remove function when not ready
-      delete (window as any).fixFirstWatchedAt;
+      delete (window as unknown as Record<string, unknown>).fixFirstWatchedAt;
     }
-  }, [user, seriesData, loading, fixMissingFirstWatchedAt]);
+  }, [user, seriesData, loading]);
 
   // Signal when initial data is loaded
   useEffect(() => {
-    // If no user, data is immediately "ready" (empty)
     if (!user) {
       window.setAppReady?.('initialData', true);
       return;
     }
 
-    // If user exists and data has loaded
     if (!loading) {
       window.setAppReady?.('initialData', true);
     }
   }, [user, loading]);
 
-  // Debounced detection function
-  const runNewSeasonDetection = useCallback((seriesList: Series[], userId: string) => {
-    // Clear any pending timeout
-    if (detectionTimeoutRef.current) {
-      clearTimeout(detectionTimeoutRef.current);
-      detectionTimeoutRef.current = null;
-    }
+  // Debounced detection functions (extracted to seriesListDetection.ts)
+  const runNewSeasonDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createNewSeasonDetectionRunner(
+        { detectionRunRef, detectionTimeoutRef },
+        setSeriesWithNewSeasons,
+        setHasCheckedForNewSeasons
+      )(list, userId),
+    []
+  );
 
-    // Check if already running
-    if (detectionRunRef.current) {
-      return;
-    }
+  const runInactiveSeriesDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createInactiveSeriesDetectionRunner(
+        { inactiveDetectionRunRef, inactiveDetectionTimeoutRef },
+        setInactiveSeries,
+        setInactiveRewatches,
+        setHasCheckedForInactive
+      )(list, userId),
+    []
+  );
 
-    detectionTimeoutRef.current = setTimeout(async () => {
-      if (detectionRunRef.current || seriesList.length === 0) {
-        return;
-      }
+  const runCompletedSeriesDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createCompletedSeriesDetectionRunner(
+        { completedDetectionRunRef, completedDetectionTimeoutRef },
+        setCompletedSeries,
+        setHasCheckedForCompleted
+      )(list, userId),
+    []
+  );
 
-      detectionRunRef.current = true;
+  const runUnratedSeriesDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createUnratedSeriesDetectionRunner(
+        { unratedDetectionRunRef, unratedDetectionTimeoutRef },
+        setUnratedSeries,
+        setHasCheckedForUnrated
+      )(list, userId),
+    []
+  );
 
-      try {
-        const newSeasons = await detectNewSeasons(seriesList, userId);
-
-        if (newSeasons.length > 0) {
-          // Speichere in sessionStorage
-          if (typeof window !== 'undefined') {
-            const dataToStore = JSON.stringify(newSeasons);
-            sessionStorage.setItem('seriesWithNewSeasons', dataToStore);
-          }
-          setSeriesWithNewSeasons(newSeasons);
-          // Force update
-          setTimeout(() => {
-            setSeriesWithNewSeasons([...newSeasons]);
-          }, 100);
-          // WICHTIG: Nicht sofort hasCheckedForNewSeasons setzen, damit der Dialog angezeigt werden kann
-        } else {
-          setHasCheckedForNewSeasons(true);
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
-          }
-        }
-      } catch (error) {
-        setHasCheckedForNewSeasons(true);
-      } finally {
-        detectionRunRef.current = false;
-      }
-    }, 500); // Erhöht auf 500ms für besseres Debouncing
-  }, []);
-
-  // Debounced detection function for inactive series
-  const runInactiveSeriesDetection = useCallback((seriesList: Series[], userId: string) => {
-    if (inactiveDetectionTimeoutRef.current) {
-      clearTimeout(inactiveDetectionTimeoutRef.current);
-      inactiveDetectionTimeoutRef.current = null;
-    }
-
-    if (inactiveDetectionRunRef.current) {
-      return;
-    }
-
-    inactiveDetectionTimeoutRef.current = setTimeout(async () => {
-      if (inactiveDetectionRunRef.current || seriesList.length === 0) {
-        return;
-      }
-
-      inactiveDetectionRunRef.current = true;
-
-      try {
-        const [inactive, inactiveRew] = await Promise.all([
-          detectInactiveSeries(seriesList, userId),
-          detectInactiveRewatches(seriesList, userId),
-        ]);
-
-        if (inactiveRew.length > 0) {
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('inactiveRewatches', JSON.stringify(inactiveRew));
-          }
-          setInactiveRewatches(inactiveRew);
-        }
-
-        if (inactive.length > 0) {
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('inactiveSeries', JSON.stringify(inactive));
-          }
-          setInactiveSeries(inactive);
-          setTimeout(() => {
-            setInactiveSeries([...inactive]);
-          }, 100);
-        } else if (inactiveRew.length === 0) {
-          setHasCheckedForInactive(true);
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('hasCheckedForInactive', 'true');
-          }
-        }
-      } catch (error) {
-        console.error('Error detecting inactive series:', error);
-        setHasCheckedForInactive(true);
-      } finally {
-        inactiveDetectionRunRef.current = false;
-      }
-    }, 500);
-  }, []);
-
-  // Debounced detection function for completed series
-  const runCompletedSeriesDetection = useCallback((seriesList: Series[], userId: string) => {
-    if (completedDetectionTimeoutRef.current) {
-      clearTimeout(completedDetectionTimeoutRef.current);
-      completedDetectionTimeoutRef.current = null;
-    }
-
-    if (completedDetectionRunRef.current) {
-      return;
-    }
-
-    completedDetectionTimeoutRef.current = setTimeout(async () => {
-      if (completedDetectionRunRef.current || seriesList.length === 0) {
-        return;
-      }
-
-      completedDetectionRunRef.current = true;
-
-      try {
-        const completed = await detectCompletedSeries(seriesList, userId);
-
-        if (completed.length > 0) {
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('completedSeries', JSON.stringify(completed));
-          }
-          setCompletedSeries(completed);
-          setTimeout(() => {
-            setCompletedSeries([...completed]);
-          }, 100);
-        } else {
-          setHasCheckedForCompleted(true);
-          if (typeof window !== 'undefined') {
-            sessionStorage.setItem('hasCheckedForCompleted', 'true');
-          }
-        }
-      } catch (error) {
-        console.error('Error detecting completed series:', error);
-        setHasCheckedForCompleted(true);
-      } finally {
-        completedDetectionRunRef.current = false;
-      }
-    }, 500);
-  }, []);
+  const runProviderChangeDetection = useCallback(
+    (list: Series[], userId: string) =>
+      createProviderChangeDetectionRunner(
+        { providerChangeDetectionRunRef, providerChangeDetectionTimeoutRef },
+        setProviderChanges,
+        setHasCheckedForProviderChanges
+      )(list, userId),
+    []
+  );
 
   // New season detection nur beim ersten Load und wenn online
   useEffect(() => {
-    // Prüfe ob bereits neue Staffeln im State sind
     if (seriesWithNewSeasons.length > 0) {
       return;
     }
@@ -432,7 +241,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runNewSeasonDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length, // Nur auf Längenänderung reagieren, nicht auf jede Änderung
+    seriesList,
     hasCheckedForNewSeasons,
     isOffline,
     seriesWithNewSeasons.length,
@@ -452,7 +261,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runInactiveSeriesDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForInactive,
     isOffline,
     inactiveSeries.length,
@@ -472,16 +281,59 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     runCompletedSeriesDetection(seriesList, user.uid);
   }, [
     user,
-    seriesList.length,
+    seriesList,
     hasCheckedForCompleted,
     isOffline,
     completedSeries.length,
     runCompletedSeriesDetection,
   ]);
 
-  // Reset bei User-Wechsel
+  // Unrated series detection
   useEffect(() => {
-    if (!user) {
+    if (unratedSeries.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForUnrated || isOffline) {
+      return;
+    }
+
+    runUnratedSeriesDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList,
+    hasCheckedForUnrated,
+    isOffline,
+    unratedSeries.length,
+    runUnratedSeriesDetection,
+  ]);
+
+  // Provider change detection
+  useEffect(() => {
+    if (providerChanges.length > 0) {
+      return;
+    }
+
+    if (!user || !seriesList.length || hasCheckedForProviderChanges || isOffline) {
+      return;
+    }
+
+    runProviderChangeDetection(seriesList, user.uid);
+  }, [
+    user,
+    seriesList,
+    hasCheckedForProviderChanges,
+    isOffline,
+    providerChanges.length,
+    runProviderChangeDetection,
+  ]);
+
+  // Reset bei User-Wechsel - use cleanup to avoid setState-in-effect
+  useEffect(() => {
+    if (!user) return;
+
+    // When user changes/logs out, cleanup resets state
+    return () => {
       setSeriesWithNewSeasons([]);
       setHasCheckedForNewSeasons(false);
       setInactiveSeries([]);
@@ -489,10 +341,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setHasCheckedForInactive(false);
       setCompletedSeries([]);
       setHasCheckedForCompleted(false);
+      setUnratedSeries([]);
+      setHasCheckedForUnrated(false);
+      setProviderChanges([]);
+      setHasCheckedForProviderChanges(false);
       detectionRunRef.current = false;
       inactiveDetectionRunRef.current = false;
       completedDetectionRunRef.current = false;
-      firstWatchedAtFixedRef.current = false; // Reset fix flag on logout
+      providerChangeDetectionRunRef.current = false;
+      firstWatchedAtFixedRef.current = false;
 
       if (detectionTimeoutRef.current) {
         clearTimeout(detectionTimeoutRef.current);
@@ -507,7 +364,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         completedDetectionTimeoutRef.current = null;
       }
 
-      // Clear sessionStorage on logout
+      if (providerChangeDetectionTimeoutRef.current) {
+        clearTimeout(providerChangeDetectionTimeoutRef.current);
+        providerChangeDetectionTimeoutRef.current = null;
+      }
+
       if (typeof window !== 'undefined') {
         sessionStorage.removeItem('seriesWithNewSeasons');
         sessionStorage.removeItem('hasCheckedForNewSeasons');
@@ -516,16 +377,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         sessionStorage.removeItem('hasCheckedForInactive');
         sessionStorage.removeItem('completedSeries');
         sessionStorage.removeItem('hasCheckedForCompleted');
+        sessionStorage.removeItem('providerChanges');
+        sessionStorage.removeItem('hasCheckedForProviderChanges');
       }
-    }
+    };
   }, [user]);
 
   const clearNewSeasons = useCallback(() => {
     setSeriesWithNewSeasons([]);
-    setHasCheckedForNewSeasons(true); // Jetzt als gecheckt markieren
+    setHasCheckedForNewSeasons(true);
     detectionRunRef.current = false;
 
-    // Clear from sessionStorage
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('seriesWithNewSeasons');
       sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
@@ -561,11 +423,32 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  const clearUnratedSeries = useCallback(() => {
+    setUnratedSeries([]);
+    setHasCheckedForUnrated(true);
+    unratedDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('unratedSeries');
+      sessionStorage.setItem('hasCheckedForUnrated', 'true');
+    }
+  }, []);
+
+  const clearProviderChanges = useCallback(() => {
+    setProviderChanges([]);
+    setHasCheckedForProviderChanges(true);
+    providerChangeDetectionRunRef.current = false;
+
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('providerChanges');
+      sessionStorage.setItem('hasCheckedForProviderChanges', 'true');
+    }
+  }, []);
+
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
     setHasCheckedForNewSeasons(false);
 
-    // Clear sessionStorage to allow new check
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('hasCheckedForNewSeasons');
       sessionStorage.removeItem('seriesWithNewSeasons');
@@ -600,16 +483,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
       const series = seriesList.find((s) => s.id === seriesId);
       if (series) {
-        // Create a test series with increased season count
         const testSeries = {
           ...series,
           seasonCount: (series.seasonCount || 0) + 1,
         };
 
-        // Add to new seasons list
         setSeriesWithNewSeasons((prev) => [...prev, testSeries]);
 
-        // Store in sessionStorage
         if (typeof window !== 'undefined') {
           const newList = [...seriesWithNewSeasons, testSeries];
           sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
@@ -622,17 +502,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const forceDetection = useCallback(() => {
     if (process.env.NODE_ENV !== 'development') return;
 
-    // Reset detection state
     detectionRunRef.current = false;
     setHasCheckedForNewSeasons(false);
 
-    // Clear sessionStorage
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('hasCheckedForNewSeasons');
       sessionStorage.removeItem('seriesWithNewSeasons');
     }
 
-    // Force run detection
     if (user && seriesList.length > 0) {
       runNewSeasonDetection(seriesList, user.uid);
     }
@@ -649,10 +526,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         inactiveSeries,
         inactiveRewatches,
         completedSeries,
+        unratedSeries,
+        providerChanges,
         clearNewSeasons,
         clearInactiveSeries,
         clearInactiveRewatches,
         clearCompletedSeries,
+        clearUnratedSeries,
+        clearProviderChanges,
         recheckForNewSeasons,
         refetchSeries,
         toggleHideSeries,
@@ -670,5 +551,3 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     </SeriesListContext.Provider>
   );
 };
-
-export const useSeriesList = () => useContext(SeriesListContext);

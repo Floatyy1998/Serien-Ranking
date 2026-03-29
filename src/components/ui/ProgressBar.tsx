@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface ProgressBarProps {
   value: number;
@@ -21,7 +21,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const fromColor = color || currentTheme.primary;
-  const endColor = toColor || 'var(--theme-secondary-gradient, #8b5cf6)';
+  const endColor = toColor || currentTheme.accent;
   const clampedValue = Math.min(100, Math.max(0, value));
 
   return (

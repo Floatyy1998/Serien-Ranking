@@ -3,11 +3,14 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Schedule, ChevronRight } from '@mui/icons-material';
+import { hasEpisodeAired } from '../../utils/episodeDate';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import Schedule from '@mui/icons-material/Schedule';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useSeriesList } from '../../contexts/SeriesListContext';
+import { IconContainer, NavCard } from '../../components/ui';
 
 export const CatchUpCard: React.FC = () => {
   const navigate = useNavigate();
@@ -26,15 +29,13 @@ export const CatchUpCard: React.FC = () => {
       let hasUnwatched = false;
       let seriesRemainingEpisodes = 0;
       let seriesRemainingMinutes = 0;
-      const seriesRuntime = series.episodeRuntime || 45;
+      const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons.forEach((season) => {
         if (!season.episodes) return;
         season.episodes.forEach((episode) => {
-          const airDate = episode.air_date || episode.airDate || episode.firstAired;
-          if (!airDate) return; // Skip episodes without air date
-          const hasAired = new Date(airDate) <= new Date();
-          if (hasAired && !episode.watched) {
+          if (!hasEpisodeAired(episode)) return;
+          if (!episode.watched) {
             hasUnwatched = true;
             seriesRemainingEpisodes++;
             seriesRemainingMinutes += episode.runtime || seriesRuntime;
@@ -52,7 +53,6 @@ export const CatchUpCard: React.FC = () => {
     return { seriesCount, totalEpisodes, totalMinutes };
   }, [seriesList]);
 
-  // Format time helper
   const formatTime = (minutes: number): string => {
     if (minutes < 60) return `${minutes} Min`;
     const hours = Math.floor(minutes / 60);
@@ -61,51 +61,20 @@ export const CatchUpCard: React.FC = () => {
     return `${days}+ Tage`;
   };
 
-  // Don't show if nothing to catch up
-  if (stats.seriesCount === 0) {
-    return null;
-  }
+  if (stats.seriesCount === 0) return null;
 
   const accentColor = currentTheme.primary;
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.98 }}
+    <NavCard
       onClick={() => navigate('/catch-up')}
+      accentColor={accentColor}
       aria-label={`Backlog: ${stats.seriesCount} Serien, ${stats.totalEpisodes} Episoden`}
-      style={{
-        margin: '0 20px',
-        padding: '12px 14px',
-        borderRadius: '14px',
-        background: `linear-gradient(135deg, ${accentColor}15, ${accentColor}05)`,
-        border: `1px solid ${accentColor}30`,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        width: 'calc(100% - 40px)',
-        textAlign: 'left',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-      }}
     >
-      {/* Icon */}
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: '12px',
-          background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
+      <IconContainer color={accentColor}>
         <Schedule style={{ fontSize: 20, color: 'white' }} />
-      </div>
+      </IconContainer>
 
-      {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <h2
           style={{
@@ -131,7 +100,6 @@ export const CatchUpCard: React.FC = () => {
         </p>
       </div>
 
-      {/* Stats Preview */}
       <div
         style={{
           display: 'flex',
@@ -150,24 +118,13 @@ export const CatchUpCard: React.FC = () => {
         >
           {formatTime(stats.totalMinutes)}
         </span>
-        <span
-          style={{
-            fontSize: 11,
-            color: currentTheme.text.muted,
-          }}
-        >
-          Watchtime
-        </span>
+        <span style={{ fontSize: 11, color: currentTheme.text.muted }}>Watchtime</span>
       </div>
 
-      {/* Arrow */}
       <ChevronRight
-        style={{
-          fontSize: 24,
-          color: currentTheme.text.muted,
-          flexShrink: 0,
-        }}
+        style={{ fontSize: 24, color: currentTheme.text.muted, flexShrink: 0 }}
+        aria-hidden="true"
       />
-    </motion.button>
+    </NavCard>
   );
 };

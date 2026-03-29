@@ -9,7 +9,12 @@ export {
   slideDown,
   fadeIn,
   popIn,
+  tapScale,
+  tapScaleSmall,
+  tapScaleTight,
+  hoverScale,
+  hoverLift,
+  springs,
+  contentSwap,
+  scaleButton,
 } from './variants';
-
-export { useAnimatedNumber } from './useAnimatedNumber';
-export { useMagneticEffect } from './useMagneticEffect';

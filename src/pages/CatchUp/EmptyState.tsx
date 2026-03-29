@@ -2,7 +2,7 @@ import { ArrowForward, AutoAwesome, CheckCircleOutline } from '@mui/icons-materi
 import { motion } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText } from '../../components/ui';
 
 export const EmptyState = memo(() => {
@@ -75,7 +75,7 @@ export const EmptyState = memo(() => {
         onClick={handleDiscover}
         className="cu-empty-btn"
         style={{
-          background: `linear-gradient(135deg, ${currentTheme.primary}, var(--theme-secondary-gradient, #8b5cf6))`,
+          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
           boxShadow: `0 8px 24px ${currentTheme.primary}40`,
         }}
       >

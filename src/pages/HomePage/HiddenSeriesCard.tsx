@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { VisibilityOff, ChevronRight } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContext';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 
 export const HiddenSeriesCard: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +24,8 @@ export const HiddenSeriesCard: React.FC = () => {
         margin: '0 20px',
         padding: '12px 14px',
         borderRadius: '14px',
-        background: `linear-gradient(135deg, ${accentColor}15, ${accentColor}05)`,
-        border: `1px solid ${accentColor}30`,
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',

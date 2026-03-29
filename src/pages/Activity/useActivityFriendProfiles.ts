@@ -29,7 +29,7 @@ export const useActivityFriendProfiles = (
             if (snapshot.exists()) {
               newProfiles[friend.uid] = snapshot.val();
             }
-          } catch (error) {
+          } catch {
             // Silent fail
           }
         })
@@ -50,7 +50,7 @@ export const useActivityFriendProfiles = (
           if (snapshot.exists()) {
             profiles[request.fromUserId] = snapshot.val();
           }
-        } catch (error) {
+        } catch {
           // Silent fail
         }
       }

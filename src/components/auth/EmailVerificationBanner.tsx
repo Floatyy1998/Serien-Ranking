@@ -4,8 +4,9 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../App';
-import { colors, commonStyles } from '../../theme';
+import { useAuth } from '../../AuthContext';
+import { commonStyles } from '../../theme';
+import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface EmailVerificationBannerProps {
 
 export const EmailVerificationBanner = ({ children }: EmailVerificationBannerProps) => {
   const auth = useAuth();
+  const { currentTheme } = useTheme();
   const user = auth?.user;
   const [isVerified, setIsVerified] = useState<boolean | null>(user?.emailVerified ?? null);
   const [loading] = useState(false); // Kein initiales Loading
@@ -21,23 +23,17 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verwende den User aus dem Auth Context statt firebase.auth().currentUser
     if (user) {
-      // Setze sofort den aktuellen Status
-      setIsVerified(user.emailVerified);
-
-      // Nur wenn online, versuche zu aktualisieren (ohne Loading anzuzeigen)
-      if (navigator.onLine && !user.emailVerified) {
+      // Aktuellen Status immer vom Server holen wenn online
+      if (navigator.onLine) {
         user
           .reload()
           .then(() => {
             setIsVerified(user.emailVerified);
           })
-          .catch((_error) => {
-            // console.warn(
-            //   'User reload fehlgeschlagen (offline?), verwende cached Daten:',
-            //   error
-            // );
+          .catch(() => {
+            // Offline/Fehler: cached Daten verwenden
+            setIsVerified(user.emailVerified);
           });
       }
     } else if (auth?.authStateResolved) {
@@ -109,8 +105,8 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
             left: 0,
             right: 0,
             zIndex: 9999,
-            background: `linear-gradient(90deg, ${colors.status.error}, #ff6b7a)`,
-            color: colors.text.secondary,
+            background: `linear-gradient(90deg, ${currentTheme.status?.error || '#ef4444'}, #ff6b7a)`,
+            color: currentTheme.text.secondary,
             padding: '12px 20px',
             ...commonStyles.flexBetween,
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
@@ -130,7 +126,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                 onClick={resendVerification}
                 sx={{
                   backgroundColor: 'rgba(255,255,255,0.2)',
-                  color: colors.text.secondary,
+                  color: currentTheme.text.secondary,
                   '&:hover': {
                     backgroundColor: 'rgba(255,255,255,0.3)',
                   },
@@ -146,7 +142,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                 onClick={handleLogout}
                 sx={{
                   borderColor: 'rgba(255,255,255,0.5)',
-                  color: colors.text.secondary,
+                  color: currentTheme.text.secondary,
                   '&:hover': {
                     borderColor: 'white',
                     backgroundColor: 'rgba(255,255,255,0.1)',
@@ -178,7 +174,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           >
             <div
               style={{
-                backgroundColor: colors.background.dialog,
+                backgroundColor: currentTheme.background.surface,
                 padding: '40px',
                 borderRadius: '16px',
                 border: `2px solid var(--theme-primary)`,
@@ -199,7 +195,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               >
                 Email-Verifizierung erforderlich
               </h2>
-              <p style={{ color: colors.text.muted, marginBottom: '24px', lineHeight: '1.5' }}>
+              <p
+                style={{ color: currentTheme.text.muted, marginBottom: '24px', lineHeight: '1.5' }}
+              >
                 Um alle Funktionen nutzen zu können, müssen Sie Ihre Email-Adresse verifizieren.
                 Überprüfen Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
               </p>
@@ -210,7 +208,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                     onClick={resendVerification}
                     sx={{
                       backgroundColor: 'var(--theme-primary)',
-                      color: colors.background.default,
+                      color: currentTheme.background.default,
                       '&:hover': {
                         backgroundColor: 'var(--theme-accent)',
                       },
@@ -228,7 +226,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                       color: 'var(--theme-primary)',
                       '&:hover': {
                         borderColor: 'var(--theme-accent)',
-                        backgroundColor: colors.overlay.medium,
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
                       },
                     }}
                   >

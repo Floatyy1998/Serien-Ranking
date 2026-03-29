@@ -15,7 +15,7 @@ class BadgeCounterService {
     try {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/quickwatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Quickwatch-Counter:', error);
     }
   }
@@ -27,7 +27,7 @@ class BadgeCounterService {
     try {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/rewatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Rewatch-Counter:', error);
     }
   }
@@ -71,7 +71,7 @@ class BadgeCounterService {
 
       // Aktualisiere beide Werte
       await Promise.all([lastActivityRef.set(today), streakRef.set(currentStreak)]);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Streak-Counter:', error);
     }
   }
@@ -87,7 +87,7 @@ class BadgeCounterService {
       // Auch typ-spezifische Counter
       const typeCounterRef = firebase.database().ref(`badgeCounters/${userId}/${type}Added`);
       await typeCounterRef.transaction((current) => (current || 0) + 1);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Social-Counter:', error);
     }
   }
@@ -145,7 +145,7 @@ class BadgeCounterService {
           }
         });
       }
-    } catch (error) {
+    } catch {
       // console.error('❌ Fehler beim Multi-Timeframe-Binge-Counter:', error);
     }
   }
@@ -169,7 +169,7 @@ class BadgeCounterService {
           await bingeRef.remove(); // Abgelaufene Session entfernen
         }
       }
-    } catch (error) {
+    } catch {
       // console.error('❌ Fehler beim Multi-Timeframe-Binge-Cleanup:', error);
     }
   }
@@ -190,7 +190,7 @@ class BadgeCounterService {
         // console.log('🏃 Marathon transaction:', { current, newValue, weekKey });
         return newValue;
       });
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Marathon-Counter:', error);
     }
   }
@@ -206,7 +206,7 @@ class BadgeCounterService {
         .ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
 
       await marathonRef.transaction((current) => (current || 0) + episodeCount);
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Marathon-Counter:', error);
     }
   }
@@ -236,7 +236,7 @@ class BadgeCounterService {
         timeRemainingInWeek: this.getTimeRemainingInWeek(),
         currentWeekKey: weekKey,
       };
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Lesen der Marathon-Stats:', error);
       return {
         currentWeekEpisodes: 0,
@@ -290,7 +290,7 @@ class BadgeCounterService {
     try {
       const counterRef = firebase.database().ref(`badgeCounters/${userId}/${counterName}`);
       await counterRef.transaction((current) => (current || 0) + amount);
-    } catch (error) {
+    } catch {
       // console.error(`Fehler beim ${counterName}-Counter:`, error);
     }
   }
@@ -305,7 +305,7 @@ class BadgeCounterService {
         .ref(`badgeCounters/${userId}/${counterName}`)
         .once('value');
       return snapshot.val() || 0;
-    } catch (error) {
+    } catch {
       // console.error(`Fehler beim Lesen des ${counterName}-Counters:`, error);
       return 0;
     }
@@ -318,7 +318,7 @@ class BadgeCounterService {
     try {
       const snapshot = await firebase.database().ref(`badgeCounters/${userId}`).once('value');
       return snapshot.val() || {};
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Lesen aller Counter:', error);
       return {};
     }
@@ -330,7 +330,7 @@ class BadgeCounterService {
   async resetCounter(userId: string, counterName: string): Promise<void> {
     try {
       await firebase.database().ref(`badgeCounters/${userId}/${counterName}`).set(0);
-    } catch (error) {
+    } catch {
       // console.error(`Fehler beim Zurücksetzen des ${counterName}-Counters:`, error);
     }
   }
@@ -341,7 +341,7 @@ class BadgeCounterService {
   async clearAllCounters(userId: string): Promise<void> {
     try {
       await firebase.database().ref(`badgeCounters/${userId}`).remove();
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Löschen aller Counter:', error);
     }
   }
@@ -362,7 +362,7 @@ class BadgeCounterService {
         await marathonWeeksRef.child(currentWeekKey).set(0);
         // console.log(`🏃 Neue Marathon-Woche erstellt: ${currentWeekKey}`);
       }
-    } catch (error) {
+    } catch {
       // console.error('Fehler beim Erstellen der Marathon-Woche:', error);
     }
   }

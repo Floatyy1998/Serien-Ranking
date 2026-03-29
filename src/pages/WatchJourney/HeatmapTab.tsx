@@ -1,9 +1,11 @@
 import { AccessTime, CalendarMonth, Nightlight, Speed, WbSunny } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { useTheme } from '../../contexts/ThemeContext';
-import { DAY_NAMES, WatchJourneyData } from '../../services/watchJourneyService';
+import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from 'recharts';
+import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { DAY_NAMES } from '../../services/watchJourneyService';
 
 interface HeatmapTabProps {
   data: WatchJourneyData;
@@ -113,11 +115,11 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               }}
             >
               {isNightOwl ? (
-                <Nightlight style={{ color: 'white', fontSize: 28 }} />
+                <Nightlight style={{ color: currentTheme.text.secondary, fontSize: 28 }} />
               ) : isEarlyBird ? (
-                <WbSunny style={{ color: 'white', fontSize: 28 }} />
+                <WbSunny style={{ color: currentTheme.text.secondary, fontSize: 28 }} />
               ) : (
-                <AccessTime style={{ color: 'white', fontSize: 28 }} />
+                <AccessTime style={{ color: currentTheme.text.secondary, fontSize: 28 }} />
               )}
             </div>
             <div>
@@ -179,7 +181,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           Uhrzeitverteilung
         </h3>
         <div style={{ width: '100%', height: 200 }}>
-          <ResponsiveContainer>
+          <SafeResponsiveContainer minWidth={0} minHeight={0}>
             <BarChart data={hourlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={`${textSecondary}15`} />
               <XAxis
@@ -191,6 +193,14 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               <YAxis
                 tick={{ fill: textSecondary, fontSize: 11 }}
                 axisLine={{ stroke: `${textSecondary}30` }}
+                allowDecimals={false}
+                label={{
+                  value: 'Episoden',
+                  angle: -90,
+                  position: 'insideLeft',
+                  offset: 20,
+                  style: { fill: textSecondary, fontSize: 11 },
+                }}
               />
               <Tooltip
                 cursor={{ fill: `${primaryColor}10` }}
@@ -235,7 +245,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 style={{ outline: 'none' }}
               />
             </BarChart>
-          </ResponsiveContainer>
+          </SafeResponsiveContainer>
         </div>
       </motion.div>
 
@@ -432,13 +442,13 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             style={{
               padding: '20px',
               borderRadius: '16px',
-              background: '#00cec915',
-              border: '1px solid #00cec940',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <CalendarMonth style={{ color: '#00cec9', fontSize: 28, marginBottom: 8 }} />
-            <div style={{ color: '#00cec9', fontSize: 24, fontWeight: 700 }}>{weekendCount}</div>
+            <CalendarMonth style={{ color: primaryColor, fontSize: 28, marginBottom: 8 }} />
+            <div style={{ color: primaryColor, fontSize: 24, fontWeight: 700 }}>{weekendCount}</div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Wochenend-Sessions</div>
           </motion.div>
 
@@ -449,13 +459,13 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             style={{
               padding: '20px',
               borderRadius: '16px',
-              background: '#fdcb6e15',
-              border: '1px solid #fdcb6e40',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
               textAlign: 'center',
             }}
           >
-            <Speed style={{ color: '#fdcb6e', fontSize: 28, marginBottom: 8 }} />
-            <div style={{ color: '#fdcb6e', fontSize: 24, fontWeight: 700 }}>{weekdayCount}</div>
+            <Speed style={{ color: primaryColor, fontSize: 28, marginBottom: 8 }} />
+            <div style={{ color: primaryColor, fontSize: 24, fontWeight: 700 }}>{weekdayCount}</div>
             <div style={{ color: textSecondary, fontSize: 12 }}>Wochentag-Sessions</div>
           </motion.div>
         </div>

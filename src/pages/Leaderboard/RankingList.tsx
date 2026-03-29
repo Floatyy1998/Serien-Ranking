@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
 
@@ -31,12 +31,14 @@ export const RankingList = React.memo(function RankingList({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3 + i * 0.05 }}
           onClick={() => {
-            if (!entry.isCurrentUser) navigate(`/friend/${entry.uid}`);
+            if (!entry.isCurrentUser) {
+              navigate(`/friend/${entry.uid}`);
+            }
           }}
           style={{
             background: entry.isCurrentUser
               ? `${currentTheme.primary}18`
-              : 'rgba(255, 255, 255, 0.04)',
+              : currentTheme.background.surface,
             border: entry.isCurrentUser ? `1px solid ${currentTheme.primary}40` : undefined,
             cursor: entry.isCurrentUser ? 'default' : 'pointer',
           }}

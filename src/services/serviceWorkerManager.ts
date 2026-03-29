@@ -45,11 +45,13 @@ class ServiceWorkerManager {
     try {
       await this.register();
       this.setupEventListeners();
-      // Prüfe auf Updates, aber nicht so aggressiv
-      // Einmal nach 30 Sekunden, dann alle 5 Minuten
-      setTimeout(() => this.checkForUpdates(), 30000);
-      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000); // Alle 5 Minuten
-    } catch (error) {
+      // Update checks: nach 5s, dann alle 5 Minuten, und bei Tab-Fokus
+      setTimeout(() => this.checkForUpdates(), 5000);
+      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') this.checkForUpdates();
+      });
+    } catch {
       // // console.error(
       //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
       //   error
@@ -75,21 +77,21 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Check for updates
-    if (registration.waiting) {
-      this.showUpdateAvailable();
+    // Waiting worker on page load → direkt aktivieren
+    if (registration.waiting && navigator.serviceWorker.controller) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
 
-    // Update Handler einrichten
+    // Mid-session update → show banner, then auto-reload
     registration.addEventListener('updatefound', () => {
-      const newWorker = registration.installing;
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            this.showUpdateAvailable();
-          }
-        });
-      }
+      this.showUpdateBanner();
+      const poll = setInterval(() => {
+        if (registration.waiting) {
+          clearInterval(poll);
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }, 500);
+      setTimeout(() => clearInterval(poll), 120_000);
     });
 
     return registration;
@@ -101,19 +103,15 @@ class ServiceWorkerManager {
   private setupEventListeners(): void {
     if (!navigator.serviceWorker) return;
 
-    // Bei Controller-Wechsel einfach neu laden (ohne Notification-Spam)
+    // Flag vom letzten Reload sofort entfernen (damit der nächste Update-Reload funktioniert)
+    sessionStorage.removeItem('sw-reloaded');
+
+    // Bei Controller-Wechsel neu laden
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      // // console.log('🔄 Neuer Service Worker aktiv - Seite wird neu geladen');
-
-      // Prüfe ob wir schon einen Reload gemacht haben (verhindert Endlosschleife)
       const reloadFlag = sessionStorage.getItem('sw-reloaded');
-
       if (!reloadFlag) {
         sessionStorage.setItem('sw-reloaded', 'true');
         window.location.reload();
-      } else {
-        // Nach erfolgreichem Reload Flag entfernen
-        sessionStorage.removeItem('sw-reloaded');
       }
     });
 
@@ -138,7 +136,10 @@ class ServiceWorkerManager {
         this.notifyOfflineReady();
         break;
       case 'UPDATE_AVAILABLE':
-        this.showUpdateAvailable();
+        // Auto-update: direkt aktivieren
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        });
         break;
     }
   }
@@ -170,7 +171,7 @@ class ServiceWorkerManager {
           checkState();
         });
       }
-    } catch (error) {
+    } catch {
       // // console.error('❌ Service Worker Update fehlgeschlagen:', error);
     }
   }
@@ -183,9 +184,15 @@ class ServiceWorkerManager {
       const registration = await this.registrationPromise;
       if (!registration) return;
 
+      // Wartender Worker da? → direkt aktivieren
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        return;
+      }
+
       await registration.update();
     } catch (error) {
-      // // console.log('Update-Check fehlgeschlagen:', error);
+      console.warn('[SW] Update-Check fehlgeschlagen:', error);
     }
   }
 
@@ -240,7 +247,7 @@ class ServiceWorkerManager {
           }
         ).sync.register(tag);
       }
-    } catch (error) {
+    } catch {
       // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
     }
   }
@@ -258,7 +265,7 @@ class ServiceWorkerManager {
     try {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
-    } catch (error) {
+    } catch {
       // // console.error('❌ Failed to queue Firebase update:', error);
     }
   }
@@ -317,24 +324,57 @@ class ServiceWorkerManager {
   /**
    * 🔔 UI Notifications
    */
-  private showUpdateAvailable(): void {
-    // // console.log('🆕 Update verfügbar');
-
-    // Zeige nur einmal pro Session eine Update-Notification
-    const shown = sessionStorage.getItem('update-shown');
-    if (shown) {
-      // // console.log('Update-Notification bereits gezeigt');
-      return;
-    }
-
-    sessionStorage.setItem('update-shown', 'true');
-
-    // Zeige Notification, aber installiere NICHT automatisch
-    window.dispatchEvent(
-      new CustomEvent('sw-update-available', {
-        detail: { autoUpdate: false },
-      })
-    );
+  private showUpdateBanner(): void {
+    if (document.getElementById('sw-update-banner')) return;
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes sw-slide-up {
+        from { transform: translateY(100%); opacity: 0 }
+        to { transform: translateY(0); opacity: 1 }
+      }
+      @keyframes sw-spinner {
+        to { transform: rotate(360deg) }
+      }
+      #sw-update-banner {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background: rgba(30, 30, 40, 0.85);
+        backdrop-filter: blur(20px) saturate(1.4);
+        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.1px;
+        animation: sw-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+        -webkit-font-smoothing: antialiased;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      #sw-update-banner .sw-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-top-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        animation: sw-spinner 0.8s linear infinite;
+        flex-shrink: 0;
+      }
+    `;
+    document.head.appendChild(style);
+    const banner = document.createElement('div');
+    banner.id = 'sw-update-banner';
+    banner.innerHTML = '<span class="sw-spinner"></span> Update wird installiert…';
+    document.body.appendChild(banner);
   }
 
   private notifyOfflineReady(): void {

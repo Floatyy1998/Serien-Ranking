@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../App';
-import { useMovieList } from '../../contexts/MovieListProvider';
-import { useSeriesList } from '../../contexts/OptimizedSeriesListProvider';
-import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { useMovieList } from '../../contexts/MovieListContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
-import type { DiscoverItem } from './DiscoverItemCard';
+import type { DiscoverItem } from './discoverItemHelpers';
+import { useDiscoverActions } from './useDiscoverActions';
 
 interface UseDiscoverFetchResult {
   results: DiscoverItem[];
@@ -45,7 +44,6 @@ export const useDiscoverFetch = (
   searchQuery: string,
   isRestoring: boolean
 ): UseDiscoverFetchResult => {
-  const { user } = useAuth()!;
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
@@ -53,16 +51,6 @@ export const useDiscoverFetch = (
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [addingItem, setAddingItem] = useState<string | null>(null);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: '',
-  });
-  const [dialog, setDialog] = useState<{
-    open: boolean;
-    message: string;
-    type: 'success' | 'error' | 'info' | 'warning';
-  }>({ open: false, message: '', type: 'info' });
   const [searchResults, setSearchResults] = useState<DiscoverItem[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
@@ -72,6 +60,12 @@ export const useDiscoverFetch = (
     new Set()
   );
 
+  const { addingItem, snackbar, dialog, setDialog, addToList } = useDiscoverActions(
+    setResults,
+    setSearchResults,
+    setRecommendations
+  );
+
   const pageRef = useRef(page);
   const hasMoreRef = useRef(hasMore);
   const loadingRef = useRef(loading);
@@ -79,6 +73,8 @@ export const useDiscoverFetch = (
   const recommendationsLoadingRef = useRef(recommendationsLoading);
   const recommendationsHasMoreRef = useRef(recommendationsHasMore);
   const activeCategoryRef = useRef(activeCategory);
+  const recommendationsRef = useRef(recommendations);
+  const usedSourcesRef = useRef(usedRecommendationSources);
 
   useEffect(() => {
     pageRef.current = page;
@@ -101,6 +97,12 @@ export const useDiscoverFetch = (
   useEffect(() => {
     activeCategoryRef.current = activeCategory;
   }, [activeCategory]);
+  useEffect(() => {
+    recommendationsRef.current = recommendations;
+  }, [recommendations]);
+  useEffect(() => {
+    usedSourcesRef.current = usedRecommendationSources;
+  }, [usedRecommendationSources]);
 
   const isInList = useCallback(
     (id: string | number, type: 'series' | 'movie') => {
@@ -119,7 +121,7 @@ export const useDiscoverFetch = (
 
   const fetchRecommendations = useCallback(
     async (reset = false) => {
-      if (recommendationsLoading) return;
+      if (recommendationsLoadingRef.current) return;
 
       setRecommendationsLoading(true);
 
@@ -139,7 +141,7 @@ export const useDiscoverFetch = (
           setRecommendationsHasMore(true);
         }
 
-        const currentUsedSources = reset ? new Set<string>() : new Set(usedRecommendationSources);
+        const currentUsedSources = reset ? new Set<string>() : new Set(usedSourcesRef.current);
         const availableItems = userItems.filter(
           (item) => !currentUsedSources.has(item.id.toString())
         );
@@ -154,7 +156,7 @@ export const useDiscoverFetch = (
         const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
 
         const allRecommendations: DiscoverItem[] = [];
-        const existingIds = new Set(recommendations.map((r) => r.id));
+        const existingIds = new Set(recommendationsRef.current.map((r) => r.id));
 
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
@@ -213,23 +215,15 @@ export const useDiscoverFetch = (
         setRecommendationsLoading(false);
       }
     },
-    [
-      activeTab,
-      seriesList,
-      movieList,
-      isInList,
-      recommendationsLoading,
-      recommendations,
-      usedRecommendationSources,
-    ]
+    [activeTab, seriesList, movieList, isInList]
   );
 
   const fetchFromTMDB = useCallback(
     async (reset = false) => {
-      if (loading) return;
+      if (loadingRef.current) return;
 
       setLoading(true);
-      const currentPage = reset ? 1 : page + 1;
+      const currentPage = reset ? 1 : pageRef.current + 1;
 
       try {
         let endpoint = '';
@@ -313,7 +307,7 @@ export const useDiscoverFetch = (
         setLoading(false);
       }
     },
-    [activeTab, activeCategory, selectedGenre, page, loading, isInList]
+    [activeTab, activeCategory, selectedGenre, isInList]
   );
 
   useEffect(() => {
@@ -327,7 +321,15 @@ export const useDiscoverFetch = (
       setHasMore(true);
       fetchFromTMDB(true);
     }
-  }, [activeTab, activeCategory, selectedGenre, showSearch, isRestoring]);
+  }, [
+    activeTab,
+    activeCategory,
+    selectedGenre,
+    showSearch,
+    isRestoring,
+    fetchRecommendations,
+    fetchFromTMDB,
+  ]);
 
   useEffect(() => {
     if (activeCategory === 'recommendations') {
@@ -432,87 +434,19 @@ export const useDiscoverFetch = (
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showSearch, searchItems]);
 
-  const addToList = useCallback(
-    async (item: DiscoverItem, event?: React.MouseEvent) => {
-      if (event) {
-        event.stopPropagation();
-      }
-
-      if (!user) {
-        setDialog({
-          open: true,
-          message: 'Bitte einloggen um Inhalte hinzuzufügen!',
-          type: 'warning',
-        });
-        return;
-      }
-
-      const itemKey = `${item.type}-${item.id}`;
-      setAddingItem(itemKey);
-
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
-
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            user: import.meta.env.VITE_USER,
-            id: item.id,
-            uuid: user.uid,
-          }),
-        });
-
-        if (response.ok) {
-          setResults((prev) => prev.filter((r) => r.id !== item.id));
-          setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-          setRecommendations((prev) => prev.filter((r) => r.id !== item.id));
-
-          const title = item.title || item.name;
-          setSnackbar({
-            open: true,
-            message: `"${title}" wurde erfolgreich hinzugefügt!`,
-          });
-
-          const posterPath = item.poster_path ?? undefined;
-          if (item.type === 'series') {
-            await logSeriesAdded(
-              user.uid,
-              item.name || item.title || 'Unbekannte Serie',
-              item.id,
-              posterPath
-            );
-          } else {
-            await logMovieAdded(user.uid, item.title || 'Unbekannter Film', item.id, posterPath);
-          }
-
-          setTimeout(() => {
-            setSnackbar({ open: false, message: '' });
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('Failed to add item:', error);
-      } finally {
-        setAddingItem(null);
-      }
-    },
-    [user]
-  );
-
   const setupScrollListener = useCallback(
     (_currentActiveCategory: string) => {
       const scrollContainer = document.querySelector('.mobile-discover-container');
-      if (scrollContainer) {
-        const scrollHandler = () => {
-          if (!scrollContainer) return;
+      if (!scrollContainer) return undefined;
 
-          const scrollTop = scrollContainer.scrollTop;
-          const scrollHeight = scrollContainer.scrollHeight;
-          const clientHeight = scrollContainer.clientHeight;
-          const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      let ticking = false;
+      const scrollHandler = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          const distanceFromBottom =
+            scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight;
 
           if (distanceFromBottom < 500) {
             if (activeCategoryRef.current === 'recommendations') {
@@ -523,13 +457,13 @@ export const useDiscoverFetch = (
               fetchFromTMDB(false);
             }
           }
-        };
+        });
+      };
 
-        scrollContainer.addEventListener('scroll', scrollHandler);
-        return () => {
-          scrollContainer.removeEventListener('scroll', scrollHandler);
-        };
-      }
+      scrollContainer.addEventListener('scroll', scrollHandler, { passive: true });
+      return () => {
+        scrollContainer.removeEventListener('scroll', scrollHandler);
+      };
     },
     [fetchFromTMDB, fetchRecommendations]
   );
