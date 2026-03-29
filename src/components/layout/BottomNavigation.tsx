@@ -1,11 +1,12 @@
 import { BarChart, CalendarToday, Person, PlayCircle } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
-import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
@@ -25,13 +26,16 @@ export const BottomNavigation = () => {
   const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
   const { unreadCount: notificationUnreadCount } = useNotifications();
 
-  // Calculate total badge count - only show if greater than 0
-  // Achievement badges are kept private and not shown in navigation
   const totalBadgeCount =
     (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
 
   const todayEpisodes = useTodayEpisodes();
   const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [pillPos, setPillPos] = useState({ left: 0, width: 0 });
+  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const getActiveIndex = () => {
     if (location.pathname === '/') return 0;
@@ -43,6 +47,16 @@ export const BottomNavigation = () => {
   };
 
   const activeIndex = getActiveIndex();
+  const pillTargetIndex = hoveredIndex ?? activeIndex;
+
+  useEffect(() => {
+    const el = itemRefs.current[pillTargetIndex];
+    if (!el) return;
+    setPillPos({
+      left: el.offsetLeft + 4,
+      width: el.offsetWidth - 8,
+    });
+  }, [pillTargetIndex]);
 
   const navItems: NavItem[] = [
     {
@@ -96,9 +110,7 @@ export const BottomNavigation = () => {
   ];
 
   const isActive = (path: string) => {
-    if (path === '/') {
-      return location.pathname === '/';
-    }
+    if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
@@ -113,7 +125,6 @@ export const BottomNavigation = () => {
     }
   };
 
-  // Hide on detail pages
   const shouldHide =
     location.pathname.includes('/series/') ||
     location.pathname.includes('/movie/') ||
@@ -151,13 +162,26 @@ export const BottomNavigation = () => {
           role="tablist"
           aria-label="Seitennavigation"
           onKeyDown={handleNavKeyDown}
+          ref={containerRef}
+          onMouseLeave={() => setHoveredIndex(null)}
         >
-          {navItems.map((item) => {
+          {/* Animated Pill */}
+          <motion.div
+            className="nav-pill"
+            animate={{ left: pillPos.left, width: pillPos.width }}
+            transition={{ type: 'spring', stiffness: 500, damping: 40, bounce: 0 }}
+          />
+
+          {navItems.map((item, index) => {
             const active = isActive(item.path);
+            const isTarget = index === pillTargetIndex;
 
             return (
               <motion.button
                 key={item.id}
+                ref={(el) => {
+                  itemRefs.current[index] = el;
+                }}
                 role="tab"
                 aria-selected={active}
                 aria-current={active ? 'page' : undefined}
@@ -165,6 +189,8 @@ export const BottomNavigation = () => {
                 tabIndex={active ? 0 : -1}
                 className={`nav-item ${active ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onTouchStart={() => setHoveredIndex(index)}
                 whileTap={{ scale: 0.9 }}
               >
                 <div className="nav-icon-container">
@@ -191,7 +217,6 @@ export const BottomNavigation = () => {
                   ) : (
                     <div className="nav-icon">{item.icon}</div>
                   )}
-                  {/* Active dot */}
                   <AnimatePresence>
                     {active && (
                       <motion.div
@@ -205,7 +230,14 @@ export const BottomNavigation = () => {
                   </AnimatePresence>
                 </div>
 
-                <span className="nav-label">{item.label}</span>
+                <span
+                  className="nav-label"
+                  style={{
+                    color: isTarget ? 'var(--color-primary)' : undefined,
+                  }}
+                >
+                  {item.label}
+                </span>
               </motion.button>
             );
           })}
