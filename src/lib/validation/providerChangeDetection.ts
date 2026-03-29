@@ -17,6 +17,20 @@ type KnownProviders = Record<string, KnownProviderData>;
 
 const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
+/** Normalize provider names so ad-supported tiers map to the standard name */
+const normalizeProviderName = (name: string): string | null => {
+  const lower = name.toLowerCase();
+  if (lower.includes('netflix')) return 'Netflix';
+  if (lower.includes('amazon') || lower.includes('prime video')) return 'Amazon Prime Video';
+  if (lower.includes('disney')) return 'Disney Plus';
+  if (lower.includes('paramount')) return 'Paramount Plus';
+  if (lower.includes('apple tv')) return 'Apple TV Plus';
+  if (lower.includes('joyn')) return 'Joyn Plus';
+  if (lower.includes('hbo') || lower === 'max') return 'HBO Max';
+  if (SUPPORTED_PROVIDERS.has(name)) return name;
+  return null;
+};
+
 const getKnownProviders = async (userId: string): Promise<KnownProviders> => {
   try {
     const snapshot = await firebase.database().ref(`users/${userId}/knownProviders`).once('value');
@@ -49,9 +63,14 @@ async function fetchTMDBProviders(tmdbId: number): Promise<string[]> {
     const data = await res.json();
     const flatrate = data.results?.DE?.flatrate;
     if (!Array.isArray(flatrate)) return [];
+    const seen = new Set<string>();
     return flatrate
-      .map((p: { provider_name: string }) => p.provider_name)
-      .filter((name: string) => SUPPORTED_PROVIDERS.has(name));
+      .map((p: { provider_name: string }) => normalizeProviderName(p.provider_name))
+      .filter((name): name is string => {
+        if (!name || seen.has(name)) return false;
+        seen.add(name);
+        return true;
+      });
   } catch {
     return [];
   }
@@ -106,7 +125,9 @@ export const detectProviderChanges = async (
           return null;
         }
 
-        const knownFiltered = known.providers.filter((p) => SUPPORTED_PROVIDERS.has(p));
+        const knownFiltered = known.providers
+          .map((p) => normalizeProviderName(p))
+          .filter((p): p is string => p !== null);
         const addedProviders = currentProviders.filter((p) => !knownFiltered.includes(p));
         const removedProviders = knownFiltered.filter((p) => !currentProviders.includes(p));
 
