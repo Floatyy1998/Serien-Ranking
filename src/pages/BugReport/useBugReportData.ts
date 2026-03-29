@@ -95,7 +95,7 @@ export function useBugReportData() {
           type: 'bug_ticket_reply',
           title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
           message: `${displayName}: "${data.title}"`,
-          data: { ticketId },
+          data: { ticketId, ticketType: data.ticketType },
         });
 
         return true;
@@ -130,16 +130,15 @@ export function useBugReportData() {
           .set(new Date().toISOString());
 
         // Notification an Admin
-        const ticketSnap = await firebase
-          .database()
-          .ref(`bugTickets/${ticketId}/title`)
-          .once('value');
-        const ticketTitle = ticketSnap.val() || 'Ticket';
+        const ticketSnap = await firebase.database().ref(`bugTickets/${ticketId}`).once('value');
+        const ticketData = ticketSnap.val();
+        const ticketTitle = ticketData?.title || 'Ticket';
+        const ticketType = ticketData?.ticketType || 'bug';
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
           title: 'Neuer Kommentar',
           message: `${displayName} hat auf "${ticketTitle}" geantwortet`,
-          data: { ticketId },
+          data: { ticketId, ticketType },
         });
 
         return true;

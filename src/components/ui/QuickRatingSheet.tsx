@@ -110,7 +110,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               lineHeight: 1,
             }}
           >
-            {rating > 0 ? rating.toFixed(1) : '–'}
+            {rating > 0 ? rating.toFixed(1) : '0.0'}
           </span>
           <span
             style={{

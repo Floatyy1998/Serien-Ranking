@@ -130,7 +130,22 @@ export class ErrorBoundary extends Component<Props, State> {
 
           {/* Bug Report Link */}
           <a
-            href="/bug-report"
+            href="/bug-report?create=true"
+            onClick={(e) => {
+              e.preventDefault();
+              const errorText = [
+                `Zeitpunkt: ${new Date().toLocaleString('de-DE')}`,
+                `URL: ${window.location.href}`,
+                `Gerät: ${navigator.userAgent}`,
+                '',
+                this.state.errorInfo || this.state.error?.message || 'Unbekannter Fehler',
+              ].join('\n');
+              const params = new URLSearchParams({
+                create: 'true',
+                errors: errorText.slice(0, 1500),
+              });
+              window.open(`/bug-report?${params.toString()}`, '_blank');
+            }}
             style={{
               display: 'block',
               textAlign: 'center',

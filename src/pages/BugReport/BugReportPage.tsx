@@ -24,6 +24,7 @@ export const BugReportPage = memo(() => {
     useBugReportData();
   const [showForm, setShowForm] = useState(() => searchParams.get('create') === 'true');
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
+  const initialErrors = searchParams.get('errors') || '';
 
   return (
     <PageLayout>
@@ -81,6 +82,7 @@ export const BugReportPage = memo(() => {
                 }}
                 onCancel={() => setShowForm(false)}
                 onUpload={uploadScreenshot}
+                initialConsoleErrors={initialErrors}
               />
             </motion.div>
           )}
@@ -148,6 +150,7 @@ function NewTicketForm({
   onSubmit,
   onCancel,
   onUpload,
+  initialConsoleErrors,
 }: {
   theme: ReturnType<typeof useTheme>['currentTheme'];
   onSubmit: (data: {
@@ -161,12 +164,13 @@ function NewTicketForm({
   }) => Promise<boolean>;
   onCancel: () => void;
   onUpload: (file: File) => Promise<string | null>;
+  initialConsoleErrors?: string;
 }) {
   const [ticketType, setTicketType] = useState<TicketType>('bug');
   const [priority, setPriority] = useState<TicketPriority>('low');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [consoleErrors, setConsoleErrors] = useState('');
+  const [consoleErrors, setConsoleErrors] = useState(initialConsoleErrors || '');
   const [steps, setSteps] = useState('');
   const [screenshots, setScreenshots] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -518,8 +522,19 @@ function NewTicketForm({
               Fehlermeldungen aus der Konsole (optional)
             </label>
             <textarea
+              ref={(el) => {
+                if (el) {
+                  el.style.height = 'auto';
+                  el.style.height = `${Math.max(el.scrollHeight, 66)}px`;
+                }
+              }}
               value={consoleErrors}
-              onChange={(e) => setConsoleErrors(e.target.value)}
+              onChange={(e) => {
+                setConsoleErrors(e.target.value);
+                const el = e.target;
+                el.style.height = 'auto';
+                el.style.height = `${Math.max(el.scrollHeight, 66)}px`;
+              }}
               placeholder="Falls vorhanden: Fehlermeldungen aus der Browser-Konsole (F12) hier einfügen"
               rows={3}
               style={{
@@ -527,6 +542,8 @@ function NewTicketForm({
                 resize: 'vertical',
                 fontFamily: 'monospace',
                 fontSize: '12px',
+                maxHeight: '300px',
+                overflow: 'auto',
               }}
             />
           </div>
@@ -581,6 +598,11 @@ function NewTicketForm({
     </div>
   );
 }
+
+const autoResize = (el: HTMLTextAreaElement) => {
+  el.style.height = 'auto';
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+};
 
 /* ── Ticket Card ── */
 
@@ -1033,11 +1055,16 @@ function TicketCard({
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <textarea
                   value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
+                  onChange={(e) => {
+                    setCommentText(e.target.value);
+                    autoResize(e.target);
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
                       handleSendComment();
+                      const ta = e.target as HTMLTextAreaElement;
+                      ta.style.height = 'auto';
                     }
                   }}
                   placeholder="Kommentar schreiben..."
@@ -1051,8 +1078,9 @@ function TicketCard({
                     color: theme.text.secondary,
                     fontSize: '13px',
                     outline: 'none',
-                    resize: 'vertical',
+                    resize: 'none',
                     fontFamily: 'inherit',
+                    overflow: 'hidden',
                   }}
                 />
                 <motion.button
