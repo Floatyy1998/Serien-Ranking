@@ -23,7 +23,8 @@ export interface UnifiedNotification {
     | 'heart'
     | 'flag'
     | 'announcement'
-    | 'bug';
+    | 'bug'
+    | 'feature';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
@@ -218,7 +219,9 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           : navigateTo,
         notificationId: n.id,
         icon: isBugTicket
-          ? 'bug'
+          ? n.data?.ticketType === 'feature'
+            ? 'feature'
+            : 'bug'
           : n.type === 'discussion_reply'
             ? 'chat'
             : n.type === 'spoiler_flag'

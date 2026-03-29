@@ -102,7 +102,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
           type: 'bug_ticket_status',
           title: 'Ticket-Status geändert',
           message: `Dein Ticket "${ticket.title}" ist jetzt: ${statusLabel}`,
-          data: { ticketId },
+          data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }
     },
@@ -132,7 +132,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
           type: 'bug_ticket_reply',
           title: 'Antwort auf dein Ticket',
           message: `Admin hat auf "${ticket.title}" geantwortet: ${text.slice(0, 80)}${text.length > 80 ? '...' : ''}`,
-          data: { ticketId },
+          data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }
     },
@@ -796,16 +796,26 @@ function TicketCard({
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <textarea
                       value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
+                      onChange={(e) => {
+                        setCommentText(e.target.value);
+                        autoResize(e.target);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault();
                           handleSend();
+                          const ta = e.target as HTMLTextAreaElement;
+                          ta.style.height = 'auto';
                         }
                       }}
                       placeholder="Antwort schreiben (sichtbar für User)..."
                       rows={1}
-                      style={{ ...inputStyle(theme), resize: 'vertical', fontFamily: 'inherit' }}
+                      style={{
+                        ...inputStyle(theme),
+                        resize: 'none',
+                        fontFamily: 'inherit',
+                        overflow: 'hidden',
+                      }}
                     />
                     <button
                       onClick={handleSend}
@@ -867,12 +877,17 @@ function TicketCard({
                   <div style={{ display: 'flex', gap: '6px' }}>
                     <textarea
                       value={noteText}
-                      onChange={(e) => setNoteText(e.target.value)}
+                      onChange={(e) => {
+                        setNoteText(e.target.value);
+                        autoResize(e.target);
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey && noteText.trim()) {
                           e.preventDefault();
                           onAddAdminNote(noteText.trim());
                           setNoteText('');
+                          const ta = e.target as HTMLTextAreaElement;
+                          ta.style.height = 'auto';
                         }
                       }}
                       placeholder="Interne Notiz hinzufügen..."
@@ -880,8 +895,9 @@ function TicketCard({
                       style={{
                         ...inputStyle(theme),
                         borderColor: `${theme.status.warning}25`,
-                        resize: 'vertical',
+                        resize: 'none',
                         fontFamily: 'inherit',
+                        overflow: 'hidden',
                       }}
                     />
                     <button
@@ -956,6 +972,13 @@ function Section({
     </div>
   );
 }
+
+/* ── Helpers ── */
+
+const autoResize = (el: HTMLTextAreaElement) => {
+  el.style.height = 'auto';
+  el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+};
 
 /* ── Shared Styles ── */
 
