@@ -466,9 +466,10 @@ function TicketCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const age = Math.floor((Date.now() - new Date(ticket.createdAt).getTime()) / 86400000);
+  const [now] = useState(() => Date.now());
+  const age = Math.floor((now - new Date(ticket.createdAt).getTime()) / 86400000);
   const ageStr = age === 0 ? 'Heute' : age === 1 ? 'Gestern' : `vor ${age}d`;
-  const updatedAge = Math.floor((Date.now() - new Date(ticket.updatedAt).getTime()) / 86400000);
+  const updatedAge = Math.floor((now - new Date(ticket.updatedAt).getTime()) / 86400000);
   const updatedStr =
     updatedAge === 0 ? 'Heute' : updatedAge === 1 ? 'Gestern' : `vor ${updatedAge}d`;
 
@@ -793,13 +794,18 @@ function TicketCard({
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <input
-                      type="text"
+                    <textarea
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSend();
+                        }
+                      }}
                       placeholder="Antwort schreiben (sichtbar für User)..."
-                      style={inputStyle(theme)}
+                      rows={1}
+                      style={{ ...inputStyle(theme), resize: 'vertical', fontFamily: 'inherit' }}
                     />
                     <button
                       onClick={handleSend}
@@ -859,18 +865,24 @@ function TicketCard({
                     </div>
                   )}
                   <div style={{ display: 'flex', gap: '6px' }}>
-                    <input
-                      type="text"
+                    <textarea
                       value={noteText}
                       onChange={(e) => setNoteText(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && noteText.trim()) {
+                        if (e.key === 'Enter' && !e.shiftKey && noteText.trim()) {
+                          e.preventDefault();
                           onAddAdminNote(noteText.trim());
                           setNoteText('');
                         }
                       }}
                       placeholder="Interne Notiz hinzufügen..."
-                      style={{ ...inputStyle(theme), borderColor: `${theme.status.warning}25` }}
+                      rows={1}
+                      style={{
+                        ...inputStyle(theme),
+                        borderColor: `${theme.status.warning}25`,
+                        resize: 'vertical',
+                        fontFamily: 'inherit',
+                      }}
                     />
                     <button
                       onClick={() => {
