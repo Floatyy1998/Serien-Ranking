@@ -66,6 +66,7 @@
   align-items: center;
   justify-content: center;
   height: 28px;
+  width: 28px;
 }
 
 .nav-icon {
@@ -94,15 +95,12 @@
 
 /* --- Active Dot Indicator --- */
 .nav-active-dot {
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background: var(--color-primary, #00fed7);
   pointer-events: none;
+  margin: -2px auto 0;
 }
 
 /* --- Nav Label --- */

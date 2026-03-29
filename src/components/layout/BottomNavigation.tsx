@@ -217,18 +217,18 @@ export const BottomNavigation = () => {
                   ) : (
                     <div className="nav-icon">{item.icon}</div>
                   )}
-                  <AnimatePresence>
-                    {active && (
-                      <motion.div
-                        className="nav-active-dot"
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
-                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                      />
-                    )}
-                  </AnimatePresence>
                 </div>
+                <AnimatePresence>
+                  {active && (
+                    <motion.div
+                      className="nav-active-dot"
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      exit={{ scale: 0, opacity: 0 }}
+                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                    />
+                  )}
+                </AnimatePresence>
 
                 <span
                   className="nav-label"
