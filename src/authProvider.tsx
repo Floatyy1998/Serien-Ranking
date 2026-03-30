@@ -1,5 +1,6 @@
 import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { initAnalyticsIfConsented, setAnalyticsUser } from './firebase/analytics';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './AuthContext';
@@ -30,9 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       .then((module) => {
         try {
           module.initFirebase();
-          import('./firebase/analytics').then((a) => {
-            a.initAnalyticsIfConsented();
-          });
+          initAnalyticsIfConsented();
           // Remove compat analytics import (GA4 replaced by RTDB)
           // firebase/compat/analytics is no longer needed
           setFirebaseInitialized(true);
@@ -72,9 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             setUser(user);
             setAuthStateResolved(true);
             // Set analytics user for RTDB analytics
-            import('./firebase/analytics').then((a) => {
-              a.setAnalyticsUser(user?.uid ?? null);
-            });
+            setAnalyticsUser(user?.uid ?? null);
             window.setAppReady?.('auth', true);
             window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
 
