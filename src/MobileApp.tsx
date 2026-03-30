@@ -1,5 +1,6 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './AuthContext';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
@@ -161,288 +162,290 @@ export const MobileApp = () => {
   return (
     <div className="mobile-app">
       <ScrollToTop />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          {/* Onboarding - Full-screen, no Layout */}
-          <Route path="/onboarding" element={<OnboardingPage />} />
+      <ErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            {/* Onboarding - Full-screen, no Layout */}
+            <Route path="/onboarding" element={<OnboardingPage />} />
 
-          {/* Main Pages */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <HomePage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/watchlist"
-            element={
-              <Layout>
-                <WatchNextPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/ratings"
-            element={
-              <Layout>
-                <RatingsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <Layout>
-                <ProfilePage />
-              </Layout>
-            }
-          />
+            {/* Main Pages */}
+            <Route
+              path="/"
+              element={
+                <Layout>
+                  <HomePage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/watchlist"
+              element={
+                <Layout>
+                  <WatchNextPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/ratings"
+              element={
+                <Layout>
+                  <RatingsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <Layout>
+                  <ProfilePage />
+                </Layout>
+              }
+            />
 
-          {/* Additional Pages */}
-          <Route
-            path="/recently-watched"
-            element={
-              <Layout hideNav>
-                <RecentlyWatchedPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/discover"
-            element={
-              <Layout hideNav>
-                <DiscoverPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/activity"
-            element={
-              <Layout hideNav>
-                <ActivityPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/discussions"
-            element={
-              <Layout hideNav>
-                <DiscussionFeedPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <Layout>
-                <SearchPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/badges"
-            element={
-              <Layout hideNav>
-                <BadgesPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/pets"
-            element={
-              <Layout hideNav>
-                <PetsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/theme"
-            element={
-              <Layout hideNav>
-                <ThemePage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/home-layout"
-            element={
-              <Layout hideNav>
-                <HomeLayoutPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/stats"
-            element={
-              <Layout hideNav>
-                <StatsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/taste-profile"
-            element={
-              <Layout hideNav>
-                <TasteProfilePage />
-              </Layout>
-            }
-          />
-          {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
-          <Route path="/wrapped" element={<WrappedPage />} />
-          <Route path="/wrapped/:year" element={<WrappedPage />} />
-          <Route
-            path="/actor-universe"
-            element={
-              <Layout hideNav>
-                <ActorUniversePage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <Layout hideNav>
-                <SettingsPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/profile-settings"
-            element={
-              <Layout hideNav>
-                <ProfileSettingsPage />
-              </Layout>
-            }
-          />
+            {/* Additional Pages */}
+            <Route
+              path="/recently-watched"
+              element={
+                <Layout hideNav>
+                  <RecentlyWatchedPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/discover"
+              element={
+                <Layout hideNav>
+                  <DiscoverPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/activity"
+              element={
+                <Layout hideNav>
+                  <ActivityPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/discussions"
+              element={
+                <Layout hideNav>
+                  <DiscussionFeedPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <Layout>
+                  <SearchPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/badges"
+              element={
+                <Layout hideNav>
+                  <BadgesPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/pets"
+              element={
+                <Layout hideNav>
+                  <PetsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/theme"
+              element={
+                <Layout hideNav>
+                  <ThemePage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/home-layout"
+              element={
+                <Layout hideNav>
+                  <HomeLayoutPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/stats"
+              element={
+                <Layout hideNav>
+                  <StatsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/taste-profile"
+              element={
+                <Layout hideNav>
+                  <TasteProfilePage />
+                </Layout>
+              }
+            />
+            {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
+            <Route path="/wrapped" element={<WrappedPage />} />
+            <Route path="/wrapped/:year" element={<WrappedPage />} />
+            <Route
+              path="/actor-universe"
+              element={
+                <Layout hideNav>
+                  <ActorUniversePage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <Layout hideNav>
+                  <SettingsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/profile-settings"
+              element={
+                <Layout hideNav>
+                  <ProfileSettingsPage />
+                </Layout>
+              }
+            />
 
-          {/* Detail Pages */}
-          <Route
-            path="/series/:id"
-            element={
-              <Layout hideNav>
-                <SeriesDetailPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/episodes/:id"
-            element={
-              <Layout hideNav>
-                <EpisodeManagementPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/episode/:seriesId/s/:seasonNumber/e/:episodeNumber"
-            element={
-              <Layout hideNav>
-                <EpisodeDiscussionPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/rating/:type/:id"
-            element={
-              <Layout hideNav>
-                <RatingPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/movie/:id"
-            element={
-              <Layout hideNav>
-                <MovieDetailPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/friend/:id"
-            element={
-              <Layout hideNav>
-                <FriendProfilePage />
-              </Layout>
-            }
-          />
-          <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
-          <Route path="/watch-journey" element={<WatchJourneyPage />} />
-          <Route path="/catch-up" element={<CatchUpPage />} />
-          <Route path="/hidden-series" element={<HiddenSeriesPage />} />
-          <Route
-            path="/leaderboard"
-            element={
-              <Layout hideNav>
-                <LeaderboardPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/patch-notes"
-            element={
-              <Layout hideNav>
-                <PatchNotesPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <Layout hideNav>
-                <AdminDashboardPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/bug-report"
-            element={
-              <Layout hideNav>
-                <BugReportPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/calendar"
-            element={
-              <Layout>
-                <CalendarPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/countdowns"
-            element={
-              <Layout hideNav>
-                <CountdownPage />
-              </Layout>
-            }
-          />
+            {/* Detail Pages */}
+            <Route
+              path="/series/:id"
+              element={
+                <Layout hideNav>
+                  <SeriesDetailPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/episodes/:id"
+              element={
+                <Layout hideNav>
+                  <EpisodeManagementPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/episode/:seriesId/s/:seasonNumber/e/:episodeNumber"
+              element={
+                <Layout hideNav>
+                  <EpisodeDiscussionPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/rating/:type/:id"
+              element={
+                <Layout hideNav>
+                  <RatingPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/movie/:id"
+              element={
+                <Layout hideNav>
+                  <MovieDetailPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/friend/:id"
+              element={
+                <Layout hideNav>
+                  <FriendProfilePage />
+                </Layout>
+              }
+            />
+            <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
+            <Route path="/watch-journey" element={<WatchJourneyPage />} />
+            <Route path="/catch-up" element={<CatchUpPage />} />
+            <Route path="/hidden-series" element={<HiddenSeriesPage />} />
+            <Route
+              path="/leaderboard"
+              element={
+                <Layout hideNav>
+                  <LeaderboardPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/patch-notes"
+              element={
+                <Layout hideNav>
+                  <PatchNotesPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <Layout hideNav>
+                  <AdminDashboardPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/bug-report"
+              element={
+                <Layout hideNav>
+                  <BugReportPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <Layout>
+                  <CalendarPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/countdowns"
+              element={
+                <Layout hideNav>
+                  <CountdownPage />
+                </Layout>
+              }
+            />
 
-          {/* Legal Pages */}
-          <Route
-            path="/impressum"
-            element={
-              <Layout hideNav>
-                <ImpressumPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/privacy"
-            element={
-              <Layout hideNav>
-                <PrivacyPage />
-              </Layout>
-            }
-          />
+            {/* Legal Pages */}
+            <Route
+              path="/impressum"
+              element={
+                <Layout hideNav>
+                  <ImpressumPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/privacy"
+              element={
+                <Layout hideNav>
+                  <PrivacyPage />
+                </Layout>
+              }
+            />
 
-          {/* Redirect old routes */}
-          <Route path="/profile/:id" element={<FriendProfilePage />} />
-          <Route path="/friends" element={<Navigate to="/activity" />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </Suspense>
+            {/* Redirect old routes */}
+            <Route path="/profile/:id" element={<FriendProfilePage />} />
+            <Route path="/friends" element={<Navigate to="/activity" />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 };
