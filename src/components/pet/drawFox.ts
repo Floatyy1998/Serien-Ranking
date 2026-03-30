@@ -1,3 +1,5 @@
+import type { AccessorySlot } from '../../types/pet.types';
+
 export const drawFox = (
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -8,7 +10,8 @@ export const drawFox = (
   offset: number,
   animated: boolean,
   frame: number,
-  animationSpeed: number
+  animationSpeed: number,
+  equippedSlot?: AccessorySlot | null
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -129,11 +132,13 @@ export const drawFox = (
     ctx.fillStyle = '#FFF';
     ctx.fillRect((centerX + 7) * ps, (centerY + 3) * ps + offset, ps, ps * 1.5);
 
-    // Torii-Tor Symbol auf Stirn (vereinfacht)
-    ctx.fillStyle = '#DC143C';
-    ctx.fillRect((centerX - 1) * ps, (centerY - 5) * ps + offset, ps * 2, ps * 0.3);
-    ctx.fillRect((centerX - 0.5) * ps, (centerY - 4.5) * ps + offset, ps * 0.3, ps);
-    ctx.fillRect((centerX + 0.2) * ps, (centerY - 4.5) * ps + offset, ps * 0.3, ps);
+    // Torii-Tor Symbol auf Stirn - nur ohne Head-Accessory
+    if (equippedSlot !== 'head') {
+      ctx.fillStyle = '#DC143C';
+      ctx.fillRect((centerX - 1) * ps, (centerY - 5) * ps + offset, ps * 2, ps * 0.3);
+      ctx.fillRect((centerX - 0.5) * ps, (centerY - 4.5) * ps + offset, ps * 0.3, ps);
+      ctx.fillRect((centerX + 0.2) * ps, (centerY - 4.5) * ps + offset, ps * 0.3, ps);
+    }
 
     // Spirituelle blaue Flammen an Pfoten
     ctx.fillStyle = '#4169E1';
@@ -170,12 +175,14 @@ export const drawFox = (
       ctx.fillRect((centerX + 7 + xOffset) * ps, (centerY + 1 + yOffset) * ps + offset, ps, ps);
     }
 
-    // Magatama-Halskette (japanisches Symbol)
-    ctx.fillStyle = '#2E8B57';
-    for (let i = -2; i <= 2; i++) {
-      ctx.beginPath();
-      ctx.arc((centerX + i * 1.5) * ps, (centerY + 3.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
-      ctx.fill();
+    // Magatama-Halskette - nur ohne Neck-Accessory
+    if (equippedSlot !== 'neck') {
+      ctx.fillStyle = '#2E8B57';
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.arc((centerX + i * 1.5) * ps, (centerY + 3.5) * ps + offset, ps * 0.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     // Rote Augen mit spirituellem Glanz
@@ -231,20 +238,22 @@ export const drawFox = (
       }
     }
 
-    // Rotes Torii-Symbol auf Stirn (einfacher)
-    ctx.fillStyle = '#DC143C';
-    // Horizontaler Balken
-    ctx.fillRect((centerX - 1.5) * ps, (centerY - 5) * ps + offset, ps * 3, ps * 0.4);
-    // Vertikale Pfosten
-    ctx.fillRect((centerX - 1) * ps, (centerY - 4.5) * ps + offset, ps * 0.4, ps * 1.5);
-    ctx.fillRect((centerX + 0.6) * ps, (centerY - 4.5) * ps + offset, ps * 0.4, ps * 1.5);
+    // Rotes Torii-Symbol auf Stirn - nur ohne Head-Accessory
+    if (equippedSlot !== 'head') {
+      ctx.fillStyle = '#DC143C';
+      ctx.fillRect((centerX - 1.5) * ps, (centerY - 5) * ps + offset, ps * 3, ps * 0.4);
+      ctx.fillRect((centerX - 1) * ps, (centerY - 4.5) * ps + offset, ps * 0.4, ps * 1.5);
+      ctx.fillRect((centerX + 0.6) * ps, (centerY - 4.5) * ps + offset, ps * 0.4, ps * 1.5);
+    }
 
-    // Goldene Magatama-Kette (deutlicher)
-    ctx.fillStyle = '#FFD700';
-    for (let i = -2; i <= 2; i++) {
-      ctx.beginPath();
-      ctx.arc((centerX + i * 1.5) * ps, (centerY + 3) * ps + offset, ps * 0.5, 0, Math.PI * 2);
-      ctx.fill();
+    // Goldene Magatama-Kette - nur ohne Neck-Accessory
+    if (equippedSlot !== 'neck') {
+      ctx.fillStyle = '#FFD700';
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.arc((centerX + i * 1.5) * ps, (centerY + 3) * ps + offset, ps * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
 
     // Rote mystische Linien an den Wangen
@@ -312,11 +321,13 @@ export const drawFox = (
       }
     }
 
-    // Größeres Torii-Symbol
-    ctx.fillStyle = '#DC143C';
-    ctx.fillRect((centerX - 2) * ps, (centerY - 5.5) * ps + offset, ps * 4, ps * 0.5);
-    ctx.fillRect((centerX - 1.5) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
-    ctx.fillRect((centerX + 1) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
+    // Größeres Torii-Symbol - nur ohne Head-Accessory
+    if (equippedSlot !== 'head') {
+      ctx.fillStyle = '#DC143C';
+      ctx.fillRect((centerX - 2) * ps, (centerY - 5.5) * ps + offset, ps * 4, ps * 0.5);
+      ctx.fillRect((centerX - 1.5) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
+      ctx.fillRect((centerX + 1) * ps, (centerY - 5) * ps + offset, ps * 0.5, ps * 2);
+    }
   }
 
   if (level >= 25) {
@@ -334,25 +345,25 @@ export const drawFox = (
       }
     }
 
-    // Göttliches Stirnsymbol (Sonne statt Torii)
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 1, 0, Math.PI * 2);
-    ctx.fill();
-    // Sonnenstrahlen
-    for (let i = 0; i < 8; i++) {
-      const rayAngle = (i / 8) * Math.PI * 2;
-      const rx = centerX * ps + Math.cos(rayAngle) * ps * 1.5;
-      const ry = (centerY - 5) * ps + offset + Math.sin(rayAngle) * ps * 1.5;
-      ctx.fillRect(rx - ps * 0.15, ry - ps * 0.15, ps * 0.3, ps * 0.3);
+    // Göttliches Stirnsymbol - nur ohne Head-Accessory
+    if (equippedSlot !== 'head') {
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 1, 0, Math.PI * 2);
+      ctx.fill();
+      for (let i = 0; i < 8; i++) {
+        const rayAngle = (i / 8) * Math.PI * 2;
+        const rx = centerX * ps + Math.cos(rayAngle) * ps * 1.5;
+        const ry = (centerY - 5) * ps + offset + Math.sin(rayAngle) * ps * 1.5;
+        ctx.fillRect(rx - ps * 0.15, ry - ps * 0.15, ps * 0.3, ps * 0.3);
+      }
+      ctx.shadowColor = '#FFD700';
+      ctx.shadowBlur = ps * 4;
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
-    // Leuchten
-    ctx.shadowColor = '#FFD700';
-    ctx.shadowBlur = ps * 4;
-    ctx.fillStyle = '#FFD700';
-    ctx.beginPath();
-    ctx.arc(centerX * ps, (centerY - 5) * ps + offset, ps * 0.6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.shadowBlur = 0;
   }
 };

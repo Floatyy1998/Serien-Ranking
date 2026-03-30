@@ -1,12 +1,18 @@
 /**
- * PetCustomization - Color picker and accessory grid
+ * PetCustomization - Color picker and accessory inventory
  */
 
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { ACCESSORIES, PET_COLORS } from '../../types/pet.types';
-import type { Pet } from '../../types/pet.types';
+import {
+  PET_COLORS,
+  ACCESSORIES,
+  RARITY_COLORS,
+  RARITY_LABELS,
+  getAccessoryRarity,
+} from '../../types/pet.types';
+import type { Pet, AccessoryRarity } from '../../types/pet.types';
 import './PetsPage.css';
 
 interface PetCustomizationProps {
@@ -16,6 +22,8 @@ interface PetCustomizationProps {
   onToggleAccessory: (accessoryId: string) => void;
 }
 
+const rarityOrder: AccessoryRarity[] = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
+
 export const PetCustomization = memo(function PetCustomization({
   pet,
   activeColorBorder,
@@ -23,6 +31,15 @@ export const PetCustomization = memo(function PetCustomization({
   onToggleAccessory,
 }: PetCustomizationProps) {
   const { currentTheme } = useTheme();
+
+  // Sort pet's accessories by rarity (best first)
+  const sortedAccessories = [...(pet.accessories || [])].sort((a, b) => {
+    const ra = rarityOrder.indexOf(getAccessoryRarity(a.id));
+    const rb = rarityOrder.indexOf(getAccessoryRarity(b.id));
+    return ra - rb;
+  });
+
+  const equippedCount = sortedAccessories.filter((a) => a.equipped).length;
 
   return (
     <motion.div
@@ -68,7 +85,7 @@ export const PetCustomization = memo(function PetCustomization({
         </div>
       </div>
 
-      {/* Accessories */}
+      {/* Accessories Inventory */}
       <div
         className="pet-customization-section"
         style={{
@@ -78,37 +95,74 @@ export const PetCustomization = memo(function PetCustomization({
       >
         <h2 className="pet-customization-title" style={{ color: currentTheme.text.primary }}>
           Accessoires
+          <span
+            style={{
+              fontSize: '0.75rem',
+              color: currentTheme.text.secondary,
+              marginLeft: 8,
+              fontWeight: 400,
+            }}
+          >
+            {sortedAccessories.length}/{Object.keys(ACCESSORIES).length}
+            {equippedCount > 0 ? ' \u00B7 1 getragen' : ''}
+          </span>
         </h2>
-        <div className="pet-accessories-grid">
-          {Object.entries(ACCESSORIES)
-            .slice(0, 8)
-            .map(([accessoryId, accessory]) => {
-              const isEquipped = pet.accessories?.some(
-                (acc) => acc.id === accessoryId && acc.equipped
-              );
+        {sortedAccessories.length === 0 ? (
+          <p
+            style={{
+              color: currentTheme.text.secondary,
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              padding: '12px 0',
+            }}
+          >
+            Schau Episoden um Accessoires zu finden!
+          </p>
+        ) : (
+          <div className="pet-accessories-grid">
+            {sortedAccessories.map((accessory) => {
+              const rarity = getAccessoryRarity(accessory.id);
+              const rarityColor = RARITY_COLORS[rarity];
+              const def = ACCESSORIES[accessory.id];
+
               return (
                 <motion.button
-                  key={`${accessoryId}-${isEquipped}`}
+                  key={`${accessory.id}-${accessory.equipped}`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => onToggleAccessory(accessoryId)}
+                  onClick={() => onToggleAccessory(accessory.id)}
                   className="pet-accessory-btn"
+                  title={`${def?.name || accessory.name} (${RARITY_LABELS[rarity]})`}
                   style={{
-                    background: isEquipped
-                      ? `linear-gradient(135deg, ${currentTheme.primary}30, ${currentTheme.primary}15)`
+                    background: accessory.equipped
+                      ? `linear-gradient(135deg, ${rarityColor}30, ${rarityColor}15)`
                       : currentTheme.background.default,
-                    border: isEquipped
-                      ? `2px solid ${currentTheme.primary}`
+                    border: accessory.equipped
+                      ? `2px solid ${rarityColor}`
                       : `1px solid ${currentTheme.border.default}`,
                     color: currentTheme.text.primary,
-                    boxShadow: isEquipped ? `0 4px 12px ${currentTheme.primary}30` : 'none',
+                    boxShadow: accessory.equipped ? `0 4px 12px ${rarityColor}40` : 'none',
+                    position: 'relative',
                   }}
                 >
-                  {accessory.icon}
+                  {def?.icon || accessory.icon}
+                  {/* Rarity dot */}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: 3,
+                      right: 3,
+                      width: 6,
+                      height: 6,
+                      borderRadius: '50%',
+                      background: rarityColor,
+                    }}
+                  />
                 </motion.button>
               );
             })}
-        </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );

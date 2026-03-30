@@ -11,6 +11,7 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { RARITY_LABELS } from '../../types/pet.types';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -210,7 +211,23 @@ export function useSeriesActions(
             }
           },
           onCommit: async () => {
-            await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
+            const drop = await petService.watchedSeriesWithGenreAllPets(
+              userId,
+              series.genre?.genres || []
+            );
+            if (drop && userId) {
+              firebase
+                .database()
+                .ref(`users/${userId}/notifications`)
+                .push({
+                  type: 'accessory_drop',
+                  title: `${drop.icon} Neues Accessoire!`,
+                  message: `${drop.name} (${RARITY_LABELS[drop.rarity]})`,
+                  timestamp: Date.now(),
+                  read: false,
+                  data: { accessoryId: drop.accessoryId, rarity: drop.rarity },
+                });
+            }
             WatchActivityService.logEpisodeWatch(
               userId,
               series.id,

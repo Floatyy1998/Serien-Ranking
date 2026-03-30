@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { Pet } from '../../types/pet.types';
-import { PET_COLORS } from '../../types/pet.types';
+import type { Pet, AccessorySlot } from '../../types/pet.types';
+import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { adjustColor } from './colorUtils';
 import { drawAccessory } from './drawAccessory';
@@ -97,9 +97,25 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
               ? bounceOffset * 0.5
               : bounceOffset;
 
+      // Bestimme welcher Slot durch ein equipped Accessory belegt ist
+      const equippedAcc = pet.accessories?.find((a) => a.equipped);
+      const equippedSlot: AccessorySlot | null = equippedAcc
+        ? (ACCESSORIES[equippedAcc.id]?.slot ?? null)
+        : null;
+
       // Zeichne zuerst das Pet
       if (pet.type === 'cat') {
-        drawCat(ctx, pet, pet.level, pixelSize, color, darkColor, lightColor, moodBounce);
+        drawCat(
+          ctx,
+          pet,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          equippedSlot
+        );
       } else if (pet.type === 'dog') {
         drawDog(
           ctx,
@@ -112,7 +128,8 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
           moodBounce,
           animated,
           frameRef.current,
-          animationSpeed
+          animationSpeed,
+          equippedSlot
         );
       } else if (pet.type === 'dragon') {
         drawDragon(
@@ -138,7 +155,8 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
           moodBounce,
           animated,
           frameRef.current,
-          animationSpeed
+          animationSpeed,
+          equippedSlot
         );
       } else if (pet.type === 'fox') {
         drawFox(
@@ -151,7 +169,8 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
           moodBounce,
           animated,
           frameRef.current,
-          animationSpeed
+          animationSpeed,
+          equippedSlot
         );
       }
 
@@ -159,7 +178,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       if (pet.accessories && pet.accessories.length > 0) {
         pet.accessories.forEach((accessory) => {
           if (!accessory.equipped) return;
-          drawAccessory(ctx, accessory, pixelSize, moodBounce);
+          drawAccessory(ctx, accessory, pixelSize, moodBounce, pet.type, pet.level);
         });
       }
 

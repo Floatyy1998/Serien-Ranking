@@ -1,3 +1,5 @@
+import type { AccessorySlot } from '../../types/pet.types';
+
 export const drawBird = (
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -8,7 +10,8 @@ export const drawBird = (
   offset: number,
   animated: boolean,
   frame: number,
-  animationSpeed: number
+  animationSpeed: number,
+  equippedSlot?: AccessorySlot | null
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -241,8 +244,8 @@ export const drawBird = (
   ctx.fillRect((centerX + 1) * ps, (centerY + 10.5) * ps + offset, ps * 0.5, ps);
   ctx.fillRect((centerX + 2) * ps, (centerY + 10.5) * ps + offset, ps * 0.5, ps);
 
-  // Level 10+ Goldene Krone
-  if (level >= 10) {
+  // Level 10+ Goldene Krone - nur wenn kein Head-Accessory equipped
+  if (level >= 10 && equippedSlot !== 'head') {
     ctx.fillStyle = 'gold';
     ctx.fillRect((centerX - 2) * ps, (centerY - 10) * ps + offset, ps * 4, ps);
     ctx.fillRect((centerX - 3) * ps, (centerY - 11) * ps + offset, ps, ps * 2);

@@ -169,9 +169,13 @@ export function usePetsData() {
 
     let newAccessories;
     if (accessoryIndex >= 0) {
-      newAccessories = currentAccessories.map((acc) =>
-        acc.id === accessoryId ? { ...acc, equipped: !acc.equipped } : acc
-      );
+      const isEquipping = !currentAccessories[accessoryIndex].equipped;
+      newAccessories = currentAccessories.map((acc) => {
+        if (acc.id === accessoryId) return { ...acc, equipped: isEquipping };
+        // Unequip all others when equipping this one
+        if (isEquipping && acc.equipped) return { ...acc, equipped: false };
+        return acc;
+      });
     } else {
       const accessoryInfo = ACCESSORIES[accessoryId];
       if (accessoryInfo) {
@@ -179,7 +183,7 @@ export function usePetsData() {
           ...currentAccessories,
           {
             id: accessoryId,
-            type: accessoryInfo.type,
+            type: accessoryInfo.slot,
             name: accessoryInfo.name,
             icon: accessoryInfo.icon,
             equipped: true,

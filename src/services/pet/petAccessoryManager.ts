@@ -1,11 +1,32 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import type { Pet, PetAccessory } from '../../types/pet.types';
+import type {
+  Pet,
+  PetAccessory,
+  AccessoryRarity,
+  AccessoryDefinition,
+} from '../../types/pet.types';
 import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
-import { getUserPet } from './petCore';
+import { getUserPet, getUserPets } from './petCore';
 
-// Accessoire ausruesten/ablegen
+/** Erstellt ein PetAccessory ohne undefined-Felder (Firebase verbietet undefined) */
+function makeAccessory(id: string, def: AccessoryDefinition, equipped: boolean): PetAccessory {
+  const acc: PetAccessory = {
+    id,
+    type: def.slot,
+    name: def.name,
+    icon: def.icon,
+    equipped,
+  };
+  if (def.color) acc.color = def.color;
+  return acc;
+}
+
+// ============================================================
+// Toggle Accessory - max 1 equipped per pet
+// ============================================================
+
 export async function toggleAccessory(
   userId: string,
   petId: string,
@@ -18,19 +39,28 @@ export async function toggleAccessory(
     pet.accessories = [];
   }
 
-  const existingAccessory = pet.accessories.find((a) => a.id === accessoryId);
+  const target = pet.accessories.find((a) => a.id === accessoryId);
 
-  if (existingAccessory) {
-    existingAccessory.equipped = !existingAccessory.equipped;
+  if (target) {
+    if (!target.equipped) {
+      // Equipping this one - unequip everything else first
+      pet.accessories.forEach((a) => {
+        a.equipped = false;
+      });
+      target.equipped = true;
+    } else {
+      // Unequipping
+      target.equipped = false;
+    }
   } else {
+    // New accessory - add and equip, unequip all others
     const accessoryData = ACCESSORIES[accessoryId];
     if (accessoryData) {
-      const newAccessory: PetAccessory = {
-        id: accessoryId,
-        ...accessoryData,
-        equipped: true,
-      };
-      pet.accessories.push(newAccessory);
+      pet.accessories.forEach((a) => {
+        a.equipped = false;
+      });
+
+      pet.accessories.push(makeAccessory(accessoryId, accessoryData, true));
     }
   }
 
@@ -38,36 +68,124 @@ export async function toggleAccessory(
   return pet;
 }
 
+// ============================================================
+// Starter Accessories - 3 random ones for new pets
+// ============================================================
+
+const STARTER_POOL = [
+  'beanie',
+  'baseballCap',
+  'flowerCrown',
+  'roundGlasses',
+  'collar',
+  'bow',
+  'bowtie',
+];
+
+export function generateStarterAccessories(): PetAccessory[] {
+  const pool = [...STARTER_POOL];
+  const starters: PetAccessory[] = [];
+
+  for (let i = 0; i < 3 && pool.length > 0; i++) {
+    const idx = Math.floor(Math.random() * pool.length);
+    const pick = pool.splice(idx, 1)[0];
+    const def = ACCESSORIES[pick];
+    if (def) {
+      starters.push(makeAccessory(pick, def, i === 0));
+    }
+  }
+
+  return starters;
+}
+
+// ============================================================
+// Accessory Drop System
+// ============================================================
+
+export interface AccessoryDrop {
+  accessoryId: string;
+  name: string;
+  icon: string;
+  rarity: AccessoryRarity;
+}
+
+/**
+ * Rolls for a random accessory drop after watching an episode.
+ * 1% chance per episode (~alle 100 Episoden).
+ * Adds to ALL living pets' inventory (unequipped).
+ */
+export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
+  if (Math.random() > PET_CONFIG.DROP_CHANCE_PER_EPISODE) {
+    return null;
+  }
+
+  const rarity = rollRarity();
+
+  const candidates = Object.entries(ACCESSORIES).filter(([, def]) => def.rarity === rarity);
+  if (candidates.length === 0) return null;
+
+  const pets = await getUserPets(userId);
+  const alivePets = pets.filter((p) => p.isAlive);
+  if (alivePets.length === 0) return null;
+
+  // Pick a random accessory, prefer one not yet owned by any pet
+  const allOwned = new Set(alivePets.flatMap((p) => (p.accessories || []).map((a) => a.id)));
+  const unowned = candidates.filter(([id]) => !allOwned.has(id));
+
+  const pool = unowned.length > 0 ? unowned : candidates;
+  const [accessoryId, def] = pool[Math.floor(Math.random() * pool.length)];
+
+  // If all pets already have this accessory, skip
+  if (allOwned.has(accessoryId) && unowned.length === 0) {
+    return null;
+  }
+
+  // Add to all living pets that don't have it yet
+  for (const pet of alivePets) {
+    if (pet.accessories?.some((a) => a.id === accessoryId)) continue;
+
+    if (!pet.accessories) pet.accessories = [];
+    pet.accessories.push(makeAccessory(accessoryId, def, false));
+    await firebase.database().ref(`pets/${userId}/${pet.id}/accessories`).set(pet.accessories);
+  }
+
+  return { accessoryId, name: def.name, icon: def.icon, rarity };
+}
+
+function rollRarity(): AccessoryRarity {
+  const weights = PET_CONFIG.RARITY_WEIGHTS;
+  const total = weights.common + weights.uncommon + weights.rare + weights.epic + weights.legendary;
+  const roll = Math.random() * total;
+
+  if (roll < weights.common) return 'common';
+  if (roll < weights.common + weights.uncommon) return 'uncommon';
+  if (roll < weights.common + weights.uncommon + weights.rare) return 'rare';
+  if (roll < weights.common + weights.uncommon + weights.rare + weights.epic) return 'epic';
+  return 'legendary';
+}
+
+// ============================================================
+// Legacy: Check & Unlock Accessories (level-up / seasonal rewards)
+// ============================================================
+
 function hasAccessory(pet: Pet, accessoryId: string): boolean {
   return pet.accessories?.some((a) => a.id === accessoryId) || false;
 }
 
-// Pruefe und schalte Accessoires frei
 export async function checkAndUnlockAccessories(pet: Pet): Promise<void> {
   const month = new Date().getMonth() + 1;
+  let changed = false;
 
   if (pet.level >= PET_CONFIG.CROWN_LEVEL_REQUIREMENT && !hasAccessory(pet, 'crown')) {
     if (!pet.accessories) pet.accessories = [];
-    pet.accessories.push({
-      id: 'crown',
-      type: 'crown' as const,
-      name: 'Krone',
-      icon: '\uD83D\uDC51',
-      equipped: false,
-    });
-    await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+    pet.accessories.push(makeAccessory('crown', ACCESSORIES.crown, false));
+    changed = true;
   }
 
   if (month === PET_CONFIG.SANTA_HAT_MONTH && !hasAccessory(pet, 'santaHat')) {
     if (!pet.accessories) pet.accessories = [];
-    pet.accessories.push({
-      id: 'santaHat',
-      type: 'hat' as const,
-      name: 'Weihnachtsmuetze',
-      icon: '\uD83C\uDF85',
-      equipped: false,
-    });
-    await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+    pet.accessories.push(makeAccessory('santaHat', ACCESSORIES.santaHat, false));
+    changed = true;
   }
 
   if (
@@ -75,18 +193,19 @@ export async function checkAndUnlockAccessories(pet: Pet): Promise<void> {
     !hasAccessory(pet, 'sunglasses')
   ) {
     if (!pet.accessories) pet.accessories = [];
-    pet.accessories.push({
-      id: 'sunglasses',
-      type: 'glasses' as const,
-      name: 'Sonnenbrille',
-      icon: '\uD83D\uDD76\uFE0F',
-      equipped: false,
-    });
+    pet.accessories.push(makeAccessory('sunglasses', ACCESSORIES.sunglasses, false));
+    changed = true;
+  }
+
+  if (changed) {
     await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
   }
 }
 
-// Check Achievements fuer spezielle Farben/Muster
+// ============================================================
+// Achievements
+// ============================================================
+
 export async function checkAchievements(pet: Pet): Promise<void> {
   const updates: Record<string, string[] | undefined> = {};
 
@@ -127,7 +246,10 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 }
 
-// Aendere Pet-Farbe
+// ============================================================
+// Color & Pattern Changes
+// ============================================================
+
 export async function changePetColor(
   userId: string,
   petId: string,
@@ -145,7 +267,6 @@ export async function changePetColor(
   return pet;
 }
 
-// Aendere Pet-Muster
 export async function changePetPattern(
   userId: string,
   petId: string,

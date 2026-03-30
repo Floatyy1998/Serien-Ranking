@@ -7,7 +7,7 @@ const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 
 export interface UnifiedNotification {
   id: string;
-  kind: 'activity' | 'request' | 'discussion' | 'announcement' | 'bug_ticket';
+  kind: 'activity' | 'request' | 'discussion' | 'announcement' | 'bug_ticket' | 'pet';
   title: string;
   message: string;
   timestamp: number;
@@ -24,7 +24,8 @@ export interface UnifiedNotification {
     | 'flag'
     | 'announcement'
     | 'bug'
-    | 'feature';
+    | 'feature'
+    | 'pet';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
@@ -205,30 +206,35 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       }
 
       const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
+      const isPet = n.type === 'accessory_drop';
       items.push({
         id: `notif_${n.id}`,
-        kind: isBugTicket ? 'bug_ticket' : 'discussion',
+        kind: isPet ? 'pet' : isBugTicket ? 'bug_ticket' : 'discussion',
         title: n.title,
         message: n.message,
         timestamp: n.timestamp,
         read: n.read,
-        navigateTo: isBugTicket
-          ? isAdmin
-            ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
-            : '/bug-report'
-          : navigateTo,
+        navigateTo: isPet
+          ? '/pets'
+          : isBugTicket
+            ? isAdmin
+              ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
+              : '/bug-report'
+            : navigateTo,
         notificationId: n.id,
-        icon: isBugTicket
-          ? n.data?.ticketType === 'feature'
-            ? 'feature'
-            : 'bug'
-          : n.type === 'discussion_reply'
-            ? 'chat'
-            : n.type === 'spoiler_flag'
-              ? 'flag'
-              : n.type === 'discussion_like'
-                ? 'heart'
-                : 'chat',
+        icon: isPet
+          ? 'pet'
+          : isBugTicket
+            ? n.data?.ticketType === 'feature'
+              ? 'feature'
+              : 'bug'
+            : n.type === 'discussion_reply'
+              ? 'chat'
+              : n.type === 'spoiler_flag'
+                ? 'flag'
+                : n.type === 'discussion_like'
+                  ? 'heart'
+                  : 'chat',
       });
     }
 
