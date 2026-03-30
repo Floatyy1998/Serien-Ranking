@@ -438,6 +438,3 @@ class ServiceWorkerManager {
 
 // Singleton Instance
 export const serviceWorkerManager = new ServiceWorkerManager();
-
-// Type Exports
-export type { CacheStatus, PendingUpdate };

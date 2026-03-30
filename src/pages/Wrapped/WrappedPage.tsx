@@ -91,5 +91,3 @@ export const WrappedPage: React.FC = () => {
     </div>
   );
 };
-
-export default WrappedPage;

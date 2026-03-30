@@ -25,15 +25,7 @@ import {
   watchedSeriesWithGenreAllPets,
 } from './petProgressManager';
 
-import {
-  toggleAccessory,
-  changePetColor,
-  changePetPattern,
-  generateStarterAccessories,
-  rollAccessoryDrop,
-} from './petAccessoryManager';
-
-export type { AccessoryDrop } from './petAccessoryManager';
+import { toggleAccessory, changePetColor } from './petAccessoryManager';
 
 export const petService = {
   getUserPets,
@@ -56,7 +48,4 @@ export const petService = {
   watchedSeriesWithGenreAllPets,
   toggleAccessory,
   changePetColor,
-  changePetPattern,
-  generateStarterAccessories,
-  rollAccessoryDrop,
 };

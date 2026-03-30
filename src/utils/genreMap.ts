@@ -1,4 +1,4 @@
-export const GENRE_MAP: Record<number, string> = {
+const GENRE_MAP: Record<number, string> = {
   28: 'Action',
   12: 'Abenteuer',
   16: 'Animation',

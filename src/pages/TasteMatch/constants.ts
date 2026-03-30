@@ -14,14 +14,6 @@ export const ACCENT_COLORS = {
   match: '#ff6b9d', // Herz-Pink
 };
 
-// Premium gradient for compatibility score display
-export const getCompatibilityGradient = (score: number): string => {
-  if (score >= 80) return 'linear-gradient(135deg, #00cec9, #00b894)';
-  if (score >= 60) return 'linear-gradient(135deg, #fdcb6e, #f39c12)';
-  if (score >= 40) return 'linear-gradient(135deg, #e17055, #d63031)';
-  return 'linear-gradient(135deg, #636e72, #2d3436)';
-};
-
 export const getCompatibilityColors = (score: number): { from: string; to: string } => {
   if (score >= 80) return { from: '#00cec9', to: '#00b894' };
   if (score >= 60) return { from: '#fdcb6e', to: '#f39c12' };

@@ -40,10 +40,6 @@ export interface Discussion {
   isSpoiler?: boolean;
 }
 
-export interface DiscussionWithReplies extends Discussion {
-  replies: DiscussionReply[];
-}
-
 export interface CreateDiscussionInput {
   itemId: number;
   itemType: DiscussionItemType;
@@ -52,11 +48,6 @@ export interface CreateDiscussionInput {
   title: string;
   content: string;
   isSpoiler?: boolean;
-}
-
-export interface CreateReplyInput {
-  discussionId: string;
-  content: string;
 }
 
 export interface DiscussionFeedMetadata {

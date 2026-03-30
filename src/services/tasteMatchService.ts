@@ -361,5 +361,3 @@ export async function calculateTasteMatch(
     },
   };
 }
-
-export default { calculateTasteMatch };

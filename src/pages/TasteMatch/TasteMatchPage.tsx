@@ -294,5 +294,3 @@ export const TasteMatchPage: React.FC = () => {
     </div>
   );
 };
-
-export default TasteMatchPage;

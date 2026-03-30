@@ -21,12 +21,3 @@ export const getFormattedDate = (date: string) => {
 
   return `${day}.${month}.${year}`;
 };
-export const getFormattedTime = (date: string) => {
-  if (!date) return 'Keine Zeit';
-  const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) return 'Ungültige Zeit';
-  return parsedDate.toLocaleTimeString('de-DE', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};

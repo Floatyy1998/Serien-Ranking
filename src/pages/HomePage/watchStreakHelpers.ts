@@ -19,7 +19,7 @@ export interface ActivePetInfo {
 
 export type StreakStatus = 'active' | 'at_risk' | 'shieldable' | 'lost';
 
-export function getDaysSinceLastWatch(lastWatchDate: string): number {
+function getDaysSinceLastWatch(lastWatchDate: string): number {
   if (!lastWatchDate) return Infinity;
   const today = toLocalDateString();
   const todayMs = new Date(today).getTime();

@@ -112,7 +112,8 @@ export interface AccessoryDrop {
 /**
  * Rolls for a random accessory drop after watching an episode.
  * 1% chance per episode (~alle 100 Episoden).
- * Adds to ALL living pets' inventory (unequipped).
+ * Accessories are shared across all pets — we only need to check one pet's inventory.
+ * The sync logic in getUserPets propagates to all pets on next load.
  */
 export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
   if (Math.random() > PET_CONFIG.DROP_CHANCE_PER_EPISODE) {
@@ -128,26 +129,20 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
   const alivePets = pets.filter((p) => p.isAlive);
   if (alivePets.length === 0) return null;
 
-  // Pick a random accessory, prefer one not yet owned by any pet
-  const allOwned = new Set(alivePets.flatMap((p) => (p.accessories || []).map((a) => a.id)));
-  const unowned = candidates.filter(([id]) => !allOwned.has(id));
+  // Inventory is shared — use first pet as source of truth
+  const owned = new Set((alivePets[0].accessories || []).map((a) => a.id));
+  const unowned = candidates.filter(([id]) => !owned.has(id));
 
-  const pool = unowned.length > 0 ? unowned : candidates;
-  const [accessoryId, def] = pool[Math.floor(Math.random() * pool.length)];
+  // All candidates already owned → no drop
+  if (unowned.length === 0) return null;
 
-  // If all pets already have this accessory, skip
-  if (allOwned.has(accessoryId) && unowned.length === 0) {
-    return null;
-  }
+  const [accessoryId, def] = unowned[Math.floor(Math.random() * unowned.length)];
 
-  // Add to all living pets that don't have it yet
-  for (const pet of alivePets) {
-    if (pet.accessories?.some((a) => a.id === accessoryId)) continue;
-
-    if (!pet.accessories) pet.accessories = [];
-    pet.accessories.push(makeAccessory(accessoryId, def, false));
-    await firebase.database().ref(`pets/${userId}/${pet.id}/accessories`).set(pet.accessories);
-  }
+  // Add to first pet — sync in getUserPets propagates to the rest
+  const pet = alivePets[0];
+  if (!pet.accessories) pet.accessories = [];
+  pet.accessories.push(makeAccessory(accessoryId, def, false));
+  await firebase.database().ref(`pets/${userId}/${pet.id}/accessories`).set(pet.accessories);
 
   return { accessoryId, name: def.name, icon: def.icon, rarity };
 }
@@ -264,24 +259,5 @@ export async function changePetColor(
 
   pet.color = newColor;
   await firebase.database().ref(`pets/${userId}/${petId}/color`).set(newColor);
-  return pet;
-}
-
-export async function changePetPattern(
-  userId: string,
-  petId: string,
-  newPattern: string
-): Promise<Pet | null> {
-  const pet = await getUserPet(userId, petId);
-  if (!pet) return null;
-
-  const basicPatterns = ['spots', 'stripes', 'plain', 'patches'];
-
-  if (!basicPatterns.includes(newPattern) && !pet.unlockedPatterns?.includes(newPattern)) {
-    return pet;
-  }
-
-  pet.pattern = newPattern as Pet['pattern'];
-  await firebase.database().ref(`pets/${userId}/${petId}/pattern`).set(newPattern);
   return pet;
 }

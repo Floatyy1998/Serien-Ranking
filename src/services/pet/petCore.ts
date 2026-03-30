@@ -24,7 +24,7 @@ function isLegacySinglePet(data: unknown): data is { name: string; type: string;
 }
 
 /** Prueft ob das Objekt ein gueltiger Pet-Datensatz aus Firebase ist */
-export function isRawPetData(data: unknown): data is Record<string, unknown> {
+function isRawPetData(data: unknown): data is Record<string, unknown> {
   return typeof data === 'object' && data !== null && 'type' in data;
 }
 
@@ -34,7 +34,7 @@ export function isRawPetData(data: unknown): data is Record<string, unknown> {
 
 const migrationDone: Set<string> = new Set();
 
-export async function migrateIfNeeded(userId: string): Promise<void> {
+async function migrateIfNeeded(userId: string): Promise<void> {
   if (migrationDone.has(userId)) return;
 
   try {

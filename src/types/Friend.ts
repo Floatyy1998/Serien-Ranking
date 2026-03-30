@@ -9,25 +9,6 @@ export interface Friend {
   isOnline?: boolean;
 }
 
-export interface UserProfile {
-  uid: string;
-  email: string;
-  username: string;
-  displayName?: string;
-  photoURL?: string;
-  createdAt: number;
-  lastActive?: number;
-}
-
-export interface UserSearchResult {
-  uid: string;
-  username: string;
-  displayName?: string;
-  photoURL?: string;
-  isAlreadyFriend: boolean;
-  hasPendingRequest: boolean;
-}
-
 export interface FriendRequest {
   id: string;
   fromUserId: string;
@@ -69,13 +50,4 @@ export interface FriendActivity {
   poster?: string; // Alternativer Poster-Pfad
   rating?: number;
   timestamp: number;
-}
-
-export interface FriendStats {
-  totalSeries: number;
-  totalMovies: number;
-  totalWatchtime: number;
-  favoriteGenres: string[];
-  averageRating: number;
-  recentActivity: FriendActivity[];
 }

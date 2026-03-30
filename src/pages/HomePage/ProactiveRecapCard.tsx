@@ -68,6 +68,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = ({
           backdropFilter: 'blur(16px)',
           background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee)`,
           overflow: 'hidden',
+          maxHeight: 'calc(100dvh - 80px)',
+          overflowY: 'auto',
         }}
       >
         {/* Close button */}

@@ -405,6 +405,3 @@ class OfflineFirebaseService {
 
 // Singleton Instance
 export const offlineFirebaseService = new OfflineFirebaseService();
-
-// Type Exports
-export type { OfflineCacheConfig, OfflineQueueItem } from './offlineFirebaseTypes';
