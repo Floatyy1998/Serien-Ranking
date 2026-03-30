@@ -201,7 +201,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const isActioned =
     variant === 'new-season'
       ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
-      : variant === 'inactive-rewatch'
+      : variant === 'inactive-rewatch' || variant === 'unrated'
         ? actionedIds.has(currentSeries.id)
         : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
 

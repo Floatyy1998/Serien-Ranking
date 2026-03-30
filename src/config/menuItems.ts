@@ -16,25 +16,6 @@ export const genreMenuItems = [
   { value: 'Western', label: 'Western' },
 ];
 
-// Subtile Quick-Filter als kleine Chips
-export const quickFilterChips = [
-  {
-    value: 'Ohne Bewertung',
-    label: 'Ohne Bewertung',
-    iconName: 'StarBorder',
-  },
-  {
-    value: 'Neue Episoden',
-    label: 'Neue Episoden',
-    iconName: 'Fiber New',
-  },
-  {
-    value: 'Zuletzt Hinzugefügt',
-    label: 'Zuletzt Hinzugefügt',
-    iconName: 'Schedule',
-  },
-];
-
 export const genreMenuItemsForMovies = [
   { value: 'All', label: 'Alle' },
   { value: 'Action', label: 'Action' },
@@ -54,25 +35,6 @@ export const genreMenuItemsForMovies = [
   { value: 'Thriller', label: 'Thriller' },
   { value: 'War', label: 'War' },
   { value: 'Western', label: 'Western' },
-];
-
-// Subtile Quick-Filter für Filme
-export const quickFilterChipsForMovies = [
-  {
-    value: 'Ohne Bewertung',
-    label: 'Ohne Bewertung',
-    iconName: 'StarBorder',
-  },
-  {
-    value: 'Noch nicht Veröffentlicht',
-    label: 'Unveröffentlicht',
-    iconName: 'Upcoming',
-  },
-  {
-    value: 'Zuletzt Hinzugefügt',
-    label: 'Zuletzt Hinzugefügt',
-    iconName: 'Schedule',
-  },
 ];
 
 export const genreIdMap = [

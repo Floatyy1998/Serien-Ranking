@@ -12,20 +12,12 @@
 import { getYearlyActivity } from './watchActivityService';
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
-import type {
-  MonthlyData,
-  HeatmapData,
-  ActivityData,
-  WatchJourneyData,
-  YearlyTrendData,
-  MultiYearTrendsData,
-} from './watchJourneyTypes';
+import type { HeatmapData, WatchJourneyData, MultiYearTrendsData } from './watchJourneyTypes';
 import {
   MONTH_NAMES,
   DAY_NAMES,
   GENRE_COLORS,
   PROVIDER_COLORS,
-  FALLBACK_COLORS,
   isValidGenre,
   isValidProvider,
   getColor,
@@ -33,17 +25,9 @@ import {
 } from './watchJourneyTypes';
 import { calculateMultiYearTrends } from './watchJourneyTrends';
 
-// Re-export everything from sub-modules
-export type {
-  MonthlyData,
-  HeatmapData,
-  ActivityData,
-  WatchJourneyData,
-  YearlyTrendData,
-  MultiYearTrendsData,
-};
-export { MONTH_NAMES, DAY_NAMES, GENRE_COLORS, PROVIDER_COLORS, FALLBACK_COLORS };
-export { isValidGenre, isValidProvider, getColor };
+// Re-export types used by consumers
+export type { WatchJourneyData, MultiYearTrendsData };
+export { DAY_NAMES };
 export { calculateMultiYearTrends };
 
 // ============================================================================
@@ -370,35 +354,3 @@ export async function calculateWatchJourney(
     })(),
   };
 }
-
-// ============================================================================
-// HELPER - Normalize data for stacked charts (0-100%)
-// ============================================================================
-
-export function normalizeMonthlyData(months: MonthlyData[], keys: string[]): MonthlyData[] {
-  return months.map((month) => {
-    const normalized: Record<string, number> = {};
-    if (month.total > 0) {
-      keys.forEach((key) => {
-        normalized[key] = ((month.values[key] || 0) / month.total) * 100;
-      });
-    } else {
-      keys.forEach((key) => {
-        normalized[key] = 0;
-      });
-    }
-    return { ...month, values: normalized, total: 100 };
-  });
-}
-
-// ============================================================================
-// EXPORT
-// ============================================================================
-
-export default {
-  calculateWatchJourney,
-  calculateMultiYearTrends,
-  normalizeMonthlyData,
-  DAY_NAMES,
-  MONTH_NAMES,
-};

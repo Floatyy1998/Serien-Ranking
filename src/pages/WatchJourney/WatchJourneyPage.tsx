@@ -115,5 +115,3 @@ export const WatchJourneyPage: React.FC = () => {
     </div>
   );
 };
-
-export default WatchJourneyPage;

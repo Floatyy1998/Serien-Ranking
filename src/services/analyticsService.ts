@@ -14,7 +14,7 @@ import 'firebase/compat/database';
 // ─── Types ───────────────────────────────────────────────────────────────
 
 /** Alle erlaubten Analytics-Event-Namen als typisierte Union */
-export type AllowedAnalyticsEvent =
+type AllowedAnalyticsEvent =
   | 'page_view'
   | 'login'
   | 'logout'

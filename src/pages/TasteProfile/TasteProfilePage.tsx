@@ -264,5 +264,3 @@ export const TasteProfilePage: React.FC = () => {
     </PageLayout>
   );
 };
-
-export default TasteProfilePage;

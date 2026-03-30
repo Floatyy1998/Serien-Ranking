@@ -159,5 +159,3 @@ export function AdminDashboardPage() {
     </PageLayout>
   );
 }
-
-export default AdminDashboardPage;

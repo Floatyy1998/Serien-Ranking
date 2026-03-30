@@ -7,7 +7,3 @@
 import { calculateWrappedStats } from './wrapped';
 
 export { calculateWrappedStats };
-
-export default {
-  calculateWrappedStats,
-};

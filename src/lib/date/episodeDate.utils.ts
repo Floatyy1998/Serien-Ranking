@@ -41,28 +41,3 @@ export const getUnifiedEpisodeDate = (date: string | Date): string => {
 
   return germanDate;
 };
-
-export const getUnifiedEpisodeTime = (date: string | Date): string => {
-  if (!date) return '';
-
-  const episodeDate = new Date(date);
-
-  // Prüfe auf ungültiges Datum
-  if (isNaN(episodeDate.getTime())) return '';
-
-  // Deutsche Zeitzone für konsistente Anzeige
-  return episodeDate.toLocaleTimeString('de-DE', {
-    timeZone: 'Europe/Berlin',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
-
-export const getUnifiedEpisodeDateTime = (
-  date: string | Date
-): { dateString: string; timeString: string } => {
-  return {
-    dateString: getUnifiedEpisodeDate(date),
-    timeString: getUnifiedEpisodeTime(date),
-  };
-};

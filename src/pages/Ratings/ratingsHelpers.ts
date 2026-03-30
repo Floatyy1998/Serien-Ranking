@@ -179,8 +179,3 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
     providers: extractProviders(m),
   };
 }
-
-// ─── Progressive rendering constants ────────────────────────────────────
-
-export const INITIAL_RENDER = 30;
-export const RENDER_BATCH = 50;

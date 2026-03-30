@@ -62,31 +62,6 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 };
 
 /**
- * Prüft ob ein aktiver Rewatch abgeschlossen ist.
- * Alle gesehenen Episoden haben die Ziel-watchCount erreicht.
- * Gibt false zurück wenn kein aktiver Rewatch oder keine Seasons vorhanden.
- */
-export const isRewatchComplete = (series: Series): boolean => {
-  if (!hasActiveRewatch(series)) return false;
-  if (!series.seasons || series.seasons.length === 0) return false;
-
-  const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
-
-  for (const season of series.seasons) {
-    const episodes = normalizeEpisodes(season.episodes);
-    for (const episode of episodes) {
-      if (!episode.watched) continue;
-      const currentWatchCount = episode.watchCount || 1;
-      if (currentWatchCount < targetWatchCount) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-};
-
-/**
  * Berechnet den Rewatch-Fortschritt einer Serie.
  * Zählt gesehene Episoden die die Ziel-watchCount erreicht haben.
  * Gibt { current: 0, total: 0 } für leere/uninitialisierte Serien.
@@ -138,7 +113,7 @@ export const hasAnySeasonFullyWatched = (series: Series): boolean => {
  * Prüft ob alle Episoden einer Serie gesehen wurden und alle den gleichen watchCount haben.
  * Gibt false zurück für: leere Seasons, ungesehene Episoden, inkonsistente watchCounts.
  */
-export const isSeriesFullyWatched = (series: Series): boolean => {
+const isSeriesFullyWatched = (series: Series): boolean => {
   if (!series.seasons || series.seasons.length === 0) return false;
 
   let watchCount: number | null = null;

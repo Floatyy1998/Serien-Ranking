@@ -173,11 +173,6 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
   medal: { slot: 'neck', name: 'Medaille', icon: '\uD83C\uDFC5', rarity: 'rare' },
 };
 
-/** Get the slot for an accessory by ID */
-export function getAccessorySlot(accessoryId: string): AccessorySlot {
-  return ACCESSORIES[accessoryId]?.slot ?? 'head';
-}
-
 /** Get the rarity for an accessory by ID */
 export function getAccessoryRarity(accessoryId: string): AccessoryRarity {
   return ACCESSORIES[accessoryId]?.rarity ?? 'common';

@@ -3,7 +3,7 @@
 /**
  * Konvertiert Hex-Farbe zu RGB
  */
-export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
@@ -18,7 +18,7 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
  * Berechnet die relative Luminanz einer Farbe
  * Basiert auf WCAG 2.1 Guidelines
  */
-export function getLuminance(rgb: { r: number; g: number; b: number }): number {
+function getLuminance(rgb: { r: number; g: number; b: number }): number {
   const { r, g, b } = rgb;
 
   const [rs, gs, bs] = [r, g, b].map((c) => {
@@ -32,7 +32,7 @@ export function getLuminance(rgb: { r: number; g: number; b: number }): number {
 /**
  * Berechnet das Kontrastverhältnis zwischen zwei Farben
  */
-export function getContrastRatio(color1: string, color2: string): number {
+function getContrastRatio(color1: string, color2: string): number {
   const rgb1 = hexToRgb(color1);
   const rgb2 = hexToRgb(color2);
 
@@ -51,7 +51,7 @@ export function getContrastRatio(color1: string, color2: string): number {
  * Bestimmt die optimale Textfarbe für einen gegebenen Hintergrund
  * Berücksichtigt WCAG AA Standards (Kontrast >= 4.5:1)
  */
-export function getOptimalTextColor(backgroundColor: string): string {
+function getOptimalTextColor(backgroundColor: string): string {
   const whiteContrast = getContrastRatio(backgroundColor, '#ffffff');
   const blackContrast = getContrastRatio(backgroundColor, '#000000');
 
@@ -140,19 +140,6 @@ export function generateColorPalette(primaryColor: string) {
     borderLight: withOpacity(primaryColor, 0.08),
     borderPrimary: primaryColor,
   };
-}
-
-/**
- * Validiert ob eine Farbkombination WCAG-konform ist
- */
-export function isAccessible(
-  backgroundColor: string,
-  textColor: string,
-  level: 'AA' | 'AAA' = 'AA'
-): boolean {
-  const contrast = getContrastRatio(backgroundColor, textColor);
-  const minContrast = level === 'AAA' ? 7 : 4.5;
-  return contrast >= minContrast;
 }
 
 /**
@@ -252,7 +239,7 @@ export function normalizeThemeColors(config: {
  * Konvertiert Hex-Farbe zu HSL
  * Gibt h: 0-360, s: 0-100, l: 0-100 zurück
  */
-export function hexToHsl(hex: string): { h: number; s: number; l: number } {
+function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const clean = (hex || '').replace('#', '');
   if (clean.length < 6) return { h: 0, s: 0, l: 50 };
   const r = parseInt(clean.substring(0, 2), 16) / 255;
@@ -277,7 +264,7 @@ export function hexToHsl(hex: string): { h: number; s: number; l: number } {
  * Konvertiert HSL zurück zu Hex
  * Erwartet h: 0-360, s: 0-100, l: 0-100
  */
-export function hslToHex(h: number, s: number, l: number): string {
+function hslToHex(h: number, s: number, l: number): string {
   const sN = s / 100;
   const lN = l / 100;
   const c = (1 - Math.abs(2 * lN - 1)) * sN;

@@ -23,5 +23,3 @@ export const StartPage = () => (
     </Container>
   </div>
 );
-
-export default StartPage;
