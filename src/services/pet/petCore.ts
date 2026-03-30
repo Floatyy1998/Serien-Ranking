@@ -78,6 +78,8 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
   if (!data) return [];
 
   const pets: Pet[] = [];
+  const OLD_TYPES = ['hat', 'glasses', 'collar', 'bow', 'scarf', 'crown', 'bandana'];
+  let needsAccessoryReset = false;
 
   for (const petId of Object.keys(data)) {
     const petData = data[petId];
@@ -94,6 +96,21 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
       await firebase.database().ref(`pets/${userId}/${petId}/favoriteGenre`).set(randomGenre);
     }
 
+    // Prüfe ob alte Accessory-Typen vorhanden sind
+    const accessories = petData.accessories as unknown[];
+    if (
+      Array.isArray(accessories) &&
+      accessories.some(
+        (a: unknown) =>
+          typeof a === 'object' &&
+          a !== null &&
+          'type' in a &&
+          OLD_TYPES.includes((a as { type: string }).type)
+      )
+    ) {
+      needsAccessoryReset = true;
+    }
+
     pets.push({
       ...(petData as unknown as Pet),
       lastFed: new Date(petData.lastFed as string | number),
@@ -101,8 +118,22 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
     });
   }
 
+  // Migration: Alte Accessories durch neue Starter ersetzen (alle Pets gleich)
+  if (needsAccessoryReset && pets.length > 0) {
+    const starters = generateStarterAccessories();
+    for (const p of pets) {
+      p.accessories = starters.map((a) => ({ ...a }));
+      // Erstes Pet behaelt equipped, Rest nicht
+      if (pets.indexOf(p) > 0) {
+        p.accessories.forEach((a) => (a.equipped = false));
+        if (p.accessories.length > 0) p.accessories[0].equipped = true;
+      }
+      await firebase.database().ref(`pets/${userId}/${p.id}/accessories`).set(p.accessories);
+    }
+  }
+
   // Sync: Alle Pets muessen die gleichen Accessories haben
-  if (pets.length > 1) {
+  if (!needsAccessoryReset && pets.length > 1) {
     const accSets = pets.map((p) =>
       (p.accessories || [])
         .map((a) => a.id)
@@ -112,25 +143,21 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
     const allSame = accSets.every((s) => s === accSets[0]);
 
     if (!allSame) {
-      // Nimm die groesste Sammlung als Basis
       let bestAccessories = pets[0].accessories || [];
       for (const p of pets) {
         if ((p.accessories || []).length > bestAccessories.length) {
           bestAccessories = p.accessories || [];
         }
       }
-      // Falls alle nur Starter haben (<=3), reset auf gleiche Starter
       if (bestAccessories.length <= 3) {
         bestAccessories = generateStarterAccessories();
       }
       for (const p of pets) {
-        // Behalte den equipped-Status des jeweiligen Pets
         const equippedId = p.accessories?.find((a) => a.equipped)?.id;
         const synced = bestAccessories.map((a) => ({
           ...a,
           equipped: a.id === equippedId,
         }));
-        // Falls nichts equipped war, equip das erste
         if (!synced.some((a) => a.equipped) && synced.length > 0) {
           synced[0].equipped = true;
         }
