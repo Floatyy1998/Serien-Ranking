@@ -1,4 +1,4 @@
-import type { Pet } from '../../types/pet.types';
+import type { Pet, AccessorySlot } from '../../types/pet.types';
 
 export const drawCat = (
   ctx: CanvasRenderingContext2D,
@@ -8,7 +8,8 @@ export const drawCat = (
   color: string,
   dark: string,
   light: string,
-  offset: number
+  offset: number,
+  equippedSlot?: AccessorySlot | null
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -219,26 +220,26 @@ export const drawCat = (
   }
 
   if (level >= 10) {
-    // Majestätische Krone + Mähne
-    // Mähne
+    // Mähne (immer zeichnen - ist kein Accessory-Konflikt)
     ctx.fillStyle = dark;
     ctx.fillRect((centerX - 5) * ps, (centerY - 3) * ps + offset, ps, ps * 3);
     ctx.fillRect((centerX + 4) * ps, (centerY - 3) * ps + offset, ps, ps * 3);
     ctx.fillRect((centerX - 4) * ps, (centerY - 4) * ps + offset, ps * 8, ps * 0.5);
 
-    // Goldene Krone
-    ctx.fillStyle = 'gold';
-    ctx.fillRect((centerX - 2) * ps, (centerY - 10) * ps + offset, ps * 4, ps);
-    ctx.fillRect((centerX - 3) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
-    ctx.fillRect(centerX * ps, (centerY - 11) * ps + offset, ps, ps * 2);
-    ctx.fillRect((centerX + 2) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
-    // Drei Juwelen
-    ctx.fillStyle = '#FF1493';
-    ctx.fillRect((centerX - 2) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
-    ctx.fillStyle = '#00CED1';
-    ctx.fillRect((centerX - 0.3) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
-    ctx.fillStyle = '#9400D3';
-    ctx.fillRect((centerX + 1.4) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
+    // Goldene Krone nur wenn kein Head-Accessory equipped
+    if (equippedSlot !== 'head') {
+      ctx.fillStyle = 'gold';
+      ctx.fillRect((centerX - 2) * ps, (centerY - 10) * ps + offset, ps * 4, ps);
+      ctx.fillRect((centerX - 3) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
+      ctx.fillRect(centerX * ps, (centerY - 11) * ps + offset, ps, ps * 2);
+      ctx.fillRect((centerX + 2) * ps, (centerY - 11) * ps + offset, ps, ps * 2);
+      ctx.fillStyle = '#FF1493';
+      ctx.fillRect((centerX - 2) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
+      ctx.fillStyle = '#00CED1';
+      ctx.fillRect((centerX - 0.3) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
+      ctx.fillStyle = '#9400D3';
+      ctx.fillRect((centerX + 1.4) * ps, (centerY - 10.5) * ps + offset, ps * 0.6, ps * 0.6);
+    }
   }
 
   if (level >= 15) {

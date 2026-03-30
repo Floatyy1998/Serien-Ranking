@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
+import { generateStarterAccessories } from './petAccessoryManager';
 
 // ============================================================================
 // TYPE GUARDS
@@ -100,6 +101,45 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
     });
   }
 
+  // Sync: Alle Pets muessen die gleichen Accessories haben
+  if (pets.length > 1) {
+    const accSets = pets.map((p) =>
+      (p.accessories || [])
+        .map((a) => a.id)
+        .sort()
+        .join(',')
+    );
+    const allSame = accSets.every((s) => s === accSets[0]);
+
+    if (!allSame) {
+      // Nimm die groesste Sammlung als Basis
+      let bestAccessories = pets[0].accessories || [];
+      for (const p of pets) {
+        if ((p.accessories || []).length > bestAccessories.length) {
+          bestAccessories = p.accessories || [];
+        }
+      }
+      // Falls alle nur Starter haben (<=3), reset auf gleiche Starter
+      if (bestAccessories.length <= 3) {
+        bestAccessories = generateStarterAccessories();
+      }
+      for (const p of pets) {
+        // Behalte den equipped-Status des jeweiligen Pets
+        const equippedId = p.accessories?.find((a) => a.equipped)?.id;
+        const synced = bestAccessories.map((a) => ({
+          ...a,
+          equipped: a.id === equippedId,
+        }));
+        // Falls nichts equipped war, equip das erste
+        if (!synced.some((a) => a.equipped) && synced.length > 0) {
+          synced[0].equipped = true;
+        }
+        p.accessories = synced;
+        await firebase.database().ref(`pets/${userId}/${p.id}/accessories`).set(synced);
+      }
+    }
+  }
+
   return pets;
 }
 
@@ -177,16 +217,7 @@ export async function createPet(userId: string, name: string, type: Pet['type'])
     size: sizes[Math.floor(Math.random() * sizes.length)],
     mood: 'happy',
     favoriteGenre: GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)],
-    accessories: [
-      {
-        id: 'collar',
-        type: 'collar' as const,
-        name: 'Halsband',
-        icon: '\uD83D\uDCFF',
-        equipped: true,
-        color: '#8B4513',
-      },
-    ],
+    accessories: generateStarterAccessories(),
     unlockedColors: [],
     unlockedPatterns: [],
     totalSeriesWatched: 0,

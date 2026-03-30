@@ -1,4 +1,4 @@
-import type { Pet } from '../../types/pet.types';
+import type { Pet, AccessorySlot } from '../../types/pet.types';
 
 export const drawDog = (
   ctx: CanvasRenderingContext2D,
@@ -11,7 +11,8 @@ export const drawDog = (
   offset: number,
   animated: boolean,
   frame: number,
-  animationSpeed: number
+  animationSpeed: number,
+  equippedSlot?: AccessorySlot | null
 ): void => {
   const centerX = 16;
   const centerY = 16;
@@ -163,27 +164,26 @@ export const drawDog = (
   }
 
   if (level >= 10) {
-    // Alpha-Status
-    // Leichtes Glühen
+    // Alpha-Status - Leichtes Glühen
     ctx.shadowColor = color;
     ctx.shadowBlur = ps * 2;
     ctx.fillStyle = color;
     ctx.fillRect((centerX - 4) * ps, (centerY - 1) * ps + offset, ps * 8, ps * 0.1);
     ctx.shadowBlur = 0;
 
-    // Stachelhalsband
-    ctx.fillStyle = '#2C2C2C';
-    ctx.fillRect((centerX - 4) * ps, (centerY + 4) * ps + offset, ps * 8, ps * 1.2);
-    // Metallstacheln
-    ctx.fillStyle = '#C0C0C0';
-    for (let i = -3; i <= 3; i++) {
-      ctx.fillRect((centerX + i * 1.3) * ps, (centerY + 3.8) * ps + offset, ps * 0.4, ps * 0.8);
+    // Stachelhalsband nur wenn kein Neck-Accessory equipped
+    if (equippedSlot !== 'neck') {
+      ctx.fillStyle = '#2C2C2C';
+      ctx.fillRect((centerX - 4) * ps, (centerY + 4) * ps + offset, ps * 8, ps * 1.2);
+      ctx.fillStyle = '#C0C0C0';
+      for (let i = -3; i <= 3; i++) {
+        ctx.fillRect((centerX + i * 1.3) * ps, (centerY + 3.8) * ps + offset, ps * 0.4, ps * 0.8);
+      }
+      ctx.fillStyle = 'gold';
+      ctx.beginPath();
+      ctx.arc(centerX * ps, (centerY + 6) * ps + offset, ps * 1, 0, Math.PI * 2);
+      ctx.fill();
     }
-    // Goldmedaillon
-    ctx.fillStyle = 'gold';
-    ctx.beginPath();
-    ctx.arc(centerX * ps, (centerY + 6) * ps + offset, ps * 1, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   if (level >= 15) {

@@ -58,4 +58,15 @@ export const PET_CONFIG = {
   STREAK_SHIELD_HAPPINESS_COST: 10,
   STREAK_SHIELD_COOLDOWN_DAYS: 7,
   STREAK_SHIELD_MAX_MISSED_DAYS: 2,
+
+  // Accessory Drops
+  DROP_CHANCE_PER_EPISODE: 0.01, // 1% = ~alle 100 Episoden
+  MAX_EQUIPPED_PER_SLOT: 1, // Max 1 pro Slot (head/face/neck) = 3 total
+  RARITY_WEIGHTS: {
+    common: 45,
+    uncommon: 30,
+    rare: 15,
+    epic: 8,
+    legendary: 2,
+  },
 } as const;

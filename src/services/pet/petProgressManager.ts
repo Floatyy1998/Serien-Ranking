@@ -3,7 +3,12 @@ import 'firebase/compat/database';
 import type { Pet } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
-import { checkAndUnlockAccessories, checkAchievements } from './petAccessoryManager';
+import {
+  checkAndUnlockAccessories,
+  checkAchievements,
+  rollAccessoryDrop,
+} from './petAccessoryManager';
+import type { AccessoryDrop } from './petAccessoryManager';
 
 // Update wenn Episode geschaut wurde
 export async function watchedEpisode(userId: string, petId: string): Promise<Pet | null> {
@@ -150,15 +155,18 @@ export async function watchedSeriesWithGenre(
   return pet;
 }
 
-// XP fuer ALLE lebenden Pets
+// XP fuer ALLE lebenden Pets + Accessory Drop Roll
 export async function watchedSeriesWithGenreAllPets(
   userId: string,
   genres: string[]
-): Promise<void> {
+): Promise<AccessoryDrop | null> {
   const pets = await getUserPets(userId);
   for (const pet of pets) {
     if (pet.isAlive) {
       await watchedSeriesWithGenre(userId, pet.id, genres);
     }
   }
+
+  // Roll for accessory drop
+  return rollAccessoryDrop(userId);
 }
