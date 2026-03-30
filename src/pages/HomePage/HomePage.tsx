@@ -451,7 +451,10 @@ export const HomePage: React.FC = () => {
         displayName={dbDisplayName || user.displayName || undefined}
         photoURL={user.photoURL ?? undefined}
         totalUnreadBadge={notifs.totalUnreadBadge}
-        onNotificationsOpen={() => setShowNotifications(true)}
+        onNotificationsOpen={() => {
+          setShowNotifications(true);
+          notifs.handleMarkAllNotificationsRead();
+        }}
         watchedEpisodes={stats.watchedEpisodes}
         totalMovies={stats.totalMovies}
         progress={stats.progress}

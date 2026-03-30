@@ -234,12 +234,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const markRequestsAsRead = useCallback(async () => {
     if (!user) return;
     const now = Date.now();
-
-    setFriendRequests((prevRequests) => {
-      const stillUnread = prevRequests.filter((request) => request.sentAt > now);
-      setUnreadRequestsCount(stillUnread.length);
-      return prevRequests;
-    });
+    // Ref SOFORT updaten
+    lastReadRequestsTimeRef.current = now;
+    setUnreadRequestsCount(0);
 
     setLastReadRequestsTime(now);
 
@@ -253,9 +250,10 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const markActivitiesAsRead = useCallback(async () => {
     if (!user) return;
     const now = Date.now();
+    // Ref SOFORT updaten damit loadFriendActivities den neuen Wert sieht
+    lastReadActivitiesTimeRef.current = now;
+    setUnreadActivitiesCount(0);
     setFriendActivities((prevActivities) => {
-      const stillUnread = prevActivities.filter((activity) => activity.timestamp > now);
-      setUnreadActivitiesCount(stillUnread.length);
       return prevActivities;
     });
 

@@ -626,7 +626,10 @@ function TicketCard({
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(ticket.title);
   const [editDesc, setEditDesc] = useState(ticket.description);
+  const isClosed =
+    ticket.status === 'done' || ticket.status === 'rejected' || ticket.status === 'obsolete';
   const canEdit = ticket.status === 'open' || ticket.status === 'in-progress';
+  const [reopenMode, setReopenMode] = useState(false);
   const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.done;
   const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
   const typeCfg = TYPE_CONFIG[ticket.ticketType || 'bug'];
@@ -1051,57 +1054,161 @@ function TicketCard({
                 </div>
               )}
 
-              {/* Add Comment */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <textarea
-                  value={commentText}
-                  onChange={(e) => {
-                    setCommentText(e.target.value);
-                    autoResize(e.target);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendComment();
-                      const ta = e.target as HTMLTextAreaElement;
-                      ta.style.height = 'auto';
-                    }
-                  }}
-                  placeholder="Kommentar schreiben..."
-                  rows={1}
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    background: theme.background.default,
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: '8px',
-                    color: theme.text.secondary,
-                    fontSize: '13px',
-                    outline: 'none',
-                    resize: 'none',
-                    fontFamily: 'inherit',
-                    overflow: 'hidden',
-                  }}
-                />
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSendComment}
-                  disabled={!commentText.trim() || sending}
-                  style={{
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: 'none',
-                    background:
-                      commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
-                    color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
-                    cursor: commentText.trim() && !sending ? 'pointer' : 'default',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <Send style={{ fontSize: 16 }} />
-                </motion.button>
-              </div>
+              {/* Add Comment / Reopen Request */}
+              {isClosed ? (
+                <div style={{ marginTop: '12px' }}>
+                  {!reopenMode ? (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setReopenMode(true)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: `1px solid ${theme.border.default}`,
+                        background: theme.background.default,
+                        color: theme.text.secondary,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      Wiedereroeffnung beantragen
+                    </motion.button>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div style={{ fontSize: '12px', color: theme.text.muted }}>
+                        Begruendung fuer die Wiedereroeffnung:
+                      </div>
+                      <textarea
+                        value={commentText}
+                        onChange={(e) => {
+                          setCommentText(e.target.value);
+                          autoResize(e.target);
+                        }}
+                        placeholder="Warum soll das Ticket wieder geoeffnet werden?"
+                        rows={2}
+                        style={{
+                          padding: '8px 12px',
+                          background: theme.background.default,
+                          border: `1px solid ${theme.border.default}`,
+                          borderRadius: '8px',
+                          color: theme.text.secondary,
+                          fontSize: '13px',
+                          outline: 'none',
+                          resize: 'none',
+                          fontFamily: 'inherit',
+                          overflow: 'hidden',
+                        }}
+                      />
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            setReopenMode(false);
+                            setCommentText('');
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: `1px solid ${theme.border.default}`,
+                            background: 'transparent',
+                            color: theme.text.secondary,
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          Abbrechen
+                        </motion.button>
+                        <motion.button
+                          whileTap={{ scale: 0.95 }}
+                          onClick={async () => {
+                            if (!commentText.trim()) return;
+                            setSending(true);
+                            const success = await onAddComment(
+                              `[Antrag auf Wiedereroeffnung] ${commentText.trim()}`
+                            );
+                            if (success) {
+                              setCommentText('');
+                              setReopenMode(false);
+                            }
+                            setSending(false);
+                          }}
+                          disabled={!commentText.trim() || sending}
+                          style={{
+                            flex: 1,
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: 'none',
+                            background:
+                              commentText.trim() && !sending ? '#f59e0b' : `${theme.primary}30`,
+                            color: commentText.trim() && !sending ? '#000' : `${theme.primary}60`,
+                            cursor: commentText.trim() && !sending ? 'pointer' : 'default',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            fontFamily: 'inherit',
+                          }}
+                        >
+                          Antrag senden
+                        </motion.button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => {
+                      setCommentText(e.target.value);
+                      autoResize(e.target);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendComment();
+                        const ta = e.target as HTMLTextAreaElement;
+                        ta.style.height = 'auto';
+                      }
+                    }}
+                    placeholder="Kommentar schreiben..."
+                    rows={1}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      background: theme.background.default,
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '8px',
+                      color: theme.text.secondary,
+                      fontSize: '13px',
+                      outline: 'none',
+                      resize: 'none',
+                      fontFamily: 'inherit',
+                      overflow: 'hidden',
+                    }}
+                  />
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleSendComment}
+                    disabled={!commentText.trim() || sending}
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background:
+                        commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
+                      color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
+                      cursor: commentText.trim() && !sending ? 'pointer' : 'default',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Send style={{ fontSize: 16 }} />
+                  </motion.button>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
