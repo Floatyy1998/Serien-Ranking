@@ -103,6 +103,7 @@ export function generateStarterAccessories(): PetAccessory[] {
 // ============================================================
 
 export interface AccessoryDrop {
+  dropId: string;
   accessoryId: string;
   name: string;
   icon: string;
@@ -111,9 +112,8 @@ export interface AccessoryDrop {
 
 /**
  * Rolls for a random accessory drop after watching an episode.
- * 1% chance per episode (~alle 100 Episoden).
- * Accessories are shared across all pets — we only need to check one pet's inventory.
- * The sync logic in getUserPets propagates to all pets on next load.
+ * Writes a pending drop to Firebase instead of granting immediately.
+ * The user must claim it via the case-opening overlay.
  */
 export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
   if (Math.random() > PET_CONFIG.DROP_CHANCE_PER_EPISODE) {
@@ -138,13 +138,64 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
 
   const [accessoryId, def] = unowned[Math.floor(Math.random() * unowned.length)];
 
-  // Add to first pet — sync in getUserPets propagates to the rest
-  const pet = alivePets[0];
-  if (!pet.accessories) pet.accessories = [];
-  pet.accessories.push(makeAccessory(accessoryId, def, false));
-  await firebase.database().ref(`pets/${userId}/${pet.id}/accessories`).set(pet.accessories);
+  // Write pending drop + notification in one go
+  const dropRef = firebase.database().ref(`users/${userId}/pendingAccessoryDrops`).push();
+  const notifRef = firebase.database().ref(`users/${userId}/notifications`).push();
+  const now = Date.now();
 
-  return { accessoryId, name: def.name, icon: def.icon, rarity };
+  await Promise.all([
+    dropRef.set({ accessoryId, name: def.name, icon: def.icon, rarity, timestamp: now }),
+    notifRef.set({
+      type: 'pending_accessory_drop',
+      title: '🎁 Neues Accessoire gefunden!',
+      message: 'Tippe hier zum Öffnen',
+      timestamp: now,
+      read: false,
+      data: { dropId: dropRef.key, accessoryId, rarity },
+    }),
+  ]);
+
+  return { dropId: dropRef.key!, accessoryId, name: def.name, icon: def.icon, rarity };
+}
+
+/**
+ * Claims a pending accessory drop — adds it to the pet inventory
+ * and deletes the pending drop from Firebase.
+ */
+export async function claimAccessoryDrop(
+  userId: string,
+  dropId: string,
+  accessoryId: string
+): Promise<boolean> {
+  // Verify pending drop exists
+  const dropRef = firebase.database().ref(`users/${userId}/pendingAccessoryDrops/${dropId}`);
+  const snapshot = await dropRef.once('value');
+  if (!snapshot.exists()) return false;
+
+  const def = ACCESSORIES[accessoryId];
+  if (!def) {
+    await dropRef.remove();
+    return false;
+  }
+
+  // Add to first alive pet — sync propagates to others
+  const pets = await getUserPets(userId);
+  const alivePet = pets.find((p) => p.isAlive);
+  if (alivePet) {
+    const alreadyOwned = alivePet.accessories?.some((a) => a.id === accessoryId);
+    if (!alreadyOwned) {
+      if (!alivePet.accessories) alivePet.accessories = [];
+      alivePet.accessories.push(makeAccessory(accessoryId, def, false));
+      await firebase
+        .database()
+        .ref(`pets/${userId}/${alivePet.id}/accessories`)
+        .set(alivePet.accessories);
+    }
+  }
+
+  // Delete pending drop
+  await dropRef.remove();
+  return true;
 }
 
 function rollRarity(): AccessoryRarity {

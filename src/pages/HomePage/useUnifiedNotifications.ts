@@ -29,6 +29,8 @@ export interface UnifiedNotification {
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
+  action?: 'case_opening';
+  dropData?: { dropId: string; accessoryId: string; rarity: string };
 }
 
 export interface Announcement {
@@ -207,35 +209,50 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
 
       const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
       const isPet = n.type === 'accessory_drop';
-      items.push({
+      const isPendingDrop = n.type === 'pending_accessory_drop';
+
+      const item: UnifiedNotification = {
         id: `notif_${n.id}`,
-        kind: isPet ? 'pet' : isBugTicket ? 'bug_ticket' : 'discussion',
+        kind: isPet || isPendingDrop ? 'pet' : isBugTicket ? 'bug_ticket' : 'discussion',
         title: n.title,
         message: n.message,
         timestamp: n.timestamp,
         read: n.read,
-        navigateTo: isPet
-          ? '/pets'
-          : isBugTicket
-            ? isAdmin
-              ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
-              : '/bug-report'
-            : navigateTo,
+        navigateTo:
+          isPet || isPendingDrop
+            ? '/pets'
+            : isBugTicket
+              ? isAdmin
+                ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
+                : '/bug-report'
+              : navigateTo,
         notificationId: n.id,
-        icon: isPet
-          ? 'pet'
-          : isBugTicket
-            ? n.data?.ticketType === 'feature'
-              ? 'feature'
-              : 'bug'
-            : n.type === 'discussion_reply'
-              ? 'chat'
-              : n.type === 'spoiler_flag'
-                ? 'flag'
-                : n.type === 'discussion_like'
-                  ? 'heart'
-                  : 'chat',
-      });
+        icon:
+          isPet || isPendingDrop
+            ? 'pet'
+            : isBugTicket
+              ? n.data?.ticketType === 'feature'
+                ? 'feature'
+                : 'bug'
+              : n.type === 'discussion_reply'
+                ? 'chat'
+                : n.type === 'spoiler_flag'
+                  ? 'flag'
+                  : n.type === 'discussion_like'
+                    ? 'heart'
+                    : 'chat',
+      };
+
+      if (isPendingDrop && n.data) {
+        item.action = 'case_opening';
+        item.dropData = {
+          dropId: n.data.dropId as string,
+          accessoryId: n.data.accessoryId as string,
+          rarity: n.data.rarity as string,
+        };
+      }
+
+      items.push(item);
     }
 
     // Sort by timestamp descending, limit to 30

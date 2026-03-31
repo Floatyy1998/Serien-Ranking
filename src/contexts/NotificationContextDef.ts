@@ -14,7 +14,8 @@ export interface AppNotification {
     | 'trophy_won'
     | 'bug_ticket_reply'
     | 'bug_ticket_status'
-    | 'accessory_drop';
+    | 'accessory_drop'
+    | 'pending_accessory_drop';
   title: string;
   message: string;
   timestamp: number;

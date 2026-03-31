@@ -7,8 +7,6 @@ import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { showToast, showUndoToast } from '../lib/toast';
-import { RARITY_LABELS } from '../types/pet.types';
-import { useNotifications } from '../contexts/NotificationContextDef';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRating';
@@ -148,7 +146,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
   const authContext = useAuth();
   const user = authContext?.user ?? null;
   const { seriesList } = useSeriesList();
-  const { addNotification } = useNotifications();
   const continueWatching = useContinueWatching();
   const todayEpisodes = useWebWorkerTodayEpisodes();
   const {
@@ -228,18 +225,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 source: 'continue_watching_swipe',
               }
             );
-            const drop = await petService.watchedSeriesWithGenreAllPets(
-              user.uid,
-              item.genre?.genres || []
-            );
-            if (drop) {
-              addNotification({
-                type: 'accessory_drop',
-                title: `${drop.icon} Neues Accessoire!`,
-                message: `${drop.name} (${RARITY_LABELS[drop.rarity]})`,
-                data: { accessoryId: drop.accessoryId, rarity: drop.rarity },
-              });
-            }
+            await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
             if (snap.previousCount === 0) {
               const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
               WatchActivityService.logEpisodeWatch(
@@ -277,7 +263,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
-    [user, showQuickRating, seriesList, addNotification]
+    [user, showQuickRating, seriesList]
   );
 
   const handleEpisodeComplete = useCallback(
@@ -326,18 +312,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               isRewatch: snap.previousCount > 0,
               source: 'today_episodes_swipe',
             });
-            const drop = await petService.watchedSeriesWithGenreAllPets(
-              user.uid,
-              episode.seriesGenre || []
-            );
-            if (drop) {
-              addNotification({
-                type: 'accessory_drop',
-                title: `${drop.icon} Neues Accessoire!`,
-                message: `${drop.name} (${RARITY_LABELS[drop.rarity]})`,
-                data: { accessoryId: drop.accessoryId, rarity: drop.rarity },
-              });
-            }
+            await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
             if (snap.previousCount === 0) {
               WatchActivityService.logEpisodeWatch(
                 user.uid,
@@ -358,7 +333,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
         showToast('Fehler beim Speichern', 3000, 'error');
       }
     },
-    [user, addNotification]
+    [user]
   );
 
   return {

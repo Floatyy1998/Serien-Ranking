@@ -413,6 +413,11 @@ export const useEpisodeDiscussion = () => {
     episodeName: string;
   } | null>(null);
 
+  // Reset transition overlay when route params change (navigate to next episode)
+  useEffect(() => {
+    setNextEpisodeTransition(null);
+  }, [seriesId, seasonNumber, episodeNumber]);
+
   // ---------- Status Flags ----------
   const isNotFound = !series && !tmdbDetails && !seriesInfo;
   const hasUser = !!user;

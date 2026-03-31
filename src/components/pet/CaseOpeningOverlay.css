@@ -1,0 +1,154 @@
+.case-opening-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.case-opening-content {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 0 16px;
+}
+
+.case-opening-title {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  text-align: center;
+  margin: 0;
+}
+
+.case-opening-carousel-wrapper {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  height: 120px;
+  border-radius: 12px;
+}
+
+.case-opening-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.case-opening-marker::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid currentColor;
+}
+
+.case-opening-marker::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 10px solid currentColor;
+}
+
+.case-opening-strip {
+  display: flex;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.case-opening-card {
+  flex-shrink: 0;
+  width: 80px;
+  height: 100px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 2px solid;
+  transition: border-color 0.2s;
+}
+
+.case-opening-card-icon {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.case-opening-card-name {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.case-opening-reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.case-opening-reveal-icon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.case-opening-reveal-name {
+  font-size: 20px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  text-align: center;
+}
+
+.case-opening-rarity-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.case-opening-claim-btn {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  padding: 14px 32px;
+  border-radius: 14px;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+}
+
+.case-opening-confetti {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10001;
+}

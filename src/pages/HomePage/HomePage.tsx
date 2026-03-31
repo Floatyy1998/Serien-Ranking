@@ -8,6 +8,7 @@ import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
+import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -141,6 +142,11 @@ export const HomePage: React.FC = () => {
     episodePath: string;
   }>({ open: false, seriesId: 0, title: '', episodePath: '' });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [caseOpeningDrop, setCaseOpeningDrop] = useState<{
+    dropId: string;
+    accessoryId: string;
+    rarity: string;
+  } | null>(null);
 
   // Data hooks
   const stats = useWebWorkerStatsOptimized();
@@ -493,7 +499,10 @@ export const HomePage: React.FC = () => {
         onDismissAnnouncement={notifs.dismissAnnouncement}
         onAcceptRequest={notifs.acceptFriendRequest}
         onDeclineRequest={notifs.declineFriendRequest}
+        onOpenCaseOpening={setCaseOpeningDrop}
       />
+
+      <CaseOpeningOverlay dropData={caseOpeningDrop} onClose={() => setCaseOpeningDrop(null)} />
 
       <QuickRatingSheet
         isOpen={quickRatingOpen}
