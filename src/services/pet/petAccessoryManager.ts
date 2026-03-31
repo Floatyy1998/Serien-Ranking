@@ -10,6 +10,41 @@ import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
 
+// Remote config cache — fetched once per session from admin/config/petDrops
+let remoteDropConfig: { dropChance?: number; rarityWeights?: Record<string, number> } | null = null;
+let remoteConfigFetched = false;
+
+async function getDropConfig(): Promise<{
+  dropChance: number;
+  rarityWeights: {
+    common: number;
+    uncommon: number;
+    rare: number;
+    epic: number;
+    legendary: number;
+  };
+}> {
+  if (!remoteConfigFetched) {
+    remoteConfigFetched = true;
+    try {
+      const snap = await firebase.database().ref('admin/config/petDrops').once('value');
+      if (snap.exists()) remoteDropConfig = snap.val();
+    } catch {
+      // Fallback to local constants
+    }
+  }
+  return {
+    dropChance: remoteDropConfig?.dropChance ?? PET_CONFIG.DROP_CHANCE_PER_EPISODE,
+    rarityWeights: {
+      common: remoteDropConfig?.rarityWeights?.common ?? PET_CONFIG.RARITY_WEIGHTS.common,
+      uncommon: remoteDropConfig?.rarityWeights?.uncommon ?? PET_CONFIG.RARITY_WEIGHTS.uncommon,
+      rare: remoteDropConfig?.rarityWeights?.rare ?? PET_CONFIG.RARITY_WEIGHTS.rare,
+      epic: remoteDropConfig?.rarityWeights?.epic ?? PET_CONFIG.RARITY_WEIGHTS.epic,
+      legendary: remoteDropConfig?.rarityWeights?.legendary ?? PET_CONFIG.RARITY_WEIGHTS.legendary,
+    },
+  };
+}
+
 /** Erstellt ein PetAccessory ohne undefined-Felder (Firebase verbietet undefined) */
 function makeAccessory(id: string, def: AccessoryDefinition, equipped: boolean): PetAccessory {
   const acc: PetAccessory = {
@@ -116,11 +151,12 @@ export interface AccessoryDrop {
  * The user must claim it via the case-opening overlay.
  */
 export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
-  if (Math.random() > PET_CONFIG.DROP_CHANCE_PER_EPISODE) {
+  const config = await getDropConfig();
+  if (Math.random() > config.dropChance) {
     return null;
   }
 
-  const rarity = rollRarity();
+  const rarity = rollRarity(config.rarityWeights);
 
   const candidates = Object.entries(ACCESSORIES).filter(([, def]) => def.rarity === rarity);
   if (candidates.length === 0) return null;
@@ -198,8 +234,13 @@ export async function claimAccessoryDrop(
   return true;
 }
 
-function rollRarity(): AccessoryRarity {
-  const weights = PET_CONFIG.RARITY_WEIGHTS;
+function rollRarity(weights: {
+  common: number;
+  uncommon: number;
+  rare: number;
+  epic: number;
+  legendary: number;
+}): AccessoryRarity {
   const total = weights.common + weights.uncommon + weights.rare + weights.epic + weights.legendary;
   const roll = Math.random() * total;
 

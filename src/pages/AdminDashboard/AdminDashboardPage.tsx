@@ -14,6 +14,7 @@ import {
   History,
   Message,
   Refresh,
+  Settings,
   Speed,
   Timeline,
 } from '@mui/icons-material';
@@ -33,6 +34,7 @@ import { BackendErrorsTab } from './tabs/BackendErrorsTab';
 import { DataHealthTab } from './tabs/DataHealthTab';
 import { MessagesTab } from './tabs/MessagesTab';
 import { TicketsTab } from './tabs/TicketsTab';
+import { ConfigTab } from './tabs/ConfigTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -47,6 +49,7 @@ const TABS = [
   { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
   { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
+  { id: 'config', label: 'Config', icon: <Settings style={{ fontSize: 16 }} /> },
 ] as const;
 
 type TabId = (typeof TABS)[number]['id'];
@@ -152,6 +155,7 @@ export function AdminDashboardPage() {
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
+              {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>
           </AnimatePresence>
         </div>
