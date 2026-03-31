@@ -10,10 +10,7 @@ import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
 
-// Remote config cache — fetched once per session from admin/config/petDrops
-let remoteDropConfig: { dropChance?: number; rarityWeights?: Record<string, number> } | null = null;
-let remoteConfigFetched = false;
-
+// Fetch remote drop config fresh from Firebase each time
 async function getDropConfig(): Promise<{
   dropChance: number;
   rarityWeights: {
@@ -24,24 +21,27 @@ async function getDropConfig(): Promise<{
     legendary: number;
   };
 }> {
-  if (!remoteConfigFetched) {
-    remoteConfigFetched = true;
-    try {
-      const snap = await firebase.database().ref('admin/config/petDrops').once('value');
-      if (snap.exists()) remoteDropConfig = snap.val();
-    } catch {
-      // Fallback to local constants
+  try {
+    const snap = await firebase.database().ref('admin/config/petDrops').once('value');
+    if (snap.exists()) {
+      const val = snap.val();
+      return {
+        dropChance: val.dropChance ?? PET_CONFIG.DROP_CHANCE_PER_EPISODE,
+        rarityWeights: {
+          common: val.rarityWeights?.common ?? PET_CONFIG.RARITY_WEIGHTS.common,
+          uncommon: val.rarityWeights?.uncommon ?? PET_CONFIG.RARITY_WEIGHTS.uncommon,
+          rare: val.rarityWeights?.rare ?? PET_CONFIG.RARITY_WEIGHTS.rare,
+          epic: val.rarityWeights?.epic ?? PET_CONFIG.RARITY_WEIGHTS.epic,
+          legendary: val.rarityWeights?.legendary ?? PET_CONFIG.RARITY_WEIGHTS.legendary,
+        },
+      };
     }
+  } catch {
+    // Fallback to local constants
   }
   return {
-    dropChance: remoteDropConfig?.dropChance ?? PET_CONFIG.DROP_CHANCE_PER_EPISODE,
-    rarityWeights: {
-      common: remoteDropConfig?.rarityWeights?.common ?? PET_CONFIG.RARITY_WEIGHTS.common,
-      uncommon: remoteDropConfig?.rarityWeights?.uncommon ?? PET_CONFIG.RARITY_WEIGHTS.uncommon,
-      rare: remoteDropConfig?.rarityWeights?.rare ?? PET_CONFIG.RARITY_WEIGHTS.rare,
-      epic: remoteDropConfig?.rarityWeights?.epic ?? PET_CONFIG.RARITY_WEIGHTS.epic,
-      legendary: remoteDropConfig?.rarityWeights?.legendary ?? PET_CONFIG.RARITY_WEIGHTS.legendary,
-    },
+    dropChance: PET_CONFIG.DROP_CHANCE_PER_EPISODE,
+    rarityWeights: { ...PET_CONFIG.RARITY_WEIGHTS },
   };
 }
 
