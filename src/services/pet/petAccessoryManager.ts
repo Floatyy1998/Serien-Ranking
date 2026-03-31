@@ -46,7 +46,12 @@ async function getDropConfig(): Promise<{
 }
 
 /** Erstellt ein PetAccessory ohne undefined-Felder (Firebase verbietet undefined) */
-function makeAccessory(id: string, def: AccessoryDefinition, equipped: boolean): PetAccessory {
+function makeAccessory(
+  id: string,
+  def: AccessoryDefinition,
+  equipped: boolean,
+  isNew?: boolean
+): PetAccessory {
   const acc: PetAccessory = {
     id,
     type: def.slot,
@@ -55,6 +60,7 @@ function makeAccessory(id: string, def: AccessoryDefinition, equipped: boolean):
     equipped,
   };
   if (def.color) acc.color = def.color;
+  if (isNew) acc.isNew = true;
   return acc;
 }
 
@@ -75,6 +81,9 @@ export async function toggleAccessory(
   }
 
   const target = pet.accessories.find((a) => a.id === accessoryId);
+
+  // Clear isNew flag when interacting with an accessory
+  if (target?.isNew) delete target.isNew;
 
   if (target) {
     if (!target.equipped) {
@@ -221,7 +230,7 @@ export async function claimAccessoryDrop(
     const alreadyOwned = alivePet.accessories?.some((a) => a.id === accessoryId);
     if (!alreadyOwned) {
       if (!alivePet.accessories) alivePet.accessories = [];
-      alivePet.accessories.push(makeAccessory(accessoryId, def, false));
+      alivePet.accessories.push(makeAccessory(accessoryId, def, false, true));
       await firebase
         .database()
         .ref(`pets/${userId}/${alivePet.id}/accessories`)

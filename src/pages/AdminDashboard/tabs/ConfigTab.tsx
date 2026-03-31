@@ -185,7 +185,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
       </button>
 
       <p style={{ color: theme.text.muted, fontSize: '12px', marginTop: '12px' }}>
-        Änderungen gelten für Frontend und Extension (nach nächstem Seitenload).
+        Änderungen gelten sofort für Frontend und Extension.
       </p>
     </div>
   );
