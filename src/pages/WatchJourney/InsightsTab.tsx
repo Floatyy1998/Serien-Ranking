@@ -335,21 +335,26 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Histogram */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 120 }}>
+        {/* Histogram — bars and labels separated so labels don't eat bar height */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
           {runtimeDistribution.map((bucket, index) => (
+            <motion.div
+              key={bucket.label}
+              initial={{ height: 0 }}
+              animate={{ height: Math.round((bucket.percentage / 100) * 100) }}
+              transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
+              style={{
+                flex: 1,
+                background: `linear-gradient(180deg, ${runtimeColor}, ${runtimeColor}60)`,
+                borderRadius: '8px 8px 0 0',
+                minHeight: bucket.count > 0 ? 4 : 2,
+              }}
+            />
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          {runtimeDistribution.map((bucket) => (
             <div key={bucket.label} style={{ flex: 1, textAlign: 'center' }}>
-              <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: `${bucket.percentage}%` }}
-                transition={{ delay: 0.3 + index * 0.1, duration: 0.5 }}
-                style={{
-                  background: `linear-gradient(180deg, ${runtimeColor}, ${runtimeColor}60)`,
-                  borderRadius: '8px 8px 0 0',
-                  minHeight: bucket.count > 0 ? 20 : 4,
-                  marginBottom: 8,
-                }}
-              />
               <div style={{ color: textSecondary, fontSize: 11 }}>{bucket.label}</div>
               <div style={{ color: runtimeColor, fontSize: 12, fontWeight: 600 }}>
                 {bucket.count} {bucket.count === 1 ? 'Serie' : 'Serien'}
