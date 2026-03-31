@@ -34,6 +34,7 @@ interface NotificationSheetProps {
   onDismissAnnouncement: (id: string) => void;
   onAcceptRequest: (id: string) => void;
   onDeclineRequest: (id: string) => void;
+  onOpenCaseOpening?: (dropData: { dropId: string; accessoryId: string; rarity: string }) => void;
 }
 
 const ICON_MAP: Record<
@@ -76,6 +77,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
   onDismissAnnouncement,
   onAcceptRequest,
   onDeclineRequest,
+  onOpenCaseOpening,
 }: NotificationSheetProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -214,6 +216,12 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   whileTap={item.kind !== 'request' ? { scale: 0.98 } : undefined}
                   onClick={() => {
                     if (item.kind === 'request') return;
+                    if (item.action === 'case_opening' && item.dropData && onOpenCaseOpening) {
+                      if (item.notificationId) onMarkAsRead(item.notificationId);
+                      onClose();
+                      onOpenCaseOpening(item.dropData);
+                      return;
+                    }
                     if (item.kind === 'discussion' && item.notificationId) {
                       onMarkAsRead(item.notificationId);
                     }

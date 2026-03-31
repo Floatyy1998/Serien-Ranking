@@ -94,6 +94,15 @@ export interface PetAccessory {
   equipped: boolean;
 }
 
+export interface PendingAccessoryDrop {
+  id: string; // Firebase push key
+  accessoryId: string;
+  name: string;
+  icon: string;
+  rarity: AccessoryRarity;
+  timestamp: number;
+}
+
 export const RARITY_COLORS: Record<AccessoryRarity, string> = {
   common: '#9E9E9E',
   uncommon: '#4CAF50',
@@ -103,11 +112,11 @@ export const RARITY_COLORS: Record<AccessoryRarity, string> = {
 };
 
 export const RARITY_LABELS: Record<AccessoryRarity, string> = {
-  common: 'Gewoehnlich',
-  uncommon: 'Ungewoehnlich',
+  common: 'Gewöhnlich',
+  uncommon: 'Ungewöhnlich',
   rare: 'Selten',
   epic: 'Episch',
-  legendary: 'Legendaer',
+  legendary: 'Legendär',
 };
 
 export interface AccessoryDefinition {
