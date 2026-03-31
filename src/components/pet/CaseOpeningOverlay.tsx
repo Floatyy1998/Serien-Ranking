@@ -59,7 +59,6 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
   const user = auth?.user;
   const { currentTheme } = useTheme();
   const [phase, setPhase] = useState<'loading' | 'spinning' | 'reveal'>('loading');
-  const [claiming, setClaiming] = useState(false);
   const [alreadyClaimed, setAlreadyClaimed] = useState(false);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastTickCardRef = useRef(-1);
@@ -130,15 +129,8 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
     return unsubscribe;
   }, [currentCardIndex, phase]);
 
-  const handleClaim = useCallback(async () => {
-    if (!user || !dropData || claiming) return;
-    setClaiming(true);
-    await petService.claimAccessoryDrop(user.uid, dropData.dropId, dropData.accessoryId);
-    onClose();
-  }, [user, dropData, claiming, onClose]);
-
   const handleAnimationComplete = useCallback(() => {
-    // Reveal — play epic reveal sound (2x speed, 3 seconds)
+    // Reveal — play epic reveal sound (2x speed, 5 seconds)
     const revealAudio = new Audio('/sounds/reveal.mp3');
     revealAudio.volume = 0.8;
     revealAudio.playbackRate = 2.0;
@@ -147,13 +139,17 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
       revealAudio.pause();
     }, 5000);
     setPhase('reveal');
-  }, []);
+
+    // Auto-claim immediately so the item is safe even if user closes the app
+    if (user && dropData) {
+      petService.claimAccessoryDrop(user.uid, dropData.dropId, dropData.accessoryId);
+    }
+  }, [user, dropData]);
 
   // Check if drop still exists, then spin or show endscreen
   useEffect(() => {
     if (!dropData) return;
 
-    setClaiming(false);
     setPhase('loading');
     lastTickCardRef.current = -1;
 
@@ -429,16 +425,14 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
                   transition={{ delay: alreadyClaimed ? 0.1 : 0.65 }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  disabled={claiming}
-                  onClick={alreadyClaimed ? onClose : handleClaim}
+                  onClick={onClose}
                   style={{
                     background: `linear-gradient(135deg, ${rarityColor}, ${rarityColor}cc)`,
                     color: '#fff',
                     boxShadow: `0 6px 24px ${rarityColor}50`,
-                    opacity: claiming ? 0.6 : 1,
                   }}
                 >
-                  {alreadyClaimed ? 'Schließen' : claiming ? 'Wird eingesammelt...' : 'Einsammeln'}
+                  {alreadyClaimed ? 'Schließen' : 'Einsammeln'}
                 </motion.button>
               </motion.div>
             )}
