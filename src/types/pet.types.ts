@@ -92,6 +92,7 @@ export interface PetAccessory {
   color?: string;
   unlockCondition?: string;
   equipped: boolean;
+  isNew?: boolean;
 }
 
 export interface PendingAccessoryDrop {

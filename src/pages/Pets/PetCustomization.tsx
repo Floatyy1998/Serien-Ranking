@@ -158,6 +158,26 @@ export const PetCustomization = memo(function PetCustomization({
                       background: rarityColor,
                     }}
                   />
+                  {/* New badge */}
+                  {accessory.isNew && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: -4,
+                        right: -4,
+                        background: currentTheme.primary,
+                        color: '#fff',
+                        fontSize: '8px',
+                        fontWeight: 800,
+                        padding: '1px 4px',
+                        borderRadius: '6px',
+                        lineHeight: '12px',
+                        letterSpacing: '0.3px',
+                      }}
+                    >
+                      NEU
+                    </span>
+                  )}
                 </motion.button>
               );
             })}
