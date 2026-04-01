@@ -84,14 +84,17 @@ async function markEpisodeWatchedInFirebase(
   const previousLastWatchedAt: string | null = lastSnap.val() || null;
   const previousWatched: boolean = !!watchedSnap.val();
 
-  // Schreiben
+  // Atomar schreiben um Zwischenzustände zu vermeiden
   const now = new Date().toISOString();
-  await db.ref(`${basePath}/watched`).set(true);
-  await db.ref(`${basePath}/watchCount`).set(previousCount + 1);
-  await db.ref(`${basePath}/lastWatchedAt`).set(now);
+  const updates: Record<string, unknown> = {
+    [`${basePath}/watched`]: true,
+    [`${basePath}/watchCount`]: previousCount + 1,
+    [`${basePath}/lastWatchedAt`]: now,
+  };
   if (!hadFirstWatched) {
-    await db.ref(`${basePath}/firstWatchedAt`).set(now);
+    updates[`${basePath}/firstWatchedAt`] = now;
   }
+  await db.ref().update(updates);
 
   return { previousCount, hadFirstWatched, previousLastWatchedAt, previousWatched };
 }

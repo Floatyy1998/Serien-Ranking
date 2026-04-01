@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
+import { normalizeEpisodes, normalizeSeasons } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { showToast, showUndoToast } from '../../lib/toast';
@@ -19,6 +20,29 @@ export function useRewatchHandler() {
   const [rewatchSwipeDirections, setRewatchSwipeDirections] = useState<
     Record<string, 'left' | 'right'>
   >({});
+
+  // Aufräumen: stale Keys aus hiddenRewatches entfernen wenn sich die Episode-Liste ändert
+  useEffect(() => {
+    if (hiddenRewatches.size === 0) return;
+    const currentKeys = new Set(
+      rewatchEpisodes.map((ep) => `rewatch-${ep.id}-${ep.seasonNumber}-${ep.episodeNumber}`)
+    );
+    setHiddenRewatches((prev) => {
+      let hasStale = false;
+      for (const key of prev) {
+        if (!currentKeys.has(key)) {
+          hasStale = true;
+          break;
+        }
+      }
+      if (!hasStale) return prev;
+      const cleaned = new Set<string>();
+      for (const key of prev) {
+        if (currentKeys.has(key)) cleaned.add(key);
+      }
+      return cleaned;
+    });
+  }, [rewatchEpisodes, hiddenRewatches.size]);
 
   const handleRewatchComplete = async (
     item: (typeof rewatchEpisodes)[number],
@@ -62,18 +86,21 @@ export function useRewatchHandler() {
       const prevWatched: boolean = !!watchedSnap.val();
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
-      // Sofort: nur Episode-Daten schreiben
+      // Atomar: alle Episode-Daten + rewatch/lastWatchedAt in einem update()
+      // Vermeidet Zwischenzustände wo watchCount aktualisiert ist aber lastWatchedAt noch nicht
       const newWatchCount = prevCount + 1;
-      await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
-      await db.ref(`${episodePath}/lastWatchedAt`).set(nowIso);
-      await db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).set(nowIso);
-
+      const updates: Record<string, unknown> = {
+        [`${episodePath}/watchCount`]: newWatchCount,
+        [`${episodePath}/lastWatchedAt`]: nowIso,
+        [`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`]: nowIso,
+      };
       if (!prevWatched) {
-        await db.ref(`${episodePath}/watched`).set(true);
+        updates[`${episodePath}/watched`] = true;
         if (!prevFirstWatchedAt) {
-          await db.ref(`${episodePath}/firstWatchedAt`).set(nowIso);
+          updates[`${episodePath}/firstWatchedAt`] = nowIso;
         }
       }
+      await db.ref().update(updates);
 
       // Auto-complete rewatch check (muss sofort passieren, da es Episode-Daten ändert)
       const series = seriesList.find((s) => s.id === item.id);
@@ -81,14 +108,12 @@ export function useRewatchHandler() {
       if (series?.rewatch?.active) {
         const targetCount = item.targetWatchCount;
         let allDone = true;
-        for (const s of series.seasons || []) {
-          for (const ep of s.episodes || []) {
+        for (const s of normalizeSeasons(series.seasons)) {
+          const episodes = normalizeEpisodes(s.episodes);
+          for (let i = 0; i < episodes.length; i++) {
+            const ep = episodes[i];
             if (!ep.watched) continue;
-            if (
-              s.seasonNumber === item.seasonNumber - 1 &&
-              s.episodes?.indexOf(ep) === item.episodeIndex
-            )
-              continue;
+            if (s.seasonNumber === item.seasonNumber - 1 && i === item.episodeIndex) continue;
             if ((ep.watchCount || 1) < targetCount) {
               allDone = false;
               break;
