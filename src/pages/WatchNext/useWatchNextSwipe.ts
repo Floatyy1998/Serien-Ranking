@@ -106,13 +106,16 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       const prevLastWatchedAt: string | null = lastSnap.val() || null;
       const prevWatched: boolean = !!watchedSnap.val();
 
-      // Sofort: nur Episode-Daten in Firebase schreiben (damit nächste Episode erscheint)
-      await db.ref(`${basePath}/watched`).set(true);
-      await db.ref(`${basePath}/watchCount`).set(prevCount + 1);
-      await db.ref(`${basePath}/lastWatchedAt`).set(nowIso);
+      // Atomar schreiben um Zwischenzustände zu vermeiden
+      const updates: Record<string, unknown> = {
+        [`${basePath}/watched`]: true,
+        [`${basePath}/watchCount`]: prevCount + 1,
+        [`${basePath}/lastWatchedAt`]: nowIso,
+      };
       if (!episode.isRewatch && !prevFirstWatchedAt) {
-        await db.ref(`${basePath}/firstWatchedAt`).set(nowIso);
+        updates[`${basePath}/firstWatchedAt`] = nowIso;
       }
+      await db.ref().update(updates);
 
       // Undo-Toast mit verzögerten Side-Effects
       showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
