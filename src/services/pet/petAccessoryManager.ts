@@ -200,7 +200,7 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
     }),
   ]);
 
-  return { dropId: dropRef.key!, accessoryId, name: def.name, icon: def.icon, rarity };
+  return { dropId: dropRef.key ?? '', accessoryId, name: def.name, icon: def.icon, rarity };
 }
 
 /**

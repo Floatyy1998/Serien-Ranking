@@ -272,7 +272,7 @@ export const useProfileData = (): UseProfileDataResult => {
       { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
       { label: 'KI-Empfehlungen', icon: AutoAwesome, color: '#a855f7', path: '/taste-profile' },
     ],
-    [currentTheme, unreadBadgesCount, mangaList.length]
+    [currentTheme, unreadBadgesCount]
   );
 
   const settingsItems: ProfileMenuItem[] = useMemo(
