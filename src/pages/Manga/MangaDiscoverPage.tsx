@@ -1,11 +1,12 @@
-import { Add, Check, NewReleases, Search, Star, TrendingUp, Whatshot } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Add, NewReleases, Search, Star, TrendingUp, Whatshot } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { BackButton, GradientText } from '../../components/ui';
+import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { discoverManga, type DiscoverCategory } from '../../services/anilistService';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
@@ -50,6 +51,7 @@ export const MangaDiscoverPage = () => {
   const { user } = useAuth() || {};
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
+  const { isMobile } = useDeviceType();
 
   const [category, setCategory] = useState<DiscoverCategory>('trending');
   const [countryFilter, setCountryFilter] = useState('all');
@@ -57,20 +59,34 @@ export const MangaDiscoverPage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasNextPage, setHasNextPage] = useState(false);
-  const [page, setPage] = useState(1);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [addingId, setAddingId] = useState<number | null>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const pageRef = useRef(1);
 
-  // Initial load + reset on filter change
+  const trackedIds = useMemo(() => new Set(mangaList.map((m) => m.anilistId)), [mangaList]);
+  const filteredResults = useMemo(
+    () => results.filter((r) => !trackedIds.has(r.id)),
+    [results, trackedIds]
+  );
+
+  // Refs for stable scroll handler
+  const hasNextPageRef = useRef(hasNextPage);
+  const loadingMoreRef = useRef(loadingMore);
+  const loadingRef = useRef(loading);
+  const categoryRef = useRef(category);
+  const countryFilterRef = useRef(countryFilter);
+  hasNextPageRef.current = hasNextPage;
+  loadingMoreRef.current = loadingMore;
+  loadingRef.current = loading;
+  categoryRef.current = category;
+  countryFilterRef.current = countryFilter;
+
+  // Fetch initial data
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    setSelectedId(null);
-    setPage(1);
-    discoverManga(category, 1, 20, countryFilter)
+    pageRef.current = 1;
+    discoverManga(category, 1, 30, countryFilter)
       .then(({ results: r, hasNextPage: hn }) => {
         if (!cancelled) {
           setResults(r);
@@ -89,58 +105,57 @@ export const MangaDiscoverPage = () => {
   }, [category, countryFilter]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // Load more on scroll
-  const loadMore = useCallback(() => {
-    if (loadingMore || !hasNextPage) return;
+  // Stable fetchMore using refs
+  const fetchMore = useCallback(() => {
+    if (loadingMoreRef.current || !hasNextPageRef.current || loadingRef.current) return;
     setLoadingMore(true);
-    const nextPage = page + 1;
-    discoverManga(category, nextPage, 20, countryFilter)
+    const nextPage = pageRef.current + 1;
+    discoverManga(categoryRef.current, nextPage, 30, countryFilterRef.current)
       .then(({ results: r, hasNextPage: hn }) => {
+        pageRef.current = nextPage;
         setResults((prev) => {
           const existingIds = new Set(prev.map((m) => m.id));
-          const newItems = r.filter((m) => !existingIds.has(m.id));
-          return [...prev, ...newItems];
+          return [...prev, ...r.filter((m) => !existingIds.has(m.id))];
         });
         setHasNextPage(hn);
-        setPage(nextPage);
       })
       .catch(() => {})
       .finally(() => setLoadingMore(false));
-  }, [loadingMore, hasNextPage, page, category, countryFilter]);
+  }, []);
 
-  // Intersection Observer for infinite scroll
+  // Scroll listener on .mobile-content (the actual scrolling container from Layout)
   useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
+    const container = document.querySelector('.mobile-content');
+    if (!container) return;
 
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) loadMore();
-      },
-      { rootMargin: '400px' }
-    );
+    let ticking = false;
+    const handleScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const distFromBottom =
+          container.scrollHeight - container.scrollTop - container.clientHeight;
+        if (distFromBottom < 500) {
+          fetchMore();
+        }
+      });
+    };
 
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [fetchMore]);
 
-    return () => observerRef.current?.disconnect();
-  }, [loadMore]);
-
-  const isTracked = useCallback(
-    (id: number) => mangaList.some((m) => m.anilistId === id),
-    [mangaList]
-  );
-
-  const addManga = useCallback(
-    async (result: AniListMangaSearchResult) => {
-      if (!user || isTracked(result.id)) return;
+  const handleAdd = useCallback(
+    async (e: React.MouseEvent, result: AniListMangaSearchResult) => {
+      e.stopPropagation();
+      if (!user) return;
       setAddingId(result.id);
-
       const nextNmr = mangaList.length > 0 ? Math.max(...mangaList.map((m) => m.nmr)) + 1 : 1;
       await addMangaToList(user.uid, result, nextNmr);
       setAddingId(null);
     },
-    [user, mangaList, isTracked]
+    [user, mangaList]
   );
 
   const getCategoryColor = (colorKey: string) => {
@@ -160,7 +175,7 @@ export const MangaDiscoverPage = () => {
         style={{
           position: 'sticky',
           top: 0,
-          zIndex: 100,
+          zIndex: 'var(--z-sticky)' as string,
           background: `${currentTheme.background.default}e8`,
           backdropFilter: 'blur(28px) saturate(1.4)',
           WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
@@ -173,7 +188,6 @@ export const MangaDiscoverPage = () => {
             paddingTop: 'calc(14px + env(safe-area-inset-top))',
           }}
         >
-          {/* Title row */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <BackButton />
             <GradientText
@@ -205,7 +219,6 @@ export const MangaDiscoverPage = () => {
             </motion.button>
           </div>
 
-          {/* Categories */}
           <div
             style={{
               display: 'grid',
@@ -239,7 +252,6 @@ export const MangaDiscoverPage = () => {
                     fontSize: 11,
                     fontWeight: active ? 700 : 500,
                     opacity: active ? 1 : 0.6,
-                    transition: 'all 0.2s',
                   }}
                 >
                   {cat.icon}
@@ -249,7 +261,6 @@ export const MangaDiscoverPage = () => {
             })}
           </div>
 
-          {/* Country Filter */}
           <div style={{ display: 'flex', gap: 6 }}>
             {COUNTRY_FILTERS.map((f) => {
               const active = countryFilter === f.key;
@@ -289,58 +300,52 @@ export const MangaDiscoverPage = () => {
           <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
             Laden...
           </div>
-        ) : results.length > 0 ? (
+        ) : filteredResults.length > 0 ? (
           <>
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-                gap: 14,
+                gridTemplateColumns: isMobile
+                  ? 'repeat(2, 1fr)'
+                  : 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: isMobile ? 16 : 24,
               }}
             >
-              {[...results]
-                .sort((a, b) => {
-                  // Push tracked manga to the end
-                  const aT = isTracked(a.id) ? 1 : 0;
-                  const bT = isTracked(b.id) ? 1 : 0;
-                  return aT - bT;
-                })
-                .map((result) => {
-                  const displayFormat = getDisplayFormat(result.countryOfOrigin, result.format);
-                  const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
-                  const formatColor = FORMAT_COLORS[formatKey] || '#a78bfa';
-                  const tracked = isTracked(result.id);
-                  const selected = selectedId === result.id;
-                  const cleanDesc = result.description?.replace(/<[^>]*>/g, '') || '';
+              {filteredResults.map((result) => {
+                const displayFormat = getDisplayFormat(result.countryOfOrigin, result.format);
+                const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
+                const formatColor = FORMAT_COLORS[formatKey] || '#a78bfa';
 
-                  return (
-                    <motion.div
-                      key={result.id}
-                      layout
+                return (
+                  <motion.div
+                    key={result.id}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => navigate(`/manga/${result.id}`)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <div
                       style={{
-                        borderRadius: 14,
-                        overflow: 'hidden',
                         position: 'relative',
+                        borderRadius: 14,
                         aspectRatio: '2/3',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 20px -4px rgba(0,0,0,0.4)',
-                        opacity: tracked ? 0.5 : 1,
-                      }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => {
-                        if (selected) {
-                          if (tracked) navigate(`/manga/${result.id}`);
-                          else addManga(result).then(() => navigate(`/manga/${result.id}`));
-                        } else {
-                          setSelectedId(result.id);
-                        }
+                        boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+                        overflow: 'hidden',
                       }}
                     >
                       <img
                         src={result.coverImage.large}
                         alt={result.title.romaji}
                         loading="lazy"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        decoding="async"
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          display: 'block',
+                          borderRadius: 14,
+                        }}
                       />
 
                       {/* Format badge */}
@@ -364,7 +369,7 @@ export const MangaDiscoverPage = () => {
                       </div>
 
                       {/* Score */}
-                      {result.averageScore && !tracked && (
+                      {result.averageScore && (
                         <div
                           style={{
                             position: 'absolute',
@@ -383,220 +388,94 @@ export const MangaDiscoverPage = () => {
                         </div>
                       )}
 
-                      {tracked && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            width: 24,
-                            height: 24,
-                            borderRadius: 8,
-                            background: `${currentTheme.primary}dd`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <Check style={{ fontSize: 14, color: '#fff' }} />
-                        </div>
-                      )}
-
-                      {/* Bottom info */}
+                      {/* Bottom gradient */}
                       <div
                         style={{
                           position: 'absolute',
                           bottom: 0,
                           left: 0,
                           right: 0,
-                          padding: '24px 10px 10px',
-                          background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                          height: '60%',
+                          background:
+                            'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                          borderRadius: '0 0 14px 14px',
+                          pointerEvents: 'none',
+                        }}
+                      />
+
+                      {/* Add button */}
+                      <motion.button
+                        whileTap={{ scale: 0.85 }}
+                        onClick={(e) => handleAdd(e, result)}
+                        style={{
+                          position: 'absolute',
+                          bottom: 10,
+                          right: 10,
+                          width: 34,
+                          height: 34,
+                          borderRadius: 10,
+                          border: 'none',
+                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                          zIndex: 2,
                         }}
                       >
-                        <div
-                          style={{
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: '#fff',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {result.title.english || result.title.romaji}
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            color: 'rgba(255,255,255,0.5)',
-                            marginTop: 2,
-                            display: 'flex',
-                            gap: 6,
-                          }}
-                        >
-                          {result.chapters && <span>{result.chapters} Kap.</span>}
-                          {result.status === 'RELEASING' && (
-                            <span style={{ color: '#22c55e' }}>Laufend</span>
-                          )}
-                          {result.status === 'FINISHED' && <span>Abgeschlossen</span>}
-                        </div>
-                      </div>
-
-                      {/* Info Overlay */}
-                      <AnimatePresence>
-                        {selected && (
-                          <motion.div
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        {addingId === result.id ? (
+                          <div
                             style={{
-                              position: 'absolute',
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              height: '70%',
-                              background: 'rgba(10,14,26,0.8)',
-                              backdropFilter: 'blur(20px) saturate(1.4)',
-                              borderRadius: '16px 16px 0 0',
-                              padding: '14px 12px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              borderTop: '1px solid rgba(255,255,255,0.12)',
+                              width: 16,
+                              height: 16,
+                              border: '2px solid rgba(255,255,255,0.3)',
+                              borderTopColor: '#fff',
+                              borderRadius: '50%',
+                              animation: 'spin 0.6s linear infinite',
                             }}
-                          >
-                            <div
-                              style={{
-                                width: 32,
-                                height: 3,
-                                borderRadius: 2,
-                                background: 'rgba(255,255,255,0.2)',
-                                margin: '0 auto 10px',
-                              }}
-                            />
-                            <div
-                              style={{
-                                fontSize: 13,
-                                fontWeight: 700,
-                                color: '#fff',
-                                marginBottom: 6,
-                                lineHeight: 1.3,
-                              }}
-                            >
-                              {result.title.english || result.title.romaji}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: 'rgba(255,255,255,0.6)',
-                                lineHeight: 1.5,
-                                flex: 1,
-                                overflow: 'hidden',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 4,
-                                WebkitBoxOrient: 'vertical',
-                              }}
-                            >
-                              {cleanDesc || 'Keine Beschreibung verfügbar.'}
-                            </div>
-                            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                              {!tracked ? (
-                                <motion.button
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    addManga(result);
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '10px 0',
-                                    borderRadius: 10,
-                                    border: 'none',
-                                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                                    color: '#fff',
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    fontFamily: 'var(--font-body)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 6,
-                                  }}
-                                >
-                                  {addingId === result.id ? (
-                                    'Wird hinzugefügt...'
-                                  ) : (
-                                    <>
-                                      <Add style={{ fontSize: 16 }} />
-                                      Hinzufügen
-                                    </>
-                                  )}
-                                </motion.button>
-                              ) : (
-                                <motion.button
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/manga/${result.id}`);
-                                  }}
-                                  style={{
-                                    flex: 1,
-                                    padding: '10px 0',
-                                    borderRadius: 10,
-                                    border: `1px solid ${currentTheme.primary}40`,
-                                    background: `${currentTheme.primary}15`,
-                                    color: currentTheme.primary,
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    cursor: 'pointer',
-                                    fontFamily: 'var(--font-body)',
-                                  }}
-                                >
-                                  Details ansehen
-                                </motion.button>
-                              )}
-                            </div>
-                          </motion.div>
+                          />
+                        ) : (
+                          <Add style={{ fontSize: 20 }} />
                         )}
-                      </AnimatePresence>
+                      </motion.button>
+                    </div>
 
-                      {/* Quick add button */}
-                      {!selected && !tracked && (
-                        <motion.button
-                          whileTap={{ scale: 0.85 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            addManga(result);
-                          }}
-                          style={{
-                            position: 'absolute',
-                            bottom: 42,
-                            right: 8,
-                            width: 30,
-                            height: 30,
-                            borderRadius: 10,
-                            border: 'none',
-                            background: `${currentTheme.primary}dd`,
-                            backdropFilter: 'blur(8px)',
-                            color: '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                          }}
-                        >
-                          <Add style={{ fontSize: 18 }} />
-                        </motion.button>
-                      )}
-                    </motion.div>
-                  );
-                })}
+                    {/* Title + meta below card (like series Discover) */}
+                    <div style={{ marginTop: 8 }}>
+                      <div
+                        style={{
+                          fontSize: isMobile ? 13 : 14,
+                          fontWeight: 600,
+                          color: currentTheme.text.primary,
+                          lineHeight: 1.3,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
+                        {result.title.english || result.title.romaji}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: currentTheme.text.secondary,
+                          opacity: 0.6,
+                          marginTop: 2,
+                        }}
+                      >
+                        {result.startDate?.year || ''}
+                        {result.chapters ? ` · ${result.chapters} Kap.` : ''}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
 
-            {/* Infinite scroll trigger */}
-            <div ref={loadMoreRef} style={{ height: 1 }} />
             {loadingMore && (
               <div style={{ textAlign: 'center', padding: 20, opacity: 0.5, fontSize: 14 }}>
                 Mehr laden...
@@ -607,11 +486,22 @@ export const MangaDiscoverPage = () => {
           <div style={{ textAlign: 'center', padding: 60 }}>
             <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.3 }}>📚</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: currentTheme.text.primary }}>
-              Keine Ergebnisse
+              Keine neuen Manga
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: currentTheme.text.secondary,
+                opacity: 0.6,
+                marginTop: 4,
+              }}
+            >
+              Alle Manga in dieser Kategorie sind bereits in deiner Sammlung.
             </div>
           </div>
         )}
       </div>
+      <ScrollToTopButton />
     </div>
   );
 };

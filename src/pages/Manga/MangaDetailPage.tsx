@@ -19,6 +19,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getMangaById } from '../../services/anilistService';
+import { addMangaToList } from './addMangaToList';
 import {
   getMangaDexInfo,
   getMangaDexChapterDates,
@@ -221,11 +222,134 @@ export const MangaDetailPage = () => {
     navigate('/manga');
   }, [user, anilistId, navigate]);
 
+  // Not in user's list yet - show AniList preview with Add button
   if (!manga) {
+    if (!anilistData) {
+      return (
+        <PageLayout>
+          <PageHeader title="Manga" />
+          <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Laden...</div>
+        </PageLayout>
+      );
+    }
+
+    const previewFormat = getDisplayFormat(anilistData.countryOfOrigin, anilistData.format);
+    const previewDesc = (anilistData.description || '').replace(/<[^>]*>/g, '');
+    const previewTitle = anilistData.title.english || anilistData.title.romaji;
+
     return (
       <PageLayout>
-        <PageHeader title="Manga" />
-        <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Manga nicht gefunden</div>
+        {anilistData.bannerImage && (
+          <div className="manga-detail-banner">
+            <img src={anilistData.bannerImage} alt="" />
+            <div className="manga-detail-banner-fade" />
+          </div>
+        )}
+
+        <PageHeader
+          title={previewTitle}
+          gradientFrom={currentTheme.primary}
+          gradientTo={currentTheme.accent}
+          subtitle={previewFormat}
+          icon={<MenuBook />}
+        />
+
+        <div className="manga-detail-content">
+          <div className="manga-detail-info-row">
+            <img
+              className="manga-detail-poster"
+              src={anilistData.coverImage.large}
+              alt={previewTitle}
+            />
+            <div className="manga-detail-info">
+              {anilistData.title.romaji && anilistData.title.romaji !== previewTitle && (
+                <div
+                  className="manga-detail-alt-title"
+                  style={{ color: currentTheme.text.secondary }}
+                >
+                  {anilistData.title.romaji}
+                </div>
+              )}
+              <div className="manga-detail-meta">
+                {anilistData.status && (
+                  <span className="manga-detail-meta-item">
+                    {ANILIST_STATUS_LABELS[anilistData.status] || anilistData.status}
+                  </span>
+                )}
+                {anilistData.chapters && (
+                  <span className="manga-detail-meta-item">{anilistData.chapters} Kapitel</span>
+                )}
+                {anilistData.volumes && (
+                  <span className="manga-detail-meta-item">{anilistData.volumes} Bände</span>
+                )}
+                {anilistData.averageScore && (
+                  <span className="manga-detail-meta-item">⭐ {anilistData.averageScore}%</span>
+                )}
+              </div>
+              {anilistData.genres && anilistData.genres.length > 0 && (
+                <div className="manga-detail-genres">
+                  {anilistData.genres.slice(0, 5).map((g) => (
+                    <span
+                      key={g}
+                      className="manga-detail-genre"
+                      style={{
+                        background: `${currentTheme.primary}20`,
+                        color: currentTheme.primary,
+                      }}
+                    >
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Add to list button */}
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={async () => {
+              if (!user) return;
+              const nextNmr =
+                mangaList.length > 0 ? Math.max(...mangaList.map((m) => m.nmr)) + 1 : 1;
+              await addMangaToList(user.uid, anilistData, nextNmr);
+            }}
+            style={{
+              width: '100%',
+              padding: '14px 0',
+              borderRadius: 14,
+              border: 'none',
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              color: '#fff',
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-body)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              marginBottom: 20,
+              boxShadow: `0 4px 20px ${currentTheme.primary}40`,
+            }}
+          >
+            <Add style={{ fontSize: 20 }} />
+            Zur Sammlung hinzufügen
+          </motion.button>
+
+          {/* Description */}
+          {previewDesc && (
+            <Section bg={`${currentTheme.text.primary}08`} delay={0.1}>
+              <SectionTitle color={currentTheme.text.primary}>Beschreibung</SectionTitle>
+              <p
+                className="manga-detail-description"
+                style={{ color: currentTheme.text.secondary }}
+              >
+                {previewDesc}
+              </p>
+            </Section>
+          )}
+        </div>
       </PageLayout>
     );
   }
