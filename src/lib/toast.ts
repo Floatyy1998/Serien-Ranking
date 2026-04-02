@@ -1,10 +1,17 @@
 let activeToast: HTMLElement | null = null;
 let activeDismissTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingCommit: (() => void) | null = null;
 
 function clearActiveToast(): void {
   if (activeDismissTimer) {
     clearTimeout(activeDismissTimer);
     activeDismissTimer = null;
+  }
+  // Sofort den pending onCommit des vorherigen Toasts auslösen
+  if (pendingCommit) {
+    const commit = pendingCommit;
+    pendingCommit = null;
+    commit();
   }
   if (activeToast) {
     activeToast.remove();
@@ -205,6 +212,7 @@ export function showUndoToast(
   ensureToastStyles();
 
   let undone = false;
+  pendingCommit = onCommit || null;
 
   const toast = document.createElement('div');
   toast.id = 'app-toast';
@@ -226,6 +234,7 @@ export function showUndoToast(
   undoBtn.textContent = 'Rückgängig';
   undoBtn.addEventListener('click', () => {
     undone = true;
+    pendingCommit = null; // Undo => kein Commit
     onUndo();
     clearActiveToast();
   });
@@ -262,6 +271,7 @@ export function showUndoToast(
 
   activeDismissTimer = setTimeout(() => {
     cancelAnimationFrame(rafId);
+    pendingCommit = null; // Timer abgelaufen => direkt committen
     dismissToast(toast);
     if (!undone && onCommit) {
       onCommit();

@@ -199,7 +199,7 @@ export const useCalendarData = () => {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }
           },
-          onCommit: () => {
+          onCommit: async () => {
             if (series) {
               trackEpisodeWatched(
                 series.title || series.name || '',
@@ -213,6 +213,10 @@ export const useCalendarData = () => {
                   source: 'calendar',
                 }
               );
+              const episode = series.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
+              const { updateEpisodeCounters } =
+                await import('../../features/badges/minimalActivityLogger');
+              await updateEpisodeCounters(user.uid, prevCount > 0, episode?.air_date);
               if (prevCount === 0) {
                 const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
                 WatchActivityService.logEpisodeWatch(

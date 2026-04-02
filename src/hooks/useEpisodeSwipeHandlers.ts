@@ -229,6 +229,9 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               }
             );
             await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
+            const { updateEpisodeCounters } =
+              await import('../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, snap.previousCount > 0, item.airDate);
             if (snap.previousCount === 0) {
               const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
               WatchActivityService.logEpisodeWatch(
@@ -316,6 +319,9 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               source: 'today_episodes_swipe',
             });
             await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
+            const { updateEpisodeCounters } =
+              await import('../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(user.uid, snap.previousCount > 0);
             if (snap.previousCount === 0) {
               WatchActivityService.logEpisodeWatch(
                 user.uid,
