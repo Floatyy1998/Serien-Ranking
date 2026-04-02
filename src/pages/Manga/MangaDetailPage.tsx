@@ -63,7 +63,6 @@ export const MangaDetailPage = () => {
 
   const [anilistData, setAnilistData] = useState<AniListMangaSearchResult | null>(null);
   const [editChapter, setEditChapter] = useState(manga?.currentChapter || 0);
-  const [editVolume, setEditVolume] = useState(manga?.currentVolume || 0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(manga?.notes || '');
@@ -75,15 +74,11 @@ export const MangaDetailPage = () => {
 
   // Sync local edit state when manga data changes from Firebase
   const mangaChapter = manga?.currentChapter;
-  const mangaVolume = manga?.currentVolume;
   const mangaNotes = manga?.notes;
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (mangaChapter !== undefined) setEditChapter(mangaChapter);
   }, [mangaChapter]);
-  useEffect(() => {
-    setEditVolume(mangaVolume || 0);
-  }, [mangaVolume]);
   useEffect(() => {
     setNotesValue(mangaNotes || '');
   }, [mangaNotes]);
@@ -137,7 +132,10 @@ export const MangaDetailPage = () => {
   const handleChapterChange = useCallback(
     async (newChapter: number) => {
       if (!user || !manga) return;
-      const clamped = Math.max(0, newChapter);
+      const effectiveMax = manga.chapters || manga.latestChapterAvailable || null;
+      const clamped = effectiveMax
+        ? Math.max(0, Math.min(newChapter, effectiveMax))
+        : Math.max(0, newChapter);
       const previousChapter = editChapter;
       setEditChapter(clamped);
 
@@ -164,15 +162,6 @@ export const MangaDetailPage = () => {
       }
     },
     [user, manga, anilistId, editChapter]
-  );
-
-  const handleVolumeChange = useCallback(
-    async (newVolume: number) => {
-      const clamped = Math.max(0, newVolume);
-      setEditVolume(clamped);
-      await updateField('currentVolume', clamped);
-    },
-    [updateField]
   );
 
   const handleStatusChange = useCallback(
@@ -510,46 +499,6 @@ export const MangaDetailPage = () => {
                   background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 }}
               />
-            </div>
-          )}
-
-          {/* Volume Counter */}
-          {manga.volumes && (
-            <div style={{ marginTop: 16 }}>
-              <div
-                className="manga-detail-section-subtitle"
-                style={{ color: currentTheme.text.secondary }}
-              >
-                Band
-              </div>
-              <div className="manga-detail-counter">
-                <button
-                  className="manga-detail-counter-btn"
-                  onClick={() => handleVolumeChange(editVolume - 1)}
-                  style={{ background: `${currentTheme.primary}20`, color: currentTheme.primary }}
-                >
-                  <Remove />
-                </button>
-                <div className="manga-detail-counter-value">
-                  <input
-                    type="number"
-                    value={editVolume}
-                    onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                    className="manga-detail-counter-input"
-                    style={{ color: currentTheme.text.primary }}
-                  />
-                  <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
-                    / {manga.volumes}
-                  </span>
-                </div>
-                <button
-                  className="manga-detail-counter-btn"
-                  onClick={() => handleVolumeChange(editVolume + 1)}
-                  style={{ background: `${currentTheme.primary}20`, color: currentTheme.primary }}
-                >
-                  <Add />
-                </button>
-              </div>
             </div>
           )}
         </Section>

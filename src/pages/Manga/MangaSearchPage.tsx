@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { searchManga } from '../../services/anilistService';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
@@ -22,6 +23,7 @@ export const MangaSearchPage = () => {
   const { user } = useAuth() || {};
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
+  const { isMobile } = useDeviceType();
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
@@ -247,13 +249,15 @@ export const MangaSearchPage = () => {
           </div>
         )}
 
-        {/* Results Grid - same card style as Discover */}
+        {/* Results Grid - exact same cards as Discover */}
         {!searching && filteredResults.length > 0 && (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-              gap: 14,
+              gridTemplateColumns: isMobile
+                ? 'repeat(2, 1fr)'
+                : 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: isMobile ? 16 : 24,
             }}
           >
             {filteredResults.map((result) => {
@@ -264,140 +268,157 @@ export const MangaSearchPage = () => {
               return (
                 <motion.div
                   key={result.id}
-                  style={{
-                    borderRadius: 14,
-                    overflow: 'hidden',
-                    position: 'relative',
-                    aspectRatio: '2/3',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 20px -4px rgba(0,0,0,0.4)',
-                  }}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(`/manga/${result.id}`)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <img
-                    src={result.coverImage.large}
-                    alt={result.title.romaji}
-                    loading="lazy"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-
-                  {/* Format badge */}
                   <div
                     style={{
-                      position: 'absolute',
-                      top: 8,
-                      left: 8,
-                      fontSize: 9,
-                      fontWeight: 700,
-                      padding: '3px 7px',
-                      borderRadius: 6,
-                      background: 'rgba(0,0,0,0.6)',
-                      backdropFilter: 'blur(8px)',
-                      color: formatColor,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
+                      position: 'relative',
+                      borderRadius: 14,
+                      aspectRatio: '2/3',
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.4)',
+                      overflow: 'hidden',
                     }}
                   >
-                    {displayFormat}
-                  </div>
+                    <img
+                      src={result.coverImage.large}
+                      alt={result.title.romaji}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                        borderRadius: 14,
+                      }}
+                    />
 
-                  {/* Score badge */}
-                  {result.averageScore && (
+                    {/* Format badge */}
                     <div
                       style={{
                         position: 'absolute',
                         top: 8,
-                        right: 8,
-                        fontSize: 10,
+                        left: 8,
+                        fontSize: 9,
                         fontWeight: 700,
-                        padding: '3px 6px',
+                        padding: '3px 7px',
                         borderRadius: 6,
                         background: 'rgba(0,0,0,0.6)',
                         backdropFilter: 'blur(8px)',
-                        color: '#f59e0b',
+                        color: formatColor,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
                       }}
                     >
-                      ⭐ {result.averageScore}%
+                      {displayFormat}
                     </div>
-                  )}
 
-                  {/* Bottom info */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: '24px 10px 10px',
-                      background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-                    }}
-                  >
+                    {/* Score */}
+                    {result.averageScore && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: '3px 6px',
+                          borderRadius: 6,
+                          background: 'rgba(0,0,0,0.6)',
+                          backdropFilter: 'blur(8px)',
+                          color: '#f59e0b',
+                        }}
+                      >
+                        ⭐ {result.averageScore}%
+                      </div>
+                    )}
+
+                    {/* Bottom gradient */}
                     <div
                       style={{
-                        fontSize: 12,
-                        fontWeight: 700,
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '60%',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                        borderRadius: '0 0 14px 14px',
+                        pointerEvents: 'none',
+                      }}
+                    />
+
+                    {/* Add button */}
+                    <motion.button
+                      whileTap={{ scale: 0.85 }}
+                      onClick={(e) => handleAdd(e, result)}
+                      style={{
+                        position: 'absolute',
+                        bottom: 10,
+                        right: 10,
+                        width: 34,
+                        height: 34,
+                        borderRadius: 10,
+                        border: 'none',
+                        background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                         color: '#fff',
-                        whiteSpace: 'nowrap',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                        zIndex: 2,
+                      }}
+                    >
+                      {addingId === result.id ? (
+                        <div
+                          style={{
+                            width: 16,
+                            height: 16,
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            borderTopColor: '#fff',
+                            borderRadius: '50%',
+                            animation: 'spin 0.6s linear infinite',
+                          }}
+                        />
+                      ) : (
+                        <Add style={{ fontSize: 20 }} />
+                      )}
+                    </motion.button>
+                  </div>
+
+                  {/* Title + meta below card (like Discover) */}
+                  <div style={{ marginTop: 8 }}>
+                    <div
+                      style={{
+                        fontSize: isMobile ? 13 : 14,
+                        fontWeight: 600,
+                        color: currentTheme.text.primary,
+                        lineHeight: 1.3,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
                       }}
                     >
                       {result.title.english || result.title.romaji}
                     </div>
                     <div
                       style={{
-                        fontSize: 10,
-                        color: 'rgba(255,255,255,0.5)',
+                        fontSize: 11,
+                        color: currentTheme.text.secondary,
+                        opacity: 0.6,
                         marginTop: 2,
-                        display: 'flex',
-                        gap: 6,
                       }}
                     >
-                      {result.chapters && <span>{result.chapters} Kap.</span>}
-                      {result.status === 'RELEASING' && (
-                        <span style={{ color: '#22c55e' }}>Laufend</span>
-                      )}
-                      {result.status === 'FINISHED' && <span>Abgeschlossen</span>}
+                      {result.startDate?.year || ''}
+                      {result.chapters ? ` · ${result.chapters} Kap.` : ''}
                     </div>
                   </div>
-
-                  {/* Add button */}
-                  <motion.button
-                    whileTap={{ scale: 0.85 }}
-                    onClick={(e) => handleAdd(e, result)}
-                    style={{
-                      position: 'absolute',
-                      bottom: 42,
-                      right: 8,
-                      width: 34,
-                      height: 34,
-                      borderRadius: 10,
-                      border: 'none',
-                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                      color: '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-                    }}
-                  >
-                    {addingId === result.id ? (
-                      <div
-                        style={{
-                          width: 16,
-                          height: 16,
-                          border: '2px solid rgba(255,255,255,0.3)',
-                          borderTopColor: '#fff',
-                          borderRadius: '50%',
-                          animation: 'spin 0.6s linear infinite',
-                        }}
-                      />
-                    ) : (
-                      <Add style={{ fontSize: 20 }} />
-                    )}
-                  </motion.button>
                 </motion.div>
               );
             })}
