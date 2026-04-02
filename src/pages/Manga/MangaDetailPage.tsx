@@ -72,13 +72,21 @@ export const MangaDetailPage = () => {
   const [chapterInfo, setChapterInfo] = useState<MangaDexChapterInfo | null>(null);
   const notesRef = useRef<HTMLTextAreaElement>(null);
 
+  // Sync local edit state when manga data changes from Firebase
+  const mangaChapter = manga?.currentChapter;
+  const mangaVolume = manga?.currentVolume;
+  const mangaNotes = manga?.notes;
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (manga) {
-      setEditChapter(manga.currentChapter);
-      setEditVolume(manga.currentVolume || 0);
-      setNotesValue(manga.notes || '');
-    }
-  }, [manga]);
+    if (mangaChapter !== undefined) setEditChapter(mangaChapter);
+  }, [mangaChapter]);
+  useEffect(() => {
+    setEditVolume(mangaVolume || 0);
+  }, [mangaVolume]);
+  useEffect(() => {
+    setNotesValue(mangaNotes || '');
+  }, [mangaNotes]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (anilistId) {

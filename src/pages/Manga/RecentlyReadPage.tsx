@@ -40,9 +40,10 @@ export const RecentlyReadPage = () => {
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
   const [rangeDays, setRangeDays] = useState(30);
+  const [mountTime] = useState(() => Date.now());
 
   const dateGroups = useMemo(() => {
-    const cutoff = Date.now() - rangeDays * 24 * 60 * 60 * 1000;
+    const cutoff = mountTime - rangeDays * 24 * 60 * 60 * 1000;
 
     const recentManga = mangaList
       .filter((m) => m.lastReadAt && new Date(m.lastReadAt).getTime() > cutoff)

@@ -7,7 +7,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
@@ -18,6 +18,7 @@ export const MangaStatsPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { mangaList } = useMangaList();
+  const [mountTime] = useState(() => Date.now());
 
   const stats = useMemo(() => {
     const total = mangaList.length;
@@ -75,7 +76,7 @@ export const MangaStatsPage = () => {
       .slice(0, 5);
 
     // Recently active (last 7 days)
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekAgo = mountTime - 7 * 24 * 60 * 60 * 1000;
     const activeThisWeek = mangaList.filter(
       (m) => m.lastReadAt && new Date(m.lastReadAt).getTime() > weekAgo
     ).length;
@@ -100,7 +101,7 @@ export const MangaStatsPage = () => {
       topPlatforms,
       activeThisWeek,
     };
-  }, [mangaList, user]);
+  }, [mangaList, user, mountTime]);
 
   if (mangaList.length === 0) {
     return (
