@@ -32,22 +32,34 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     [allMangaList]
   );
 
-  // Background refresh: update latestChapterAvailable for all releasing manga
-  // Runs once per session to keep chapter counts current
-  const refreshRunRef = useRef(false);
+  // Background refresh: update latestChapterAvailable for releasing manga
+  // Two triggers:
+  // 1. Once per session: refresh ALL releasing manga (catches new chapters)
+  // 2. Always: fetch for any releasing manga that has NO latestChapterAvailable yet (newly added)
+  const refreshedIdsRef = useRef(new Set<number>());
   useEffect(() => {
-    if (!user || loading || allMangaList.length === 0 || refreshRunRef.current) return;
-    if (sessionStorage.getItem('mangaChapterRefreshDone') === 'true') return;
+    if (!user || loading || allMangaList.length === 0) return;
 
-    refreshRunRef.current = true;
-    sessionStorage.setItem('mangaChapterRefreshDone', 'true');
+    const sessionDone = sessionStorage.getItem('mangaChapterRefreshDone') === 'true';
 
-    const releasingManga = allMangaList.filter((m) => m.status === 'RELEASING' && !m.chapters);
+    const toFetch = allMangaList.filter((m) => {
+      if (m.status !== 'RELEASING' || m.chapters) return false;
+      // Always fetch if no latestChapterAvailable (newly added)
+      if (!m.latestChapterAvailable) return !refreshedIdsRef.current.has(m.anilistId);
+      // Otherwise only on first session load
+      if (sessionDone) return false;
+      return !refreshedIdsRef.current.has(m.anilistId);
+    });
 
-    if (releasingManga.length === 0) return;
+    if (toFetch.length === 0) {
+      if (!sessionDone) sessionStorage.setItem('mangaChapterRefreshDone', 'true');
+      return;
+    }
 
-    // Stagger requests to respect MangaDex rate limit (5 req/sec)
-    releasingManga.forEach((manga, i) => {
+    if (!sessionDone) sessionStorage.setItem('mangaChapterRefreshDone', 'true');
+
+    toFetch.forEach((manga, i) => {
+      refreshedIdsRef.current.add(manga.anilistId);
       setTimeout(async () => {
         try {
           const info = await getMangaDexInfo(manga.title);
@@ -64,7 +76,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
         } catch {
           // Silent fail per manga
         }
-      }, i * 250); // 4 req/sec to stay safe
+      }, i * 250);
     });
   }, [user, loading, allMangaList]);
 
