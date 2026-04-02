@@ -7,16 +7,21 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import {
   AutoAwesome,
+  AutoStories,
+  BarChart,
   EmojiEvents,
+  Explore,
   Forum,
   Group,
   History,
   Leaderboard,
+  MenuBook,
   Palette,
   Pets,
   Search,
   Settings,
   Star,
+  Timeline,
   TrendingUp,
   ViewQuilt,
 } from '@mui/icons-material';
@@ -25,6 +30,7 @@ import 'firebase/compat/auth';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { useMangaList } from '../../contexts/MangaListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -66,6 +72,7 @@ export interface UseProfileDataResult {
   stats: ProfileStats;
   menuItems: ProfileMenuItem[];
   secondaryMenuItems: ProfileMenuItem[];
+  mangaMenuItems: ProfileMenuItem[];
   settingsItems: ProfileMenuItem[];
   goTo: (path: string) => void;
   handleLogout: () => Promise<void>;
@@ -163,6 +170,7 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { mangaList } = useMangaList();
 
   const stats = useMemo(() => computeStats(seriesList, movieList), [seriesList, movieList]);
 
@@ -203,6 +211,47 @@ export const useProfileData = (): UseProfileDataResult => {
     [currentTheme, unreadActivitiesCount, unreadRequestsCount]
   );
 
+  const mangaMenuItems: ProfileMenuItem[] = useMemo(
+    () =>
+      mangaList.length > 0
+        ? [
+            { label: 'Manga Home', icon: AutoStories, color: '#8b5cf6', path: '/manga' },
+            {
+              label: 'Leseliste',
+              icon: MenuBook,
+              color: currentTheme.primary,
+              path: '/manga/reading-list',
+            },
+            {
+              label: 'Bewertungen',
+              icon: BarChart,
+              color: currentTheme.status.warning,
+              path: '/manga/ratings',
+            },
+            {
+              label: 'Entdecken',
+              icon: Explore,
+              color: currentTheme.status.error,
+              path: '/manga/discover',
+            },
+            {
+              label: 'Statistiken',
+              icon: TrendingUp,
+              color: currentTheme.accent,
+              path: '/manga/stats',
+            },
+            {
+              label: 'Verlauf',
+              icon: History,
+              color: currentTheme.status.success,
+              path: '/manga/recently-read',
+            },
+            { label: 'Journey', icon: Timeline, color: '#a855f7', path: '/manga/journey' },
+          ]
+        : [],
+    [currentTheme, mangaList.length]
+  );
+
   const secondaryMenuItems: ProfileMenuItem[] = useMemo(
     () => [
       { label: 'Rangliste', icon: Leaderboard, color: '#f59e0b', path: '/leaderboard' },
@@ -223,7 +272,7 @@ export const useProfileData = (): UseProfileDataResult => {
       { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
       { label: 'KI-Empfehlungen', icon: AutoAwesome, color: '#a855f7', path: '/taste-profile' },
     ],
-    [currentTheme, unreadBadgesCount]
+    [currentTheme, unreadBadgesCount, mangaList.length]
   );
 
   const settingsItems: ProfileMenuItem[] = useMemo(
@@ -257,6 +306,7 @@ export const useProfileData = (): UseProfileDataResult => {
     stats,
     menuItems,
     secondaryMenuItems,
+    mangaMenuItems,
     settingsItems,
     goTo,
     handleLogout,
