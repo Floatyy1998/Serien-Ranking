@@ -225,8 +225,8 @@ export function TicketsTab({ theme }: TicketsTabProps) {
               textAlign: 'center',
             }}
           >
-            <div style={{ fontSize: '18px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
-            <div style={{ fontSize: '10px', color: theme.text.muted, marginTop: '2px' }}>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: stat.color }}>{stat.value}</div>
+            <div style={{ fontSize: '13px', color: theme.text.muted, marginTop: '2px' }}>
               {stat.label}
             </div>
           </div>
@@ -257,7 +257,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
             border: '1px solid rgba(255,255,255,0.06)',
             background: theme.background.surface,
             color: theme.text.secondary,
-            fontSize: '12px',
+            fontSize: '15px',
             outline: 'none',
             boxSizing: 'border-box',
           }}
@@ -270,7 +270,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
           <span
             style={{
-              fontSize: '10px',
+              fontSize: '13px',
               color: theme.text.muted,
               fontWeight: 600,
               marginRight: '2px',
@@ -300,7 +300,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
                 border: 'none',
                 background: typeFilter === key ? `${color}20` : 'transparent',
                 color: typeFilter === key ? color : theme.text.muted,
-                fontSize: '11px',
+                fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
               }}
@@ -314,7 +314,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span
             style={{
-              fontSize: '10px',
+              fontSize: '13px',
               color: theme.text.muted,
               fontWeight: 600,
               marginRight: '2px',
@@ -342,7 +342,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
                   border: 'none',
                   background: active ? `${color}20` : 'transparent',
                   color: active ? color : theme.text.muted,
-                  fontSize: '11px',
+                  fontSize: '14px',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
@@ -356,14 +356,14 @@ export function TicketsTab({ theme }: TicketsTabProps) {
       </div>
 
       {/* ── Results Info ── */}
-      <div style={{ fontSize: '11px', color: theme.text.muted }}>
+      <div style={{ fontSize: '14px', color: theme.text.muted }}>
         {filtered.length} von {tickets.length} Tickets
         {searchQuery && ` für "${searchQuery}"`}
       </div>
 
       {/* ── Ticket List ── */}
       {filtered.length === 0 && (
-        <div style={{ padding: 40, textAlign: 'center', color: theme.text.muted, fontSize: 13 }}>
+        <div style={{ padding: 40, textAlign: 'center', color: theme.text.muted, fontSize: 16 }}>
           Keine Tickets gefunden.
         </div>
       )}
@@ -414,6 +414,7 @@ function TicketCard({
   const [noteText, setNoteText] = useState('');
   const [sending, setSending] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedCommentId, setCopiedCommentId] = useState<string | null>(null);
 
   const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.done;
   const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
@@ -464,6 +465,12 @@ function TicketCard({
     navigator.clipboard.writeText(JSON.stringify(JSON.parse(JSON.stringify(data)), null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyComment = (commentId: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedCommentId(commentId);
+    setTimeout(() => setCopiedCommentId(null), 2000);
   };
 
   const [now] = useState(() => Date.now());
@@ -520,7 +527,7 @@ function TicketCard({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              fontSize: '13px',
+              fontSize: '16px',
               fontWeight: 600,
               color: theme.text.primary,
               whiteSpace: 'nowrap',
@@ -533,7 +540,7 @@ function TicketCard({
           </div>
           <div
             style={{
-              fontSize: '11px',
+              fontSize: '13px',
               color: theme.text.muted,
               marginTop: '3px',
               display: 'flex',
@@ -599,7 +606,7 @@ function TicketCard({
                 }}
               >
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <label style={{ fontSize: '10px', color: theme.text.muted, fontWeight: 600 }}>
+                  <label style={{ fontSize: '13px', color: theme.text.muted, fontWeight: 600 }}>
                     Status:
                   </label>
                   <select
@@ -615,7 +622,7 @@ function TicketCard({
                   </select>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                  <label style={{ fontSize: '10px', color: theme.text.muted, fontWeight: 600 }}>
+                  <label style={{ fontSize: '13px', color: theme.text.muted, fontWeight: 600 }}>
                     Prio:
                   </label>
                   <select
@@ -695,7 +702,7 @@ function TicketCard({
                       style={{
                         ...contentBox(theme),
                         fontFamily: 'monospace',
-                        fontSize: '11px',
+                        fontSize: '14px',
                         color: theme.status.error,
                         border: `1px solid ${theme.status.error}20`,
                         maxHeight: '150px',
@@ -709,7 +716,7 @@ function TicketCard({
 
                 {/* Device */}
                 {ticket.device && (
-                  <div style={{ fontSize: '10px', color: theme.text.muted, padding: '4px 0' }}>
+                  <div style={{ fontSize: '13px', color: theme.text.muted, padding: '4px 0' }}>
                     Device: {ticket.device.slice(0, 120)}
                   </div>
                 )}
@@ -731,7 +738,7 @@ function TicketCard({
                         <div
                           key={c.id}
                           style={{
-                            padding: '8px 12px',
+                            padding: '10px 14px',
                             borderRadius: '8px',
                             background: c.isAdmin ? `${theme.primary}10` : theme.background.default,
                             borderLeft: c.isAdmin
@@ -749,7 +756,7 @@ function TicketCard({
                           >
                             <span
                               style={{
-                                fontSize: '11px',
+                                fontSize: '14px',
                                 fontWeight: 600,
                                 color: c.isAdmin ? theme.primary : theme.text.secondary,
                               }}
@@ -759,10 +766,10 @@ function TicketCard({
                             {c.isAdmin && (
                               <span
                                 style={{
-                                  fontSize: '8px',
+                                  fontSize: '10px',
                                   background: theme.primary,
                                   color: '#fff',
-                                  padding: '1px 4px',
+                                  padding: '2px 5px',
                                   borderRadius: '3px',
                                   fontWeight: 700,
                                 }}
@@ -772,17 +779,43 @@ function TicketCard({
                             )}
                             <span
                               style={{
-                                fontSize: '10px',
+                                fontSize: '13px',
                                 color: theme.text.muted,
                                 marginLeft: 'auto',
                               }}
                             >
                               {new Date(c.createdAt).toLocaleString('de-DE')}
                             </span>
+                            <button
+                              onClick={() => copyComment(c.id, c.text)}
+                              title="Kommentar kopieren"
+                              style={{
+                                padding: '3px 6px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                background:
+                                  copiedCommentId === c.id
+                                    ? `${theme.status.success}20`
+                                    : 'transparent',
+                                color:
+                                  copiedCommentId === c.id
+                                    ? theme.status.success
+                                    : theme.text.muted,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                fontSize: '12px',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <ContentCopy style={{ fontSize: 13 }} />
+                              {copiedCommentId === c.id && 'Kopiert!'}
+                            </button>
                           </div>
                           <div
                             style={{
-                              fontSize: '12px',
+                              fontSize: '15px',
                               color: theme.text.secondary,
                               whiteSpace: 'pre-wrap',
                             }}
@@ -856,7 +889,7 @@ function TicketCard({
                         <div
                           key={n.id}
                           style={{
-                            fontSize: '11px',
+                            fontSize: '14px',
                             color: theme.text.secondary,
                             padding: '4px 0',
                           }}
@@ -865,7 +898,7 @@ function TicketCard({
                             <span style={{ color: theme.status.warning, fontWeight: 600 }}>
                               {n.authorName}
                             </span>
-                            <span style={{ color: theme.text.muted, fontSize: '10px' }}>
+                            <span style={{ color: theme.text.muted, fontSize: '13px' }}>
                               {new Date(n.createdAt).toLocaleString('de-DE')}
                             </span>
                           </div>
@@ -929,9 +962,9 @@ function Badge({ children, color }: { children: React.ReactNode; color: string }
   return (
     <span
       style={{
-        fontSize: '10px',
+        fontSize: '12px',
         fontWeight: 700,
-        padding: '3px 7px',
+        padding: '4px 8px',
         borderRadius: '5px',
         background: `${color}15`,
         color,
@@ -958,7 +991,7 @@ function Section({
     <div>
       <div
         style={{
-          fontSize: '10px',
+          fontSize: '13px',
           fontWeight: 700,
           color: color || theme.text.muted,
           textTransform: 'uppercase',
@@ -988,7 +1021,7 @@ const selectStyle = (theme: TicketsTabProps['theme']): React.CSSProperties => ({
   border: '1px solid rgba(255,255,255,0.1)',
   background: theme.background.surface,
   color: theme.text.secondary,
-  fontSize: '11px',
+  fontSize: '14px',
   outline: 'none',
   cursor: 'pointer',
 });
@@ -999,7 +1032,7 @@ const actionBtnStyle = (color: string): React.CSSProperties => ({
   border: 'none',
   background: `${color}15`,
   color,
-  fontSize: '11px',
+  fontSize: '14px',
   fontWeight: 500,
   cursor: 'pointer',
   display: 'flex',
@@ -1008,7 +1041,7 @@ const actionBtnStyle = (color: string): React.CSSProperties => ({
 });
 
 const contentBox = (theme: TicketsTabProps['theme']): React.CSSProperties => ({
-  fontSize: '12px',
+  fontSize: '15px',
   color: theme.text.secondary,
   whiteSpace: 'pre-wrap',
   padding: '10px 12px',
@@ -1025,7 +1058,7 @@ const inputStyle = (theme: TicketsTabProps['theme']): React.CSSProperties => ({
   border: '1px solid rgba(255,255,255,0.08)',
   borderRadius: '6px',
   color: theme.text.secondary,
-  fontSize: '12px',
+  fontSize: '15px',
   outline: 'none',
 });
 
@@ -1039,7 +1072,7 @@ const sendBtnStyle = (
   border: 'none',
   background: active ? color || theme.primary : `${color || theme.primary}30`,
   color: active ? '#fff' : `${color || theme.primary}60`,
-  fontSize: '12px',
+  fontSize: '15px',
   fontWeight: 600,
   cursor: active ? 'pointer' : 'default',
   display: 'flex',
