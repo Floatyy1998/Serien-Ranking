@@ -1,12 +1,15 @@
 /**
- * MangaDex API - holt aktuelle Kapitelzahlen für laufende Manga.
- * Requests laufen über den Backend-Proxy um CORS zu vermeiden.
+ * Manga chapter data service.
+ * Uses MangaUpdates API (https://api.mangaupdates.com) as primary source.
+ * MangaUpdates has excellent coverage for Manga, Manhwa AND Webtoon-exclusive titles.
+ * No API key needed. Requests go through backend proxy to avoid CORS.
  */
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 
-// Simple in-memory cache to avoid re-fetching
+// Simple in-memory cache
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
+const chapterCache = new Map<string, { data: MangaDexChapterInfo; timestamp: number }>();
 const CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 export interface MangaDexInfo {
@@ -16,8 +19,21 @@ export interface MangaDexInfo {
   status: string | null;
 }
 
+export interface ChapterRelease {
+  chapter: number;
+  publishedAt: string;
+  title?: string;
+}
+
+export interface MangaDexChapterInfo {
+  mangadexId: string | null;
+  recentChapters: ChapterRelease[];
+  estimatedNextDate: string | null;
+  avgDaysBetweenReleases: number | null;
+}
+
 /**
- * Sucht einen Manga auf MangaDex anhand des Titels und gibt die aktuelle Kapitelzahl zurück.
+ * Holt aktuelle Kapitelzahl über MangaUpdates.
  */
 export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
   const cacheKey = title.toLowerCase().trim();
@@ -27,49 +43,22 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
   }
 
   try {
-    // Step 1: Search for the manga (via backend proxy)
-    const searchRes = await fetch(
-      `${BACKEND_URL}/mangadex/search?title=${encodeURIComponent(title)}`
-    );
+    // Search via backend proxy
+    const searchRes = await fetch(`${BACKEND_URL}/mangaupdates/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
     if (!searchRes.ok) return nullResult();
 
     const searchData = await searchRes.json();
-    const manga = searchData.data?.[0];
-    if (!manga) return nullResult();
-
-    const mangadexId = manga.id;
-    const status = manga.attributes?.status || null;
-
-    // Step 2: Get aggregate data (all chapters)
-    const aggRes = await fetch(`${BACKEND_URL}/mangadex/aggregate/${mangadexId}`);
-    if (!aggRes.ok) return { mangadexId, latestChapter: null, totalChapters: 0, status };
-
-    const aggData = await aggRes.json();
-    const volumes = aggData.volumes || {};
-
-    let maxChapter = 0;
-    let totalEntries = 0;
-
-    for (const vol of Object.values(volumes) as {
-      chapters?: Record<string, { chapter: string }>;
-    }[]) {
-      const chapters = vol.chapters || {};
-      for (const ch of Object.values(chapters)) {
-        totalEntries++;
-        try {
-          const num = parseFloat(ch.chapter);
-          if (!isNaN(num) && num > maxChapter) maxChapter = num;
-        } catch {
-          // skip non-numeric chapters
-        }
-      }
-    }
+    if (!searchData.seriesId) return nullResult();
 
     const result: MangaDexInfo = {
-      mangadexId,
-      latestChapter: maxChapter > 0 ? Math.floor(maxChapter) : null,
-      totalChapters: totalEntries,
-      status,
+      mangadexId: String(searchData.seriesId),
+      latestChapter: searchData.latestChapter,
+      totalChapters: searchData.latestChapter || 0,
+      status: searchData.completed ? 'completed' : 'ongoing',
     };
 
     cache.set(cacheKey, { data: result, timestamp: Date.now() });
@@ -79,29 +68,8 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
   }
 }
 
-function nullResult(): MangaDexInfo {
-  return { mangadexId: null, latestChapter: null, totalChapters: 0, status: null };
-}
-
-// ─── Chapter Release Data ───────────────────────────
-
-export interface ChapterRelease {
-  chapter: number;
-  publishedAt: string; // ISO date
-  title?: string;
-}
-
-export interface MangaDexChapterInfo {
-  mangadexId: string | null;
-  recentChapters: ChapterRelease[];
-  estimatedNextDate: string | null; // ISO date
-  avgDaysBetweenReleases: number | null;
-}
-
-const chapterCache = new Map<string, { data: MangaDexChapterInfo; timestamp: number }>();
-
 /**
- * Holt die letzten Kapitel-Releases von MangaDex und schätzt das nächste Release-Datum.
+ * Holt die letzten Kapitel-Releases und schätzt nächstes Release-Datum.
  */
 export async function getMangaDexChapterDates(title: string): Promise<MangaDexChapterInfo> {
   const cacheKey = title.toLowerCase().trim();
@@ -111,47 +79,21 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
   }
 
   try {
-    // Step 1: Find manga
-    const searchRes = await fetch(
-      `${BACKEND_URL}/mangadex/search?title=${encodeURIComponent(title)}`
+    // Get releases via backend proxy
+    const res = await fetch(`${BACKEND_URL}/mangaupdates/releases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+    });
+    if (!res.ok) return nullChapterResult();
+
+    const data = await res.json();
+    const chapters: ChapterRelease[] = (data.releases || []).map(
+      (r: { chapter: number; date: string }) => ({
+        chapter: r.chapter,
+        publishedAt: r.date,
+      })
     );
-    if (!searchRes.ok) return nullChapterResult();
-
-    const searchData = await searchRes.json();
-    const manga = searchData.data?.[0];
-    if (!manga) return nullChapterResult();
-
-    const mangadexId = manga.id;
-
-    // Step 2: Get latest chapters with dates
-    const feedRes = await fetch(`${BACKEND_URL}/mangadex/feed/${mangadexId}?limit=10&lang=en`);
-    if (!feedRes.ok)
-      return {
-        mangadexId,
-        recentChapters: [],
-        estimatedNextDate: null,
-        avgDaysBetweenReleases: null,
-      };
-
-    const feedData = await feedRes.json();
-    const chapters: ChapterRelease[] = [];
-    const seenChapters = new Set<number>();
-
-    for (const ch of feedData.data || []) {
-      const attrs = ch.attributes;
-      const num = parseFloat(attrs.chapter);
-      if (isNaN(num) || seenChapters.has(Math.floor(num))) continue;
-      seenChapters.add(Math.floor(num));
-
-      chapters.push({
-        chapter: Math.floor(num),
-        publishedAt: attrs.publishAt || attrs.createdAt,
-        title: attrs.title || undefined,
-      });
-    }
-
-    // Sort by chapter desc
-    chapters.sort((a, b) => b.chapter - a.chapter);
 
     // Calculate average days between releases
     let avgDays: number | null = null;
@@ -164,7 +106,6 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
         const d2 = new Date(chapters[i + 1].publishedAt).getTime();
         const daysDiff = (d1 - d2) / (1000 * 60 * 60 * 24);
         if (daysDiff > 0 && daysDiff < 60) {
-          // Ignore gaps > 60 days (hiatus)
           gaps.push(daysDiff);
         }
       }
@@ -178,7 +119,7 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
     }
 
     const result: MangaDexChapterInfo = {
-      mangadexId,
+      mangadexId: data.seriesId ? String(data.seriesId) : null,
       recentChapters: chapters.slice(0, 5),
       estimatedNextDate: estimatedNext,
       avgDaysBetweenReleases: avgDays,
@@ -189,6 +130,10 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
   } catch {
     return nullChapterResult();
   }
+}
+
+function nullResult(): MangaDexInfo {
+  return { mangadexId: null, latestChapter: null, totalChapters: 0, status: null };
 }
 
 function nullChapterResult(): MangaDexChapterInfo {
