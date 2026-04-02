@@ -64,6 +64,7 @@ export const MangaDiscoverPage = () => {
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Initial load + reset on filter change
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -86,6 +87,7 @@ export const MangaDiscoverPage = () => {
       cancelled = true;
     };
   }, [category, countryFilter]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // Load more on scroll
   const loadMore = useCallback(() => {

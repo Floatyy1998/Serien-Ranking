@@ -1,6 +1,6 @@
 import { BarChart, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
@@ -49,7 +49,11 @@ export const MangaRatingsPage = () => {
   const [sortBy, setSortBy] = useState<SortBy>('rating-desc');
   const [quickFilter, setQuickFilter] = useState<QuickFilterType>('all');
 
-  const getRating = (manga: Manga): number => (user ? manga.rating?.[user.uid] || 0 : 0);
+  const userId = user?.uid;
+  const getRating = useCallback(
+    (manga: Manga): number => (userId ? manga.rating?.[userId] || 0 : 0),
+    [userId]
+  );
 
   const items = useMemo(() => {
     let filtered = [...mangaList];
@@ -99,13 +103,13 @@ export const MangaRatingsPage = () => {
     });
 
     return filtered;
-  }, [mangaList, sortBy, quickFilter, user]);
+  }, [mangaList, sortBy, quickFilter, getRating]);
 
   const stats = useMemo(() => {
     const rated = items.filter((m) => getRating(m) > 0);
     const avg = rated.length > 0 ? rated.reduce((s, m) => s + getRating(m), 0) / rated.length : 0;
     return { count: rated.length, average: avg };
-  }, [items, user]);
+  }, [items, getRating]);
 
   return (
     <PageLayout>

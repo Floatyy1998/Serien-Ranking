@@ -1,6 +1,6 @@
 import { LibraryAdd } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
@@ -25,8 +25,9 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
 
+  const [mountTime] = useState(() => Date.now());
   const recentManga = useMemo(() => {
-    const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgo = mountTime - 7 * 24 * 60 * 60 * 1000;
     return mangaList
       .filter((m) => m.addedAt && new Date(m.addedAt).getTime() > sevenDaysAgo)
       .sort((a, b) => new Date(b.addedAt!).getTime() - new Date(a.addedAt!).getTime())
