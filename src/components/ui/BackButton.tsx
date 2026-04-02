@@ -76,7 +76,7 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
               }}
             />
           }
-          onClick={() => navigate('/')}
+          onClick={() => navigate(location.pathname.startsWith('/manga') ? '/manga' : '/')}
           size={32}
           borderRadius="10px"
           variant="glass"

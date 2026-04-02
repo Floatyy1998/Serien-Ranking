@@ -23,6 +23,7 @@ export const ProfilePage = memo(() => {
     stats,
     menuItems,
     secondaryMenuItems,
+    mangaMenuItems,
     settingsItems,
     goTo,
     handleLogout,
@@ -61,6 +62,16 @@ export const ProfilePage = memo(() => {
         onNavigate={goTo}
         animationDelay={0.3}
       />
+
+      {mangaMenuItems.length > 0 && (
+        <ProfileMenuGroup
+          title="Manga"
+          items={mangaMenuItems}
+          currentTheme={currentTheme}
+          onNavigate={goTo}
+          animationDelay={0.35}
+        />
+      )}
 
       <ProfileMenuGroup
         title="Deine Aktivitäten"
