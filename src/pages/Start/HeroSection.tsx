@@ -12,7 +12,7 @@ export const HeroSection = () => (
   >
     <div className="start-hero">
       <div className="start-hero-subtitle" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-        Serien & Film Tracker
+        Serien, Film & Manga Tracker
       </div>
 
       <GradientText as="h1" style={{ marginBottom: '24px' }}>
@@ -21,13 +21,13 @@ export const HeroSection = () => (
 
       <div className="start-hero-description" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
         <span style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontWeight: 300 }}>
-          Dein ultimativer Serien & Film Tracker
+          Dein ultimativer Serien, Film & Manga Tracker
         </span>
       </div>
       <div className="start-hero-body" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
         <span style={{ fontSize: 'clamp(0.95rem, 1.5vw, 1.05rem)' }}>
-          Entdecke neue Serien, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine
-          Favoriten mit Freunden.
+          Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt
+          und teile deine Favoriten mit Freunden.
         </span>
       </div>
 
