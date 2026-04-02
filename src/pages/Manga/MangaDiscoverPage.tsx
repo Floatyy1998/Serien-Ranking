@@ -74,11 +74,13 @@ export const MangaDiscoverPage = () => {
   const loadingRef = useRef(loading);
   const categoryRef = useRef(category);
   const countryFilterRef = useRef(countryFilter);
-  hasNextPageRef.current = hasNextPage;
-  loadingMoreRef.current = loadingMore;
-  loadingRef.current = loading;
-  categoryRef.current = category;
-  countryFilterRef.current = countryFilter;
+  useEffect(() => {
+    hasNextPageRef.current = hasNextPage;
+    loadingMoreRef.current = loadingMore;
+    loadingRef.current = loading;
+    categoryRef.current = category;
+    countryFilterRef.current = countryFilter;
+  });
 
   // Fetch initial data
   /* eslint-disable react-hooks/set-state-in-effect */
