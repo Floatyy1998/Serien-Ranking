@@ -32,7 +32,7 @@ const HIGHLIGHTS: HighlightItem[] = [
   {
     icon: Analytics,
     title: 'Deep Analytics',
-    desc: 'Umfassende Einblicke in deine Sehgewohnheiten',
+    desc: 'Umfassende Einblicke in deine Seh- und Lesegewohnheiten',
     color: '#c084fc',
   },
 ];

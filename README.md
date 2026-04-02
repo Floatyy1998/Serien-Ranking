@@ -1,8 +1,10 @@
 # TV-RANK
 
-TV-RANK ist eine umfassende Serienverwaltungs-App, die es Benutzern ermöglicht, ihre Lieblingsserien und -filme zu entdecken, zu bewerten und zu verwalten. Die App bietet eine Vielzahl von Funktionen, darunter die Möglichkeit, Serien nach Genre und Anbieter zu filtern, Bewertungen anzuzeigen und zu bearbeiten sowie detaillierte Statistiken zu den angesehenen Serien und Filmen zu erhalten.
+TV-RANK ist eine umfassende Medien-Tracking-App, die es Benutzern ermöglicht, ihre Lieblingsserien, Filme und Manga zu entdecken, zu bewerten und zu verwalten. Die App bietet eine Vielzahl von Funktionen, darunter die Möglichkeit, Inhalte nach Genre und Anbieter zu filtern, Bewertungen anzuzeigen und zu bearbeiten sowie detaillierte Statistiken zu erhalten.
 
 ## Funktionen
+
+### Serien & Filme
 
 - **Serien und Filme anzeigen und durchsuchen**: Durchsuchen Sie eine umfangreiche Datenbank von Serien und Filmen.
   ![Serien anzeigen](./Bilder/Serien.jpg)
@@ -48,14 +50,41 @@ TV-RANK ist eine umfassende Serienverwaltungs-App, die es Benutzern ermöglicht,
 - **Unveröffentlichte Serien und Filme finden**: Entdecken sie unveröffentlichte Serien und Filme und sehen Sie, wann diese erscheinen.
   ![Statistiken anzeigen](./Bilder/Empfehlungen.jpg)
 
+---
+
+### Manga, Manhwa & Manhua
+
+TV-RANK bietet einen vollständigen, eigenständigen Bereich zum Tracking von Manga, Manhwa (koreanisch) und Manhua (chinesisch).
+
+- **Manga Homepage**: Eigene Homepage mit Weiterlesen, Trending, Beliebt, Top bewertet, Statistiken und mehr
+- **Manga entdecken**: Trending, beliebte und Top-bewertete Manga/Manhwa/Manhua von AniList mit Infinite Scroll
+- **Suche**: Durchsuchen Sie die AniList-Datenbank nach Manga, Manhwa und Manhua
+- **Kapitel-Tracking**: Verfolgen Sie Ihren Lesefortschritt mit Swipe-to-mark (nächstes Kapitel gelesen)
+- **Leseliste**: Alle Manga zum Weiterlesen mit Filter- und Sortieroptionen
+- **Aktuelle Kapitelzahlen**: Automatische Aktualisierung der verfügbaren Kapitelzahl via MangaUpdates (auch für Webtoon-exklusive Titel wie Tower of God)
+- **Kapitel-Releases**: Letzte erschienene Kapitel mit Datum und geschätztem nächsten Release
+- **Bewertungen**: Eigene Bewertungsseite mit Filter nach Format (Manga/Manhwa/Manhua) und Status
+- **Statistiken**: Lese-Statistiken mit Fortschrittsring, Genre-Verteilung, Format-Aufschlüsselung
+- **Read Journey**: Lese-Trends mit monatlichem Aktivitätsdiagramm, meistgelesene Manga, Genre-Analyse
+- **Catch-Up**: Überblick welche Manga noch aufgeholt werden müssen
+- **Lese-Verlauf**: Chronologische Übersicht der zuletzt gelesenen Manga
+- **Versteckte Manga**: Pausierte Manga verwalten
+- **Detail-Seite**: Kapitelfortschritt, Status, Bewertung, Lese-Plattform, Notizen, verwandte Titel, Empfehlungen, Autor/Zeichner, externe Links
+
 ## Technologien
 
 - **React**: Für die Benutzeroberfläche.
 - **TypeScript**: Für die Typensicherheit und bessere Wartbarkeit des Codes.
-- **Firebase**: Für Authentifizierung und Datenbank.
+- **Firebase**: Für Authentifizierung und Realtime Database.
 - **Material-UI**: Für die Gestaltung der Benutzeroberfläche.
 - **Framer Motion**: Für Animationen.
 - **Vite**: Als Build-Tool.
+
+### APIs
+
+- **TMDB**: Serien- und Film-Datenbank (Metadata, Poster, Episoden)
+- **AniList**: Manga/Manhwa/Manhua-Datenbank (Metadata, Poster, Suche, Trending, Empfehlungen)
+- **MangaUpdates**: Aktuelle Kapitelzahlen und Release-Daten für Manga (inkl. Webtoon-exklusive Titel)
 
 ## Live-Demo
 

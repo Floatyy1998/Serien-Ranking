@@ -1,4 +1,4 @@
-import { Star, TrendingUp, People, EmojiEvents, Movie, Tv } from '@mui/icons-material';
+import { Star, TrendingUp, People, EmojiEvents, Movie, Tv, AutoStories } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { FeatureCard } from './FeatureCard';
 
@@ -41,10 +41,18 @@ const FEATURES = [
     color: '#f472b6',
   },
   {
+    icon: <AutoStories sx={{ fontSize: 24 }} />,
+    title: 'Manga-Tracking',
+    description:
+      'Tracke Manga, Manhwa und Manhua. Kapitelfortschritt, Bewertungen und Release-Daten.',
+    delay: 0.35,
+    color: '#38bdf8',
+  },
+  {
     icon: <TrendingUp sx={{ fontSize: 24 }} />,
     title: 'Statistiken',
-    description: 'Detaillierte Einblicke in deine Sehgewohnheiten und Fortschritt.',
-    delay: 0.35,
+    description: 'Detaillierte Einblicke in deine Seh- und Lesegewohnheiten.',
+    delay: 0.4,
     color: '#fb923c',
   },
 ] as const;
@@ -60,7 +68,7 @@ export const FeaturesGrid = () => (
         Alles was du brauchst
       </h2>
       <p className="start-features-subheading" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-        Features für das beste Streaming-Erlebnis
+        Features für das beste Tracking-Erlebnis
       </p>
     </motion.div>
 
