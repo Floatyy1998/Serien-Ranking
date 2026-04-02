@@ -1,12 +1,9 @@
 /**
  * MangaDex API - holt aktuelle Kapitelzahlen für laufende Manga.
- * AniList hat bei laufenden Manga oft chapters: null.
- * MangaDex hat über /aggregate den höchsten verfügbaren Chapter.
- *
- * Kein API-Key nötig. Rate limit: 5 Req/Sek.
+ * Requests laufen über den Backend-Proxy um CORS zu vermeiden.
  */
 
-const MANGADEX_API = 'https://api.mangadex.org';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 // Simple in-memory cache to avoid re-fetching
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
@@ -30,9 +27,9 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
   }
 
   try {
-    // Step 1: Search for the manga
+    // Step 1: Search for the manga (via backend proxy)
     const searchRes = await fetch(
-      `${MANGADEX_API}/manga?title=${encodeURIComponent(title)}&limit=1&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`
+      `${BACKEND_URL}/mangadex/search?title=${encodeURIComponent(title)}`
     );
     if (!searchRes.ok) return nullResult();
 
@@ -44,7 +41,7 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
     const status = manga.attributes?.status || null;
 
     // Step 2: Get aggregate data (all chapters)
-    const aggRes = await fetch(`${MANGADEX_API}/manga/${mangadexId}/aggregate`);
+    const aggRes = await fetch(`${BACKEND_URL}/mangadex/aggregate/${mangadexId}`);
     if (!aggRes.ok) return { mangadexId, latestChapter: null, totalChapters: 0, status };
 
     const aggData = await aggRes.json();
@@ -116,7 +113,7 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
   try {
     // Step 1: Find manga
     const searchRes = await fetch(
-      `${MANGADEX_API}/manga?title=${encodeURIComponent(title)}&limit=1&contentRating[]=safe&contentRating[]=suggestive&contentRating[]=erotica`
+      `${BACKEND_URL}/mangadex/search?title=${encodeURIComponent(title)}`
     );
     if (!searchRes.ok) return nullChapterResult();
 
@@ -127,9 +124,7 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
     const mangadexId = manga.id;
 
     // Step 2: Get latest chapters with dates
-    const feedRes = await fetch(
-      `${MANGADEX_API}/manga/${mangadexId}/feed?limit=10&order%5Bchapter%5D=desc&translatedLanguage%5B%5D=en`
-    );
+    const feedRes = await fetch(`${BACKEND_URL}/mangadex/feed/${mangadexId}?limit=10&lang=en`);
     if (!feedRes.ok)
       return {
         mangadexId,
