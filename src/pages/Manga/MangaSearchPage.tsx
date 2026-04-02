@@ -1,6 +1,6 @@
-import { Add, Check, Close, Search } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Add, Close, Search } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
@@ -27,7 +27,6 @@ export const MangaSearchPage = () => {
   const [results, setResults] = useState<AniListMangaSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [countryFilter, setCountryFilter] = useState<string>('all');
-  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [addingId, setAddingId] = useState<number | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
@@ -43,6 +42,7 @@ export const MangaSearchPage = () => {
     inputRef.current?.focus();
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (!query.trim()) {
@@ -71,35 +71,32 @@ export const MangaSearchPage = () => {
     };
   }, [query]);
 
-  const filteredResults =
-    countryFilter === 'all' ? results : results.filter((r) => r.countryOfOrigin === countryFilter);
+  const trackedIds = useMemo(() => new Set(mangaList.map((m) => m.anilistId)), [mangaList]);
 
-  const isTracked = useCallback(
-    (id: number) => mangaList.some((m) => m.anilistId === id),
-    [mangaList]
-  );
+  // Filter: by country + remove tracked
+  const filteredResults = useMemo(() => {
+    let filtered = results.filter((r) => !trackedIds.has(r.id));
+    if (countryFilter !== 'all') {
+      filtered = filtered.filter((r) => r.countryOfOrigin === countryFilter);
+    }
+    return filtered;
+  }, [results, trackedIds, countryFilter]);
 
-  const addManga = useCallback(
-    async (result: AniListMangaSearchResult) => {
-      if (!user || isTracked(result.id)) return;
+  const handleAdd = useCallback(
+    async (e: React.MouseEvent, result: AniListMangaSearchResult) => {
+      e.stopPropagation();
+      if (!user) return;
       setAddingId(result.id);
-
       const nextNmr = mangaList.length > 0 ? Math.max(...mangaList.map((m) => m.nmr)) + 1 : 1;
       await addMangaToList(user.uid, result, nextNmr);
       setAddingId(null);
     },
-    [user, mangaList, isTracked]
+    [user, mangaList]
   );
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: currentTheme.background.default,
-        position: 'relative',
-      }}
-    >
-      {/* ─── Fixed Header ────────────────────────── */}
+    <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
+      {/* ─── Sticky Header ───────────────────────── */}
       <div
         style={{
           position: 'sticky',
@@ -192,12 +189,10 @@ export const MangaSearchPage = () => {
             })}
           </div>
         </div>
-
-        {/* Subtle bottom edge */}
         <div
           style={{
             height: 1,
-            background: `linear-gradient(90deg, transparent, ${currentTheme.primary}18, rgba(255,255,255,0.06), ${currentTheme.primary}18, transparent)`,
+            background: `linear-gradient(90deg, transparent, ${currentTheme.primary}18, rgba(255,255,255,0.06), transparent)`,
           }}
         />
       </div>
@@ -245,41 +240,166 @@ export const MangaSearchPage = () => {
           </div>
         )}
 
-        {/* Loading */}
         {searching && (
           <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
             Suche...
           </div>
         )}
 
-        {/* Results Grid */}
+        {/* Results Grid - same card style as Discover */}
         {!searching && filteredResults.length > 0 && (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-              gap: 16,
+              gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+              gap: 14,
             }}
           >
-            {filteredResults.map((result) => (
-              <SearchResultCard
-                key={result.id}
-                result={result}
-                isTracked={isTracked(result.id)}
-                isSelected={selectedId === result.id}
-                isAdding={addingId === result.id}
-                onSelect={() => setSelectedId(selectedId === result.id ? null : result.id)}
-                onAdd={() => addManga(result)}
-                onDetail={() => {
-                  if (isTracked(result.id)) {
-                    navigate(`/manga/${result.id}`);
-                  } else {
-                    addManga(result).then(() => navigate(`/manga/${result.id}`));
-                  }
-                }}
-                theme={currentTheme}
-              />
-            ))}
+            {filteredResults.map((result) => {
+              const displayFormat = getDisplayFormat(result.countryOfOrigin, result.format);
+              const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
+              const formatColor = FORMAT_COLORS[formatKey] || '#a78bfa';
+
+              return (
+                <motion.div
+                  key={result.id}
+                  style={{
+                    borderRadius: 14,
+                    overflow: 'hidden',
+                    position: 'relative',
+                    aspectRatio: '2/3',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 20px -4px rgba(0,0,0,0.4)',
+                  }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate(`/manga/${result.id}`)}
+                >
+                  <img
+                    src={result.coverImage.large}
+                    alt={result.title.romaji}
+                    loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+
+                  {/* Format badge */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      left: 8,
+                      fontSize: 9,
+                      fontWeight: 700,
+                      padding: '3px 7px',
+                      borderRadius: 6,
+                      background: 'rgba(0,0,0,0.6)',
+                      backdropFilter: 'blur(8px)',
+                      color: formatColor,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {displayFormat}
+                  </div>
+
+                  {/* Score badge */}
+                  {result.averageScore && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: '3px 6px',
+                        borderRadius: 6,
+                        background: 'rgba(0,0,0,0.6)',
+                        backdropFilter: 'blur(8px)',
+                        color: '#f59e0b',
+                      }}
+                    >
+                      ⭐ {result.averageScore}%
+                    </div>
+                  )}
+
+                  {/* Bottom info */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '24px 10px 10px',
+                      background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: '#fff',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {result.title.english || result.title.romaji}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: 'rgba(255,255,255,0.5)',
+                        marginTop: 2,
+                        display: 'flex',
+                        gap: 6,
+                      }}
+                    >
+                      {result.chapters && <span>{result.chapters} Kap.</span>}
+                      {result.status === 'RELEASING' && (
+                        <span style={{ color: '#22c55e' }}>Laufend</span>
+                      )}
+                      {result.status === 'FINISHED' && <span>Abgeschlossen</span>}
+                    </div>
+                  </div>
+
+                  {/* Add button */}
+                  <motion.button
+                    whileTap={{ scale: 0.85 }}
+                    onClick={(e) => handleAdd(e, result)}
+                    style={{
+                      position: 'absolute',
+                      bottom: 42,
+                      right: 8,
+                      width: 34,
+                      height: 34,
+                      borderRadius: 10,
+                      border: 'none',
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {addingId === result.id ? (
+                      <div
+                        style={{
+                          width: 16,
+                          height: 16,
+                          border: '2px solid rgba(255,255,255,0.3)',
+                          borderTopColor: '#fff',
+                          borderRadius: '50%',
+                          animation: 'spin 0.6s linear infinite',
+                        }}
+                      />
+                    ) : (
+                      <Add style={{ fontSize: 20 }} />
+                    )}
+                  </motion.button>
+                </motion.div>
+              );
+            })}
           </div>
         )}
 
@@ -302,7 +422,6 @@ export const MangaSearchPage = () => {
           </div>
         )}
 
-        {/* Empty State */}
         {!query && recentSearches.length === 0 && (
           <div style={{ textAlign: 'center', padding: 60 }}>
             <div style={{ fontSize: 48, marginBottom: 16, opacity: 0.3 }}>📚</div>
@@ -332,329 +451,5 @@ export const MangaSearchPage = () => {
         )}
       </div>
     </div>
-  );
-};
-
-// ─── Search Result Card (Discover-style) ─────────────
-
-const SearchResultCard = ({
-  result,
-  isTracked,
-  isSelected,
-  isAdding,
-  onSelect,
-  onAdd,
-  onDetail,
-  theme,
-}: {
-  result: AniListMangaSearchResult;
-  isTracked: boolean;
-  isSelected: boolean;
-  isAdding: boolean;
-  onSelect: () => void;
-  onAdd: () => void;
-  onDetail: () => void;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
-}) => {
-  const displayFormat = getDisplayFormat(result.countryOfOrigin, result.format);
-  const formatKey = getDisplayFormatKey(result.countryOfOrigin, result.format);
-  const formatColor = FORMAT_COLORS[formatKey] || '#a78bfa';
-  const cleanDesc = result.description?.replace(/<[^>]*>/g, '') || '';
-
-  return (
-    <motion.div
-      layout
-      style={{
-        borderRadius: 14,
-        overflow: 'hidden',
-        position: 'relative',
-        aspectRatio: '2/3',
-        cursor: 'pointer',
-      }}
-      whileTap={{ scale: 0.97 }}
-      onClick={() => {
-        if (isSelected) {
-          onDetail();
-        } else {
-          onSelect();
-        }
-      }}
-    >
-      {/* Poster */}
-      <img
-        src={result.coverImage.large}
-        alt={result.title.romaji}
-        loading="lazy"
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-      />
-
-      {/* Format Badge */}
-      <div
-        style={{
-          position: 'absolute',
-          top: 8,
-          left: 8,
-          fontSize: 9,
-          fontWeight: 700,
-          padding: '3px 7px',
-          borderRadius: 6,
-          background: 'rgba(0,0,0,0.6)',
-          backdropFilter: 'blur(8px)',
-          color: formatColor,
-          textTransform: 'uppercase',
-          letterSpacing: '0.04em',
-        }}
-      >
-        {displayFormat}
-      </div>
-
-      {/* Score Badge */}
-      {result.averageScore && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            fontSize: 10,
-            fontWeight: 700,
-            padding: '3px 6px',
-            borderRadius: 6,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(8px)',
-            color: '#f59e0b',
-          }}
-        >
-          ⭐ {result.averageScore}%
-        </div>
-      )}
-
-      {/* Already tracked badge */}
-      {isTracked && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: 8,
-            width: 24,
-            height: 24,
-            borderRadius: 8,
-            background: `${theme.primary}dd`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Check style={{ fontSize: 14, color: '#fff' }} />
-        </div>
-      )}
-
-      {/* Bottom Info (always visible) */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '24px 10px 10px',
-          background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-            color: '#fff',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            lineHeight: 1.3,
-          }}
-        >
-          {result.title.english || result.title.romaji}
-        </div>
-        <div
-          style={{
-            fontSize: 10,
-            color: 'rgba(255,255,255,0.5)',
-            marginTop: 2,
-            display: 'flex',
-            gap: 6,
-          }}
-        >
-          {result.chapters && <span>{result.chapters} Kap.</span>}
-          {result.volumes && <span>{result.volumes} Bde.</span>}
-          {result.status === 'RELEASING' && <span style={{ color: '#22c55e' }}>Laufend</span>}
-        </div>
-      </div>
-
-      {/* ─── Info Overlay (on select) ────────────── */}
-      <AnimatePresence>
-        {isSelected && (
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '70%',
-              background: 'rgba(10, 14, 26, 0.8)',
-              backdropFilter: 'blur(20px) saturate(1.4)',
-              borderRadius: '16px 16px 0 0',
-              padding: '14px 12px',
-              display: 'flex',
-              flexDirection: 'column',
-              borderTop: '1px solid rgba(255,255,255,0.12)',
-            }}
-          >
-            {/* Handle bar */}
-            <div
-              style={{
-                width: 32,
-                height: 3,
-                borderRadius: 2,
-                background: 'rgba(255,255,255,0.2)',
-                margin: '0 auto 10px',
-              }}
-            />
-
-            {/* Title */}
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: '#fff',
-                marginBottom: 6,
-                lineHeight: 1.3,
-              }}
-            >
-              {result.title.english || result.title.romaji}
-            </div>
-
-            {/* Description */}
-            <div
-              style={{
-                fontSize: 11,
-                color: 'rgba(255,255,255,0.6)',
-                lineHeight: 1.5,
-                flex: 1,
-                overflow: 'hidden',
-                display: '-webkit-box',
-                WebkitLineClamp: 4,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {cleanDesc || 'Keine Beschreibung verfügbar.'}
-            </div>
-
-            {/* Actions */}
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              {!isTracked ? (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAdd();
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 0',
-                    borderRadius: 10,
-                    border: 'none',
-                    background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
-                    color: '#fff',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-body)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 6,
-                  }}
-                >
-                  {isAdding ? (
-                    'Wird hinzugefügt...'
-                  ) : (
-                    <>
-                      <Add style={{ fontSize: 16 }} />
-                      Hinzufügen
-                    </>
-                  )}
-                </motion.button>
-              ) : (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDetail();
-                  }}
-                  style={{
-                    flex: 1,
-                    padding: '10px 0',
-                    borderRadius: 10,
-                    border: `1px solid ${theme.primary}40`,
-                    background: `${theme.primary}15`,
-                    color: theme.primary,
-                    fontSize: 12,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontFamily: 'var(--font-body)',
-                  }}
-                >
-                  Details ansehen
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Add button (when NOT selected and NOT tracked) */}
-      {!isSelected && !isTracked && (
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd();
-          }}
-          style={{
-            position: 'absolute',
-            bottom: 42,
-            right: 8,
-            width: 30,
-            height: 30,
-            borderRadius: 10,
-            border: 'none',
-            background: `${theme.primary}dd`,
-            backdropFilter: 'blur(8px)',
-            color: '#fff',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          }}
-        >
-          {isAdding ? (
-            <div
-              style={{
-                width: 14,
-                height: 14,
-                border: '2px solid rgba(255,255,255,0.3)',
-                borderTopColor: '#fff',
-                borderRadius: '50%',
-                animation: 'spin 0.6s linear infinite',
-              }}
-            />
-          ) : (
-            <Add style={{ fontSize: 18 }} />
-          )}
-        </motion.button>
-      )}
-    </motion.div>
   );
 };
