@@ -212,10 +212,16 @@ export const useProfileData = (): UseProfileDataResult => {
   );
 
   const mangaMenuItems: ProfileMenuItem[] = useMemo(
-    () =>
-      mangaList.length > 0
+    () => [
+      { label: 'Manga Home', icon: AutoStories, color: '#8b5cf6', path: '/manga' },
+      {
+        label: 'Entdecken',
+        icon: Explore,
+        color: currentTheme.status.error,
+        path: '/manga/discover',
+      },
+      ...(mangaList.length > 0
         ? [
-            { label: 'Manga Home', icon: AutoStories, color: '#8b5cf6', path: '/manga' },
             {
               label: 'Leseliste',
               icon: MenuBook,
@@ -227,12 +233,6 @@ export const useProfileData = (): UseProfileDataResult => {
               icon: BarChart,
               color: currentTheme.status.warning,
               path: '/manga/ratings',
-            },
-            {
-              label: 'Entdecken',
-              icon: Explore,
-              color: currentTheme.status.error,
-              path: '/manga/discover',
             },
             {
               label: 'Statistiken',
@@ -248,7 +248,8 @@ export const useProfileData = (): UseProfileDataResult => {
             },
             { label: 'Journey', icon: Timeline, color: '#a855f7', path: '/manga/journey' },
           ]
-        : [],
+        : []),
+    ],
     [currentTheme, mangaList]
   );
 
