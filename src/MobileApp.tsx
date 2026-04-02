@@ -50,6 +50,17 @@ import {
   PatchNotesPage,
   AdminDashboardPage,
   BugReportPage,
+  MangaPage,
+  MangaDetailPage,
+  MangaRatingsPage,
+  MangaSearchPage,
+  MangaCatchUpPage,
+  HiddenMangaPage,
+  RecentlyReadPage,
+  MangaStatsPage,
+  MangaDiscoverPage,
+  MangaReadJourneyPage,
+  MangaReadingListPage,
   preloadRoutes,
 } from './lazyRoutes';
 
@@ -417,6 +428,96 @@ export const MobileApp = () => {
               element={
                 <Layout hideNav>
                   <CountdownPage />
+                </Layout>
+              }
+            />
+
+            {/* Manga Pages - specific routes before :id */}
+            <Route
+              path="/manga"
+              element={
+                <Layout hideNav>
+                  <MangaPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/ratings"
+              element={
+                <Layout hideNav>
+                  <MangaRatingsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/search"
+              element={
+                <Layout hideNav>
+                  <MangaSearchPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/catch-up"
+              element={
+                <Layout hideNav>
+                  <MangaCatchUpPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/hidden"
+              element={
+                <Layout hideNav>
+                  <HiddenMangaPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/recently-read"
+              element={
+                <Layout hideNav>
+                  <RecentlyReadPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/stats"
+              element={
+                <Layout hideNav>
+                  <MangaStatsPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/discover"
+              element={
+                <Layout hideNav>
+                  <MangaDiscoverPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/journey"
+              element={
+                <Layout hideNav>
+                  <MangaReadJourneyPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/reading-list"
+              element={
+                <Layout hideNav>
+                  <MangaReadingListPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/manga/:id"
+              element={
+                <Layout hideNav>
+                  <MangaDetailPage />
                 </Layout>
               }
             />

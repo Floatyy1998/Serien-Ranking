@@ -4,6 +4,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 // Badge Migration Tools für Development
+import { MangaListProvider } from './contexts/MangaListProvider';
 import { MovieListProvider } from './contexts/MovieListProvider';
 import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
@@ -141,73 +142,75 @@ function AppContent() {
       <GeneralNotificationProvider>
         <SeriesListProvider>
           <MovieListProvider>
-            <StatsProvider>
-              <BadgeProvider>
-                <RatingsStateProvider>
-                  <ThemeProvider theme={currentTheme}>
-                    <DynamicThemeProvider>
-                      <CssBaseline />
-                      <RouteTracker />
-                      <div className="w-full">
-                        <a href="#main-content" className="skip-to-content">
-                          Zum Hauptinhalt springen
-                        </a>
-                        <main className="w-full" id="main-content" tabIndex={-1}>
-                          <Suspense fallback={<PageLoader />}>
-                            <Routes>
-                              <Route
-                                path="/login"
-                                element={
-                                  <AuthContext.Consumer>
-                                    {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
-                                  </AuthContext.Consumer>
-                                }
-                              />
-                              <Route
-                                path="/register"
-                                element={
-                                  <AuthContext.Consumer>
-                                    {(auth) =>
-                                      auth?.user ? <Navigate to="/" /> : <RegisterPage />
-                                    }
-                                  </AuthContext.Consumer>
-                                }
-                              />
-                              <Route path="/public/:publicId" element={<PublicProfilePage />} />
-                              <Route path="/privacy" element={<PrivacyPage />} />
-                              <Route path="/impressum" element={<ImpressumPage />} />
-                              <Route
-                                path="/*"
-                                element={
-                                  <AuthContext.Consumer>
-                                    {(auth) => {
-                                      // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
-                                      if (auth?.user) {
-                                        return (
-                                          <EmailVerificationBanner>
-                                            <MobileApp />
-                                          </EmailVerificationBanner>
-                                        );
-                                      } else if (auth?.authStateResolved) {
-                                        return <StartPage />;
-                                      } else {
-                                        // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                                        return null;
+            <MangaListProvider>
+              <StatsProvider>
+                <BadgeProvider>
+                  <RatingsStateProvider>
+                    <ThemeProvider theme={currentTheme}>
+                      <DynamicThemeProvider>
+                        <CssBaseline />
+                        <RouteTracker />
+                        <div className="w-full">
+                          <a href="#main-content" className="skip-to-content">
+                            Zum Hauptinhalt springen
+                          </a>
+                          <main className="w-full" id="main-content" tabIndex={-1}>
+                            <Suspense fallback={<PageLoader />}>
+                              <Routes>
+                                <Route
+                                  path="/login"
+                                  element={
+                                    <AuthContext.Consumer>
+                                      {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
+                                    </AuthContext.Consumer>
+                                  }
+                                />
+                                <Route
+                                  path="/register"
+                                  element={
+                                    <AuthContext.Consumer>
+                                      {(auth) =>
+                                        auth?.user ? <Navigate to="/" /> : <RegisterPage />
                                       }
-                                    }}
-                                  </AuthContext.Consumer>
-                                }
-                              />
-                              <Route path="*" element={<Navigate to="/" />} />
-                            </Routes>
-                          </Suspense>
-                        </main>
-                      </div>
-                    </DynamicThemeProvider>
-                  </ThemeProvider>
-                </RatingsStateProvider>
-              </BadgeProvider>
-            </StatsProvider>
+                                    </AuthContext.Consumer>
+                                  }
+                                />
+                                <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                                <Route path="/privacy" element={<PrivacyPage />} />
+                                <Route path="/impressum" element={<ImpressumPage />} />
+                                <Route
+                                  path="/*"
+                                  element={
+                                    <AuthContext.Consumer>
+                                      {(auth) => {
+                                        // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
+                                        if (auth?.user) {
+                                          return (
+                                            <EmailVerificationBanner>
+                                              <MobileApp />
+                                            </EmailVerificationBanner>
+                                          );
+                                        } else if (auth?.authStateResolved) {
+                                          return <StartPage />;
+                                        } else {
+                                          // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                                          return null;
+                                        }
+                                      }}
+                                    </AuthContext.Consumer>
+                                  }
+                                />
+                                <Route path="*" element={<Navigate to="/" />} />
+                              </Routes>
+                            </Suspense>
+                          </main>
+                        </div>
+                      </DynamicThemeProvider>
+                    </ThemeProvider>
+                  </RatingsStateProvider>
+                </BadgeProvider>
+              </StatsProvider>
+            </MangaListProvider>
           </MovieListProvider>
         </SeriesListProvider>
       </GeneralNotificationProvider>

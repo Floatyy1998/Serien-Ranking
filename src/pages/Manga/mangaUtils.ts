@@ -1,0 +1,52 @@
+/**
+ * AniList meldet fast alles als format: "MANGA", auch Manhwa/Manhua.
+ * Die zuverlässige Unterscheidung läuft über countryOfOrigin:
+ * JP = Manga, KR = Manhwa, CN = Manhua
+ */
+export function getDisplayFormat(countryOfOrigin?: string, format?: string): string {
+  if (countryOfOrigin === 'KR') return 'Manhwa';
+  if (countryOfOrigin === 'CN') return 'Manhua';
+  if (format === 'ONE_SHOT') return 'One Shot';
+  if (format === 'NOVEL') return 'Novel';
+  return 'Manga';
+}
+
+export function getDisplayFormatKey(countryOfOrigin?: string, format?: string): string {
+  if (countryOfOrigin === 'KR') return 'MANHWA';
+  if (countryOfOrigin === 'CN') return 'MANHUA';
+  if (format === 'ONE_SHOT') return 'ONE_SHOT';
+  if (format === 'NOVEL') return 'NOVEL';
+  return 'MANGA';
+}
+
+export const FORMAT_COLORS: Record<string, string> = {
+  MANGA: '#e879f9',
+  MANHWA: '#38bdf8',
+  MANHUA: '#fb923c',
+  ONE_SHOT: '#a78bfa',
+  NOVEL: '#34d399',
+};
+
+export const STATUS_LABELS: Record<string, string> = {
+  reading: 'Lese ich',
+  completed: 'Abgeschlossen',
+  paused: 'Pausiert',
+  dropped: 'Abgebrochen',
+  planned: 'Geplant',
+};
+
+export const STATUS_COLORS: Record<string, string> = {
+  reading: '#3b82f6',
+  completed: '#22c55e',
+  paused: '#f59e0b',
+  dropped: '#ef4444',
+  planned: '#8b5cf6',
+};
+
+export const ANILIST_STATUS_LABELS: Record<string, string> = {
+  RELEASING: 'Laufend',
+  FINISHED: 'Abgeschlossen',
+  CANCELLED: 'Abgebrochen',
+  HIATUS: 'Hiatus',
+  NOT_YET_RELEASED: 'Noch nicht erschienen',
+};

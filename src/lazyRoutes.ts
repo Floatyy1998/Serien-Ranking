@@ -160,6 +160,66 @@ export const BugReportPage = lazy(() =>
     default: m.BugReportPage,
   }))
 );
+export const MangaPage = lazy(() =>
+  import(/* webpackChunkName: "manga" */ './pages/Manga').then((m) => ({
+    default: m.MangaPage,
+  }))
+);
+export const MangaDetailPage = lazy(() =>
+  import(/* webpackChunkName: "manga-detail" */ './pages/Manga/MangaDetailPage').then((m) => ({
+    default: m.MangaDetailPage,
+  }))
+);
+export const MangaRatingsPage = lazy(() =>
+  import(/* webpackChunkName: "manga-ratings" */ './pages/Manga/MangaRatingsPage').then((m) => ({
+    default: m.MangaRatingsPage,
+  }))
+);
+export const MangaSearchPage = lazy(() =>
+  import(/* webpackChunkName: "manga-search" */ './pages/Manga/MangaSearchPage').then((m) => ({
+    default: m.MangaSearchPage,
+  }))
+);
+export const MangaCatchUpPage = lazy(() =>
+  import(/* webpackChunkName: "manga-catch-up" */ './pages/Manga/MangaCatchUpPage').then((m) => ({
+    default: m.MangaCatchUpPage,
+  }))
+);
+export const HiddenMangaPage = lazy(() =>
+  import(/* webpackChunkName: "hidden-manga" */ './pages/Manga/HiddenMangaPage').then((m) => ({
+    default: m.HiddenMangaPage,
+  }))
+);
+export const RecentlyReadPage = lazy(() =>
+  import(/* webpackChunkName: "recently-read" */ './pages/Manga/RecentlyReadPage').then((m) => ({
+    default: m.RecentlyReadPage,
+  }))
+);
+export const MangaStatsPage = lazy(() =>
+  import(/* webpackChunkName: "manga-stats" */ './pages/Manga/MangaStatsPage').then((m) => ({
+    default: m.MangaStatsPage,
+  }))
+);
+export const MangaDiscoverPage = lazy(() =>
+  import(/* webpackChunkName: "manga-discover" */ './pages/Manga/MangaDiscoverPage').then((m) => ({
+    default: m.MangaDiscoverPage,
+  }))
+);
+export const MangaReadJourneyPage = lazy(() =>
+  import(/* webpackChunkName: "manga-journey" */ './pages/Manga/MangaReadJourneyPage').then(
+    (m) => ({
+      default: m.MangaReadJourneyPage,
+    })
+  )
+);
+
+export const MangaReadingListPage = lazy(() =>
+  import(/* webpackChunkName: "manga-reading-list" */ './pages/Manga/MangaReadingListPage').then(
+    (m) => ({
+      default: m.MangaReadingListPage,
+    })
+  )
+);
 
 // Preload all lazy route chunks when the browser is idle
 // so that first navigation to any page feels instant
