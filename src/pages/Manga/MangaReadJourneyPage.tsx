@@ -99,7 +99,7 @@ export const MangaReadJourneyPage = () => {
     const readDates = new Set(
       mangaList
         .filter((m) => m.lastReadAt)
-        .map((m) => new Date(m.lastReadAt!).toISOString().split('T')[0])
+        .map((m) => new Date(m.lastReadAt || '').toISOString().split('T')[0])
     );
     let streak = 0;
     const today = new Date();
