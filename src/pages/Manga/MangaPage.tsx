@@ -1,0 +1,602 @@
+import {
+  AutoStories,
+  BarChart,
+  Explore,
+  History,
+  MenuBook,
+  Notifications,
+  Search,
+  Timeline,
+  TrendingUp,
+} from '@mui/icons-material';
+import { Badge } from '@mui/material';
+import { motion } from 'framer-motion';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
+import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
+import { useMangaList } from '../../contexts/MangaListContext';
+import { useTheme } from '../../contexts/ThemeContextDef';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useNotifications } from '../../contexts/NotificationContextDef';
+import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import { ContinueReadingSection } from './sections/ContinueReadingSection';
+import { HiddenMangaCard } from './sections/HiddenMangaCard';
+import { MangaCatchUpCard } from './sections/MangaCatchUpCard';
+import { MangaStatsSection } from './sections/MangaStatsSection';
+import { MangaCarouselSection } from './sections/MangaCarouselSection';
+import { useMangaTrending, useMangaPopular, useMangaTopRated } from '../../hooks/useMangaTrending';
+import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
+import { STATUS_COLORS, STATUS_LABELS } from './mangaUtils';
+import './MangaPage.css';
+
+export const MangaPage = () => {
+  const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const { mangaList, loading } = useMangaList();
+  const navigate = useNavigate();
+  const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
+  const { unreadCount: notificationUnreadCount } = useNotifications();
+  const totalUnread =
+    (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
+
+  const { data: userData } = useEnhancedFirebaseCache<{ photoURL?: string }>(
+    user ? `users/${user.uid}` : '',
+    { ttl: 5 * 60 * 1000, useRealtimeListener: true }
+  );
+  const photoURL = userData?.photoURL || user?.photoURL || null;
+  const collectionRef = useRef<HTMLDivElement>(null);
+  const [collectionFilter, setCollectionFilter] = useState('all');
+
+  // Trending/Popular/Top hooks
+  const trendingItems = useMangaTrending();
+  const popularItems = useMangaPopular();
+  const topRatedItems = useMangaTopRated();
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    mangaList.forEach((m) => {
+      counts[m.readStatus] = (counts[m.readStatus] || 0) + 1;
+    });
+    return counts;
+  }, [mangaList]);
+
+  const quickStats = useMemo(() => {
+    const totalChapters = mangaList.reduce((sum, m) => sum + m.currentChapter, 0);
+    const reading = mangaList.filter((m) => m.readStatus === 'reading').length;
+    const completed = mangaList.filter((m) => m.readStatus === 'completed').length;
+    return { totalChapters, reading, completed };
+  }, [mangaList]);
+
+  const handleGoToReadingList = useCallback(() => {
+    navigate('/manga/reading-list');
+  }, [navigate]);
+
+  const filtered = useMemo(
+    () =>
+      collectionFilter === 'all'
+        ? mangaList
+        : mangaList.filter((m) => m.readStatus === collectionFilter),
+    [mangaList, collectionFilter]
+  );
+
+  return (
+    <div
+      style={{
+        overflowY: 'auto',
+        position: 'relative',
+        minHeight: '100vh',
+        background: currentTheme.background.default,
+      }}
+    >
+      {/* ─── Gradient Header ────────────────────────── */}
+      <header
+        style={{
+          background: `linear-gradient(180deg, ${currentTheme.primary}40 0%, ${currentTheme.primary}10 50%, transparent 100%)`,
+          padding: '20px',
+          paddingTop: 'calc(30px + env(safe-area-inset-top))',
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 250, damping: 22 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+        >
+          {/* Home button → Series Homepage */}
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => navigate('/')}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 10,
+              border: 'none',
+              background: 'rgba(255,255,255,0.06)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: 16,
+                height: 16,
+                backgroundColor: 'var(--color-primary)',
+                WebkitMaskImage: 'url(/tv-logo.svg)',
+                maskImage: 'url(/tv-logo.svg)',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain' as string,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat' as string,
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center' as string,
+              }}
+            />
+          </motion.button>
+
+          <div style={{ flex: 1 }}>
+            <GradientText
+              as="h1"
+              from={currentTheme.primary}
+              to={currentTheme.accent}
+              style={{
+                fontSize: '22px',
+                fontFamily: 'var(--font-display)',
+                fontWeight: 800,
+                letterSpacing: '-0.01em',
+                margin: '0 0 4px 0',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <AutoStories />
+              Manga
+            </GradientText>
+            <p
+              style={{
+                color: currentTheme.text.secondary,
+                fontSize: '15px',
+                margin: 0,
+                opacity: 0.7,
+              }}
+            >
+              {mangaList.length > 0
+                ? `${mangaList.length} Titel in deiner Sammlung`
+                : 'Deine Manga-Sammlung'}
+            </p>
+          </div>
+
+          {/* Notifications + Profile (like GreetingSection) */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {totalUnread > 0 ? (
+              <Badge
+                badgeContent={totalUnread}
+                color="error"
+                sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 18, minWidth: 18 } }}
+              >
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => navigate('/activity')}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: '50%',
+                    background: `${currentTheme.primary}1A`,
+                    border: `1px solid ${currentTheme.primary}33`,
+                    color: currentTheme.text.primary,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Notifications style={{ fontSize: 20 }} />
+                </motion.button>
+              </Badge>
+            ) : (
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => navigate('/activity')}
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: '50%',
+                  background: `${currentTheme.primary}1A`,
+                  border: `1px solid ${currentTheme.primary}33`,
+                  color: currentTheme.text.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <Notifications style={{ fontSize: 20 }} />
+              </motion.button>
+            )}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => navigate('/profile')}
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: photoURL
+                  ? `url(${photoURL}) center/cover`
+                  : `${currentTheme.primary}30`,
+                border: `2px solid ${currentTheme.primary}`,
+                cursor: 'pointer',
+              }}
+            />
+          </div>
+        </motion.div>
+      </header>
+
+      {/* ─── Search Bar → /manga/search ──────────────── */}
+      <div style={{ padding: '0 20px', marginBottom: 20 }}>
+        <motion.div
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/manga/search')}
+          style={{
+            background: currentTheme.background.surface,
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 16,
+            padding: '14px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            cursor: 'pointer',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <Search style={{ fontSize: 20, color: currentTheme.text.secondary, opacity: 0.5 }} />
+          <span style={{ color: currentTheme.text.secondary, fontSize: 14, opacity: 0.5 }}>
+            Manga, Manhwa, Manhua suchen...
+          </span>
+        </motion.div>
+      </div>
+
+      {/* ─── Quick Stats Chips ───────────────────────── */}
+      {mangaList.length > 0 && (
+        <HorizontalScrollContainer>
+          <div style={{ display: 'flex', gap: 8, padding: '0 20px', marginBottom: 20 }}>
+            <StatChip label={`${quickStats.totalChapters} Kapitel`} theme={currentTheme} />
+            <StatChip label={`${quickStats.reading} am Lesen`} theme={currentTheme} />
+            <StatChip label={`${quickStats.completed} fertig`} theme={currentTheme} />
+            <StatChip label={`${mangaList.length} Titel`} theme={currentTheme} />
+          </div>
+        </HorizontalScrollContainer>
+      )}
+
+      {/* ─── Quick Actions ───────────────────────────── */}
+      {mangaList.length > 0 && (
+        <div
+          style={{
+            display: 'flex',
+            gap: 8,
+            padding: '0 20px',
+            marginBottom: 28,
+            overflowX: 'auto',
+          }}
+        >
+          <QuickActionBtn
+            icon={<MenuBook style={{ fontSize: 16 }} />}
+            label="Leseliste"
+            onClick={() => navigate('/manga/reading-list')}
+            theme={currentTheme}
+          />
+          <QuickActionBtn
+            icon={<Explore style={{ fontSize: 16 }} />}
+            label="Entdecken"
+            onClick={() => navigate('/manga/discover')}
+            theme={currentTheme}
+          />
+          <QuickActionBtn
+            icon={<BarChart style={{ fontSize: 16 }} />}
+            label="Bewertungen"
+            onClick={() => navigate('/manga/ratings')}
+            theme={currentTheme}
+          />
+          <QuickActionBtn
+            icon={<TrendingUp style={{ fontSize: 16 }} />}
+            label="Statistiken"
+            onClick={() => navigate('/manga/stats')}
+            theme={currentTheme}
+          />
+          <QuickActionBtn
+            icon={<Timeline style={{ fontSize: 16 }} />}
+            label="Journey"
+            onClick={() => navigate('/manga/journey')}
+            theme={currentTheme}
+          />
+          <QuickActionBtn
+            icon={<History style={{ fontSize: 16 }} />}
+            label="Verlauf"
+            onClick={() => navigate('/manga/recently-read')}
+            theme={currentTheme}
+          />
+        </div>
+      )}
+
+      {/* ─── Continue Reading ────────────────────────── */}
+      <ContinueReadingSection onFilterReading={handleGoToReadingList} />
+
+      {/* ─── Recently Added ──────────────────────────── */}
+      <RecentlyAddedMangaSection />
+
+      {/* ─── Trending Carousel ───────────────────────── */}
+      <MangaCarouselSection
+        variant="trending"
+        items={trendingItems}
+        title="Trending"
+        onSeeAll={() => navigate('/manga/discover')}
+        iconColor={currentTheme.primary}
+      />
+
+      {/* ─── Popular Carousel ────────────────────────── */}
+      <MangaCarouselSection
+        variant="popular"
+        items={popularItems}
+        title="Beliebt"
+        onSeeAll={() => navigate('/manga/discover')}
+        iconColor={currentTheme.status?.error || '#ef4444'}
+      />
+
+      {/* ─── Top Rated Carousel ──────────────────────── */}
+      <MangaCarouselSection
+        variant="top-rated"
+        items={topRatedItems}
+        title="Top bewertet"
+        onSeeAll={() => navigate('/manga/discover')}
+        iconColor={currentTheme.accent}
+      />
+
+      {/* ─── For-You Cards ───────────────────────────── */}
+      {mangaList.length > 0 && (
+        <section style={{ marginBottom: 32 }}>
+          <SectionHeader
+            icon={<AutoStories />}
+            iconColor={currentTheme.status?.warning || '#f59e0b'}
+            title="Für dich"
+          />
+          <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <MangaCatchUpCard />
+            <HiddenMangaCard />
+          </div>
+        </section>
+      )}
+
+      {/* ─── Stats ───────────────────────────────────── */}
+      <MangaStatsSection />
+
+      {/* ─── Collection Grid ─────────────────────────── */}
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Laden...</div>
+      ) : mangaList.length > 0 ? (
+        <section ref={collectionRef} style={{ marginBottom: 32 }}>
+          <SectionHeader icon={<AutoStories />} iconColor={currentTheme.accent} title="Sammlung" />
+
+          {/* Filter Tabs */}
+          <div className="manga-filter-tabs" style={{ padding: '0 20px' }}>
+            <button
+              className={`manga-filter-tab ${collectionFilter === 'all' ? 'manga-filter-tab--active' : ''}`}
+              onClick={() => setCollectionFilter('all')}
+              style={
+                collectionFilter === 'all'
+                  ? { borderColor: currentTheme.primary, background: `${currentTheme.primary}20` }
+                  : {}
+              }
+            >
+              Alle ({mangaList.length})
+            </button>
+            {Object.entries(STATUS_LABELS).map(
+              ([key, label]) =>
+                (statusCounts[key] || 0) > 0 && (
+                  <button
+                    key={key}
+                    className={`manga-filter-tab ${collectionFilter === key ? 'manga-filter-tab--active' : ''}`}
+                    onClick={() => setCollectionFilter(key)}
+                    style={
+                      collectionFilter === key
+                        ? { borderColor: STATUS_COLORS[key], background: `${STATUS_COLORS[key]}20` }
+                        : {}
+                    }
+                  >
+                    {label} ({statusCounts[key]})
+                  </button>
+                )
+            )}
+          </div>
+
+          {/* Grid - same sizing as Serien Ratings */}
+          <div className="manga-collection-grid" style={{ padding: '0 20px', paddingBottom: 100 }}>
+            {filtered.map((manga) => (
+              <MangaCard
+                key={manga.anilistId}
+                manga={manga}
+                onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                userId={user?.uid}
+              />
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div
+              style={{
+                textAlign: 'center',
+                padding: 40,
+                fontSize: 14,
+                color: currentTheme.text.secondary,
+                opacity: 0.6,
+              }}
+            >
+              Keine Manga mit Filter &quot;{STATUS_LABELS[collectionFilter]}&quot;
+            </div>
+          )}
+        </section>
+      ) : (
+        <div className="manga-empty">
+          <div className="manga-empty-icon">📚</div>
+          <div className="manga-empty-title" style={{ color: currentTheme.text.primary }}>
+            Deine Manga-Sammlung
+          </div>
+          <div className="manga-empty-text" style={{ color: currentTheme.text.secondary }}>
+            Suche oben nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Stat Chip ──────────────────────────────────────
+
+const StatChip = ({
+  label,
+  theme,
+}: {
+  label: string;
+  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+}) => (
+  <div
+    style={{
+      padding: '8px 14px',
+      borderRadius: 12,
+      background:
+        'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
+      border: '1px solid rgba(255,255,255,0.06)',
+      fontSize: 12,
+      fontWeight: 500,
+      color: theme.text.secondary,
+      whiteSpace: 'nowrap',
+      flexShrink: 0,
+    }}
+  >
+    {label}
+  </div>
+);
+
+// ─── Quick Action Button ────────────────────────────
+
+const QuickActionBtn = ({
+  icon,
+  label,
+  onClick,
+  theme,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+}) => (
+  <motion.button
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: 6,
+      padding: '10px 16px',
+      borderRadius: 14,
+      border: '1px solid rgba(255,255,255,0.06)',
+      background:
+        'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
+      color: theme.text.primary,
+      fontSize: 13,
+      fontWeight: 500,
+      whiteSpace: 'nowrap',
+      cursor: 'pointer',
+      fontFamily: 'var(--font-body)',
+    }}
+  >
+    {icon}
+    {label}
+  </motion.button>
+);
+
+// ─── Manga Card ─────────────────────────────────────
+
+const MangaCard = ({
+  manga,
+  onClick,
+  userId,
+}: {
+  manga: import('../../types/Manga').Manga;
+  onClick: () => void;
+  userId?: string;
+}) => {
+  const progress =
+    manga.chapters && manga.chapters > 0
+      ? Math.min((manga.currentChapter / manga.chapters) * 100, 100)
+      : 0;
+
+  const userRating = userId ? manga.rating?.[userId] || 0 : 0;
+
+  return (
+    <div className="manga-collection-item" onClick={onClick}>
+      <div className="manga-collection-card">
+        <img
+          className="manga-collection-poster"
+          src={manga.poster}
+          alt={manga.title}
+          loading="lazy"
+        />
+        <div className="manga-collection-overlay">
+          {/* Top badges */}
+          <div className="manga-collection-top">
+            {manga.readStatus === 'completed' && (
+              <span
+                className="manga-collection-badge"
+                style={{ background: 'rgba(34,197,94,0.85)', color: '#fff' }}
+              >
+                ✓
+              </span>
+            )}
+            {manga.readStatus !== 'reading' && manga.readStatus !== 'completed' && (
+              <span
+                className="manga-collection-badge"
+                style={{ background: `${STATUS_COLORS[manga.readStatus]}cc`, color: '#fff' }}
+              >
+                {STATUS_LABELS[manga.readStatus]}
+              </span>
+            )}
+          </div>
+
+          {/* Bottom info */}
+          <div className="manga-collection-bottom">
+            <h3 className="manga-collection-title">{manga.title}</h3>
+            <div className="manga-collection-meta">
+              {userRating > 0 && (
+                <span className="manga-collection-rating">⭐ {userRating.toFixed(0)}</span>
+              )}
+              <span>
+                Kap. {manga.currentChapter}
+                {manga.chapters ? ` / ${manga.chapters}` : ''}
+              </span>
+            </div>
+            {/* Progress bar */}
+            {progress > 0 && (
+              <div className="manga-collection-progress">
+                <div className="manga-collection-progress-track">
+                  <div
+                    className="manga-collection-progress-fill"
+                    style={{
+                      width: `${progress}%`,
+                      background: progress === 100 ? '#22c55e' : STATUS_COLORS.reading,
+                    }}
+                  />
+                </div>
+                <span className="manga-collection-progress-text">
+                  {progress === 100 ? 'Fertig' : `${Math.round(progress)}%`}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
