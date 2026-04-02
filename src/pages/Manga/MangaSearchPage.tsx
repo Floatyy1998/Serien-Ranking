@@ -37,12 +37,13 @@ export const MangaSearchPage = () => {
   });
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recentSearchesRef = useRef(recentSearches);
+  recentSearchesRef.current = recentSearches;
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     if (!query.trim()) {
@@ -54,10 +55,10 @@ export const MangaSearchPage = () => {
       try {
         const { results: r } = await searchManga(query.trim(), 1, 30);
         setResults(r);
-        const updated = [query.trim(), ...recentSearches.filter((s) => s !== query.trim())].slice(
-          0,
-          8
-        );
+        const updated = [
+          query.trim(),
+          ...recentSearchesRef.current.filter((s) => s !== query.trim()),
+        ].slice(0, 8);
         setRecentSearches(updated);
         localStorage.setItem('mangaRecentSearches', JSON.stringify(updated));
       } catch {

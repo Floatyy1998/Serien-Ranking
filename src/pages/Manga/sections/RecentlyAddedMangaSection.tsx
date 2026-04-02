@@ -30,9 +30,9 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
     const sevenDaysAgo = mountTime - 7 * 24 * 60 * 60 * 1000;
     return mangaList
       .filter((m) => m.addedAt && new Date(m.addedAt).getTime() > sevenDaysAgo)
-      .sort((a, b) => new Date(b.addedAt!).getTime() - new Date(a.addedAt!).getTime())
+      .sort((a, b) => new Date(b.addedAt || '').getTime() - new Date(a.addedAt || '').getTime())
       .slice(0, 10);
-  }, [mangaList]);
+  }, [mangaList, mountTime]);
 
   if (recentManga.length === 0) return null;
 

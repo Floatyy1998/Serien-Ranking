@@ -249,7 +249,7 @@ export const useProfileData = (): UseProfileDataResult => {
             { label: 'Journey', icon: Timeline, color: '#a855f7', path: '/manga/journey' },
           ]
         : [],
-    [currentTheme, mangaList.length]
+    [currentTheme, mangaList]
   );
 
   const secondaryMenuItems: ProfileMenuItem[] = useMemo(

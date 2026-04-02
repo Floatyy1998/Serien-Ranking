@@ -5,7 +5,7 @@ import { useAuth } from '../../AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { getDisplayFormat } from './mangaUtils';
+import { getDisplayFormat, type AppTheme } from './mangaUtils';
 
 type TabType = 'activity' | 'genres' | 'insights';
 
@@ -78,9 +78,12 @@ export const MangaReadJourneyPage = () => {
     const totalChapters = mangaList.reduce((sum, m) => sum + m.currentChapter, 0);
     const avgChaptersPerManga = mangaList.length > 0 ? totalChapters / mangaList.length : 0;
 
-    const rated = user ? mangaList.filter((m) => m.rating?.[user.uid] > 0) : [];
+    const uid = user?.uid;
+    const rated = uid ? mangaList.filter((m) => m.rating?.[uid] > 0) : [];
     const avgRating =
-      rated.length > 0 ? rated.reduce((sum, m) => sum + m.rating[user!.uid], 0) / rated.length : 0;
+      rated.length > 0 && uid
+        ? rated.reduce((sum, m) => sum + (m.rating[uid] || 0), 0) / rated.length
+        : 0;
 
     // Format breakdown
     const formats: Record<string, number> = {};
@@ -490,7 +493,7 @@ const InsightCard = ({
   value: string;
   icon: React.ReactNode;
   color: string;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
   sub?: string;
 }) => (
   <motion.div
