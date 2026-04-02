@@ -211,6 +211,9 @@ export function useSeriesActions(
           },
           onCommit: async () => {
             await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
+            const { updateEpisodeCounters } =
+              await import('../../features/badges/minimalActivityLogger');
+            await updateEpisodeCounters(userId, true, episode.air_date);
             WatchActivityService.logEpisodeWatch(
               userId,
               series.id,
