@@ -1,11 +1,12 @@
 import firebase from 'firebase/compat/app';
-import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
+import type { AniListMangaSearchResult } from '../../types/Manga';
 import { getMangaDexInfo } from '../../services/mangadexService';
 import { getDisplayFormatKey } from './mangaUtils';
 
 /**
  * Zentrale Funktion zum Hinzufügen eines Manga zur Liste.
- * Holt automatisch die aktuelle Kapitelzahl von MangaDex für laufende Manga.
+ * Holt automatisch die aktuelle Kapitelzahl von MangaUpdates für laufende Manga.
+ * WICHTIG: Keine undefined Werte - Firebase wirft sonst einen Error.
  */
 export async function addMangaToList(
   userId: string,
@@ -16,33 +17,36 @@ export async function addMangaToList(
   const startDateStr =
     sd?.year && sd?.month && sd?.day
       ? `${sd.year}-${String(sd.month).padStart(2, '0')}-${String(sd.day).padStart(2, '0')}`
-      : undefined;
+      : null;
 
-  const manga: Manga = {
+  // Build manga object - use null instead of undefined (Firebase rejects undefined)
+  const manga: Record<string, unknown> = {
     nmr: nextNmr,
     anilistId: result.id,
     title: result.title.english || result.title.romaji,
-    titleEnglish: result.title.english || undefined,
     titleRomaji: result.title.romaji,
     poster: result.coverImage.large,
-    bannerImage: result.bannerImage || undefined,
-    description: result.description || undefined,
-    chapters: result.chapters,
-    volumes: result.volumes,
-    status: result.status,
+    chapters: result.chapters ?? null,
+    volumes: result.volumes ?? null,
+    status: result.status || null,
     format: getDisplayFormatKey(result.countryOfOrigin, result.format),
-    countryOfOrigin: result.countryOfOrigin,
-    genres: result.genres,
-    averageScore: result.averageScore,
+    countryOfOrigin: result.countryOfOrigin || null,
+    genres: result.genres || [],
+    averageScore: result.averageScore ?? null,
     startDate: startDateStr,
-    isAdult: result.isAdult,
+    isAdult: result.isAdult || false,
     rating: {},
     currentChapter: 0,
     readStatus: 'planned',
     addedAt: new Date().toISOString(),
   };
 
-  // Für laufende Manga ohne bekannte Kapitelzahl: MangaDex abfragen
+  // Only add optional fields if they have values (avoid undefined in Firebase)
+  if (result.title.english) manga.titleEnglish = result.title.english;
+  if (result.bannerImage) manga.bannerImage = result.bannerImage;
+  if (result.description) manga.description = result.description;
+
+  // Für laufende Manga ohne bekannte Kapitelzahl: MangaUpdates abfragen
   if (!result.chapters && result.status === 'RELEASING') {
     try {
       const mdInfo = await getMangaDexInfo(result.title.english || result.title.romaji);
