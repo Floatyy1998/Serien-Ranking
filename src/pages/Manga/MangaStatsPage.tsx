@@ -12,7 +12,7 @@ import { useAuth } from '../../AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { getDisplayFormat } from './mangaUtils';
+import { getDisplayFormat, type AppTheme } from './mangaUtils';
 
 export const MangaStatsPage = () => {
   const { currentTheme } = useTheme();
@@ -31,12 +31,11 @@ export const MangaStatsPage = () => {
     const totalVolumes = mangaList.reduce((sum, m) => sum + (m.currentVolume || 0), 0);
 
     // Ratings
-    const rated = user
-      ? mangaList.filter((m) => m.rating?.[user.uid] && m.rating[user.uid] > 0)
-      : [];
+    const uid = user?.uid;
+    const rated = uid ? mangaList.filter((m) => m.rating?.[uid] && m.rating[uid] > 0) : [];
     const avgRating =
-      rated.length > 0
-        ? rated.reduce((sum, m) => sum + (m.rating[user!.uid] || 0), 0) / rated.length
+      rated.length > 0 && uid
+        ? rated.reduce((sum, m) => sum + (m.rating[uid] || 0), 0) / rated.length
         : 0;
 
     // Progress
@@ -441,7 +440,7 @@ const QuickStat = ({
   label: string;
   value: string | number;
   color: string;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
 }) => (
   <div
     style={{
@@ -503,7 +502,7 @@ const StatSection = ({
 }: {
   title: string;
   icon: React.ReactNode;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
   delay?: number;
   children: React.ReactNode;
 }) => (

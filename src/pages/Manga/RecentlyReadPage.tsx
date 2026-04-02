@@ -47,12 +47,15 @@ export const RecentlyReadPage = () => {
 
     const recentManga = mangaList
       .filter((m) => m.lastReadAt && new Date(m.lastReadAt).getTime() > cutoff)
-      .sort((a, b) => new Date(b.lastReadAt!).getTime() - new Date(a.lastReadAt!).getTime());
+      .sort(
+        (a, b) => new Date(b.lastReadAt || '').getTime() - new Date(a.lastReadAt || '').getTime()
+      );
 
     const groups: Map<string, DateGroup> = new Map();
 
     for (const manga of recentManga) {
-      const date = new Date(manga.lastReadAt!);
+      if (!manga.lastReadAt) continue;
+      const date = new Date(manga.lastReadAt);
       const key = date.toISOString().split('T')[0];
 
       if (!groups.has(key)) {
@@ -62,11 +65,12 @@ export const RecentlyReadPage = () => {
           manga: [],
         });
       }
-      groups.get(key)!.manga.push(manga);
+      const group = groups.get(key);
+      if (group) group.manga.push(manga);
     }
 
     return Array.from(groups.values());
-  }, [mangaList, rangeDays]);
+  }, [mangaList, rangeDays, mountTime]);
 
   const totalRead = dateGroups.reduce((sum, g) => sum + g.manga.length, 0);
 

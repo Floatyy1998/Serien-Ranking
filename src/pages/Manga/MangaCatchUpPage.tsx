@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
+import type { AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
@@ -243,7 +244,7 @@ const HeroStat = ({
 }: {
   label: string;
   value: string | number;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
 }) => (
   <div
     style={{

@@ -11,7 +11,7 @@ import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
-import { FORMAT_COLORS, getDisplayFormat } from '../mangaUtils';
+import { FORMAT_COLORS, getDisplayFormat, type AppTheme } from '../mangaUtils';
 
 interface MangaCarouselSectionProps {
   variant: 'trending' | 'popular' | 'top-rated';
@@ -370,7 +370,7 @@ const MetaRow = ({
   isMobile,
 }: {
   item: MangaCarouselItem;
-  theme: ReturnType<typeof import('../../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
   isMobile: boolean;
 }) => (
   <div

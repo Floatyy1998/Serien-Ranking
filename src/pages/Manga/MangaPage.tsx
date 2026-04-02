@@ -27,7 +27,8 @@ import { MangaStatsSection } from './sections/MangaStatsSection';
 import { MangaCarouselSection } from './sections/MangaCarouselSection';
 import { useMangaTrending, useMangaPopular, useMangaTopRated } from '../../hooks/useMangaTrending';
 import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
-import { STATUS_COLORS, STATUS_LABELS } from './mangaUtils';
+import type { Manga } from '../../types/Manga';
+import { STATUS_COLORS, STATUS_LABELS, type AppTheme } from './mangaUtils';
 import './MangaPage.css';
 
 export const MangaPage = () => {
@@ -454,13 +455,7 @@ export const MangaPage = () => {
 
 // ─── Stat Chip ──────────────────────────────────────
 
-const StatChip = ({
-  label,
-  theme,
-}: {
-  label: string;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
-}) => (
+const StatChip = ({ label, theme }: { label: string; theme: AppTheme }) => (
   <div
     style={{
       padding: '8px 14px',
@@ -490,7 +485,7 @@ const QuickActionBtn = ({
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
-  theme: ReturnType<typeof import('../../contexts/ThemeContextDef').useTheme>['currentTheme'];
+  theme: AppTheme;
 }) => (
   <motion.button
     whileTap={{ scale: 0.95 }}
@@ -524,7 +519,7 @@ const MangaCard = ({
   onClick,
   userId,
 }: {
-  manga: import('../../types/Manga').Manga;
+  manga: Manga;
   onClick: () => void;
   userId?: string;
 }) => {

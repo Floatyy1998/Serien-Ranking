@@ -25,7 +25,9 @@ export const MangaStatsSection: React.FC = React.memo(() => {
       : [];
     const avgRating =
       rated.length > 0
-        ? (rated.reduce((sum, m) => sum + (m.rating[user!.uid] || 0), 0) / rated.length).toFixed(1)
+        ? (
+            rated.reduce((sum, m) => sum + (user ? m.rating[user.uid] || 0 : 0), 0) / rated.length
+          ).toFixed(1)
         : '—';
 
     const manga = mangaList.filter((m) => m.format === 'MANGA').length;

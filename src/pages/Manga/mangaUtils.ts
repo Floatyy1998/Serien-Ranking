@@ -1,3 +1,8 @@
+import type { useTheme } from '../../contexts/ThemeContextDef';
+
+/** Theme type alias to avoid `typeof import()` in component props */
+export type AppTheme = ReturnType<typeof useTheme>['currentTheme'];
+
 /**
  * AniList meldet fast alles als format: "MANGA", auch Manhwa/Manhua.
  * Die zuverlässige Unterscheidung läuft über countryOfOrigin:

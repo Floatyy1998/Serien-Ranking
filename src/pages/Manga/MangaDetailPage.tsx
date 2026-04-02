@@ -97,15 +97,18 @@ export const MangaDetailPage = () => {
     }
   }, [anilistId]);
 
+  // Extract stable values for effect deps
+  const mangaTitle = manga?.title;
+  const mangaChapters = manga?.chapters;
+  const mangaStatus = manga?.status;
+
   // Fetch latest chapter from MangaDex for ongoing manga without chapter count
-  // and persist to Firebase so all pages (stats, catch-up, homepage) can use it
   useEffect(() => {
-    if (!user || !manga || manga.chapters || manga.status !== 'RELEASING') return;
-    getMangaDexInfo(manga.title)
+    if (!user || !mangaTitle || mangaChapters || mangaStatus !== 'RELEASING') return;
+    getMangaDexInfo(mangaTitle)
       .then((info) => {
         setMangadexInfo(info);
         if (info.latestChapter && info.latestChapter > 0) {
-          // Save to Firebase as latestChapterAvailable (separate from chapters which is the total)
           firebase
             .database()
             .ref(`${user.uid}/manga/${anilistId}/latestChapterAvailable`)
@@ -113,15 +116,15 @@ export const MangaDetailPage = () => {
         }
       })
       .catch(() => {});
-  }, [user, manga?.title, manga?.chapters, manga?.status, anilistId]);
+  }, [user, mangaTitle, mangaChapters, mangaStatus, anilistId]);
 
   // Fetch chapter release dates from MangaDex for releasing manga
   useEffect(() => {
-    if (!manga || manga.status !== 'RELEASING') return;
-    getMangaDexChapterDates(manga.title)
+    if (!mangaTitle || mangaStatus !== 'RELEASING') return;
+    getMangaDexChapterDates(mangaTitle)
       .then(setChapterInfo)
       .catch(() => {});
-  }, [manga?.title, manga?.status]);
+  }, [mangaTitle, mangaStatus]);
 
   const updateField = useCallback(
     async (field: string, value: unknown) => {
