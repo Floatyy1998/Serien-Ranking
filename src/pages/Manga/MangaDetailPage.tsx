@@ -509,37 +509,40 @@ export const MangaDetailPage = () => {
             <SectionTitle color={currentTheme.text.primary}>Kapitel-Releases</SectionTitle>
 
             {/* Estimated next release */}
-            {chapterInfo.estimatedNextDate && (
-              <div
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: 12,
-                  background: `${currentTheme.primary}15`,
-                  border: `1px solid ${currentTheme.primary}30`,
-                  marginBottom: 12,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                }}
-              >
-                <div style={{ fontSize: 20 }}>📅</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
-                    Nächstes Kapitel ~
-                    {new Date(chapterInfo.estimatedNextDate).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </div>
-                  {chapterInfo.avgDaysBetweenReleases && (
-                    <div style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.7 }}>
-                      Erscheint ca. alle {chapterInfo.avgDaysBetweenReleases} Tage
+            {chapterInfo.estimatedNextDate &&
+              new Date(chapterInfo.estimatedNextDate) > new Date() && (
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: 12,
+                    background: `${currentTheme.primary}15`,
+                    border: `1px solid ${currentTheme.primary}30`,
+                    marginBottom: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ fontSize: 20 }}>📅</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
+                      Nächstes Kapitel ~
+                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString('de-DE', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
                     </div>
-                  )}
+                    {chapterInfo.avgDaysBetweenReleases && (
+                      <div
+                        style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.7 }}
+                      >
+                        Erscheint ca. alle {chapterInfo.avgDaysBetweenReleases} Tage
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Recent chapters */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
