@@ -97,6 +97,53 @@
   margin-bottom: 8px;
 }
 
+/* Hero stepper - invisible chrome */
+.manga-hero-stepper {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.manga-hero-stepper:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff !important;
+}
+
+.manga-hero-stepper:active {
+  transform: scale(0.9);
+}
+
+.manga-hero-chapter-input {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  color: #fff;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+  background: transparent;
+  border: none;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+.manga-hero-chapter-input::-webkit-inner-spin-button,
+.manga-hero-chapter-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Chapter Counter */
 .manga-detail-counter {
   display: flex;

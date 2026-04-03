@@ -436,7 +436,7 @@ export const MobileApp = () => {
             <Route
               path="/manga"
               element={
-                <Layout hideNav>
+                <Layout>
                   <MangaPage />
                 </Layout>
               }

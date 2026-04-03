@@ -1,4 +1,4 @@
-import { BarChart, CalendarToday, Person, PlayCircle } from '@mui/icons-material';
+import { BarChart, CalendarToday, MenuBook, PlayCircle } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -23,11 +23,8 @@ export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   useTheme();
-  const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
-  const { unreadCount: notificationUnreadCount } = useNotifications();
-
-  const totalBadgeCount =
-    (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
+  useOptimizedFriends();
+  useNotifications();
 
   const todayEpisodes = useTodayEpisodes();
   const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
@@ -42,7 +39,7 @@ export const BottomNavigation = () => {
     if (location.pathname.startsWith('/watchlist')) return 1;
     if (location.pathname === '/calendar') return 2;
     if (location.pathname.startsWith('/ratings')) return 3;
-    if (location.pathname.startsWith('/profile')) return 4;
+    if (location.pathname.startsWith('/manga')) return 4;
     return 0;
   };
 
@@ -101,11 +98,10 @@ export const BottomNavigation = () => {
       label: 'Bewertungen',
     },
     {
-      id: 'profile',
-      path: '/profile',
-      icon: <Person />,
-      label: 'Profil',
-      badge: totalBadgeCount > 0 ? totalBadgeCount : undefined,
+      id: 'manga',
+      path: '/manga',
+      icon: <MenuBook />,
+      label: 'Manga',
     },
   ];
 

@@ -131,7 +131,7 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
 
       {/* Title and subtitle */}
       <Title>TV-RANK</Title>
-      <Subtitle>Serien & Filme im Blick</Subtitle>
+      <Subtitle>Serien, Filme & Manga im Blick</Subtitle>
 
       {/* Progress section with glass effect */}
       <ProgressWrapper>

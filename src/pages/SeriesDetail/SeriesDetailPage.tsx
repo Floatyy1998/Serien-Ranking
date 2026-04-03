@@ -7,7 +7,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
-import { CastCrew, ProviderBadges, VideoGallery } from '../../components/detail';
+import { CastCrew } from '../../components/detail';
 import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
@@ -18,9 +18,7 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
-import { ActionButtons } from './ActionButtons';
 import { HeroSection } from './HeroSection';
-import { RatingsCard } from './RatingsCard';
 import { SeasonsSection } from './SeasonsSection';
 import { SeriesDetailDialogs } from './SeriesDetailDialogs';
 import { useSeriesActions } from './useSeriesActions';
@@ -241,72 +239,28 @@ export const SeriesDetailPage = memo(() => {
       {/* Hero Section */}
       <HeroSection
         series={series}
+        localSeries={localSeries}
         tmdbSeries={tmdbSeries}
         tmdbBackdrop={tmdbBackdrop}
         tmdbFirstAirDate={tmdbFirstAirDate}
+        tmdbRating={tmdbRating}
+        imdbRating={imdbRating}
+        providers={providers}
         overallRating={overallRating}
         progressStats={progressStats}
         paceInfo={paceInfo}
         isReadOnlyTmdbSeries={isReadOnlyTmdbSeries}
         isAdding={isAdding}
+        isDeleting={isDeleting}
         isMobile={isMobile}
         currentTheme={currentTheme}
         onAddSeries={handleAddSeries}
+        onNavigateEpisodes={() => navigate(`/episodes/${series.id}`)}
+        onNavigateRating={() => navigate(`/rating/series/${series.id}`)}
+        onWatchlistToggle={handleWatchlistToggle}
+        onHideToggle={handleHideToggle}
+        onDelete={handleDeleteSeries}
       />
-
-      {/* Ratings & Provider */}
-      <div style={{ padding: isMobile ? '12px 16px 0' : '16px 20px 0' }}>
-        <RatingsCard
-          series={series}
-          localSeries={localSeries}
-          tmdbRating={tmdbRating}
-          imdbRating={imdbRating}
-          seriesId={id || ''}
-          isMobile={isMobile}
-        />
-
-        {/* Provider + VideoGallery in einer Zeile */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            marginBottom: isMobile ? '4px' : '8px',
-          }}
-        >
-          {((series.provider?.provider && series.provider.provider.length > 0) || providers) && (
-            <ProviderBadges
-              providers={
-                series.provider?.provider && series.provider.provider.length > 0
-                  ? series.provider.provider
-                  : (providers ?? undefined)
-              }
-              size={isMobile ? 'medium' : 'large'}
-              maxDisplay={isMobile ? 4 : 6}
-              showNames={false}
-              searchTitle={series.title || series.name}
-              tmdbId={series.tmdb_id || series.id}
-              mediaType="tv"
-            />
-          )}
-          <VideoGallery tmdbId={series.tmdb_id || series.id} mediaType="tv" buttonStyle="compact" />
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      {!isReadOnlyTmdbSeries && (
-        <ActionButtons
-          series={series}
-          overallRating={overallRating}
-          isDeleting={isDeleting}
-          isMobile={isMobile}
-          onNavigateEpisodes={() => navigate(`/episodes/${series.id}`)}
-          onNavigateRating={() => navigate(`/rating/series/${series.id}`)}
-          onWatchlistToggle={handleWatchlistToggle}
-          onHideToggle={handleHideToggle}
-          onDelete={handleDeleteSeries}
-        />
-      )}
 
       {/* Hidden series banner */}
       {series.hidden && !isReadOnlyTmdbSeries && (
@@ -332,7 +286,7 @@ export const SeriesDetailPage = memo(() => {
       {/* Info/Cast Tab Switcher */}
       <div
         className="detail-tab-switcher"
-        style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}
+        style={{ margin: isMobile ? '8px 12px 12px' : '12px 20px 20px' }}
       >
         {(
           [
@@ -364,13 +318,12 @@ export const SeriesDetailPage = memo(() => {
             }}
             className="detail-tab-btn"
             style={{
-              padding: isMobile ? '8px' : '10px',
               background:
                 activeTab === tab.key
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                  : 'rgba(255, 255, 255, 0.05)',
-              borderRadius: isMobile ? '10px' : '12px',
-              fontSize: isMobile ? '12px' : '14px',
+                  : undefined,
+              color: activeTab === tab.key ? '#fff' : undefined,
+              fontSize: isMobile ? '12px' : '13px',
               fontWeight: activeTab === tab.key ? 600 : 500,
             }}
           >

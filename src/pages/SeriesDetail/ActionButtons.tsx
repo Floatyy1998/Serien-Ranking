@@ -38,146 +38,99 @@ export const ActionButtons = memo<ActionButtonsProps>(
     onDelete,
   }) => {
     const { currentTheme } = useTheme();
-    const iconSize = isMobile ? '18px' : '20px';
     const hasRating = parseFloat(overallRating) > 0;
-    const pad = isMobile ? '10px' : '12px';
-    const radius = isMobile ? '10px' : '12px';
-    const fontSize = isMobile ? '13px' : '15px';
-    const gap = isMobile ? '8px' : '10px';
+    const iconSize = isMobile ? 18 : 20;
 
     return (
-      <div
-        style={{
-          padding: isMobile ? '8px 12px' : '12px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap,
-        }}
-      >
-        {/* Row 1: Primary actions with labels */}
-        <div style={{ display: 'flex', gap }}>
+      <div className="series-actions" style={{ padding: isMobile ? '10px 12px' : '14px 20px' }}>
+        <div className="series-actions__bar">
+          {/* Episoden - Primary */}
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
             onClick={onNavigateEpisodes}
-            className="action-btn"
+            className="series-actions__item series-actions__item--primary"
             style={{
-              flex: 1,
-              padding: pad,
-              background: `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.accent}CC 100%)`,
-              border: `1px solid ${currentTheme.primary}80`,
-              borderRadius: radius,
-              fontSize,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             }}
           >
             <PlayCircle style={{ fontSize: iconSize }} />
             <span>Episoden</span>
           </motion.button>
 
+          {/* Bewerten */}
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={{ scale: 0.96 }}
             onClick={onNavigateRating}
-            className="action-btn"
+            className="series-actions__item"
             style={{
-              flex: 1,
-              padding: pad,
-              background: hasRating
-                ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
-                : 'rgba(255, 255, 255, 0.05)',
-              border: hasRating
-                ? '1px solid rgba(255, 215, 0, 0.3)'
-                : '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: radius,
-              fontSize,
+              color: hasRating ? currentTheme.accent : undefined,
+              borderColor: hasRating ? `${currentTheme.accent}44` : undefined,
+              background: hasRating ? `${currentTheme.accent}11` : undefined,
             }}
           >
-            <Star
-              style={{
-                fontSize: iconSize,
-                color: hasRating ? currentTheme.accent : currentTheme.text.secondary,
-              }}
-            />
-            <span>Bewerten</span>
+            <Star style={{ fontSize: iconSize }} />
+            <span>{isMobile ? '' : 'Bewerten'}</span>
           </motion.button>
-        </div>
 
-        {/* Row 2: Icon-only secondary actions */}
-        <div style={{ display: 'flex', gap }}>
+          {/* Divider */}
+          <div className="series-actions__divider" />
+
+          {/* Watchlist */}
           <Tooltip title={series.watchlist ? 'Von Watchlist entfernen' : 'Zur Watchlist'} arrow>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.96 }}
               onClick={onWatchlistToggle}
-              className="action-btn"
+              className="series-actions__item series-actions__item--icon"
               style={{
-                flex: 1,
-                padding: pad,
-                background: series.watchlist
-                  ? `linear-gradient(135deg, ${currentTheme.primary}33 0%, ${currentTheme.primary}33 100%)`
-                  : 'rgba(255, 255, 255, 0.05)',
-                border: series.watchlist
-                  ? `1px solid ${currentTheme.primary}66`
-                  : '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: radius,
-                fontSize,
+                color: series.watchlist ? currentTheme.primary : undefined,
+                borderColor: series.watchlist ? `${currentTheme.primary}44` : undefined,
+                background: series.watchlist ? `${currentTheme.primary}11` : undefined,
               }}
             >
               {series.watchlist ? (
-                <BookmarkRemove style={{ fontSize: iconSize, color: currentTheme.primary }} />
+                <BookmarkRemove style={{ fontSize: iconSize }} />
               ) : (
-                <BookmarkAdd style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
+                <BookmarkAdd style={{ fontSize: iconSize }} />
               )}
-              <span>{series.watchlist ? 'Watchlist ✓' : 'Watchlist'}</span>
             </motion.button>
           </Tooltip>
 
-          <Tooltip title={series.hidden ? 'Serie einblenden' : 'Serie ausblenden'} arrow>
+          {/* Verstecken */}
+          <Tooltip title={series.hidden ? 'Einblenden' : 'Ausblenden'} arrow>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.96 }}
               onClick={onHideToggle}
-              className="action-btn"
+              className="series-actions__item series-actions__item--icon"
               style={{
-                flex: 1,
-                padding: pad,
-                background: series.hidden
-                  ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.2) 0%, rgba(255, 183, 77, 0.2) 100%)'
-                  : 'rgba(255, 255, 255, 0.05)',
-                border: series.hidden
-                  ? '1px solid rgba(255, 152, 0, 0.4)'
-                  : '1px solid rgba(255, 255, 255, 0.1)',
-                borderRadius: radius,
-                fontSize,
+                color: series.hidden ? currentTheme.status?.warning || '#f59e0b' : undefined,
+                borderColor: series.hidden ? 'rgba(255,152,0,0.35)' : undefined,
+                background: series.hidden ? 'rgba(255,152,0,0.1)' : undefined,
               }}
             >
               {series.hidden ? (
-                <Visibility
-                  style={{ fontSize: iconSize, color: currentTheme.status?.warning || '#f59e0b' }}
-                />
+                <Visibility style={{ fontSize: iconSize }} />
               ) : (
-                <VisibilityOff style={{ fontSize: iconSize, color: currentTheme.text.secondary }} />
+                <VisibilityOff style={{ fontSize: iconSize }} />
               )}
-              <span>{series.hidden ? 'Sichtbar' : 'Verstecken'}</span>
             </motion.button>
           </Tooltip>
 
-          <Tooltip title={isDeleting ? 'Wird gelöscht...' : 'Serie löschen'} arrow>
+          {/* Löschen */}
+          <Tooltip title="Löschen" arrow>
             <motion.button
-              whileTap={{ scale: isDeleting ? 1 : 0.95 }}
+              whileTap={{ scale: isDeleting ? 1 : 0.96 }}
               onClick={onDelete}
               disabled={isDeleting}
-              className="action-btn"
+              className="series-actions__item series-actions__item--icon"
               style={{
-                flex: 1,
-                padding: pad,
-                background: 'rgba(220, 53, 69, 0.1)',
-                border: '1px solid rgba(220, 53, 69, 0.3)',
-                borderRadius: radius,
-                opacity: isDeleting ? 0.6 : 1,
+                color: currentTheme.status?.error || '#ef4444',
+                borderColor: 'rgba(220,53,69,0.2)',
+                background: 'rgba(220,53,69,0.06)',
+                opacity: isDeleting ? 0.4 : 1,
                 cursor: isDeleting ? 'not-allowed' : 'pointer',
-                fontSize,
               }}
             >
-              <Delete
-                style={{ fontSize: iconSize, color: currentTheme.status?.error || '#ef4444' }}
-              />
+              <Delete style={{ fontSize: iconSize }} />
             </motion.button>
           </Tooltip>
         </div>
