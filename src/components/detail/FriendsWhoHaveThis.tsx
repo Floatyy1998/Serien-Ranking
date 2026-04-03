@@ -109,8 +109,8 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
         gap: '6px',
       }}
     >
-      {/* Friend Avatars - no overlap */}
-      {friendsWithItem.slice(0, 4).map((friend) => {
+      {/* Friend Avatars */}
+      {friendsWithItem.slice(0, 3).map((friend) => {
         const hasRating = parseFloat(friend.rating) > 0;
         const rating = parseFloat(friend.rating);
         const isHighRating = rating >= 8.5;
@@ -222,8 +222,8 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
       })}
 
       {/* +X More Badge */}
-      {friendsWithItem.length > 4 && (
-        <Tooltip title={`+${friendsWithItem.length - 4} weitere Freunde`} arrow>
+      {friendsWithItem.length > 3 && (
+        <Tooltip title={`+${friendsWithItem.length - 3} weitere Freunde`} arrow>
           <div
             style={{
               width: '28px',
@@ -242,7 +242,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
               cursor: 'default',
             }}
           >
-            +{friendsWithItem.length - 4}
+            +{friendsWithItem.length - 3}
           </div>
         </Tooltip>
       )}
