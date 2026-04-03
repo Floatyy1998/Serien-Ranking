@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { GradientText, HorizontalScrollContainer, SectionHeader } from '../../components/ui';
+import { GradientText, SectionHeader } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -90,7 +90,7 @@ export const MangaPage = () => {
         background: currentTheme.background.default,
       }}
     >
-      {/* ─── Gradient Header ────────────────────────── */}
+      {/* ─── Header ────────────────────────── */}
       <header
         style={{
           background: `linear-gradient(180deg, ${currentTheme.primary}40 0%, ${currentTheme.primary}10 50%, transparent 100%)`,
@@ -104,40 +104,6 @@ export const MangaPage = () => {
           transition={{ type: 'spring', stiffness: 250, damping: 22 }}
           style={{ display: 'flex', alignItems: 'center', gap: 12 }}
         >
-          {/* Home button → Series Homepage */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => navigate('/')}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              border: 'none',
-              background: 'rgba(255,255,255,0.06)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <div
-              style={{
-                width: 16,
-                height: 16,
-                backgroundColor: 'var(--color-primary)',
-                WebkitMaskImage: 'url(/tv-logo.svg)',
-                maskImage: 'url(/tv-logo.svg)',
-                WebkitMaskSize: 'contain',
-                maskSize: 'contain' as string,
-                WebkitMaskRepeat: 'no-repeat',
-                maskRepeat: 'no-repeat' as string,
-                WebkitMaskPosition: 'center',
-                maskPosition: 'center' as string,
-              }}
-            />
-          </motion.button>
-
           <div style={{ flex: 1 }}>
             <GradientText
               as="h1"
@@ -171,7 +137,7 @@ export const MangaPage = () => {
             </p>
           </div>
 
-          {/* Notifications + Profile (like GreetingSection) */}
+          {/* Notifications + Profile */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {totalUnread > 0 ? (
               <Badge
@@ -195,7 +161,7 @@ export const MangaPage = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  <Notifications style={{ fontSize: 20 }} />
+                  <Notifications style={{ fontSize: 16 }} />
                 </motion.button>
               </Badge>
             ) : (
@@ -215,7 +181,7 @@ export const MangaPage = () => {
                   cursor: 'pointer',
                 }}
               >
-                <Notifications style={{ fontSize: 20 }} />
+                <Notifications style={{ fontSize: 16 }} />
               </motion.button>
             )}
             <motion.button
@@ -236,7 +202,7 @@ export const MangaPage = () => {
         </motion.div>
       </header>
 
-      {/* ─── Search Bar → /manga/search ──────────────── */}
+      {/* ─── Search Bar ──────────────── */}
       <div style={{ padding: '0 20px', marginBottom: 20 }}>
         <motion.div
           whileTap={{ scale: 0.98 }}
@@ -253,71 +219,59 @@ export const MangaPage = () => {
             backdropFilter: 'blur(10px)',
           }}
         >
-          <Search style={{ fontSize: 20, color: currentTheme.text.secondary, opacity: 0.5 }} />
+          <Search style={{ fontSize: 16, color: currentTheme.text.secondary, opacity: 0.5 }} />
           <span style={{ color: currentTheme.text.secondary, fontSize: 14, opacity: 0.5 }}>
             Manga, Manhwa, Manhua suchen...
           </span>
         </motion.div>
       </div>
 
-      {/* ─── Quick Stats Chips ───────────────────────── */}
+      {/* ─── Quick Actions Grid ──────────────── */}
       {mangaList.length > 0 && (
-        <HorizontalScrollContainer>
-          <div style={{ display: 'flex', gap: 8, padding: '0 20px', marginBottom: 20 }}>
-            <StatChip label={`${quickStats.totalChapters} Kapitel`} theme={currentTheme} />
-            <StatChip label={`${quickStats.reading} am Lesen`} theme={currentTheme} />
-            <StatChip label={`${quickStats.completed} fertig`} theme={currentTheme} />
-            <StatChip label={`${mangaList.length} Titel`} theme={currentTheme} />
-          </div>
-        </HorizontalScrollContainer>
-      )}
-
-      {/* ─── Quick Actions ───────────────────────────── */}
-      {mangaList.length > 0 && (
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            padding: '0 20px',
-            marginBottom: 28,
-            overflowX: 'auto',
-          }}
-        >
-          <QuickActionBtn
+        <div className="manga-quick-grid">
+          <QuickTile
             icon={<MenuBook style={{ fontSize: 16 }} />}
             label="Leseliste"
+            stat={`${quickStats.reading} aktiv`}
             onClick={() => navigate('/manga/reading-list')}
             theme={currentTheme}
+            accent={currentTheme.primary}
           />
-          <QuickActionBtn
+          <QuickTile
             icon={<Explore style={{ fontSize: 16 }} />}
             label="Entdecken"
             onClick={() => navigate('/manga/discover')}
             theme={currentTheme}
+            accent="#3b82f6"
           />
-          <QuickActionBtn
+          <QuickTile
             icon={<BarChart style={{ fontSize: 16 }} />}
             label="Bewertungen"
             onClick={() => navigate('/manga/ratings')}
             theme={currentTheme}
+            accent={currentTheme.accent}
           />
-          <QuickActionBtn
+          <QuickTile
             icon={<TrendingUp style={{ fontSize: 16 }} />}
             label="Statistiken"
+            stat={`${quickStats.totalChapters} Kap.`}
             onClick={() => navigate('/manga/stats')}
             theme={currentTheme}
+            accent={currentTheme.status?.warning || '#f59e0b'}
           />
-          <QuickActionBtn
+          <QuickTile
             icon={<Timeline style={{ fontSize: 16 }} />}
             label="Journey"
             onClick={() => navigate('/manga/journey')}
             theme={currentTheme}
+            accent={currentTheme.status?.error || '#ef4444'}
           />
-          <QuickActionBtn
+          <QuickTile
             icon={<History style={{ fontSize: 16 }} />}
             label="Verlauf"
             onClick={() => navigate('/manga/recently-read')}
             theme={currentTheme}
+            accent="rgba(255,255,255,0.5)"
           />
         </div>
       )}
@@ -412,7 +366,7 @@ export const MangaPage = () => {
             )}
           </div>
 
-          {/* Grid - same sizing as Serien Ratings */}
+          {/* Grid */}
           <div className="manga-collection-grid" style={{ padding: '0 20px', paddingBottom: 100 }}>
             {filtered.map((manga) => (
               <MangaCard
@@ -453,62 +407,32 @@ export const MangaPage = () => {
   );
 };
 
-// ─── Stat Chip ──────────────────────────────────────
+// ─── Quick Tile ─────────────────────────────────────
 
-const StatChip = ({ label, theme }: { label: string; theme: AppTheme }) => (
-  <div
-    style={{
-      padding: '8px 14px',
-      borderRadius: 12,
-      background:
-        'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
-      border: '1px solid rgba(255,255,255,0.06)',
-      fontSize: 12,
-      fontWeight: 500,
-      color: theme.text.secondary,
-      whiteSpace: 'nowrap',
-      flexShrink: 0,
-    }}
-  >
-    {label}
-  </div>
-);
-
-// ─── Quick Action Button ────────────────────────────
-
-const QuickActionBtn = ({
+const QuickTile = ({
   icon,
   label,
+  stat,
   onClick,
   theme,
+  accent,
 }: {
   icon: React.ReactNode;
   label: string;
+  stat?: string;
   onClick: () => void;
   theme: AppTheme;
+  accent: string;
 }) => (
   <motion.button
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      padding: '10px 16px',
-      borderRadius: 14,
-      border: '1px solid rgba(255,255,255,0.06)',
-      background:
-        'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
-      color: theme.text.primary,
-      fontSize: 13,
-      fontWeight: 500,
-      whiteSpace: 'nowrap',
-      cursor: 'pointer',
-      fontFamily: 'var(--font-body)',
-    }}
+    className="manga-quick-tile"
+    style={{ color: theme.text.primary }}
   >
-    {icon}
-    {label}
+    <div style={{ color: accent, display: 'flex' }}>{icon}</div>
+    <span className="manga-quick-tile__label">{label}</span>
+    {stat && <span className="manga-quick-tile__stat">· {stat}</span>}
   </motion.button>
 );
 
@@ -545,48 +469,19 @@ const MangaCard = ({
             {manga.readStatus === 'completed' && (
               <span
                 className="manga-collection-badge"
-                style={{ background: 'rgba(34,197,94,0.85)', color: '#fff' }}
+                style={{ background: STATUS_COLORS.completed }}
               >
                 ✓
               </span>
             )}
-            {manga.readStatus !== 'reading' && manga.readStatus !== 'completed' && (
-              <span
-                className="manga-collection-badge"
-                style={{ background: `${STATUS_COLORS[manga.readStatus]}cc`, color: '#fff' }}
-              >
-                {STATUS_LABELS[manga.readStatus]}
-              </span>
-            )}
+            {userRating > 0 && <span className="manga-collection-rating">★ {userRating}</span>}
           </div>
-
           {/* Bottom info */}
           <div className="manga-collection-bottom">
-            <h3 className="manga-collection-title">{manga.title}</h3>
-            <div className="manga-collection-meta">
-              {userRating > 0 && (
-                <span className="manga-collection-rating">⭐ {userRating.toFixed(0)}</span>
-              )}
-              <span>
-                Kap. {manga.currentChapter}
-                {manga.chapters ? ` / ${manga.chapters}` : ''}
-              </span>
-            </div>
-            {/* Progress bar */}
+            <div className="manga-collection-title">{manga.title}</div>
             {progress > 0 && (
               <div className="manga-collection-progress">
-                <div className="manga-collection-progress-track">
-                  <div
-                    className="manga-collection-progress-fill"
-                    style={{
-                      width: `${progress}%`,
-                      background: progress === 100 ? '#22c55e' : STATUS_COLORS.reading,
-                    }}
-                  />
-                </div>
-                <span className="manga-collection-progress-text">
-                  {progress === 100 ? 'Fertig' : `${Math.round(progress)}%`}
-                </span>
+                <div className="manga-collection-progress-fill" style={{ width: `${progress}%` }} />
               </div>
             )}
           </div>

@@ -54,10 +54,14 @@ const getLastWatchedDate = (series: Series): number | null => {
   return isNaN(ts) ? null : ts;
 };
 
-const hasUpcomingEpisodes = (series: Series): boolean => {
-  const today = new Date();
-
-  // Prüfe ob die Serie noch läuft
+/**
+ * Prüft ob die Serie noch nicht als inaktiv gelten sollte:
+ * - Laufende Serien (Status "running" etc.) → überspringe
+ * - Zukünftige Episoden → überspringe
+ * - Kürzlich ausgestrahlte Episoden (< 30 Tage) die noch nicht geschaut wurden → überspringe
+ *   (User bekommt 30 Tage ab Ausstrahlung, um die Folge zu schauen)
+ */
+const shouldSkipForInactivity = (series: Series): boolean => {
   const status = series.status?.toLowerCase();
   const isRunning =
     status === 'running' ||
@@ -66,16 +70,26 @@ const hasUpcomingEpisodes = (series: Series): boolean => {
     status === 'planned' ||
     status === 'continuing';
 
-  // Wenn Serie als laufend markiert ist, hat sie potentiell zukünftige Episoden
   if (isRunning) {
     return true;
   }
 
-  // Prüfe ob es Episoden mit zukünftigem Datum in den Seasons gibt
+  const now = Date.now();
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
   for (const season of normalizeSeasons(series.seasons)) {
     for (const episode of normalizeEpisodes(season.episodes)) {
       const airDate = getEpisodeAirDate(episode);
-      if (airDate && airDate > today) {
+      if (!airDate) continue;
+
+      // Zukünftige oder heutige Episode → überspringe
+      if (airDate >= todayStart) return true;
+
+      // Bereits ausgestrahlt aber innerhalb der letzten 30 Tage und nicht geschaut
+      // → User hat noch Zeit, die Folge zu schauen
+      const daysSinceAired = now - airDate.getTime();
+      if (daysSinceAired < ONE_MONTH_MS && !episode.watched) {
         return true;
       }
     }
@@ -105,8 +119,8 @@ export const detectInactiveSeries = async (
     if (!series || !series.id || !series.watchlist) continue;
     if (hasActiveRewatch(series)) continue;
 
-    // Überspringe Serien mit zukünftigen Episoden (laufende Serien)
-    if (hasUpcomingEpisodes(series)) continue;
+    // Überspringe Serien mit zukünftigen oder kürzlich ausgestrahlten ungeschauten Episoden
+    if (shouldSkipForInactivity(series)) continue;
 
     const seriesKey = series.id.toString();
     const stored = storedData[seriesKey];

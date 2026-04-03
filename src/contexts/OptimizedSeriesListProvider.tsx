@@ -6,14 +6,10 @@ import type { Series } from '../types/Series';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import {
-  getSessionStorageJSON,
   fixMissingFirstWatchedAt,
-  createNewSeasonDetectionRunner,
-  createInactiveSeriesDetectionRunner,
-  createCompletedSeriesDetectionRunner,
-  createUnratedSeriesDetectionRunner,
-  createProviderChangeDetectionRunner,
+  runSequentialDetections,
   type ProviderChangeInfo,
+  type DetectionResults,
 } from './seriesListDetection';
 import { checkSeriesIntegrity } from './dataIntegrityChecker';
 import { SeriesListContext } from './SeriesListContext';
@@ -21,99 +17,14 @@ import { SeriesListContext } from './SeriesListContext';
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
 
-  // Verwende sessionStorage um State zwischen Re-Renders zu behalten
-  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>(() =>
-    getSessionStorageJSON('seriesWithNewSeasons', [])
-  );
-
-  // Listen for sessionStorage updates from other tabs via storage event
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === 'seriesWithNewSeasons' && e.newValue) {
-        try {
-          const parsed = JSON.parse(e.newValue);
-          if (parsed.length > 0 && seriesWithNewSeasons.length === 0) {
-            setSeriesWithNewSeasons(parsed);
-          }
-        } catch (e) {
-          console.error('Failed to parse seriesWithNewSeasons from storage event:', e);
-        }
-      }
-    };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, [seriesWithNewSeasons.length]);
-
-  const [hasCheckedForNewSeasons, setHasCheckedForNewSeasons] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasCheckedForNewSeasons') === 'true';
-    }
-    return false;
-  });
-
-  // State für inaktive Serien
-  const [inactiveSeries, setInactiveSeries] = useState<Series[]>(() =>
-    getSessionStorageJSON('inactiveSeries', [])
-  );
-
-  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>(() =>
-    getSessionStorageJSON('inactiveRewatches', [])
-  );
-
-  const [hasCheckedForInactive, setHasCheckedForInactive] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasCheckedForInactive') === 'true';
-    }
-    return false;
-  });
-
-  // State für komplett geschaute Serien
-  const [completedSeries, setCompletedSeries] = useState<Series[]>(() =>
-    getSessionStorageJSON('completedSeries', [])
-  );
-
-  const [hasCheckedForCompleted, setHasCheckedForCompleted] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasCheckedForCompleted') === 'true';
-    }
-    return false;
-  });
-
-  // State für unbewertete Serien
-  const [unratedSeries, setUnratedSeries] = useState<Series[]>(() =>
-    getSessionStorageJSON('unratedSeries', [])
-  );
-
-  const [hasCheckedForUnrated, setHasCheckedForUnrated] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasCheckedForUnrated') === 'true';
-    }
-    return false;
-  });
-
-  // State für Provider-Änderungen
-  const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>(() =>
-    getSessionStorageJSON('providerChanges', [])
-  );
-
-  const [hasCheckedForProviderChanges, setHasCheckedForProviderChanges] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return sessionStorage.getItem('hasCheckedForProviderChanges') === 'true';
-    }
-    return false;
-  });
+  const [seriesWithNewSeasons, setSeriesWithNewSeasons] = useState<Series[]>([]);
+  const [inactiveSeries, setInactiveSeries] = useState<Series[]>([]);
+  const [inactiveRewatches, setInactiveRewatches] = useState<Series[]>([]);
+  const [completedSeries, setCompletedSeries] = useState<Series[]>([]);
+  const [unratedSeries, setUnratedSeries] = useState<Series[]>([]);
+  const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>([]);
 
   const detectionRunRef = useRef(false);
-  const inactiveDetectionRunRef = useRef(false);
-  const completedDetectionRunRef = useRef(false);
-  const unratedDetectionRunRef = useRef(false);
-  const providerChangeDetectionRunRef = useRef(false);
-  const detectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inactiveDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const completedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const unratedDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const providerChangeDetectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const firstWatchedAtFixedRef = useRef(false);
 
   const {
     data: seriesData,
@@ -176,288 +87,98 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [user, loading]);
 
-  // Debounced detection functions (extracted to seriesListDetection.ts)
-  const runNewSeasonDetection = useCallback(
-    (list: Series[], userId: string) =>
-      createNewSeasonDetectionRunner(
-        { detectionRunRef, detectionTimeoutRef },
-        setSeriesWithNewSeasons,
-        setHasCheckedForNewSeasons
-      )(list, userId),
-    []
-  );
-
-  const runInactiveSeriesDetection = useCallback(
-    (list: Series[], userId: string) =>
-      createInactiveSeriesDetectionRunner(
-        { inactiveDetectionRunRef, inactiveDetectionTimeoutRef },
-        setInactiveSeries,
-        setInactiveRewatches,
-        setHasCheckedForInactive
-      )(list, userId),
-    []
-  );
-
-  const runCompletedSeriesDetection = useCallback(
-    (list: Series[], userId: string) =>
-      createCompletedSeriesDetectionRunner(
-        { completedDetectionRunRef, completedDetectionTimeoutRef },
-        setCompletedSeries,
-        setHasCheckedForCompleted
-      )(list, userId),
-    []
-  );
-
-  const runUnratedSeriesDetection = useCallback(
-    (list: Series[], userId: string) =>
-      createUnratedSeriesDetectionRunner(
-        { unratedDetectionRunRef, unratedDetectionTimeoutRef },
-        setUnratedSeries,
-        setHasCheckedForUnrated
-      )(list, userId),
-    []
-  );
-
-  const runProviderChangeDetection = useCallback(
-    (list: Series[], userId: string) =>
-      createProviderChangeDetectionRunner(
-        { providerChangeDetectionRunRef, providerChangeDetectionTimeoutRef },
-        setProviderChanges,
-        setHasCheckedForProviderChanges
-      )(list, userId),
-    []
-  );
-
-  // New season detection nur beim ersten Load und wenn online
+  // Sequentielle Detection — einmal nach dem Laden
   useEffect(() => {
-    if (seriesWithNewSeasons.length > 0) {
-      return;
-    }
+    if (!user || !seriesList.length || isOffline || detectionRunRef.current) return;
 
-    if (!user || !seriesList.length || hasCheckedForNewSeasons || isOffline) {
-      return;
-    }
+    detectionRunRef.current = true;
+    const abortController = new AbortController();
 
-    runNewSeasonDetection(seriesList, user.uid);
-  }, [
-    user,
-    seriesList,
-    hasCheckedForNewSeasons,
-    isOffline,
-    seriesWithNewSeasons.length,
-    runNewSeasonDetection,
-  ]);
+    runSequentialDetections(
+      seriesList,
+      user.uid,
+      (partial: Partial<DetectionResults>) => {
+        if (partial.seriesWithNewSeasons) setSeriesWithNewSeasons(partial.seriesWithNewSeasons);
+        if (partial.inactiveSeries) setInactiveSeries(partial.inactiveSeries);
+        if (partial.inactiveRewatches) setInactiveRewatches(partial.inactiveRewatches);
+        if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
+        if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
+        if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+      },
+      abortController.signal
+    );
 
-  // Inactive series detection
-  useEffect(() => {
-    if (inactiveSeries.length > 0) {
-      return;
-    }
+    return () => {
+      abortController.abort();
+    };
+  }, [user, seriesList, isOffline]);
 
-    if (!user || !seriesList.length || hasCheckedForInactive || isOffline) {
-      return;
-    }
-
-    runInactiveSeriesDetection(seriesList, user.uid);
-  }, [
-    user,
-    seriesList,
-    hasCheckedForInactive,
-    isOffline,
-    inactiveSeries.length,
-    runInactiveSeriesDetection,
-  ]);
-
-  // Completed series detection
-  useEffect(() => {
-    if (completedSeries.length > 0) {
-      return;
-    }
-
-    if (!user || !seriesList.length || hasCheckedForCompleted || isOffline) {
-      return;
-    }
-
-    runCompletedSeriesDetection(seriesList, user.uid);
-  }, [
-    user,
-    seriesList,
-    hasCheckedForCompleted,
-    isOffline,
-    completedSeries.length,
-    runCompletedSeriesDetection,
-  ]);
-
-  // Unrated series detection
-  useEffect(() => {
-    if (unratedSeries.length > 0) {
-      return;
-    }
-
-    if (!user || !seriesList.length || hasCheckedForUnrated || isOffline) {
-      return;
-    }
-
-    runUnratedSeriesDetection(seriesList, user.uid);
-  }, [
-    user,
-    seriesList,
-    hasCheckedForUnrated,
-    isOffline,
-    unratedSeries.length,
-    runUnratedSeriesDetection,
-  ]);
-
-  // Provider change detection
-  useEffect(() => {
-    if (providerChanges.length > 0) {
-      return;
-    }
-
-    if (!user || !seriesList.length || hasCheckedForProviderChanges || isOffline) {
-      return;
-    }
-
-    runProviderChangeDetection(seriesList, user.uid);
-  }, [
-    user,
-    seriesList,
-    hasCheckedForProviderChanges,
-    isOffline,
-    providerChanges.length,
-    runProviderChangeDetection,
-  ]);
-
-  // Reset bei User-Wechsel - use cleanup to avoid setState-in-effect
+  // Reset bei User-Wechsel
   useEffect(() => {
     if (!user) return;
 
-    // When user changes/logs out, cleanup resets state
     return () => {
       setSeriesWithNewSeasons([]);
-      setHasCheckedForNewSeasons(false);
       setInactiveSeries([]);
       setInactiveRewatches([]);
-      setHasCheckedForInactive(false);
       setCompletedSeries([]);
-      setHasCheckedForCompleted(false);
       setUnratedSeries([]);
-      setHasCheckedForUnrated(false);
       setProviderChanges([]);
-      setHasCheckedForProviderChanges(false);
       detectionRunRef.current = false;
-      inactiveDetectionRunRef.current = false;
-      completedDetectionRunRef.current = false;
-      providerChangeDetectionRunRef.current = false;
-      firstWatchedAtFixedRef.current = false;
-
-      if (detectionTimeoutRef.current) {
-        clearTimeout(detectionTimeoutRef.current);
-        detectionTimeoutRef.current = null;
-      }
-      if (inactiveDetectionTimeoutRef.current) {
-        clearTimeout(inactiveDetectionTimeoutRef.current);
-        inactiveDetectionTimeoutRef.current = null;
-      }
-      if (completedDetectionTimeoutRef.current) {
-        clearTimeout(completedDetectionTimeoutRef.current);
-        completedDetectionTimeoutRef.current = null;
-      }
-
-      if (providerChangeDetectionTimeoutRef.current) {
-        clearTimeout(providerChangeDetectionTimeoutRef.current);
-        providerChangeDetectionTimeoutRef.current = null;
-      }
-
-      if (typeof window !== 'undefined') {
-        sessionStorage.removeItem('seriesWithNewSeasons');
-        sessionStorage.removeItem('hasCheckedForNewSeasons');
-        sessionStorage.removeItem('inactiveSeries');
-        sessionStorage.removeItem('inactiveRewatches');
-        sessionStorage.removeItem('hasCheckedForInactive');
-        sessionStorage.removeItem('completedSeries');
-        sessionStorage.removeItem('hasCheckedForCompleted');
-        sessionStorage.removeItem('providerChanges');
-        sessionStorage.removeItem('hasCheckedForProviderChanges');
-      }
     };
   }, [user]);
 
   const clearNewSeasons = useCallback(() => {
     setSeriesWithNewSeasons([]);
-    setHasCheckedForNewSeasons(true);
-    detectionRunRef.current = false;
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('seriesWithNewSeasons');
-      sessionStorage.setItem('hasCheckedForNewSeasons', 'true');
-    }
   }, []);
 
   const clearInactiveSeries = useCallback(() => {
     setInactiveSeries([]);
-    setHasCheckedForInactive(true);
-    inactiveDetectionRunRef.current = false;
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('inactiveSeries');
-      sessionStorage.setItem('hasCheckedForInactive', 'true');
-    }
   }, []);
 
   const clearInactiveRewatches = useCallback(() => {
     setInactiveRewatches([]);
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('inactiveRewatches');
-    }
   }, []);
 
   const clearCompletedSeries = useCallback(() => {
     setCompletedSeries([]);
-    setHasCheckedForCompleted(true);
-    completedDetectionRunRef.current = false;
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('completedSeries');
-      sessionStorage.setItem('hasCheckedForCompleted', 'true');
-    }
   }, []);
 
   const clearUnratedSeries = useCallback(() => {
     setUnratedSeries([]);
-    setHasCheckedForUnrated(true);
-    unratedDetectionRunRef.current = false;
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('unratedSeries');
-      sessionStorage.setItem('hasCheckedForUnrated', 'true');
-    }
   }, []);
 
   const clearProviderChanges = useCallback(() => {
     setProviderChanges([]);
-    setHasCheckedForProviderChanges(true);
-    providerChangeDetectionRunRef.current = false;
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('providerChanges');
-      sessionStorage.setItem('hasCheckedForProviderChanges', 'true');
-    }
   }, []);
 
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
-    setHasCheckedForNewSeasons(false);
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('hasCheckedForNewSeasons');
-      sessionStorage.removeItem('seriesWithNewSeasons');
-    }
+    setSeriesWithNewSeasons([]);
+    setInactiveSeries([]);
+    setInactiveRewatches([]);
+    setCompletedSeries([]);
+    setUnratedSeries([]);
+    setProviderChanges([]);
 
     if (user && seriesList.length > 0) {
-      runNewSeasonDetection(seriesList, user.uid);
+      detectionRunRef.current = true;
+      const abortController = new AbortController();
+      runSequentialDetections(
+        seriesList,
+        user.uid,
+        (partial: Partial<DetectionResults>) => {
+          if (partial.seriesWithNewSeasons) setSeriesWithNewSeasons(partial.seriesWithNewSeasons);
+          if (partial.inactiveSeries) setInactiveSeries(partial.inactiveSeries);
+          if (partial.inactiveRewatches) setInactiveRewatches(partial.inactiveRewatches);
+          if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
+          if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
+          if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+        },
+        abortController.signal
+      );
     }
-  }, [user, seriesList, runNewSeasonDetection]);
+  }, [user, seriesList]);
 
   const refetchSeries = useCallback(() => {
     refetch();
@@ -489,31 +210,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         };
 
         setSeriesWithNewSeasons((prev) => [...prev, testSeries]);
-
-        if (typeof window !== 'undefined') {
-          const newList = [...seriesWithNewSeasons, testSeries];
-          sessionStorage.setItem('seriesWithNewSeasons', JSON.stringify(newList));
-        }
       }
     },
-    [seriesList, seriesWithNewSeasons]
+    [seriesList]
   );
 
   const forceDetection = useCallback(() => {
     if (process.env.NODE_ENV !== 'development') return;
-
-    detectionRunRef.current = false;
-    setHasCheckedForNewSeasons(false);
-
-    if (typeof window !== 'undefined') {
-      sessionStorage.removeItem('hasCheckedForNewSeasons');
-      sessionStorage.removeItem('seriesWithNewSeasons');
-    }
-
-    if (user && seriesList.length > 0) {
-      runNewSeasonDetection(seriesList, user.uid);
-    }
-  }, [user, seriesList, runNewSeasonDetection]);
+    recheckForNewSeasons();
+  }, [recheckForNewSeasons]);
 
   return (
     <SeriesListContext.Provider
