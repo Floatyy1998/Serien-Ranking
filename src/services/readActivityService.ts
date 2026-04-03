@@ -50,7 +50,7 @@ export async function logChapterRead(
       mangaId: manga.anilistId,
       mangaTitle: manga.title,
       chapterNumber: previousChapter + i + 1,
-      volumeNumber: manga.currentVolume || undefined,
+      ...(manga.currentVolume ? { volumeNumber: manga.currentVolume } : {}),
       format: manga.format,
       genres: manga.genres,
       isReread: (manga.rereadCount || 0) > 0,

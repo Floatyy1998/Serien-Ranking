@@ -15,9 +15,10 @@ import { motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { PageHeader, PageLayout } from '../../components/ui';
+import { BackButton, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { getMangaById } from '../../services/anilistService';
 import { addMangaToList } from './addMangaToList';
 import {
@@ -28,6 +29,7 @@ import {
 } from '../../services/mangadexService';
 import { logChapterRead, logMangaRating } from '../../services/readActivityService';
 import type { AniListMangaSearchResult, Manga } from '../../types/Manga';
+import '../SeriesDetail/SeriesDetailPage.css';
 import './MangaDetailPage.css';
 
 const STATUS_OPTIONS: { value: Manga['readStatus']; label: string; color: string }[] = [
@@ -55,6 +57,7 @@ export const MangaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const { isMobile } = useDeviceType();
   const { mangaList, toggleHideManga } = useMangaList();
   const navigate = useNavigate();
 
@@ -358,7 +361,6 @@ export const MangaDetailPage = () => {
     effectiveChapters && effectiveChapters > 0
       ? Math.min((editChapter / effectiveChapters) * 100, 100)
       : 0;
-  const chaptersFromMangaDex = !manga.chapters && effectiveChapters;
 
   // Related manga from AniList
   const recommendations = displayData?.recommendations?.edges?.slice(0, 6) || [];
@@ -366,143 +368,331 @@ export const MangaDetailPage = () => {
   const externalLinks = displayData?.externalLinks || [];
   const relations = displayData?.relations?.edges?.filter((e) => e.node.type === 'MANGA') || [];
 
+  const displayFormat = getDisplayFormat(manga.countryOfOrigin, manga.format);
+
   return (
     <PageLayout>
-      {manga.bannerImage && (
-        <div className="manga-detail-banner">
-          <img src={manga.bannerImage} alt="" />
-          <div className="manga-detail-banner-fade" />
+      {/* ─── Hero ─── */}
+      <div
+        style={{ position: 'relative', overflow: 'hidden', minHeight: isMobile ? undefined : 420 }}
+      >
+        {/* Backdrop: blurred poster on mobile, actual banner on desktop */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            backgroundImage: `url(${isMobile ? manga.bannerImage || manga.poster : manga.bannerImage || manga.poster})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center top',
+            filter: isMobile ? 'blur(50px) brightness(0.25) saturate(1.8)' : 'brightness(0.35)',
+            transform: isMobile ? 'scale(1.3)' : 'none',
+          }}
+        />
+        {/* Gradient */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: isMobile ? '60%' : '80%',
+            zIndex: 1,
+            background: `linear-gradient(transparent, ${currentTheme.background.default})`,
+          }}
+        />
+        {/* Vignette on desktop */}
+        {!isMobile && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 1,
+              background:
+                'radial-gradient(ellipse 80% 100% at 50% 50%, transparent 40%, rgba(10,14,26,0.6) 100%)',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+
+        {/* Back button */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 'calc(12px + env(safe-area-inset-top))',
+            left: isMobile ? 12 : 20,
+            zIndex: 10,
+          }}
+        >
+          <BackButton style={{ backdropFilter: 'blur(10px)' }} />
         </div>
-      )}
 
-      <PageHeader
-        title={manga.title}
-        gradientFrom={currentTheme.primary}
-        gradientTo={currentTheme.accent}
-        subtitle={
-          [getDisplayFormat(manga.countryOfOrigin, manga.format)].filter(Boolean).join(' · ') ||
-          undefined
-        }
-        icon={<MenuBook />}
-      />
+        {/* Content */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            paddingTop: 'calc(64px + env(safe-area-inset-top))',
+            paddingBottom: isMobile ? 20 : 36,
+            display: 'flex',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: isMobile ? 'center' : 'stretch',
+            gap: isMobile ? 0 : 32,
+            ...(isMobile
+              ? {}
+              : {
+                  maxWidth: 1100,
+                  margin: '0 auto',
+                  paddingLeft: 48,
+                  paddingRight: 48,
+                }),
+          }}
+        >
+          {/* Poster */}
+          <img
+            src={manga.poster}
+            alt={manga.title}
+            style={{
+              width: isMobile ? 150 : 220,
+              height: isMobile ? 220 : 325,
+              borderRadius: isMobile ? 14 : 16,
+              objectFit: 'cover',
+              flexShrink: 0,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 6px 20px rgba(0,0,0,0.4)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              marginBottom: isMobile ? 20 : 0,
+            }}
+          />
 
-      <div className="manga-detail-content">
-        {/* Info Row */}
-        <div className="manga-detail-info-row">
-          <img className="manga-detail-poster" src={manga.poster} alt={manga.title} />
-          <div className="manga-detail-info">
+          {/* Info - glassmorphic on desktop */}
+          <div
+            style={{
+              ...(isMobile
+                ? { width: '100%' }
+                : {
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column' as const,
+                    background: 'rgba(10, 14, 26, 0.55)',
+                    backdropFilter: 'blur(24px) saturate(1.4)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+                    borderRadius: 20,
+                    padding: '24px 28px',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                  }),
+            }}
+          >
+            <h1
+              style={{
+                fontSize: isMobile ? 24 : 32,
+                fontWeight: 800,
+                fontFamily: 'var(--font-display)',
+                margin: isMobile ? '0 20px 4px' : '0 0 6px',
+                lineHeight: 1.2,
+                letterSpacing: '-0.02em',
+                color: '#fff',
+                textAlign: isMobile ? ('center' as const) : ('left' as const),
+              }}
+            >
+              {manga.title}
+            </h1>
+
             {manga.titleRomaji && manga.titleRomaji !== manga.title && (
               <div
-                className="manga-detail-alt-title"
-                style={{ color: currentTheme.text.secondary }}
+                style={{
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.4)',
+                  textAlign: isMobile ? 'center' : 'left',
+                  padding: isMobile ? '0 20px' : 0,
+                  marginBottom: 2,
+                }}
               >
                 {manga.titleRomaji}
               </div>
             )}
 
-            <div className="manga-detail-meta">
-              {manga.status && (
-                <span className="manga-detail-meta-item">
-                  {ANILIST_STATUS_LABELS[manga.status] || manga.status}
-                </span>
-              )}
-              {effectiveChapters && (
-                <span className="manga-detail-meta-item">
-                  {effectiveChapters} Kapitel{chaptersFromMangaDex ? ' (aktuell)' : ''}
-                </span>
-              )}
-              {manga.volumes && (
-                <span className="manga-detail-meta-item">{manga.volumes} Bände</span>
-              )}
-              {manga.averageScore && (
-                <span className="manga-detail-meta-item">⭐ {manga.averageScore}%</span>
-              )}
+            {/* Meta */}
+            <div
+              style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                gap: '3px 8px',
+                fontSize: 13,
+                color: 'rgba(255,255,255,0.55)',
+                marginTop: 8,
+                padding: isMobile ? '0 20px' : 0,
+              }}
+            >
+              <span style={{ fontWeight: 600, color: currentTheme.primary }}>{displayFormat}</span>
+              {manga.status && <span>{ANILIST_STATUS_LABELS[manga.status] || manga.status}</span>}
+              {effectiveChapters && <span>{effectiveChapters} Kapitel</span>}
+              {manga.averageScore && <span>⭐ {manga.averageScore}%</span>}
             </div>
 
-            {/* Staff (Author/Artist) */}
+            {/* Staff */}
             {staff.length > 0 && (
-              <div style={{ marginTop: 4 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: 'rgba(255,255,255,0.3)',
+                  marginTop: 6,
+                  textAlign: isMobile ? 'center' : 'left',
+                }}
+              >
                 {staff
                   .filter(
                     (s) =>
                       s.role.toLowerCase().includes('story') || s.role.toLowerCase().includes('art')
                   )
-                  .slice(0, 3)
-                  .map((s, i) => (
-                    <div
-                      key={i}
-                      style={{ fontSize: 12, color: currentTheme.text.secondary, opacity: 0.7 }}
-                    >
-                      {s.node.name.full} ({s.role})
-                    </div>
-                  ))}
+                  .slice(0, 2)
+                  .map((s) => s.node.name.full)
+                  .join(' · ')}
               </div>
             )}
 
+            {/* Genres */}
             {manga.genres && manga.genres.length > 0 && (
-              <div className="manga-detail-genres">
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  gap: 6,
+                  padding: isMobile ? '0 20px' : 0,
+                  marginTop: 12,
+                }}
+              >
                 {manga.genres.slice(0, 5).map((g) => (
                   <span
                     key={g}
-                    className="manga-detail-genre"
-                    style={{ background: `${currentTheme.primary}20`, color: currentTheme.primary }}
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: '4px 12px',
+                      borderRadius: 999,
+                      color: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
                   >
                     {g}
                   </span>
                 ))}
               </div>
             )}
+
+            {/* Chapter counter + Progress - pushed to bottom on desktop */}
+            <div
+              style={{
+                marginTop: isMobile ? 14 : 'auto',
+                padding: isMobile ? '0 20px' : 0,
+                paddingTop: isMobile ? 0 : 16,
+              }}
+            >
+              {/* Chapter progress */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: isMobile ? 'center' : 'flex-start',
+                    gap: 2,
+                  }}
+                >
+                  <button
+                    onClick={() => handleChapterChange(editChapter - 1)}
+                    className="manga-hero-stepper"
+                    style={{ color: 'rgba(255,255,255,0.3)' }}
+                  >
+                    <Remove style={{ fontSize: 20 }} />
+                  </button>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    defaultValue={editChapter}
+                    key={editChapter}
+                    onFocus={(e) => e.target.select()}
+                    onBlur={(e) => {
+                      const v = parseInt(e.target.value, 10);
+                      if (!isNaN(v) && v >= 1) {
+                        const clamped = effectiveChapters ? Math.min(v, effectiveChapters) : v;
+                        handleChapterChange(clamped);
+                        e.target.value = String(clamped);
+                      } else {
+                        e.target.value = String(editChapter);
+                      }
+                    }}
+                    onInput={(e) => {
+                      const el = e.target as HTMLInputElement;
+                      el.style.width = `${Math.max(el.value.length, 1) * 15 + 6}px`;
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
+                    }}
+                    className="manga-detail-counter-input manga-hero-chapter-input"
+                    style={{
+                      width: `${Math.max(String(editChapter).length, 1) * 15 + 6}px`,
+                    }}
+                  />
+                  <button
+                    onClick={() => handleChapterChange(editChapter + 1)}
+                    className="manga-hero-stepper"
+                    style={{ color: 'rgba(255,255,255,0.3)' }}
+                  >
+                    <Add style={{ fontSize: 20 }} />
+                  </button>
+                  {effectiveChapters && (
+                    <span
+                      style={{
+                        color: 'rgba(255,255,255,0.2)',
+                        fontSize: 13,
+                        fontWeight: 500,
+                        marginLeft: 4,
+                      }}
+                    >
+                      von {effectiveChapters} Kapiteln
+                    </span>
+                  )}
+                </div>
+
+                {/* Progress bar */}
+                {effectiveChapters && effectiveChapters > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 4,
+                        borderRadius: 2,
+                        background: 'rgba(255,255,255,0.08)',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: '100%',
+                          width: `${progress}%`,
+                          borderRadius: 2,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                          transition: 'width 0.5s ease',
+                          boxShadow: `0 0 8px ${currentTheme.primary}50`,
+                        }}
+                      />
+                    </div>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>
+                      {Math.round(progress)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Chapter Progress */}
-        <Section bg={`${currentTheme.text.primary}08`} delay={0.1}>
-          <SectionTitle color={currentTheme.text.primary}>Kapitel-Fortschritt</SectionTitle>
-          <div className="manga-detail-counter">
-            <button
-              className="manga-detail-counter-btn"
-              onClick={() => handleChapterChange(editChapter - 1)}
-              style={{ background: `${currentTheme.primary}20`, color: currentTheme.primary }}
-            >
-              <Remove />
-            </button>
-            <div className="manga-detail-counter-value">
-              <input
-                type="number"
-                value={editChapter}
-                onChange={(e) => handleChapterChange(Number(e.target.value))}
-                className="manga-detail-counter-input"
-                style={{ color: currentTheme.text.primary }}
-              />
-              {effectiveChapters && (
-                <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
-                  / {effectiveChapters}
-                  {chaptersFromMangaDex && <span style={{ fontSize: 10, opacity: 0.5 }}> ~</span>}
-                </span>
-              )}
-            </div>
-            <button
-              className="manga-detail-counter-btn"
-              onClick={() => handleChapterChange(editChapter + 1)}
-              style={{ background: `${currentTheme.primary}20`, color: currentTheme.primary }}
-            >
-              <Add />
-            </button>
-          </div>
-
-          {effectiveChapters && effectiveChapters > 0 && (
-            <div className="manga-detail-progress-bar">
-              <div
-                className="manga-detail-progress-bar-fill"
-                style={{
-                  width: `${progress}%`,
-                  background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                }}
-              />
-            </div>
-          )}
-        </Section>
-
+      <div className="manga-detail-content">
         {/* Chapter Releases (MangaDex) */}
         {chapterInfo && chapterInfo.recentChapters.length > 0 && manga.status === 'RELEASING' && (
           <Section bg={`${currentTheme.text.primary}08`} delay={0.12}>

@@ -33,43 +33,6 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
           </p>
         </div>
       )}
-
-      {/* Genres */}
-      {movie.genre?.genres && movie.genre.genres.length > 0 && (
-        <div className={`md-info__section md-info__section${mobileClass}`}>
-          <h3
-            style={{
-              fontSize: isMobile ? '14px' : '16px',
-              fontWeight: 600,
-              marginBottom: isMobile ? '8px' : '12px',
-              color: currentTheme.text.primary,
-            }}
-          >
-            Genres
-          </h3>
-          <div className="md-genres">
-            {movie.genre.genres.map((genre: string) => (
-              <span key={genre} className="md-genre-tag">
-                {genre}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Additional Info Grid */}
-      {movie.status && (
-        <div className="md-info-grid">
-          <div className="md-info-card">
-            <p className="md-info-card__label" style={{ color: currentTheme.text.muted }}>
-              Status
-            </p>
-            <p className="md-info-card__value" style={{ color: currentTheme.text.primary }}>
-              {movie.status === 'Released' ? 'Veröffentlicht' : movie.status}
-            </p>
-          </div>
-        </div>
-      )}
     </div>
   );
 });

@@ -91,6 +91,7 @@ export const MovieDetailPage = memo(() => {
         imdbRating={imdbRating}
         providers={providers}
         averageRating={averageRating}
+        isWatched={isWatched}
         isReadOnlyTmdbMovie={isReadOnlyTmdbMovie}
         isAdding={isAdding}
         getBackdropUrl={getBackdropUrl}
