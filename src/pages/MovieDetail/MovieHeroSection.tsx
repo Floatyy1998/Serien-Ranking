@@ -167,14 +167,21 @@ export const MovieHeroSection = memo(
             {/* Info */}
             <div
               className={isMobile ? undefined : 'md-hero__glass-card'}
-              style={isMobile ? { width: '100%' } : undefined}
+              style={isMobile ? { width: '100%' } : { position: 'relative' }}
             >
+              {/* Friends - top right corner on desktop */}
+              {!isMobile && (
+                <div style={{ position: 'absolute', top: 20, right: 24 }}>
+                  <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
+                </div>
+              )}
               <h1
                 className="md-hero__title"
                 style={{
                   fontSize: isMobile ? 24 : 28,
                   textAlign: isMobile ? 'center' : 'left',
                   margin: isMobile ? '0 20px 4px' : undefined,
+                  paddingRight: isMobile ? undefined : 80,
                   letterSpacing: '-0.02em',
                 }}
               >
@@ -209,44 +216,37 @@ export const MovieHeroSection = memo(
                     &bull; &#11088; {averageRating}
                   </span>
                 )}
-                {movie && (
-                  <>
-                    <span style={{ opacity: 0.5 }}>&bull;</span>
-                    <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
-                  </>
-                )}
               </div>
 
-              {/* Genre Tags */}
-              {allGenres.length > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 6,
-                    marginTop: 10,
-                    justifyContent: isMobile ? 'center' : 'flex-start',
-                    padding: isMobile ? '0 20px' : undefined,
-                  }}
-                >
-                  {allGenres.slice(0, 4).map((genre, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 500,
-                        padding: '4px 12px',
-                        borderRadius: 9999,
-                        color: 'rgba(255,255,255,0.7)',
-                        background: 'rgba(255,255,255,0.06)',
-                        border: '1px solid rgba(255,255,255,0.1)',
-                      }}
-                    >
-                      {genre}
-                    </span>
-                  ))}
-                </div>
-              )}
+              {/* Genre Tags + Friends */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 6,
+                  marginTop: 10,
+                  alignItems: 'center',
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  padding: isMobile ? '0 20px' : undefined,
+                }}
+              >
+                {allGenres.slice(0, 4).map((genre, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 500,
+                      padding: '4px 12px',
+                      borderRadius: 9999,
+                      color: 'rgba(255,255,255,0.7)',
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}
+                  >
+                    {genre}
+                  </span>
+                ))}
+              </div>
 
               {/* Ratings + Provider */}
               {isMobile ? (

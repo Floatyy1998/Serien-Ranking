@@ -296,8 +296,14 @@ export const HeroSection = memo<HeroSectionProps>(
           {/* Info */}
           <div
             className={isMobile ? undefined : 'hero-section__glass-card'}
-            style={isMobile ? { width: '100%' } : undefined}
+            style={isMobile ? { width: '100%' } : { position: 'relative' }}
           >
+            {/* Friends - top right corner on desktop */}
+            {!isMobile && (
+              <div style={{ position: 'absolute', top: 20, right: 24 }}>
+                <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
+              </div>
+            )}
             <h1
               className="hero-section__title"
               style={{
@@ -305,6 +311,7 @@ export const HeroSection = memo<HeroSectionProps>(
                 cursor: 'pointer',
                 textAlign: isMobile ? 'center' : 'left',
                 margin: isMobile ? '0 20px 4px' : undefined,
+                paddingRight: isMobile ? undefined : 80,
                 letterSpacing: '-0.02em',
               }}
               onClick={() => {
@@ -347,15 +354,9 @@ export const HeroSection = memo<HeroSectionProps>(
               {parseFloat(overallRating) > 0 && (
                 <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
               )}
-              {series && (
-                <>
-                  <span style={{ opacity: 0.5 }}>&bull;</span>
-                  <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
-                </>
-              )}
             </div>
 
-            {/* Badges */}
+            {/* Badges + Friends */}
             <div
               className="hero-section__badges"
               style={{
