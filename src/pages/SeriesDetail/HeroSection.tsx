@@ -356,12 +356,11 @@ export const HeroSection = memo<HeroSectionProps>(
               )}
             </div>
 
-            {/* Badges + Friends */}
+            {/* Status Badges */}
             <div
               className="hero-section__badges"
               style={{
                 gap: isMobile ? '6px' : '8px',
-                marginBottom: isMobile ? 10 : 12,
                 justifyContent: isMobile ? 'center' : 'flex-start',
                 padding: isMobile ? '0 20px' : undefined,
                 marginTop: isMobile ? 12 : undefined,
@@ -369,17 +368,32 @@ export const HeroSection = memo<HeroSectionProps>(
             >
               <StatusBadge series={series} />
               <NextEpisodeChip series={series} />
-              {genres.slice(0, maxGenres).map((genre, i) => (
-                <span key={i} className="hero-section__genre-tag">
-                  {genre}
-                </span>
-              ))}
-              {genres.length > maxGenres && (
-                <span className="hero-section__genre-tag" style={{ opacity: 0.7 }}>
-                  +{genres.length - maxGenres}
-                </span>
-              )}
             </div>
+
+            {/* Genre Tags */}
+            {genres.length > 0 && (
+              <div
+                className="hero-section__badges"
+                style={{
+                  gap: isMobile ? '6px' : '8px',
+                  marginTop: 6,
+                  marginBottom: isMobile ? 10 : 12,
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  padding: isMobile ? '0 20px' : undefined,
+                }}
+              >
+                {genres.slice(0, maxGenres).map((genre, i) => (
+                  <span key={i} className="hero-section__genre-tag">
+                    {genre}
+                  </span>
+                ))}
+                {genres.length > maxGenres && (
+                  <span className="hero-section__genre-tag" style={{ opacity: 0.7 }}>
+                    +{genres.length - maxGenres}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Ratings + Provider row */}
             {isMobile ? (
