@@ -26,3 +26,4 @@ export { Snackbar } from './Snackbar';
 export { UserAvatar } from './UserAvatar';
 export { SpoilerReveal } from './SpoilerReveal';
 export { FilterPill } from './FilterPill';
+export { HeaderActions } from './HeaderActions';

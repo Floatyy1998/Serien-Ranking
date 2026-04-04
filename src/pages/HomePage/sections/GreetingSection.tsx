@@ -1,10 +1,10 @@
-import { Notifications, Search } from '@mui/icons-material';
-import { Badge, Chip } from '@mui/material';
+import { Search } from '@mui/icons-material';
+import { Chip } from '@mui/material';
 import { Movie as MovieIcon, NewReleases, PlayCircle, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GradientText, HorizontalScrollContainer } from '../../../components/ui';
+import { GradientText, HeaderActions, HorizontalScrollContainer } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { getGreeting } from '../../../lib/text/greetings';
 import { LiveClock } from '../LiveClock';
@@ -169,70 +169,11 @@ export const GreetingSection = React.memo(function GreetingSection({
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {totalUnreadBadge > 0 ? (
-              <Badge
-                badgeContent={totalUnreadBadge}
-                color="error"
-                sx={{
-                  '& .MuiBadge-badge': {
-                    background: `linear-gradient(135deg, ${currentTheme.status?.error || '#ef4444'} 0%, ${currentTheme.status?.error || '#ef4444'} 100%)`,
-                  },
-                }}
-              >
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={onNotificationsOpen}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    background: `${currentTheme.primary}1A`,
-                    border: `1px solid ${currentTheme.primary}33`,
-                    color: currentTheme.text.primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Notifications style={{ fontSize: '20px' }} />
-                </motion.button>
-              </Badge>
-            ) : (
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={onNotificationsOpen}
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  background: `${currentTheme.primary}1A`,
-                  border: `1px solid ${currentTheme.primary}33`,
-                  color: currentTheme.text.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                <Notifications style={{ fontSize: '20px' }} />
-              </motion.button>
-            )}
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate('/profile')}
-              style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                background: `url(${photoURL}) center/cover`,
-                border: `2px solid ${currentTheme.primary}`,
-                cursor: 'pointer',
-              }}
-            />
-          </div>
+          <HeaderActions
+            totalUnreadBadge={totalUnreadBadge}
+            onNotificationsOpen={onNotificationsOpen}
+            photoURL={photoURL}
+          />
         </div>
       </header>
 
