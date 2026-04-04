@@ -159,6 +159,60 @@ export interface AccessoryDrop {
  * Writes a pending drop to Firebase instead of granting immediately.
  * The user must claim it via the case-opening overlay.
  */
+/** Accessories exclusive to daily spin and milestones — never drop from episodes */
+const EXCLUSIVE_ACCESSORIES = new Set([
+  // Spin exclusive
+  'diamondTiara',
+  'ninjaMask',
+  'royalCape',
+  'aviatorGoggles',
+  'chefHat',
+  'lei',
+  'catEars',
+  'nightOwlGoggles',
+  'galaxyCape',
+  'samuraiHelmet',
+  'pixelShades',
+  'luckyClover',
+  'witchHat',
+  'steamGoggles',
+  'rainbowScarf',
+  'mushHat',
+  'butterflyMask',
+  'shellNecklace',
+  'foxEars',
+  'ghostMask',
+  'thunderChain',
+  'iceHelm',
+  'prismVisor',
+  'solarAmulet',
+  // Milestone exclusive
+  'trophyNecklace',
+  'starHelmet',
+  'crystalMonocle',
+  'phoenixFeather',
+  'infinityScarf',
+  'ancientCrown',
+  'championBelt',
+  'cosmicHelm',
+  'timeTravelerGoggles',
+  'enchantedRose',
+  'shadowHood',
+  'celestialCrown',
+  'volcanoHelm',
+  'abyssVisor',
+  'dragonScaleCollar',
+  'lotusHelm',
+  'eclipseGoggles',
+  'runeNecklace',
+  'glitchCrown',
+  'voidMask',
+  'sakuraPendant',
+  'pyramidHelm',
+  'mirrorShades',
+  'obsidianAmulet',
+]);
+
 export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
   const config = await getDropConfig();
   if (Math.random() > config.dropChance) {
@@ -167,7 +221,9 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
 
   const rarity = rollRarity(config.rarityWeights);
 
-  const candidates = Object.entries(ACCESSORIES).filter(([, def]) => def.rarity === rarity);
+  const candidates = Object.entries(ACCESSORIES).filter(
+    ([id, def]) => def.rarity === rarity && !EXCLUSIVE_ACCESSORIES.has(id)
+  );
   if (candidates.length === 0) return null;
 
   const pets = await getUserPets(userId);

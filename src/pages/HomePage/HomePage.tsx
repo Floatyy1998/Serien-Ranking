@@ -35,6 +35,8 @@ import { TasteMatchCard } from './TasteMatchCard';
 import { TasteProfileCard } from './TasteProfileCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { WatchStreakCard } from './WatchStreakCard';
+import { DailySpinCard } from './DailySpinCard';
+import { MilestoneBoxCard } from './MilestoneBoxCard';
 import { WrappedNotification } from './WrappedNotification';
 import { useHomeConfig } from './useHomeConfig';
 import { useRewatchHandler } from './useRewatchHandler';
@@ -269,6 +271,8 @@ export const HomePage: React.FC = () => {
       case 'for-you': {
         const comps: Record<string, React.ReactNode> = {
           'watch-streak': <WatchStreakCard key="watch-streak" />,
+          'daily-spin': <DailySpinCard key="daily-spin" />,
+          'milestone-box': <MilestoneBoxCard key="milestone-box" />,
           'taste-profile': <TasteProfileCard key="taste-profile" />,
           'taste-match': <TasteMatchCard key="taste-match" />,
           'watch-journey': <WatchJourneyCard key="watch-journey" />,

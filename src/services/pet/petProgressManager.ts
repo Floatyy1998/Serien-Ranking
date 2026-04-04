@@ -9,6 +9,7 @@ import {
   rollAccessoryDrop,
 } from './petAccessoryManager';
 import type { AccessoryDrop } from './petAccessoryManager';
+import { getActiveXpBoost } from './dailySpinService';
 
 // Update wenn Episode geschaut wurde
 export async function watchedEpisode(userId: string, petId: string): Promise<Pet | null> {
@@ -110,6 +111,12 @@ export async function watchedSeriesWithGenre(
     pet.happiness > PET_CONFIG.HEALTHY_HAPPINESS_THRESHOLD;
   if (isHealthy) {
     xpGain = Math.floor(xpGain * PET_CONFIG.HEALTHY_XP_MULTIPLIER);
+  }
+
+  // Daily Spin XP boost
+  const xpBoost = await getActiveXpBoost(userId);
+  if (xpBoost) {
+    xpGain = Math.floor(xpGain * xpBoost.multiplier);
   }
 
   pet.episodesWatched++;

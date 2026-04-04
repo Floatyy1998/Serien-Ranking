@@ -1,0 +1,403 @@
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
+import { ACCESSORIES } from '../../types/pet.types';
+import { getUserPets } from './petCore';
+
+// ============================================================
+// Daily Spin Reward Types
+// ============================================================
+
+export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing';
+
+export interface XpBoostItem {
+  multiplier: number;
+  durationMinutes: number;
+  source: string;
+  wonAt: number;
+}
+
+export interface SpinReward {
+  type: SpinRewardType;
+  label: string;
+  icon: string;
+  color: string;
+  rarity: AccessoryRarity;
+  // XP boost
+  xpMultiplier?: number;
+  xpDurationMinutes?: number;
+  // Accessory
+  accessoryId?: string;
+}
+
+export interface DailySpinData {
+  lastSpinDate: string;
+  totalSpins: number;
+  history: SpinHistoryEntry[];
+}
+
+export interface SpinHistoryEntry {
+  date: string;
+  reward: SpinReward;
+  timestamp: number;
+}
+
+// ============================================================
+// Spin Wheel Segments
+// ============================================================
+
+/** IDs of accessories exclusive to the daily spin (not dropped from episodes) */
+const SPIN_EXCLUSIVE_ACCESSORIES = [
+  'diamondTiara',
+  'ninjaMask',
+  'royalCape',
+  'aviatorGoggles',
+  'chefHat',
+  'lei',
+  'catEars',
+  'nightOwlGoggles',
+  'galaxyCape',
+  'samuraiHelmet',
+  'pixelShades',
+  'luckyClover',
+  'witchHat',
+  'steamGoggles',
+  'rainbowScarf',
+  'mushHat',
+  'butterflyMask',
+  'shellNecklace',
+  'foxEars',
+  'ghostMask',
+  'thunderChain',
+  'iceHelm',
+  'prismVisor',
+  'solarAmulet',
+];
+
+function toLocalDateString(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Build the 8 segments for the spin wheel, influenced by streak */
+export function buildSpinSegments(streakDays: number): SpinReward[] {
+  // Streak tiers improve reward quality
+  const tier = streakDays >= 30 ? 3 : streakDays >= 14 ? 2 : streakDays >= 7 ? 1 : 0;
+
+  const segments: SpinReward[] = [
+    // 0: Niete — 30%
+    {
+      type: 'nothing',
+      label: 'Niete',
+      icon: '❌',
+      color: '#444444',
+      rarity: 'common',
+    },
+    // 1: 2x XP 30min — 20%
+    {
+      type: 'xp_boost',
+      label: '2x XP — 30 Min',
+      icon: '⚡',
+      color: '#FFD93D',
+      rarity: 'common',
+      xpMultiplier: 2,
+      xpDurationMinutes: 30,
+    },
+    // 2: Niete — 15%
+    {
+      type: 'nothing',
+      label: 'Niete',
+      icon: '💨',
+      color: '#555555',
+      rarity: 'common',
+    },
+    // 3: 2x XP 1h — 12%
+    {
+      type: 'xp_boost',
+      label: '2x XP — 1 Stunde',
+      icon: '🔥',
+      color: '#FF9800',
+      rarity: 'uncommon',
+      xpMultiplier: 2,
+      xpDurationMinutes: 60,
+    },
+    // 4: Accessoire — 10%
+    {
+      type: 'accessory',
+      label: 'Accessoire',
+      icon: '🎁',
+      color: '#2196F3',
+      rarity: tier >= 1 ? 'uncommon' : 'common',
+    },
+    // 5: 2x XP 2h — 6%
+    {
+      type: 'xp_boost',
+      label: '2x XP — 2 Stunden',
+      icon: '💥',
+      color: '#4CAF50',
+      rarity: 'rare',
+      xpMultiplier: 2,
+      xpDurationMinutes: 120,
+    },
+    // 6: Seltenes Accessoire — 4%
+    {
+      type: 'accessory',
+      label: 'Seltenes Accessoire',
+      icon: '✨',
+      color: '#9C27B0',
+      rarity: tier >= 1 ? 'rare' : 'uncommon',
+    },
+    // 7: Episches Accessoire — 3%
+    {
+      type: 'accessory',
+      label: 'Episches Accessoire',
+      icon: '💎',
+      color: '#E040FB',
+      rarity: tier >= 3 ? 'epic' : tier >= 1 ? 'rare' : 'uncommon',
+    },
+  ];
+
+  return segments;
+}
+
+// ============================================================
+// Weighted spin logic
+// ============================================================
+
+/** Weights for each segment index — total 100 */
+// Niete 30%, 2xXP30m 20%, Niete 15%, 2xXP1h 12%, Acc 10%, 2xXP2h 6%, Rare Acc 4%, Epic Acc 3%
+const BASE_WEIGHTS = [30, 20, 15, 12, 10, 6, 4, 3];
+
+function weightedRandomIndex(weights: number[]): number {
+  const total = weights.reduce((a, b) => a + b, 0);
+  let roll = Math.random() * total;
+  for (let i = 0; i < weights.length; i++) {
+    roll -= weights[i];
+    if (roll <= 0) return i;
+  }
+  return weights.length - 1;
+}
+
+// ============================================================
+// Core spin functions
+// ============================================================
+
+/** Check if the user can spin today */
+export async function canSpinToday(userId: string): Promise<boolean> {
+  const ref = firebase.database().ref(`users/${userId}/dailySpin/lastSpinDate`);
+  const snap = await ref.once('value');
+  const lastDate = snap.val();
+  if (!lastDate) return true;
+  return lastDate !== toLocalDateString(new Date());
+}
+
+/** Get current daily spin data */
+export async function getDailySpinData(userId: string): Promise<DailySpinData | null> {
+  const ref = firebase.database().ref(`users/${userId}/dailySpin`);
+  const snap = await ref.once('value');
+  return snap.val();
+}
+
+/** Perform the daily spin and return the reward + segment index */
+export async function performDailySpin(
+  userId: string,
+  streakDays: number
+): Promise<{ reward: SpinReward; segmentIndex: number } | null> {
+  const allowed = await canSpinToday(userId);
+  if (!allowed) return null;
+
+  const segments = buildSpinSegments(streakDays);
+  const segmentIndex = weightedRandomIndex(BASE_WEIGHTS);
+  const reward = { ...segments[segmentIndex] };
+
+  // If it's an accessory reward, pick a specific one
+  if (reward.type === 'accessory') {
+    const picked = await pickAccessoryReward(userId, reward.rarity);
+    if (picked) {
+      reward.accessoryId = picked.id;
+      reward.label = picked.name;
+      reward.icon = picked.icon;
+    } else {
+      // Fallback to XP boost if all accessories owned
+      reward.type = 'xp_boost';
+      reward.label = '2x XP (1 Stunde)';
+      reward.icon = '🔥';
+      reward.xpMultiplier = 2;
+      reward.xpDurationMinutes = 60;
+    }
+  }
+
+  // Save spin result
+  const today = toLocalDateString(new Date());
+  const spinRef = firebase.database().ref(`users/${userId}/dailySpin`);
+  const snap = await spinRef.once('value');
+  const current = snap.val() || { totalSpins: 0, history: [] };
+
+  const historyEntry: SpinHistoryEntry = {
+    date: today,
+    reward,
+    timestamp: Date.now(),
+  };
+
+  // Keep last 30 history entries
+  const history = [...(current.history || []), historyEntry].slice(-30);
+
+  await spinRef.set({
+    lastSpinDate: today,
+    totalSpins: (current.totalSpins || 0) + 1,
+    history,
+  });
+
+  // Apply the reward
+  await applySpinReward(userId, reward);
+
+  return { reward, segmentIndex };
+}
+
+// ============================================================
+// Reward application
+// ============================================================
+
+async function pickAccessoryReward(
+  userId: string,
+  targetRarity: AccessoryRarity
+): Promise<{ id: string; name: string; icon: string } | null> {
+  const pets = await getUserPets(userId);
+  const alivePet = pets.find((p) => p.isAlive);
+  if (!alivePet) return null;
+
+  const owned = new Set((alivePet.accessories || []).map((a) => a.id));
+
+  // Prefer spin-exclusive accessories first, then fall back to regular ones
+  const spinExclusiveCandidates = SPIN_EXCLUSIVE_ACCESSORIES.filter((id) => {
+    const def = ACCESSORIES[id];
+    return def && def.rarity === targetRarity && !owned.has(id);
+  });
+
+  if (spinExclusiveCandidates.length > 0) {
+    const id = spinExclusiveCandidates[Math.floor(Math.random() * spinExclusiveCandidates.length)];
+    const def = ACCESSORIES[id];
+    return { id, name: def.name, icon: def.icon };
+  }
+
+  // Fall back to regular accessories of that rarity
+  const regularCandidates = Object.entries(ACCESSORIES).filter(
+    ([id, def]) => def.rarity === targetRarity && !owned.has(id)
+  );
+
+  if (regularCandidates.length === 0) return null;
+
+  const [id, def] = regularCandidates[Math.floor(Math.random() * regularCandidates.length)];
+  return { id, name: def.name, icon: def.icon };
+}
+
+async function applySpinReward(userId: string, reward: SpinReward): Promise<void> {
+  const pets = await getUserPets(userId);
+  const alivePet = pets.find((p) => p.isAlive);
+  if (!alivePet) return;
+
+  const petRef = firebase.database().ref(`pets/${userId}/${alivePet.id}`);
+
+  switch (reward.type) {
+    case 'xp_boost': {
+      // Add to inventory instead of activating immediately
+      const boostItem: XpBoostItem = {
+        multiplier: reward.xpMultiplier || 2,
+        durationMinutes: reward.xpDurationMinutes || 60,
+        source: 'daily_spin',
+        wonAt: Date.now(),
+      };
+      const invRef = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+      const invSnap = await invRef.once('value');
+      const inventory: XpBoostItem[] = invSnap.val() || [];
+      inventory.push(boostItem);
+      await invRef.set(inventory);
+      break;
+    }
+    case 'nothing':
+      break;
+    case 'accessory': {
+      if (!reward.accessoryId) break;
+      const def = ACCESSORIES[reward.accessoryId];
+      if (!def) break;
+      const alreadyOwned = alivePet.accessories?.some((a) => a.id === reward.accessoryId);
+      if (alreadyOwned) break;
+
+      const newAcc: PetAccessory = {
+        id: reward.accessoryId,
+        type: def.slot,
+        name: def.name,
+        icon: def.icon,
+        equipped: false,
+        isNew: true,
+      };
+      if (def.color) newAcc.color = def.color;
+
+      const accessories = [...(alivePet.accessories || []), newAcc];
+      await petRef.update({ accessories });
+      break;
+    }
+  }
+}
+
+// ============================================================
+// XP Boost check (used by petProgressManager)
+// ============================================================
+
+export async function getActiveXpBoost(
+  userId: string
+): Promise<{ multiplier: number; expiresAt: number } | null> {
+  const ref = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const snap = await ref.once('value');
+  const data = snap.val();
+  if (!data) return null;
+
+  if (Date.now() > data.expiresAt) {
+    // Expired — clean up
+    await ref.remove();
+    return null;
+  }
+
+  return { multiplier: data.multiplier, expiresAt: data.expiresAt };
+}
+
+// ============================================================
+// XP Boost Inventory
+// ============================================================
+
+/** Get all collected (unused) XP boosts */
+export async function getXpBoostInventory(userId: string): Promise<XpBoostItem[]> {
+  const ref = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+  const snap = await ref.once('value');
+  return snap.val() || [];
+}
+
+/** Activate a boost from inventory by index */
+export async function activateXpBoost(userId: string, index: number): Promise<boolean> {
+  const ref = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+  const snap = await ref.once('value');
+  const inventory: XpBoostItem[] = snap.val() || [];
+
+  if (index < 0 || index >= inventory.length) return false;
+
+  // Check if a boost is already active
+  const activeRef = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const activeSnap = await activeRef.once('value');
+  const active = activeSnap.val();
+  if (active && active.expiresAt > Date.now()) return false;
+
+  const boost = inventory[index];
+  const expiresAt = Date.now() + boost.durationMinutes * 60 * 1000;
+
+  // Activate
+  await activeRef.set({
+    multiplier: boost.multiplier,
+    expiresAt,
+    source: boost.source,
+  });
+
+  // Remove from inventory
+  inventory.splice(index, 1);
+  await ref.set(inventory.length > 0 ? inventory : null);
+
+  return true;
+}

@@ -103,7 +103,7 @@ export const PetCustomization = memo(function PetCustomization({
               fontWeight: 400,
             }}
           >
-            {sortedAccessories.length}/{Object.keys(ACCESSORIES).length}
+            {sortedAccessories.length}
             {equippedCount > 0 ? ' \u00B7 1 getragen' : ''}
           </span>
         </h2>
