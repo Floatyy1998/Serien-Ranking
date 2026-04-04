@@ -99,13 +99,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
   };
 
   return (
-    <BottomSheet
-      isOpen={isOpen}
-      onClose={onClose}
-      maxHeight="75vh"
-      ariaLabel="Benachrichtigungen"
-      bottomOffset="calc(90px + env(safe-area-inset-bottom))"
-    >
+    <BottomSheet isOpen={isOpen} onClose={onClose} maxHeight="75vh" ariaLabel="Benachrichtigungen">
       <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         {/* Header */}
         <div style={{ padding: '0 20px 16px', position: 'relative' }}>
