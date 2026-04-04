@@ -22,11 +22,7 @@ export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClo
   const { currentTheme } = useTheme();
 
   return (
-    <BottomSheet
-      isOpen={posterNav.open}
-      onClose={onClose}
-      bottomOffset="calc(90px + env(safe-area-inset-bottom))"
-    >
+    <BottomSheet isOpen={posterNav.open} onClose={onClose}>
       <div
         style={{
           display: 'flex',

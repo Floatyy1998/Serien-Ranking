@@ -168,7 +168,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
       </Tooltip>
 
       {/* Filter Panel */}
-      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} bottomOffset="0px">
+      <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <QuickFilterPanel
           isMovieMode={isMovieMode}
           isRatingsMode={isRatingsMode}

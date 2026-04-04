@@ -13,7 +13,6 @@ interface BottomSheetProps {
   maxHeight?: string;
   showDragHandle?: boolean;
   dragThreshold?: number;
-  bottomOffset?: string;
   ariaLabel?: string;
   ariaLabelledBy?: string;
 }
@@ -26,7 +25,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   maxHeight = '85vh',
   showDragHandle = true,
   dragThreshold = 100,
-  bottomOffset = '0px',
   ariaLabel,
   ariaLabelledBy,
 }) => {
@@ -97,7 +95,6 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               overflow: 'hidden',
               boxShadow:
                 '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3)',
-              marginBottom: bottomOffset,
               paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
             }}
             onClick={(e) => e.stopPropagation()}
