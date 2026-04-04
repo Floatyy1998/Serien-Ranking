@@ -26,6 +26,20 @@ import {
 } from './petProgressManager';
 
 import { toggleAccessory, changePetColor, claimAccessoryDrop } from './petAccessoryManager';
+import {
+  canSpinToday,
+  performDailySpin,
+  getDailySpinData,
+  getActiveXpBoost,
+  getXpBoostInventory,
+  activateXpBoost,
+} from './dailySpinService';
+import {
+  getAvailableBoxCount,
+  getNextBoxThreshold,
+  getProgressToNextBox,
+  openMysteryBox,
+} from './mysteryBoxService';
 
 export const petService = {
   getUserPets,
@@ -49,4 +63,14 @@ export const petService = {
   toggleAccessory,
   changePetColor,
   claimAccessoryDrop,
+  canSpinToday,
+  performDailySpin,
+  getDailySpinData,
+  getActiveXpBoost,
+  getXpBoostInventory,
+  activateXpBoost,
+  getAvailableBoxCount,
+  getNextBoxThreshold,
+  getProgressToNextBox,
+  openMysteryBox,
 };

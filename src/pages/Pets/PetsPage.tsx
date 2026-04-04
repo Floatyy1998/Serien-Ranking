@@ -10,6 +10,7 @@ import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
 import { PetCustomization } from './PetCustomization';
+import { XpBoostSection } from './XpBoostSection';
 import { PetReleaseConfirm } from './PetReleaseConfirm';
 import { PetSelector } from './PetSelector';
 import { usePetsData } from './usePetsData';
@@ -127,6 +128,9 @@ export const PetsPage: React.FC = () => {
         onClose={closeReleaseConfirm}
         onConfirm={releasePet}
       />
+
+      {/* XP Boosts */}
+      <XpBoostSection />
 
       {/* Customization: Colors & Accessories */}
       <PetCustomization

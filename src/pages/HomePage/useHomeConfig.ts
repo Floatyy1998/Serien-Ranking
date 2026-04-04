@@ -20,6 +20,8 @@ export const DEFAULT_SECTION_ORDER = [
 ];
 export const DEFAULT_FOR_YOU_ORDER = [
   'watch-streak',
+  'daily-spin',
+  'milestone-box',
   'taste-profile',
   'taste-match',
   'watch-journey',
