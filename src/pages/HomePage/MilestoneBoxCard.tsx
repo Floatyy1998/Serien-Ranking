@@ -110,7 +110,7 @@ export const MilestoneBoxCard: React.FC = () => {
             >
               {hasBox
                 ? `${availableBoxes} Box${availableBoxes > 1 ? 'en' : ''} verfügbar!`
-                : `Nächste bei ${nextThreshold} Episoden`}
+                : `Nächste in ${nextThreshold - totalEpisodes} Episoden`}
             </p>
           </div>
 
