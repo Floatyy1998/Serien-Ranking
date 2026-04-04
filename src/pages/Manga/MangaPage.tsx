@@ -4,22 +4,21 @@ import {
   Explore,
   History,
   MenuBook,
-  Notifications,
   Search,
   Timeline,
   TrendingUp,
 } from '@mui/icons-material';
-import { Badge } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { GradientText, SectionHeader } from '../../components/ui';
+import { GradientText, HeaderActions, SectionHeader } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
-import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
+import { NotificationSheet } from '../HomePage/NotificationSheet';
+import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
+import { useUnifiedNotifications } from '../HomePage/useUnifiedNotifications';
 import { ContinueReadingSection } from './sections/ContinueReadingSection';
 import { HiddenMangaCard } from './sections/HiddenMangaCard';
 import { MangaCatchUpCard } from './sections/MangaCatchUpCard';
@@ -36,10 +35,13 @@ export const MangaPage = () => {
   const { user } = useAuth() || {};
   const { mangaList, loading } = useMangaList();
   const navigate = useNavigate();
-  const { unreadActivitiesCount, unreadRequestsCount } = useOptimizedFriends();
-  const { unreadCount: notificationUnreadCount } = useNotifications();
-  const totalUnread =
-    (unreadActivitiesCount || 0) + (unreadRequestsCount || 0) + (notificationUnreadCount || 0);
+  const notifs = useUnifiedNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [caseOpeningDrop, setCaseOpeningDrop] = useState<{
+    dropId: string;
+    accessoryId: string;
+    rarity: string;
+  } | null>(null);
 
   const { data: userData } = useEnhancedFirebaseCache<{ photoURL?: string }>(
     user ? `users/${user.uid}` : '',
@@ -137,68 +139,14 @@ export const MangaPage = () => {
             </p>
           </div>
 
-          {/* Notifications + Profile */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {totalUnread > 0 ? (
-              <Badge
-                badgeContent={totalUnread}
-                color="error"
-                sx={{ '& .MuiBadge-badge': { fontSize: 10, height: 18, minWidth: 18 } }}
-              >
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => navigate('/activity')}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: '50%',
-                    background: `${currentTheme.primary}1A`,
-                    border: `1px solid ${currentTheme.primary}33`,
-                    color: currentTheme.text.primary,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <Notifications style={{ fontSize: 16 }} />
-                </motion.button>
-              </Badge>
-            ) : (
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => navigate('/activity')}
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: `${currentTheme.primary}1A`,
-                  border: `1px solid ${currentTheme.primary}33`,
-                  color: currentTheme.text.primary,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                }}
-              >
-                <Notifications style={{ fontSize: 16 }} />
-              </motion.button>
-            )}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => navigate('/profile')}
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                background: photoURL
-                  ? `url(${photoURL}) center/cover`
-                  : `${currentTheme.primary}30`,
-                border: `2px solid ${currentTheme.primary}`,
-                cursor: 'pointer',
-              }}
-            />
-          </div>
+          <HeaderActions
+            totalUnreadBadge={notifs.totalUnreadBadge}
+            onNotificationsOpen={() => {
+              setShowNotifications(true);
+              notifs.handleMarkAllNotificationsRead();
+            }}
+            photoURL={photoURL}
+          />
         </motion.div>
       </header>
 
@@ -403,6 +351,20 @@ export const MangaPage = () => {
           </div>
         </div>
       )}
+
+      <NotificationSheet
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+        notifications={notifs.unifiedNotifications}
+        onMarkAllRead={notifs.handleMarkAllNotificationsRead}
+        onMarkAsRead={notifs.markAsRead}
+        onDismissAnnouncement={notifs.dismissAnnouncement}
+        onAcceptRequest={notifs.acceptFriendRequest}
+        onDeclineRequest={notifs.declineFriendRequest}
+        onOpenCaseOpening={setCaseOpeningDrop}
+      />
+
+      <CaseOpeningOverlay dropData={caseOpeningDrop} onClose={() => setCaseOpeningDrop(null)} />
     </div>
   );
 };
