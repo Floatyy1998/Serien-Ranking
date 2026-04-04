@@ -235,7 +235,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
         onClick={onClose}
         style={{
           position: 'absolute',
-          top: 16,
+          top: 'calc(16px + env(safe-area-inset-top, 0px))',
           right: 16,
           background: 'none',
           border: 'none',
