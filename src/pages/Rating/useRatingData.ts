@@ -66,8 +66,9 @@ export const useRatingData = (): UseRatingDataResult => {
         const overall = calculateOverallRating(item);
         setOverallRating(parseFloat(overall) || 0);
 
+        const validGenres = new Set(allPossibleGenres);
         Object.keys(item.rating).forEach((genre) => {
-          if (typeof item.rating[genre] === 'number') {
+          if (typeof item.rating[genre] === 'number' && validGenres.has(genre)) {
             loadedRatings[genre] = item.rating[genre];
           }
         });
