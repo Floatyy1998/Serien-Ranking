@@ -113,11 +113,10 @@ export async function watchedSeriesWithGenre(
     xpGain = Math.floor(xpGain * PET_CONFIG.HEALTHY_XP_MULTIPLIER);
   }
 
-  // Daily Spin XP boost (episodenbasiert)
+  // Daily Spin XP boost (Multiplikator anwenden, Verbrauch passiert einmal in watchedSeriesWithGenreAllPets)
   const xpBoost = await getActiveXpBoost(userId);
   if (xpBoost) {
     xpGain = Math.floor(xpGain * xpBoost.multiplier);
-    await consumeXpBoostEpisode(userId);
   }
 
   pet.episodesWatched++;
@@ -173,6 +172,12 @@ export async function watchedSeriesWithGenreAllPets(
     if (pet.isAlive) {
       await watchedSeriesWithGenre(userId, pet.id, genres);
     }
+  }
+
+  // Boost-Episode einmal pro geschauter Episode verbrauchen (nicht pro Pet)
+  const xpBoost = await getActiveXpBoost(userId);
+  if (xpBoost) {
+    await consumeXpBoostEpisode(userId);
   }
 
   // Roll for accessory drop
