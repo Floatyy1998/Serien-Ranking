@@ -7,7 +7,6 @@ export const DEFAULT_SECTION_ORDER = [
   'main-actions',
   'quick-actions',
   'secondary-actions',
-  'recently-added',
   'countdown',
   'continue-watching',
   'rewatches',

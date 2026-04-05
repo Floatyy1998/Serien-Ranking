@@ -43,7 +43,6 @@ import { useRewatchHandler } from './useRewatchHandler';
 import { useUnifiedNotifications } from './useUnifiedNotifications';
 import { GreetingSection } from './sections/GreetingSection';
 import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
-import { RecentlyAddedSection } from './sections/RecentlyAddedSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
@@ -253,9 +252,6 @@ export const HomePage: React.FC = () => {
         return (
           <SecondaryActionsSection key="secondary-actions" config={config} navigate={navigate} />
         );
-
-      case 'recently-added':
-        return <RecentlyAddedSection key="recently-added" />;
 
       case 'countdown':
         if (countdowns.length === 0) return null;

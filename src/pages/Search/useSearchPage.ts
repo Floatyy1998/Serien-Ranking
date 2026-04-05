@@ -10,7 +10,6 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { trackRecentlyAdded } from '../../lib/recentlyAdded';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 
@@ -359,12 +358,6 @@ export const useSearchPage = (): UseSearchPageResult => {
           setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
 
           const title = item.title || item.name || '';
-          trackRecentlyAdded({
-            id: item.id,
-            title,
-            poster: item.poster_path || undefined,
-            type: item.type,
-          });
 
           setSnackbar({
             open: true,
