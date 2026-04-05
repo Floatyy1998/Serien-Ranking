@@ -20,7 +20,7 @@ export interface MysteryBoxReward {
   rarity: AccessoryRarity;
   accessoryId?: string;
   xpMultiplier?: number;
-  xpDurationMinutes?: number;
+  xpEpisodeCount?: number;
 }
 
 export interface MysteryBoxData {
@@ -174,13 +174,13 @@ function getBoxRarity(boxNumber: number): AccessoryRarity {
   return 'common';
 }
 
-/** XP boost durations by rarity */
-const BOOST_DURATIONS: Record<AccessoryRarity, { multiplier: number; minutes: number }> = {
-  common: { multiplier: 2, minutes: 30 },
-  uncommon: { multiplier: 2, minutes: 60 },
-  rare: { multiplier: 2, minutes: 120 },
-  epic: { multiplier: 3, minutes: 60 },
-  legendary: { multiplier: 3, minutes: 180 },
+/** XP boost episode counts by rarity */
+const BOOST_EPISODES: Record<AccessoryRarity, { multiplier: number; episodes: number }> = {
+  common: { multiplier: 2, episodes: 2 },
+  uncommon: { multiplier: 2, episodes: 5 },
+  rare: { multiplier: 2, episodes: 10 },
+  epic: { multiplier: 3, episodes: 5 },
+  legendary: { multiplier: 3, episodes: 15 },
 };
 
 async function generateMysteryReward(
@@ -204,15 +204,14 @@ async function generateMysteryReward(
   }
 
   // XP boost (also fallback if all accessories owned)
-  const boost = BOOST_DURATIONS[rarity];
-  const durationLabel = boost.minutes >= 60 ? `${boost.minutes / 60} Std` : `${boost.minutes} Min`;
+  const boost = BOOST_EPISODES[rarity];
   return {
     type: 'xp_boost',
-    label: `${boost.multiplier}x XP — ${durationLabel}`,
+    label: `${boost.multiplier}x XP — ${boost.episodes} Episoden`,
     icon: '\u26A1',
     rarity,
     xpMultiplier: boost.multiplier,
-    xpDurationMinutes: boost.minutes,
+    xpEpisodeCount: boost.episodes,
   };
 }
 
@@ -282,7 +281,7 @@ async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Pro
       const inventory = invSnap.val() || [];
       inventory.push({
         multiplier: reward.xpMultiplier || 2,
-        durationMinutes: reward.xpDurationMinutes || 60,
+        episodeCount: reward.xpEpisodeCount || 5,
         source: 'mystery_box',
         wonAt: Date.now(),
       });

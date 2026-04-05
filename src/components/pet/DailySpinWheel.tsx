@@ -53,9 +53,9 @@ function getResultIcon(reward: SpinReward) {
     case 'nothing':
       return <Close style={{ fontSize: 64, color: '#666' }} />;
     case 'xp_boost':
-      if ((reward.xpDurationMinutes || 0) >= 120)
+      if ((reward.xpEpisodeCount || 0) >= 10)
         return <LocalFireDepartment style={{ fontSize: 64, color: '#4CAF50' }} />;
-      if ((reward.xpDurationMinutes || 0) >= 60)
+      if ((reward.xpEpisodeCount || 0) >= 5)
         return <Whatshot style={{ fontSize: 64, color: '#FF9800' }} />;
       return <Bolt style={{ fontSize: 64, color: '#FFD93D' }} />;
     case 'accessory':
@@ -501,7 +501,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
               style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center' }}
             >
               {result.type === 'xp_boost' &&
-                `Alle XP werden ${result.xpMultiplier}x multipliziert für ${result.xpDurationMinutes} Minuten!`}
+                `Alle XP werden ${result.xpMultiplier}x multipliziert für ${result.xpEpisodeCount} Episoden!`}
               {result.type === 'accessory' && 'Neues Accessoire freigeschaltet!'}
               {result.type === 'nothing' && 'Morgen hast du mehr Glück!'}
             </motion.p>

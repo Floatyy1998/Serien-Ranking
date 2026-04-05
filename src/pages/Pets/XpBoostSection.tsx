@@ -17,9 +17,8 @@ export const XpBoostSection: React.FC = () => {
   const [inventory, setInventory] = useState<XpBoostItem[]>([]);
   const [activeBoost, setActiveBoost] = useState<{
     multiplier: number;
-    expiresAt: number;
+    remainingEpisodes: number;
   } | null>(null);
-  const [timeLeft, setTimeLeft] = useState('');
   const [activating, setActivating] = useState(false);
 
   // Load inventory
@@ -34,8 +33,8 @@ export const XpBoostSection: React.FC = () => {
     const ref = firebase.database().ref(`users/${user.uid}/activeXpBoost`);
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
-      if (data && data.expiresAt > Date.now()) {
-        setActiveBoost({ multiplier: data.multiplier, expiresAt: data.expiresAt });
+      if (data && data.remainingEpisodes > 0) {
+        setActiveBoost({ multiplier: data.multiplier, remainingEpisodes: data.remainingEpisodes });
       } else {
         setActiveBoost(null);
       }
@@ -43,24 +42,6 @@ export const XpBoostSection: React.FC = () => {
     ref.on('value', handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
-
-  // Countdown timer
-  useEffect(() => {
-    if (!activeBoost) return;
-    const tick = () => {
-      const remaining = activeBoost.expiresAt - Date.now();
-      if (remaining <= 0) {
-        setActiveBoost(null);
-        return;
-      }
-      const mins = Math.floor(remaining / 60000);
-      const secs = Math.floor((remaining % 60000) / 1000);
-      setTimeLeft(`${mins}:${secs.toString().padStart(2, '0')}`);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [activeBoost]);
 
   const handleActivate = async (index: number) => {
     if (!user?.uid || activating) return;
@@ -73,16 +54,16 @@ export const XpBoostSection: React.FC = () => {
     setActivating(false);
   };
 
-  const getBoostIcon = (multiplier: number, duration: number) => {
-    if (duration >= 120) return <LocalFireDepartment style={{ fontSize: 18, color: '#4CAF50' }} />;
-    if (multiplier >= 3 || duration >= 60)
+  const getBoostIcon = (multiplier: number, episodes: number) => {
+    if (episodes >= 10) return <LocalFireDepartment style={{ fontSize: 18, color: '#4CAF50' }} />;
+    if (multiplier >= 3 || episodes >= 5)
       return <Whatshot style={{ fontSize: 18, color: '#FF9800' }} />;
     return <Bolt style={{ fontSize: 18, color: '#FFD93D' }} />;
   };
 
-  const getBoostColor = (multiplier: number, duration: number) => {
-    if (duration >= 120) return '#4CAF50';
-    if (multiplier >= 3 || duration >= 60) return '#FF9800';
+  const getBoostColor = (multiplier: number, episodes: number) => {
+    if (episodes >= 10) return '#4CAF50';
+    if (multiplier >= 3 || episodes >= 5) return '#FF9800';
     return '#FFD93D';
   };
 
@@ -152,7 +133,8 @@ export const XpBoostSection: React.FC = () => {
                 {activeBoost.multiplier}x XP aktiv!
               </div>
               <div style={{ fontSize: 12, color: currentTheme.text.secondary }}>
-                Noch {timeLeft} verbleibend
+                Noch {activeBoost.remainingEpisodes}{' '}
+                {activeBoost.remainingEpisodes === 1 ? 'Episode' : 'Episoden'}
               </div>
             </div>
             <div
@@ -163,7 +145,7 @@ export const XpBoostSection: React.FC = () => {
                 color: '#FFD93D',
               }}
             >
-              {timeLeft}
+              {activeBoost.remainingEpisodes}
             </div>
           </motion.div>
         )}
@@ -173,11 +155,7 @@ export const XpBoostSection: React.FC = () => {
       {inventory.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {inventory.map((boost, i) => {
-            const color = getBoostColor(boost.multiplier, boost.durationMinutes);
-            const durationLabel =
-              boost.durationMinutes >= 60
-                ? `${boost.durationMinutes / 60} Std`
-                : `${boost.durationMinutes} Min`;
+            const color = getBoostColor(boost.multiplier, boost.episodeCount);
 
             return (
               <div
@@ -204,7 +182,7 @@ export const XpBoostSection: React.FC = () => {
                     flexShrink: 0,
                   }}
                 >
-                  {getBoostIcon(boost.multiplier, boost.durationMinutes)}
+                  {getBoostIcon(boost.multiplier, boost.episodeCount)}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div
@@ -214,7 +192,8 @@ export const XpBoostSection: React.FC = () => {
                       color: currentTheme.text.primary,
                     }}
                   >
-                    {boost.multiplier}x XP — {durationLabel}
+                    {boost.multiplier}x XP — {boost.episodeCount}{' '}
+                    {boost.episodeCount === 1 ? 'Episode' : 'Episoden'}
                   </div>
                 </div>
                 <motion.button
