@@ -344,7 +344,7 @@ export const XpBoostHeaderButton: React.FC = () => {
                   Keine Boosts vorhanden.
                   <br />
                   <span style={{ fontSize: 11, opacity: 0.7 }}>
-                    Boosts gibt's beim Daily Spin & in Mystery Boxes!
+                    Boosts gibt's beim Daily Spin & in Mystery Boxen!
                   </span>
                 </div>
               )}
