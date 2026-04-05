@@ -10,7 +10,7 @@ import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
 import { PetCustomization } from './PetCustomization';
-import { XpBoostSection } from './XpBoostSection';
+import { XpBoostHeaderButton } from './XpBoostHeaderButton';
 import { PetReleaseConfirm } from './PetReleaseConfirm';
 import { PetSelector } from './PetSelector';
 import { usePetsData } from './usePetsData';
@@ -95,6 +95,7 @@ export const PetsPage: React.FC = () => {
         title="Meine Pets"
         gradientFrom={currentTheme.accent}
         gradientTo={currentTheme.primary}
+        actions={<XpBoostHeaderButton />}
       />
 
       {/* Pet Selector */}
@@ -128,9 +129,6 @@ export const PetsPage: React.FC = () => {
         onClose={closeReleaseConfirm}
         onConfirm={releasePet}
       />
-
-      {/* XP Boosts */}
-      <XpBoostSection />
 
       {/* Customization: Colors & Accessories */}
       <PetCustomization
