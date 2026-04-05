@@ -17,7 +17,7 @@ function getBoostColor(multiplier: number, episodes: number): string {
   if (value >= 30) return '#9C27B0'; // Epic purple
   if (value >= 20) return '#4CAF50'; // Rare green
   if (value >= 10) return '#FF9800'; // Uncommon orange
-  return '#FFD93D'; // Common yellow
+  return '#90A4AE'; // Common grey-blue
 }
 
 function getBoostLabel(multiplier: number, episodes: number): string {
