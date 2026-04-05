@@ -143,32 +143,64 @@ export async function openMysteryBox(
 
 /** Rarity skaliert mit Box-Nummer */
 function getBoxRarity(boxNumber: number): AccessoryRarity {
-  // Box 1 (50 Ep) = common/uncommon, Box 4 (200 Ep) = rare, Box 10 (500 Ep) = epic, Box 20 (1000 Ep) = legendary
-  // Aber immer zufällig — höhere Boxen haben nur bessere Chancen
   const roll = Math.random();
 
-  if (boxNumber >= 20) {
-    // 1000+ Episoden: 30% legendary, 30% epic, 25% rare, 15% uncommon
-    if (roll < 0.3) return 'legendary';
-    if (roll < 0.6) return 'epic';
-    if (roll < 0.85) return 'rare';
-    return 'uncommon';
-  }
-  if (boxNumber >= 10) {
-    // 500+ Episoden: 10% legendary, 25% epic, 35% rare, 30% uncommon
+  if (boxNumber >= 400) {
+    // 20000+ Ep: 10% L, 55% E, 25% R, 8% U, 2% C
     if (roll < 0.1) return 'legendary';
-    if (roll < 0.35) return 'epic';
-    if (roll < 0.7) return 'rare';
-    return 'uncommon';
-  }
-  if (boxNumber >= 4) {
-    // 200+ Episoden: 5% epic, 25% rare, 40% uncommon, 30% common
-    if (roll < 0.05) return 'epic';
-    if (roll < 0.3) return 'rare';
-    if (roll < 0.7) return 'uncommon';
+    if (roll < 0.65) return 'epic';
+    if (roll < 0.9) return 'rare';
+    if (roll < 0.98) return 'uncommon';
     return 'common';
   }
-  // Erste Boxen: 15% rare, 35% uncommon, 50% common
+  if (boxNumber >= 200) {
+    // 10000+ Ep: 8% L, 49% E, 30% R, 10% U, 3% C
+    if (roll < 0.08) return 'legendary';
+    if (roll < 0.57) return 'epic';
+    if (roll < 0.87) return 'rare';
+    if (roll < 0.97) return 'uncommon';
+    return 'common';
+  }
+  if (boxNumber >= 100) {
+    // 5000+ Ep: 5% L, 45% E, 33% R, 12% U, 5% C
+    if (roll < 0.05) return 'legendary';
+    if (roll < 0.5) return 'epic';
+    if (roll < 0.83) return 'rare';
+    if (roll < 0.95) return 'uncommon';
+    return 'common';
+  }
+  if (boxNumber >= 50) {
+    // 2500+ Ep: 3% L, 39% E, 35% R, 15% U, 8% C
+    if (roll < 0.03) return 'legendary';
+    if (roll < 0.42) return 'epic';
+    if (roll < 0.77) return 'rare';
+    if (roll < 0.92) return 'uncommon';
+    return 'common';
+  }
+  if (boxNumber >= 20) {
+    // 1000+ Ep: 2% L, 33% E, 35% R, 20% U, 10% C
+    if (roll < 0.02) return 'legendary';
+    if (roll < 0.35) return 'epic';
+    if (roll < 0.7) return 'rare';
+    if (roll < 0.9) return 'uncommon';
+    return 'common';
+  }
+  if (boxNumber >= 10) {
+    // 500+ Ep: 1% L, 24% E, 35% R, 25% U, 15% C
+    if (roll < 0.01) return 'legendary';
+    if (roll < 0.25) return 'epic';
+    if (roll < 0.6) return 'rare';
+    if (roll < 0.85) return 'uncommon';
+    return 'common';
+  }
+  if (boxNumber >= 4) {
+    // 200+ Ep: 10% E, 30% R, 35% U, 25% C
+    if (roll < 0.1) return 'epic';
+    if (roll < 0.4) return 'rare';
+    if (roll < 0.75) return 'uncommon';
+    return 'common';
+  }
+  // Erste Boxen (50-150 Ep): 15% R, 35% U, 50% C
   if (roll < 0.15) return 'rare';
   if (roll < 0.5) return 'uncommon';
   return 'common';
@@ -179,7 +211,7 @@ const BOOST_EPISODES: Record<AccessoryRarity, { multiplier: number; episodes: nu
   common: { multiplier: 2, episodes: 2 },
   uncommon: { multiplier: 2, episodes: 5 },
   rare: { multiplier: 2, episodes: 10 },
-  epic: { multiplier: 3, episodes: 5 },
+  epic: { multiplier: 3, episodes: 10 },
   legendary: { multiplier: 3, episodes: 15 },
 };
 

@@ -9,6 +9,7 @@ interface SectionHeaderProps {
   title: string;
   onSeeAll?: () => void;
   seeAllLabel?: string;
+  action?: React.ReactNode;
   style?: React.CSSProperties;
 }
 
@@ -18,6 +19,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   title,
   onSeeAll,
   seeAllLabel = 'Alle',
+  action,
   style,
 }) => {
   const { currentTheme } = useTheme();
@@ -56,6 +58,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         </span>
         {title}
       </h2>
+      {action}
       {onSeeAll && (
         <Tooltip title="Alle anzeigen" arrow>
           <button

@@ -1,4 +1,5 @@
 import {
+  BarChart,
   Category,
   ExpandLess,
   ExpandMore,
@@ -9,10 +10,11 @@ import {
   TrendingUp,
   Tv,
 } from '@mui/icons-material';
-import { Box, Collapse, IconButton, Paper, Tooltip, Typography } from '@mui/material';
+import { Box, Collapse, IconButton, Paper, Typography } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SectionHeader } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { colors } from '../../theme';
@@ -59,38 +61,21 @@ export const StatsGrid = () => {
   return (
     <Box>
       {/* Header with expand button */}
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          mb: 1.5,
-        }}
-      >
-        <Typography
-          sx={{
-            fontSize: '0.9rem',
-            color: currentTheme.text.secondary,
-            fontWeight: 700,
-            fontFamily: 'var(--font-display)',
-          }}
-        >
-          Deine Statistiken
-        </Typography>
-
-        <Tooltip title={expanded ? 'Weniger anzeigen' : 'Mehr anzeigen'} arrow>
+      <SectionHeader
+        icon={<BarChart />}
+        iconColor={currentTheme.primary}
+        title="Deine Statistiken"
+        action={
           <IconButton
             onClick={() => setExpanded(!expanded)}
             size="small"
-            sx={{
-              color: currentTheme.text.muted,
-              padding: '4px',
-            }}
+            sx={{ color: currentTheme.text.muted, padding: '4px' }}
           >
             {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
           </IconButton>
-        </Tooltip>
-      </Box>
+        }
+        style={{ paddingLeft: 0, paddingRight: 0 }}
+      />
 
       {/* Bento Grid: Progress Ring (2 rows left) + Stat Tiles (right) */}
       <motion.div

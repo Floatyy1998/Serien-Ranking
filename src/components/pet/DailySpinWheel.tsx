@@ -5,6 +5,7 @@ import Close from '@mui/icons-material/Close';
 import Whatshot from '@mui/icons-material/Whatshot';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Diamond from '@mui/icons-material/Diamond';
+import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import { useAuth } from '../../AuthContext';
@@ -21,30 +22,32 @@ interface DailySpinWheelProps {
   onClose: () => void;
 }
 
-const SEGMENT_COUNT = 8;
+const SEGMENT_COUNT = 9;
 const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 
 const SEGMENT_COLORS = [
   '#3a3a3a', // Niete
-  '#FFD93D', // 2x XP 30min
+  '#FFD93D', // 2x XP 2 Ep
   '#4a4a4a', // Niete
-  '#FF9800', // 2x XP 1h
+  '#FF9800', // 2x XP 5 Ep
   '#2196F3', // Accessoire
-  '#4CAF50', // 2x XP 2h
+  '#4CAF50', // 2x XP 10 Ep
   '#9C27B0', // Seltenes Acc
   '#E040FB', // Episches Acc
+  '#FFD700', // Legendäres Acc
 ];
 
 /** MUI icon per segment */
 const SEGMENT_ICONS = [
-  <Close style={{ fontSize: 30, color: 'rgba(255,255,255,0.4)' }} />,
-  <Bolt style={{ fontSize: 32, color: '#1a1a2e' }} />,
-  <Close style={{ fontSize: 30, color: 'rgba(255,255,255,0.4)' }} />,
-  <Whatshot style={{ fontSize: 32, color: '#1a1a2e' }} />,
-  <CardGiftcard style={{ fontSize: 32, color: 'white' }} />,
-  <LocalFireDepartment style={{ fontSize: 32, color: '#1a1a2e' }} />,
-  <AutoAwesome style={{ fontSize: 32, color: 'white' }} />,
-  <Diamond style={{ fontSize: 32, color: 'white' }} />,
+  <Close style={{ fontSize: 28, color: 'rgba(255,255,255,0.4)' }} />,
+  <Bolt style={{ fontSize: 28, color: '#1a1a2e' }} />,
+  <Close style={{ fontSize: 28, color: 'rgba(255,255,255,0.4)' }} />,
+  <Whatshot style={{ fontSize: 28, color: '#1a1a2e' }} />,
+  <CardGiftcard style={{ fontSize: 28, color: 'white' }} />,
+  <LocalFireDepartment style={{ fontSize: 28, color: '#1a1a2e' }} />,
+  <AutoAwesome style={{ fontSize: 28, color: 'white' }} />,
+  <Diamond style={{ fontSize: 28, color: 'white' }} />,
+  <EmojiEvents style={{ fontSize: 28, color: '#1a1a2e' }} />,
 ];
 
 /** Result icon by type */
@@ -59,8 +62,9 @@ function getResultIcon(reward: SpinReward) {
         return <Whatshot style={{ fontSize: 64, color: '#FF9800' }} />;
       return <Bolt style={{ fontSize: 64, color: '#FFD93D' }} />;
     case 'accessory':
-      if (reward.rarity === 'epic' || reward.rarity === 'legendary')
-        return <Diamond style={{ fontSize: 64, color: '#E040FB' }} />;
+      if (reward.rarity === 'legendary')
+        return <EmojiEvents style={{ fontSize: 64, color: '#FFD700' }} />;
+      if (reward.rarity === 'epic') return <Diamond style={{ fontSize: 64, color: '#E040FB' }} />;
       if (reward.rarity === 'rare')
         return <AutoAwesome style={{ fontSize: 64, color: '#9C27B0' }} />;
       return <CardGiftcard style={{ fontSize: 64, color: '#2196F3' }} />;

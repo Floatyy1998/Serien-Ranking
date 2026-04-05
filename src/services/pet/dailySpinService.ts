@@ -78,13 +78,10 @@ function toLocalDateString(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-/** Build the 8 segments for the spin wheel, influenced by streak */
-export function buildSpinSegments(streakDays: number): SpinReward[] {
-  // Streak tiers improve reward quality
-  const tier = streakDays >= 30 ? 3 : streakDays >= 14 ? 2 : streakDays >= 7 ? 1 : 0;
-
+/** Build the 9 segments for the spin wheel — rarities are fixed per segment */
+export function buildSpinSegments(_streakDays: number): SpinReward[] {
   const segments: SpinReward[] = [
-    // 0: Niete — 30%
+    // 0: Niete
     {
       type: 'nothing',
       label: 'Niete',
@@ -92,7 +89,7 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       color: '#444444',
       rarity: 'common',
     },
-    // 1: 2x XP 2 Episoden — 20%
+    // 1: 2x XP 2 Episoden
     {
       type: 'xp_boost',
       label: '2x XP — 2 Episoden',
@@ -102,7 +99,7 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       xpMultiplier: 2,
       xpEpisodeCount: 2,
     },
-    // 2: Niete — 15%
+    // 2: Niete
     {
       type: 'nothing',
       label: 'Niete',
@@ -110,7 +107,7 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       color: '#555555',
       rarity: 'common',
     },
-    // 3: 2x XP 5 Episoden — 12%
+    // 3: 2x XP 5 Episoden
     {
       type: 'xp_boost',
       label: '2x XP — 5 Episoden',
@@ -120,15 +117,15 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       xpMultiplier: 2,
       xpEpisodeCount: 5,
     },
-    // 4: Accessoire — 10%
+    // 4: Common Accessoire
     {
       type: 'accessory',
       label: 'Accessoire',
       icon: '🎁',
       color: '#2196F3',
-      rarity: tier >= 1 ? 'uncommon' : 'common',
+      rarity: 'common',
     },
-    // 5: 2x XP 10 Episoden — 6%
+    // 5: 2x XP 10 Episoden
     {
       type: 'xp_boost',
       label: '2x XP — 10 Episoden',
@@ -138,21 +135,29 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       xpMultiplier: 2,
       xpEpisodeCount: 10,
     },
-    // 6: Seltenes Accessoire — 4%
+    // 6: Seltenes Accessoire
     {
       type: 'accessory',
       label: 'Seltenes Accessoire',
       icon: '✨',
       color: '#9C27B0',
-      rarity: tier >= 1 ? 'rare' : 'uncommon',
+      rarity: 'rare',
     },
-    // 7: Episches Accessoire — 3%
+    // 7: Episches Accessoire
     {
       type: 'accessory',
       label: 'Episches Accessoire',
       icon: '💎',
       color: '#E040FB',
-      rarity: tier >= 3 ? 'epic' : tier >= 1 ? 'rare' : 'uncommon',
+      rarity: 'epic',
+    },
+    // 8: Legendäres Accessoire
+    {
+      type: 'accessory',
+      label: 'Legendäres Accessoire',
+      icon: '👑',
+      color: '#FFD700',
+      rarity: 'legendary',
     },
   ];
 
@@ -163,9 +168,19 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
 // Weighted spin logic
 // ============================================================
 
-/** Weights for each segment index — total 100 */
-// Niete 30%, 2xXP30m 20%, Niete 15%, 2xXP1h 12%, Acc 10%, 2xXP2h 6%, Rare Acc 4%, Epic Acc 3%
-const BASE_WEIGHTS = [30, 20, 15, 12, 10, 6, 4, 3];
+/** Weights per segment index, scaled by streak tier.
+ *  Segments: Niete, 2xXP2Ep, Niete, 2xXP5Ep, Acc, 2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
+ *  Higher streak = less Nieten, more rare/epic/legendary chances */
+const STREAK_WEIGHTS: number[][] = [
+  // Tier 0 (0–6 Tage):   Niete 44%, XP 38%, Acc 18%
+  [29, 20, 15, 12, 10, 6, 4, 3, 1],
+  // Tier 1 (7–13 Tage):  Niete 38%, XP 38%, Acc 24%
+  [24, 20, 14, 12, 12, 7, 5, 4, 2],
+  // Tier 2 (14–29 Tage): Niete 32%, XP 38%, Acc 30%
+  [19, 20, 13, 12, 14, 8, 7, 5, 2],
+  // Tier 3 (30+ Tage):   Niete 26%, XP 38%, Acc 36%
+  [14, 20, 12, 12, 16, 9, 8, 6, 3],
+];
 
 function weightedRandomIndex(weights: number[]): number {
   const total = weights.reduce((a, b) => a + b, 0);
@@ -206,7 +221,8 @@ export async function performDailySpin(
   if (!allowed) return null;
 
   const segments = buildSpinSegments(streakDays);
-  const segmentIndex = weightedRandomIndex(BASE_WEIGHTS);
+  const tier = streakDays >= 30 ? 3 : streakDays >= 14 ? 2 : streakDays >= 7 ? 1 : 0;
+  const segmentIndex = weightedRandomIndex(STREAK_WEIGHTS[tier]);
   const reward = { ...segments[segmentIndex] };
 
   // If it's an accessory reward, pick a specific one
