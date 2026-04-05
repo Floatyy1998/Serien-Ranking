@@ -1,5 +1,5 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
@@ -22,35 +22,56 @@ import { updateTheme } from './theme';
 import { AuthProvider } from './authProvider';
 import { AuthContext } from './AuthContext';
 import { loadSavedTheme } from './themeHelpers';
+import { lazy } from 'react';
+
+// Retry wrapper: on chunk load failure (after deploy), reload the page once
+const RELOAD_KEY = 'chunk-reload';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function lazyWithRetry(factory: () => Promise<any>) {
+  return lazy(() =>
+    factory().catch((error: unknown) => {
+      const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY);
+      if (!alreadyReloaded) {
+        sessionStorage.setItem(RELOAD_KEY, '1');
+        window.location.reload();
+        return new Promise(() => {});
+      }
+      sessionStorage.removeItem(RELOAD_KEY);
+      throw error;
+    })
+  );
+}
 
 // Lazy load mobile app for all platforms
-const MobileApp = lazy(() => import('./MobileApp').then((m) => ({ default: m.MobileApp })));
-const StartPage = lazy(() =>
+const MobileApp = lazyWithRetry(() =>
+  import('./MobileApp').then((m) => ({ default: m.MobileApp }))
+);
+const StartPage = lazyWithRetry(() =>
   import('./pages/Start').then((m) => ({
     default: m.StartPage,
   }))
 );
-const LoginPage = lazy(() =>
+const LoginPage = lazyWithRetry(() =>
   import('./pages/Auth/LoginPage').then((m) => ({
     default: m.LoginPage,
   }))
 );
-const RegisterPage = lazy(() =>
+const RegisterPage = lazyWithRetry(() =>
   import('./pages/Auth/RegisterPage').then((m) => ({
     default: m.RegisterPage,
   }))
 );
-const PublicProfilePage = lazy(() =>
+const PublicProfilePage = lazyWithRetry(() =>
   import('./pages/PublicProfile').then((m) => ({
     default: m.PublicProfilePage,
   }))
 );
-const PrivacyPage = lazy(() =>
+const PrivacyPage = lazyWithRetry(() =>
   import('./pages/Privacy').then((m) => ({
     default: m.PrivacyPage,
   }))
 );
-const ImpressumPage = lazy(() =>
+const ImpressumPage = lazyWithRetry(() =>
   import('./pages/Impressum').then((m) => ({
     default: m.ImpressumPage,
   }))

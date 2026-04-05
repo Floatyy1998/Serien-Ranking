@@ -15,6 +15,20 @@ export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, error: null, errorInfo: '' };
 
   static getDerivedStateFromError(error: Error): Partial<State> {
+    // Chunk load errors after deploy: auto-reload once
+    if (
+      error.message?.includes('dynamically imported module') ||
+      error.message?.includes('Loading chunk') ||
+      error.message?.includes('Failed to fetch')
+    ) {
+      const alreadyReloaded = sessionStorage.getItem('chunk-reload');
+      if (!alreadyReloaded) {
+        sessionStorage.setItem('chunk-reload', '1');
+        window.location.reload();
+        return { hasError: false, error: null, errorInfo: '' };
+      }
+      sessionStorage.removeItem('chunk-reload');
+    }
     return { hasError: true, error };
   }
 
