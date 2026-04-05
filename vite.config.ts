@@ -30,25 +30,16 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp}'],
+        // HTML nicht precachen - muss immer frisch vom Server kommen,
+        // damit nach einem Deploy sofort die neuen Chunk-Referenzen geladen werden
+        globPatterns: ['**/*.{js,css,svg,png,jpg,jpeg,webp}'],
         navigateFallback: null, // Disable navigate fallback to prevent loops
-        navigateFallbackDenylist: [/.*/], // Never serve cached HTML for navigations
         skipWaiting: true, // Auto-update: neuer Worker übernimmt sofort
         clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
         // Disable verbose logging
         disableDevLogs: true,
         runtimeCaching: [
-          {
-            // App JS/CSS chunks: network first so deploys take effect immediately
-            urlPattern: /\/assets\/.*\.(js|css)$/,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'app-assets',
-              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 },
-              networkTimeoutSeconds: 3,
-            },
-          },
           {
             urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
             handler: 'CacheFirst',
