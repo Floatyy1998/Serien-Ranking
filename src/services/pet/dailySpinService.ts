@@ -12,7 +12,7 @@ export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing';
 
 export interface XpBoostItem {
   multiplier: number;
-  durationMinutes: number;
+  episodeCount: number;
   source: string;
   wonAt: number;
 }
@@ -25,7 +25,7 @@ export interface SpinReward {
   rarity: AccessoryRarity;
   // XP boost
   xpMultiplier?: number;
-  xpDurationMinutes?: number;
+  xpEpisodeCount?: number;
   // Accessory
   accessoryId?: string;
 }
@@ -92,15 +92,15 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       color: '#444444',
       rarity: 'common',
     },
-    // 1: 2x XP 30min — 20%
+    // 1: 2x XP 2 Episoden — 20%
     {
       type: 'xp_boost',
-      label: '2x XP — 30 Min',
+      label: '2x XP — 2 Episoden',
       icon: '⚡',
       color: '#FFD93D',
       rarity: 'common',
       xpMultiplier: 2,
-      xpDurationMinutes: 30,
+      xpEpisodeCount: 2,
     },
     // 2: Niete — 15%
     {
@@ -110,15 +110,15 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       color: '#555555',
       rarity: 'common',
     },
-    // 3: 2x XP 1h — 12%
+    // 3: 2x XP 5 Episoden — 12%
     {
       type: 'xp_boost',
-      label: '2x XP — 1 Stunde',
+      label: '2x XP — 5 Episoden',
       icon: '🔥',
       color: '#FF9800',
       rarity: 'uncommon',
       xpMultiplier: 2,
-      xpDurationMinutes: 60,
+      xpEpisodeCount: 5,
     },
     // 4: Accessoire — 10%
     {
@@ -128,15 +128,15 @@ export function buildSpinSegments(streakDays: number): SpinReward[] {
       color: '#2196F3',
       rarity: tier >= 1 ? 'uncommon' : 'common',
     },
-    // 5: 2x XP 2h — 6%
+    // 5: 2x XP 10 Episoden — 6%
     {
       type: 'xp_boost',
-      label: '2x XP — 2 Stunden',
+      label: '2x XP — 10 Episoden',
       icon: '💥',
       color: '#4CAF50',
       rarity: 'rare',
       xpMultiplier: 2,
-      xpDurationMinutes: 120,
+      xpEpisodeCount: 10,
     },
     // 6: Seltenes Accessoire — 4%
     {
@@ -219,10 +219,10 @@ export async function performDailySpin(
     } else {
       // Fallback to XP boost if all accessories owned
       reward.type = 'xp_boost';
-      reward.label = '2x XP (1 Stunde)';
+      reward.label = '2x XP — 5 Episoden';
       reward.icon = '🔥';
       reward.xpMultiplier = 2;
-      reward.xpDurationMinutes = 60;
+      reward.xpEpisodeCount = 5;
     }
   }
 
@@ -302,7 +302,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
       // Add to inventory instead of activating immediately
       const boostItem: XpBoostItem = {
         multiplier: reward.xpMultiplier || 2,
-        durationMinutes: reward.xpDurationMinutes || 60,
+        episodeCount: reward.xpEpisodeCount || 5,
         source: 'daily_spin',
         wonAt: Date.now(),
       };
@@ -345,30 +345,80 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
 
 export async function getActiveXpBoost(
   userId: string
-): Promise<{ multiplier: number; expiresAt: number } | null> {
+): Promise<{ multiplier: number; remainingEpisodes: number } | null> {
   const ref = firebase.database().ref(`users/${userId}/activeXpBoost`);
   const snap = await ref.once('value');
   const data = snap.val();
   if (!data) return null;
 
-  if (Date.now() > data.expiresAt) {
-    // Expired — clean up
+  // Migration: altes zeitbasiertes Format → entfernen (abgelaufen oder nicht migrierbar)
+  if (data.expiresAt && !data.remainingEpisodes) {
     await ref.remove();
     return null;
   }
 
-  return { multiplier: data.multiplier, expiresAt: data.expiresAt };
+  if (!data.remainingEpisodes || data.remainingEpisodes <= 0) {
+    await ref.remove();
+    return null;
+  }
+
+  return { multiplier: data.multiplier, remainingEpisodes: data.remainingEpisodes };
+}
+
+/** Decrement remaining episodes on the active boost. Called after XP is applied. */
+export async function consumeXpBoostEpisode(userId: string): Promise<void> {
+  const ref = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const snap = await ref.once('value');
+  const data = snap.val();
+  if (!data) return;
+
+  const remaining = (data.remainingEpisodes || 0) - 1;
+  if (remaining <= 0) {
+    await ref.remove();
+  } else {
+    await ref.update({ remainingEpisodes: remaining });
+  }
 }
 
 // ============================================================
 // XP Boost Inventory
 // ============================================================
 
+/** Konvertiert alte zeitbasierte Minuten in Episoden-Anzahl */
+function migrateMinutesToEpisodes(minutes: number): number {
+  if (minutes >= 120) return 10;
+  if (minutes >= 60) return 5;
+  return 2;
+}
+
 /** Get all collected (unused) XP boosts */
 export async function getXpBoostInventory(userId: string): Promise<XpBoostItem[]> {
   const ref = firebase.database().ref(`users/${userId}/xpBoostInventory`);
   const snap = await ref.once('value');
-  return snap.val() || [];
+  const raw: Record<string, unknown>[] = snap.val() || [];
+  if (raw.length === 0) return [];
+
+  // Migration: alte durationMinutes-Items zu episodeCount konvertieren
+  let needsMigration = false;
+  const migrated: XpBoostItem[] = raw.map((item) => {
+    const legacy = item as Record<string, unknown>;
+    if (legacy.durationMinutes && !legacy.episodeCount) {
+      needsMigration = true;
+      return {
+        multiplier: (legacy.multiplier as number) || 2,
+        episodeCount: migrateMinutesToEpisodes(legacy.durationMinutes as number),
+        source: (legacy.source as string) || 'daily_spin',
+        wonAt: (legacy.wonAt as number) || Date.now(),
+      };
+    }
+    return item as unknown as XpBoostItem;
+  });
+
+  if (needsMigration) {
+    await ref.set(migrated);
+  }
+
+  return migrated;
 }
 
 /** Activate a boost from inventory by index */
@@ -383,15 +433,14 @@ export async function activateXpBoost(userId: string, index: number): Promise<bo
   const activeRef = firebase.database().ref(`users/${userId}/activeXpBoost`);
   const activeSnap = await activeRef.once('value');
   const active = activeSnap.val();
-  if (active && active.expiresAt > Date.now()) return false;
+  if (active && active.remainingEpisodes > 0) return false;
 
   const boost = inventory[index];
-  const expiresAt = Date.now() + boost.durationMinutes * 60 * 1000;
 
   // Activate
   await activeRef.set({
     multiplier: boost.multiplier,
-    expiresAt,
+    remainingEpisodes: boost.episodeCount,
     source: boost.source,
   });
 

@@ -172,22 +172,12 @@ export const HeroSection = memo(
           className="ed-hero-series-btn"
         >
           <Tv className="ed-hero-series-btn-icon" />
-          Zur Serie
+          {seriesTitle}
         </motion.button>
       </div>
 
       {/* Episode Info Overlay */}
       <div className="ed-hero-info">
-        {/* Series Title Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="ed-series-badge"
-        >
-          <Tv className="ed-series-badge-icon" />
-          <span className="ed-series-badge-text">{seriesTitle}</span>
-        </motion.div>
-
         {/* Season & Episode Badges */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
