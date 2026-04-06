@@ -7,6 +7,7 @@
 import {
   Assessment,
   BugReport,
+  FiberNew,
   ConfirmationNumber,
   Extension,
   Groups,
@@ -35,6 +36,7 @@ import { DataHealthTab } from './tabs/DataHealthTab';
 import { MessagesTab } from './tabs/MessagesTab';
 import { TicketsTab } from './tabs/TicketsTab';
 import { ConfigTab } from './tabs/ConfigTab';
+import { NewEpisodesTab } from './tabs/NewEpisodesTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -48,6 +50,7 @@ const TABS = [
   { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumber style={{ fontSize: 16 }} /> },
   { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
+  { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
   { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
   { id: 'config', label: 'Config', icon: <Settings style={{ fontSize: 16 }} /> },
 ] as const;
@@ -154,6 +157,7 @@ export function AdminDashboardPage() {
               {activeTab === 'tickets' && <TicketsTab theme={currentTheme} />}
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
+              {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
             </motion.div>
