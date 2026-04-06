@@ -9,7 +9,8 @@ type Episode = Season['episodes'][number];
 /** Normalizes seasons to an array regardless of storage format. */
 export const normalizeSeasons = (seasons: Series['seasons'] | undefined): Season[] => {
   if (!seasons) return [];
-  return Array.isArray(seasons) ? seasons : Object.values(seasons);
+  const arr = Array.isArray(seasons) ? seasons : Object.values(seasons);
+  return arr.filter((s): s is Season => !!s && typeof s === 'object');
 };
 
 /** Normalizes episodes to an array regardless of storage format.

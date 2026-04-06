@@ -16,7 +16,7 @@ export const SeasonTabs = memo<SeasonTabsProps>(
 
     return (
       <div className="season-tabs">
-        {seasons.map((season, index) => {
+        {seasons.filter(Boolean).map((season, index) => {
           const watched = season.episodes?.filter((ep) => ep.watched).length || 0;
           const total = season.episodes?.length || 0;
           const progress = total > 0 ? Math.round((watched / total) * 100) : 0;
