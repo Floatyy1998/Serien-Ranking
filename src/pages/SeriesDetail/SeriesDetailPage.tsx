@@ -103,7 +103,7 @@ export const SeriesDetailPage = memo(() => {
     if (hasActiveRewatch(series)) {
       const nextEp = getNextRewatchEpisode(series);
       if (nextEp) {
-        const idx = series.seasons.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
+        const idx = series.seasons.findIndex((s) => s?.seasonNumber === nextEp.seasonNumber);
         if (idx >= 0) {
           setSelectedSeasonIndex(idx);
           return;
@@ -112,7 +112,7 @@ export const SeriesDetailPage = memo(() => {
     }
 
     for (let i = 0; i < series.seasons.length; i++) {
-      const eps = series.seasons[i].episodes;
+      const eps = series.seasons[i]?.episodes;
       if (!eps) continue;
       for (const ep of eps) {
         if (!ep.watched && hasEpisodeAired(ep)) {
