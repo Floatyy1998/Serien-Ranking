@@ -36,6 +36,7 @@ export const XpBoostHeaderButton: React.FC = () => {
   const [activeBoost, setActiveBoost] = useState<{
     multiplier: number;
     remainingEpisodes: number;
+    originalEpisodes: number;
   } | null>(null);
   const [open, setOpen] = useState(false);
   const [activating, setActivating] = useState(false);
@@ -54,7 +55,11 @@ export const XpBoostHeaderButton: React.FC = () => {
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
       if (data && data.remainingEpisodes > 0) {
-        setActiveBoost({ multiplier: data.multiplier, remainingEpisodes: data.remainingEpisodes });
+        setActiveBoost({
+          multiplier: data.multiplier,
+          remainingEpisodes: data.remainingEpisodes,
+          originalEpisodes: data.originalEpisodes || data.remainingEpisodes,
+        });
       } else {
         setActiveBoost(null);
       }
@@ -95,7 +100,7 @@ export const XpBoostHeaderButton: React.FC = () => {
   let showPulse = false;
 
   if (activeBoost) {
-    iconColor = getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes);
+    iconColor = getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes);
     glowColor = iconColor;
   } else if (hasBoosts) {
     // White pulse = "you have boosts, activate one!"
@@ -283,8 +288,8 @@ export const XpBoostHeaderButton: React.FC = () => {
                   margin: '10px 10px 0',
                   padding: '10px 12px',
                   borderRadius: 12,
-                  background: `linear-gradient(135deg, ${getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes)}18, ${getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes)}08)`,
-                  border: `1px solid ${getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes)}30`,
+                  background: `linear-gradient(135deg, ${getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes)}18, ${getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes)}08)`,
+                  border: `1px solid ${getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes)}30`,
                   display: 'flex',
                   alignItems: 'center',
                   gap: 10,
@@ -297,7 +302,7 @@ export const XpBoostHeaderButton: React.FC = () => {
                     width: 32,
                     height: 32,
                     borderRadius: 10,
-                    background: `linear-gradient(135deg, ${getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes)}, ${getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes)}aa)`,
+                    background: `linear-gradient(135deg, ${getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes)}, ${getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes)}aa)`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -311,7 +316,7 @@ export const XpBoostHeaderButton: React.FC = () => {
                     style={{
                       fontSize: 13,
                       fontWeight: 700,
-                      color: getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes),
+                      color: getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes),
                     }}
                   >
                     {activeBoost.multiplier}x XP aktiv
@@ -324,7 +329,7 @@ export const XpBoostHeaderButton: React.FC = () => {
                 <Check
                   style={{
                     fontSize: 18,
-                    color: getBoostColor(activeBoost.multiplier, activeBoost.remainingEpisodes),
+                    color: getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes),
                   }}
                 />
               </div>
