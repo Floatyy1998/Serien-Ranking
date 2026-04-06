@@ -177,6 +177,10 @@ export async function watchedSeriesWithGenreAllPets(
   // Boost-Episode einmal pro geschauter Episode verbrauchen (nicht pro Pet)
   const xpBoost = await getActiveXpBoost(userId);
   if (xpBoost) {
+    console.warn(
+      '🔴 [FRONTEND] watchedSeriesWithGenreAllPets → consumeXpBoostEpisode aufgerufen!',
+      { genres, petCount: pets.filter((p) => p.isAlive).length }
+    );
     await consumeXpBoostEpisode(userId);
   }
 
