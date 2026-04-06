@@ -83,8 +83,48 @@ export function PerformanceTab({
     (b[1].timestamp || '').localeCompare(a[1].timestamp || '')
   );
 
+  const handleCopyAll = () => {
+    const lines = actions.map(([action, perf]) => {
+      const phases = Object.entries(perf.phases || {})
+        .map(([k, v]) => `${k}: ${v.formatted} (${v.percent})`)
+        .join(', ');
+      const users = (perf.users || [])
+        .map((u) => `${u.user}: ${u.durationFormatted} (${u.itemCount}x)`)
+        .join(', ');
+      const tmdb = perf.tmdb
+        ? `TMDB: ${perf.tmdb.requests} req, ${perf.tmdb.cacheHits} cache, ${perf.tmdb.rateLimits} 429s, ${perf.tmdb.fails} fails`
+        : '';
+      const tvmaze =
+        perf.tvMaze && perf.tvMaze.requests > 0
+          ? `TVMaze: ${perf.tvMaze.requests} req, ${perf.tvMaze.cacheHits} cache, ${perf.tvMaze.rateLimits} 429s`
+          : '';
+      return `=== ${action.toUpperCase()} (${perf.totalDurationFormatted}) ===\n${phases}\nUsers: ${users}\n${[tmdb, tvmaze].filter(Boolean).join('\n')}`;
+    });
+    navigator.clipboard.writeText(lines.join('\n\n'));
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Copy button */}
+      {actions.length > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={handleCopyAll}
+            style={{
+              background: `${theme.primary}15`,
+              border: `1px solid ${theme.primary}30`,
+              color: theme.primary,
+              padding: '6px 14px',
+              borderRadius: 8,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Kopieren
+          </button>
+        </div>
+      )}
       {/* Overview cards */}
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
         {actions.map(([action, perf]) => {
