@@ -9,7 +9,6 @@ import { getImageUrl } from '../utils/imageUrl';
 import {
   DEFAULT_EPISODE_RUNTIME_MINUTES,
   getSeriesLastWatchedAt,
-  normalizeSeasons,
 } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 
@@ -48,11 +47,17 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
       const nextEp = getNextRewatchEpisode(series);
       if (!nextEp) continue;
 
-      const seasonsArray = normalizeSeasons(series.seasons);
-      const seasonIndex = seasonsArray.findIndex((s) => s.seasonNumber === nextEp.seasonNumber);
-      if (seasonIndex === -1) continue;
+      const seasonIndex = nextEp.seasonIndex;
+      const season = series.seasons?.[seasonIndex];
+      if (!season) continue;
 
-      const ep = seasonsArray[seasonIndex]?.episodes?.[nextEp.episodeIndex];
+      type Episode = Series['seasons'][number]['episodes'][number];
+      const episodes: Episode[] = Array.isArray(season.episodes)
+        ? season.episodes
+        : season.episodes
+          ? Object.values(season.episodes)
+          : [];
+      const ep = episodes[nextEp.episodeIndex];
       const progress = getRewatchProgress(series);
       const percent =
         progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;

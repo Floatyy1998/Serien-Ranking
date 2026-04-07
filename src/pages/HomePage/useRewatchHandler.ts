@@ -4,7 +4,7 @@ import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
-import { normalizeEpisodes, normalizeSeasons } from '../../lib/episode/seriesMetrics';
+import { normalizeEpisodes } from '../../lib/episode/seriesMetrics';
 import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import { showToast, showUndoToast } from '../../lib/toast';
@@ -108,12 +108,14 @@ export function useRewatchHandler() {
       if (series?.rewatch?.active) {
         const targetCount = item.targetWatchCount;
         let allDone = true;
-        for (const s of normalizeSeasons(series.seasons)) {
+        for (let sIdx = 0; sIdx < (series.seasons?.length || 0); sIdx++) {
+          const s = series.seasons[sIdx];
+          if (!s || typeof s !== 'object') continue;
           const episodes = normalizeEpisodes(s.episodes);
           for (let i = 0; i < episodes.length; i++) {
             const ep = episodes[i];
             if (!ep.watched) continue;
-            if (s.seasonNumber === item.seasonNumber - 1 && i === item.episodeIndex) continue;
+            if (sIdx === item.seasonIndex && i === item.episodeIndex) continue;
             if ((ep.watchCount || 1) < targetCount) {
               allDone = false;
               break;

@@ -1,11 +1,14 @@
 import type { Series } from '../../types/Series';
 import { normalizeEpisodes } from '../episode/seriesMetrics';
 
+type Episode = Series['seasons'][number]['episodes'][number];
+
 export interface NextRewatchEpisode {
   id: number;
   name: string;
   air_date: string;
   seasonNumber: number;
+  seasonIndex: number;
   episodeIndex: number;
   currentWatchCount: number;
   targetWatchCount: number;
@@ -39,10 +42,17 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
   // Ensure target is at least 2 — an active rewatch always means "watch again"
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
 
-  for (const season of series.seasons) {
-    const episodes = normalizeEpisodes(season.episodes);
+  for (let sIdx = 0; sIdx < series.seasons.length; sIdx++) {
+    const season = series.seasons[sIdx];
+    if (!season || typeof season !== 'object') continue;
+    const episodes: Episode[] = Array.isArray(season.episodes)
+      ? season.episodes
+      : season.episodes
+        ? Object.values(season.episodes)
+        : [];
     for (let i = 0; i < episodes.length; i++) {
       const episode = episodes[i];
+      if (!episode || typeof episode !== 'object' || episode.episode_number == null) continue;
       if (!episode.watched) continue;
       const currentWatchCount = episode.watchCount || 1;
 
@@ -50,6 +60,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
         return {
           ...episode,
           seasonNumber: season.seasonNumber,
+          seasonIndex: sIdx,
           episodeIndex: i,
           currentWatchCount,
           targetWatchCount,
