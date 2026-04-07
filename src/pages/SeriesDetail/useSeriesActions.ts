@@ -106,6 +106,7 @@ export function useSeriesActions(
         setIsDeleting(true);
         try {
           await firebase.database().ref(`${userId}/serien/${series.nmr}`).remove();
+          await firebase.database().ref(`${userId}/seriesIndex/${series.nmr}`).remove();
           trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar('Serie erfolgreich gelöscht!');
         } catch {
