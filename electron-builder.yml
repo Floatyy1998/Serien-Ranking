@@ -19,9 +19,9 @@ win:
   icon: public/app-icon.ico
   signAndEditExecutable: false
 nsis:
-  oneClick: true
+  oneClick: false
   perMachine: false
-  allowToChangeInstallationDirectory: false
+  allowToChangeInstallationDirectory: true
   deleteAppDataOnUninstall: false
   shortcutName: TV-Rank
   installerIcon: public/app-icon.ico

@@ -81,33 +81,35 @@ export const HeroSection = () => (
         </Button>
       </div>
 
-      <Button
-        component="a"
-        href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.zip`}
-        download
-        startIcon={<DesktopWindows />}
-        size="small"
-        sx={{
-          mt: 3,
-          px: 3,
-          py: 1,
-          borderColor: 'rgba(255, 255, 255, 0.12)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          color: 'rgba(255, 255, 255, 0.45)',
-          fontWeight: 400,
-          fontSize: '0.85rem',
-          borderRadius: 2,
-          textTransform: 'none',
-          background: 'rgba(255, 255, 255, 0.03)',
-          '&:hover': {
-            borderColor: 'rgba(168, 85, 247, 0.4)',
-            color: 'rgba(255, 255, 255, 0.7)',
-            background: 'rgba(168, 85, 247, 0.08)',
-          },
-        }}
-      >
-        Desktop App herunterladen
-      </Button>
+      {!window.electronAPI?.isElectron && (
+        <Button
+          component="a"
+          href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.exe`}
+          download
+          startIcon={<DesktopWindows />}
+          size="small"
+          sx={{
+            mt: 3,
+            px: 3,
+            py: 1,
+            borderColor: 'rgba(255, 255, 255, 0.12)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            color: 'rgba(255, 255, 255, 0.45)',
+            fontWeight: 400,
+            fontSize: '0.85rem',
+            borderRadius: 2,
+            textTransform: 'none',
+            background: 'rgba(255, 255, 255, 0.03)',
+            '&:hover': {
+              borderColor: 'rgba(168, 85, 247, 0.4)',
+              color: 'rgba(255, 255, 255, 0.7)',
+              background: 'rgba(168, 85, 247, 0.08)',
+            },
+          }}
+        >
+          Desktop App herunterladen
+        </Button>
+      )}
     </div>
   </motion.div>
 );
