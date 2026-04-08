@@ -1,0 +1,28 @@
+appId: de.tv-rank.app
+productName: TV-Rank
+artifactName: "TV-Rank-Setup.${ext}"
+afterPack: ./scripts/afterPack.cjs
+directories:
+  output: release
+  buildResources: public
+files:
+  - dist/**/*
+  - electron/**/*
+  - package.json
+extraResources:
+  - from: public/app-icon.ico
+    to: app-icon.ico
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/app-icon.ico
+  signAndEditExecutable: false
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  deleteAppDataOnUninstall: false
+  shortcutName: TV-Rank
+  installerIcon: public/app-icon.ico

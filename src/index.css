@@ -78,3 +78,8 @@ body {
     border-color: var(--theme-primary);
   }
 }
+
+/* Electron: push header below native window controls */
+html.electron header {
+  padding-top: 44px !important;
+}
