@@ -1,7 +1,5 @@
-const { app, BrowserWindow, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, shell } = require('electron');
 const path = require('path');
-const fs = require('fs');
-const { pathToFileURL } = require('url');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 try {
@@ -10,43 +8,16 @@ try {
   // electron-squirrel-startup not installed, ignore
 }
 
+const APP_URL = 'https://tv-rank.de';
 let mainWindow;
 
 function getIconPath() {
-  const iconPath = app.isPackaged
+  return app.isPackaged
     ? path.join(process.resourcesPath, 'app-icon.ico')
     : path.join(__dirname, '..', 'public', 'app-icon.ico');
-  return iconPath;
 }
-
-function getDistPath() {
-  return path.join(__dirname, '..', 'dist');
-}
-
-// Register custom protocol to serve dist files like a real web server
-protocol.registerSchemesAsPrivileged([
-  {
-    scheme: 'app',
-    privileges: {
-      standard: true,
-      secure: true,
-      supportFetchAPI: true,
-      corsEnabled: true,
-    },
-  },
-]);
 
 function createWindow() {
-  protocol.handle('app', (request) => {
-    let urlPath = new URL(request.url).pathname;
-    if (urlPath.startsWith('/')) urlPath = urlPath.slice(1);
-    const filePath = path.join(getDistPath(), urlPath);
-    if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
-      return net.fetch(pathToFileURL(filePath).toString());
-    }
-    return net.fetch(pathToFileURL(path.join(getDistPath(), 'index.html')).toString());
-  });
-
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -72,17 +43,14 @@ function createWindow() {
     mainWindow.show();
   });
 
+  // Open external links in default browser, keep app links in Electron
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('app://')) return { action: 'allow' };
+    if (url.startsWith(APP_URL)) return { action: 'allow' };
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
-  } else {
-    mainWindow.loadURL('app://./index.html');
-  }
+  mainWindow.loadURL(APP_URL);
 }
 
 app.whenReady().then(createWindow);

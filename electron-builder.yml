@@ -6,7 +6,6 @@ directories:
   output: release
   buildResources: public
 files:
-  - dist/**/*
   - electron/**/*
   - package.json
 extraResources:
