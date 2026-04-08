@@ -1,6 +1,8 @@
 {
-  "name": "magic-patterns-vite-template",
-  "version": "0.0.1",
+  "name": "tv-rank",
+  "version": "1.0.0",
+  "description": "TV-Rank - Serien, Film & Manga Tracker",
+  "author": "Konrad Dinges",
   "private": true,
   "main": "electron/main.cjs",
   "type": "module",
