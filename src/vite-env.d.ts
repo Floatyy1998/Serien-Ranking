@@ -17,5 +17,9 @@ interface ImportMeta {
 }
 
 interface Window {
-  electronAPI?: { isElectron: boolean };
+  electronAPI?: {
+    isElectron: boolean;
+    getAutoStart: () => Promise<boolean>;
+    setAutoStart: (enabled: boolean) => Promise<boolean>;
+  };
 }

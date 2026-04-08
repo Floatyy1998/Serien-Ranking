@@ -3,8 +3,10 @@
  * Slim composition component following DiscoverPage pattern
  */
 
-import { Check, DesktopWindows, Logout } from '@mui/icons-material';
+import { Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
+import { Switch } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
@@ -105,10 +107,12 @@ export const SettingsPage = () => {
           onNavigateImpressum={() => navigate('/impressum')}
         />
 
-        {/* Desktop App Download */}
-        {!window.electronAPI?.isElectron && (
+        {/* Desktop App: Download (Web) or Autostart Toggle (Electron) */}
+        {window.electronAPI?.isElectron ? (
+          <AutoStartToggle currentTheme={currentTheme} />
+        ) : (
           <motion.a
-            href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.zip`}
+            href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.exe`}
             download
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -184,5 +188,62 @@ export const SettingsPage = () => {
         type={dialog.type}
       />
     </div>
+  );
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AutoStartToggle = ({ currentTheme }: { currentTheme: any }) => {
+  const [autoStart, setAutoStart] = useState(false);
+
+  useEffect(() => {
+    window.electronAPI?.getAutoStart().then(setAutoStart);
+  }, []);
+
+  const handleToggle = async () => {
+    const newValue = !autoStart;
+    await window.electronAPI?.setAutoStart(newValue);
+    setAutoStart(newValue);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.25 }}
+      className="settings-nav-btn"
+      style={{
+        background: currentTheme.background.surface,
+        border: `1px solid ${currentTheme.border.default}`,
+        color: currentTheme.text.primary,
+        cursor: 'pointer',
+      }}
+      onClick={handleToggle}
+    >
+      <div
+        className="settings-nav-btn-icon"
+        style={{
+          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+        }}
+      >
+        <PowerSettingsNew style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+      </div>
+      <div className="settings-nav-btn-text">
+        <h2 className="settings-nav-btn-title">Autostart</h2>
+        <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+          TV-Rank beim Hochfahren starten
+        </p>
+      </div>
+      <Switch
+        checked={autoStart}
+        onChange={handleToggle}
+        onClick={(e) => e.stopPropagation()}
+        sx={{
+          '& .MuiSwitch-switchBase.Mui-checked': { color: currentTheme.primary },
+          '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+            backgroundColor: currentTheme.primary,
+          },
+        }}
+      />
+    </motion.div>
   );
 };

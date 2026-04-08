@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, ipcMain } = require('electron');
 const path = require('path');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -52,6 +52,15 @@ function createWindow() {
 
   mainWindow.loadURL(APP_URL);
 }
+
+// IPC handlers for autostart toggle
+ipcMain.handle('get-auto-start', () => {
+  return app.getLoginItemSettings().openAtLogin;
+});
+ipcMain.handle('set-auto-start', (_event, enabled) => {
+  app.setLoginItemSettings({ openAtLogin: enabled });
+  return enabled;
+});
 
 app.whenReady().then(createWindow);
 
