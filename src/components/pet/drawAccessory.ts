@@ -19,7 +19,23 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
   const cx = 16;
   switch (petType) {
     case 'cat': {
-      const hs = level >= 10 ? 1.25 : level >= 7 ? 1.15 : level >= 3 ? 1.08 : 1;
+      // Lv50+ = Säbelzahn-Form (größerer Kopf, andere Proportionen)
+      if (level >= 50) {
+        const hs = level >= 75 ? 1.5 : level >= 60 ? 1.4 : 1.35;
+        return {
+          headTopY: 10,
+          headCenterX: cx,
+          headHalfWidth: 4 * hs,
+          eyeY: 13,
+          eyeLeftX: -3.5,
+          eyeRightX: 1,
+          eyeWidth: 2.5,
+          neckY: 18,
+          neckHalfWidth: 5 * hs,
+        };
+      }
+      const hs =
+        level >= 20 ? 1.3 : level >= 15 ? 1.25 : level >= 10 ? 1.15 : level >= 5 ? 1.08 : 1;
       return {
         headTopY: 11,
         headCenterX: cx,
@@ -33,7 +49,22 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
       };
     }
     case 'dog': {
-      const hs = level >= 10 ? 1.3 : level >= 7 ? 1.2 : level >= 3 ? 1.1 : 1;
+      // Lv50+ = Wolf-Form
+      if (level >= 50) {
+        const hs = level >= 75 ? 1.45 : level >= 60 ? 1.35 : 1.3;
+        return {
+          headTopY: 11,
+          headCenterX: cx,
+          headHalfWidth: 4 * hs,
+          eyeY: 14,
+          eyeLeftX: -3.5,
+          eyeRightX: 1,
+          eyeWidth: 2.5,
+          neckY: 19,
+          neckHalfWidth: 5 * hs,
+        };
+      }
+      const hs = level >= 20 ? 1.35 : level >= 15 ? 1.3 : level >= 10 ? 1.2 : level >= 5 ? 1.1 : 1;
       return {
         headTopY: 12,
         headCenterX: cx,
@@ -47,6 +78,20 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
       };
     }
     case 'bird':
+      // Lv50+ = Phönix-Form
+      if (level >= 50) {
+        return {
+          headTopY: 10,
+          headCenterX: cx,
+          headHalfWidth: 3,
+          eyeY: 13,
+          eyeLeftX: -4,
+          eyeRightX: 2,
+          eyeWidth: 2,
+          neckY: 15.5,
+          neckHalfWidth: 3,
+        };
+      }
       return {
         headTopY: 10,
         headCenterX: cx,
@@ -59,6 +104,20 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
         neckHalfWidth: 3,
       };
     case 'dragon':
+      // Lv50+ = Wyvern-Form
+      if (level >= 50) {
+        return {
+          headTopY: 10,
+          headCenterX: cx,
+          headHalfWidth: 4,
+          eyeY: 12,
+          eyeLeftX: -3.5,
+          eyeRightX: 1,
+          eyeWidth: 2.5,
+          neckY: 17.5,
+          neckHalfWidth: 4.5,
+        };
+      }
       return {
         headTopY: 11,
         headCenterX: cx,
@@ -67,10 +126,24 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
         eyeLeftX: -3,
         eyeRightX: 1,
         eyeWidth: 2,
-        neckY: 15.5,
+        neckY: 18,
         neckHalfWidth: 4,
       };
     case 'fox':
+      // Lv50+ = Göttliche Kitsune-Form
+      if (level >= 50) {
+        return {
+          headTopY: 10,
+          headCenterX: cx,
+          headHalfWidth: 3.5,
+          eyeY: 13.5,
+          eyeLeftX: -3.5,
+          eyeRightX: 1.5,
+          eyeWidth: 2,
+          neckY: 17,
+          neckHalfWidth: 3.5,
+        };
+      }
       return {
         headTopY: 11,
         headCenterX: cx,
@@ -2542,25 +2615,26 @@ function drawChampionBelt(
   a: PetAnchors
 ): void {
   const cx = a.headCenterX;
-  const ny = a.neckY;
+  // Gürtel sitzt am Bauch, nicht am Hals — 3 Pixel unterhalb neckY
+  const by = a.neckY + 3;
   const nhw = a.neckHalfWidth;
   // Leather belt
   ctx.fillStyle = '#8B4513';
-  ctx.fillRect((cx - nhw - 0.5) * ps, (ny + 0.5) * ps + off, ps * (nhw * 2 + 1), ps * 2);
+  ctx.fillRect((cx - nhw - 0.5) * ps, (by + 0.5) * ps + off, ps * (nhw * 2 + 1), ps * 2);
   // Gold plate
   ctx.fillStyle = '#FFD700';
-  ctx.fillRect((cx - 1.5) * ps, (ny + 0.3) * ps + off, ps * 3, ps * 2.5);
+  ctx.fillRect((cx - 1.5) * ps, (by + 0.3) * ps + off, ps * 3, ps * 2.5);
   // Inner design
   ctx.fillStyle = '#DAA520';
-  ctx.fillRect((cx - 1.2) * ps, (ny + 0.6) * ps + off, ps * 2.4, ps * 1.8);
+  ctx.fillRect((cx - 1.2) * ps, (by + 0.6) * ps + off, ps * 2.4, ps * 1.8);
   // Star in center
   ctx.fillStyle = '#FFFFFF';
-  ctx.fillRect((cx - 0.4) * ps, (ny + 1) * ps + off, ps * 0.8, ps * 0.3);
-  ctx.fillRect((cx - 0.15) * ps, (ny + 0.7) * ps + off, ps * 0.3, ps * 0.9);
+  ctx.fillRect((cx - 0.4) * ps, (by + 1) * ps + off, ps * 0.8, ps * 0.3);
+  ctx.fillRect((cx - 0.15) * ps, (by + 0.7) * ps + off, ps * 0.3, ps * 0.9);
   // Side gems
   ctx.fillStyle = '#FF0000';
-  ctx.fillRect((cx - 1) * ps, (ny + 1.1) * ps + off, ps * 0.3, ps * 0.3);
-  ctx.fillRect((cx + 0.7) * ps, (ny + 1.1) * ps + off, ps * 0.3, ps * 0.3);
+  ctx.fillRect((cx - 1) * ps, (by + 1.1) * ps + off, ps * 0.3, ps * 0.3);
+  ctx.fillRect((cx + 0.7) * ps, (by + 1.1) * ps + off, ps * 0.3, ps * 0.3);
 }
 
 function drawCosmicHelm(
