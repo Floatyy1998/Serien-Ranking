@@ -33,5 +33,8 @@ public/service-worker.js
 storage.rules
 .claude
 
+# Electron
+release/
+
 # Legal content (keep out of repository)
 public/legal/

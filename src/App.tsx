@@ -1,6 +1,7 @@
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import { Suspense, useEffect, useState } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { TitleBar } from './components/electron/TitleBar';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 // Badge Migration Tools für Development
@@ -170,6 +171,7 @@ function AppContent() {
                     <ThemeProvider theme={currentTheme}>
                       <DynamicThemeProvider>
                         <CssBaseline />
+                        <TitleBar />
                         <RouteTracker />
                         <div className="w-full">
                           <a href="#main-content" className="skip-to-content">

@@ -11,6 +11,7 @@ dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [
     react(),
     criticalCSSPlugin(), // Temporarily disabled - causing build hang

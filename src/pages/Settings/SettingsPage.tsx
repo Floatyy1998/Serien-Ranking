@@ -3,7 +3,7 @@
  * Slim composition component following DiscoverPage pattern
  */
 
-import { Check, Logout } from '@mui/icons-material';
+import { Check, DesktopWindows, Logout } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, PageHeader } from '../../components/ui';
@@ -104,6 +104,40 @@ export const SettingsPage = () => {
           onNavigatePrivacy={() => navigate('/privacy')}
           onNavigateImpressum={() => navigate('/impressum')}
         />
+
+        {/* Desktop App Download */}
+        {!window.electronAPI?.isElectron && (
+          <motion.a
+            href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.zip`}
+            download
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            whileTap={{ scale: 0.98 }}
+            className="settings-nav-btn"
+            style={{
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border.default}`,
+              color: currentTheme.text.primary,
+              textDecoration: 'none',
+            }}
+          >
+            <div
+              className="settings-nav-btn-icon"
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              }}
+            >
+              <DesktopWindows style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+            </div>
+            <div className="settings-nav-btn-text">
+              <h2 className="settings-nav-btn-title">Desktop App</h2>
+              <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+                TV-Rank für Windows herunterladen
+              </p>
+            </div>
+          </motion.a>
+        )}
 
         {/* Logout */}
         <motion.button
