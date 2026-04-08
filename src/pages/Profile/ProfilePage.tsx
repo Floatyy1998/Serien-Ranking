@@ -5,6 +5,7 @@
  */
 
 import { memo } from 'react';
+import { BackButton } from '../../components/ui/BackButton';
 import {
   ProfileFeaturedNav,
   ProfileHeader,
@@ -45,6 +46,10 @@ export const ProfilePage = memo(() => {
           `,
         }}
       />
+
+      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
+        <BackButton />
+      </div>
 
       <ProfileHeader
         displayName={displayName}
