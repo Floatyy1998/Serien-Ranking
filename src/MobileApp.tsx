@@ -207,7 +207,7 @@ export const MobileApp = () => {
             <Route
               path="/profile"
               element={
-                <Layout>
+                <Layout hideNav>
                   <ProfilePage />
                 </Layout>
               }

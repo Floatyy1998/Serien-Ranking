@@ -125,7 +125,8 @@ export const BottomNavigation = () => {
     location.pathname.includes('/series/') ||
     location.pathname.includes('/movie/') ||
     location.pathname.includes('/rating/') ||
-    location.pathname.startsWith('/episodes/');
+    location.pathname.startsWith('/episodes/') ||
+    location.pathname === '/profile';
 
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
