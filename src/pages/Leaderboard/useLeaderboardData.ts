@@ -7,6 +7,7 @@ import {
   fetchLeaderboardData,
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
+  seedLeaderboardStats,
 } from '../../services/leaderboardService';
 import type {
   GlobalLeaderboardEntry,
@@ -92,9 +93,13 @@ export function useLeaderboardData() {
   }, [user?.uid, friends]);
 
   const loadGlobalData = useCallback(async () => {
+    if (user?.uid) {
+      const friendUids = friends.map((f) => f.uid);
+      await seedLeaderboardStats(user.uid, friendUids);
+    }
     const entries = await fetchGlobalLeaderboard();
     setGlobalEntries(entries);
-  }, []);
+  }, [user?.uid, friends]);
 
   const loadData = useCallback(async () => {
     if (!user?.uid) return;
