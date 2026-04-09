@@ -368,8 +368,8 @@ export async function checkAndArchiveMonth(): Promise<void> {
 
   // Leaderboard-Stats aus öffentlichem Knoten laden (statt /users komplett)
   const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
-  const allStats = statsSnap.val() as Record<string, Record<string, unknown>> | null;
-  const uids = allStats ? Object.keys(allStats) : [];
+  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
+  const uids = Object.keys(allStats);
 
   // Für jeden fehlenden Monat archivieren
   for (const monthKey of missingMonths) {
@@ -385,7 +385,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
             .once('value');
           const hist = histSnap.val() as Record<string, number> | null;
           if (hist && hist.watchtimeThisMonth > 0) {
-            const entry = allStats![uid];
+            const entry = allStats[uid];
             entryList.push({
               uid,
               displayName: (entry?.displayName as string) || 'Unbekannt',
@@ -396,7 +396,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
           }
 
           // Fallback: aktuelle leaderboardStats (falls Monat noch nicht gewechselt)
-          const statsEntry = allStats![uid];
+          const statsEntry = allStats[uid];
           if (!statsEntry || (statsEntry.monthKey as string) !== monthKey) return;
           const watchtime = (statsEntry.watchtimeThisMonth as number) || 0;
           if (watchtime <= 0) return;
