@@ -161,26 +161,41 @@ export function useAdminDashboardData(daysRange = 30) {
     return () => {};
   }, [refreshKey]);
 
-  // Load user profiles for display names
+  // Load user profiles for display names (einzeln pro UID statt /users komplett)
   useEffect(() => {
     const db = firebase.database();
-    db.ref('users')
-      .once('value')
-      .then((snap) => {
-        const val = snap.val();
-        if (!val) return;
-        const profiles: typeof userProfiles = {};
-        for (const uid of Object.keys(val)) {
-          profiles[uid] = {
-            displayName: val[uid]?.displayName || '',
-            photoURL: val[uid]?.photoURL || '',
-            username: val[uid]?.username || '',
+    const uids = new Set([...Object.keys(userMetas), ...realtimeUsers.map((u) => u.uid)]);
+    if (uids.size === 0) return;
+
+    Promise.all(
+      [...uids].map(async (uid) => {
+        try {
+          const snap = await db.ref(`users/${uid}`).once('value');
+          const val = snap.val();
+          if (!val) return null;
+          return {
+            uid,
+            displayName: val.displayName || '',
+            photoURL: val.photoURL || '',
+            username: val.username || '',
           };
+        } catch {
+          return null;
         }
-        setUserProfiles(profiles);
       })
-      .catch(() => {});
-  }, [refreshKey]);
+    ).then((results) => {
+      const profiles: typeof userProfiles = {};
+      for (const r of results) {
+        if (r)
+          profiles[r.uid] = {
+            displayName: r.displayName,
+            photoURL: r.photoURL,
+            username: r.username,
+          };
+      }
+      setUserProfiles(profiles);
+    });
+  }, [userMetas, realtimeUsers, refreshKey]);
 
   // Realtime users listener
   useEffect(() => {
