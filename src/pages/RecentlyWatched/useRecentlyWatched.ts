@@ -218,14 +218,14 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
       const watchCountRef = firebase
         .database()
         .ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
+          `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
         );
       await watchCountRef.set(episode.watchCount + 1);
 
       const lastWatchedRef = firebase
         .database()
         .ref(
-          `${user.uid}/serien/${episode.seriesNmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
+          `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
         );
       await lastWatchedRef.set(new Date().toISOString());
 

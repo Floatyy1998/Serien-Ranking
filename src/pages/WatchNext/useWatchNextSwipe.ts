@@ -86,7 +86,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     const series = seriesList.find((s) => s.id === episode.seriesId);
     if (!series) return;
 
-    const basePath = `${user.uid}/serien/${series.nmr}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
+    const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
     const db = firebase.database();
     const uid = user.uid;
     const label = `S${episode.seasonIndex + 1}E${episode.episodeIndex + 1}`;

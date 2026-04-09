@@ -64,7 +64,7 @@ export function useRewatchHandler() {
     if (!user) return;
 
     const label = `S${item.seasonNumber}E${item.episodeNumber}`;
-    const episodePath = `${user.uid}/serien/${item.nmr}/seasons/${item.seasonIndex}/episodes/${item.episodeIndex}`;
+    const episodePath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}/episodes/${item.episodeIndex}`;
     const db = firebase.database();
     const nowIso = new Date().toISOString();
 
@@ -76,7 +76,7 @@ export function useRewatchHandler() {
           db.ref(`${episodePath}/firstWatchedAt`).once('value'),
           db.ref(`${episodePath}/lastWatchedAt`).once('value'),
           db.ref(`${episodePath}/watched`).once('value'),
-          db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).once('value'),
+          db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).once('value'),
         ]
       );
 
@@ -92,7 +92,7 @@ export function useRewatchHandler() {
       const updates: Record<string, unknown> = {
         [`${episodePath}/watchCount`]: newWatchCount,
         [`${episodePath}/lastWatchedAt`]: nowIso,
-        [`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`]: nowIso,
+        [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
       };
       if (!prevWatched) {
         updates[`${episodePath}/watched`] = true;
@@ -124,7 +124,7 @@ export function useRewatchHandler() {
           if (!allDone) break;
         }
         if (allDone && newWatchCount >= targetCount) {
-          await db.ref(`${user.uid}/serien/${item.nmr}/rewatch`).remove();
+          await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).remove();
           rewatchRemoved = true;
         }
       }
@@ -151,13 +151,13 @@ export function useRewatchHandler() {
             }
             if (prevRewatchLastWatchedAt) {
               await db
-                .ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`)
+                .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)
                 .set(prevRewatchLastWatchedAt);
             } else {
-              await db.ref(`${user.uid}/serien/${item.nmr}/rewatch/lastWatchedAt`).remove();
+              await db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).remove();
             }
             if (rewatchRemoved && series?.rewatch) {
-              await db.ref(`${user.uid}/serien/${item.nmr}/rewatch`).set(series.rewatch);
+              await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).set(series.rewatch);
             }
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');

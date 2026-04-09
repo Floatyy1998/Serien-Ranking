@@ -21,19 +21,19 @@ const LAST_CLEANUP_KEY = 'wrapped_last_cleanup_year';
 // ============================================================================
 
 export function getEventsPath(userId: string, year: number): string {
-  return `${userId}/${WRAPPED_BASE}/${year}/events`;
+  return `users/${userId}/${WRAPPED_BASE}/${year}/events`;
 }
 
 export function getBingeSessionsPath(userId: string, year: number): string {
-  return `${userId}/${WRAPPED_BASE}/${year}/bingeSessions`;
+  return `users/${userId}/${WRAPPED_BASE}/${year}/bingeSessions`;
 }
 
 export function getStreakPath(userId: string, year: number): string {
-  return `${userId}/${WRAPPED_BASE}/${year}/streak`;
+  return `users/${userId}/${WRAPPED_BASE}/${year}/streak`;
 }
 
 export function getWrappedBasePath(userId: string): string {
-  return `${userId}/${WRAPPED_BASE}`;
+  return `users/${userId}/${WRAPPED_BASE}`;
 }
 
 // ============================================================================

@@ -15,7 +15,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     refetch,
     isStale,
     isOffline,
-  } = useEnhancedFirebaseCache<Record<string, Manga>>(user ? `${user.uid}/manga` : '', {
+  } = useEnhancedFirebaseCache<Record<string, Manga>>(user ? `users/${user.uid}/manga` : '', {
     ttl: 24 * 60 * 60 * 1000,
     useDeltaSync: true,
     enableOfflineSupport: true,
@@ -70,7 +70,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           ) {
             await firebase
               .database()
-              .ref(`${user.uid}/manga/${manga.anilistId}/latestChapterAvailable`)
+              .ref(`users/${user.uid}/manga/${manga.anilistId}/latestChapterAvailable`)
               .set(info.latestChapter);
           }
         } catch {
@@ -83,7 +83,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
   const toggleHideManga = useCallback(
     async (anilistId: number, hidden: boolean) => {
       if (!user) return;
-      await firebase.database().ref(`${user.uid}/manga/${anilistId}/hidden`).set(hidden);
+      await firebase.database().ref(`users/${user.uid}/manga/${anilistId}/hidden`).set(hidden);
     },
     [user]
   );

@@ -58,5 +58,5 @@ export async function addMangaToList(
     }
   }
 
-  await firebase.database().ref(`${userId}/manga/${result.id}`).set(manga);
+  await firebase.database().ref(`users/${userId}/manga/${result.id}`).set(manga);
 }

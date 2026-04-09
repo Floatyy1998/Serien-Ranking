@@ -76,7 +76,7 @@ export const useQuickSeasonRating = () => {
       }
 
       try {
-        const ratingRef = firebase.database().ref(`${user.uid}/serien/${series.nmr}/rating`);
+        const ratingRef = firebase.database().ref(`users/${user.uid}/series/${series.id}/rating`);
         await ratingRef.set(ratingsToSave);
 
         trackRatingSaved(String(series.id), 'series', rating);

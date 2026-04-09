@@ -26,7 +26,7 @@ interface MangaRatingEvent {
 
 function getEventsPath(userId: string): string {
   const year = new Date().getFullYear();
-  return `${userId}/wrapped/${year}/mangaEvents`;
+  return `users/${userId}/wrapped/${year}/mangaEvents`;
 }
 
 export async function logChapterRead(

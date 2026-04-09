@@ -213,7 +213,7 @@ MobilePoster.displayName = 'MobilePoster';
 interface SingleEpisodeCardProps {
   ep: WeeklyEpisode;
   backdropSrc: string | undefined;
-  onMarkWatched: (seriesNmr: number, seasonIndex: number, episodeIndex: number) => void;
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
 }
 
 export const SingleEpisodeCard = memo(
@@ -231,7 +231,7 @@ export const SingleEpisodeCard = memo(
 
     const handleClick = () =>
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
-    const handleMark = () => onMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex);
+    const handleMark = () => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex);
     const airTime = formatAirTime(ep.airstamp);
     const provider = ep.providers[0];
 
@@ -362,7 +362,7 @@ interface EpisodeGroupCardProps {
   backdropSrc: string | undefined;
   isExpanded: boolean;
   onToggle: () => void;
-  onMarkWatched: (seriesNmr: number, seasonIndex: number, episodeIndex: number) => void;
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
 }
 
 export const EpisodeGroupCard = memo(
@@ -525,7 +525,7 @@ export const EpisodeGroupCard = memo(
                 </span>
                 <WatchIndicator
                   watched={ep.watched}
-                  onMark={() => onMarkWatched(ep.seriesNmr, ep.seasonIndex, ep.episodeIndex)}
+                  onMark={() => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex)}
                   small
                 />
               </div>

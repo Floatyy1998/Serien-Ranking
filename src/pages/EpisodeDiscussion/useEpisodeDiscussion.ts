@@ -261,7 +261,7 @@ export const useEpisodeDiscussion = () => {
 
       const isCurrentlyWatched = localEpisode.watched;
 
-      const basePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
       const db = firebase.database();
 
       if (isCurrentlyWatched) {
@@ -270,7 +270,7 @@ export const useEpisodeDiscussion = () => {
           [`${basePath}/watchCount`]: null,
           [`${basePath}/firstWatchedAt`]: null,
           [`${basePath}/lastWatchedAt`]: null,
-          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       } else {
         const now = new Date().toISOString();
@@ -279,7 +279,7 @@ export const useEpisodeDiscussion = () => {
           [`${basePath}/watchCount`]: 1,
           [`${basePath}/firstWatchedAt`]: now,
           [`${basePath}/lastWatchedAt`]: now,
-          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       }
 

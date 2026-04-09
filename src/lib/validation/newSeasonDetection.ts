@@ -8,7 +8,10 @@ const NOTIFIED_KEY = 'newSeasonNotified';
 
 const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   try {
-    const snapshot = await firebase.database().ref(`${userId}/seasonCounts`).once('value');
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${userId}/meta/seasonCounts`)
+      .once('value');
     return (snapshot.val() as SeasonCounts | null) || {};
   } catch {
     return {};
@@ -17,7 +20,7 @@ const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
 
 const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<void> => {
   try {
-    await firebase.database().ref(`${userId}/seasonCounts`).set(data);
+    await firebase.database().ref(`users/${userId}/meta/seasonCounts`).set(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[NewSeasonDetection] Failed to store season counts: ${message}`);

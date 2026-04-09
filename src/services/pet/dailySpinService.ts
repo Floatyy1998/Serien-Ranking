@@ -311,7 +311,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
   const alivePet = pets.find((p) => p.isAlive);
   if (!alivePet) return;
 
-  const petRef = firebase.database().ref(`pets/${userId}/${alivePet.id}`);
+  const petRef = firebase.database().ref(`users/${userId}/pets/${alivePet.id}`);
 
   switch (reward.type) {
     case 'xp_boost': {

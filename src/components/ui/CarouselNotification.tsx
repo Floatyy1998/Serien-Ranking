@@ -178,11 +178,11 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         return;
       } else if (variant === 'inactive-rewatch') {
         // Rewatch beenden statt Watchlist ändern
-        await firebase.database().ref(`${user.uid}/serien/${seriesItem.nmr}/rewatch`).remove();
+        await firebase.database().ref(`users/${user.uid}/series/${seriesItem.id}/rewatch`).remove();
       } else {
         const watchlistRef = firebase
           .database()
-          .ref(`${user.uid}/serien/${seriesItem.nmr}/watchlist`);
+          .ref(`users/${user.uid}/series/${seriesItem.id}/watchlist`);
         await watchlistRef.set(config.watchlistValue);
       }
 

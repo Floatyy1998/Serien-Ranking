@@ -7,5 +7,8 @@ import 'firebase/compat/database';
  * dass sich die Daten geändert haben und ein Full-Load nötig ist.
  */
 export function bumpSeriesVersion(uid: string): void {
-  firebase.database().ref(`${uid}/serienVersion`).set(firebase.database.ServerValue.TIMESTAMP);
+  firebase
+    .database()
+    .ref(`users/${uid}/meta/serienVersion`)
+    .set(firebase.database.ServerValue.TIMESTAMP);
 }

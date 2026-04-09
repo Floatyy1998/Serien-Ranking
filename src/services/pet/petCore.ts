@@ -38,7 +38,7 @@ async function migrateIfNeeded(userId: string): Promise<void> {
   if (migrationDone.has(userId)) return;
 
   try {
-    const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
+    const snapshot = await firebase.database().ref(`users/${userId}/pets`).once('value');
     if (!snapshot.exists()) {
       migrationDone.add(userId);
       return;
@@ -50,11 +50,11 @@ async function migrateIfNeeded(userId: string): Promise<void> {
       const petId = data.id;
       await firebase
         .database()
-        .ref(`pets/${userId}`)
+        .ref(`users/${userId}/pets`)
         .set({
           [petId]: data,
         });
-      await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+      await firebase.database().ref(`users/${userId}/petWidget/activePetId`).set(petId);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -71,7 +71,7 @@ async function migrateIfNeeded(userId: string): Promise<void> {
 export async function getUserPets(userId: string): Promise<Pet[]> {
   await migrateIfNeeded(userId);
 
-  const snapshot = await firebase.database().ref(`pets/${userId}`).once('value');
+  const snapshot = await firebase.database().ref(`users/${userId}/pets`).once('value');
   if (!snapshot.exists()) return [];
 
   const data = snapshot.val() as Record<string, unknown> | null;
@@ -87,13 +87,16 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
 
     if (!petData.createdAt) {
       petData.createdAt = Date.now();
-      await firebase.database().ref(`pets/${userId}/${petId}/createdAt`).set(petData.createdAt);
+      await firebase
+        .database()
+        .ref(`users/${userId}/pets/${petId}/createdAt`)
+        .set(petData.createdAt);
     }
 
     if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
       const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
       petData.favoriteGenre = randomGenre;
-      await firebase.database().ref(`pets/${userId}/${petId}/favoriteGenre`).set(randomGenre);
+      await firebase.database().ref(`users/${userId}/pets/${petId}/favoriteGenre`).set(randomGenre);
     }
 
     // Prüfe ob alte Accessory-Typen vorhanden sind
@@ -128,7 +131,7 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
         p.accessories.forEach((a) => (a.equipped = false));
         if (p.accessories.length > 0) p.accessories[0].equipped = true;
       }
-      await firebase.database().ref(`pets/${userId}/${p.id}/accessories`).set(p.accessories);
+      await firebase.database().ref(`users/${userId}/pets/${p.id}/accessories`).set(p.accessories);
     }
   }
 
@@ -162,7 +165,7 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
           synced[0].equipped = true;
         }
         p.accessories = synced;
-        await firebase.database().ref(`pets/${userId}/${p.id}/accessories`).set(synced);
+        await firebase.database().ref(`users/${userId}/pets/${p.id}/accessories`).set(synced);
       }
     }
   }
@@ -173,7 +176,7 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
 export async function getUserPet(userId: string, petId: string): Promise<Pet | null> {
   await migrateIfNeeded(userId);
 
-  const snapshot = await firebase.database().ref(`pets/${userId}/${petId}`).once('value');
+  const snapshot = await firebase.database().ref(`users/${userId}/pets/${petId}`).once('value');
   if (!snapshot.exists()) return null;
 
   const petData = snapshot.val() as Record<string, unknown>;
@@ -181,13 +184,13 @@ export async function getUserPet(userId: string, petId: string): Promise<Pet | n
   if (!petData.createdAt) {
     const now = new Date();
     petData.createdAt = now.getTime();
-    await firebase.database().ref(`pets/${userId}/${petId}/createdAt`).set(petData.createdAt);
+    await firebase.database().ref(`users/${userId}/pets/${petId}/createdAt`).set(petData.createdAt);
   }
 
   if (!petData.favoriteGenre || petData.favoriteGenre === 'All') {
     const randomGenre = GENRE_FAVORITES[Math.floor(Math.random() * GENRE_FAVORITES.length)];
     petData.favoriteGenre = randomGenre;
-    await firebase.database().ref(`pets/${userId}/${petId}/favoriteGenre`).set(randomGenre);
+    await firebase.database().ref(`users/${userId}/pets/${petId}/favoriteGenre`).set(randomGenre);
   }
 
   return {
@@ -198,12 +201,15 @@ export async function getUserPet(userId: string, petId: string): Promise<Pet | n
 }
 
 export async function getActivePetId(userId: string): Promise<string | null> {
-  const snapshot = await firebase.database().ref(`petWidget/${userId}/activePetId`).once('value');
+  const snapshot = await firebase
+    .database()
+    .ref(`users/${userId}/petWidget/activePetId`)
+    .once('value');
   return (snapshot.val() as string | null) || null;
 }
 
 export async function setActivePetId(userId: string, petId: string): Promise<void> {
-  await firebase.database().ref(`petWidget/${userId}/activePetId`).set(petId);
+  await firebase.database().ref(`users/${userId}/petWidget/activePetId`).set(petId);
 }
 
 export async function canCreateNewPet(userId: string): Promise<boolean> {
@@ -252,13 +258,13 @@ export async function createPet(userId: string, name: string, type: Pet['type'])
   };
 
   await migrateIfNeeded(userId);
-  await firebase.database().ref(`pets/${userId}/${newPet.id}`).set(newPet);
-  await firebase.database().ref(`petWidget/${userId}/activePetId`).set(newPet.id);
+  await firebase.database().ref(`users/${userId}/pets/${newPet.id}`).set(newPet);
+  await firebase.database().ref(`users/${userId}/petWidget/activePetId`).set(newPet.id);
   return newPet;
 }
 
 export async function deletePet(userId: string, petId: string): Promise<void> {
-  await firebase.database().ref(`pets/${userId}/${petId}`).remove();
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).remove();
 }
 
 // Pet Widget Position Management
@@ -272,7 +278,10 @@ export async function getPetWidgetPosition(userId: string): Promise<
   | null
 > {
   try {
-    const snapshot = await firebase.database().ref(`petWidget/${userId}/position`).once('value');
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${userId}/petWidget/position`)
+      .once('value');
     return snapshot.val() as
       | {
           edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
@@ -297,7 +306,7 @@ export async function savePetWidgetPosition(
   }
 ): Promise<void> {
   try {
-    await firebase.database().ref(`petWidget/${userId}/position`).set(position);
+    await firebase.database().ref(`users/${userId}/petWidget/position`).set(position);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[PetService] Failed to save widget position: ${message}`);

@@ -152,7 +152,7 @@ export async function updateUserActivityOp(
   activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
 ): Promise<void> {
   try {
-    const activitiesRef = firebase.database().ref(`activities/${user.uid}`);
+    const activitiesRef = firebase.database().ref(`users/${user.uid}/activities`);
 
     // Add new activity
     const newActivityRef = activitiesRef.push();

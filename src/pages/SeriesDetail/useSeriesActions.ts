@@ -106,8 +106,8 @@ export function useSeriesActions(
       onConfirm: async () => {
         setIsDeleting(true);
         try {
-          await firebase.database().ref(`${userId}/serien/${series.nmr}`).remove();
-          await firebase.database().ref(`${userId}/seriesIndex/${series.nmr}`).remove();
+          await firebase.database().ref(`users/${userId}/series/${series.id}`).remove();
+          await firebase.database().ref(`users/${userId}/seriesWatch/${series.id}`).remove();
           bumpSeriesVersion(userId);
           trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar('Serie erfolgreich gelöscht!');
@@ -126,7 +126,7 @@ export function useSeriesActions(
       const newWatchlistStatus = !series.watchlist;
       await firebase
         .database()
-        .ref(`${userId}/serien/${series.nmr}/watchlist`)
+        .ref(`users/${userId}/series/${series.id}/watchlist`)
         .set(newWatchlistStatus);
       if (newWatchlistStatus) {
         const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
@@ -161,7 +161,7 @@ export function useSeriesActions(
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
         const db = firebase.database();
-        const episodePath = `${userId}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        const episodePath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
         const prevWatchCount = episode.watchCount || 1;
         const [lastSnap] = await Promise.all([
           db.ref(`${episodePath}/lastWatchedAt`).once('value'),
@@ -190,7 +190,7 @@ export function useSeriesActions(
             if (!allDone) break;
           }
           if (allDone && newWatchCount >= targetCount) {
-            await db.ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+            await db.ref(`users/${userId}/series/${series.id}/rewatch`).remove();
             bumpSeriesVersion(userId);
             showSnackbar(`Rewatch #${series.rewatch.round} abgeschlossen!`);
             rewatchRemoved = true;
@@ -208,7 +208,7 @@ export function useSeriesActions(
                 await db.ref(`${episodePath}/lastWatchedAt`).remove();
               }
               if (rewatchRemoved && series.rewatch) {
-                await db.ref(`${userId}/serien/${series.nmr}/rewatch`).set(series.rewatch);
+                await db.ref(`users/${userId}/series/${series.id}/rewatch`).set(series.rewatch);
               }
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
@@ -252,7 +252,7 @@ export function useSeriesActions(
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
         const db = firebase.database();
-        const episodePath = `${userId}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        const episodePath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
 
         // Snapshot vorher
         const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
@@ -316,7 +316,7 @@ export function useSeriesActions(
           ? Math.max(1, currentMaxCount - 1)
           : Math.max(1, currentMaxCount);
 
-        const seriesPath = `${userId}/serien/${series.nmr}`;
+        const seriesPath = `users/${userId}/series/${series.id}`;
         await firebase.database().ref(`${seriesPath}/rewatch`).set({
           active: true,
           round: newRound,
@@ -344,7 +344,7 @@ export function useSeriesActions(
   const handleStopRewatch = useCallback(async () => {
     if (!series || !userId) return;
     try {
-      await firebase.database().ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+      await firebase.database().ref(`users/${userId}/series/${series.id}/rewatch`).remove();
       bumpSeriesVersion(userId);
       showSnackbar('Rewatch beendet.');
     } catch {

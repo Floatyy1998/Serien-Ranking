@@ -28,7 +28,7 @@ export const WatchStreakCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
-    const ref = firebase.database().ref(`${user.uid}/wrapped/${year}/streak`);
+    const ref = firebase.database().ref(`users/${user.uid}/wrapped/${year}/streak`);
 
     const handler = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
@@ -53,7 +53,7 @@ export const WatchStreakCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
 
-    const activePetRef = firebase.database().ref(`petWidget/${user.uid}/activePetId`);
+    const activePetRef = firebase.database().ref(`users/${user.uid}/petWidget/activePetId`);
     let petRef: firebase.database.Reference | null = null;
     let petHandler: ((s: firebase.database.DataSnapshot) => void) | null = null;
 
@@ -69,7 +69,7 @@ export const WatchStreakCard: React.FC = () => {
         return;
       }
 
-      petRef = firebase.database().ref(`pets/${user.uid}/${activePetId}`);
+      petRef = firebase.database().ref(`users/${user.uid}/pets/${activePetId}`);
       petHandler = (petSnap: firebase.database.DataSnapshot) => {
         const data = petSnap.val();
         if (data) {
