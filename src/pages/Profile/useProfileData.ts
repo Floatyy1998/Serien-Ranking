@@ -6,6 +6,7 @@
 import type { SvgIconComponent } from '@mui/icons-material';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import {
+  AdminPanelSettings,
   AutoAwesome,
   AutoStories,
   BarChart,
@@ -276,6 +277,8 @@ export const useProfileData = (): UseProfileDataResult => {
     [currentTheme, unreadBadgesCount]
   );
 
+  const isAdmin = user?.uid === '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
+
   const settingsItems: ProfileMenuItem[] = useMemo(
     () => [
       { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
@@ -292,8 +295,11 @@ export const useProfileData = (): UseProfileDataResult => {
         color: '#3b82f6',
         path: '/bug-report',
       },
+      ...(isAdmin
+        ? [{ label: 'Admin Panel', icon: AdminPanelSettings, color: '#ef4444', path: '/admin' }]
+        : []),
     ],
-    [currentTheme]
+    [currentTheme, isAdmin]
   );
 
   const goTo = (path: string) => {
