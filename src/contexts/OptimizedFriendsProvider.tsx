@@ -146,7 +146,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     };
   }, [user]);
 
-  // Friend Activities laden
+  // Friend Activities: Einmaliger Load + child_added Listener für neue Activities
   const loadFriendActivities = useCallback(async () => {
     if (!user || friends.length === 0) {
       setFriendActivities([]);
@@ -156,10 +156,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
     try {
       const allActivities: FriendActivity[] = [];
-      const activeFriends = friends;
 
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      const activityPromises = activeFriends.map(async (friend) => {
+      const activityPromises = friends.map(async (friend) => {
         try {
           const activitiesRef = firebase
             .database()
@@ -200,7 +199,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       );
       setUnreadActivitiesCount(unreadActivities.length);
     } catch {
-      // // console.warn('Failed to load friend activities:', error);
+      // Silent fail
     }
   }, [user, friends]);
 
@@ -208,24 +207,54 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     loadFriendActivitiesRef.current = loadFriendActivities;
   }, [loadFriendActivities]);
 
+  // Einmaliger Load + Realtime child_added Listener pro Freund für neue Activities
   useEffect(() => {
     if (!user || friends.length === 0 || !readTimesLoaded) {
       return;
     }
 
+    // 1. Einmaliger initialer Load
     loadFriendActivitiesRef.current?.();
 
-    const interval = setInterval(
-      () => {
-        loadFriendActivitiesRef.current?.();
-      },
-      5 * 60 * 1000
-    );
+    // 2. child_added Listener pro Freund — feuert nur bei NEUEN Activities
+    const listenStartTime = Date.now();
+    const unsubscribes: (() => void)[] = [];
+
+    friends.forEach((friend) => {
+      const ref = firebase
+        .database()
+        .ref(`activities/${friend.uid}`)
+        .orderByChild('timestamp')
+        .startAt(listenStartTime);
+
+      const listener = ref.on('child_added', (snapshot) => {
+        const data = snapshot.val();
+        if (!data || !snapshot.key) return;
+
+        const newActivity: FriendActivity = {
+          id: snapshot.key,
+          userId: friend.uid,
+          userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
+          ...data,
+        };
+
+        setFriendActivities((prev) => {
+          const updated = [newActivity, ...prev].slice(0, 100);
+          return updated;
+        });
+
+        if (data.timestamp > lastReadActivitiesTimeRef.current) {
+          setUnreadActivitiesCount((prev) => prev + 1);
+        }
+      });
+
+      unsubscribes.push(() => ref.off('child_added', listener));
+    });
 
     return () => {
-      clearInterval(interval);
+      unsubscribes.forEach((unsub) => unsub());
     };
-  }, [user, friends.length, readTimesLoaded]);
+  }, [user, friends, readTimesLoaded]);
 
   useEffect(() => {
     setLoading(friendsLoading);

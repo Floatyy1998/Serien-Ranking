@@ -5,6 +5,7 @@ import type { Series } from '../types/Series';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { bumpSeriesVersion } from '../lib/firebase/seriesVersionBump';
 import {
   fixMissingFirstWatchedAt,
   runSequentialDetections,
@@ -34,7 +35,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     isOffline,
   } = useEnhancedFirebaseCache<Record<string, Series>>(user ? `${user.uid}/serien` : '', {
     ttl: 24 * 60 * 60 * 1000,
-    useRealtimeListener: true,
+    useDeltaSync: true,
+    deltaSubKey: 'seasons',
+    versionPath: user ? `${user.uid}/serienVersion` : undefined,
     enableOfflineSupport: true,
     syncOnReconnect: true,
   });
@@ -193,6 +196,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       } else {
         await ref.remove();
       }
+      bumpSeriesVersion(user.uid);
     },
     [user]
   );

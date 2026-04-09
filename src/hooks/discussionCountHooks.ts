@@ -28,18 +28,13 @@ export const useDiscussionCount = (
 
     const ref = firebase.database().ref(path);
 
-    const handleValue = (snapshot: firebase.database.DataSnapshot) => {
+    // Einmaliger Read statt Realtime-Listener
+    ref.once('value').then((snapshot) => {
       const data = snapshot.val();
       const discussionCount = data ? Object.keys(data).length : 0;
       countsCache[path] = discussionCount;
       setCount(discussionCount);
-    };
-
-    ref.on('value', handleValue);
-
-    return () => {
-      ref.off('value', handleValue);
-    };
+    });
   }, [path, itemId]);
 
   return count;
@@ -56,25 +51,32 @@ export const useEpisodeDiscussionCounts = (
   useEffect(() => {
     if (!seriesId || !episodeCount) return;
 
-    const unsubscribes: (() => void)[] = [];
+    // Ein einziger Batch-Read für alle Episoden der Staffel
+    const parentPath = `discussions/episode`;
+    const ref = firebase.database().ref(parentPath);
 
-    for (let ep = 1; ep <= episodeCount; ep++) {
-      const path = `discussions/episode/${seriesId}_s${seasonNumber}_e${ep}`;
-      const ref = firebase.database().ref(path);
-
-      const handleValue = (snapshot: firebase.database.DataSnapshot) => {
+    // Lade alle Diskussionen die mit dieser seriesId+season beginnen
+    const prefix = `${seriesId}_s${seasonNumber}_e`;
+    ref
+      .orderByKey()
+      .startAt(prefix + '1')
+      .endAt(prefix + '\uf8ff')
+      .once('value')
+      .then((snapshot) => {
         const data = snapshot.val();
-        const count = data ? Object.keys(data).length : 0;
-        setCounts((prev) => ({ ...prev, [ep]: count }));
-      };
+        const newCounts: DiscussionCounts = {};
 
-      ref.on('value', handleValue);
-      unsubscribes.push(() => ref.off('value', handleValue));
-    }
+        if (data) {
+          for (let ep = 1; ep <= episodeCount; ep++) {
+            const key = `${seriesId}_s${seasonNumber}_e${ep}`;
+            if (data[key]) {
+              newCounts[ep] = Object.keys(data[key]).length;
+            }
+          }
+        }
 
-    return () => {
-      unsubscribes.forEach((unsub) => unsub());
-    };
+        setCounts(newCounts);
+      });
   }, [seriesId, seasonNumber, episodeCount]);
 
   return counts;

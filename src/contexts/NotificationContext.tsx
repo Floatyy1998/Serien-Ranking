@@ -55,7 +55,11 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     if (!user) return;
 
     // Load notifications from Firebase
-    const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
+    const notificationsRef = firebase
+      .database()
+      .ref(`users/${user.uid}/notifications`)
+      .orderByChild('timestamp')
+      .limitToLast(50);
 
     const handleData = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();

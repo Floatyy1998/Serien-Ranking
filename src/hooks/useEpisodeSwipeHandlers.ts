@@ -90,6 +90,7 @@ async function markEpisodeWatchedInFirebase(
     [`${basePath}/watched`]: true,
     [`${basePath}/watchCount`]: previousCount + 1,
     [`${basePath}/lastWatchedAt`]: now,
+    [`${uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
   };
   if (!hadFirstWatched) {
     updates[`${basePath}/firstWatchedAt`] = now;

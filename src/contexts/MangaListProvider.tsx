@@ -17,7 +17,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     isOffline,
   } = useEnhancedFirebaseCache<Record<string, Manga>>(user ? `${user.uid}/manga` : '', {
     ttl: 24 * 60 * 60 * 1000,
-    useRealtimeListener: true,
+    useDeltaSync: true,
     enableOfflineSupport: true,
     syncOnReconnect: true,
   });

@@ -261,47 +261,33 @@ export const useEpisodeDiscussion = () => {
 
       const isCurrentlyWatched = localEpisode.watched;
 
-      const updatedEpisodes = localSeason.episodes?.map((ep, idx) => {
-        if (idx === episodeIndex) {
-          if (isCurrentlyWatched) {
-            const {
-              watchCount: _watchCount,
-              firstWatchedAt: _firstWatchedAt,
-              lastWatchedAt: _lastWatchedAt,
-              ...rest
-            } = ep as Series['seasons'][number]['episodes'][number] & {
-              watchCount?: number;
-              firstWatchedAt?: string;
-              lastWatchedAt?: string;
-            };
-            return { ...rest, watched: false };
-          } else {
-            return {
-              ...ep,
-              watched: true,
-              watchCount: 1,
-              firstWatchedAt: new Date().toISOString(),
-              lastWatchedAt: new Date().toISOString(),
-            };
-          }
-        }
-        return ep;
-      });
+      const basePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const db = firebase.database();
 
-      const updatedSeasons = series.seasons.map((s, idx) => {
-        if (idx === seasonIndex) {
-          return { ...s, episodes: updatedEpisodes };
-        }
-        return s;
-      });
-
-      await firebase.database().ref(`${user.uid}/serien/${series.nmr}/seasons`).set(updatedSeasons);
+      if (isCurrentlyWatched) {
+        await db.ref().update({
+          [`${basePath}/watched`]: false,
+          [`${basePath}/watchCount`]: null,
+          [`${basePath}/firstWatchedAt`]: null,
+          [`${basePath}/lastWatchedAt`]: null,
+          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+        });
+      } else {
+        const now = new Date().toISOString();
+        await db.ref().update({
+          [`${basePath}/watched`]: true,
+          [`${basePath}/watchCount`]: 1,
+          [`${basePath}/firstWatchedAt`]: now,
+          [`${basePath}/lastWatchedAt`]: now,
+          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+        });
+      }
 
       // Auto-navigate to next unwatched episode (delayed so user sees the checkmark)
       if (!isCurrentlyWatched && series) {
         const epIdx = episodeIndex;
         const sIdx = seasonIndex;
-        const seasons = updatedSeasons;
+        const seasons = series.seasons;
 
         // Find next unwatched episode
         let nextPath: string | null = null;
