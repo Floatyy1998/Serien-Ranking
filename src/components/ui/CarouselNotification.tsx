@@ -113,12 +113,14 @@ interface CarouselNotificationProps {
   series: Series[];
   onDismiss: () => void;
   variant: Variant;
+  onQuickRate?: (series: Series, onRated: () => void) => void;
 }
 
 export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   series,
   onDismiss,
   variant,
+  onQuickRate,
 }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
@@ -171,7 +173,17 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
     if (!user) return;
     try {
       if (variant === 'unrated') {
-        // Zur Bewertungsseite navigieren
+        if (onQuickRate) {
+          onQuickRate(seriesItem, () => {
+            // Callback: wird aufgerufen wenn User tatsächlich geratet hat
+            markAsNotified([seriesItem.id]);
+            setActionedIds((prev) => new Set(prev).add(seriesItem.id));
+            if (currentIndex < series.length - 1) {
+              setCurrentIndex(currentIndex + 1);
+            }
+          });
+          return;
+        }
         navigate(`/rating/series/${seriesItem.id}`);
         await markAsNotified([seriesItem.id]);
         onDismiss();
