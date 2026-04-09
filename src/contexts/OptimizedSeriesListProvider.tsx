@@ -95,18 +95,16 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const [catalogSeasons, setCatalogSeasons] = useState<
     Record<string, Record<string, CatalogSeason>>
   >({});
-  const [seasonsLoading, setSeasonsLoading] = useState(false);
   const loadedSeasonsRef = useRef<Set<string>>(new Set());
+  const seasonsLoadingRef = useRef(false);
 
   useEffect(() => {
-    if (!userSeriesRefs || !user) return;
-    const tmdbIds = Object.keys(userSeriesRefs);
-    const toLoad = tmdbIds.filter((id) => !loadedSeasonsRef.current.has(id));
+    if (!userSeriesRefs || !user || seasonsLoadingRef.current) return;
+    const toLoad = Object.keys(userSeriesRefs).filter((id) => !loadedSeasonsRef.current.has(id));
     if (toLoad.length === 0) return;
+    seasonsLoadingRef.current = true;
 
-    setSeasonsLoading(true);
     const db = firebase.database();
-
     Promise.all(
       toLoad.map(async (tmdbId) => {
         try {
@@ -123,11 +121,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         loadedSeasonsRef.current.add(tmdbId);
       }
       setCatalogSeasons((prev) => ({ ...prev, ...newSeasons }));
-      setSeasonsLoading(false);
+      seasonsLoadingRef.current = false;
     });
   }, [userSeriesRefs, user]);
 
-  const loading = refsLoading || watchLoading || catalogLoading || seasonsLoading;
+  // Seasons sind geladen wenn catalogSeasons mindestens so viele Keys hat wie userSeriesRefs
+  const refCount = userSeriesRefs ? Object.keys(userSeriesRefs).length : 0;
+  const seasonCount = Object.keys(catalogSeasons).length;
+  const loading =
+    refsLoading || watchLoading || catalogLoading || (refCount > 0 && seasonCount < refCount);
 
   // Merge: CatalogMeta + CatalogSeasons + UserRefs + WatchData → Series[]
   const allSeries: Series[] = useMemo(() => {
