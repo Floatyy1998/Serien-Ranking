@@ -65,7 +65,8 @@ export const PetWidget: React.FC = () => {
       console.error('Error loading pet position:', error);
       setPosition(calculatePixelPosition(edgePosition));
     }
-  }, [user, edgePosition]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const savePosition = async (newPosition: { x: number; y: number }) => {
     if (!user) return;
@@ -119,7 +120,8 @@ export const PetWidget: React.FC = () => {
     checkHungerToast(pet);
 
     return () => clearInterval(interval);
-  }, [user, pet]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, pet?.id]);
 
   useEffect(() => {
     const updateConstraintsAndPosition = () => {
