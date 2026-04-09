@@ -116,12 +116,85 @@ export async function updateLeaderboardStats(
     current.lastUpdated = Date.now();
     await ref.set(current);
 
-    // Global leaderboard is now read directly from leaderboardStats nodes,
-    // so no separate update is needed.
+    // Öffentliche Kopie für globales Leaderboard schreiben
+    // (da /users nicht mehr komplett gelesen werden darf)
+    try {
+      const userSnap = await firebase.database().ref(`users/${userId}`).once('value');
+      const userData = userSnap.val() as Record<string, unknown> | null;
+      await firebase
+        .database()
+        .ref(`leaderboardStats/${userId}`)
+        .set({
+          ...current,
+          displayName:
+            (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
+          photoURL: (userData?.photoURL as string) || null,
+          username: (userData?.username as string) || null,
+        });
+    } catch {
+      // Falls leaderboardStats nicht geschrieben werden kann, ignorieren
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Leaderboard] Failed to update stats: ${message}`);
   }
+}
+
+/**
+ * Kopiert die bestehenden Leaderboard-Stats eines Users (und optional seiner Freunde)
+ * in den öffentlichen /leaderboardStats Knoten, falls dort noch kein aktueller Eintrag existiert.
+ * Wird einmalig beim Laden der Leaderboard-Seite aufgerufen.
+ */
+export async function seedLeaderboardStats(
+  currentUserId: string,
+  friendUids: string[]
+): Promise<void> {
+  const allUids = [currentUserId, ...friendUids];
+  const currentMonth = getCurrentMonthKey();
+
+  await Promise.all(
+    allUids.map(async (uid) => {
+      try {
+        // Prüfe ob schon ein aktueller Eintrag existiert
+        const existingSnap = await firebase
+          .database()
+          .ref(`leaderboardStats/${uid}/monthKey`)
+          .once('value');
+        if (existingSnap.val() === currentMonth) return;
+
+        // Stats aus dem User-Knoten laden
+        const statsSnap = await firebase
+          .database()
+          .ref(`users/${uid}/leaderboard/stats`)
+          .once('value');
+        const stats = statsSnap.val() as LeaderboardStats | null;
+        if (!stats || stats.monthKey !== currentMonth) return;
+        if (
+          (stats.watchtimeThisMonth || 0) <= 0 &&
+          (stats.episodesThisMonth || 0) <= 0 &&
+          (stats.moviesThisMonth || 0) <= 0
+        )
+          return;
+
+        // Profil laden
+        const userSnap = await firebase.database().ref(`users/${uid}`).once('value');
+        const userData = userSnap.val() as Record<string, unknown> | null;
+
+        await firebase
+          .database()
+          .ref(`leaderboardStats/${uid}`)
+          .set({
+            ...stats,
+            displayName:
+              (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
+            photoURL: (userData?.photoURL as string) || null,
+            username: (userData?.username as string) || null,
+          });
+      } catch {
+        // Skip user bei Permission-Fehler
+      }
+    })
+  );
 }
 
 /**
@@ -213,55 +286,37 @@ export async function fetchLeaderboardProfiles(
 
 /**
  * Lädt die globale Rangliste für den aktuellen Monat.
- * Liest direkt aus den bestehenden leaderboardStats aller User —
- * so sind die Daten immer aktuell (gleiche Quelle wie Freundes-Rangliste).
+ * Liest aus dem öffentlichen /leaderboardStats Knoten statt /users.
  */
 export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> {
   const currentMonth = getCurrentMonthKey();
 
-  // Alle User laden für Profile
-  const usersSnap = await firebase.database().ref('users').once('value');
-  const usersData = usersSnap.val() as Record<string, Record<string, unknown>> | null;
-  if (!usersData) return [];
+  const snapshot = await firebase.database().ref('leaderboardStats').once('value');
+  const data = snapshot.val() as Record<string, Record<string, unknown>> | null;
+  if (!data) return [];
 
-  const uids = Object.keys(usersData);
   const entries: GlobalLeaderboardEntry[] = [];
 
-  await Promise.all(
-    uids.map(async (uid) => {
-      try {
-        const statsSnap = await firebase
-          .database()
-          .ref(`users/${uid}/leaderboard/stats`)
-          .once('value');
-        const stats = statsSnap.val() as LeaderboardStats | null;
-        if (!stats || stats.monthKey !== currentMonth) return;
-        if (
-          stats.watchtimeThisMonth <= 0 &&
-          stats.episodesThisMonth <= 0 &&
-          stats.moviesThisMonth <= 0
-        )
-          return;
+  for (const [uid, entry] of Object.entries(data)) {
+    if ((entry.monthKey as string) !== currentMonth) continue;
+    const watchtime = (entry.watchtimeThisMonth as number) || 0;
+    const episodes = (entry.episodesThisMonth as number) || 0;
+    const movies = (entry.moviesThisMonth as number) || 0;
+    if (watchtime <= 0 && episodes <= 0 && movies <= 0) continue;
 
-        const userData = usersData[uid];
-        entries.push({
-          uid,
-          episodesThisMonth: stats.episodesThisMonth || 0,
-          moviesThisMonth: stats.moviesThisMonth || 0,
-          watchtimeThisMonth: stats.watchtimeThisMonth || 0,
-          streakThisMonth: stats.streakThisMonth || 0,
-          streakAllTime: stats.streakAllTime || 0,
-          displayName:
-            (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
-          photoURL: (userData?.photoURL as string) || undefined,
-          username: (userData?.username as string) || undefined,
-          lastUpdated: stats.lastUpdated || 0,
-        });
-      } catch {
-        // Skip user if permission denied
-      }
-    })
-  );
+    entries.push({
+      uid,
+      episodesThisMonth: episodes,
+      moviesThisMonth: movies,
+      watchtimeThisMonth: watchtime,
+      streakThisMonth: (entry.streakThisMonth as number) || 0,
+      streakAllTime: (entry.streakAllTime as number) || 0,
+      displayName: (entry.displayName as string) || 'Unbekannt',
+      photoURL: (entry.photoURL as string) || undefined,
+      username: (entry.username as string) || undefined,
+      lastUpdated: (entry.lastUpdated as number) || 0,
+    });
+  }
 
   return entries;
 }
@@ -311,11 +366,10 @@ export async function checkAndArchiveMonth(): Promise<void> {
   const missingMonths = pastMonths.filter((m) => !existingTrophies[m]);
   if (missingMonths.length === 0) return;
 
-  // User-Daten einmalig laden
-  const usersSnap = await firebase.database().ref('users').once('value');
-  const usersData = usersSnap.val() as Record<string, Record<string, unknown>> | null;
-  if (!usersData) return;
-  const uids = Object.keys(usersData);
+  // Leaderboard-Stats aus öffentlichem Knoten laden (statt /users komplett)
+  const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
+  const allStats = statsSnap.val() as Record<string, Record<string, unknown>> | null;
+  const uids = allStats ? Object.keys(allStats) : [];
 
   // Für jeden fehlenden Monat archivieren
   for (const monthKey of missingMonths) {
@@ -331,33 +385,27 @@ export async function checkAndArchiveMonth(): Promise<void> {
             .once('value');
           const hist = histSnap.val() as Record<string, number> | null;
           if (hist && hist.watchtimeThisMonth > 0) {
-            const userData = usersData[uid];
+            const entry = allStats![uid];
             entryList.push({
               uid,
-              displayName:
-                (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
-              photoURL: (userData?.photoURL as string) || undefined,
+              displayName: (entry?.displayName as string) || 'Unbekannt',
+              photoURL: (entry?.photoURL as string) || undefined,
               score: hist.watchtimeThisMonth,
             });
             return;
           }
 
           // Fallback: aktuelle leaderboardStats (falls Monat noch nicht gewechselt)
-          const statsSnap = await firebase
-            .database()
-            .ref(`users/${uid}/leaderboard/stats`)
-            .once('value');
-          const stats = statsSnap.val() as LeaderboardStats | null;
-          if (!stats || stats.monthKey !== monthKey) return;
-          if (stats.watchtimeThisMonth <= 0) return;
+          const statsEntry = allStats![uid];
+          if (!statsEntry || (statsEntry.monthKey as string) !== monthKey) return;
+          const watchtime = (statsEntry.watchtimeThisMonth as number) || 0;
+          if (watchtime <= 0) return;
 
-          const userData = usersData[uid];
           entryList.push({
             uid,
-            displayName:
-              (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
-            photoURL: (userData?.photoURL as string) || undefined,
-            score: stats.watchtimeThisMonth,
+            displayName: (statsEntry.displayName as string) || 'Unbekannt',
+            photoURL: (statsEntry.photoURL as string) || undefined,
+            score: watchtime,
           });
         } catch {
           // Skip user
