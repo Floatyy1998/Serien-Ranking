@@ -2,7 +2,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
@@ -119,6 +119,7 @@ export const HomePage: React.FC = () => {
     quickRatingSeasonNumber,
     closeQuickRating,
     saveQuickRating,
+    showQuickRating,
   } = useEpisodeSwipeHandlers();
 
   // Rewatch
@@ -143,6 +144,7 @@ export const HomePage: React.FC = () => {
     episodePath: string;
   }>({ open: false, seriesId: 0, title: '', episodePath: '' });
   const [showNotifications, setShowNotifications] = useState(false);
+  const onRatedCallbackRef = useRef<(() => void) | null>(null);
   const [caseOpeningDrop, setCaseOpeningDrop] = useState<{
     dropId: string;
     accessoryId: string;
@@ -450,6 +452,10 @@ export const HomePage: React.FC = () => {
           variant="unrated"
           series={unratedSeries}
           onDismiss={clearUnratedSeries}
+          onQuickRate={(s, onRated) => {
+            onRatedCallbackRef.current = onRated;
+            showQuickRating(s, 0);
+          }}
         />
       ) : null}
 
@@ -506,10 +512,17 @@ export const HomePage: React.FC = () => {
 
       <QuickRatingSheet
         isOpen={quickRatingOpen}
-        onClose={closeQuickRating}
+        onClose={() => {
+          closeQuickRating();
+          onRatedCallbackRef.current = null;
+        }}
         seriesTitle={quickRatingSeries?.title || ''}
         seasonNumber={quickRatingSeasonNumber}
-        onRate={saveQuickRating}
+        onRate={async (rating) => {
+          await saveQuickRating(rating);
+          onRatedCallbackRef.current?.();
+          onRatedCallbackRef.current = null;
+        }}
       />
     </div>
   );

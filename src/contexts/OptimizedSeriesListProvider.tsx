@@ -96,8 +96,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     Record<string, Record<string, CatalogSeason>>
   >({});
   const seasonsLoadedRef = useRef(false);
-  const [, _forceUpdate] = useState(0);
-
   useEffect(() => {
     if (!userSeriesRefs || !user) return;
     const tmdbIds = Object.keys(userSeriesRefs);
@@ -180,9 +178,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [user, loading]);
 
-  // Sequentielle Detection — einmal nach dem Laden
+  // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
+  const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);
   useEffect(() => {
-    if (!user || !seriesList.length || isOffline || detectionRunRef.current) return;
+    if (!user || !seriesList.length || !hasSeasons || isOffline || detectionRunRef.current) return;
 
     detectionRunRef.current = true;
     const abortController = new AbortController();
@@ -204,7 +203,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     return () => {
       abortController.abort();
     };
-  }, [user, seriesList, isOffline]);
+  }, [user, seriesList, hasSeasons, isOffline]);
 
   // Reset bei User-Wechsel
   useEffect(() => {

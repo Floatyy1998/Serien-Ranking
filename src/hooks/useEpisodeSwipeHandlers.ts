@@ -45,6 +45,7 @@ interface EpisodeSwipeHandlersReturn {
   quickRatingSeasonNumber: number;
   closeQuickRating: () => void;
   saveQuickRating: (rating: number) => Promise<void>;
+  showQuickRating: (series: Series, seasonNumber: number) => void;
 }
 
 /**
@@ -373,5 +374,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
     quickRatingSeasonNumber,
     closeQuickRating,
     saveQuickRating,
+    showQuickRating,
   };
 };
