@@ -8,6 +8,16 @@ import { offlineFirebaseService } from '../services/offlineFirebaseService';
 interface EnhancedCacheOptions {
   ttl?: number;
   useRealtimeListener?: boolean;
+  /** Use child_changed/added/removed instead of onValue for Record-type data.
+   *  Dramatically reduces bandwidth: only changed children are downloaded, not the entire dataset. */
+  useDeltaSync?: boolean;
+  /** When set, child_changed listeners are placed on this sub-key of each child instead of on the child itself.
+   *  E.g. 'seasons' → listens on {path}/{childKey}/seasons → only the changed season is downloaded. */
+  deltaSubKey?: string;
+  /** Firebase path to a version counter (e.g. '{uid}/serienVersion').
+   *  On load: read this single number and compare with cached version.
+   *  Match → skip full load. Mismatch → full load. Handles multi-device correctly. */
+  versionPath?: string;
   enableOfflineSupport?: boolean;
   syncOnReconnect?: boolean;
   cacheInServiceWorker?: boolean;
@@ -32,6 +42,9 @@ export function useEnhancedFirebaseCache<T = unknown>(
   const {
     ttl = 5 * 60 * 1000, // 5 Minuten default
     useRealtimeListener = false,
+    useDeltaSync = false,
+    deltaSubKey,
+    versionPath,
     enableOfflineSupport = true,
     syncOnReconnect = true,
     cacheInServiceWorker = true,
@@ -66,12 +79,13 @@ export function useEnhancedFirebaseCache<T = unknown>(
   /**
    * 💾 Daten in alle Caches speichern
    */
+  const versionRef = useRef<number | undefined>(undefined);
   const saveToCache = useCallback(
     async (newData: T): Promise<void> => {
       if (!enableOfflineSupport) return;
       try {
-        // IndexedDB Cache
-        await offlineFirebaseService.cacheData(path, newData, ttl);
+        // IndexedDB Cache (mit Version falls vorhanden)
+        await offlineFirebaseService.cacheData(path, newData, ttl, versionRef.current);
         // Service Worker Cache (falls aktiviert)
         if (cacheInServiceWorker && 'serviceWorker' in navigator) {
           if (navigator.serviceWorker.controller) {
@@ -159,6 +173,178 @@ export function useEnhancedFirebaseCache<T = unknown>(
       setLoading(false);
     }
   }, [path, useRealtimeListener, saveToCache, loadFromCache]);
+  /**
+   * 🔄 Delta Sync Listener einrichten (child_changed/added/removed)
+   * Spart massiv Bandbreite: Nur geänderte Kinder werden heruntergeladen, nicht der gesamte Datensatz.
+   */
+  /**
+   * Hilfsfunktion: Delta-Listener auf Basis von initialData aufsetzen.
+   * Wird sowohl beim initialen Setup als auch nach Full-Load verwendet.
+   */
+  const attachDeltaListeners = useCallback(
+    (ref: firebase.database.Reference, initialData: T) => {
+      const cleanups: (() => void)[] = [];
+
+      // Deep delta: Listener pro Child auf deren Sub-Key (z.B. seasons)
+      const subKeyName = deltaSubKey ?? '';
+      const attachSubListener = (childKey: string) => {
+        const subRef = firebase.database().ref(`${path}/${childKey}/${subKeyName}`);
+        const onSubChanged = subRef.on('child_changed', (snap) => {
+          const subChildKey = snap.key;
+          if (!subChildKey) return;
+          setData((prev) => {
+            const prevRecord = prev as Record<string, Record<string, unknown>>;
+            const child = prevRecord[childKey];
+            if (!child) return prev;
+            const subCollection = child[subKeyName];
+            let updatedSub: unknown;
+            if (Array.isArray(subCollection)) {
+              updatedSub = [...subCollection];
+              (updatedSub as unknown[])[Number(subChildKey)] = snap.val();
+            } else {
+              updatedSub = {
+                ...(subCollection as Record<string, unknown>),
+                [subChildKey]: snap.val(),
+              };
+            }
+            const updated = {
+              ...prevRecord,
+              [childKey]: { ...child, [subKeyName]: updatedSub },
+            } as T;
+            saveToCache(updated);
+            return updated;
+          });
+          setLastUpdated(Date.now());
+        });
+        cleanups.push(() => subRef.off('child_changed', onSubChanged));
+      };
+
+      if (deltaSubKey) {
+        for (const childKey of Object.keys(initialData as Record<string, unknown>)) {
+          attachSubListener(childKey);
+        }
+      } else {
+        const onChanged = ref.on('child_changed', (snap) => {
+          const key = snap.key;
+          if (!key) return;
+          setData((prev) => {
+            const updated = {
+              ...(prev as Record<string, unknown>),
+              [key]: snap.val(),
+            } as T;
+            saveToCache(updated);
+            return updated;
+          });
+          setLastUpdated(Date.now());
+        });
+        cleanups.push(() => ref.off('child_changed', onChanged));
+      }
+
+      const onRemoved = ref.on('child_removed', (snap) => {
+        const key = snap.key;
+        if (!key) return;
+        setData((prev) => {
+          if (!prev || typeof prev !== 'object') return prev;
+          const copy = { ...(prev as Record<string, unknown>) };
+          delete copy[key];
+          const updated = copy as T;
+          saveToCache(updated);
+          return updated;
+        });
+        setLastUpdated(Date.now());
+      });
+      cleanups.push(() => ref.off('child_removed', onRemoved));
+
+      listenerRef.current = () => {
+        cleanups.forEach((cleanup) => cleanup());
+      };
+    },
+    [path, deltaSubKey, saveToCache]
+  );
+
+  const doFullLoadAndAttach = useCallback(
+    async (ref: firebase.database.Reference) => {
+      try {
+        // Version von Firebase lesen und speichern
+        if (versionPath) {
+          const vSnap = await firebase.database().ref(versionPath).once('value');
+          versionRef.current = vSnap.val() ?? undefined;
+        }
+        const snapshot = await ref.once('value');
+        const initialData = (snapshot.val() || {}) as T;
+        setData(initialData);
+        setLastUpdated(Date.now());
+        setIsStale(false);
+        setError(null);
+        setLoading(false);
+        await saveToCache(initialData);
+        attachDeltaListeners(ref, initialData);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : err?.toString?.() || 'Firebase Fehler';
+        const isNetworkError =
+          errorMessage.includes('network') ||
+          errorMessage.includes('NETWORK') ||
+          errorMessage.includes('ERR_INTERNET_DISCONNECTED');
+        if (isNetworkError) {
+          setIsOffline(true);
+          const cached = await loadFromCache();
+          if (cached) {
+            setData(cached);
+            setIsStale(true);
+          } else {
+            setError('Keine Offline-Daten verfügbar');
+          }
+        } else {
+          setError(errorMessage);
+        }
+        setLoading(false);
+      }
+    },
+    [versionPath, attachDeltaListeners, saveToCache, loadFromCache]
+  );
+
+  const setupDeltaListener = useCallback(
+    async (existingCacheData?: T | null) => {
+      if (!path || !useDeltaSync) return;
+      const ref = firebase.database().ref(path);
+
+      // Kein Cache → Full-Load
+      if (!existingCacheData || typeof existingCacheData !== 'object') {
+        await doFullLoadAndAttach(ref);
+        return;
+      }
+
+      // Cache vorhanden + Version-Check konfiguriert → nur eine Zahl lesen
+      if (versionPath) {
+        try {
+          const [remoteVersionSnap, cachedVersion] = await Promise.all([
+            firebase.database().ref(versionPath).once('value'),
+            offlineFirebaseService.getCacheVersion(path),
+          ]);
+          const remoteVersion: number | null = remoteVersionSnap.val();
+          versionRef.current = remoteVersion ?? undefined;
+
+          if (remoteVersion !== null && cachedVersion !== null && remoteVersion === cachedVersion) {
+            // Version stimmt überein → Cache ist aktuell, kein Full-Load nötig
+            attachDeltaListeners(ref, existingCacheData);
+            return;
+          }
+
+          // Version unterschiedlich → Daten haben sich auf anderem Gerät geändert → Full-Load
+          await doFullLoadAndAttach(ref);
+        } catch {
+          // Version-Check fehlgeschlagen → sicherheitshalber Full-Load
+          await doFullLoadAndAttach(ref);
+        }
+        return;
+      }
+
+      // Kein versionPath konfiguriert → Cache vertrauen, direkt Listener aufsetzen
+      attachDeltaListeners(ref, existingCacheData);
+    },
+    [path, useDeltaSync, versionPath, attachDeltaListeners, doFullLoadAndAttach]
+  );
   /**
    * 🔄 Daten neu laden (Refetch)
    */
@@ -260,7 +446,9 @@ export function useEnhancedFirebaseCache<T = unknown>(
         }
         // 2. Nur wenn online - Realtime Listener oder Fetch versuchen
         if (navigator.onLine) {
-          if (useRealtimeListener) {
+          if (useDeltaSync) {
+            setupDeltaListener(cachedData);
+          } else if (useRealtimeListener) {
             setupRealtimeListener();
           } else {
             // 3. Versuche aktuellen Wert von Firebase zu laden
@@ -311,7 +499,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
         abortControllerRef.current.abort();
       }
     };
-  }, [path, useRealtimeListener, loadFromCache, setupRealtimeListener, fetchFromFirebase]);
+  }, [
+    path,
+    useRealtimeListener,
+    useDeltaSync,
+    loadFromCache,
+    setupRealtimeListener,
+    setupDeltaListener,
+    fetchFromFirebase,
+  ]);
   return {
     data,
     loading,

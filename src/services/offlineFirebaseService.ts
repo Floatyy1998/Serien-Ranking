@@ -114,7 +114,12 @@ class OfflineFirebaseService {
     }
   }
 
-  public async cacheData(path: string, data: unknown, ttl: number = 5 * 60 * 1000): Promise<void> {
+  public async cacheData(
+    path: string,
+    data: unknown,
+    ttl: number = 5 * 60 * 1000,
+    version?: number
+  ): Promise<void> {
     try {
       const cacheItem = {
         path,
@@ -122,6 +127,7 @@ class OfflineFirebaseService {
         timestamp: Date.now(),
         ttl,
         expiresAt: Date.now() + ttl,
+        ...(version !== undefined && { version }),
       };
 
       if (this.config.enableIndexedDB) {
@@ -166,6 +172,29 @@ class OfflineFirebaseService {
       });
     } catch {
       // console.error('Cache Abruf fehlgeschlagen:', error);
+      return null;
+    }
+  }
+
+  public async getCacheVersion(path: string): Promise<number | null> {
+    try {
+      if (!this.config.enableIndexedDB) return null;
+      const db = await this.initIndexedDB();
+      const transaction = db.transaction(['firebaseCache'], 'readonly');
+      const store = transaction.objectStore('firebaseCache');
+      return new Promise((resolve, reject) => {
+        const request = store.get(path);
+        request.onsuccess = () => {
+          const result = request.result;
+          if (!result || Date.now() > result.expiresAt) {
+            resolve(null);
+            return;
+          }
+          resolve(result.version ?? null);
+        };
+        request.onerror = () => reject(request.error);
+      });
+    } catch {
       return null;
     }
   }

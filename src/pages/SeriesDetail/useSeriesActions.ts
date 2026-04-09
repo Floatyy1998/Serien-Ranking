@@ -15,6 +15,7 @@ import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { trackSeriesAdded, trackSeriesDeleted } from '../../firebase/analytics';
+import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { showToast, showUndoToast } from '../../lib/toast';
 
 interface DialogState {
@@ -107,6 +108,7 @@ export function useSeriesActions(
         try {
           await firebase.database().ref(`${userId}/serien/${series.nmr}`).remove();
           await firebase.database().ref(`${userId}/seriesIndex/${series.nmr}`).remove();
+          bumpSeriesVersion(userId);
           trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar('Serie erfolgreich gelöscht!');
         } catch {
@@ -169,6 +171,7 @@ export function useSeriesActions(
         const newWatchCount = prevWatchCount + 1;
         await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
         await db.ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+        bumpSeriesVersion(userId);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
 
@@ -188,6 +191,7 @@ export function useSeriesActions(
           }
           if (allDone && newWatchCount >= targetCount) {
             await db.ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+            bumpSeriesVersion(userId);
             showSnackbar(`Rewatch #${series.rewatch.round} abgeschlossen!`);
             rewatchRemoved = true;
           }
@@ -270,6 +274,7 @@ export function useSeriesActions(
           await db.ref(`${episodePath}/firstWatchedAt`).remove();
           await db.ref(`${episodePath}/lastWatchedAt`).remove();
         }
+        bumpSeriesVersion(userId);
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
@@ -340,6 +345,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     try {
       await firebase.database().ref(`${userId}/serien/${series.nmr}/rewatch`).remove();
+      bumpSeriesVersion(userId);
       showSnackbar('Rewatch beendet.');
     } catch {
       setDialog({ open: true, message: 'Fehler beim Beenden des Rewatches.', type: 'error' });
