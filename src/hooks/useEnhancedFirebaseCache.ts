@@ -219,30 +219,69 @@ export function useEnhancedFirebaseCache<T = unknown>(
         cleanups.push(() => subRef.off('child_changed', onSubChanged));
       };
 
+      // Property-Level Listener: fängt Änderungen, Hinzufügen und Entfernen
+      // von Metadaten-Properties (rating, hidden, watchlist etc.).
+      // Überspringt deltaSubKey (z.B. seasons) — das deckt der Deep-Listener ab.
+      const attachPropListeners = (targetKey: string) => {
+        const initChild = (initialData as Record<string, Record<string, unknown>>)[targetKey];
+        const knownProps = new Set<string>(initChild ? Object.keys(initChild) : []);
+        const propRef = firebase.database().ref(`${path}/${targetKey}`);
+
+        const applyPropUpdate = (propKey: string, value: unknown) => {
+          setData((prev) => {
+            const prevRecord = prev as Record<string, Record<string, unknown>>;
+            const child = prevRecord[targetKey];
+            if (!child) return prev;
+            const updated = {
+              ...prevRecord,
+              [targetKey]: { ...child, [propKey]: value },
+            } as T;
+            saveToCache(updated);
+            return updated;
+          });
+          setLastUpdated(Date.now());
+        };
+
+        const onChanged = propRef.on('child_changed', (snap) => {
+          const propKey = snap.key;
+          if (!propKey || propKey === subKeyName) return;
+          applyPropUpdate(propKey, snap.val());
+        });
+        const onAdded = propRef.on('child_added', (snap) => {
+          const propKey = snap.key;
+          if (!propKey || propKey === subKeyName) return;
+          if (knownProps.has(propKey)) {
+            knownProps.delete(propKey);
+            return;
+          }
+          applyPropUpdate(propKey, snap.val());
+        });
+        const onRemoved = propRef.on('child_removed', (snap) => {
+          const propKey = snap.key;
+          if (!propKey || propKey === subKeyName) return;
+          setData((prev) => {
+            const prevRecord = prev as Record<string, Record<string, unknown>>;
+            const child = prevRecord[targetKey];
+            if (!child) return prev;
+            const copy = { ...child };
+            delete copy[propKey];
+            const updated = { ...prevRecord, [targetKey]: copy } as T;
+            saveToCache(updated);
+            return updated;
+          });
+          setLastUpdated(Date.now());
+        });
+        cleanups.push(
+          () => propRef.off('child_changed', onChanged),
+          () => propRef.off('child_added', onAdded),
+          () => propRef.off('child_removed', onRemoved)
+        );
+      };
+
       if (deltaSubKey) {
         for (const childKey of Object.keys(initialData as Record<string, unknown>)) {
           attachSubListener(childKey);
-
-          // Property-Level Listener: fängt rating, hidden, watchlist etc.
-          // Überspringt deltaSubKey (z.B. seasons) — das deckt der Deep-Listener ab.
-          const propRef = firebase.database().ref(`${path}/${childKey}`);
-          const onPropChanged = propRef.on('child_changed', (snap) => {
-            const propKey = snap.key;
-            if (!propKey || propKey === subKeyName) return;
-            setData((prev) => {
-              const prevRecord = prev as Record<string, Record<string, unknown>>;
-              const child = prevRecord[childKey];
-              if (!child) return prev;
-              const updated = {
-                ...prevRecord,
-                [childKey]: { ...child, [propKey]: snap.val() },
-              } as T;
-              saveToCache(updated);
-              return updated;
-            });
-            setLastUpdated(Date.now());
-          });
-          cleanups.push(() => propRef.off('child_changed', onPropChanged));
+          attachPropListeners(childKey);
         }
       } else {
         const onChanged = ref.on('child_changed', (snap) => {
@@ -284,25 +323,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         setLastUpdated(Date.now());
         if (deltaSubKey) {
           attachSubListener(key);
-          // Property-Level Listener für neues Kind
-          const propRef = firebase.database().ref(`${path}/${key}`);
-          const onPropChanged = propRef.on('child_changed', (snap) => {
-            const propKey = snap.key;
-            if (!propKey || propKey === subKeyName) return;
-            setData((prev) => {
-              const prevRecord = prev as Record<string, Record<string, unknown>>;
-              const child = prevRecord[key];
-              if (!child) return prev;
-              const updated = {
-                ...prevRecord,
-                [key]: { ...child, [propKey]: snap.val() },
-              } as T;
-              saveToCache(updated);
-              return updated;
-            });
-            setLastUpdated(Date.now());
-          });
-          cleanups.push(() => propRef.off('child_changed', onPropChanged));
+          attachPropListeners(key);
         }
       });
       cleanups.push(() => ref.off('child_added', onAdded));
