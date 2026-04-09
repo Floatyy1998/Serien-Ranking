@@ -109,7 +109,7 @@ export const MangaDetailPage = () => {
         if (info.latestChapter && info.latestChapter > 0) {
           firebase
             .database()
-            .ref(`${user.uid}/manga/${anilistId}/latestChapterAvailable`)
+            .ref(`users/${user.uid}/manga/${anilistId}/latestChapterAvailable`)
             .set(info.latestChapter);
         }
       })
@@ -127,7 +127,7 @@ export const MangaDetailPage = () => {
   const updateField = useCallback(
     async (field: string, value: unknown) => {
       if (!user || !manga) return;
-      await firebase.database().ref(`${user.uid}/manga/${anilistId}/${field}`).set(value);
+      await firebase.database().ref(`users/${user.uid}/manga/${anilistId}/${field}`).set(value);
     },
     [user, manga, anilistId]
   );
@@ -157,7 +157,7 @@ export const MangaDetailPage = () => {
         updates.completedAt = new Date().toISOString();
       }
 
-      await firebase.database().ref(`${user.uid}/manga/${anilistId}`).update(updates);
+      await firebase.database().ref(`users/${user.uid}/manga/${anilistId}`).update(updates);
 
       // Log activity only for increments
       if (clamped > previousChapter) {
@@ -179,7 +179,7 @@ export const MangaDetailPage = () => {
         updates.completedAt = new Date().toISOString();
       }
 
-      await firebase.database().ref(`${user.uid}/manga/${anilistId}`).update(updates);
+      await firebase.database().ref(`users/${user.uid}/manga/${anilistId}`).update(updates);
     },
     [user, manga, anilistId]
   );
@@ -189,7 +189,10 @@ export const MangaDetailPage = () => {
       if (!user || !manga) return;
       const currentRating = manga.rating?.[user.uid];
       if (currentRating === rating) {
-        await firebase.database().ref(`${user.uid}/manga/${anilistId}/rating/${user.uid}`).remove();
+        await firebase
+          .database()
+          .ref(`users/${user.uid}/manga/${anilistId}/rating/${user.uid}`)
+          .remove();
       } else {
         await updateField(`rating/${user.uid}`, rating);
         await logMangaRating(user.uid, manga, rating);
@@ -213,7 +216,7 @@ export const MangaDetailPage = () => {
 
   const handleDelete = useCallback(async () => {
     if (!user) return;
-    await firebase.database().ref(`${user.uid}/manga/${anilistId}`).remove();
+    await firebase.database().ref(`users/${user.uid}/manga/${anilistId}`).remove();
     navigate('/manga');
   }, [user, anilistId, navigate]);
 

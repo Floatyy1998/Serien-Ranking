@@ -162,7 +162,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         try {
           const activitiesRef = firebase
             .database()
-            .ref(`activities/${friend.uid}`)
+            .ref(`users/${friend.uid}/activities`)
             .orderByChild('timestamp')
             .startAt(sevenDaysAgo)
             .limitToLast(20);
@@ -223,7 +223,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     friends.forEach((friend) => {
       const ref = firebase
         .database()
-        .ref(`activities/${friend.uid}`)
+        .ref(`users/${friend.uid}/activities`)
         .orderByChild('timestamp')
         .startAt(listenStartTime);
 

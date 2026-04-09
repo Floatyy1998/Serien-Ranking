@@ -14,7 +14,7 @@ interface EnhancedCacheOptions {
   /** When set, child_changed listeners are placed on this sub-key of each child instead of on the child itself.
    *  E.g. 'seasons' → listens on {path}/{childKey}/seasons → only the changed season is downloaded. */
   deltaSubKey?: string;
-  /** Firebase path to a version counter (e.g. '{uid}/serienVersion').
+  /** Firebase path to a version counter (e.g. 'users/{uid}/meta/serienVersion').
    *  On load: read this single number and compare with cached version.
    *  Match → skip full load. Mismatch → full load. Handles multi-device correctly. */
   versionPath?: string;

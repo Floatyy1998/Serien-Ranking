@@ -148,10 +148,10 @@ export const useCalendarData = () => {
   // ── Mark watched ─────────────────────────────────────────────
 
   const handleMarkWatched = useCallback(
-    async (seriesNmr: number, seasonIndex: number, episodeIndex: number) => {
+    async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
       const db = firebase.database();
-      const basePath = `${user.uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const basePath = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
 
       try {
         // Snapshot vorher
@@ -177,7 +177,7 @@ export const useCalendarData = () => {
         }
         await db.ref().update(updates);
 
-        const series = seriesList.find((s) => s.nmr === seriesNmr);
+        const series = seriesList.find((s) => s.id === seriesId);
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
         showUndoToast(`${title} ${label} als gesehen markiert`, {

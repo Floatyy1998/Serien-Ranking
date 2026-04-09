@@ -75,55 +75,49 @@ interface MovieItem {
   providers: string[];
 }
 
-interface FirebaseSeriesData {
-  id: number;
-  title?: string;
-  original_name?: string;
-  poster?: { poster?: string };
-  rating?: Record<string, number>;
-  genre?: { genres?: string[] };
-  provider?: { provider?: Array<{ name: string }> };
-  seasons?: number;
-}
-
-interface FirebaseMovieData {
-  id: number;
-  title?: string;
-  poster?: { poster?: string };
-  rating?: Record<string, number>;
-  genre?: { genres?: string[] };
-  provider?: { provider?: Array<{ name: string }> };
-}
+// Legacy interfaces removed — catalog data is now flat
 
 /**
  * Lädt Serien und Filme eines Users
  */
 async function loadUserData(userId: string): Promise<UserData> {
-  const [seriesSnapshot, moviesSnapshot] = await Promise.all([
-    firebase.database().ref(`${userId}/serien`).once('value'),
-    firebase.database().ref(`${userId}/filme`).once('value'),
+  const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] = await Promise.all([
+    firebase.database().ref(`users/${userId}/series`).once('value'),
+    firebase.database().ref(`users/${userId}/movies`).once('value'),
+    firebase.database().ref('catalog/seriesMeta').once('value'),
+    firebase.database().ref('catalog/moviesMeta').once('value'),
   ]);
 
-  const seriesData = seriesSnapshot.val() || {};
-  const moviesData = moviesSnapshot.val() || {};
+  const seriesRefs = seriesSnapshot.val() || {};
+  const moviesRefs = moviesSnapshot.val() || {};
+  const catalogSeries = catalogSeriesSnap.val() || {};
+  const catalogMovies = catalogMoviesSnap.val() || {};
 
-  const series: SeriesItem[] = (Object.values(seriesData) as FirebaseSeriesData[]).map((s) => ({
-    id: s.id,
-    title: s.title || s.original_name || 'Unknown',
-    poster: s.poster?.poster,
-    rating: s.rating,
-    genres: s.genre?.genres || [],
-    providers: s.provider?.provider?.map((p) => p.name) || [],
-  }));
+  const series: SeriesItem[] = Object.entries(seriesRefs).map(([tmdbId, ref]) => {
+    const userRef = ref as Record<string, unknown>;
+    const cat = (catalogSeries[tmdbId] || {}) as Record<string, unknown>;
+    return {
+      id: parseInt(tmdbId),
+      title: (cat.title as string) || 'Unknown',
+      poster: cat.poster as string | undefined,
+      rating: userRef.rating as Record<string, number>,
+      genres: (cat.genres as string[]) || [],
+      providers: ((cat.providers as Array<{ name: string }>) || []).map((p) => p.name),
+    };
+  });
 
-  const movies: MovieItem[] = (Object.values(moviesData) as FirebaseMovieData[]).map((m) => ({
-    id: m.id,
-    title: m.title || 'Unknown',
-    poster: m.poster?.poster,
-    rating: m.rating,
-    genres: m.genre?.genres || [],
-    providers: m.provider?.provider?.map((p) => p.name) || [],
-  }));
+  const movies: MovieItem[] = Object.entries(moviesRefs).map(([tmdbId, ref]) => {
+    const userRef = ref as Record<string, unknown>;
+    const cat = (catalogMovies[tmdbId] || {}) as Record<string, unknown>;
+    return {
+      id: parseInt(tmdbId),
+      title: (cat.title as string) || 'Unknown',
+      poster: cat.poster as string | undefined,
+      rating: userRef.rating as Record<string, number>,
+      genres: (cat.genres as string[]) || [],
+      providers: ((cat.providers as Array<{ name: string }>) || []).map((p) => p.name),
+    };
+  });
 
   return { series, movies };
 }

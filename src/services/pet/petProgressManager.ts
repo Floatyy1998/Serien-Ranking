@@ -48,7 +48,7 @@ export async function watchedEpisode(userId: string, petId: string): Promise<Pet
     updateData.hunger = pet.hunger;
   }
 
-  await firebase.database().ref(`pets/${userId}/${petId}`).update(updateData);
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).update(updateData);
 
   return pet;
 }
@@ -157,7 +157,7 @@ export async function watchedSeriesWithGenre(
     updateData.hunger = pet.hunger;
   }
 
-  await firebase.database().ref(`pets/${userId}/${petId}`).update(updateData);
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).update(updateData);
 
   return pet;
 }

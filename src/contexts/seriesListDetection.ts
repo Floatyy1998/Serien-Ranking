@@ -43,7 +43,7 @@ export async function fixMissingFirstWatchedAt(
             if (episode.firstWatchedAt) {
               _totalEpisodesWithFirstWatched++;
             } else {
-              const episodePath = `${userId}/serien/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
+              const episodePath = `users/${userId}/seriesWatch/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
               updates[episodePath] = todayISO;
               _totalUpdated++;
             }

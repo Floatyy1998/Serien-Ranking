@@ -27,7 +27,7 @@ export const DailySpinCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
-    const ref = firebase.database().ref(`${user.uid}/wrapped/${year}/streak`);
+    const ref = firebase.database().ref(`users/${user.uid}/wrapped/${year}/streak`);
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
       setStreakDays(data?.currentStreak || 0);

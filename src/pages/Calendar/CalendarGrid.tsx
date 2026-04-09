@@ -20,7 +20,7 @@ interface DayCellProps {
   backdrops: Record<number, string>;
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
-  onMarkWatched: (seriesNmr: number, seasonIndex: number, episodeIndex: number) => void;
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
 }
 
 interface CalendarGridProps {
@@ -29,7 +29,7 @@ interface CalendarGridProps {
   backdrops: Record<number, string>;
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
-  onMarkWatched: (seriesNmr: number, seasonIndex: number, episodeIndex: number) => void;
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
 }
 
 // ── DayCell ──────────────────────────────────────────────────────

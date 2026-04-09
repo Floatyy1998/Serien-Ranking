@@ -282,53 +282,64 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         const userData = userSnapshot.val();
         setFriendName(userData?.displayName || 'User');
 
-        const seriesRef = firebase.database().ref(`${friendId}/serien`);
-        const seriesSnapshot = await seriesRef.once('value');
+        // Lade User-Refs + Catalog parallel
+        const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] =
+          await Promise.all([
+            firebase.database().ref(`users/${friendId}/series`).once('value'),
+            firebase.database().ref(`users/${friendId}/movies`).once('value'),
+            firebase.database().ref('catalog/seriesMeta').once('value'),
+            firebase.database().ref('catalog/moviesMeta').once('value'),
+          ]);
+
         const seriesData = seriesSnapshot.val() || {};
+        const catalogSeries = catalogSeriesSnap.val() || {};
 
         const seriesList: FriendItem[] = [];
-        for (const [key, value] of Object.entries(seriesData)) {
-          const series = value as FriendItem;
+        for (const [tmdbId, userRef] of Object.entries(seriesData)) {
+          const ref = userRef as Record<string, unknown>;
+          const catalog = catalogSeries[tmdbId] as Record<string, unknown> | undefined;
           seriesList.push({
-            id: series.id || parseInt(key),
-            nmr: series.nmr || parseInt(key),
-            title: series.title || 'Unknown',
-            poster: series.poster,
-            rating: series.rating,
-            genre: series.genre,
-            genres: series.genre?.genres || [],
-            provider: series.provider,
-            seasons: Array.isArray(series.seasons)
-              ? series.seasons
-              : series.seasons
-                ? (Object.values(series.seasons) as FriendSeason[])
-                : [],
-            status: series.status,
-            production: series.production,
-          });
+            id: parseInt(tmdbId),
+            nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
+            title: (catalog?.title as string) || 'Unknown',
+            poster: catalog?.poster ? { poster: catalog.poster as string } : undefined,
+            rating: ref.rating as Record<string, number>,
+            genre: catalog?.genres ? { genres: catalog.genres as string[] } : undefined,
+            genres: (catalog?.genres as string[]) || [],
+            provider: catalog?.providers ? { provider: catalog.providers as unknown[] } : undefined,
+            seasons: [],
+            status: catalog?.status as string | undefined,
+            production:
+              catalog?.production != null
+                ? { production: catalog.production as boolean }
+                : undefined,
+          } as FriendItem);
         }
         setFriendSeries(seriesList);
 
-        const moviesRef = firebase.database().ref(`${friendId}/filme`);
-        const moviesSnapshot = await moviesRef.once('value');
         const moviesData = moviesSnapshot.val() || {};
+        const catalogMovies = catalogMoviesSnap.val() || {};
 
         const moviesList: FriendItem[] = [];
-        for (const [key, value] of Object.entries(moviesData)) {
-          const movie = value as FriendItem;
+        for (const [tmdbId, userRef] of Object.entries(moviesData)) {
+          const ref = userRef as Record<string, unknown>;
+          const catalog = catalogMovies[tmdbId] as Record<string, unknown> | undefined;
           moviesList.push({
-            id: movie.id || parseInt(key),
-            nmr: movie.nmr || parseInt(key),
-            title: movie.title || 'Unknown',
-            poster: movie.poster,
-            rating: movie.rating,
-            genre: movie.genre,
-            genres: movie.genre?.genres || [],
-            provider: movie.provider,
-            release_date: movie.release_date,
-            status: movie.status,
-            production: movie.production,
-          });
+            id: parseInt(tmdbId),
+            nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
+            title: (catalog?.title as string) || 'Unknown',
+            poster: catalog?.poster ? { poster: catalog.poster as string } : undefined,
+            rating: ref.rating as Record<string, number>,
+            genre: catalog?.genres ? { genres: catalog.genres as string[] } : undefined,
+            genres: (catalog?.genres as string[]) || [],
+            provider: catalog?.providers ? { provider: catalog.providers as unknown[] } : undefined,
+            release_date: catalog?.releaseDate as string | undefined,
+            status: catalog?.status as string | undefined,
+            production:
+              catalog?.production != null
+                ? { production: catalog.production as boolean }
+                : undefined,
+          } as FriendItem);
         }
         setFriendMovies(moviesList);
       } catch (error) {

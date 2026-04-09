@@ -151,7 +151,7 @@ export const MangaReadingListPage = () => {
         updates.completedAt = new Date().toISOString();
       }
 
-      await firebase.database().ref(`${user.uid}/manga/${manga.anilistId}`).update(updates);
+      await firebase.database().ref(`users/${user.uid}/manga/${manga.anilistId}`).update(updates);
       await logChapterRead(user.uid, manga, newChapter, manga.currentChapter);
     },
     [user]

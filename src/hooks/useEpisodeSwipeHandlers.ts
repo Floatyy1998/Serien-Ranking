@@ -64,11 +64,11 @@ interface EpisodeSnapshot {
  */
 async function markEpisodeWatchedInFirebase(
   uid: string,
-  seriesNmr: number | string,
+  seriesId: number | string,
   seasonIndex: number,
   episodeIndex: number
 ): Promise<EpisodeSnapshot> {
-  const basePath = `${uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+  const basePath = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
   const db = firebase.database();
 
   // Snapshot vorher lesen
@@ -90,7 +90,7 @@ async function markEpisodeWatchedInFirebase(
     [`${basePath}/watched`]: true,
     [`${basePath}/watchCount`]: previousCount + 1,
     [`${basePath}/lastWatchedAt`]: now,
-    [`${uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+    [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
   };
   if (!hadFirstWatched) {
     updates[`${basePath}/firstWatchedAt`] = now;
@@ -106,12 +106,12 @@ async function markEpisodeWatchedInFirebase(
  */
 async function revertEpisodeWatch(
   uid: string,
-  seriesNmr: number | string,
+  seriesId: number | string,
   seasonIndex: number,
   episodeIndex: number,
   snapshot: EpisodeSnapshot
 ): Promise<void> {
-  const basePath = `${uid}/serien/${seriesNmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+  const basePath = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
   const db = firebase.database();
 
   await db.ref(`${basePath}/watched`).set(snapshot.previousWatched);
@@ -192,7 +192,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
       try {
         const snap = await markEpisodeWatchedInFirebase(
           user.uid,
-          item.nmr,
+          item.id,
           item.nextEpisode.seasonIndex,
           item.nextEpisode.episodeIndex
         );
@@ -207,7 +207,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
             try {
               await revertEpisodeWatch(
                 user.uid,
-                item.nmr,
+                item.id,
                 item.nextEpisode.seasonIndex,
                 item.nextEpisode.episodeIndex,
                 snap
@@ -287,7 +287,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
       try {
         const snap = await markEpisodeWatchedInFirebase(
           user.uid,
-          episode.seriesNmr,
+          episode.seriesId,
           episode.seasonIndex,
           episode.episodeIndex
         );
@@ -302,7 +302,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
             try {
               await revertEpisodeWatch(
                 user.uid,
-                episode.seriesNmr,
+                episode.seriesId,
                 episode.seasonIndex,
                 episode.episodeIndex,
                 snap

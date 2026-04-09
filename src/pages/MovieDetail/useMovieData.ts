@@ -274,9 +274,8 @@ export const useMovieData = () => {
     try {
       setLoading(true);
 
-      const movieRef = firebase.database().ref(`${user.uid}/filme/${movie.nmr}`);
+      const movieRef = firebase.database().ref(`users/${user.uid}/movies/${movie.id}`);
       await movieRef.remove();
-      await firebase.database().ref(`${user.uid}/filmeIndex/${movie.nmr}`).remove();
       trackMovieDeleted(String(movie.id), movie.title || '');
       setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);

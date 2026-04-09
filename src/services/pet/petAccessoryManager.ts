@@ -108,7 +108,7 @@ export async function toggleAccessory(
     }
   }
 
-  await firebase.database().ref(`pets/${userId}/${petId}/accessories`).set(pet.accessories);
+  await firebase.database().ref(`users/${userId}/pets/${petId}/accessories`).set(pet.accessories);
   return pet;
 }
 
@@ -289,7 +289,7 @@ export async function claimAccessoryDrop(
       alivePet.accessories.push(makeAccessory(accessoryId, def, false, true));
       await firebase
         .database()
-        .ref(`pets/${userId}/${alivePet.id}/accessories`)
+        .ref(`users/${userId}/pets/${alivePet.id}/accessories`)
         .set(alivePet.accessories);
     }
   }
@@ -350,7 +350,10 @@ export async function checkAndUnlockAccessories(pet: Pet): Promise<void> {
   }
 
   if (changed) {
-    await firebase.database().ref(`pets/${pet.userId}/${pet.id}/accessories`).set(pet.accessories);
+    await firebase
+      .database()
+      .ref(`users/${pet.userId}/pets/${pet.id}/accessories`)
+      .set(pet.accessories);
   }
 }
 
@@ -394,7 +397,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 
   if (Object.keys(updates).length > 0) {
-    await firebase.database().ref(`pets/${pet.userId}/${pet.id}`).update(updates);
+    await firebase.database().ref(`users/${pet.userId}/pets/${pet.id}`).update(updates);
   }
 }
 
@@ -415,6 +418,6 @@ export async function changePetColor(
   }
 
   pet.color = newColor;
-  await firebase.database().ref(`pets/${userId}/${petId}/color`).set(newColor);
+  await firebase.database().ref(`users/${userId}/pets/${petId}/color`).set(newColor);
   return pet;
 }

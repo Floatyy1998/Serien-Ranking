@@ -77,8 +77,8 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
 
                 try {
                   const [seriesSnapshot, moviesSnapshot] = await Promise.all([
-                    firebase.database().ref(`${uid}/serien`).once('value'),
-                    firebase.database().ref(`${uid}/filme`).once('value'),
+                    firebase.database().ref(`users/${uid}/series`).once('value'),
+                    firebase.database().ref(`users/${uid}/movies`).once('value'),
                   ]);
 
                   const seriesData = seriesSnapshot.val();

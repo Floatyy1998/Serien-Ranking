@@ -144,7 +144,10 @@ export const OnboardingPage: React.FC = () => {
             }
 
             // Read directly from Firebase to find the series
-            const snapshot = await firebase.database().ref(`${user.uid}/serien`).once('value');
+            const snapshot = await firebase
+              .database()
+              .ref(`users/${user.uid}/series`)
+              .once('value');
             const allSeries = snapshot.val();
 
             if (allSeries) {
@@ -171,7 +174,7 @@ export const OnboardingPage: React.FC = () => {
           const shouldBeOnWatchlist = selection !== 'all';
           await firebase
             .database()
-            .ref(`${user.uid}/serien/${seriesNmr}/watchlist`)
+            .ref(`users/${user.uid}/series/${tmdbId}/watchlist`)
             .set(shouldBeOnWatchlist);
 
           // Fetch full series details from TMDB to get season count
@@ -228,7 +231,10 @@ export const OnboardingPage: React.FC = () => {
           }
 
           // Write seasons to Firebase
-          await firebase.database().ref(`${user.uid}/serien/${seriesNmr}/seasons`).set(seasons);
+          await firebase
+            .database()
+            .ref(`users/${user.uid}/seriesWatch/${tmdbId}/seasons`)
+            .set(seasons);
 
           // Update progress
           completedSeries++;

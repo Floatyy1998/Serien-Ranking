@@ -2,6 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Series } from '../types/Series';
+import type {
+  CatalogSeries,
+  CatalogSeason,
+  UserSeriesRef,
+  SeriesWatchData,
+} from '../types/CatalogTypes';
+import { mergeToSeriesView } from '../lib/seriesAdapter';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -12,7 +19,6 @@ import {
   type ProviderChangeInfo,
   type DetectionResults,
 } from './seriesListDetection';
-import { checkSeriesIntegrity } from './dataIntegrityChecker';
 import { SeriesListContext } from './SeriesListContext';
 
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
@@ -27,56 +33,134 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   const detectionRunRef = useRef(false);
 
+  // 1. User-Referenzen (klein, welche Serien hat der User + Ratings)
   const {
-    data: seriesData,
-    loading,
-    refetch,
+    data: userSeriesRefs,
+    loading: refsLoading,
+    refetch: refetchRefs,
     isStale,
     isOffline,
-  } = useEnhancedFirebaseCache<Record<string, Series>>(user ? `${user.uid}/serien` : '', {
-    ttl: 24 * 60 * 60 * 1000,
-    useDeltaSync: true,
-    deltaSubKey: 'seasons',
-    versionPath: user ? `${user.uid}/serienVersion` : undefined,
-    enableOfflineSupport: true,
-    syncOnReconnect: true,
-  });
-
-  // Konvertiere Object zu Array, sanitize kaputte Daten, logge Probleme ins Admin-Panel
-  const allSeries: Series[] = useMemo(() => {
-    if (!seriesData || !user) return [];
-
-    const { sanitized, issues } = checkSeriesIntegrity(seriesData, user.uid);
-
-    if (issues.length > 0) {
-      firebase
-        .database()
-        .ref(`admin/dataIntegrityIssues/${user.uid}`)
-        .set({
-          timestamp: new Date().toISOString(),
-          userName: user.displayName || user.email || user.uid,
-          issueCount: issues.length,
-          issues,
-        });
-    } else {
-      firebase.database().ref(`admin/dataIntegrityIssues/${user.uid}`).remove();
+  } = useEnhancedFirebaseCache<Record<string, UserSeriesRef>>(
+    user ? `users/${user.uid}/series` : '',
+    {
+      ttl: 24 * 60 * 60 * 1000,
+      useRealtimeListener: true,
+      enableOfflineSupport: true,
+      syncOnReconnect: true,
     }
+  );
 
-    return sanitized;
-  }, [seriesData, user]);
+  // 2. Watch-Daten (delta-sync auf seasons)
+  const {
+    data: watchDataMap,
+    loading: watchLoading,
+    refetch: refetchWatch,
+  } = useEnhancedFirebaseCache<Record<string, SeriesWatchData>>(
+    user ? `users/${user.uid}/seriesWatch` : '',
+    {
+      ttl: 24 * 60 * 60 * 1000,
+      useDeltaSync: true,
+      deltaSubKey: 'seasons',
+      versionPath: user ? `users/${user.uid}/meta/serienVersion` : undefined,
+      enableOfflineSupport: true,
+      syncOnReconnect: true,
+    }
+  );
+
+  // 3. Catalog-Meta (shared, klein ~350KB für alle Serien, OHNE Seasons)
+  const {
+    data: catalogMeta,
+    loading: catalogLoading,
+    refetch: refetchCatalog,
+  } = useEnhancedFirebaseCache<Record<string, CatalogSeries>>(
+    userSeriesRefs && Object.keys(userSeriesRefs).length > 0 ? 'catalog/seriesMeta' : '',
+    {
+      ttl: 24 * 60 * 60 * 1000,
+      versionPath: 'catalog/version',
+      enableOfflineSupport: true,
+      syncOnReconnect: true,
+    }
+  );
+
+  // Auto-Refetch: Wenn eine neue Serie in userRefs auftaucht die nicht im Catalog ist
+  useEffect(() => {
+    if (!userSeriesRefs || !catalogMeta) return;
+    const missingInCatalog = Object.keys(userSeriesRefs).some((id) => !catalogMeta[id]);
+    if (missingInCatalog) {
+      refetchCatalog();
+    }
+  }, [userSeriesRefs, catalogMeta, refetchCatalog]);
+
+  // 4. Catalog-Seasons nur für User-Serien (on-demand, parallel)
+  const [catalogSeasons, setCatalogSeasons] = useState<
+    Record<string, Record<string, CatalogSeason>>
+  >({});
+  const [seasonsLoading, setSeasonsLoading] = useState(false);
+  const loadedSeasonsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!userSeriesRefs || !user) return;
+    const tmdbIds = Object.keys(userSeriesRefs);
+    const toLoad = tmdbIds.filter((id) => !loadedSeasonsRef.current.has(id));
+    if (toLoad.length === 0) return;
+
+    setSeasonsLoading(true);
+    const db = firebase.database();
+
+    Promise.all(
+      toLoad.map(async (tmdbId) => {
+        try {
+          const snap = await db.ref(`catalog/seasons/${tmdbId}`).once('value');
+          return [tmdbId, snap.val() || {}] as const;
+        } catch {
+          return [tmdbId, {}] as const;
+        }
+      })
+    ).then((results) => {
+      const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
+      for (const [tmdbId, data] of results) {
+        newSeasons[tmdbId] = data as Record<string, CatalogSeason>;
+        loadedSeasonsRef.current.add(tmdbId);
+      }
+      setCatalogSeasons((prev) => ({ ...prev, ...newSeasons }));
+      setSeasonsLoading(false);
+    });
+  }, [userSeriesRefs, user]);
+
+  const loading = refsLoading || watchLoading || catalogLoading || seasonsLoading;
+
+  // Merge: CatalogMeta + CatalogSeasons + UserRefs + WatchData → Series[]
+  const allSeries: Series[] = useMemo(() => {
+    if (!userSeriesRefs || !catalogMeta || !user) return [];
+
+    const merged: Series[] = [];
+    for (const [tmdbIdStr, userRef] of Object.entries(userSeriesRefs)) {
+      const tmdbId = Number(tmdbIdStr);
+      const meta = catalogMeta[tmdbIdStr];
+      if (!meta) continue;
+      // Merge meta + seasons back into CatalogSeries shape
+      const catalogWithSeasons: CatalogSeries = {
+        ...meta,
+        seasons: catalogSeasons[tmdbIdStr] || undefined,
+      };
+      const watchData = watchDataMap?.[tmdbIdStr];
+      merged.push(mergeToSeriesView(tmdbId, catalogWithSeasons, userRef, watchData));
+    }
+    return merged;
+  }, [userSeriesRefs, catalogMeta, catalogSeasons, watchDataMap, user]);
   const seriesList = useMemo(() => allSeries.filter((s) => !s.hidden), [allSeries]);
   const hiddenSeriesList = useMemo(() => allSeries.filter((s) => s.hidden === true), [allSeries]);
 
   // Make fix function available globally for manual execution
   useEffect(() => {
-    if (user && seriesData && !loading) {
+    if (user && watchDataMap && !loading) {
       (window as unknown as Record<string, unknown>).fixFirstWatchedAt = () => {
-        fixMissingFirstWatchedAt(user.uid, seriesData);
+        fixMissingFirstWatchedAt(user.uid, watchDataMap as unknown as Record<string, Series>);
       };
     } else {
       delete (window as unknown as Record<string, unknown>).fixFirstWatchedAt;
     }
-  }, [user, seriesData, loading]);
+  }, [user, watchDataMap, loading]);
 
   // Signal when initial data is loaded
   useEffect(() => {
@@ -184,13 +268,17 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   }, [user, seriesList]);
 
   const refetchSeries = useCallback(() => {
-    refetch();
-  }, [refetch]);
+    refetchRefs();
+    refetchWatch();
+  }, [refetchRefs, refetchWatch]);
 
   const toggleHideSeries = useCallback(
     async (nmr: number, hidden: boolean) => {
       if (!user) return;
-      const ref = firebase.database().ref(`${user.uid}/serien/${nmr}/hidden`);
+      // Finde tmdbId anhand von nmr (legacyNmr) oder direkt aus seriesList
+      const series = allSeries.find((s) => s.nmr === nmr || s.id === nmr);
+      if (!series) return;
+      const ref = firebase.database().ref(`users/${user.uid}/series/${series.id}/hidden`);
       if (hidden) {
         await ref.set(true);
       } else {
@@ -198,7 +286,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       }
       bumpSeriesVersion(user.uid);
     },
-    [user]
+    [user, allSeries]
   );
 
   // TEST FUNCTIONS - Only available in development

@@ -176,7 +176,7 @@ export const useEpisodeManagement = () => {
         newWatchCount = 0;
       }
 
-      const basePath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
       const db = firebase.database();
 
       if (newWatched) {
@@ -185,7 +185,7 @@ export const useEpisodeManagement = () => {
           [`${basePath}/watched`]: true,
           [`${basePath}/watchCount`]: newWatchCount,
           [`${basePath}/lastWatchedAt`]: now,
-          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         };
         if (!episode.firstWatchedAt) {
           updates[`${basePath}/firstWatchedAt`] = now;
@@ -197,7 +197,7 @@ export const useEpisodeManagement = () => {
           [`${basePath}/watchCount`]: null,
           [`${basePath}/firstWatchedAt`]: null,
           [`${basePath}/lastWatchedAt`]: null,
-          [`${user.uid}/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       }
 
@@ -213,7 +213,7 @@ export const useEpisodeManagement = () => {
       showUndoToast(`${series.title} ${label} ${action}`, {
         onUndo: async () => {
           try {
-            const undoPath = `${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+            const undoPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
             await firebase
               .database()
               .ref(undoPath)
@@ -298,7 +298,7 @@ export const useEpisodeManagement = () => {
     try {
       const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
       const now = new Date().toISOString();
-      const basePath = `${user.uid}/serien/${series.nmr}/seasons`;
+      const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons`;
       const updates: Record<string, unknown> = {};
 
       series.seasons.forEach((season, sIdx) => {
@@ -322,7 +322,7 @@ export const useEpisodeManagement = () => {
         });
       });
 
-      updates[`${user.uid}/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
+      updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
       await firebase.database().ref().update(updates);
       setSelectedSeason(targetSeasonIndex);
 
@@ -397,11 +397,11 @@ export const useEpisodeManagement = () => {
       const prevEpisodes = JSON.parse(JSON.stringify(season.episodes));
       const episodesRef = firebase
         .database()
-        .ref(`${user.uid}/serien/${series.nmr}/seasons/${seasonIndex}/episodes`);
+        .ref(`users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes`);
       await episodesRef.set(updatedEpisodes);
       firebase
         .database()
-        .ref(`${user.uid}/serienVersion`)
+        .ref(`users/${user.uid}/meta/serienVersion`)
         .set(firebase.database.ServerValue.TIMESTAMP);
 
       // Quick-Rate: Trigger wenn letzte Staffel komplett markiert

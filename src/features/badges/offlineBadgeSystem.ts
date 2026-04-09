@@ -90,22 +90,39 @@ export class OfflineBadgeSystem {
   }
 
   private async getSeriesData(): Promise<BadgeSeriesItem[]> {
-    const snapshot = await firebase.database().ref(`${this.userId}/serien`).once('value');
-    return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeSeriesItem[]) : [];
+    const [refsSnap, watchSnap] = await Promise.all([
+      firebase.database().ref(`users/${this.userId}/series`).once('value'),
+      firebase.database().ref(`users/${this.userId}/seriesWatch`).once('value'),
+    ]);
+    if (!refsSnap.exists()) return [];
+    const refs = refsSnap.val() as Record<string, Record<string, unknown>>;
+    const watchData = (watchSnap.val() || {}) as Record<string, Record<string, unknown>>;
+    return Object.entries(refs).map(([tmdbId, ref]) => ({
+      rating: ref.rating,
+      seasons: watchData[tmdbId]?.seasons
+        ? Object.values(watchData[tmdbId].seasons as Record<string, unknown>)
+        : [],
+    })) as BadgeSeriesItem[];
   }
 
   private async getMoviesData(): Promise<BadgeMovieItem[]> {
-    const snapshot = await firebase.database().ref(`${this.userId}/filme`).once('value');
-    return snapshot.exists() ? (Object.values(snapshot.val()) as BadgeMovieItem[]) : [];
+    const snapshot = await firebase.database().ref(`users/${this.userId}/movies`).once('value');
+    if (!snapshot.exists()) return [];
+    return Object.values(snapshot.val() as Record<string, Record<string, unknown>>).map((ref) => ({
+      rating: ref.rating,
+    })) as BadgeMovieItem[];
   }
 
   private async getActivitiesData(): Promise<unknown[]> {
-    const snapshot = await firebase.database().ref(`activities/${this.userId}`).once('value');
+    const snapshot = await firebase.database().ref(`users/${this.userId}/activities`).once('value');
     return snapshot.exists() ? Object.values(snapshot.val()) : [];
   }
 
   private async getBadgeCounters(): Promise<BadgeCounters> {
-    const snapshot = await firebase.database().ref(`badgeCounters/${this.userId}`).once('value');
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${this.userId}/badgeCounters`)
+      .once('value');
     return snapshot.exists() ? (snapshot.val() as BadgeCounters) : {};
   }
 
@@ -115,7 +132,7 @@ export class OfflineBadgeSystem {
       return this.cachedBadges;
     }
 
-    const snapshot = await firebase.database().ref(`badges/${this.userId}`).once('value');
+    const snapshot = await firebase.database().ref(`users/${this.userId}/badges`).once('value');
 
     this.cachedBadges = snapshot.exists() ? Object.values(snapshot.val()) : [];
     return this.cachedBadges;
@@ -124,7 +141,7 @@ export class OfflineBadgeSystem {
   private async saveBadge(badge: EarnedBadge): Promise<void> {
     await firebase
       .database()
-      .ref(`badges/${this.userId}/${badge.id}`)
+      .ref(`users/${this.userId}/badges/${badge.id}`)
       .set({
         ...badge,
         earnedAt: firebase.database.ServerValue.TIMESTAMP,

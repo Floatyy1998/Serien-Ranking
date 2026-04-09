@@ -46,7 +46,7 @@ export async function updateLeaderboardStats(
   }
 ): Promise<void> {
   try {
-    const ref = firebase.database().ref(`${userId}/leaderboardStats`);
+    const ref = firebase.database().ref(`users/${userId}/leaderboard/stats`);
     const snapshot = await ref.once('value');
     const current: LeaderboardStats =
       (snapshot.val() as LeaderboardStats | null) ?? getDefaultStats();
@@ -61,7 +61,7 @@ export async function updateLeaderboardStats(
       if (current.watchtimeThisMonth > 0 || current.episodesThisMonth > 0) {
         firebase
           .database()
-          .ref(`${userId}/leaderboardHistory/${current.monthKey}`)
+          .ref(`users/${userId}/leaderboard/history/${current.monthKey}`)
           .set({
             episodesThisMonth: current.episodesThisMonth,
             moviesThisMonth: current.moviesThisMonth,
@@ -137,7 +137,10 @@ export async function fetchLeaderboardData(
   const results = await Promise.all(
     allUids.map(async (uid) => {
       try {
-        const snapshot = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
+        const snapshot = await firebase
+          .database()
+          .ref(`users/${uid}/leaderboard/stats`)
+          .once('value');
         const stats = snapshot.val() as LeaderboardStats | null;
 
         if (!stats) {
@@ -227,7 +230,10 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
   await Promise.all(
     uids.map(async (uid) => {
       try {
-        const statsSnap = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
+        const statsSnap = await firebase
+          .database()
+          .ref(`users/${uid}/leaderboard/stats`)
+          .once('value');
         const stats = statsSnap.val() as LeaderboardStats | null;
         if (!stats || stats.monthKey !== currentMonth) return;
         if (
@@ -321,7 +327,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
           // Erst leaderboardHistory prüfen (Snapshot vom Monats-Rollover)
           const histSnap = await firebase
             .database()
-            .ref(`${uid}/leaderboardHistory/${monthKey}`)
+            .ref(`users/${uid}/leaderboard/history/${monthKey}`)
             .once('value');
           const hist = histSnap.val() as Record<string, number> | null;
           if (hist && hist.watchtimeThisMonth > 0) {
@@ -337,7 +343,10 @@ export async function checkAndArchiveMonth(): Promise<void> {
           }
 
           // Fallback: aktuelle leaderboardStats (falls Monat noch nicht gewechselt)
-          const statsSnap = await firebase.database().ref(`${uid}/leaderboardStats`).once('value');
+          const statsSnap = await firebase
+            .database()
+            .ref(`users/${uid}/leaderboard/stats`)
+            .once('value');
           const stats = statsSnap.val() as LeaderboardStats | null;
           if (!stats || stats.monthKey !== monthKey) return;
           if (stats.watchtimeThisMonth <= 0) return;

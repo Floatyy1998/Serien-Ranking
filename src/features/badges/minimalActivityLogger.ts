@@ -52,7 +52,7 @@ const logFriendActivity = async (
   activityData: FriendActivityData
 ): Promise<void> => {
   try {
-    const activitiesRef = firebase.database().ref(`activities/${userId}`);
+    const activitiesRef = firebase.database().ref(`users/${userId}/activities`);
 
     // Add new activity
     const newActivityRef = activitiesRef.push();

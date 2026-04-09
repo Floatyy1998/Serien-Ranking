@@ -47,7 +47,7 @@ export function checkSeriesIntegrity(
 
   const sanitized = Object.entries(seriesData).map(([seriesKey, s]) => {
     const sName = s.name || s.title || `Key: ${seriesKey}`;
-    const bp = `${uid}/serien/${seriesKey}`;
+    const bp = `users/${uid}/seriesWatch/${seriesKey}`;
 
     if (!s.name && !s.title)
       add(

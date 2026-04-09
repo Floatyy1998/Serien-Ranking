@@ -139,7 +139,7 @@ export const useRatingData = (): UseRatingDataResult => {
       if (Object.keys(ratingsToSave).length > 0) {
         const ratingRef = firebase
           .database()
-          .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
+          .ref(`users/${user.uid}/${type === 'series' ? 'series' : 'movies'}/${item.id}/rating`);
 
         await ratingRef.set(ratingsToSave);
 
@@ -147,7 +147,7 @@ export const useRatingData = (): UseRatingDataResult => {
         if (type === 'movie') {
           const movieItem = item as MovieType;
           const now = new Date().toISOString();
-          const movieRef = firebase.database().ref(`${user.uid}/filme/${item.nmr}`);
+          const movieRef = firebase.database().ref(`users/${user.uid}/movies/${item.id}`);
 
           await movieRef.child('ratedAt').set(now);
 
@@ -196,7 +196,7 @@ export const useRatingData = (): UseRatingDataResult => {
     try {
       const ratingRef = firebase
         .database()
-        .ref(`${user.uid}/${type === 'series' ? 'serien' : 'filme'}/${item.nmr}/rating`);
+        .ref(`users/${user.uid}/${type === 'series' ? 'series' : 'movies'}/${item.id}/rating`);
 
       await ratingRef.remove();
       trackRatingDeleted(String(item.id), type || 'unknown');

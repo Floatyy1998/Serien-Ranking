@@ -16,7 +16,7 @@ export async function feedPet(userId: string, petId: string): Promise<Pet | null
   pet.happiness = Math.min(100, pet.happiness + PET_CONFIG.HAPPINESS_INCREASE_PER_FEED);
   pet.lastFed = new Date();
 
-  await firebase.database().ref(`pets/${userId}/${petId}`).update({
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).update({
     hunger: pet.hunger,
     happiness: pet.happiness,
     lastFed: pet.lastFed.toISOString(),
@@ -35,7 +35,7 @@ export async function playWithPet(userId: string, petId: string): Promise<Pet | 
   pet.happiness = Math.min(100, pet.happiness + PET_CONFIG.HAPPINESS_INCREASE_PER_PLAY);
   pet.hunger = Math.min(100, pet.hunger + PET_CONFIG.HUNGER_INCREASE_PER_PLAY);
 
-  await firebase.database().ref(`pets/${userId}/${petId}`).update({
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).update({
     happiness: pet.happiness,
     hunger: pet.hunger,
   });
@@ -99,7 +99,7 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
     pet.deathTime = now;
     pet.deathCause = deathCause;
 
-    await firebase.database().ref(`pets/${userId}/${petId}`).update({
+    await firebase.database().ref(`users/${userId}/pets/${petId}`).update({
       isAlive: false,
       deathTime: now.toISOString(),
       deathCause: deathCause,
@@ -108,7 +108,7 @@ export async function updatePetStatus(userId: string, petId: string): Promise<Pe
       lastUpdated: now.toISOString(),
     });
   } else {
-    await firebase.database().ref(`pets/${userId}/${petId}`).update({
+    await firebase.database().ref(`users/${userId}/pets/${petId}`).update({
       hunger: pet.hunger,
       happiness: pet.happiness,
       lastUpdated: now.toISOString(),
@@ -162,10 +162,10 @@ export async function revivePet(userId: string, petId: string): Promise<Pet | nu
     experience: pet.experience,
   };
 
-  await firebase.database().ref(`pets/${userId}/${petId}`).update(updates);
+  await firebase.database().ref(`users/${userId}/pets/${petId}`).update(updates);
   // Todesfelder explizit entfernen
-  await firebase.database().ref(`pets/${userId}/${petId}/deathTime`).remove();
-  await firebase.database().ref(`pets/${userId}/${petId}/deathCause`).remove();
+  await firebase.database().ref(`users/${userId}/pets/${petId}/deathTime`).remove();
+  await firebase.database().ref(`users/${userId}/pets/${petId}/deathCause`).remove();
 
   return pet;
 }
@@ -207,7 +207,7 @@ export async function activateStreakShield(
     const newHappiness = Math.max(0, pet.happiness - PET_CONFIG.STREAK_SHIELD_HAPPINESS_COST);
 
     // Update pet in Firebase
-    await firebase.database().ref(`pets/${userId}/${petId}`).update({
+    await firebase.database().ref(`users/${userId}/pets/${petId}`).update({
       experience: newExperience,
       level: newLevel,
       happiness: newHappiness,
@@ -220,7 +220,7 @@ export async function activateStreakShield(
     const yesterdayStr = toLocalDateString(yesterday);
     const todayStr = toLocalDateString();
 
-    const streakRef = firebase.database().ref(`${userId}/wrapped/${year}/streak`);
+    const streakRef = firebase.database().ref(`users/${userId}/wrapped/${year}/streak`);
     const streakSnapshot = await streakRef.once('value');
     const streakData = streakSnapshot.val() as Record<string, unknown> | null;
 

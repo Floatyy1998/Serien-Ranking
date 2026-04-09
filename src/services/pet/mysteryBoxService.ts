@@ -303,7 +303,7 @@ async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Pro
       if (def.color) newAcc.color = def.color;
 
       const accessories = [...(alivePet.accessories || []), newAcc];
-      await firebase.database().ref(`pets/${userId}/${alivePet.id}`).update({ accessories });
+      await firebase.database().ref(`users/${userId}/pets/${alivePet.id}`).update({ accessories });
       break;
     }
     case 'xp_boost': {

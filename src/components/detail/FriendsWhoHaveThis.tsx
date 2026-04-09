@@ -46,20 +46,21 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
         await Promise.all(
           friends.map(async (friend) => {
             try {
-              const path = mediaType === 'series' ? `${friend.uid}/serien` : `${friend.uid}/filme`;
+              const path =
+                mediaType === 'series'
+                  ? `users/${friend.uid}/series`
+                  : `users/${friend.uid}/movies`;
               const itemsRef = firebase.database().ref(path);
               const snapshot = await itemsRef.once('value');
               const itemsData = snapshot.val();
 
               if (itemsData) {
-                // Find the item with matching ID
-                const foundItem = Object.values(itemsData).find(
-                  (item) => (item as Series | Movie).id === itemId
-                ) as Series | Movie | undefined;
+                // Im neuen Format ist der Key die tmdbId
+                const foundItem = itemsData[String(itemId)] as Record<string, unknown> | undefined;
 
                 if (foundItem) {
-                  // Calculate rating
-                  const rating = calculateOverallRating(foundItem);
+                  // Calculate rating from user ref
+                  const rating = calculateOverallRating(foundItem as unknown as Series | Movie);
 
                   // Load profile from users/{uid} to get photoURL
                   const userRef = firebase.database().ref(`users/${friend.uid}`);

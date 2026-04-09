@@ -13,7 +13,9 @@ class BadgeCounterService {
    */
   async incrementQuickwatchCounter(userId: string): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`badgeCounters/${userId}/quickwatchEpisodes`);
+      const counterRef = firebase
+        .database()
+        .ref(`users/${userId}/badgeCounters/quickwatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch {
       // console.error('Fehler beim Quickwatch-Counter:', error);
@@ -25,7 +27,7 @@ class BadgeCounterService {
    */
   async incrementRewatchCounter(userId: string): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`badgeCounters/${userId}/rewatchEpisodes`);
+      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/rewatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch {
       // console.error('Fehler beim Rewatch-Counter:', error);
@@ -38,8 +40,10 @@ class BadgeCounterService {
   async updateStreakCounter(userId: string): Promise<void> {
     try {
       const today = new Date().toDateString();
-      const lastActivityRef = firebase.database().ref(`badgeCounters/${userId}/lastActivityDate`);
-      const streakRef = firebase.database().ref(`badgeCounters/${userId}/currentStreak`);
+      const lastActivityRef = firebase
+        .database()
+        .ref(`users/${userId}/badgeCounters/lastActivityDate`);
+      const streakRef = firebase.database().ref(`users/${userId}/badgeCounters/currentStreak`);
 
       const lastActivitySnapshot = await lastActivityRef.once('value');
       const lastActivityDate = lastActivitySnapshot.val();
@@ -81,11 +85,11 @@ class BadgeCounterService {
    */
   async incrementSocialCounter(userId: string, type: 'series' | 'movie'): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`badgeCounters/${userId}/itemsAdded`);
+      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/itemsAdded`);
       await counterRef.transaction((current) => (current || 0) + 1);
 
       // Auch typ-spezifische Counter
-      const typeCounterRef = firebase.database().ref(`badgeCounters/${userId}/${type}Added`);
+      const typeCounterRef = firebase.database().ref(`users/${userId}/badgeCounters/${type}Added`);
       await typeCounterRef.transaction((current) => (current || 0) + 1);
     } catch {
       // console.error('Fehler beim Social-Counter:', error);
@@ -108,7 +112,7 @@ class BadgeCounterService {
       for (const timeframe of timeframes) {
         const bingeRef = firebase
           .database()
-          .ref(`badgeCounters/${userId}/bingeWindows/${timeframe.key}`);
+          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe.key}`);
 
         await bingeRef.transaction((current) => {
           if (!current) return current; // Keine Session vorhanden
@@ -126,7 +130,7 @@ class BadgeCounterService {
       for (const timeframe of timeframes) {
         const bingeRef = firebase
           .database()
-          .ref(`badgeCounters/${userId}/bingeWindows/${timeframe.key}`);
+          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe.key}`);
 
         await bingeRef.transaction((current) => {
           if (!current) {
@@ -161,7 +165,7 @@ class BadgeCounterService {
       for (const timeframe of timeframes) {
         const bingeRef = firebase
           .database()
-          .ref(`badgeCounters/${userId}/bingeWindows/${timeframe}`);
+          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe}`);
         const snapshot = await bingeRef.once('value');
         const current = snapshot.val();
 
@@ -183,7 +187,7 @@ class BadgeCounterService {
       // console.log('🏃 recordMarathonEpisode:', { userId, weekKey });
       const marathonRef = firebase
         .database()
-        .ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
+        .ref(`users/${userId}/badgeCounters/marathonWeeks/${weekKey}`);
 
       await marathonRef.transaction((current) => {
         const newValue = (current || 0) + 1;
@@ -203,7 +207,7 @@ class BadgeCounterService {
       const weekKey = this.getWeekKey();
       const marathonRef = firebase
         .database()
-        .ref(`badgeCounters/${userId}/marathonWeeks/${weekKey}`);
+        .ref(`users/${userId}/badgeCounters/marathonWeeks/${weekKey}`);
 
       await marathonRef.transaction((current) => (current || 0) + episodeCount);
     } catch {
@@ -222,7 +226,9 @@ class BadgeCounterService {
   }> {
     try {
       const weekKey = this.getWeekKey();
-      const marathonWeeksRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks`);
+      const marathonWeeksRef = firebase
+        .database()
+        .ref(`users/${userId}/badgeCounters/marathonWeeks`);
       const snapshot = await marathonWeeksRef.once('value');
       const marathonWeeks = snapshot.val() || {};
 
@@ -288,7 +294,7 @@ class BadgeCounterService {
    */
   async incrementCounter(userId: string, counterName: string, amount: number = 1): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`badgeCounters/${userId}/${counterName}`);
+      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`);
       await counterRef.transaction((current) => (current || 0) + amount);
     } catch {
       // console.error(`Fehler beim ${counterName}-Counter:`, error);
@@ -302,7 +308,7 @@ class BadgeCounterService {
     try {
       const snapshot = await firebase
         .database()
-        .ref(`badgeCounters/${userId}/${counterName}`)
+        .ref(`users/${userId}/badgeCounters/${counterName}`)
         .once('value');
       return snapshot.val() || 0;
     } catch {
@@ -316,7 +322,7 @@ class BadgeCounterService {
    */
   async getAllCounters(userId: string): Promise<Record<string, number>> {
     try {
-      const snapshot = await firebase.database().ref(`badgeCounters/${userId}`).once('value');
+      const snapshot = await firebase.database().ref(`users/${userId}/badgeCounters`).once('value');
       return snapshot.val() || {};
     } catch {
       // console.error('Fehler beim Lesen aller Counter:', error);
@@ -329,7 +335,7 @@ class BadgeCounterService {
    */
   async resetCounter(userId: string, counterName: string): Promise<void> {
     try {
-      await firebase.database().ref(`badgeCounters/${userId}/${counterName}`).set(0);
+      await firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`).set(0);
     } catch {
       // console.error(`Fehler beim Zurücksetzen des ${counterName}-Counters:`, error);
     }
@@ -340,7 +346,7 @@ class BadgeCounterService {
    */
   async clearAllCounters(userId: string): Promise<void> {
     try {
-      await firebase.database().ref(`badgeCounters/${userId}`).remove();
+      await firebase.database().ref(`users/${userId}/badgeCounters`).remove();
     } catch {
       // console.error('Fehler beim Löschen aller Counter:', error);
     }
@@ -352,7 +358,9 @@ class BadgeCounterService {
   async ensureCurrentMarathonWeek(userId: string): Promise<void> {
     try {
       const currentWeekKey = this.getWeekKey();
-      const marathonWeeksRef = firebase.database().ref(`badgeCounters/${userId}/marathonWeeks`);
+      const marathonWeeksRef = firebase
+        .database()
+        .ref(`users/${userId}/badgeCounters/marathonWeeks`);
       const snapshot = await marathonWeeksRef.once('value');
       const marathonWeeks = snapshot.val() || {};
 

@@ -2,12 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type {
-  PublicItem,
-  PublicSeason,
-  PublicFilters,
-  PublicUserData,
-} from './publicProfileHelpers';
+import type { PublicItem, PublicFilters, PublicUserData } from './publicProfileHelpers';
 import { useResolvedTheme, calculatePublicRating, applyFilters } from './publicProfileHelpers';
 
 // Re-export types for backward compatibility
@@ -74,51 +69,58 @@ export function usePublicProfileData() {
 
         setProfileName(foundUser.username || foundUser.displayName || 'Unbekannt');
 
-        // Load series
-        const seriesRef = firebase.database().ref(`${foundUserId}/serien`);
-        const seriesSnapshot = await seriesRef.once('value');
+        // Load user refs + catalog parallel
+        const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] =
+          await Promise.all([
+            firebase.database().ref(`users/${foundUserId}/series`).once('value'),
+            firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
+            firebase.database().ref('catalog/seriesMeta').once('value'),
+            firebase.database().ref('catalog/moviesMeta').once('value'),
+          ]);
+
         const series = seriesSnapshot.val();
+        const catalogSeries = catalogSeriesSnap.val() || {};
 
         if (series) {
-          const seriesArray = Object.entries(series).map(([key, value]) => {
-            const data = value as PublicItem;
+          const seriesArray = Object.entries(series).map(([tmdbId, userRef]) => {
+            const ref = userRef as Record<string, unknown>;
+            const cat = catalogSeries[tmdbId] as Record<string, unknown> | undefined;
             return {
-              id: data.id || parseInt(key),
-              nmr: data.nmr || parseInt(key),
-              title: data.title,
-              poster: data.poster,
-              rating: data.rating,
-              genre: data.genre,
-              genres: data.genres,
-              provider: data.provider,
-              seasons: Array.isArray(data.seasons)
-                ? data.seasons
-                : data.seasons
-                  ? (Object.values(data.seasons) as PublicSeason[])
-                  : [],
+              id: parseInt(tmdbId),
+              nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
+              title: cat?.title as string,
+              poster: cat?.poster ? { poster: cat.poster as string } : { poster: '' },
+              rating: (ref.rating || {}) as Record<string, number>,
+              genre: cat?.genres ? { genres: cat.genres as string[] } : undefined,
+              genres: (cat?.genres as string[]) || [],
+              provider: cat?.providers
+                ? { provider: cat.providers as { id: number; logo: string; name: string }[] }
+                : undefined,
+              seasons: [],
             };
           });
           setProfileSeries(seriesArray);
         }
 
-        // Load movies
-        const moviesRef = firebase.database().ref(`${foundUserId}/filme`);
-        const moviesSnapshot = await moviesRef.once('value');
         const movies = moviesSnapshot.val();
+        const catalogMovies = catalogMoviesSnap.val() || {};
 
         if (movies) {
-          const moviesArray = Object.entries(movies).map(([key, value]) => {
-            const data = value as PublicItem;
+          const moviesArray = Object.entries(movies).map(([tmdbId, userRef]) => {
+            const ref = userRef as Record<string, unknown>;
+            const cat = catalogMovies[tmdbId] as Record<string, unknown> | undefined;
             return {
-              id: data.id || parseInt(key),
-              nmr: data.nmr || parseInt(key),
-              title: data.title,
-              poster: data.poster,
-              rating: data.rating,
-              genre: data.genre,
-              genres: data.genres,
-              provider: data.provider,
-              release_date: data.release_date,
+              id: parseInt(tmdbId),
+              nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
+              title: cat?.title as string,
+              poster: cat?.poster ? { poster: cat.poster as string } : { poster: '' },
+              rating: (ref.rating || {}) as Record<string, number>,
+              genre: cat?.genres ? { genres: cat.genres as string[] } : undefined,
+              genres: (cat?.genres as string[]) || [],
+              provider: cat?.providers
+                ? { provider: cat.providers as { id: number; logo: string; name: string }[] }
+                : undefined,
+              release_date: cat?.releaseDate as string | undefined,
             };
           });
           setProfileMovies(moviesArray);
