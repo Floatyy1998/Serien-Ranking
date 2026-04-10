@@ -38,9 +38,11 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
     if (!user) return;
     const updates: Record<string, { dismissed: boolean; timestamp: number }> = {};
     seriesIds.forEach((id) => {
+      // Jitter ±2 Tage, damit Sammel-Dismiss nicht alle gleichzeitig wieder auflebt
+      const jitter = (Math.random() - 0.5) * 4 * 24 * 60 * 60 * 1000;
       updates[`users/${user.uid}/providerChangeNotifications/${id}`] = {
         dismissed: true,
-        timestamp: Date.now(),
+        timestamp: Date.now() + jitter,
       };
     });
     await firebase.database().ref().update(updates);
