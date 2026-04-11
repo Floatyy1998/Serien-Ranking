@@ -7,7 +7,11 @@ import type { Movie } from '../types/Movie';
 import type { CatalogMovie, UserMovieRef } from '../types/CatalogTypes';
 import { mergeToMovieView } from '../lib/seriesAdapter';
 import { MovieListContext } from './MovieListContext';
-import { fetchStaticCatalogMovies, clearStaticCatalogCache } from '../lib/staticCatalog';
+import {
+  fetchStaticCatalogMovies,
+  clearStaticCatalogCache,
+  checkForCatalogVersionBump,
+} from '../lib/staticCatalog';
 
 export const MovieListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -101,6 +105,29 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
       refetchCatalog(true);
     }
   }, [userMovieRefs, catalogData, refetchCatalog]);
+
+  // Auto-Refresh bei visibilitychange (silent, kein loading flag).
+  // Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
+  useEffect(() => {
+    if (!user || !userMovieRefs) return;
+    let lastCheck = 0;
+    const handler = async () => {
+      if (document.visibilityState !== 'visible') return;
+      const now = Date.now();
+      if (now - lastCheck < 30 * 1000) return;
+      lastCheck = now;
+      try {
+        const bumped = await checkForCatalogVersionBump();
+        if (!bumped) return;
+        const newMovies = await fetchStaticCatalogMovies();
+        if (newMovies) setCatalogData(newMovies);
+      } catch {
+        // silent fail
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [user, userMovieRefs]);
 
   const loading = refsLoading || catalogLoading;
 

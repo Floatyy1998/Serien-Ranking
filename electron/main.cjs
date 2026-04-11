@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, session } = require('electron');
 const path = require('path');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
@@ -43,6 +43,18 @@ function createWindow() {
     mainWindow.show();
   });
 
+  // DevTools-Shortcuts manuell registrieren (packaged Electron deaktiviert
+  // das Default-Menu, deshalb greifen Ctrl+Shift+I / F12 sonst nicht).
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+    const isToggleDevtools =
+      input.key === 'F12' || (input.control && input.shift && input.key.toLowerCase() === 'i');
+    if (isToggleDevtools) {
+      mainWindow.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+
   // Open external links in default browser, keep app links in Electron
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith(APP_URL)) return { action: 'allow' };
@@ -51,6 +63,19 @@ function createWindow() {
   });
 
   mainWindow.loadURL(APP_URL);
+}
+
+// HTTP-Cache beim Start einmalig leeren, damit Electron beim naechsten Launch
+// nach einem Frontend-Deploy immer die frische version.json + index.html vom
+// Server zieht und nicht aus dem Chromium-Cache veraltet serviert. LocalStorage
+// bleibt erhalten (Auth, Settings, Catalog-Daten werden ueber den Version-Check
+// des Frontend-Codes invalidiert). Kostet <100ms beim Start.
+async function clearStartupCache() {
+  try {
+    await session.defaultSession.clearCache();
+  } catch {
+    // ignore — Cache-Clear ist best-effort
+  }
 }
 
 // IPC handlers for autostart toggle
@@ -62,7 +87,10 @@ ipcMain.handle('set-auto-start', (_event, enabled) => {
   return enabled;
 });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  await clearStartupCache();
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   app.quit();

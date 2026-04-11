@@ -13,6 +13,7 @@ import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeasons,
   clearStaticCatalogCache,
+  checkForCatalogVersionBump,
 } from '../lib/staticCatalog';
 
 import firebase from 'firebase/compat/app';
@@ -195,6 +196,47 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       cancelled = true;
     };
   }, [userSeriesRefs, user]);
+
+  // Auto-Refresh bei visibilitychange: Wenn der Tab nach laengerer
+  // Inaktivitaet wieder sichtbar wird, prueft der Client ob serverseitig
+  // ein neuer Catalog vorliegt. Falls ja → silent refetch (ohne
+  // catalogLoading-Flag, also ohne UI-Flackern/Splashscreen).
+  // Im Hintergrund laufende Cron-Updates werden so ohne App-Reload sichtbar.
+  useEffect(() => {
+    if (!user || !userSeriesRefs) return;
+    let lastCheck = 0;
+    const handler = async () => {
+      if (document.visibilityState !== 'visible') return;
+      // Debounce: max alle 30s pruefen
+      const now = Date.now();
+      if (now - lastCheck < 30 * 1000) return;
+      lastCheck = now;
+      try {
+        const bumped = await checkForCatalogVersionBump();
+        if (!bumped) return;
+        // Neue Version: silent refetch ohne catalogLoading-Flag.
+        const tmdbIds = Object.keys(userSeriesRefs);
+        if (tmdbIds.length === 0) return;
+        const [newMeta, ...seasonResults] = await Promise.all([
+          fetchStaticCatalogSeries(),
+          ...tmdbIds.map(async (tmdbId) => {
+            const data = await fetchStaticCatalogSeasons(tmdbId);
+            return [tmdbId, data || {}] as const;
+          }),
+        ]);
+        if (newMeta) setCatalogMeta(newMeta);
+        const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
+        for (const [tmdbId, data] of seasonResults) {
+          newSeasons[tmdbId] = data as Record<string, CatalogSeason>;
+        }
+        setCatalogSeasons(newSeasons);
+      } catch {
+        // silent fail — nicht das haupt-flow stoeren
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [user, userSeriesRefs]);
 
   const loading = refsLoading || watchLoading || catalogLoading;
 
