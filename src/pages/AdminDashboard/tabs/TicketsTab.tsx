@@ -47,8 +47,11 @@ export function TicketsTab({ theme }: TicketsTabProps) {
   const expandedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const ref = firebase.database().ref('bugTickets');
-    const handler = ref.on('value', (snap) => {
+    // limitToLast begrenzt den Listener auf die 100 neuesten Tickets (Push-Keys
+    // sind chronologisch). Spart massiv Egress, weil ein einzelner Ticket-Update
+    // sonst den kompletten Tickets-Node neu herunterlaedt.
+    const query = firebase.database().ref('bugTickets').orderByKey().limitToLast(100);
+    const handler = query.on('value', (snap) => {
       const val = snap.val();
       if (val) {
         const list = Object.values(val) as BugTicket[];
@@ -59,7 +62,7 @@ export function TicketsTab({ theme }: TicketsTabProps) {
       }
       setLoading(false);
     });
-    return () => ref.off('value', handler);
+    return () => query.off('value', handler);
   }, []);
 
   // Auto-scroll to expanded ticket from notification

@@ -137,28 +137,34 @@ export function useAdminDashboardData(daysRange = 30) {
     loadDailyStats();
   }, [daysRange, refreshKey]);
 
-  // Load user metas
+  // Load user metas + extension sessions for today in EINEM Read.
+  // Vorher liefen zwei separate once('value') auf analytics/users (haelfte
+  // der Bytes gedoppelt). Beide States werden aus demselben Snapshot befuellt.
   useEffect(() => {
     const db = firebase.database();
-    const ref = db.ref('analytics/users');
+    const today = dateKey(0);
 
-    ref
+    db.ref('analytics/users')
       .once('value')
       .then((snap) => {
         const val = snap.val();
         if (!val) return;
 
         const metas: Record<string, UserMeta> = {};
+        const sessions: Record<string, ExtensionSession[]> = {};
         for (const uid of Object.keys(val)) {
           if (val[uid]?.meta) {
             metas[uid] = { uid, ...val[uid].meta };
           }
+          const userSessions = val[uid]?.extension?.sessions?.[today];
+          if (userSessions) {
+            sessions[uid] = Object.values(userSessions);
+          }
         }
         setUserMetas(metas);
+        setExtensionSessions(sessions);
       })
       .catch(() => {});
-
-    return () => {};
   }, [refreshKey]);
 
   // Load user profiles for display names (einzeln pro UID statt /users komplett)
@@ -218,29 +224,6 @@ export function useAdminDashboardData(daysRange = 30) {
 
     return () => ref.off('value', handler);
   }, []);
-
-  // Load extension sessions for today
-  useEffect(() => {
-    const db = firebase.database();
-    const today = dateKey(0);
-
-    db.ref('analytics/users')
-      .once('value')
-      .then((snap) => {
-        const val = snap.val();
-        if (!val) return;
-
-        const sessions: Record<string, ExtensionSession[]> = {};
-        for (const uid of Object.keys(val)) {
-          const userSessions = val[uid]?.extension?.sessions?.[today];
-          if (userSessions) {
-            sessions[uid] = Object.values(userSessions);
-          }
-        }
-        setExtensionSessions(sessions);
-      })
-      .catch(() => {});
-  }, [refreshKey]);
 
   // ─── Computed Metrics ────────────────────────────────────────────────
 

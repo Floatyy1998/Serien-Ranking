@@ -42,39 +42,26 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
       const friendsWithThisItem: FriendWithItem[] = [];
 
       try {
-        // Check each friend's list for this item
+        // Gezielter Punkt-Query statt Full-Read: nur den einen Eintrag pro Friend
+        // lesen (~500 Bytes) statt die gesamte series/movies-Liste (~100-200 KB).
+        // photoURL kommt aus dem Friend-Objekt des Contexts — kein users/{uid}
+        // Read noetig.
+        const subPath = mediaType === 'series' ? 'series' : 'movies';
         await Promise.all(
           friends.map(async (friend) => {
             try {
-              const path =
-                mediaType === 'series'
-                  ? `users/${friend.uid}/series`
-                  : `users/${friend.uid}/movies`;
-              const itemsRef = firebase.database().ref(path);
-              const snapshot = await itemsRef.once('value');
-              const itemsData = snapshot.val();
+              const itemRef = firebase.database().ref(`users/${friend.uid}/${subPath}/${itemId}`);
+              const snapshot = await itemRef.once('value');
+              const foundItem = snapshot.val() as Record<string, unknown> | null;
+              if (!foundItem) return;
 
-              if (itemsData) {
-                // Im neuen Format ist der Key die tmdbId
-                const foundItem = itemsData[String(itemId)] as Record<string, unknown> | undefined;
-
-                if (foundItem) {
-                  // Calculate rating from user ref
-                  const rating = calculateOverallRating(foundItem as unknown as Series | Movie);
-
-                  // Load profile from users/{uid} to get photoURL
-                  const userRef = firebase.database().ref(`users/${friend.uid}`);
-                  const userSnapshot = await userRef.once('value');
-                  const userData = userSnapshot.val();
-
-                  friendsWithThisItem.push({
-                    uid: friend.uid,
-                    displayName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
-                    photoURL: userData?.photoURL,
-                    rating,
-                  });
-                }
-              }
+              const rating = calculateOverallRating(foundItem as unknown as Series | Movie);
+              friendsWithThisItem.push({
+                uid: friend.uid,
+                displayName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
+                photoURL: friend.photoURL,
+                rating,
+              });
             } catch (error) {
               console.error(`Error loading ${mediaType} for friend ${friend.uid}:`, error);
             }

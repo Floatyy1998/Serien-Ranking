@@ -154,6 +154,41 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       return;
     }
 
+    // Kurzer localStorage-Cache (2 min TTL): App-Reopens innerhalb von 2 Minuten
+    // ueberspringen die N-parallel-Reads komplett. Neue Activities kommen
+    // trotzdem live via child_added Listener rein, also nichts geht verloren.
+    const cacheKey = `friendActivities:${user.uid}`;
+    const cacheTTL = 2 * 60 * 1000;
+    try {
+      const rawCached = localStorage.getItem(cacheKey);
+      if (rawCached) {
+        const cached = JSON.parse(rawCached) as {
+          savedAt: number;
+          friendIds: string[];
+          activities: FriendActivity[];
+        };
+        const friendIdsKey = friends
+          .map((f) => f.uid)
+          .sort()
+          .join(',');
+        const cachedIdsKey = [...cached.friendIds].sort().join(',');
+        if (
+          Date.now() - cached.savedAt < cacheTTL &&
+          friendIdsKey === cachedIdsKey &&
+          Array.isArray(cached.activities)
+        ) {
+          setFriendActivities(cached.activities);
+          const unreadActivities = cached.activities.filter(
+            (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
+          );
+          setUnreadActivitiesCount(unreadActivities.length);
+          return;
+        }
+      }
+    } catch {
+      // ignore cache errors
+    }
+
     try {
       const allActivities: FriendActivity[] = [];
 
@@ -198,6 +233,20 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
       );
       setUnreadActivitiesCount(unreadActivities.length);
+
+      // Cache fuer naechsten App-Reopen
+      try {
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            savedAt: Date.now(),
+            friendIds: friends.map((f) => f.uid),
+            activities: recentActivities,
+          })
+        );
+      } catch {
+        // quota o.ae.
+      }
     } catch {
       // Silent fail
     }
