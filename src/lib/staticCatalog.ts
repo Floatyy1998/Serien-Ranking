@@ -76,15 +76,23 @@ function lsRemove(key: string): void {
   }
 }
 
-async function fetchJson<T>(path: string, opts?: { noStore?: boolean }): Promise<T> {
-  const url = `${CATALOG_BASE_URL}/${path}`;
+async function fetchJson<T>(
+  path: string,
+  opts?: { noStore?: boolean; version?: number | null }
+): Promise<T> {
+  // Version-basierter Cache-Bust fuer Catalog-Files (seriesMeta, moviesMeta,
+  // seasons/*). Der Browser-HTTP-Cache respektiert `max-age=86400` auch wenn
+  // serverseitig neue Daten stehen — das umgehen wir, indem jede Version eine
+  // eigene URL bekommt. So liegt alte Version 24h im Cache, neue Version ist
+  // ein neuer URL-Key und wird vom Netz geholt.
+  const query = opts?.version != null ? `?v=${opts.version}` : '';
+  const url = `${CATALOG_BASE_URL}/${path}${query}`;
   const res = await fetch(url, {
     method: 'GET',
     credentials: 'omit',
-    // version.json muss cache-busted sein, sonst sieht der Client den Bump nie
-    // und alle localStorage-Caches bleiben stale. Die grossen Catalog-Files
-    // duerfen hingegen weiterhin vom Browser gecacht werden — sie werden ueber
-    // den Version-Check invalidiert.
+    // version.json selbst muss immer frisch sein (sonst sehen wir den Bump nie),
+    // deshalb no-store. Die grossen Files duerfen 24h gecacht bleiben, weil
+    // ihre URL durch den ?v=-Query automatisch invalidiert wird.
     cache: opts?.noStore ? 'no-store' : 'default',
   });
   if (!res.ok) {
@@ -158,14 +166,16 @@ async function ensureVersionFresh(): Promise<number | null> {
  */
 export async function fetchStaticCatalogSeries(): Promise<Record<string, CatalogSeries> | null> {
   if (memoryMeta) return memoryMeta;
-  await ensureVersionFresh();
+  const version = await ensureVersionFresh();
   const cached = lsGet<Record<string, CatalogSeries>>(LS_META_KEY);
   if (cached) {
     memoryMeta = cached;
     return cached;
   }
   try {
-    const data = await fetchJson<Record<string, CatalogSeries>>('seriesMeta.json');
+    const data = await fetchJson<Record<string, CatalogSeries>>('seriesMeta.json', {
+      version,
+    });
     memoryMeta = data;
     lsSet(LS_META_KEY, data);
     return data;
@@ -180,14 +190,16 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
  */
 export async function fetchStaticCatalogMovies(): Promise<Record<string, CatalogMovie> | null> {
   if (memoryMovies) return memoryMovies;
-  await ensureVersionFresh();
+  const version = await ensureVersionFresh();
   const cached = lsGet<Record<string, CatalogMovie>>(LS_MOVIES_KEY);
   if (cached) {
     memoryMovies = cached;
     return cached;
   }
   try {
-    const data = await fetchJson<Record<string, CatalogMovie>>('moviesMeta.json');
+    const data = await fetchJson<Record<string, CatalogMovie>>('moviesMeta.json', {
+      version,
+    });
     memoryMovies = data;
     lsSet(LS_MOVIES_KEY, data);
     return data;
@@ -206,7 +218,7 @@ export async function fetchStaticCatalogSeasons(
   const id = String(tmdbId);
   const mem = memorySeasons.get(id);
   if (mem) return mem;
-  await ensureVersionFresh();
+  const version = await ensureVersionFresh();
   const lsKey = LS_SEASONS_PREFIX + id;
   const cached = lsGet<Record<string, CatalogSeason>>(lsKey);
   if (cached) {
@@ -214,7 +226,9 @@ export async function fetchStaticCatalogSeasons(
     return cached;
   }
   try {
-    const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`);
+    const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
+      version,
+    });
     memorySeasons.set(id, data);
     lsSet(lsKey, data);
     return data;

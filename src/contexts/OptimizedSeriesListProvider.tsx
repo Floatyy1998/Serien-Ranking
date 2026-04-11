@@ -197,23 +197,28 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     };
   }, [userSeriesRefs, user]);
 
-  // Auto-Refresh bei visibilitychange: Wenn der Tab nach laengerer
-  // Inaktivitaet wieder sichtbar wird, prueft der Client ob serverseitig
-  // ein neuer Catalog vorliegt. Falls ja → silent refetch (ohne
-  // catalogLoading-Flag, also ohne UI-Flackern/Splashscreen).
-  // Im Hintergrund laufende Cron-Updates werden so ohne App-Reload sichtbar.
+  // Auto-Refresh: Silent refetch der Catalog-Daten, wenn serverseitig eine
+  // neue Version vorliegt. Zwei Trigger-Wege:
+  //   1) visibilitychange (Tab wird wieder sichtbar)
+  //   2) Periodischer Poll alle 5 min, solange der Tab sichtbar ist
+  // Beide rufen denselben silent-Refetch auf (ohne catalogLoading-Flag, also
+  // ohne UI-Flackern). Background-Cron-Updates werden so ganz ohne App-Reload
+  // sichtbar — egal ob der User weg war oder die ganze Zeit aktiv war.
   useEffect(() => {
     if (!user || !userSeriesRefs) return;
     let lastCheck = 0;
-    const handler = async () => {
+    let cancelled = false;
+
+    const runCheck = async () => {
+      if (cancelled) return;
       if (document.visibilityState !== 'visible') return;
-      // Debounce: max alle 30s pruefen
+      // Debounce: max alle 30s pruefen, egal welcher Trigger
       const now = Date.now();
       if (now - lastCheck < 30 * 1000) return;
       lastCheck = now;
       try {
         const bumped = await checkForCatalogVersionBump();
-        if (!bumped) return;
+        if (!bumped || cancelled) return;
         // Neue Version: silent refetch ohne catalogLoading-Flag.
         const tmdbIds = Object.keys(userSeriesRefs);
         if (tmdbIds.length === 0) return;
@@ -224,6 +229,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
             return [tmdbId, data || {}] as const;
           }),
         ]);
+        if (cancelled) return;
         if (newMeta) setCatalogMeta(newMeta);
         const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
         for (const [tmdbId, data] of seasonResults) {
@@ -234,8 +240,20 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         // silent fail — nicht das haupt-flow stoeren
       }
     };
-    document.addEventListener('visibilitychange', handler);
-    return () => document.removeEventListener('visibilitychange', handler);
+
+    // Trigger 1: Tab wird wieder sichtbar
+    document.addEventListener('visibilitychange', runCheck);
+
+    // Trigger 2: Periodischer Poll alle 5 min. Der Check selbst kostet nur
+    // einen ~115-byte version.json-Request. Nur bei tatsaechlichem Bump wird
+    // der volle Refetch ausgefuehrt.
+    const interval = setInterval(runCheck, 5 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', runCheck);
+      clearInterval(interval);
+    };
   }, [user, userSeriesRefs]);
 
   const loading = refsLoading || watchLoading || catalogLoading;
