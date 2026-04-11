@@ -9,6 +9,11 @@ import type {
   SeriesWatchData,
 } from '../types/CatalogTypes';
 import { mergeToSeriesView } from '../lib/seriesAdapter';
+import {
+  fetchStaticCatalogSeries,
+  fetchStaticCatalogSeasons,
+  clearStaticCatalogCache,
+} from '../lib/staticCatalog';
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -67,29 +72,82 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   );
 
-  // 3. Catalog-Meta (shared, klein ~350KB für alle Serien, OHNE Seasons)
-  const {
-    data: catalogMeta,
-    loading: catalogLoading,
-    refetch: refetchCatalog,
-  } = useEnhancedFirebaseCache<Record<string, CatalogSeries>>(
-    userSeriesRefs && Object.keys(userSeriesRefs).length > 0 ? 'catalog/seriesMeta' : '',
-    {
-      ttl: 24 * 60 * 60 * 1000,
-      versionPath: 'catalog/version',
-      enableOfflineSupport: true,
-      syncOnReconnect: true,
-    }
-  );
+  // 3. Catalog-Meta (shared, ~350KB): aus Static-File vom eigenen Server,
+  //    Firebase als Fallback. Spart Firebase Download-Egress.
+  const [catalogMeta, setCatalogMeta] = useState<Record<string, CatalogSeries> | null>(null);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const refetchCatalog = useCallback(
+    async (forceFresh: boolean = false) => {
+      if (!userSeriesRefs || Object.keys(userSeriesRefs).length === 0) return;
+      setCatalogLoading(true);
+      if (forceFresh) clearStaticCatalogCache();
+      let merged: Record<string, CatalogSeries> | null = null;
 
-  // Auto-Refetch: Wenn eine neue Serie in userRefs auftaucht die nicht im Catalog ist
+      // 1) Static-File versuchen
+      try {
+        const staticData = await fetchStaticCatalogSeries();
+        if (staticData) merged = staticData;
+      } catch {
+        // ignore, firebase fallback unten
+      }
+
+      // 2) Fehlende IDs einzeln von Firebase nachholen. Deckt den Fall ab dass
+      //    der Server-Export noch nicht gelaufen ist (z.B. direkt nach /add).
+      const userIds = Object.keys(userSeriesRefs);
+      const missingIds = userIds.filter((id) => !merged || !merged[id]);
+      if (merged && missingIds.length > 0 && missingIds.length < 20) {
+        try {
+          const db = firebase.database();
+          const results = await Promise.all(
+            missingIds.map((id) => db.ref(`catalog/seriesMeta/${id}`).once('value'))
+          );
+          const patched: Record<string, CatalogSeries> = { ...merged };
+          for (let i = 0; i < missingIds.length; i++) {
+            const val = results[i].val();
+            if (val) patched[missingIds[i]] = val as CatalogSeries;
+          }
+          merged = patched;
+        } catch (e) {
+          console.warn('[catalog] missing-id firebase fallback failed', e);
+        }
+      }
+
+      // 3) Wenn static komplett versagt hat, voller Firebase-Fallback
+      if (!merged) {
+        try {
+          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
+          merged = snap.val() || {};
+        } catch (e) {
+          console.warn('[catalog] full firebase fallback failed', e);
+        }
+      }
+
+      setCatalogMeta(merged || {});
+      setCatalogLoading(false);
+    },
+    [userSeriesRefs]
+  );
+  useEffect(() => {
+    refetchCatalog();
+  }, [refetchCatalog]);
+
+  // Auto-Refetch: Wenn eine neue Serie in userRefs auftaucht die nicht im Catalog ist.
+  // Nach einem /add auf dem Server exportiert hello.js den Catalog sofort als
+  // statische Files neu, aber unser lokaler Cache (memory + localStorage) ist stale.
+  // WICHTIG: triggert NUR bei Aenderung der userRef-Keys, nicht bei jedem
+  // catalogMeta-Update, sonst Endlosschleife wenn der Server noch nicht fertig ist.
+  const lastRefetchKeysRef = useRef<string>('');
   useEffect(() => {
     if (!userSeriesRefs || !catalogMeta) return;
+    const currentKeys = Object.keys(userSeriesRefs).sort().join(',');
+    if (currentKeys === lastRefetchKeysRef.current) return;
     const missingInCatalog = Object.keys(userSeriesRefs).some((id) => !catalogMeta[id]);
     if (missingInCatalog) {
-      refetchCatalog();
+      lastRefetchKeysRef.current = currentKeys;
+      refetchCatalog(true);
     }
-  }, [userSeriesRefs, catalogMeta, refetchCatalog]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userSeriesRefs]);
 
   // 4. Catalog-Seasons nur für User-Serien (on-demand, parallel)
   const [catalogSeasons, setCatalogSeasons] = useState<
@@ -109,6 +167,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
     Promise.all(
       tmdbIds.map(async (tmdbId) => {
+        // static first
+        try {
+          const data = await fetchStaticCatalogSeasons(tmdbId);
+          if (data) return [tmdbId, data] as const;
+        } catch {
+          // ignore, fallback to firebase
+        }
         try {
           const snap = await db.ref(`catalog/seasons/${tmdbId}`).once('value');
           return [tmdbId, snap.val() || {}] as const;

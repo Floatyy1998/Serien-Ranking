@@ -22,6 +22,9 @@ export function mergeToSeriesView(
 
   if (catalog.seasons) {
     for (const [snKey, catalogSeason] of Object.entries(catalog.seasons)) {
+      // Firebase serialisiert Objects mit numerischen Keys als Arrays. Fehlt
+      // Index 0, enthaelt das Array einen null-Eintrag. Ueberspringen.
+      if (!catalogSeason || !Array.isArray(catalogSeason.episodes)) continue;
       const sn = Number(snKey);
       const seasonWatch = watchData?.seasons?.[snKey];
 

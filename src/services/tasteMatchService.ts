@@ -4,6 +4,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../lib/staticCatalog';
 
 export interface TasteMatchResult {
   overallMatch: number; // 0-100
@@ -81,17 +82,29 @@ interface MovieItem {
  * Lädt Serien und Filme eines Users
  */
 async function loadUserData(userId: string): Promise<UserData> {
-  const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] = await Promise.all([
-    firebase.database().ref(`users/${userId}/series`).once('value'),
-    firebase.database().ref(`users/${userId}/movies`).once('value'),
-    firebase.database().ref('catalog/seriesMeta').once('value'),
-    firebase.database().ref('catalog/moviesMeta').once('value'),
-  ]);
+  // Catalog via Static-File, Firebase-Fallback.
+  const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
+    await Promise.all([
+      firebase.database().ref(`users/${userId}/series`).once('value'),
+      firebase.database().ref(`users/${userId}/movies`).once('value'),
+      fetchStaticCatalogSeries(),
+      fetchStaticCatalogMovies(),
+    ]);
 
   const seriesRefs = seriesSnapshot.val() || {};
   const moviesRefs = moviesSnapshot.val() || {};
-  const catalogSeries = catalogSeriesSnap.val() || {};
-  const catalogMovies = catalogMoviesSnap.val() || {};
+  let catalogSeries = staticSeriesCatalog as Record<string, unknown> | null;
+  if (!catalogSeries) {
+    const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
+    catalogSeries = snap.val() || {};
+  }
+  catalogSeries = catalogSeries || {};
+  let catalogMovies = staticMoviesCatalog as Record<string, unknown> | null;
+  if (!catalogMovies) {
+    const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
+    catalogMovies = snap.val() || {};
+  }
+  catalogMovies = catalogMovies || {};
 
   const series: SeriesItem[] = Object.entries(seriesRefs).map(([tmdbId, ref]) => {
     const userRef = ref as Record<string, unknown>;
