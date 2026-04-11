@@ -9,6 +9,20 @@ import type {
 } from '../types/CatalogTypes';
 
 /**
+ * Firebase RTDB serialisiert Objects mit numerischen Keys, bei denen Index 0
+ * fehlt, als sparse objects (z.B. {1: 'Drama', 2: 'Action'}). Das kann fuer
+ * genres/providers passieren. Downstream-Code erwartet aber Arrays und ruft
+ * .forEach/.filter drauf. Deshalb hier defensiv zu Array konvertieren.
+ */
+function ensureArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object') {
+    return Object.values(value as Record<string, T>);
+  }
+  return [];
+}
+
+/**
  * Merges catalog data + user ref + watch data into the legacy Series interface.
  * This allows existing components to work without changes during migration.
  */
@@ -58,8 +72,8 @@ export function mergeToSeriesView(
     title: catalog.title,
     nmr: userRef.legacyNmr ?? 0,
     poster: { poster: catalog.poster },
-    genre: { genres: catalog.genres },
-    provider: { provider: catalog.providers },
+    genre: { genres: ensureArray<string>(catalog.genres) },
+    provider: { provider: ensureArray(catalog.providers) },
     imdb: { imdb_id: catalog.imdbId ?? '' },
     wo: { wo: catalog.woUrl ?? '' },
     production: { production: catalog.production },
@@ -99,8 +113,8 @@ export function mergeToMovieView(
     nmr: userRef.legacyNmr ?? 0,
     title: catalog.title,
     poster: { poster: catalog.poster },
-    genre: { genres: catalog.genres },
-    provider: { provider: catalog.providers },
+    genre: { genres: ensureArray<string>(catalog.genres) },
+    provider: { provider: ensureArray(catalog.providers) },
     imdb: { imdb_id: catalog.imdbId ?? '' },
     wo: { wo: catalog.woUrl ?? '' },
     runtime: catalog.runtime,
