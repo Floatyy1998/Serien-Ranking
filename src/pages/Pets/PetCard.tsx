@@ -7,7 +7,7 @@ import { memo } from 'react';
 import { EvolvingPixelPet } from '../../components/pet';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { PET_TYPE_NAMES } from '../../types/pet.types';
+import { PET_TYPE_NAMES, PET_BACKGROUNDS } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 
@@ -135,16 +135,41 @@ export const PetCard = memo(function PetCard({
         className="pet-card-display-wrapper"
       >
         <div
-          className="pet-card-display"
+          className={`pet-card-display${
+            pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.animationClass
+              ? ` ${PET_BACKGROUNDS[pet.equippedBackground].animationClass}`
+              : ''
+          }`}
           style={{
-            background: `${currentTheme.background.surface}ee`,
+            background:
+              pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]
+                ? PET_BACKGROUNDS[pet.equippedBackground].background
+                : `${currentTheme.background.surface}ee`,
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
+          {/* Custom overlay layer (e.g. scanlines, stars) */}
+          {pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.overlay && (
+            <div
+              className="pet-card-display-overlay"
+              style={{ background: PET_BACKGROUNDS[pet.equippedBackground].overlay }}
+            />
+          )}
           {/* Glow */}
-          <div className="pet-card-glow" />
+          <div
+            className="pet-card-glow"
+            style={
+              pet.equippedBackground && PET_BACKGROUNDS[pet.equippedBackground]?.glowColor
+                ? {
+                    background: `radial-gradient(circle, ${PET_BACKGROUNDS[pet.equippedBackground].glowColor}, transparent 70%)`,
+                  }
+                : undefined
+            }
+          />
 
-          <EvolvingPixelPet pet={pet} size={160} animated={pet.isAlive} />
+          <div className="pet-card-pet-wrapper">
+            <EvolvingPixelPet pet={pet} size={160} animated={pet.isAlive} />
+          </div>
 
           {/* Mood Badge */}
           <div className="pet-card-mood-badges">

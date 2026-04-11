@@ -11,6 +11,8 @@ import {
   RARITY_COLORS,
   RARITY_LABELS,
   getAccessoryRarity,
+  PET_BACKGROUNDS,
+  getBackgroundRarity,
 } from '../../types/pet.types';
 import type { Pet, AccessoryRarity } from '../../types/pet.types';
 import './PetsPage.css';
@@ -20,6 +22,7 @@ interface PetCustomizationProps {
   activeColorBorder: string | null;
   onChangeColor: (color: string) => void;
   onToggleAccessory: (accessoryId: string) => void;
+  onEquipBackground: (backgroundId: string | null) => void;
 }
 
 const rarityOrder: AccessoryRarity[] = ['legendary', 'epic', 'rare', 'uncommon', 'common'];
@@ -29,8 +32,17 @@ export const PetCustomization = memo(function PetCustomization({
   activeColorBorder,
   onChangeColor,
   onToggleAccessory,
+  onEquipBackground,
 }: PetCustomizationProps) {
   const { currentTheme } = useTheme();
+
+  const ownedBackgrounds = [...(pet.unlockedBackgrounds || [])]
+    .filter((id) => PET_BACKGROUNDS[id])
+    .sort((a, b) => {
+      const ra = rarityOrder.indexOf(getBackgroundRarity(a));
+      const rb = rarityOrder.indexOf(getBackgroundRarity(b));
+      return ra - rb;
+    });
 
   // Sort pet's accessories by rarity (best first)
   const sortedAccessories = [...(pet.accessories || [])].sort((a, b) => {
@@ -178,6 +190,111 @@ export const PetCustomization = memo(function PetCustomization({
                       NEU
                     </span>
                   )}
+                </motion.button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Backgrounds Inventory */}
+      <div
+        className="pet-customization-section"
+        style={{
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+          marginTop: 16,
+        }}
+      >
+        <h2 className="pet-customization-title" style={{ color: currentTheme.text.primary }}>
+          Hintergründe
+          <span
+            style={{
+              fontSize: '0.75rem',
+              color: currentTheme.text.secondary,
+              marginLeft: 8,
+              fontWeight: 400,
+            }}
+          >
+            {ownedBackgrounds.length}
+            {pet.equippedBackground ? ' \u00B7 1 aktiv' : ''}
+          </span>
+        </h2>
+        {ownedBackgrounds.length === 0 ? (
+          <p
+            style={{
+              color: currentTheme.text.secondary,
+              fontSize: '0.85rem',
+              textAlign: 'center',
+              padding: '12px 0',
+            }}
+          >
+            Öffne Mystery Boxen oder drehe das Glücksrad um Hintergründe zu finden!
+          </p>
+        ) : (
+          <div className="pet-backgrounds-grid">
+            {/* Default / none */}
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => onEquipBackground(null)}
+              className="pet-background-btn"
+              title="Standard"
+              style={{
+                background: currentTheme.background.default,
+                border: !pet.equippedBackground
+                  ? `2px solid ${currentTheme.primary}`
+                  : `1px solid ${currentTheme.border.default}`,
+                boxShadow: !pet.equippedBackground
+                  ? `0 4px 12px ${currentTheme.primary}40`
+                  : 'none',
+                color: currentTheme.text.secondary,
+              }}
+            >
+              <span style={{ fontSize: 11, fontWeight: 700 }}>Standard</span>
+            </motion.button>
+            {ownedBackgrounds.map((bgId) => {
+              const def = PET_BACKGROUNDS[bgId];
+              const rarity = def.rarity;
+              const rarityColor = RARITY_COLORS[rarity];
+              const isEquipped = pet.equippedBackground === bgId;
+
+              return (
+                <motion.button
+                  key={bgId}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => onEquipBackground(isEquipped ? null : bgId)}
+                  className={`pet-background-btn${def.animationClass ? ` ${def.animationClass}` : ''}`}
+                  title={`${def.name} (${RARITY_LABELS[rarity]})`}
+                  style={{
+                    background: def.background,
+                    border: isEquipped
+                      ? `2px solid ${rarityColor}`
+                      : `1px solid ${currentTheme.border.default}`,
+                    boxShadow: isEquipped ? `0 4px 16px ${rarityColor}60` : 'none',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {def.overlay && (
+                    <span
+                      className="pet-background-btn-overlay"
+                      style={{ background: def.overlay }}
+                    />
+                  )}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      bottom: 4,
+                      right: 4,
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: rarityColor,
+                      boxShadow: `0 0 6px ${rarityColor}`,
+                    }}
+                  />
                 </motion.button>
               );
             })}

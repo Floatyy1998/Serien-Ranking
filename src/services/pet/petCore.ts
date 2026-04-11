@@ -135,6 +135,28 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
     }
   }
 
+  // Sync: Alle Pets teilen sich die freigeschalteten Hintergruende
+  if (pets.length > 0) {
+    const union = new Set<string>();
+    for (const p of pets) {
+      for (const bg of p.unlockedBackgrounds || []) union.add(bg);
+    }
+    if (union.size > 0) {
+      const unionArr = Array.from(union);
+      for (const p of pets) {
+        const current = p.unlockedBackgrounds || [];
+        const missing = unionArr.some((id) => !current.includes(id));
+        if (missing) {
+          p.unlockedBackgrounds = unionArr;
+          await firebase
+            .database()
+            .ref(`users/${userId}/pets/${p.id}/unlockedBackgrounds`)
+            .set(unionArr);
+        }
+      }
+    }
+  }
+
   // Sync: Alle Pets muessen die gleichen Accessories haben
   if (!needsAccessoryReset && pets.length > 1) {
     const accSets = pets.map((p) =>

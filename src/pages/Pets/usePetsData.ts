@@ -3,12 +3,16 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
+
+const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 
 export function usePetsData() {
   const authContext = useAuth();
@@ -49,6 +53,30 @@ export function usePetsData() {
     if (!user) return;
     try {
       const updatedPets = await petService.updateAllPetsStatus(user.uid);
+
+      // Admin helper: remove all preview backgrounds from the admin account
+      if (user.uid === ADMIN_UID && updatedPets.length > 0) {
+        for (const p of updatedPets) {
+          const hasAny =
+            (p.unlockedBackgrounds && p.unlockedBackgrounds.length > 0) || p.equippedBackground;
+          if (!hasAny) continue;
+          try {
+            await firebase
+              .database()
+              .ref(`users/${user.uid}/pets/${p.id}/unlockedBackgrounds`)
+              .remove();
+            await firebase
+              .database()
+              .ref(`users/${user.uid}/pets/${p.id}/equippedBackground`)
+              .remove();
+            delete p.unlockedBackgrounds;
+            delete p.equippedBackground;
+          } catch (err) {
+            console.error('Error clearing admin backgrounds:', err);
+          }
+        }
+      }
+
       if (updatedPets.length > 0) {
         setPets(updatedPets);
         setActiveColorBorder(updatedPets[selectedPetIndex]?.color || updatedPets[0].color);
@@ -206,6 +234,26 @@ export function usePetsData() {
     }
   };
 
+  const equipBackground = async (backgroundId: string | null) => {
+    if (!user || !pet) return;
+    const previous = pet.equippedBackground;
+    const optimistic = { ...pet };
+    if (backgroundId === null) delete optimistic.equippedBackground;
+    else optimistic.equippedBackground = backgroundId;
+    setPets((prev) => prev.map((p) => (p.id === pet.id ? optimistic : p)));
+
+    try {
+      const updated = await petService.equipBackground(user.uid, pet.id, backgroundId);
+      if (updated) setPets((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+    } catch (error) {
+      console.error('Error equipping background:', error);
+      const rollback = { ...pet };
+      if (previous) rollback.equippedBackground = previous;
+      else delete rollback.equippedBackground;
+      setPets((prev) => prev.map((p) => (p.id === pet.id ? rollback : p)));
+    }
+  };
+
   const selectPet = async (idx: number) => {
     setSelectedPetIndex(idx);
     setActiveColorBorder(pets[idx].color);
@@ -251,6 +299,7 @@ export function usePetsData() {
     releasePet,
     changeColor,
     toggleAccessory,
+    equipBackground,
     selectPet,
     openCreateModal,
     closeCreateModal,

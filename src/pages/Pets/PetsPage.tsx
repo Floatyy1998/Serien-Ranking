@@ -46,6 +46,7 @@ export const PetsPage: React.FC = () => {
     releasePet,
     changeColor,
     toggleAccessory,
+    equipBackground,
     selectPet,
     openCreateModal,
     openReleaseConfirm,
@@ -124,6 +125,7 @@ export const PetsPage: React.FC = () => {
         activeColorBorder={activeColorBorder}
         onChangeColor={changeColor}
         onToggleAccessory={toggleAccessory}
+        onEquipBackground={equipBackground}
       />
 
       {/* Release Button */}

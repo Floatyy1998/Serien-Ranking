@@ -1,14 +1,14 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
-import { ACCESSORIES } from '../../types/pet.types';
+import { ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
 import { getUserPets } from './petCore';
 
 // ============================================================
 // Daily Spin Reward Types
 // ============================================================
 
-export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing';
+export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing' | 'background';
 
 export interface XpBoostItem {
   multiplier: number;
@@ -28,6 +28,8 @@ export interface SpinReward {
   xpEpisodeCount?: number;
   // Accessory
   accessoryId?: string;
+  // Background
+  backgroundId?: string;
 }
 
 export interface DailySpinData {
@@ -225,6 +227,17 @@ export async function performDailySpin(
   const segmentIndex = weightedRandomIndex(STREAK_WEIGHTS[tier]);
   const reward = { ...segments[segmentIndex] };
 
+  // If it's an accessory reward, 30% chance to swap for a background of same rarity
+  if (reward.type === 'accessory' && Math.random() < 0.3) {
+    const bg = await pickBackgroundReward(userId, reward.rarity);
+    if (bg) {
+      reward.type = 'background';
+      reward.backgroundId = bg.id;
+      reward.label = bg.name;
+      reward.icon = '\uD83C\uDF0C';
+    }
+  }
+
   // If it's an accessory reward, pick a specific one
   if (reward.type === 'accessory') {
     const picked = await pickAccessoryReward(userId, reward.rarity);
@@ -233,12 +246,21 @@ export async function performDailySpin(
       reward.label = picked.name;
       reward.icon = picked.icon;
     } else {
-      // Fallback to XP boost if all accessories owned
-      reward.type = 'xp_boost';
-      reward.label = '2x XP — 5 Episoden';
-      reward.icon = '🔥';
-      reward.xpMultiplier = 2;
-      reward.xpEpisodeCount = 5;
+      // Try background fallback before XP fallback
+      const bg = await pickBackgroundReward(userId, reward.rarity);
+      if (bg) {
+        reward.type = 'background';
+        reward.backgroundId = bg.id;
+        reward.label = bg.name;
+        reward.icon = '\uD83C\uDF0C';
+      } else {
+        // Fallback to XP boost if all accessories owned
+        reward.type = 'xp_boost';
+        reward.label = '2x XP — 5 Episoden';
+        reward.icon = '🔥';
+        reward.xpMultiplier = 2;
+        reward.xpEpisodeCount = 5;
+      }
     }
   }
 
@@ -306,6 +328,24 @@ async function pickAccessoryReward(
   return { id, name: def.name, icon: def.icon };
 }
 
+async function pickBackgroundReward(
+  userId: string,
+  targetRarity: AccessoryRarity
+): Promise<{ id: string; name: string } | null> {
+  const pets = await getUserPets(userId);
+  const alivePet = pets.find((p) => p.isAlive);
+  if (!alivePet) return null;
+
+  const owned = new Set(alivePet.unlockedBackgrounds || []);
+  const candidates = Object.values(PET_BACKGROUNDS).filter(
+    (bg) => bg.rarity === targetRarity && !owned.has(bg.id)
+  );
+
+  if (candidates.length === 0) return null;
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  return { id: pick.id, name: pick.name };
+}
+
 async function applySpinReward(userId: string, reward: SpinReward): Promise<void> {
   const pets = await getUserPets(userId);
   const alivePet = pets.find((p) => p.isAlive);
@@ -331,6 +371,24 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
     }
     case 'nothing':
       break;
+    case 'background': {
+      if (!reward.backgroundId) break;
+      if (!PET_BACKGROUNDS[reward.backgroundId]) break;
+      const alreadyOwned = alivePet.unlockedBackgrounds?.includes(reward.backgroundId);
+      if (alreadyOwned) break;
+      // Hintergruende werden ueber alle Pets geteilt (wie Accessoires)
+      for (const p of pets) {
+        const unlocked = [...(p.unlockedBackgrounds || [])];
+        if (!unlocked.includes(reward.backgroundId)) {
+          unlocked.push(reward.backgroundId);
+          await firebase
+            .database()
+            .ref(`users/${userId}/pets/${p.id}/unlockedBackgrounds`)
+            .set(unlocked);
+        }
+      }
+      break;
+    }
     case 'accessory': {
       if (!reward.accessoryId) break;
       const def = ACCESSORIES[reward.accessoryId];

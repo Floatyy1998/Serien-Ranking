@@ -8,6 +8,7 @@ import Diamond from '@mui/icons-material/Diamond';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
+import Wallpaper from '@mui/icons-material/Wallpaper';
 import { useAuth } from '../../AuthContext';
 import {
   buildSpinSegments,
@@ -61,6 +62,8 @@ function getResultIcon(reward: SpinReward) {
       if ((reward.xpEpisodeCount || 0) >= 5)
         return <Whatshot style={{ fontSize: 64, color: '#FF9800' }} />;
       return <Bolt style={{ fontSize: 64, color: '#FFD93D' }} />;
+    case 'background':
+      return <Wallpaper style={{ fontSize: 64, color: '#00D4FF' }} />;
     case 'accessory':
       if (reward.rarity === 'legendary')
         return <EmojiEvents style={{ fontSize: 64, color: '#FFD700' }} />;
@@ -507,6 +510,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
               {result.type === 'xp_boost' &&
                 `Alle XP werden ${result.xpMultiplier}x multipliziert für ${result.xpEpisodeCount} Episoden!`}
               {result.type === 'accessory' && 'Neues Accessoire freigeschaltet!'}
+              {result.type === 'background' && 'Neuer Hintergrund freigeschaltet!'}
               {result.type === 'nothing' && 'Morgen hast du mehr Glück!'}
             </motion.p>
           </motion.div>

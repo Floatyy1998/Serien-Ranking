@@ -1,7 +1,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
-import { ACCESSORIES } from '../../types/pet.types';
+import { ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
 import { getUserPets } from './petCore';
 
 // ============================================================
@@ -11,7 +11,7 @@ import { getUserPets } from './petCore';
 /** Interval: alle X Episoden gibt es eine Mystery Box */
 const BOX_EVERY_N_EPISODES = 50;
 
-export type MysteryRewardType = 'accessory' | 'xp_boost';
+export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background';
 
 export interface MysteryBoxReward {
   type: MysteryRewardType;
@@ -19,6 +19,7 @@ export interface MysteryBoxReward {
   icon: string;
   rarity: AccessoryRarity;
   accessoryId?: string;
+  backgroundId?: string;
   xpMultiplier?: number;
   xpEpisodeCount?: number;
 }
@@ -219,10 +220,23 @@ async function generateMysteryReward(
   userId: string,
   rarity: AccessoryRarity
 ): Promise<MysteryBoxReward> {
-  // 60% chance for exclusive accessory, 40% XP boost
+  // 30% background, 40% exclusive accessory, 30% XP boost
   const roll = Math.random();
 
-  if (roll < 0.6) {
+  if (roll < 0.3) {
+    const background = await pickBackgroundReward(userId, rarity);
+    if (background) {
+      return {
+        type: 'background',
+        label: background.name,
+        icon: '\uD83C\uDF0C',
+        rarity,
+        backgroundId: background.id,
+      };
+    }
+  }
+
+  if (roll < 0.7) {
     const accessory = await pickMilestoneAccessory(userId, rarity);
     if (accessory) {
       return {
@@ -231,6 +245,17 @@ async function generateMysteryReward(
         icon: accessory.icon,
         rarity,
         accessoryId: accessory.id,
+      };
+    }
+    // Fallback: try background before XP boost
+    const background = await pickBackgroundReward(userId, rarity);
+    if (background) {
+      return {
+        type: 'background',
+        label: background.name,
+        icon: '\uD83C\uDF0C',
+        rarity,
+        backgroundId: background.id,
       };
     }
   }
@@ -279,6 +304,24 @@ async function pickMilestoneAccessory(
   return { id, name: def.name, icon: def.icon };
 }
 
+async function pickBackgroundReward(
+  userId: string,
+  targetRarity: AccessoryRarity
+): Promise<{ id: string; name: string } | null> {
+  const pets = await getUserPets(userId);
+  const alivePet = pets.find((p) => p.isAlive);
+  if (!alivePet) return null;
+
+  const owned = new Set(alivePet.unlockedBackgrounds || []);
+  const candidates = Object.values(PET_BACKGROUNDS).filter(
+    (bg) => bg.rarity === targetRarity && !owned.has(bg.id)
+  );
+
+  if (candidates.length === 0) return null;
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  return { id: pick.id, name: pick.name };
+}
+
 async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Promise<void> {
   const pets = await getUserPets(userId);
   const alivePet = pets.find((p) => p.isAlive);
@@ -304,6 +347,24 @@ async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Pro
 
       const accessories = [...(alivePet.accessories || []), newAcc];
       await firebase.database().ref(`users/${userId}/pets/${alivePet.id}`).update({ accessories });
+      break;
+    }
+    case 'background': {
+      if (!reward.backgroundId) break;
+      if (!PET_BACKGROUNDS[reward.backgroundId]) break;
+      const alreadyOwned = alivePet.unlockedBackgrounds?.includes(reward.backgroundId);
+      if (alreadyOwned) break;
+      // Hintergruende werden ueber alle Pets geteilt (wie Accessoires)
+      for (const p of pets) {
+        const unlocked = [...(p.unlockedBackgrounds || [])];
+        if (!unlocked.includes(reward.backgroundId)) {
+          unlocked.push(reward.backgroundId);
+          await firebase
+            .database()
+            .ref(`users/${userId}/pets/${p.id}/unlockedBackgrounds`)
+            .set(unlocked);
+        }
+      }
       break;
     }
     case 'xp_boost': {

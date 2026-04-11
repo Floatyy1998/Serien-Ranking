@@ -6,7 +6,7 @@ import type {
   AccessoryRarity,
   AccessoryDefinition,
 } from '../../types/pet.types';
-import { PET_COLORS, ACCESSORIES } from '../../types/pet.types';
+import { PET_COLORS, ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
 
@@ -404,6 +404,34 @@ export async function checkAchievements(pet: Pet): Promise<void> {
 // ============================================================
 // Color & Pattern Changes
 // ============================================================
+
+// ============================================================
+// Background equipping (toggle on/off)
+// ============================================================
+
+export async function equipBackground(
+  userId: string,
+  petId: string,
+  backgroundId: string | null
+): Promise<Pet | null> {
+  const pet = await getUserPet(userId, petId);
+  if (!pet) return null;
+
+  if (backgroundId !== null) {
+    if (!PET_BACKGROUNDS[backgroundId]) return pet;
+    if (!pet.unlockedBackgrounds?.includes(backgroundId)) return pet;
+  }
+
+  const ref = firebase.database().ref(`users/${userId}/pets/${petId}/equippedBackground`);
+  if (backgroundId === null) {
+    await ref.remove();
+    delete pet.equippedBackground;
+  } else {
+    await ref.set(backgroundId);
+    pet.equippedBackground = backgroundId;
+  }
+  return pet;
+}
 
 export async function changePetColor(
   userId: string,

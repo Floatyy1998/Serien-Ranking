@@ -6,6 +6,7 @@ import LockOpen from '@mui/icons-material/LockOpen';
 import Bolt from '@mui/icons-material/Bolt';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import Diamond from '@mui/icons-material/Diamond';
+import Wallpaper from '@mui/icons-material/Wallpaper';
 import { useAuth } from '../../AuthContext';
 import { openMysteryBox } from '../../services/pet/mysteryBoxService';
 import type { MysteryBoxReward } from '../../services/pet/mysteryBoxService';
@@ -22,6 +23,8 @@ function getRewardIcon(reward: MysteryBoxReward) {
       );
     case 'xp_boost':
       return <Bolt style={{ fontSize: 72, color: '#FFD93D' }} />;
+    case 'background':
+      return <Wallpaper style={{ fontSize: 72, color: '#00D4FF' }} />;
     default:
       return <CardGiftcard style={{ fontSize: 72, color: '#9E9E9E' }} />;
   }
@@ -269,6 +272,8 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center' }}
             >
               {reward.type === 'accessory' && 'Exklusives Accessoire freigeschaltet!'}
+              {reward.type === 'background' &&
+                'Neuer Hintergrund freigeschaltet — statte dein Pet aus!'}
               {reward.type === 'xp_boost' &&
                 `${reward.xpMultiplier}x XP Boost — aktiviere ihn auf der Pet-Seite!`}
             </motion.p>
