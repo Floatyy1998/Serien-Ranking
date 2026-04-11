@@ -109,9 +109,21 @@ export default defineConfig({
     rolldownOptions: {
       output: {
         manualChunks(id) {
+          // Firebase wird vom AuthProvider ueberall eager benoetigt -> eigenes chunk
           if (id.includes('node_modules/firebase')) return 'firebase';
-          if (id.includes('node_modules/recharts')) return 'recharts';
-          if (id.includes('node_modules/framer-motion')) return 'framer';
+          // react / react-dom zusammen halten, sonst wird das initial chunk fragmentiert
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('node_modules/scheduler/')
+          ) {
+            return 'react';
+          }
+          // MUI ist auf mehreren Seiten gleichzeitig genutzt - in einem chunk
+          // halten vermeidet Duplication in mehreren Lazy-Chunks
+          if (id.includes('node_modules/@mui/')) return 'mui';
+          // recharts, framer-motion etc werden automatisch an die Lazy-Pages
+          // gebunden die sie brauchen - kein eager laden mehr
         },
       },
     },

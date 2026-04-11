@@ -79,6 +79,9 @@ class AnalyticsService {
   private userId: string | null = null;
   private enabled = false;
   private flushing = false;
+  private lifecycleListenersAttached = false;
+  private visibilityHandler: (() => void) | null = null;
+  private beforeUnloadHandler: (() => void) | null = null;
 
   init(): void {
     this.enabled = localStorage.getItem(CONSENT_KEY) === 'true';
@@ -257,18 +260,36 @@ class AnalyticsService {
   }
 
   private setupLifecycleListeners(): void {
-    document.addEventListener('visibilitychange', () => {
+    if (this.lifecycleListenersAttached) return;
+    this.lifecycleListenersAttached = true;
+
+    this.visibilityHandler = () => {
       if (document.visibilityState === 'hidden') {
         this.flush();
         this.updateRealtimePresence(false);
       } else if (document.visibilityState === 'visible') {
         this.updateRealtimePresence(true);
       }
-    });
-
-    window.addEventListener('beforeunload', () => {
+    };
+    this.beforeUnloadHandler = () => {
       this.flushSync();
-    });
+    };
+
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+    window.addEventListener('beforeunload', this.beforeUnloadHandler);
+  }
+
+  private teardownLifecycleListeners(): void {
+    if (!this.lifecycleListenersAttached) return;
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
+    }
+    if (this.beforeUnloadHandler) {
+      window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+      this.beforeUnloadHandler = null;
+    }
+    this.lifecycleListenersAttached = false;
   }
 
   private flushSync(): void {
@@ -287,6 +308,7 @@ class AnalyticsService {
   destroy(): void {
     this.flush();
     this.stopFlushTimer();
+    this.teardownLifecycleListeners();
     this.updateRealtimePresence(false);
   }
 }

@@ -21,6 +21,10 @@ class OfflineFirebaseService {
   private offlineQueue: OfflineQueueItem[] = [];
   private isOnline: boolean = navigator.onLine;
   private dbPromise: Promise<IDBDatabase> | null = null;
+  private eventListenersAttached = false;
+  private onlineHandler: (() => void) | null = null;
+  private offlineHandler: (() => void) | null = null;
+  private swMessageHandler: ((event: MessageEvent) => void) | null = null;
 
   constructor(config: Partial<OfflineCacheConfig> = {}) {
     this.config = {
@@ -96,21 +100,27 @@ class OfflineFirebaseService {
   }
 
   private setupEventListeners(): void {
-    window.addEventListener('online', () => {
+    if (this.eventListenersAttached) return;
+    this.eventListenersAttached = true;
+
+    this.onlineHandler = () => {
       this.isOnline = true;
       this.processOfflineQueue();
-    });
-
-    window.addEventListener('offline', () => {
+    };
+    this.offlineHandler = () => {
       this.isOnline = false;
-    });
+    };
+    this.swMessageHandler = (event: MessageEvent) => {
+      if (event.data?.type === 'SYNC_COMPLETE') {
+        this.handleSyncComplete(event.data.results);
+      }
+    };
+
+    window.addEventListener('online', this.onlineHandler);
+    window.addEventListener('offline', this.offlineHandler);
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'SYNC_COMPLETE') {
-          this.handleSyncComplete(event.data.results);
-        }
-      });
+      navigator.serviceWorker.addEventListener('message', this.swMessageHandler);
     }
   }
 

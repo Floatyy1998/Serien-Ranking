@@ -47,22 +47,28 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         }
       };
 
+      let cancelled = false;
       let cleanup: (() => void) | null = null;
 
       // Dynamischer Import um zirkuläre Abhängigkeiten zu vermeiden
-      import('./minimalActivityLogger').then(({ registerBadgeCallback, removeBadgeCallback }) => {
-        registerBadgeCallback(user.uid, handleNewBadges);
-
-        cleanup = () => {
-          removeBadgeCallback(user.uid);
-        };
-      });
+      import('./minimalActivityLogger')
+        .then(({ registerBadgeCallback, removeBadgeCallback }) => {
+          if (cancelled) return;
+          registerBadgeCallback(user.uid, handleNewBadges);
+          cleanup = () => {
+            removeBadgeCallback(user.uid);
+          };
+        })
+        .catch(() => {
+          // Import fehlgeschlagen – kein Callback registriert, nichts zu räumen
+        });
 
       // Event-Listener für Badge-Dialog-Events
       window.addEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
 
       // Korrekte Cleanup-Funktion
       return () => {
+        cancelled = true;
         window.removeEventListener('badgeDialogOpened', handleBadgeDialogOpened as EventListener);
         if (cleanup) {
           cleanup();
