@@ -80,6 +80,10 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     [userMovieRefs]
   );
   useEffect(() => {
+    // refetchCatalog macht intern setState - hier bewusst, weil es der initial
+    // load ist. Der Alternative waere ein separater Kontext oder ein Store,
+    // beides overkill fuer einen single network fetch beim mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refetchCatalog();
   }, [refetchCatalog]);
 
@@ -93,6 +97,7 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
 
     const missingInCatalog = Object.keys(userMovieRefs).some((id) => !catalogData[id]);
     if (missingInCatalog) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       refetchCatalog(true);
     }
   }, [userMovieRefs, catalogData, refetchCatalog]);
