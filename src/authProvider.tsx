@@ -27,8 +27,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
+    let authTimeout: ReturnType<typeof setTimeout> | null = null;
+    let badgeCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+    let unsubscribeAuth: (() => void) | null = null;
+    let cancelled = false;
+
     import('./firebase/initFirebase')
       .then((module) => {
+        if (cancelled) return;
         try {
           module.initFirebase();
           initAnalyticsIfConsented();
@@ -42,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // Service Worker Manager ist bereits als Singleton initialisiert
           }
 
-          const authTimeout = setTimeout(
+          authTimeout = setTimeout(
             () => {
               setAuthStateResolved(true);
               window.setAppReady?.('emailVerification', true); // No verification check on timeout
@@ -66,8 +72,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             !navigator.onLine ? 2000 : 5000
           ); // Kürzerer Timeout wenn offline
 
-          firebase.auth().onAuthStateChanged(async (user) => {
-            clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
+          unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
+            if (authTimeout) clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
             setUser(user);
             setAuthStateResolved(true);
             // Set analytics user for RTDB analytics
@@ -89,7 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               // Automatischer Badge-Check beim App-Start
               // Verzögerung damit alle Daten geladen sind
-              setTimeout(async () => {
+              if (badgeCheckTimeout) clearTimeout(badgeCheckTimeout);
+              badgeCheckTimeout = setTimeout(async () => {
+                if (cancelled) return;
                 try {
                   const { getOfflineBadgeSystem } =
                     await import('./features/badges/offlineBadgeSystem');
@@ -240,6 +248,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAuthStateResolved(true);
         window.setAppReady?.('emailVerification', true); // No verification when Firebase fails to load
       });
+
+    return () => {
+      cancelled = true;
+      if (authTimeout) clearTimeout(authTimeout);
+      if (badgeCheckTimeout) clearTimeout(badgeCheckTimeout);
+      if (unsubscribeAuth) unsubscribeAuth();
+    };
   }, []);
 
   // Kein LoadingSpinner mehr - SplashScreen handled das

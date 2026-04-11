@@ -33,7 +33,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
 
   useEffect(() => {
     // Small delay to ensure content is rendered
-    setTimeout(checkScroll, 100);
+    const initialTimeout = setTimeout(checkScroll, 100);
     const container = scrollRef.current;
     if (container) {
       container.addEventListener('scroll', checkScroll);
@@ -52,11 +52,15 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
       });
 
       return () => {
+        clearTimeout(initialTimeout);
         container.removeEventListener('scroll', checkScroll);
         resizeObserver.disconnect();
         images.forEach((img) => img.removeEventListener('load', checkScroll));
       };
     }
+    return () => {
+      clearTimeout(initialTimeout);
+    };
   }, [children]); // Re-check when children change
 
   const scroll = (direction: 'left' | 'right') => {

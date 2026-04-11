@@ -25,6 +25,10 @@ class ServiceWorkerManager {
   private worker: ServiceWorker | null = null;
   private isSupported: boolean = false;
   private registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
+  private updateCheckInterval: ReturnType<typeof setInterval> | null = null;
+  private updateCheckTimeout: ReturnType<typeof setTimeout> | null = null;
+  private visibilityHandler: (() => void) | null = null;
+  private eventListenersAttached = false;
 
   constructor() {
     this.isSupported = 'serviceWorker' in navigator;
@@ -46,11 +50,16 @@ class ServiceWorkerManager {
       await this.register();
       this.setupEventListeners();
       // Update checks: nach 5s, dann alle 5 Minuten, und bei Tab-Fokus
-      setTimeout(() => this.checkForUpdates(), 5000);
-      setInterval(() => this.checkForUpdates(), 5 * 60 * 1000);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') this.checkForUpdates();
-      });
+      if (this.updateCheckTimeout) clearTimeout(this.updateCheckTimeout);
+      this.updateCheckTimeout = setTimeout(() => this.checkForUpdates(), 5000);
+      if (this.updateCheckInterval) clearInterval(this.updateCheckInterval);
+      this.updateCheckInterval = setInterval(() => this.checkForUpdates(), 5 * 60 * 1000);
+      if (!this.visibilityHandler) {
+        this.visibilityHandler = () => {
+          if (document.visibilityState === 'visible') this.checkForUpdates();
+        };
+        document.addEventListener('visibilitychange', this.visibilityHandler);
+      }
     } catch {
       // // console.error(
       //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
@@ -102,6 +111,8 @@ class ServiceWorkerManager {
    */
   private setupEventListeners(): void {
     if (!navigator.serviceWorker) return;
+    if (this.eventListenersAttached) return;
+    this.eventListenersAttached = true;
 
     // Flag vom letzten Reload sofort entfernen (damit der nächste Update-Reload funktioniert)
     sessionStorage.removeItem('sw-reloaded');

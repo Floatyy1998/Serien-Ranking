@@ -121,6 +121,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
    */
   const setupRealtimeListener = useCallback(() => {
     if (!path || !useRealtimeListener) return;
+    // Detach any previous listener before attaching a new one to avoid duplicates
+    if (listenerRef.current) {
+      try {
+        listenerRef.current();
+      } catch {
+        // ignore
+      }
+      listenerRef.current = null;
+    }
     try {
       const ref = firebase.database().ref(path);
       const listener = ref.on(
