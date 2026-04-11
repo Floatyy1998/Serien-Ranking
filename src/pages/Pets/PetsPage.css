@@ -146,6 +146,40 @@
   );
   border-radius: 50%;
   pointer-events: none;
+  z-index: 1;
+}
+
+.pet-card-display-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  z-index: 0;
+}
+
+.pet-card-pet-wrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Animated backgrounds ─── */
+/* Dezentes Helligkeits-Breathing fuer Szenen mit Lichtquellen (Sonnenuntergang, Lava, Weltall) */
+.pet-bg-anim-breathe {
+  animation: pet-bg-breathe 6s ease-in-out infinite;
+}
+
+@keyframes pet-bg-breathe {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.06);
+  }
 }
 
 .pet-card-mood-badges {
@@ -352,6 +386,32 @@
   border-radius: var(--radius-lg);
   font-size: 20px;
   cursor: pointer;
+}
+
+.pet-backgrounds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.pet-background-btn {
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.pet-background-btn-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.85;
 }
 
 /* ─── Release ─── */

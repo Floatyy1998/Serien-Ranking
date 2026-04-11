@@ -25,7 +25,12 @@ import {
   watchedSeriesWithGenreAllPets,
 } from './petProgressManager';
 
-import { toggleAccessory, changePetColor, claimAccessoryDrop } from './petAccessoryManager';
+import {
+  toggleAccessory,
+  changePetColor,
+  claimAccessoryDrop,
+  equipBackground,
+} from './petAccessoryManager';
 import {
   canSpinToday,
   performDailySpin,
@@ -63,6 +68,7 @@ export const petService = {
   toggleAccessory,
   changePetColor,
   claimAccessoryDrop,
+  equipBackground,
   canSpinToday,
   performDailySpin,
   getDailySpinData,
