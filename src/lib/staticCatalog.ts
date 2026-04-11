@@ -19,9 +19,11 @@
 
 import type { CatalogSeries, CatalogMovie, CatalogSeason } from '../types/CatalogTypes';
 
+// Vite injiziert process.env.VITE_* via define() in vite.config.ts
+declare const process: { env: Record<string, string | undefined> };
+
 const CATALOG_BASE_URL =
-  (((globalThis as any).process?.env?.VITE_BACKEND_API_URL as string) ||
-    'https://serienapi.konrad-dinges.de') + '/catalog';
+  (process.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de') + '/catalog';
 
 const LS_PREFIX = 'catalog-static:';
 const LS_VERSION_KEY = LS_PREFIX + 'version';
@@ -40,9 +42,17 @@ const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
+function getLS(): Storage | null {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage : null;
+  } catch {
+    return null;
+  }
+}
+
 function lsGet<T>(key: string): T | null {
   try {
-    const raw = (globalThis as any).localStorage?.getItem(key);
+    const raw = getLS()?.getItem(key);
     if (!raw) return null;
     return JSON.parse(raw) as T;
   } catch {
@@ -52,7 +62,7 @@ function lsGet<T>(key: string): T | null {
 
 function lsSet(key: string, value: unknown): void {
   try {
-    (globalThis as any).localStorage?.setItem(key, JSON.stringify(value));
+    getLS()?.setItem(key, JSON.stringify(value));
   } catch {
     // quota exceeded or storage disabled - ignore silently
   }
@@ -60,7 +70,7 @@ function lsSet(key: string, value: unknown): void {
 
 function lsRemove(key: string): void {
   try {
-    (globalThis as any).localStorage?.removeItem(key);
+    getLS()?.removeItem(key);
   } catch {
     // ignore
   }
@@ -114,14 +124,16 @@ function setLocalVersion(v: number): void {
 function invalidateLocalCaches(): void {
   lsRemove(LS_META_KEY);
   lsRemove(LS_MOVIES_KEY);
-  // seasons werden einzeln gekeyed; wir lassen die stehen, der versionsvergleich
-  // beim naechsten fetch filtert stale eintraege selbst raus
-  for (let i = 0; i < (globalThis as any).localStorage?.length || 0; i++) {
-    const key = (globalThis as any).localStorage.key(i);
-    if (key && key.startsWith(LS_SEASONS_PREFIX)) {
-      lsRemove(key);
-    }
+  // seasons werden einzeln gekeyed; loesche alle seasons-Eintraege mit
+  // passendem prefix damit keine stale-Daten nach version-bump bleiben
+  const ls = getLS();
+  if (!ls) return;
+  const toRemove: string[] = [];
+  for (let i = 0; i < ls.length; i++) {
+    const key = ls.key(i);
+    if (key && key.startsWith(LS_SEASONS_PREFIX)) toRemove.push(key);
   }
+  for (const key of toRemove) lsRemove(key);
 }
 
 async function ensureVersionFresh(): Promise<number | null> {
@@ -225,7 +237,7 @@ export function clearStaticCatalogCache(): void {
   lsRemove(LS_VERSION_KEY);
   // seasons/*-Eintraege sind numeriert, einmal durch den storage iterieren
   try {
-    const ls = (globalThis as any).localStorage;
+    const ls = getLS();
     if (ls) {
       const toRemove: string[] = [];
       for (let i = 0; i < ls.length; i++) {

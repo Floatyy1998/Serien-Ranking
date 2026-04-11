@@ -1,8 +1,5 @@
 import firebase from 'firebase/compat/app';
-import {
-  fetchStaticCatalogSeries,
-  fetchStaticCatalogMovies,
-} from '../../lib/staticCatalog';
+import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../lib/staticCatalog';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
