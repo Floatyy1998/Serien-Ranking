@@ -227,6 +227,13 @@ export async function performDailySpin(
   const segmentIndex = weightedRandomIndex(STREAK_WEIGHTS[tier]);
   const reward = { ...segments[segmentIndex] };
 
+  // Common-Accessoire-Segmente haben 50% Chance auf uncommon Upgrade —
+  // damit sind auch uncommon-Backgrounds/Accessoires ueber den Daily Spin
+  // droppbar (das Wheel hat kein eigenes uncommon-Accessoire-Feld).
+  if (reward.type === 'accessory' && reward.rarity === 'common' && Math.random() < 0.5) {
+    reward.rarity = 'uncommon';
+  }
+
   // If it's an accessory reward, 30% chance to swap for a background of same rarity
   if (reward.type === 'accessory' && Math.random() < 0.3) {
     const bg = await pickBackgroundReward(userId, reward.rarity);
