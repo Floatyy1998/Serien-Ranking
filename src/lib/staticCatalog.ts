@@ -50,6 +50,17 @@ function getLS(): Storage | null {
   }
 }
 
+// Wrapper fuer versioned Storage: Datenwerte werden als { v, data } abgelegt,
+// damit beim Lesen sofort geprueft werden kann ob der Eintrag zur aktuellen
+// Catalog-Version gehoert. Falls nicht, wird null zurueckgegeben (und im
+// Zweifel der Key geloescht) — sodass der Caller einen frischen Fetch
+// ausloest. Verhindert den Edge-Case, dass localStorage-Version und -Content
+// auseinanderlaufen.
+interface VersionedEntry<T> {
+  v: number;
+  data: T;
+}
+
 function lsGet<T>(key: string): T | null {
   try {
     const raw = getLS()?.getItem(key);
@@ -60,11 +71,50 @@ function lsGet<T>(key: string): T | null {
   }
 }
 
+function lsGetVersioned<T>(key: string, expectedVersion: number | null): T | null {
+  try {
+    const raw = getLS()?.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as VersionedEntry<T> | T;
+    // Nur akzeptieren wenn der Eintrag das neue Format hat UND die Version matcht.
+    // Alte Eintraege ohne `v`-Feld werden bewusst verworfen und neu geholt.
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      'v' in (parsed as VersionedEntry<T>) &&
+      'data' in (parsed as VersionedEntry<T>)
+    ) {
+      const entry = parsed as VersionedEntry<T>;
+      if (expectedVersion != null && entry.v === expectedVersion) {
+        return entry.data;
+      }
+      // Version mismatch → alten Eintrag entfernen
+      getLS()?.removeItem(key);
+      return null;
+    }
+    // Legacy-Format ohne Versionsmarkierung → als stale betrachten
+    getLS()?.removeItem(key);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function lsSet(key: string, value: unknown): void {
   try {
     getLS()?.setItem(key, JSON.stringify(value));
   } catch {
     // quota exceeded or storage disabled - ignore silently
+  }
+}
+
+function lsSetVersioned<T>(key: string, version: number | null, data: T): void {
+  if (version == null) return;
+  try {
+    const entry: VersionedEntry<T> = { v: version, data };
+    getLS()?.setItem(key, JSON.stringify(entry));
+  } catch {
+    // ignore
   }
 }
 
@@ -167,7 +217,7 @@ async function ensureVersionFresh(): Promise<number | null> {
 export async function fetchStaticCatalogSeries(): Promise<Record<string, CatalogSeries> | null> {
   if (memoryMeta) return memoryMeta;
   const version = await ensureVersionFresh();
-  const cached = lsGet<Record<string, CatalogSeries>>(LS_META_KEY);
+  const cached = lsGetVersioned<Record<string, CatalogSeries>>(LS_META_KEY, version);
   if (cached) {
     memoryMeta = cached;
     return cached;
@@ -177,7 +227,7 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
       version,
     });
     memoryMeta = data;
-    lsSet(LS_META_KEY, data);
+    lsSetVersioned(LS_META_KEY, version, data);
     return data;
   } catch (e) {
     console.warn('[staticCatalog] seriesMeta fetch failed, returning null', e);
@@ -191,7 +241,7 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
 export async function fetchStaticCatalogMovies(): Promise<Record<string, CatalogMovie> | null> {
   if (memoryMovies) return memoryMovies;
   const version = await ensureVersionFresh();
-  const cached = lsGet<Record<string, CatalogMovie>>(LS_MOVIES_KEY);
+  const cached = lsGetVersioned<Record<string, CatalogMovie>>(LS_MOVIES_KEY, version);
   if (cached) {
     memoryMovies = cached;
     return cached;
@@ -201,7 +251,7 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
       version,
     });
     memoryMovies = data;
-    lsSet(LS_MOVIES_KEY, data);
+    lsSetVersioned(LS_MOVIES_KEY, version, data);
     return data;
   } catch (e) {
     console.warn('[staticCatalog] moviesMeta fetch failed, returning null', e);
@@ -220,7 +270,7 @@ export async function fetchStaticCatalogSeasons(
   if (mem) return mem;
   const version = await ensureVersionFresh();
   const lsKey = LS_SEASONS_PREFIX + id;
-  const cached = lsGet<Record<string, CatalogSeason>>(lsKey);
+  const cached = lsGetVersioned<Record<string, CatalogSeason>>(lsKey, version);
   if (cached) {
     memorySeasons.set(id, cached);
     return cached;
@@ -230,7 +280,7 @@ export async function fetchStaticCatalogSeasons(
       version,
     });
     memorySeasons.set(id, data);
-    lsSet(lsKey, data);
+    lsSetVersioned(lsKey, version, data);
     return data;
   } catch (e) {
     // 404 bedeutet einfach: noch keine Seasons fuer diese Serie exportiert
