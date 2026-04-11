@@ -106,27 +106,37 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [userMovieRefs, catalogData, refetchCatalog]);
 
-  // Auto-Refresh bei visibilitychange (silent, kein loading flag).
-  // Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
+  // Auto-Refresh: silent refetch bei visibilitychange UND periodischem Poll
+  // (5 min). Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
   useEffect(() => {
     if (!user || !userMovieRefs) return;
     let lastCheck = 0;
-    const handler = async () => {
+    let cancelled = false;
+
+    const runCheck = async () => {
+      if (cancelled) return;
       if (document.visibilityState !== 'visible') return;
       const now = Date.now();
       if (now - lastCheck < 30 * 1000) return;
       lastCheck = now;
       try {
         const bumped = await checkForCatalogVersionBump();
-        if (!bumped) return;
+        if (!bumped || cancelled) return;
         const newMovies = await fetchStaticCatalogMovies();
-        if (newMovies) setCatalogData(newMovies);
+        if (!cancelled && newMovies) setCatalogData(newMovies);
       } catch {
         // silent fail
       }
     };
-    document.addEventListener('visibilitychange', handler);
-    return () => document.removeEventListener('visibilitychange', handler);
+
+    document.addEventListener('visibilitychange', runCheck);
+    const interval = setInterval(runCheck, 5 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', runCheck);
+      clearInterval(interval);
+    };
   }, [user, userMovieRefs]);
 
   const loading = refsLoading || catalogLoading;
