@@ -1,4 +1,8 @@
 import firebase from 'firebase/compat/app';
+import {
+  fetchStaticCatalogSeries,
+  fetchStaticCatalogMovies,
+} from '../../lib/staticCatalog';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -282,17 +286,24 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         const userData = userSnapshot.val();
         setFriendName(userData?.displayName || 'User');
 
-        // Lade User-Refs + Catalog parallel
-        const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] =
+        // Lade User-Refs + Catalog parallel.
+        // Catalog wird aus statischen Server-Files geladen (kein Firebase-Egress),
+        // mit Firebase-Fallback falls Static-Endpoint nicht erreichbar ist.
+        const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
           await Promise.all([
             firebase.database().ref(`users/${friendId}/series`).once('value'),
             firebase.database().ref(`users/${friendId}/movies`).once('value'),
-            firebase.database().ref('catalog/seriesMeta').once('value'),
-            firebase.database().ref('catalog/moviesMeta').once('value'),
+            fetchStaticCatalogSeries(),
+            fetchStaticCatalogMovies(),
           ]);
 
         const seriesData = seriesSnapshot.val() || {};
-        const catalogSeries = catalogSeriesSnap.val() || {};
+        let catalogSeriesRaw = staticSeriesCatalog as Record<string, unknown> | null;
+        if (!catalogSeriesRaw) {
+          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
+          catalogSeriesRaw = snap.val() || {};
+        }
+        const catalogSeries: Record<string, unknown> = catalogSeriesRaw || {};
 
         const seriesList: FriendItem[] = [];
         for (const [tmdbId, userRef] of Object.entries(seriesData)) {
@@ -318,7 +329,12 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         setFriendSeries(seriesList);
 
         const moviesData = moviesSnapshot.val() || {};
-        const catalogMovies = catalogMoviesSnap.val() || {};
+        let catalogMoviesRaw = staticMoviesCatalog as Record<string, unknown> | null;
+        if (!catalogMoviesRaw) {
+          const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
+          catalogMoviesRaw = snap.val() || {};
+        }
+        const catalogMovies: Record<string, unknown> = catalogMoviesRaw || {};
 
         const moviesList: FriendItem[] = [];
         for (const [tmdbId, userRef] of Object.entries(moviesData)) {

@@ -1,4 +1,8 @@
 import firebase from 'firebase/compat/app';
+import {
+  fetchStaticCatalogSeries,
+  fetchStaticCatalogMovies,
+} from '../../lib/staticCatalog';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -69,17 +73,22 @@ export function usePublicProfileData() {
 
         setProfileName(foundUser.username || foundUser.displayName || 'Unbekannt');
 
-        // Load user refs + catalog parallel
-        const [seriesSnapshot, moviesSnapshot, catalogSeriesSnap, catalogMoviesSnap] =
+        // Load user refs + catalog parallel. Catalog aus Static-File, Firebase-Fallback.
+        const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
           await Promise.all([
             firebase.database().ref(`users/${foundUserId}/series`).once('value'),
             firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
-            firebase.database().ref('catalog/seriesMeta').once('value'),
-            firebase.database().ref('catalog/moviesMeta').once('value'),
+            fetchStaticCatalogSeries(),
+            fetchStaticCatalogMovies(),
           ]);
 
         const series = seriesSnapshot.val();
-        const catalogSeries = catalogSeriesSnap.val() || {};
+        let catalogSeries = staticSeriesCatalog as Record<string, unknown> | null;
+        if (!catalogSeries) {
+          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
+          catalogSeries = snap.val() || {};
+        }
+        catalogSeries = catalogSeries || {};
 
         if (series) {
           const seriesArray = Object.entries(series).map(([tmdbId, userRef]) => {
@@ -103,7 +112,12 @@ export function usePublicProfileData() {
         }
 
         const movies = moviesSnapshot.val();
-        const catalogMovies = catalogMoviesSnap.val() || {};
+        let catalogMovies = staticMoviesCatalog as Record<string, unknown> | null;
+        if (!catalogMovies) {
+          const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
+          catalogMovies = snap.val() || {};
+        }
+        catalogMovies = catalogMovies || {};
 
         if (movies) {
           const moviesArray = Object.entries(movies).map(([tmdbId, userRef]) => {
