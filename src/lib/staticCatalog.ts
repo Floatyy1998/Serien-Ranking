@@ -76,12 +76,16 @@ function lsRemove(key: string): void {
   }
 }
 
-async function fetchJson<T>(path: string): Promise<T> {
+async function fetchJson<T>(path: string, opts?: { noStore?: boolean }): Promise<T> {
   const url = `${CATALOG_BASE_URL}/${path}`;
   const res = await fetch(url, {
     method: 'GET',
     credentials: 'omit',
-    cache: 'default',
+    // version.json muss cache-busted sein, sonst sieht der Client den Bump nie
+    // und alle localStorage-Caches bleiben stale. Die grossen Catalog-Files
+    // duerfen hingegen weiterhin vom Browser gecacht werden — sie werden ueber
+    // den Version-Check invalidiert.
+    cache: opts?.noStore ? 'no-store' : 'default',
   });
   if (!res.ok) {
     throw new Error(`static catalog fetch failed ${res.status} ${url}`);
@@ -99,7 +103,7 @@ async function getRemoteVersion(): Promise<number | null> {
   if (versionFetchPromise) return versionFetchPromise;
   versionFetchPromise = (async () => {
     try {
-      const v = await fetchJson<VersionResponse>('version.json');
+      const v = await fetchJson<VersionResponse>('version.json', { noStore: true });
       cachedVersion = typeof v?.version === 'number' ? v.version : null;
       return cachedVersion;
     } catch (e) {

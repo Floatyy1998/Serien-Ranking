@@ -517,30 +517,60 @@ const nightGreetings: Greeting[] = [
   },
 ];
 
+// mulberry32: kleiner, schneller, qualitativ guter PRNG. Deterministisch
+// durch den Seed, mit sauberem Avalanche-Verhalten — im Gegensatz zum
+// frueheren "hash * 0x45d9f3b"-Trick, der bei aufeinanderfolgenden Seeds
+// (z.B. benachbarte Stunden) stark clusterte und dadurch immer wieder
+// dieselbe Handvoll Greetings zog.
+function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return function () {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Deterministischer Fisher-Yates-Shuffle mit seeded PRNG.
+function seededShuffle<T>(arr: readonly T[], seed: number): T[] {
+  const out = arr.slice();
+  const rng = mulberry32(seed);
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
 export function getGreeting(hour: number): Greeting {
   let greetings: Greeting[];
+  let slotStart: number;
 
   if (hour >= 5 && hour < 12) {
     greetings = morningGreetings;
+    slotStart = 5;
   } else if (hour >= 12 && hour < 17) {
     greetings = afternoonGreetings;
+    slotStart = 12;
   } else if (hour >= 17 && hour < 22) {
     greetings = eveningGreetings;
+    slotStart = 17;
   } else {
     greetings = nightGreetings;
+    slotStart = hour >= 22 ? 22 : -2; // 22-23 oder 0-4 (letztere als Vortagnacht)
   }
 
-  // Use current time for seed — new random greeting every hour
+  // Day-seeded Shuffle: pro Tag eine neue Permutation der Greetings-Liste,
+  // dann per Stunden-Offset indexiert. Das garantiert, dass innerhalb eines
+  // Tages jede Stunde einen anderen Greeting zeigt (solange der Slot mehr
+  // als 1 Eintrag hat), und zwischen Tagen rotieren die Sequenzen komplett.
   const now = new Date();
-  const seed =
-    now.getFullYear() * 1000000 + now.getMonth() * 10000 + now.getDate() * 100 + now.getHours();
-
-  // Simple hash function for better distribution
-  let hash = seed;
-  hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
-  hash = ((hash >> 16) ^ hash) * 0x45d9f3b;
-  hash = (hash >> 16) ^ hash;
-
-  const index = Math.abs(hash) % greetings.length;
-  return greetings[index];
+  const daySeed = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+  // Slot-Offset in den Seed mixen, sodass die vier Slots unterschiedlich shuffeln
+  const shuffled = seededShuffle(greetings, daySeed * 7 + slotStart);
+  const offsetHour = hour - slotStart;
+  const index = ((offsetHour % shuffled.length) + shuffled.length) % shuffled.length;
+  return shuffled[index];
 }
