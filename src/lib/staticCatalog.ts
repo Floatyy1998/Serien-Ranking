@@ -228,6 +228,41 @@ export async function fetchStaticCatalogSeasons(
 }
 
 /**
+ * Prueft ob serverseitig eine neue Catalog-Version vorliegt und invalidiert
+ * in diesem Fall Memory + localStorage (aber ohne direkt neu zu fetchen).
+ * Wird beim Tab-visibilitychange aufgerufen, damit der Client neue Cron-
+ * Daten nach laengerer Inaktivitaet automatisch zieht — ohne App-Reload.
+ *
+ * Returns true wenn eine neue Version gefunden wurde (und Caches invalidiert
+ * wurden), false sonst.
+ */
+export async function checkForCatalogVersionBump(): Promise<boolean> {
+  // Cached Version zuruecksetzen damit getRemoteVersion den Server neu abfragt
+  cachedVersion = null;
+  let remote: number | null;
+  try {
+    const v = await fetchJson<VersionResponse>('version.json', { noStore: true });
+    remote = typeof v?.version === 'number' ? v.version : null;
+  } catch {
+    return false;
+  }
+  if (remote === null) return false;
+  cachedVersion = remote;
+  const local = getLocalVersion();
+  if (local !== null && local === remote) {
+    // unveraendert — nichts zu tun
+    return false;
+  }
+  // Bump detected: memory + localStorage komplett invalidieren
+  memoryMeta = null;
+  memoryMovies = null;
+  memorySeasons.clear();
+  invalidateLocalCaches();
+  setLocalVersion(remote);
+  return true;
+}
+
+/**
  * Clear all in-memory AND localStorage caches (used after catalog-version
  * changes at runtime, e.g. nach /add).
  */
