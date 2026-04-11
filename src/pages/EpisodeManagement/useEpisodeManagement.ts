@@ -214,10 +214,21 @@ export const useEpisodeManagement = () => {
         onUndo: async () => {
           try {
             const undoPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
-            await firebase
-              .database()
-              .ref(undoPath)
-              .set(prevSeasons[seasonIndex].episodes[episodeIndex]);
+            // Nur Watch-Felder des alten Zustands schreiben — keine Metadaten,
+            // die sonst mit undefined-Feldern das Firebase-Set abbrechen.
+            const prevEp = prevSeasons[seasonIndex].episodes[episodeIndex] as {
+              watched?: boolean;
+              watchCount?: number;
+              firstWatchedAt?: string;
+              lastWatchedAt?: string;
+            };
+            const undoWatch: Record<string, unknown> = {
+              watched: prevEp.watched ?? false,
+            };
+            if (prevEp.watchCount != null) undoWatch.watchCount = prevEp.watchCount;
+            if (prevEp.firstWatchedAt) undoWatch.firstWatchedAt = prevEp.firstWatchedAt;
+            if (prevEp.lastWatchedAt) undoWatch.lastWatchedAt = prevEp.lastWatchedAt;
+            await firebase.database().ref(undoPath).set(undoWatch);
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }
@@ -356,45 +367,54 @@ export const useEpisodeManagement = () => {
     const allWatched = season.episodes?.every((ep) => ep.watched);
 
     try {
-      const updatedEpisodes = season.episodes?.map((ep) => {
+      // Nach dem Catalog-Split enthaelt seriesWatch NUR Watch-Felder
+      // (watched, watchCount, firstWatchedAt, lastWatchedAt). Episode-
+      // Metadaten wie airstamp/name/air_date liegen ausschliesslich im
+      // Catalog. Frueher wurde hier das komplette Episode-Objekt mit
+      // ...ep gespreaded — das schreibt dann auch undefined-Felder nach
+      // Firebase und laesst die Set-Operation fehlschlagen.
+      type WatchEpisode = {
+        watched: boolean;
+        watchCount?: number;
+        firstWatchedAt?: string;
+        lastWatchedAt?: string;
+      };
+      const updatedEpisodes: WatchEpisode[] = (season.episodes ?? []).map((ep) => {
+        const now = new Date().toISOString();
         if (mode === 'unwatch') {
-          const {
-            watchCount: _watchCount,
-            firstWatchedAt: _firstWatchedAt,
-            lastWatchedAt: _lastWatchedAt,
-            ...episodeWithoutFields
-          } = ep;
-          return { ...episodeWithoutFields, watched: false };
+          return { watched: false, watchCount: 0 };
         } else if (mode === 'rewatch') {
-          return {
-            ...ep,
+          const result: WatchEpisode = {
             watched: true,
             watchCount: (ep.watchCount || 1) + 1,
-            firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
-            lastWatchedAt: new Date().toISOString(),
+            firstWatchedAt: ep.firstWatchedAt || now,
+            lastWatchedAt: now,
           };
+          return result;
         } else {
           if (!allWatched) {
             return {
-              ...ep,
               watched: true,
               watchCount: 1,
-              firstWatchedAt: ep.firstWatchedAt || new Date().toISOString(),
-              lastWatchedAt: new Date().toISOString(),
+              firstWatchedAt: ep.firstWatchedAt || now,
+              lastWatchedAt: now,
             };
           } else {
-            const {
-              watchCount: _watchCount,
-              firstWatchedAt: _firstWatchedAt,
-              lastWatchedAt: _lastWatchedAt,
-              ...episodeWithoutFields
-            } = ep;
-            return { ...episodeWithoutFields, watched: false };
+            return { watched: false, watchCount: 0 };
           }
         }
       });
 
-      const prevEpisodes = JSON.parse(JSON.stringify(season.episodes));
+      // Fuer Undo: nur Watch-Felder des alten Zustands snapshotten. Keine
+      // Metadaten (airstamp/name/air_date), die das Set sonst aufblaehen
+      // und mit undefined-Feldern zum Scheitern bringen wuerden.
+      const prevEpisodes: WatchEpisode[] = (season.episodes ?? []).map((ep) => {
+        const w: WatchEpisode = { watched: ep.watched ?? false };
+        if (ep.watchCount != null) w.watchCount = ep.watchCount;
+        if (ep.firstWatchedAt) w.firstWatchedAt = ep.firstWatchedAt;
+        if (ep.lastWatchedAt) w.lastWatchedAt = ep.lastWatchedAt;
+        return w;
+      });
       const episodesRef = firebase
         .database()
         .ref(`users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes`);
