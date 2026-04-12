@@ -8,6 +8,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import type { ActivityEvent } from '../../types/WatchActivity';
 import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
+import { compactifyEvent, isCompactEvent, expandCompactEvent } from './compactEvent';
 
 // ============================================================================
 // KONSTANTEN
@@ -131,21 +132,12 @@ export async function saveEvent(userId: string, event: ActivityEvent): Promise<b
   try {
     await cleanupOldYearData(userId);
 
-    const cleanEvent = cleanObject(event as unknown as Record<string, unknown>);
+    // Compact-Format: kürzere Feldnamen + unix timestamp.
+    // Spart ~50% Bytes pro Event vs. Legacy.
+    const compact = compactifyEvent(event);
+    const cleanCompact = cleanObject(compact as unknown as Record<string, unknown>);
 
-    // Entferne Felder die aus timestamp oder Katalog ableitbar sind.
-    // Spart ~40% Bytes pro Event.
-    // - month, dayOfWeek, hour: ableitbar aus timestamp
-    // - deviceType: konstant pro Client
-    // - seriesTitle/movieTitle: im Katalog vorhanden
-    delete cleanEvent.month;
-    delete cleanEvent.dayOfWeek;
-    delete cleanEvent.hour;
-    delete cleanEvent.deviceType;
-    if ('seriesTitle' in cleanEvent) delete cleanEvent.seriesTitle;
-    if ('movieTitle' in cleanEvent) delete cleanEvent.movieTitle;
-
-    await firebase.database().ref(eventPath).set(cleanEvent);
+    await firebase.database().ref(eventPath).set(cleanCompact);
 
     return true;
   } catch (error) {
@@ -198,10 +190,17 @@ export async function getYearlyActivity(userId: string, year: number): Promise<A
   try {
     const snapshot = await firebase.database().ref(eventsPath).once('value');
 
-    const data = snapshot.val() as Record<string, ActivityEvent> | null;
+    const data = snapshot.val() as Record<string, unknown> | null;
 
     if (data) {
-      return Object.values(data).map(hydrateTemporalFields);
+      // Universeller Reader: erkennt Compact (ts/t/s/...) UND Legacy
+      // (timestamp/type/seriesId/...) und gibt immer Full-Format zurück.
+      return Object.values(data).map((raw) => {
+        if (isCompactEvent(raw)) {
+          return expandCompactEvent(raw as Record<string, unknown>);
+        }
+        return hydrateTemporalFields(raw as ActivityEvent);
+      });
     }
 
     return [];
