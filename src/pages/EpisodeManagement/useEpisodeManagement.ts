@@ -61,6 +61,7 @@ export const useEpisodeManagement = () => {
 
   // --- Derived data ---
   const series = seriesList.find((s: Series) => s.id === Number(id));
+
   const currentSeason = series?.seasons?.[selectedSeason];
 
   // Discussion counts for current season
@@ -214,8 +215,6 @@ export const useEpisodeManagement = () => {
         onUndo: async () => {
           try {
             const undoPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
-            // Nur Watch-Felder des alten Zustands schreiben — keine Metadaten,
-            // die sonst mit undefined-Feldern das Firebase-Set abbrechen.
             const prevEp = prevSeasons[seasonIndex].episodes[episodeIndex] as {
               watched?: boolean;
               watchCount?: number;

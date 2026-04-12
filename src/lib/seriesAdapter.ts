@@ -36,14 +36,11 @@ export function mergeToSeriesView(
   const seasons: Series['seasons'] = [];
 
   if (catalog.seasons) {
-    // catalog.seasons kann ein Array sein (mit null-Luecken) oder ein Object
-    // (mit numerischen keys). Firebase-Quirk zwingt uns zu ensureArray.
     const seasonsEntries = Array.isArray(catalog.seasons)
       ? catalog.seasons.map((s, i) => [String(i), s] as const).filter(([, s]) => s != null)
       : Object.entries(catalog.seasons).filter(([, s]) => s != null);
     for (const [snKey, catalogSeason] of seasonsEntries) {
       if (!catalogSeason) continue;
-      // Episodes koennen auch als Object (sparse) statt Array kommen
       const episodesRaw = (catalogSeason as { episodes?: unknown }).episodes;
       const episodesList = ensureArray<CatalogEpisode>(episodesRaw);
       if (episodesList.length === 0) continue;
@@ -52,7 +49,6 @@ export function mergeToSeriesView(
 
       const episodes = episodesList.map((ep, idx) => {
         const watch = seasonWatch?.episodes?.[String(idx)];
-        // Catalog kann sowohl camelCase (airDate) als auch snake_case (air_date) haben
         const rawEp = ep as unknown as Record<string, unknown>;
         return {
           id: ep.id ?? 0,

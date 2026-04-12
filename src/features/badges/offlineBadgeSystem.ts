@@ -114,7 +114,14 @@ export class OfflineBadgeSystem {
   }
 
   private async getActivitiesData(): Promise<unknown[]> {
-    const snapshot = await firebase.database().ref(`users/${this.userId}/activities`).once('value');
+    // limitToLast begrenzt auf die letzten 200 Activities. Aeltere sind fuer
+    // Badge-Berechnungen irrelevant und wuerden nur Egress kosten.
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${this.userId}/activities`)
+      .orderByKey()
+      .limitToLast(200)
+      .once('value');
     return snapshot.exists() ? Object.values(snapshot.val()) : [];
   }
 

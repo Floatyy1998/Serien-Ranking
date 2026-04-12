@@ -2,7 +2,7 @@ import { CheckCircle, Close, Person, PersonAdd, Star } from '@mui/icons-material
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -44,6 +44,15 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [recentlyAdded, setRecentlyAdded] = useState<string[]>([]);
 
+  // Modul-Level-Cache fuer die User-Liste. /users komplett zu lesen ist
+  // teuer (~50-500 KB), aber fuer Substring-Suche unvermeidbar (Firebase
+  // kann kein LIKE/contains). Wir cachen das Ergebnis 10 Minuten — wiederholte
+  // Suchen innerhalb einer Session kosten dann null Egress.
+  const usersCache = useRef<{ data: Record<string, unknown> | null; ts: number }>({
+    data: null,
+    ts: 0,
+  });
+
   // Live search with debounce
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -54,9 +63,16 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
     const searchTimer = setTimeout(async () => {
       setSearching(true);
       try {
-        const usersRef = firebase.database().ref('users');
-        const snapshot = await usersRef.once('value');
-        const users = snapshot.val();
+        let users: Record<string, unknown> | null = null;
+        const now = Date.now();
+        if (usersCache.current.data && now - usersCache.current.ts < 10 * 60 * 1000) {
+          users = usersCache.current.data;
+        } else {
+          const usersRef = firebase.database().ref('users');
+          const snapshot = await usersRef.once('value');
+          users = snapshot.val();
+          usersCache.current = { data: users, ts: now };
+        }
 
         if (users) {
           // Process users in parallel with Promise.all for better performance
