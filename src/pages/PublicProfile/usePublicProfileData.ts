@@ -80,12 +80,10 @@ export function usePublicProfileData() {
           ]);
 
         const series = seriesSnapshot.val();
-        let catalogSeries = staticSeriesCatalog as Record<string, unknown> | null;
-        if (!catalogSeries) {
-          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
-          catalogSeries = snap.val() || {};
-        }
-        catalogSeries = catalogSeries || {};
+        const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
+          string,
+          unknown
+        >;
 
         if (series) {
           const seriesArray = Object.entries(series).map(([tmdbId, userRef]) => {
@@ -109,12 +107,10 @@ export function usePublicProfileData() {
         }
 
         const movies = moviesSnapshot.val();
-        let catalogMovies = staticMoviesCatalog as Record<string, unknown> | null;
-        if (!catalogMovies) {
-          const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
-          catalogMovies = snap.val() || {};
-        }
-        catalogMovies = catalogMovies || {};
+        const catalogMovies: Record<string, unknown> = (staticMoviesCatalog || {}) as Record<
+          string,
+          unknown
+        >;
 
         if (movies) {
           const moviesArray = Object.entries(movies).map(([tmdbId, userRef]) => {

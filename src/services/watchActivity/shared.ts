@@ -133,6 +133,18 @@ export async function saveEvent(userId: string, event: ActivityEvent): Promise<b
 
     const cleanEvent = cleanObject(event as unknown as Record<string, unknown>);
 
+    // Entferne Felder die aus timestamp oder Katalog ableitbar sind.
+    // Spart ~40% Bytes pro Event.
+    // - month, dayOfWeek, hour: ableitbar aus timestamp
+    // - deviceType: konstant pro Client
+    // - seriesTitle/movieTitle: im Katalog vorhanden
+    delete cleanEvent.month;
+    delete cleanEvent.dayOfWeek;
+    delete cleanEvent.hour;
+    delete cleanEvent.deviceType;
+    if ('seriesTitle' in cleanEvent) delete cleanEvent.seriesTitle;
+    if ('movieTitle' in cleanEvent) delete cleanEvent.movieTitle;
+
     await firebase.database().ref(eventPath).set(cleanEvent);
 
     return true;
@@ -162,6 +174,25 @@ export async function clearAllWrappedData(userId: string): Promise<void> {
 // DATA RETRIEVAL
 // ============================================================================
 
+/**
+ * Stellt temporale Felder aus dem timestamp wieder her, falls sie fehlen.
+ * Neue Events speichern month/dayOfWeek/hour/deviceType nicht mehr (spart Bytes),
+ * aber die Wrapped-Statistiken brauchen sie zum Lesen.
+ */
+function hydrateTemporalFields(event: ActivityEvent): ActivityEvent {
+  if (event.month !== undefined && event.dayOfWeek !== undefined && event.hour !== undefined) {
+    return event; // Altes Event-Format, alle Felder vorhanden
+  }
+  const d = new Date(event.timestamp);
+  return {
+    ...event,
+    month: event.month ?? d.getMonth() + 1,
+    dayOfWeek: event.dayOfWeek ?? d.getDay(),
+    hour: event.hour ?? d.getHours(),
+    deviceType: event.deviceType ?? 'desktop',
+  };
+}
+
 export async function getYearlyActivity(userId: string, year: number): Promise<ActivityEvent[]> {
   const eventsPath = getEventsPath(userId, year);
   try {
@@ -170,7 +201,7 @@ export async function getYearlyActivity(userId: string, year: number): Promise<A
     const data = snapshot.val() as Record<string, ActivityEvent> | null;
 
     if (data) {
-      return Object.values(data);
+      return Object.values(data).map(hydrateTemporalFields);
     }
 
     return [];

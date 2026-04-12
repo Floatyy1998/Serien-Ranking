@@ -86,34 +86,35 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     const series = seriesList.find((s) => s.id === episode.seriesId);
     if (!series) return;
 
-    const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}`;
+    const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}`;
+    const eIdx = episode.episodeIndex;
     const db = firebase.database();
     const uid = user.uid;
     const label = `S${episode.seasonIndex + 1}E${episode.episodeIndex + 1}`;
-    const nowIso = new Date().toISOString();
+    const nowUnix = Math.floor(Date.now() / 1000);
 
     // Snapshot vorher lesen
     try {
       const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-        db.ref(`${basePath}/watchCount`).once('value'),
-        db.ref(`${basePath}/firstWatchedAt`).once('value'),
-        db.ref(`${basePath}/lastWatchedAt`).once('value'),
-        db.ref(`${basePath}/watched`).once('value'),
+        db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
+        db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
+        db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
+        db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
       ]);
 
       const prevCount: number = watchCountSnap.val() || 0;
-      const prevFirstWatchedAt: string | null = firstSnap.val() || null;
-      const prevLastWatchedAt: string | null = lastSnap.val() || null;
-      const prevWatched: boolean = !!watchedSnap.val();
+      const prevFirst: number = firstSnap.val() || 0;
+      const prevLast: number = lastSnap.val() || 0;
+      const prevWatched: number = watchedSnap.val() || 0;
 
       // Atomar schreiben um Zwischenzustände zu vermeiden
       const updates: Record<string, unknown> = {
-        [`${basePath}/watched`]: true,
-        [`${basePath}/watchCount`]: prevCount + 1,
-        [`${basePath}/lastWatchedAt`]: nowIso,
+        [`${seasonPath}/w/${eIdx}`]: 1,
+        [`${seasonPath}/c/${eIdx}`]: prevCount + 1,
+        [`${seasonPath}/l/${eIdx}`]: nowUnix,
       };
-      if (!episode.isRewatch && !prevFirstWatchedAt) {
-        updates[`${basePath}/firstWatchedAt`] = nowIso;
+      if (!episode.isRewatch && !prevFirst) {
+        updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
       }
       await db.ref().update(updates);
 
@@ -126,18 +127,10 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
             return s;
           });
           try {
-            await db.ref(`${basePath}/watched`).set(prevWatched);
-            await db.ref(`${basePath}/watchCount`).set(prevCount);
-            if (prevFirstWatchedAt) {
-              await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-            } else {
-              await db.ref(`${basePath}/firstWatchedAt`).remove();
-            }
-            if (prevLastWatchedAt) {
-              await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
-            } else {
-              await db.ref(`${basePath}/lastWatchedAt`).remove();
-            }
+            await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
+            await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
+            await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
+            await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }

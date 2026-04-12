@@ -23,7 +23,7 @@ export async function fixMissingFirstWatchedAt(
   console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
   try {
     const todayISO = new Date().toISOString();
-    const updates: Record<string, string | null> = {};
+    const updates: Record<string, number> = {};
     let _totalUpdated = 0;
     let _totalWatchedEpisodes = 0;
     let _totalEpisodesWithFirstWatched = 0;
@@ -43,8 +43,8 @@ export async function fixMissingFirstWatchedAt(
             if (episode.firstWatchedAt) {
               _totalEpisodesWithFirstWatched++;
             } else {
-              const episodePath = `users/${userId}/seriesWatch/${seriesKey}/seasons/${seasonIndex}/episodes/${episodeIndex}/firstWatchedAt`;
-              updates[episodePath] = todayISO;
+              const firstPath = `users/${userId}/seriesWatch/${seriesKey}/seasons/${seasonIndex}/f/${episodeIndex}`;
+              updates[firstPath] = Math.floor(new Date(todayISO).getTime() / 1000);
               _totalUpdated++;
             }
           }

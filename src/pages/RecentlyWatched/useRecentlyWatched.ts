@@ -215,19 +215,11 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     const key = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     try {
-      const watchCountRef = firebase
-        .database()
-        .ref(
-          `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/watchCount`
-        );
-      await watchCountRef.set(episode.watchCount + 1);
-
-      const lastWatchedRef = firebase
-        .database()
-        .ref(
-          `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/episodes/${episode.episodeIndex}/lastWatchedAt`
-        );
-      await lastWatchedRef.set(new Date().toISOString());
+      const seasonPath = `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}`;
+      const eIdx = episode.episodeIndex;
+      const db = firebase.database();
+      await db.ref(`${seasonPath}/c/${eIdx}`).set(episode.watchCount + 1);
+      await db.ref(`${seasonPath}/l/${eIdx}`).set(Math.floor(Date.now() / 1000));
 
       const series = seriesList.find((s) => s.id === episode.seriesId);
       await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);

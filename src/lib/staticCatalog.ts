@@ -330,6 +330,48 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
  * Clear all in-memory AND localStorage caches (used after catalog-version
  * changes at runtime, e.g. nach /add).
  */
+/**
+ * Erzwingt einen frischen Fetch vom Server, ohne Memory-, localStorage-
+ * oder Browser-HTTP-Cache. Nützlich wenn bekannt ist, dass Daten fehlen
+ * (z.B. nach /add oder bei stale Cache).
+ */
+export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
+  string,
+  CatalogSeries
+> | null> {
+  try {
+    const url = `${CATALOG_BASE_URL}/seriesMeta.json?_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', credentials: 'omit', cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Record<string, CatalogSeries>;
+    // Update caches with fresh data
+    memoryMeta = data;
+    const version = await getRemoteVersion();
+    if (version != null) lsSetVersioned(LS_META_KEY, version, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
+  string,
+  CatalogMovie
+> | null> {
+  try {
+    const url = `${CATALOG_BASE_URL}/moviesMeta.json?_=${Date.now()}`;
+    const res = await fetch(url, { method: 'GET', credentials: 'omit', cache: 'no-store' });
+    if (!res.ok) return null;
+    const data = (await res.json()) as Record<string, CatalogMovie>;
+    memoryMovies = data;
+    const version = await getRemoteVersion();
+    if (version != null) lsSetVersioned(LS_MOVIES_KEY, version, data);
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export function clearStaticCatalogCache(): void {
   memoryMeta = null;
   memoryMovies = null;

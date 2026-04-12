@@ -103,18 +103,8 @@ async function loadUserData(userId: string): Promise<UserData> {
 
   const seriesRefs = seriesSnapshot.val() || {};
   const moviesRefs = moviesSnapshot.val() || {};
-  let catalogSeries = staticSeriesCatalog as Record<string, unknown> | null;
-  if (!catalogSeries) {
-    const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
-    catalogSeries = snap.val() || {};
-  }
-  catalogSeries = catalogSeries || {};
-  let catalogMovies = staticMoviesCatalog as Record<string, unknown> | null;
-  if (!catalogMovies) {
-    const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
-    catalogMovies = snap.val() || {};
-  }
-  catalogMovies = catalogMovies || {};
+  const catalogSeries = (staticSeriesCatalog || {}) as Record<string, unknown>;
+  const catalogMovies = (staticMoviesCatalog || {}) as Record<string, unknown>;
 
   const series: SeriesItem[] = Object.entries(seriesRefs).map(([tmdbId, ref]) => {
     const userRef = ref as Record<string, unknown>;

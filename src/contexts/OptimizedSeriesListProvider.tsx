@@ -11,6 +11,7 @@ import type {
 import { mergeToSeriesView } from '../lib/seriesAdapter';
 import {
   fetchStaticCatalogSeries,
+  fetchStaticCatalogSeriesFresh,
   fetchStaticCatalogSeasons,
   clearStaticCatalogCache,
   checkForCatalogVersionBump,
@@ -92,34 +93,28 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         // ignore, firebase fallback unten
       }
 
-      // 2) Fehlende IDs einzeln von Firebase nachholen. Deckt den Fall ab dass
-      //    der Server-Export noch nicht gelaufen ist (z.B. direkt nach /add).
+      // 2) Fehlende IDs? Cache ist stale → frisch vom Server holen (no-store,
+      //    kein Memory/LS/Browser-Cache). Passiert z.B. wenn Serien nach dem
+      //    letzten Besuch hinzugefuegt wurden und der Cache die alte Version hat.
       const userIds = Object.keys(userSeriesRefs);
       const missingIds = userIds.filter((id) => !merged || !merged[id]);
-      if (merged && missingIds.length > 0 && missingIds.length < 20) {
+      if (missingIds.length > 0) {
         try {
-          const db = firebase.database();
-          const results = await Promise.all(
-            missingIds.map((id) => db.ref(`catalog/seriesMeta/${id}`).once('value'))
-          );
-          const patched: Record<string, CatalogSeries> = { ...merged };
-          for (let i = 0; i < missingIds.length; i++) {
-            const val = results[i].val();
-            if (val) patched[missingIds[i]] = val as CatalogSeries;
+          const freshData = await fetchStaticCatalogSeriesFresh();
+          if (freshData) {
+            merged = freshData;
           }
-          merged = patched;
         } catch (e) {
-          console.warn('[catalog] missing-id firebase fallback failed', e);
+          console.warn('[catalog] fresh refetch failed', e);
         }
       }
 
-      // 3) Wenn static komplett versagt hat, voller Firebase-Fallback
+      // 3) Wenn static komplett versagt hat: force-fresh
       if (!merged) {
         try {
-          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
-          merged = snap.val() || {};
+          merged = await fetchStaticCatalogSeriesFresh();
         } catch (e) {
-          console.warn('[catalog] full firebase fallback failed', e);
+          console.warn('[catalog] retry fresh fetch failed', e);
         }
       }
 
@@ -164,20 +159,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
 
     let cancelled = false;
-    const db = firebase.database();
 
     Promise.all(
       tmdbIds.map(async (tmdbId) => {
-        // static first
         try {
           const data = await fetchStaticCatalogSeasons(tmdbId);
-          if (data) return [tmdbId, data] as const;
-        } catch {
-          // ignore, fallback to firebase
-        }
-        try {
-          const snap = await db.ref(`catalog/seasons/${tmdbId}`).once('value');
-          return [tmdbId, snap.val() || {}] as const;
+          return [tmdbId, data || {}] as const;
         } catch {
           return [tmdbId, {}] as const;
         }
