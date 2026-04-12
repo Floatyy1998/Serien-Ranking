@@ -193,5 +193,10 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
     }
   }
 
+  // Remaining episodes am Ende
+  if (pace.remainingEpisodes > 0) {
+    parts.push(`${pace.remainingEpisodes} Ep. offen`);
+  }
+
   return parts.join(' · ');
 }
