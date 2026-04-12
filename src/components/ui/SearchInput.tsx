@@ -42,7 +42,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         style={{
           width: '100%',
           padding: '16px 16px 16px 48px',
-          paddingRight: value ? '44px' : '16px',
+          paddingRight: value ? '52px' : '16px',
           background: currentTheme.background.surface,
           border: `2px solid ${currentTheme.border.default}`,
           borderRadius: 'var(--radius-lg)',
@@ -64,33 +64,43 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       />
       <AnimatePresence>
         {value && (
-          <motion.button
-            variants={scaleButton}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            whileTap={tapScaleTight}
-            onClick={() => onChange('')}
-            aria-label="Suchfeld leeren"
+          <div
             style={{
               position: 'absolute',
               right: '12px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '24px',
-              height: '24px',
+              top: 0,
+              bottom: 0,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: currentTheme.text.secondary,
+              pointerEvents: 'none',
             }}
           >
-            <Close style={{ fontSize: '16px' }} />
-          </motion.button>
+            <motion.button
+              variants={scaleButton}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              whileTap={tapScaleTight}
+              onClick={() => onChange('')}
+              aria-label="Suchfeld leeren"
+              style={{
+                pointerEvents: 'auto',
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '28px',
+                height: '28px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: currentTheme.text.secondary,
+                padding: 0,
+              }}
+            >
+              <Close style={{ fontSize: '16px' }} />
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
     </div>
