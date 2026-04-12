@@ -21,6 +21,7 @@ export function useBugReportData() {
     const handler = ref
       .orderByChild('createdBy')
       .equalTo(user.uid)
+      .limitToLast(30)
       .on('value', (snap) => {
         const val = snap.val();
         if (val) {

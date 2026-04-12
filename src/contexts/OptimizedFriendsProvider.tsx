@@ -103,13 +103,15 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       .database()
       .ref('friendRequests')
       .orderByChild('toUserId')
-      .equalTo(user.uid);
+      .equalTo(user.uid)
+      .limitToLast(50);
 
     const outgoingRef = firebase
       .database()
       .ref('friendRequests')
       .orderByChild('fromUserId')
-      .equalTo(user.uid);
+      .equalTo(user.uid)
+      .limitToLast(50);
 
     const incomingListener = incomingRef.on('value', (snapshot) => {
       const data = snapshot.val();

@@ -291,14 +291,20 @@ export async function fetchLeaderboardProfiles(
 export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> {
   const currentMonth = getCurrentMonthKey();
 
-  const snapshot = await firebase.database().ref('leaderboardStats').once('value');
+  // Query nur Eintraege fuer den aktuellen Monat statt den kompletten
+  // leaderboardStats-Baum (spart Egress: nur aktive User statt alle alten).
+  const snapshot = await firebase
+    .database()
+    .ref('leaderboardStats')
+    .orderByChild('monthKey')
+    .equalTo(currentMonth)
+    .once('value');
   const data = snapshot.val() as Record<string, Record<string, unknown>> | null;
   if (!data) return [];
 
   const entries: GlobalLeaderboardEntry[] = [];
 
   for (const [uid, entry] of Object.entries(data)) {
-    if ((entry.monthKey as string) !== currentMonth) continue;
     const watchtime = (entry.watchtimeThisMonth as number) || 0;
     const episodes = (entry.episodesThisMonth as number) || 0;
     const movies = (entry.moviesThisMonth as number) || 0;

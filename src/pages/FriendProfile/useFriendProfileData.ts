@@ -278,10 +278,13 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
       try {
         setLoading(true);
 
-        const userRef = firebase.database().ref(`users/${friendId}`);
-        const userSnapshot = await userRef.once('value');
-        const userData = userSnapshot.val();
-        setFriendName(userData?.displayName || 'User');
+        // Punkt-Query statt Full-User-Read: nur displayName benoetigt (~50 Bytes
+        // statt ~50-100 KB fuer das komplette User-Objekt).
+        const nameSnap = await firebase
+          .database()
+          .ref(`users/${friendId}/displayName`)
+          .once('value');
+        setFriendName(nameSnap.val() || 'User');
 
         // Lade User-Refs + Catalog parallel.
         // Catalog wird aus statischen Server-Files geladen (kein Firebase-Egress),

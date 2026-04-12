@@ -81,7 +81,17 @@ interface MovieItem {
 /**
  * Lädt Serien und Filme eines Users
  */
+// Session-Level-Cache fuer loadUserData. Wenn TasteMatch mit 5 Freunden
+// verglichen wird, wird der eigene User nur 1x statt 5x von Firebase geladen.
+const userDataCache = new Map<string, { data: UserData; ts: number }>();
+const USER_DATA_CACHE_TTL = 5 * 60 * 1000;
+
 async function loadUserData(userId: string): Promise<UserData> {
+  const cached = userDataCache.get(userId);
+  if (cached && Date.now() - cached.ts < USER_DATA_CACHE_TTL) {
+    return cached.data;
+  }
+
   // Catalog via Static-File, Firebase-Fallback.
   const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
     await Promise.all([
@@ -132,7 +142,9 @@ async function loadUserData(userId: string): Promise<UserData> {
     };
   });
 
-  return { series, movies };
+  const result = { series, movies };
+  userDataCache.set(userId, { data: result, ts: Date.now() });
+  return result;
 }
 
 /**
