@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Movie } from '../types/Movie';
@@ -9,6 +7,7 @@ import { mergeToMovieView } from '../lib/seriesAdapter';
 import { MovieListContext } from './MovieListContext';
 import {
   fetchStaticCatalogMovies,
+  fetchStaticCatalogMoviesFresh,
   clearStaticCatalogCache,
   checkForCatalogVersionBump,
 } from '../lib/staticCatalog';
@@ -52,29 +51,23 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
 
       const userIds = Object.keys(userMovieRefs);
       const missingIds = userIds.filter((id) => !merged || !merged[id]);
-      if (merged && missingIds.length > 0 && missingIds.length < 20) {
+      if (missingIds.length > 0) {
         try {
-          const db = firebase.database();
-          const results = await Promise.all(
-            missingIds.map((id) => db.ref(`catalog/moviesMeta/${id}`).once('value'))
-          );
-          const patched: Record<string, CatalogMovie> = { ...merged };
-          for (let i = 0; i < missingIds.length; i++) {
-            const val = results[i].val();
-            if (val) patched[missingIds[i]] = val as CatalogMovie;
+          const freshData = await fetchStaticCatalogMoviesFresh();
+          if (freshData) {
+            merged = freshData;
           }
-          merged = patched;
         } catch (e) {
-          console.warn('[catalog] missing-id firebase fallback failed', e);
+          console.warn('[catalog] fresh refetch failed', e);
         }
       }
 
       if (!merged) {
         try {
-          const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
-          merged = snap.val() || {};
+          clearStaticCatalogCache();
+          merged = await fetchStaticCatalogMovies();
         } catch (e) {
-          console.warn('[catalog] full firebase fallback failed', e);
+          console.warn('[catalog] retry static fetch failed', e);
         }
       }
 

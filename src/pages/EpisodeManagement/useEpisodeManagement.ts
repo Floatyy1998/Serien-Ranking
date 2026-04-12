@@ -177,27 +177,28 @@ export const useEpisodeManagement = () => {
         newWatchCount = 0;
       }
 
-      const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
+      const eIdx = episodeIndex;
       const db = firebase.database();
 
       if (newWatched) {
-        const now = new Date().toISOString();
+        const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {
-          [`${basePath}/watched`]: true,
-          [`${basePath}/watchCount`]: newWatchCount,
-          [`${basePath}/lastWatchedAt`]: now,
+          [`${seasonPath}/w/${eIdx}`]: 1,
+          [`${seasonPath}/c/${eIdx}`]: newWatchCount,
+          [`${seasonPath}/l/${eIdx}`]: nowUnix,
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         };
         if (!episode.firstWatchedAt) {
-          updates[`${basePath}/firstWatchedAt`] = now;
+          updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
         }
         await db.ref().update(updates);
       } else {
         await db.ref().update({
-          [`${basePath}/watched`]: false,
-          [`${basePath}/watchCount`]: null,
-          [`${basePath}/firstWatchedAt`]: null,
-          [`${basePath}/lastWatchedAt`]: null,
+          [`${seasonPath}/w/${eIdx}`]: 0,
+          [`${seasonPath}/c/${eIdx}`]: 0,
+          [`${seasonPath}/f/${eIdx}`]: 0,
+          [`${seasonPath}/l/${eIdx}`]: 0,
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       }
@@ -214,20 +215,24 @@ export const useEpisodeManagement = () => {
       showUndoToast(`${series.title} ${label} ${action}`, {
         onUndo: async () => {
           try {
-            const undoPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+            const undoSeasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
             const prevEp = prevSeasons[seasonIndex].episodes[episodeIndex] as {
               watched?: boolean;
               watchCount?: number;
               firstWatchedAt?: string;
               lastWatchedAt?: string;
             };
-            const undoWatch: Record<string, unknown> = {
-              watched: prevEp.watched ?? false,
+            const undoUpdates: Record<string, unknown> = {
+              [`${undoSeasonPath}/w/${eIdx}`]: prevEp.watched ? 1 : 0,
+              [`${undoSeasonPath}/c/${eIdx}`]: prevEp.watchCount || 0,
+              [`${undoSeasonPath}/f/${eIdx}`]: prevEp.firstWatchedAt
+                ? Math.floor(new Date(prevEp.firstWatchedAt).getTime() / 1000)
+                : 0,
+              [`${undoSeasonPath}/l/${eIdx}`]: prevEp.lastWatchedAt
+                ? Math.floor(new Date(prevEp.lastWatchedAt).getTime() / 1000)
+                : 0,
             };
-            if (prevEp.watchCount != null) undoWatch.watchCount = prevEp.watchCount;
-            if (prevEp.firstWatchedAt) undoWatch.firstWatchedAt = prevEp.firstWatchedAt;
-            if (prevEp.lastWatchedAt) undoWatch.lastWatchedAt = prevEp.lastWatchedAt;
-            await firebase.database().ref(undoPath).set(undoWatch);
+            await firebase.database().ref().update(undoUpdates);
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }
@@ -307,7 +312,7 @@ export const useEpisodeManagement = () => {
 
     try {
       const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
-      const now = new Date().toISOString();
+      const nowUnix = Math.floor(Date.now() / 1000);
       const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons`;
       const updates: Record<string, unknown> = {};
 
@@ -324,11 +329,10 @@ export const useEpisodeManagement = () => {
             sIdx < targetSeasonIndex || (sIdx === targetSeasonIndex && eIdx < targetEpisodeIndex);
           if (!shouldMark) return;
 
-          const epPath = `${basePath}/${sIdx}/episodes/${eIdx}`;
-          updates[`${epPath}/watched`] = true;
-          updates[`${epPath}/watchCount`] = 1;
-          updates[`${epPath}/firstWatchedAt`] = now;
-          updates[`${epPath}/lastWatchedAt`] = now;
+          updates[`${basePath}/${sIdx}/w/${eIdx}`] = 1;
+          updates[`${basePath}/${sIdx}/c/${eIdx}`] = 1;
+          updates[`${basePath}/${sIdx}/f/${eIdx}`] = nowUnix;
+          updates[`${basePath}/${sIdx}/l/${eIdx}`] = nowUnix;
         });
       });
 
@@ -338,10 +342,36 @@ export const useEpisodeManagement = () => {
 
       showUndoToast(`Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`, async () => {
         try {
-          // Undo: betroffene Seasons zurückschreiben
+          // Undo: betroffene Episodes zurückschreiben
           const undoUpdates: Record<string, unknown> = {};
           for (let sIdx = 0; sIdx <= targetSeasonIndex; sIdx++) {
-            undoUpdates[`${basePath}/${sIdx}/episodes`] = prevSeasons[sIdx].episodes;
+            const prevEps = prevSeasons[sIdx].episodes as Array<{
+              watched?: boolean;
+              watchCount?: number;
+              firstWatchedAt?: string;
+              lastWatchedAt?: string;
+            }>;
+            if (!prevEps) continue;
+            prevEps.forEach(
+              (
+                ep: {
+                  watched?: boolean;
+                  watchCount?: number;
+                  firstWatchedAt?: string;
+                  lastWatchedAt?: string;
+                },
+                eIdx: number
+              ) => {
+                undoUpdates[`${basePath}/${sIdx}/w/${eIdx}`] = ep.watched ? 1 : 0;
+                undoUpdates[`${basePath}/${sIdx}/c/${eIdx}`] = ep.watchCount || 0;
+                undoUpdates[`${basePath}/${sIdx}/f/${eIdx}`] = ep.firstWatchedAt
+                  ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
+                  : 0;
+                undoUpdates[`${basePath}/${sIdx}/l/${eIdx}`] = ep.lastWatchedAt
+                  ? Math.floor(new Date(ep.lastWatchedAt).getTime() / 1000)
+                  : 0;
+              }
+            );
           }
           await firebase.database().ref().update(undoUpdates);
         } catch {
@@ -366,62 +396,58 @@ export const useEpisodeManagement = () => {
     const allWatched = season.episodes?.every((ep) => ep.watched);
 
     try {
-      // Nach dem Catalog-Split enthaelt seriesWatch NUR Watch-Felder
-      // (watched, watchCount, firstWatchedAt, lastWatchedAt). Episode-
-      // Metadaten wie airstamp/name/air_date liegen ausschliesslich im
-      // Catalog. Frueher wurde hier das komplette Episode-Objekt mit
-      // ...ep gespreaded — das schreibt dann auch undefined-Felder nach
-      // Firebase und laesst die Set-Operation fehlschlagen.
-      type WatchEpisode = {
-        watched: boolean;
-        watchCount?: number;
-        firstWatchedAt?: string;
-        lastWatchedAt?: string;
-      };
-      const updatedEpisodes: WatchEpisode[] = (season.episodes ?? []).map((ep) => {
-        const now = new Date().toISOString();
+      // Compact format: w/c/f/l arrays per season instead of episodes array
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
+      const db = firebase.database();
+      const updates: Record<string, unknown> = {};
+
+      (season.episodes ?? []).forEach((ep, eIdx) => {
         if (mode === 'unwatch') {
-          return { watched: false, watchCount: 0 };
+          updates[`${seasonPath}/w/${eIdx}`] = 0;
+          updates[`${seasonPath}/c/${eIdx}`] = 0;
+          updates[`${seasonPath}/f/${eIdx}`] = 0;
+          updates[`${seasonPath}/l/${eIdx}`] = 0;
         } else if (mode === 'rewatch') {
-          const result: WatchEpisode = {
-            watched: true,
-            watchCount: (ep.watchCount || 1) + 1,
-            firstWatchedAt: ep.firstWatchedAt || now,
-            lastWatchedAt: now,
-          };
-          return result;
+          updates[`${seasonPath}/w/${eIdx}`] = 1;
+          updates[`${seasonPath}/c/${eIdx}`] = (ep.watchCount || 1) + 1;
+          updates[`${seasonPath}/f/${eIdx}`] = ep.firstWatchedAt
+            ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
+            : nowUnix;
+          updates[`${seasonPath}/l/${eIdx}`] = nowUnix;
         } else {
           if (!allWatched) {
-            return {
-              watched: true,
-              watchCount: 1,
-              firstWatchedAt: ep.firstWatchedAt || now,
-              lastWatchedAt: now,
-            };
+            updates[`${seasonPath}/w/${eIdx}`] = 1;
+            updates[`${seasonPath}/c/${eIdx}`] = 1;
+            updates[`${seasonPath}/f/${eIdx}`] = ep.firstWatchedAt
+              ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000)
+              : nowUnix;
+            updates[`${seasonPath}/l/${eIdx}`] = nowUnix;
           } else {
-            return { watched: false, watchCount: 0 };
+            updates[`${seasonPath}/w/${eIdx}`] = 0;
+            updates[`${seasonPath}/c/${eIdx}`] = 0;
+            updates[`${seasonPath}/f/${eIdx}`] = 0;
+            updates[`${seasonPath}/l/${eIdx}`] = 0;
           }
         }
       });
 
-      // Fuer Undo: nur Watch-Felder des alten Zustands snapshotten. Keine
-      // Metadaten (airstamp/name/air_date), die das Set sonst aufblaehen
-      // und mit undefined-Feldern zum Scheitern bringen wuerden.
-      const prevEpisodes: WatchEpisode[] = (season.episodes ?? []).map((ep) => {
-        const w: WatchEpisode = { watched: ep.watched ?? false };
-        if (ep.watchCount != null) w.watchCount = ep.watchCount;
-        if (ep.firstWatchedAt) w.firstWatchedAt = ep.firstWatchedAt;
-        if (ep.lastWatchedAt) w.lastWatchedAt = ep.lastWatchedAt;
-        return w;
-      });
-      const episodesRef = firebase
-        .database()
-        .ref(`users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes`);
-      await episodesRef.set(updatedEpisodes);
-      firebase
-        .database()
-        .ref(`users/${user.uid}/meta/serienVersion`)
-        .set(firebase.database.ServerValue.TIMESTAMP);
+      // Fuer Undo: Watch-Felder des alten Zustands snapshotten
+      type PrevEpisodeState = {
+        watched: boolean;
+        watchCount: number;
+        firstUnix: number;
+        lastUnix: number;
+      };
+      const prevEpisodes: PrevEpisodeState[] = (season.episodes ?? []).map((ep) => ({
+        watched: ep.watched ?? false,
+        watchCount: ep.watchCount || 0,
+        firstUnix: ep.firstWatchedAt ? Math.floor(new Date(ep.firstWatchedAt).getTime() / 1000) : 0,
+        lastUnix: ep.lastWatchedAt ? Math.floor(new Date(ep.lastWatchedAt).getTime() / 1000) : 0,
+      }));
+
+      updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref().update(updates);
 
       // Quick-Rate: Trigger wenn letzte Staffel komplett markiert
       if (mode !== 'unwatch') {
@@ -445,7 +471,14 @@ export const useEpisodeManagement = () => {
             : 'als gesehen markiert';
       showUndoToast(`${series.title} ${seasonLabel} ${modeLabel}`, async () => {
         try {
-          await episodesRef.set(prevEpisodes);
+          const undoUpdates: Record<string, unknown> = {};
+          prevEpisodes.forEach((ep, eIdx) => {
+            undoUpdates[`${seasonPath}/w/${eIdx}`] = ep.watched ? 1 : 0;
+            undoUpdates[`${seasonPath}/c/${eIdx}`] = ep.watchCount;
+            undoUpdates[`${seasonPath}/f/${eIdx}`] = ep.firstUnix;
+            undoUpdates[`${seasonPath}/l/${eIdx}`] = ep.lastUnix;
+          });
+          await db.ref().update(undoUpdates);
         } catch {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }

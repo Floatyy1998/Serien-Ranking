@@ -8,6 +8,8 @@ import type {
   UserMovieRef,
   SeriesWatchData,
 } from '../types/CatalogTypes';
+import { isCompactSeason, readEpisodeFromCompact } from './compactWatch';
+import type { CompactSeason } from './compactWatch';
 
 /**
  * Firebase RTDB serialisiert Objects mit numerischen Keys, bei denen Index 0
@@ -48,7 +50,28 @@ export function mergeToSeriesView(
       const seasonWatch = watchData?.seasons?.[snKey];
 
       const episodes = episodesList.map((ep, idx) => {
-        const watch = seasonWatch?.episodes?.[String(idx)];
+        // Kompaktformat (w/c/f/l Arrays) oder Legacy-Format (episodes[].watched)
+        let watched = false;
+        let watchCount = 0;
+        let firstWatchedAt: string | undefined;
+        let lastWatchedAt: string | undefined;
+
+        if (seasonWatch && isCompactSeason(seasonWatch)) {
+          const cw = readEpisodeFromCompact(seasonWatch as CompactSeason, idx);
+          watched = cw.watched;
+          watchCount = cw.watchCount;
+          firstWatchedAt = cw.firstWatchedAt;
+          lastWatchedAt = cw.lastWatchedAt;
+        } else if (seasonWatch) {
+          const sw = seasonWatch as unknown as Record<string, unknown>;
+          const eps = sw?.episodes as Record<string, Record<string, unknown>> | undefined;
+          const watch = eps?.[String(idx)];
+          watched = (watch?.watched as boolean) ?? false;
+          watchCount = (watch?.watchCount as number) ?? 0;
+          firstWatchedAt = watch?.firstWatchedAt as string | undefined;
+          lastWatchedAt = watch?.lastWatchedAt as string | undefined;
+        }
+
         const rawEp = ep as unknown as Record<string, unknown>;
         return {
           id: ep.id ?? 0,
@@ -58,10 +81,10 @@ export function mergeToSeriesView(
           season_number: ep.seasonNumber ?? (rawEp.season_number as number) ?? 0,
           episode_number: ep.episodeNumber ?? (rawEp.episode_number as number) ?? 0,
           runtime: ep.runtime ?? (rawEp.runtime as number) ?? undefined,
-          watched: watch?.watched ?? false,
-          watchCount: watch?.watchCount ?? 0,
-          ...(watch?.firstWatchedAt ? { firstWatchedAt: watch.firstWatchedAt } : {}),
-          ...(watch?.lastWatchedAt ? { lastWatchedAt: watch.lastWatchedAt } : {}),
+          watched,
+          watchCount,
+          ...(firstWatchedAt ? { firstWatchedAt } : {}),
+          ...(lastWatchedAt ? { lastWatchedAt } : {}),
         };
       });
 

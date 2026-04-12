@@ -151,29 +151,30 @@ export const useCalendarData = () => {
     async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
       const db = firebase.database();
-      const basePath = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+      const seasonPath = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
+      const eIdx = episodeIndex;
 
       try {
         // Snapshot vorher
         const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-          db.ref(`${basePath}/watchCount`).once('value'),
-          db.ref(`${basePath}/firstWatchedAt`).once('value'),
-          db.ref(`${basePath}/lastWatchedAt`).once('value'),
-          db.ref(`${basePath}/watched`).once('value'),
+          db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
         ]);
         const prevCount: number = watchCountSnap.val() || 0;
-        const prevFirstWatchedAt: string | null = firstSnap.val() || null;
-        const prevLastWatchedAt: string | null = lastSnap.val() || null;
-        const prevWatched: boolean = !!watchedSnap.val();
+        const prevFirst: number = firstSnap.val() || 0;
+        const prevLast: number = lastSnap.val() || 0;
+        const prevWatched: number = watchedSnap.val() || 0;
 
         // Schreiben
-        const now = new Date().toISOString();
+        const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {};
-        updates[`${basePath}/watched`] = true;
-        updates[`${basePath}/watchCount`] = prevCount + 1;
-        updates[`${basePath}/lastWatchedAt`] = now;
-        if (!prevFirstWatchedAt) {
-          updates[`${basePath}/firstWatchedAt`] = now;
+        updates[`${seasonPath}/w/${eIdx}`] = 1;
+        updates[`${seasonPath}/c/${eIdx}`] = prevCount + 1;
+        updates[`${seasonPath}/l/${eIdx}`] = nowUnix;
+        if (!prevFirst) {
+          updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
         }
         await db.ref().update(updates);
 
@@ -183,18 +184,10 @@ export const useCalendarData = () => {
         showUndoToast(`${title} ${label} als gesehen markiert`, {
           onUndo: async () => {
             try {
-              await db.ref(`${basePath}/watched`).set(prevWatched);
-              await db.ref(`${basePath}/watchCount`).set(prevCount);
-              if (prevFirstWatchedAt) {
-                await db.ref(`${basePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-              } else {
-                await db.ref(`${basePath}/firstWatchedAt`).remove();
-              }
-              if (prevLastWatchedAt) {
-                await db.ref(`${basePath}/lastWatchedAt`).set(prevLastWatchedAt);
-              } else {
-                await db.ref(`${basePath}/lastWatchedAt`).remove();
-              }
+              await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
+              await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
+              await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
+              await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }

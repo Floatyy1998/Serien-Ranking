@@ -97,12 +97,36 @@ export class OfflineBadgeSystem {
     if (!refsSnap.exists()) return [];
     const refs = refsSnap.val() as Record<string, Record<string, unknown>>;
     const watchData = (watchSnap.val() || {}) as Record<string, Record<string, unknown>>;
-    return Object.entries(refs).map(([tmdbId, ref]) => ({
-      rating: ref.rating,
-      seasons: watchData[tmdbId]?.seasons
+    return Object.entries(refs).map(([tmdbId, ref]) => {
+      const rawSeasons = watchData[tmdbId]?.seasons
         ? Object.values(watchData[tmdbId].seasons as Record<string, unknown>)
-        : [],
-    })) as BadgeSeriesItem[];
+        : [];
+      // Convert compact format (w/c/f/l arrays) to BadgeSeason format
+      const seasons = rawSeasons.map((rawSeason: unknown) => {
+        const s = rawSeason as Record<string, unknown>;
+        const wArr = (s.w || []) as number[];
+        const cArr = (s.c || []) as number[];
+        const fArr = (s.f || []) as number[];
+        const maxLen = Math.max(
+          Array.isArray(wArr) ? wArr.length : 0,
+          Array.isArray(cArr) ? cArr.length : 0,
+          Array.isArray(fArr) ? fArr.length : 0
+        );
+        const episodes = [];
+        for (let i = 0; i < maxLen; i++) {
+          const w = Array.isArray(wArr) ? wArr[i] || 0 : 0;
+          const c = Array.isArray(cArr) ? cArr[i] || 0 : 0;
+          const f = Array.isArray(fArr) ? fArr[i] || 0 : 0;
+          episodes.push({
+            watched: w === 1,
+            watchCount: c,
+            watchedAt: f || undefined,
+          });
+        }
+        return { episodes, seasonNumber: (s.seasonNumber as number) || 0 };
+      });
+      return { rating: ref.rating, seasons };
+    }) as BadgeSeriesItem[];
   }
 
   private async getMoviesData(): Promise<BadgeMovieItem[]> {

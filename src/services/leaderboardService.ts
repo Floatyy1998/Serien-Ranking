@@ -114,26 +114,33 @@ export async function updateLeaderboardStats(
     }
 
     current.lastUpdated = Date.now();
-    await ref.set(current);
 
-    // Öffentliche Kopie für globales Leaderboard schreiben
-    // (da /users nicht mehr komplett gelesen werden darf)
+    // Atomar: User-Stats + oeffentliche Kopie in einem Write.
+    // Profile-Daten werden aus dem lokalen Cache geladen (AuthContext setzt
+    // displayName/username/photoURL bereits beim Login).
+    const publicEntry: Record<string, unknown> = {
+      ...current,
+    };
     try {
-      const userSnap = await firebase.database().ref(`users/${userId}`).once('value');
-      const userData = userSnap.val() as Record<string, unknown> | null;
-      await firebase
+      const profileSnap = await firebase
         .database()
-        .ref(`leaderboardStats/${userId}`)
-        .set({
-          ...current,
-          displayName:
-            (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
-          photoURL: (userData?.photoURL as string) || null,
-          username: (userData?.username as string) || null,
-        });
+        .ref(`users/${userId}/displayName`)
+        .once('value');
+      const usernameSnap = await firebase.database().ref(`users/${userId}/username`).once('value');
+      publicEntry.displayName = profileSnap.val() || usernameSnap.val() || 'Unbekannt';
+      publicEntry.username = usernameSnap.val() || null;
     } catch {
-      // Falls leaderboardStats nicht geschrieben werden kann, ignorieren
+      publicEntry.displayName = 'Unbekannt';
     }
+
+    // Ein einziger Multi-Path Write statt 2 separate Writes
+    await firebase
+      .database()
+      .ref()
+      .update({
+        [`users/${userId}/leaderboard/stats`]: current,
+        [`leaderboardStats/${userId}`]: publicEntry,
+      });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Leaderboard] Failed to update stats: ${message}`);

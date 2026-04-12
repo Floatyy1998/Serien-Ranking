@@ -64,40 +64,42 @@ export function useRewatchHandler() {
     if (!user) return;
 
     const label = `S${item.seasonNumber}E${item.episodeNumber}`;
-    const episodePath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}/episodes/${item.episodeIndex}`;
+    const seasonPath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}`;
+    const eIdx = item.episodeIndex;
     const db = firebase.database();
     const nowIso = new Date().toISOString();
+    const nowUnix = Math.floor(Date.now() / 1000);
 
     try {
       // Snapshot vorher lesen
       const [watchCountSnap, firstSnap, lastSnap, watchedSnap, rewatchLastSnap] = await Promise.all(
         [
-          db.ref(`${episodePath}/watchCount`).once('value'),
-          db.ref(`${episodePath}/firstWatchedAt`).once('value'),
-          db.ref(`${episodePath}/lastWatchedAt`).once('value'),
-          db.ref(`${episodePath}/watched`).once('value'),
+          db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
           db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).once('value'),
         ]
       );
 
       const prevCount: number = watchCountSnap.val() || 0;
-      const prevFirstWatchedAt: string | null = firstSnap.val() || null;
-      const prevLastWatchedAt: string | null = lastSnap.val() || null;
-      const prevWatched: boolean = !!watchedSnap.val();
+      const prevFirst: number = firstSnap.val() || 0;
+      const prevLast: number = lastSnap.val() || 0;
+      const prevWatched: number = watchedSnap.val() || 0;
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
       // Atomar: alle Episode-Daten + rewatch/lastWatchedAt in einem update()
       // Vermeidet Zwischenzustände wo watchCount aktualisiert ist aber lastWatchedAt noch nicht
       const newWatchCount = prevCount + 1;
       const updates: Record<string, unknown> = {
-        [`${episodePath}/watchCount`]: newWatchCount,
-        [`${episodePath}/lastWatchedAt`]: nowIso,
+        [`${seasonPath}/c/${eIdx}`]: newWatchCount,
+        [`${seasonPath}/l/${eIdx}`]: nowUnix,
         [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
       };
       if (!prevWatched) {
-        updates[`${episodePath}/watched`] = true;
-        if (!prevFirstWatchedAt) {
-          updates[`${episodePath}/firstWatchedAt`] = nowIso;
+        updates[`${seasonPath}/w/${eIdx}`] = 1;
+        if (!prevFirst) {
+          updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
         }
       }
       await db.ref().update(updates);
@@ -137,18 +139,10 @@ export function useRewatchHandler() {
             return s;
           });
           try {
-            await db.ref(`${episodePath}/watchCount`).set(prevCount);
-            await db.ref(`${episodePath}/watched`).set(prevWatched);
-            if (prevFirstWatchedAt) {
-              await db.ref(`${episodePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-            } else {
-              await db.ref(`${episodePath}/firstWatchedAt`).remove();
-            }
-            if (prevLastWatchedAt) {
-              await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
-            } else {
-              await db.ref(`${episodePath}/lastWatchedAt`).remove();
-            }
+            await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
+            await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
+            await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
+            await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
             if (prevRewatchLastWatchedAt) {
               await db
                 .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)

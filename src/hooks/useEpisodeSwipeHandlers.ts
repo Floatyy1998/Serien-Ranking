@@ -69,32 +69,33 @@ async function markEpisodeWatchedInFirebase(
   seasonIndex: number,
   episodeIndex: number
 ): Promise<EpisodeSnapshot> {
-  const basePath = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
   const db = firebase.database();
 
-  // Snapshot vorher lesen
-  const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-    db.ref(`${basePath}/watchCount`).once('value'),
-    db.ref(`${basePath}/firstWatchedAt`).once('value'),
-    db.ref(`${basePath}/lastWatchedAt`).once('value'),
-    db.ref(`${basePath}/watched`).once('value'),
+  // Snapshot vorher lesen (Kompaktformat: w/c/f/l Arrays)
+  const [watchedSnap, watchCountSnap, firstSnap, lastSnap] = await Promise.all([
+    db.ref(`${base}/w/${episodeIndex}`).once('value'),
+    db.ref(`${base}/c/${episodeIndex}`).once('value'),
+    db.ref(`${base}/f/${episodeIndex}`).once('value'),
+    db.ref(`${base}/l/${episodeIndex}`).once('value'),
   ]);
 
+  const previousWatched: boolean = watchedSnap.val() === 1;
   const previousCount: number = watchCountSnap.val() || 0;
-  const hadFirstWatched = !!firstSnap.val();
-  const previousLastWatchedAt: string | null = lastSnap.val() || null;
-  const previousWatched: boolean = !!watchedSnap.val();
+  const hadFirstWatched = !!(firstSnap.val() && firstSnap.val() > 0);
+  const previousLastWatchedAt: string | null =
+    lastSnap.val() && lastSnap.val() > 0 ? new Date(lastSnap.val() * 1000).toISOString() : null;
 
-  // Atomar schreiben um Zwischenzustände zu vermeiden
-  const now = new Date().toISOString();
+  // Atomar schreiben (Kompaktformat)
+  const nowUnix = Math.floor(Date.now() / 1000);
   const updates: Record<string, unknown> = {
-    [`${basePath}/watched`]: true,
-    [`${basePath}/watchCount`]: previousCount + 1,
-    [`${basePath}/lastWatchedAt`]: now,
+    [`${base}/w/${episodeIndex}`]: 1,
+    [`${base}/c/${episodeIndex}`]: previousCount + 1,
+    [`${base}/l/${episodeIndex}`]: nowUnix,
     [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
   };
   if (!hadFirstWatched) {
-    updates[`${basePath}/firstWatchedAt`] = now;
+    updates[`${base}/f/${episodeIndex}`] = nowUnix;
   }
   await db.ref().update(updates);
 
@@ -112,21 +113,25 @@ async function revertEpisodeWatch(
   episodeIndex: number,
   snapshot: EpisodeSnapshot
 ): Promise<void> {
-  const basePath = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
   const db = firebase.database();
 
-  await db.ref(`${basePath}/watched`).set(snapshot.previousWatched);
-  await db.ref(`${basePath}/watchCount`).set(snapshot.previousCount);
-
-  if (!snapshot.hadFirstWatched) {
-    await db.ref(`${basePath}/firstWatchedAt`).remove();
+  const updates: Record<string, unknown> = {
+    [`${base}/w/${episodeIndex}`]: snapshot.previousWatched ? 1 : 0,
+    [`${base}/c/${episodeIndex}`]: snapshot.previousCount,
+    [`${base}/f/${episodeIndex}`]: snapshot.hadFirstWatched
+      ? undefined // keep existing value – don't overwrite
+      : 0,
+    [`${base}/l/${episodeIndex}`]: snapshot.previousLastWatchedAt
+      ? Math.floor(new Date(snapshot.previousLastWatchedAt).getTime() / 1000)
+      : 0,
+    [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+  };
+  // Nur f schreiben wenn es geloescht werden soll
+  if (snapshot.hadFirstWatched) {
+    delete updates[`${base}/f/${episodeIndex}`];
   }
-
-  if (snapshot.previousLastWatchedAt) {
-    await db.ref(`${basePath}/lastWatchedAt`).set(snapshot.previousLastWatchedAt);
-  } else {
-    await db.ref(`${basePath}/lastWatchedAt`).remove();
-  }
+  await db.ref().update(updates);
 }
 
 /**

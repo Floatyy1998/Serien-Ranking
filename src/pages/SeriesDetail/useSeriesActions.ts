@@ -161,16 +161,15 @@ export function useSeriesActions(
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
         const db = firebase.database();
-        const episodePath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        const seasonPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
+        const eIdx = episodeIndex;
         const prevWatchCount = episode.watchCount || 1;
-        const [lastSnap] = await Promise.all([
-          db.ref(`${episodePath}/lastWatchedAt`).once('value'),
-        ]);
-        const prevLastWatchedAt: string | null = lastSnap.val() || null;
+        const [lastSnap] = await Promise.all([db.ref(`${seasonPath}/l/${eIdx}`).once('value')]);
+        const prevLast: number = lastSnap.val() || 0;
 
         const newWatchCount = prevWatchCount + 1;
-        await db.ref(`${episodePath}/watchCount`).set(newWatchCount);
-        await db.ref(`${episodePath}/lastWatchedAt`).set(new Date().toISOString());
+        await db.ref(`${seasonPath}/c/${eIdx}`).set(newWatchCount);
+        await db.ref(`${seasonPath}/l/${eIdx}`).set(Math.floor(Date.now() / 1000));
         bumpSeriesVersion(userId);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
@@ -201,12 +200,8 @@ export function useSeriesActions(
         showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, {
           onUndo: async () => {
             try {
-              await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
-              if (prevLastWatchedAt) {
-                await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
-              } else {
-                await db.ref(`${episodePath}/lastWatchedAt`).remove();
-              }
+              await db.ref(`${seasonPath}/c/${eIdx}`).set(prevWatchCount);
+              await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
               if (rewatchRemoved && series.rewatch) {
                 await db.ref(`users/${userId}/series/${series.id}/rewatch`).set(series.rewatch);
               }
@@ -252,27 +247,28 @@ export function useSeriesActions(
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
         const db = firebase.database();
-        const episodePath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/episodes/${episodeIndex}`;
+        const seasonPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
+        const eIdx = episodeIndex;
 
         // Snapshot vorher
         const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-          db.ref(`${episodePath}/watchCount`).once('value'),
-          db.ref(`${episodePath}/firstWatchedAt`).once('value'),
-          db.ref(`${episodePath}/lastWatchedAt`).once('value'),
-          db.ref(`${episodePath}/watched`).once('value'),
+          db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
+          db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
         ]);
         const prevWatchCount: number = watchCountSnap.val() || 0;
-        const prevFirstWatchedAt: string | null = firstSnap.val() || null;
-        const prevLastWatchedAt: string | null = lastSnap.val() || null;
-        const prevWatched: boolean = !!watchedSnap.val();
+        const prevFirst: number = firstSnap.val() || 0;
+        const prevLast: number = lastSnap.val() || 0;
+        const prevWatched: number = watchedSnap.val() || 0;
 
         if (episode.watchCount && episode.watchCount > 1) {
-          await db.ref(`${episodePath}/watchCount`).set(episode.watchCount - 1);
+          await db.ref(`${seasonPath}/c/${eIdx}`).set(episode.watchCount - 1);
         } else {
-          await db.ref(`${episodePath}/watched`).remove();
-          await db.ref(`${episodePath}/watchCount`).remove();
-          await db.ref(`${episodePath}/firstWatchedAt`).remove();
-          await db.ref(`${episodePath}/lastWatchedAt`).remove();
+          await db.ref(`${seasonPath}/w/${eIdx}`).set(0);
+          await db.ref(`${seasonPath}/c/${eIdx}`).set(0);
+          await db.ref(`${seasonPath}/f/${eIdx}`).set(0);
+          await db.ref(`${seasonPath}/l/${eIdx}`).set(0);
         }
         bumpSeriesVersion(userId);
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
@@ -282,14 +278,10 @@ export function useSeriesActions(
           `S${seasonNumber}E${episodeIndex + 1} als nicht gesehen markiert`,
           async () => {
             try {
-              await db.ref(`${episodePath}/watched`).set(prevWatched);
-              await db.ref(`${episodePath}/watchCount`).set(prevWatchCount);
-              if (prevFirstWatchedAt) {
-                await db.ref(`${episodePath}/firstWatchedAt`).set(prevFirstWatchedAt);
-              }
-              if (prevLastWatchedAt) {
-                await db.ref(`${episodePath}/lastWatchedAt`).set(prevLastWatchedAt);
-              }
+              await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
+              await db.ref(`${seasonPath}/c/${eIdx}`).set(prevWatchCount);
+              await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
+              await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }

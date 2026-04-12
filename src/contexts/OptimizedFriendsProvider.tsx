@@ -22,7 +22,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     loading: friendsLoading,
     refetch: refetchFriends,
   } = useEnhancedFirebaseCache<Record<string, Friend>>(user ? `users/${user.uid}/friends` : '', {
-    ttl: 2 * 60 * 1000,
+    ttl: 15 * 60 * 1000,
     useRealtimeListener: true,
     enableOfflineSupport: true,
     syncOnReconnect: true,
@@ -156,11 +156,11 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       return;
     }
 
-    // Kurzer localStorage-Cache (2 min TTL): App-Reopens innerhalb von 2 Minuten
-    // ueberspringen die N-parallel-Reads komplett. Neue Activities kommen
-    // trotzdem live via child_added Listener rein, also nichts geht verloren.
+    // localStorage-Cache (5 min TTL): spart N-parallel-Reads bei Tab-Wechseln.
+    // Periodischer Poll statt permanenter child_added Listener bringt neue
+    // Activities trotzdem zeitnah rein.
     const cacheKey = `friendActivities:${user.uid}`;
-    const cacheTTL = 2 * 60 * 1000;
+    const cacheTTL = 5 * 60 * 1000;
     try {
       const rawCached = localStorage.getItem(cacheKey);
       if (rawCached) {
@@ -267,43 +267,17 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     // 1. Einmaliger initialer Load
     loadFriendActivitiesRef.current?.();
 
-    // 2. child_added Listener pro Freund — feuert nur bei NEUEN Activities
-    const listenStartTime = Date.now();
-    const unsubscribes: (() => void)[] = [];
-
-    friends.forEach((friend) => {
-      const ref = firebase
-        .database()
-        .ref(`users/${friend.uid}/activities`)
-        .orderByChild('timestamp')
-        .startAt(listenStartTime);
-
-      const listener = ref.on('child_added', (snapshot) => {
-        const data = snapshot.val();
-        if (!data || !snapshot.key) return;
-
-        const newActivity: FriendActivity = {
-          id: snapshot.key,
-          userId: friend.uid,
-          userName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
-          ...data,
-        };
-
-        setFriendActivities((prev) => {
-          const updated = [newActivity, ...prev].slice(0, 100);
-          return updated;
-        });
-
-        if (data.timestamp > lastReadActivitiesTimeRef.current) {
-          setUnreadActivitiesCount((prev) => prev + 1);
-        }
-      });
-
-      unsubscribes.push(() => ref.off('child_added', listener));
-    });
+    // 2. Periodischer Poll alle 5 Min statt N child_added-Listener.
+    //    Spart N persistente Verbindungen (N = Anzahl Freunde).
+    const interval = setInterval(
+      () => {
+        loadFriendActivitiesRef.current?.();
+      },
+      5 * 60 * 1000
+    );
 
     return () => {
-      unsubscribes.forEach((unsub) => unsub());
+      clearInterval(interval);
     };
   }, [user, friends, readTimesLoaded]);
 

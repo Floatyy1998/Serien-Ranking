@@ -298,12 +298,10 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
           ]);
 
         const seriesData = seriesSnapshot.val() || {};
-        let catalogSeriesRaw = staticSeriesCatalog as Record<string, unknown> | null;
-        if (!catalogSeriesRaw) {
-          const snap = await firebase.database().ref('catalog/seriesMeta').once('value');
-          catalogSeriesRaw = snap.val() || {};
-        }
-        const catalogSeries: Record<string, unknown> = catalogSeriesRaw || {};
+        const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
+          string,
+          unknown
+        >;
 
         const seriesList: FriendItem[] = [];
         for (const [tmdbId, userRef] of Object.entries(seriesData)) {
@@ -329,12 +327,10 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         setFriendSeries(seriesList);
 
         const moviesData = moviesSnapshot.val() || {};
-        let catalogMoviesRaw = staticMoviesCatalog as Record<string, unknown> | null;
-        if (!catalogMoviesRaw) {
-          const snap = await firebase.database().ref('catalog/moviesMeta').once('value');
-          catalogMoviesRaw = snap.val() || {};
-        }
-        const catalogMovies: Record<string, unknown> = catalogMoviesRaw || {};
+        const catalogMovies: Record<string, unknown> = (staticMoviesCatalog || {}) as Record<
+          string,
+          unknown
+        >;
 
         const moviesList: FriendItem[] = [];
         for (const [tmdbId, userRef] of Object.entries(moviesData)) {
