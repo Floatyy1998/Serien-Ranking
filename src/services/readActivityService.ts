@@ -1,27 +1,23 @@
 import firebase from 'firebase/compat/app';
 import type { Manga } from '../types/Manga';
 
-interface ChapterReadEvent {
-  type: 'chapter_read';
-  timestamp: string;
-  month: number;
-  dayOfWeek: number;
-  hour: number;
-  mangaId: number;
-  mangaTitle: string;
-  chapterNumber: number;
-  volumeNumber?: number;
-  format?: string;
-  genres?: string[];
-  isReread: boolean;
-}
-
-interface MangaRatingEvent {
-  type: 'manga_rating';
-  timestamp: string;
-  mangaId: number;
-  mangaTitle: string;
-  rating: number;
+/**
+ * Manga events werden im Compact-Format gespeichert (gleiche Konvention wie wrapped/events).
+ *   ts: unix seconds, t: "ch"/"rg", s: mangaId, st: title,
+ *   ch: chapterNumber, vol: volumeNumber, fmt: format,
+ *   g: genres, rw: isReread (0/1), rat: rating
+ */
+interface CompactMangaEvent {
+  ts: number;
+  t: 'ch' | 'rg';
+  s: number;
+  st: string;
+  ch?: number;
+  vol?: number;
+  fmt?: string;
+  g?: string[];
+  rw?: number;
+  rat?: number;
 }
 
 function getEventsPath(userId: string): string {
@@ -35,26 +31,22 @@ export async function logChapterRead(
   chapterNumber: number,
   previousChapter: number
 ): Promise<void> {
-  const now = new Date();
+  const nowUnix = Math.floor(Date.now() / 1000);
   const chaptersRead = chapterNumber - previousChapter;
 
-  // Log each chapter individually for accurate tracking
   const promises: Promise<void>[] = [];
   for (let i = 0; i < chaptersRead; i++) {
-    const event: ChapterReadEvent = {
-      type: 'chapter_read',
-      timestamp: now.toISOString(),
-      month: now.getMonth() + 1,
-      dayOfWeek: now.getDay(),
-      hour: now.getHours(),
-      mangaId: manga.anilistId,
-      mangaTitle: manga.title,
-      chapterNumber: previousChapter + i + 1,
-      ...(manga.currentVolume ? { volumeNumber: manga.currentVolume } : {}),
-      format: manga.format,
-      genres: manga.genres,
-      isReread: (manga.rereadCount || 0) > 0,
+    const event: CompactMangaEvent = {
+      ts: nowUnix,
+      t: 'ch',
+      s: manga.anilistId,
+      st: manga.title,
+      ch: previousChapter + i + 1,
     };
+    if (manga.currentVolume) event.vol = manga.currentVolume;
+    if (manga.format) event.fmt = manga.format;
+    if (manga.genres && manga.genres.length > 0) event.g = manga.genres;
+    if ((manga.rereadCount || 0) > 0) event.rw = 1;
 
     promises.push(
       firebase
@@ -69,13 +61,12 @@ export async function logChapterRead(
 }
 
 export async function logMangaRating(userId: string, manga: Manga, rating: number): Promise<void> {
-  const now = new Date();
-  const event: MangaRatingEvent = {
-    type: 'manga_rating',
-    timestamp: now.toISOString(),
-    mangaId: manga.anilistId,
-    mangaTitle: manga.title,
-    rating,
+  const event: CompactMangaEvent = {
+    ts: Math.floor(Date.now() / 1000),
+    t: 'rg',
+    s: manga.anilistId,
+    st: manga.title,
+    rat: rating,
   };
 
   await firebase.database().ref(getEventsPath(userId)).push(event);

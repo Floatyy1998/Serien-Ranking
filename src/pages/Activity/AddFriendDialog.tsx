@@ -2,7 +2,7 @@ import { CheckCircle, Close, Person, PersonAdd, Star } from '@mui/icons-material
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -44,15 +44,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [recentlyAdded, setRecentlyAdded] = useState<string[]>([]);
 
-  // Modul-Level-Cache fuer die User-Liste. /users komplett zu lesen ist
-  // teuer (~50-500 KB), aber fuer Substring-Suche unvermeidbar (Firebase
-  // kann kein LIKE/contains). Wir cachen das Ergebnis 10 Minuten — wiederholte
-  // Suchen innerhalb einer Session kosten dann null Egress.
-  const usersCache = useRef<{ data: Record<string, unknown> | null; ts: number }>({
-    data: null,
-    ts: 0,
-  });
-
   // Live search with debounce
   useEffect(() => {
     if (searchQuery.length < 2) {
@@ -63,100 +54,90 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
     const searchTimer = setTimeout(async () => {
       setSearching(true);
       try {
-        let users: Record<string, unknown> | null = null;
-        const now = Date.now();
-        if (usersCache.current.data && now - usersCache.current.ts < 10 * 60 * 1000) {
-          users = usersCache.current.data;
-        } else {
-          const usersRef = firebase.database().ref('users');
-          const snapshot = await usersRef.once('value');
-          users = snapshot.val();
-          usersCache.current = { data: users, ts: now };
+        // Server-side Prefix-Query auf indexierten "username" Field.
+        // Lädt nur die maximal 20 matching User statt alle ~7MB.
+        const query = searchQuery.toLowerCase();
+        const snapshot = await firebase
+          .database()
+          .ref('users')
+          .orderByChild('username')
+          .startAt(query)
+          .endAt(query + '\uf8ff')
+          .limitToFirst(20)
+          .once('value');
+
+        const users = snapshot.val() as Record<string, Record<string, unknown>> | null;
+        if (!users) {
+          setSearchResults([]);
+          return;
         }
 
-        if (users) {
-          // Process users in parallel with Promise.all for better performance
-          const userPromises = (Object.entries(users) as [string, Record<string, unknown>][]).map(
-            async ([uid, userData]) => {
-              // Skip current user
-              if (uid === user?.uid) return null;
+        // Build results — series/movies counts kommen aus shallow Reads (nur Keys zaehlen)
+        const userPromises = (Object.entries(users) as [string, Record<string, unknown>][]).map(
+          async ([uid, userData]) => {
+            // Skip current user
+            if (uid === user?.uid) return null;
 
-              const username = String(userData.username ?? '').toLowerCase();
-              const displayName = String(userData.displayName ?? '').toLowerCase();
-              const query = searchQuery.toLowerCase();
-
-              // Search in username and display name
-              if (username.includes(query) || displayName.includes(query)) {
-                // Fetch series and movies counts from separate Firebase nodes
-                let seriesCount = 0;
-                let moviesCount = 0;
-
-                try {
-                  const [seriesSnapshot, moviesSnapshot] = await Promise.all([
-                    firebase.database().ref(`users/${uid}/series`).once('value'),
-                    firebase.database().ref(`users/${uid}/movies`).once('value'),
-                  ]);
-
-                  const seriesData = seriesSnapshot.val();
-                  const moviesData = moviesSnapshot.val();
-
-                  seriesCount = seriesData ? Object.keys(seriesData).length : 0;
-                  moviesCount = moviesData ? Object.keys(moviesData).length : 0;
-                } catch {
-                  // If we can't fetch counts, continue with 0
-                }
-
-                return {
-                  uid,
-                  username: userData.username || 'Unknown',
-                  displayName: userData.displayName || userData.username || 'Unknown',
-                  photoURL: userData.photoURL,
-                  bio: userData.bio,
-                  seriesCount,
-                  moviesCount,
-                  isAlreadyFriend: friends.some((f) => f.uid === uid),
-                  hasPendingRequest:
-                    sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
-                };
+            // Shallow REST-Reads fuer counts (nur Keys, kein Inhalt)
+            let seriesCount = 0;
+            let moviesCount = 0;
+            try {
+              const dbUrl = (firebase.database().app.options as { databaseURL?: string })
+                .databaseURL;
+              const token = await user?.getIdToken();
+              const [sRes, mRes] = await Promise.all([
+                fetch(`${dbUrl}/users/${uid}/series.json?shallow=true&auth=${token}`),
+                fetch(`${dbUrl}/users/${uid}/movies.json?shallow=true&auth=${token}`),
+              ]);
+              if (sRes.ok) {
+                const data = await sRes.json();
+                seriesCount = data ? Object.keys(data).length : 0;
               }
-              return null;
-            }
-          );
-
-          const processedResults = await Promise.all(userPromises);
-          const validResults = processedResults.filter(
-            (result) => result !== null
-          ) as UserSearchResult[];
-
-          // Sort results - friends last, exact matches first
-          validResults.sort((a, b) => {
-            if (a.isAlreadyFriend !== b.isAlreadyFriend) {
-              return a.isAlreadyFriend ? 1 : -1;
+              if (mRes.ok) {
+                const data = await mRes.json();
+                moviesCount = data ? Object.keys(data).length : 0;
+              }
+            } catch {
+              // Counts sind optional
             }
 
-            const searchLower = searchQuery.toLowerCase();
-            const aExact =
-              a.username.toLowerCase() === searchLower ||
-              a.displayName.toLowerCase() === searchLower;
-            const bExact =
-              b.username.toLowerCase() === searchLower ||
-              b.displayName.toLowerCase() === searchLower;
+            return {
+              uid,
+              username: (userData.username as string) || 'Unknown',
+              displayName:
+                (userData.displayName as string) || (userData.username as string) || 'Unknown',
+              photoURL: userData.photoURL as string | undefined,
+              bio: userData.bio as string | undefined,
+              seriesCount,
+              moviesCount,
+              isAlreadyFriend: friends.some((f) => f.uid === uid),
+              hasPendingRequest:
+                sentRequests.some((r) => r.toUserId === uid) || recentlyAdded.includes(uid),
+            };
+          }
+        );
 
-            if (aExact !== bExact) {
-              return aExact ? -1 : 1;
-            }
+        const processedResults = await Promise.all(userPromises);
+        const validResults = processedResults.filter(
+          (result) => result !== null
+        ) as UserSearchResult[];
 
-            return a.username.localeCompare(b.username);
-          });
+        // Sort: friends last, exact matches first
+        validResults.sort((a, b) => {
+          if (a.isAlreadyFriend !== b.isAlreadyFriend) return a.isAlreadyFriend ? 1 : -1;
+          const aExact = a.username.toLowerCase() === query;
+          const bExact = b.username.toLowerCase() === query;
+          if (aExact !== bExact) return aExact ? -1 : 1;
+          return a.username.localeCompare(b.username);
+        });
 
-          setSearchResults(validResults.slice(0, 10)); // Limit to 10 results
-        }
+        setSearchResults(validResults.slice(0, 10));
       } catch (error) {
         console.error('Search error:', error);
       } finally {
         setSearching(false);
       }
-    }, 300); // 300ms debounce
+    }, 300);
 
     return () => clearTimeout(searchTimer);
   }, [searchQuery, user, friends, sentRequests, recentlyAdded]);
