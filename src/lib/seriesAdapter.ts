@@ -8,8 +8,13 @@ import type {
   UserMovieRef,
   SeriesWatchData,
 } from '../types/CatalogTypes';
-import { isCompactSeason, readEpisodeFromCompact } from './compactWatch';
-import type { CompactSeason } from './compactWatch';
+import {
+  isEpidSeason,
+  isLegacyArraySeason,
+  readEpisodeById,
+  readEpisodeFromLegacyArray,
+} from './compactWatch';
+import type { EpidSeason, LegacyArraySeason } from './compactWatch';
 
 /**
  * Firebase RTDB serialisiert Objects mit numerischen Keys, bei denen Index 0
@@ -50,14 +55,21 @@ export function mergeToSeriesView(
       const seasonWatch = watchData?.seasons?.[snKey];
 
       const episodes = episodesList.map((ep, idx) => {
-        // Kompaktformat (w/c/f/l Arrays) oder Legacy-Format (episodes[].watched)
+        // ID-basiertes Format (eps-Map) bevorzugen, sonst Legacy-Array, sonst
+        // pre-compact Episodes-Objekt.
         let watched = false;
         let watchCount = 0;
         let firstWatchedAt: string | undefined;
         let lastWatchedAt: string | undefined;
 
-        if (seasonWatch && isCompactSeason(seasonWatch)) {
-          const cw = readEpisodeFromCompact(seasonWatch as CompactSeason, idx);
+        if (seasonWatch && isEpidSeason(seasonWatch) && ep.id) {
+          const cw = readEpisodeById(seasonWatch as EpidSeason, ep.id);
+          watched = cw.watched;
+          watchCount = cw.watchCount;
+          firstWatchedAt = cw.firstWatchedAt;
+          lastWatchedAt = cw.lastWatchedAt;
+        } else if (seasonWatch && isLegacyArraySeason(seasonWatch)) {
+          const cw = readEpisodeFromLegacyArray(seasonWatch as LegacyArraySeason, idx);
           watched = cw.watched;
           watchCount = cw.watchCount;
           firstWatchedAt = cw.firstWatchedAt;

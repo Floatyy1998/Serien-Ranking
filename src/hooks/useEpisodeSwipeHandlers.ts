@@ -13,6 +13,7 @@ import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRa
 import type { Series } from '../types/Series';
 import type { TodayEpisode } from './useWebWorkerTodayEpisodes';
 import { useWebWorkerTodayEpisodes } from './useWebWorkerTodayEpisodes';
+import { buildEpisodeWatchedUpdates, buildEpisodeUnwatchUpdates } from '../lib/compactWatch';
 
 type ContinueWatchingItem = ReturnType<typeof useContinueWatching>[number];
 
@@ -60,43 +61,36 @@ interface EpisodeSnapshot {
 }
 
 /**
- * Markiert eine Episode in Firebase als gesehen.
+ * Markiert eine Episode in Firebase als gesehen (ID-basiertes Format).
  * Gibt einen Snapshot des vorherigen Zustands zurueck, damit Undo moeglich ist.
  */
 async function markEpisodeWatchedInFirebase(
   uid: string,
   seriesId: number | string,
   seasonIndex: number,
-  episodeIndex: number
+  episodeId: number | string
 ): Promise<EpisodeSnapshot> {
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   const db = firebase.database();
 
-  // Snapshot vorher lesen (Kompaktformat: w/c/f/l Arrays)
-  const [watchedSnap, watchCountSnap, firstSnap, lastSnap] = await Promise.all([
-    db.ref(`${base}/w/${episodeIndex}`).once('value'),
-    db.ref(`${base}/c/${episodeIndex}`).once('value'),
-    db.ref(`${base}/f/${episodeIndex}`).once('value'),
-    db.ref(`${base}/l/${episodeIndex}`).once('value'),
-  ]);
-
-  const previousWatched: boolean = watchedSnap.val() === 1;
-  const previousCount: number = watchCountSnap.val() || 0;
-  const hadFirstWatched = !!(firstSnap.val() && firstSnap.val() > 0);
+  const snap = await db.ref(base).once('value');
+  const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
+  const previousWatched = (val.w ?? 0) === 1;
+  const previousCount: number = val.c ?? 0;
+  const hadFirstWatched = !!(val.f && val.f > 0);
   const previousLastWatchedAt: string | null =
-    lastSnap.val() && lastSnap.val() > 0 ? new Date(lastSnap.val() * 1000).toISOString() : null;
+    val.l && val.l > 0 ? new Date(val.l * 1000).toISOString() : null;
 
-  // Atomar schreiben (Kompaktformat)
-  const nowUnix = Math.floor(Date.now() / 1000);
-  const updates: Record<string, unknown> = {
-    [`${base}/w/${episodeIndex}`]: 1,
-    [`${base}/c/${episodeIndex}`]: previousCount + 1,
-    [`${base}/l/${episodeIndex}`]: nowUnix,
-    [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-  };
-  if (!hadFirstWatched) {
-    updates[`${base}/f/${episodeIndex}`] = nowUnix;
-  }
+  const nowIso = new Date().toISOString();
+  const updates = buildEpisodeWatchedUpdates(
+    uid,
+    seriesId,
+    seasonIndex,
+    episodeId,
+    previousCount + 1,
+    nowIso,
+    !hadFirstWatched
+  );
   await db.ref().update(updates);
 
   return { previousCount, hadFirstWatched, previousLastWatchedAt, previousWatched };
@@ -104,32 +98,31 @@ async function markEpisodeWatchedInFirebase(
 
 /**
  * Macht einen markEpisodeWatchedInFirebase-Aufruf rueckgaengig.
- * Stellt den exakten vorherigen Zustand wieder her.
  */
 async function revertEpisodeWatch(
   uid: string,
   seriesId: number | string,
   seasonIndex: number,
-  episodeIndex: number,
+  episodeId: number | string,
   snapshot: EpisodeSnapshot
 ): Promise<void> {
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
   const db = firebase.database();
-
-  const updates: Record<string, unknown> = {
-    [`${base}/w/${episodeIndex}`]: snapshot.previousWatched ? 1 : 0,
-    [`${base}/c/${episodeIndex}`]: snapshot.previousCount,
-    [`${base}/f/${episodeIndex}`]: snapshot.hadFirstWatched
-      ? undefined // keep existing value – don't overwrite
-      : 0,
-    [`${base}/l/${episodeIndex}`]: snapshot.previousLastWatchedAt
-      ? Math.floor(new Date(snapshot.previousLastWatchedAt).getTime() / 1000)
-      : 0,
-    [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-  };
-  // Nur f schreiben wenn es geloescht werden soll
+  const firstIso = snapshot.hadFirstWatched ? null : null; // f wird unten nur geschrieben wenn reset
+  void firstIso;
+  const updates = buildEpisodeUnwatchUpdates(
+    uid,
+    seriesId,
+    seasonIndex,
+    episodeId,
+    snapshot.previousWatched,
+    snapshot.previousCount,
+    null, // hadFirstWatched wird im compactWatch-Helper als "keep" behandelt wenn wir hier null geben
+    snapshot.previousLastWatchedAt
+  );
+  // Wenn vorher ein firstWatchedAt existierte, nicht ueberschreiben — sonst 0 setzen
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   if (snapshot.hadFirstWatched) {
-    delete updates[`${base}/f/${episodeIndex}`];
+    delete (updates as Record<string, unknown>)[`${base}/f`];
   }
   await db.ref().update(updates);
 }
@@ -200,7 +193,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           user.uid,
           item.id,
           item.nextEpisode.seasonIndex,
-          item.nextEpisode.episodeIndex
+          item.nextEpisode.episodeId
         );
 
         showUndoToast(`${item.title} ${label} als gesehen markiert`, {
@@ -215,7 +208,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 user.uid,
                 item.id,
                 item.nextEpisode.seasonIndex,
-                item.nextEpisode.episodeIndex,
+                item.nextEpisode.episodeId,
                 snap
               );
             } catch {
@@ -295,7 +288,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           user.uid,
           episode.seriesId,
           episode.seasonIndex,
-          episode.episodeIndex
+          episode.episodeId
         );
 
         showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
@@ -310,7 +303,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 user.uid,
                 episode.seriesId,
                 episode.seasonIndex,
-                episode.episodeIndex,
+                episode.episodeId,
                 snap
               );
             } catch {

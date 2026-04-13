@@ -260,26 +260,24 @@ export const useEpisodeDiscussion = () => {
       if (seasonIndex === -1) return;
 
       const isCurrentlyWatched = localEpisode.watched;
+      const epId = localEpisode.id;
+      if (!epId) return;
 
-      const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
-      const eIdx = episodeIndex;
+      const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
       const db = firebase.database();
 
       if (isCurrentlyWatched) {
         await db.ref().update({
-          [`${seasonPath}/w/${eIdx}`]: 0,
-          [`${seasonPath}/c/${eIdx}`]: 0,
-          [`${seasonPath}/f/${eIdx}`]: 0,
-          [`${seasonPath}/l/${eIdx}`]: 0,
+          [epPath]: null,
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       } else {
         const nowUnix = Math.floor(Date.now() / 1000);
         await db.ref().update({
-          [`${seasonPath}/w/${eIdx}`]: 1,
-          [`${seasonPath}/c/${eIdx}`]: 1,
-          [`${seasonPath}/f/${eIdx}`]: nowUnix,
-          [`${seasonPath}/l/${eIdx}`]: nowUnix,
+          [`${epPath}/w`]: 1,
+          [`${epPath}/c`]: 1,
+          [`${epPath}/f`]: nowUnix,
+          [`${epPath}/l`]: nowUnix,
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       }

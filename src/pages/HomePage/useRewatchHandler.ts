@@ -64,48 +64,48 @@ export function useRewatchHandler() {
     if (!user) return;
 
     const label = `S${item.seasonNumber}E${item.episodeNumber}`;
-    const seasonPath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}`;
-    const eIdx = item.episodeIndex;
+    const itemSeries = seriesList.find((s) => s.id === item.id);
+    const itemEp = itemSeries?.seasons?.[item.seasonIndex]?.episodes?.[item.episodeIndex];
+    const epId = itemEp?.id;
+    if (!epId) {
+      showToast('Episode-ID fehlt', 2000, 'error');
+      return;
+    }
+    const epPath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}/eps/${epId}`;
     const db = firebase.database();
     const nowIso = new Date().toISOString();
     const nowUnix = Math.floor(Date.now() / 1000);
 
     try {
       // Snapshot vorher lesen
-      const [watchCountSnap, firstSnap, lastSnap, watchedSnap, rewatchLastSnap] = await Promise.all(
-        [
-          db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
-          db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).once('value'),
-        ]
-      );
+      const [epSnap, rewatchLastSnap] = await Promise.all([
+        db.ref(epPath).once('value'),
+        db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).once('value'),
+      ]);
 
-      const prevCount: number = watchCountSnap.val() || 0;
-      const prevFirst: number = firstSnap.val() || 0;
-      const prevLast: number = lastSnap.val() || 0;
-      const prevWatched: number = watchedSnap.val() || 0;
+      const val = (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
+      const prevCount: number = val.c || 0;
+      const prevFirst: number = val.f || 0;
+      const prevLast: number = val.l || 0;
+      const prevWatched: number = val.w || 0;
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
-      // Atomar: alle Episode-Daten + rewatch/lastWatchedAt in einem update()
-      // Vermeidet Zwischenzustände wo watchCount aktualisiert ist aber lastWatchedAt noch nicht
       const newWatchCount = prevCount + 1;
       const updates: Record<string, unknown> = {
-        [`${seasonPath}/c/${eIdx}`]: newWatchCount,
-        [`${seasonPath}/l/${eIdx}`]: nowUnix,
+        [`${epPath}/c`]: newWatchCount,
+        [`${epPath}/l`]: nowUnix,
         [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
       };
       if (!prevWatched) {
-        updates[`${seasonPath}/w/${eIdx}`] = 1;
+        updates[`${epPath}/w`] = 1;
         if (!prevFirst) {
-          updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
+          updates[`${epPath}/f`] = nowUnix;
         }
       }
       await db.ref().update(updates);
 
       // Auto-complete rewatch check (muss sofort passieren, da es Episode-Daten ändert)
-      const series = seriesList.find((s) => s.id === item.id);
+      const series = itemSeries;
       let rewatchRemoved = false;
       if (series?.rewatch?.active) {
         const targetCount = item.targetWatchCount;
@@ -139,10 +139,16 @@ export function useRewatchHandler() {
             return s;
           });
           try {
-            await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
-            await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
-            await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
-            await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
+            if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
+              await db.ref(epPath).remove();
+            } else {
+              await db.ref(epPath).set({
+                ...(prevWatched ? { w: prevWatched } : {}),
+                ...(prevCount ? { c: prevCount } : {}),
+                ...(prevFirst ? { f: prevFirst } : {}),
+                ...(prevLast ? { l: prevLast } : {}),
+              });
+            }
             if (prevRewatchLastWatchedAt) {
               await db
                 .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)

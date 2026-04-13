@@ -1,29 +1,44 @@
 /**
  * Compact Watch Format – Utility-Funktionen
  *
- * Kompaktformat pro Season:
- *   { w: [1,1,0,...], c: [10,5,0,...], f: [unix,...], l: [unix,...] }
+ * Aktuelles Format (ID-basiert, ab April 2026):
+ *   seriesWatch/{sid}/seasons/{sn}/eps/{epId}: { w, c, f, l }
  *
- * Felder:
- *   w: watched (0/1 pro Episode)
- *   c: watchCount pro Episode
- *   f: firstWatchedAt als Unix-Seconds (0 = nicht gesetzt)
- *   l: lastWatchedAt als Unix-Seconds (0 = nicht gesetzt)
+ * Vorheriges Format (Index-basiert, wird noch gelesen fuer Abwaertskompat.
+ * waehrend Migration):
+ *   seriesWatch/{sid}/seasons/{sn}: {
+ *     w: [1,1,0,...],    // by index
+ *     c: [10,5,0,...],
+ *     f: [unix,...],
+ *     l: [unix,...]
+ *   }
  *
- * Firebase-Pfade fuer atomare Writes:
- *   seriesWatch/{sid}/seasons/{s}/w/{episodeIdx} = 1
- *   seriesWatch/{sid}/seasons/{s}/c/{episodeIdx} = count
- *   seriesWatch/{sid}/seasons/{s}/f/{episodeIdx} = unixSeconds
- *   seriesWatch/{sid}/seasons/{s}/l/{episodeIdx} = unixSeconds
+ * Felder pro Episode:
+ *   w: watched (0/1)
+ *   c: watchCount
+ *   f: firstWatchedAt als Unix-Seconds (0/fehlend = nicht gesetzt)
+ *   l: lastWatchedAt als Unix-Seconds (0/fehlend = nicht gesetzt)
  */
 
 // ---------- Types ----------
 
-export interface CompactSeason {
-  w: number[]; // 0/1 per episode
-  c: number[]; // watchCount per episode
-  f?: number[]; // firstWatchedAt unix seconds (0 = not set)
-  l?: number[]; // lastWatchedAt unix seconds (0 = not set)
+export interface EpisodeWatchEntry {
+  w?: number; // 0 or 1
+  c?: number;
+  f?: number;
+  l?: number;
+}
+
+export interface EpidSeason {
+  eps: Record<string, EpisodeWatchEntry>;
+}
+
+/** Legacy Kompaktformat (Index-basierte Arrays). Wird nur noch gelesen. */
+export interface LegacyArraySeason {
+  w: number[];
+  c: number[];
+  f?: number[];
+  l?: number[];
 }
 
 export interface EpisodeWatch {
@@ -35,20 +50,47 @@ export interface EpisodeWatch {
 
 // ---------- Format Detection ----------
 
-/** Prüft ob Season-Daten im neuen Kompaktformat sind (hat `w` Array). */
-export function isCompactSeason(season: unknown): season is CompactSeason {
+/** Prueft ob Season-Daten im ID-basierten Format sind (hat `eps` Map). */
+export function isEpidSeason(season: unknown): season is EpidSeason {
+  return (
+    season != null &&
+    typeof season === 'object' &&
+    'eps' in (season as Record<string, unknown>) &&
+    typeof (season as EpidSeason).eps === 'object'
+  );
+}
+
+/** Prueft ob Season-Daten im alten Array-Format sind (hat `w` Array). */
+export function isLegacyArraySeason(season: unknown): season is LegacyArraySeason {
   return (
     season != null &&
     typeof season === 'object' &&
     'w' in (season as Record<string, unknown>) &&
-    Array.isArray((season as CompactSeason).w)
+    Array.isArray((season as LegacyArraySeason).w)
   );
 }
 
 // ---------- Read Helpers ----------
 
-/** Liest Episode-Watch-Daten aus einer Compact-Season. */
-export function readEpisodeFromCompact(season: CompactSeason, episodeIdx: number): EpisodeWatch {
+/** Liest Episode-Watch-Daten aus einer ID-basierten Season. */
+export function readEpisodeById(
+  season: EpidSeason | null | undefined,
+  episodeId: number | string
+): EpisodeWatch {
+  const entry = season?.eps?.[String(episodeId)];
+  return {
+    watched: (entry?.w ?? 0) === 1,
+    watchCount: entry?.c ?? 0,
+    firstWatchedAt: unixToIso(entry?.f),
+    lastWatchedAt: unixToIso(entry?.l),
+  };
+}
+
+/** Liest Episode-Watch-Daten aus altem Array-Format. Nur fuer Migration. */
+export function readEpisodeFromLegacyArray(
+  season: LegacyArraySeason,
+  episodeIdx: number
+): EpisodeWatch {
   return {
     watched: (season.w?.[episodeIdx] ?? 0) === 1,
     watchCount: season.c?.[episodeIdx] ?? 0,
@@ -61,7 +103,7 @@ export function readEpisodeFromCompact(season: CompactSeason, episodeIdx: number
 
 /**
  * Erzeugt Firebase Multi-Path-Updates fuer einen Episode-Watched-Event.
- * Kein Read noetig – einzelne Array-Indizes werden direkt gesetzt.
+ * Key ist die Episode-ID (aus Catalog `episode.id`), nicht der Index.
  *
  * @returns Record<string, unknown> mit Pfaden relativ zum DB-Root
  */
@@ -69,20 +111,20 @@ export function buildEpisodeWatchedUpdates(
   uid: string,
   seriesId: number | string,
   seasonIndex: number,
-  episodeIndex: number,
+  episodeId: number | string,
   newWatchCount: number,
   nowIso: string,
   isFirstWatch: boolean
 ): Record<string, unknown> {
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   const updates: Record<string, unknown> = {
-    [`${base}/w/${episodeIndex}`]: 1,
-    [`${base}/c/${episodeIndex}`]: newWatchCount,
-    [`${base}/l/${episodeIndex}`]: isoToUnix(nowIso),
+    [`${base}/w`]: 1,
+    [`${base}/c`]: newWatchCount,
+    [`${base}/l`]: isoToUnix(nowIso),
     [`users/${uid}/meta/serienVersion`]: { '.sv': 'timestamp' },
   };
   if (isFirstWatch) {
-    updates[`${base}/f/${episodeIndex}`] = isoToUnix(nowIso);
+    updates[`${base}/f`] = isoToUnix(nowIso);
   }
   return updates;
 }
@@ -94,18 +136,26 @@ export function buildEpisodeUnwatchUpdates(
   uid: string,
   seriesId: number | string,
   seasonIndex: number,
-  episodeIndex: number,
+  episodeId: number | string,
   previousWatched: boolean,
   previousCount: number,
   previousFirstWatchedAt: string | null,
   previousLastWatchedAt: string | null
 ): Record<string, unknown> {
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
+  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
+  // Wenn komplett zurueckgesetzt wird (not watched, count 0), den gesamten
+  // eps-Eintrag loeschen statt Nullen zu schreiben.
+  if (!previousWatched && previousCount === 0) {
+    return {
+      [base]: null,
+      [`users/${uid}/meta/serienVersion`]: { '.sv': 'timestamp' },
+    };
+  }
   return {
-    [`${base}/w/${episodeIndex}`]: previousWatched ? 1 : 0,
-    [`${base}/c/${episodeIndex}`]: previousCount,
-    [`${base}/f/${episodeIndex}`]: previousFirstWatchedAt ? isoToUnix(previousFirstWatchedAt) : 0,
-    [`${base}/l/${episodeIndex}`]: previousLastWatchedAt ? isoToUnix(previousLastWatchedAt) : 0,
+    [`${base}/w`]: previousWatched ? 1 : 0,
+    [`${base}/c`]: previousCount,
+    [`${base}/f`]: previousFirstWatchedAt ? isoToUnix(previousFirstWatchedAt) : 0,
+    [`${base}/l`]: previousLastWatchedAt ? isoToUnix(previousLastWatchedAt) : 0,
     [`users/${uid}/meta/serienVersion`]: { '.sv': 'timestamp' },
   };
 }

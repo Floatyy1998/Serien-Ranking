@@ -151,43 +151,50 @@ export const useCalendarData = () => {
     async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
       const db = firebase.database();
-      const seasonPath = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}`;
-      const eIdx = episodeIndex;
+      const series = seriesList.find((s) => s.id === seriesId);
+      const episode = series?.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
+      const episodeId = episode?.id;
+      if (!episodeId) {
+        showToast('Episode-ID fehlt', 2000, 'error');
+        return;
+      }
+      const epBase = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
 
       try {
-        // Snapshot vorher
-        const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-          db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
-          db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
-        ]);
-        const prevCount: number = watchCountSnap.val() || 0;
-        const prevFirst: number = firstSnap.val() || 0;
-        const prevLast: number = lastSnap.val() || 0;
-        const prevWatched: number = watchedSnap.val() || 0;
+        // Snapshot vorher (ganzen Entry auf einmal)
+        const snap = await db.ref(epBase).once('value');
+        const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
+        const prevCount: number = val.c || 0;
+        const prevFirst: number = val.f || 0;
+        const prevLast: number = val.l || 0;
+        const prevWatched: number = val.w || 0;
 
         // Schreiben
         const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {};
-        updates[`${seasonPath}/w/${eIdx}`] = 1;
-        updates[`${seasonPath}/c/${eIdx}`] = prevCount + 1;
-        updates[`${seasonPath}/l/${eIdx}`] = nowUnix;
+        updates[`${epBase}/w`] = 1;
+        updates[`${epBase}/c`] = prevCount + 1;
+        updates[`${epBase}/l`] = nowUnix;
         if (!prevFirst) {
-          updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
+          updates[`${epBase}/f`] = nowUnix;
         }
         await db.ref().update(updates);
 
-        const series = seriesList.find((s) => s.id === seriesId);
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
         showUndoToast(`${title} ${label} als gesehen markiert`, {
           onUndo: async () => {
             try {
-              await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
-              await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
-              await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
-              await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
+              if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
+                await db.ref(epBase).remove();
+              } else {
+                await db.ref(epBase).set({
+                  ...(prevWatched ? { w: prevWatched } : {}),
+                  ...(prevCount ? { c: prevCount } : {}),
+                  ...(prevFirst ? { f: prevFirst } : {}),
+                  ...(prevLast ? { l: prevLast } : {}),
+                });
+              }
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }

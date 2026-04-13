@@ -215,13 +215,18 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     const key = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
 
     try {
-      const seasonPath = `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}`;
-      const eIdx = episode.episodeIndex;
-      const db = firebase.database();
-      await db.ref(`${seasonPath}/c/${eIdx}`).set(episode.watchCount + 1);
-      await db.ref(`${seasonPath}/l/${eIdx}`).set(Math.floor(Date.now() / 1000));
-
       const series = seriesList.find((s) => s.id === episode.seriesId);
+      const ep = series?.seasons?.[episode.seasonIndex]?.episodes?.[episode.episodeIndex];
+      const epId = ep?.id;
+      if (!epId) {
+        console.error('Rewatch: Episode-ID fehlt');
+        return;
+      }
+      const epPath = `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/eps/${epId}`;
+      const db = firebase.database();
+      await db.ref(`${epPath}/c`).set(episode.watchCount + 1);
+      await db.ref(`${epPath}/l`).set(Math.floor(Date.now() / 1000));
+
       await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
 
       setCompletingEpisodes((prev) => new Set([...prev, key]));
