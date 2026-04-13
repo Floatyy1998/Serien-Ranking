@@ -174,14 +174,14 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
  *  Segments: Niete, 2xXP2Ep, Niete, 2xXP5Ep, Acc, 2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
  *  Higher streak = less Nieten, more rare/epic/legendary chances */
 const STREAK_WEIGHTS: number[][] = [
-  // Tier 0 (0–6 Tage):   Niete 44%, XP 38%, Acc 18%
-  [29, 20, 15, 12, 10, 6, 4, 3, 1],
-  // Tier 1 (7–13 Tage):  Niete 38%, XP 38%, Acc 24%
-  [24, 20, 14, 12, 12, 7, 5, 4, 2],
-  // Tier 2 (14–29 Tage): Niete 32%, XP 38%, Acc 30%
-  [19, 20, 13, 12, 14, 8, 7, 5, 2],
-  // Tier 3 (30+ Tage):   Niete 26%, XP 38%, Acc 36%
-  [14, 20, 12, 12, 16, 9, 8, 6, 3],
+  // Tier 0 (0–6 Tage):   Niete 30%, XP 40%, Acc 30%
+  [20, 20, 10, 12, 15, 8, 7, 5, 3],
+  // Tier 1 (7–13 Tage):  Niete 25%, XP 40%, Acc 35%
+  [17, 20, 8, 12, 17, 8, 8, 6, 4],
+  // Tier 2 (14–29 Tage): Niete 20%, XP 40%, Acc 40%
+  [13, 20, 7, 12, 18, 8, 10, 8, 4],
+  // Tier 3 (30+ Tage):   Niete 15%, XP 40%, Acc 45%
+  [10, 20, 5, 12, 20, 8, 12, 8, 5],
 ];
 
 function weightedRandomIndex(weights: number[]): number {
