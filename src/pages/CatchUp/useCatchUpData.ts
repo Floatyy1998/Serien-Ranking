@@ -144,7 +144,7 @@ export const useCatchUpData = () => {
           } else {
             remainingMinutes += episode.runtime || seriesRuntime;
             if (!foundUnwatched) {
-              currentSeason = season.seasonNumber || season.season_number || 1;
+              currentSeason = (season.seasonNumber ?? 0) + 1;
               currentEpisode = episode.episode_number || epIndex + 1;
               foundUnwatched = true;
             }
