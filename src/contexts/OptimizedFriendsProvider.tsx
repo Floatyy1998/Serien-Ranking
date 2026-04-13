@@ -285,6 +285,65 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     setLoading(friendsLoading);
   }, [friendsLoading]);
 
+  // Sync eigenes Profil (photoURL, displayName, username) in die friend-Einträge
+  // bei allen Freunden. Der Snapshot in users/{friend}/friends/{user} wird sonst
+  // nur beim Accept des Friend-Requests geschrieben und veraltet, sobald der
+  // User sein Profilbild ändert. Max 1x alle 14 Tage pro Session.
+  const profileSyncDone = useRef(false);
+  useEffect(() => {
+    if (!user || friends.length === 0 || profileSyncDone.current) return;
+    profileSyncDone.current = true;
+
+    const syncKey = `friendProfileSync:${user.uid}`;
+    const syncInterval = 14 * 24 * 60 * 60 * 1000;
+    try {
+      const last = Number(localStorage.getItem(syncKey) || 0);
+      if (Date.now() - last < syncInterval) return;
+    } catch {
+      // ignore
+    }
+
+    const syncProfile = async () => {
+      try {
+        const currentUserSnapshot = await firebase
+          .database()
+          .ref(`users/${user.uid}`)
+          .once('value');
+        const currentUserData = currentUserSnapshot.val() || {};
+
+        const update = {
+          photoURL: currentUserData.photoURL || user.photoURL || null,
+          displayName:
+            currentUserData.displayName || currentUserData.username || user.displayName || null,
+          username: currentUserData.username || null,
+          email: currentUserData.email || user.email || null,
+        };
+
+        await Promise.all(
+          friends.map((friend) =>
+            firebase
+              .database()
+              .ref(`users/${friend.uid}/friends/${user.uid}`)
+              .update(update)
+              .catch(() => {
+                // Silent fail fuer einzelne Freunde (z.B. Permission)
+              })
+          )
+        );
+
+        try {
+          localStorage.setItem(syncKey, String(Date.now()));
+        } catch {
+          // quota
+        }
+      } catch (error) {
+        console.error('Friend profile sync failed:', error);
+      }
+    };
+
+    syncProfile();
+  }, [user, friends]);
+
   const markRequestsAsRead = useCallback(async () => {
     if (!user) return;
     const now = Date.now();
