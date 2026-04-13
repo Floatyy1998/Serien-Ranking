@@ -21,6 +21,7 @@ export const useContinueWatching = () => {
       name: string;
       seasonIndex: number;
       episodeIndex: number;
+      episodeId: number;
     };
     airDate: string;
     lastWatchedAt: string;
@@ -68,6 +69,7 @@ export const useContinueWatching = () => {
                   name: episode.name,
                   seasonIndex: j,
                   episodeIndex: k,
+                  episodeId: episode.id ?? 0,
                 },
                 airDate: getEpisodeAirDateStr(episode) || episode.air_date,
                 lastWatchedAt,

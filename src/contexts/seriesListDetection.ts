@@ -36,14 +36,14 @@ export async function fixMissingFirstWatchedAt(
       series.seasons.forEach((season, seasonIndex) => {
         if (!season.episodes) return;
 
-        season.episodes.forEach((episode, episodeIndex) => {
+        season.episodes.forEach((episode) => {
           if (episode.watched) {
             _totalWatchedEpisodes++;
 
             if (episode.firstWatchedAt) {
               _totalEpisodesWithFirstWatched++;
-            } else {
-              const firstPath = `users/${userId}/seriesWatch/${seriesKey}/seasons/${seasonIndex}/f/${episodeIndex}`;
+            } else if (episode.id) {
+              const firstPath = `users/${userId}/seriesWatch/${seriesKey}/seasons/${seasonIndex}/eps/${episode.id}/f`;
               updates[firstPath] = Math.floor(new Date(todayISO).getTime() / 1000);
               _totalUpdated++;
             }

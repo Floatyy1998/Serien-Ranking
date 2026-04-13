@@ -46,6 +46,7 @@ interface ContinueWatchingItem {
     name: string;
     seasonIndex: number;
     episodeIndex: number;
+    episodeId: number;
   };
   airDate: string;
   lastWatchedAt: string;

@@ -86,39 +86,36 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     const series = seriesList.find((s) => s.id === episode.seriesId);
     if (!series) return;
 
-    const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}`;
-    const eIdx = episode.episodeIndex;
+    const ep = series.seasons?.[episode.seasonIndex]?.episodes?.[episode.episodeIndex];
+    const epId = ep?.id;
+    if (!epId) {
+      showToast('Episode-ID fehlt', 2000, 'error');
+      return;
+    }
+    const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}/eps/${epId}`;
     const db = firebase.database();
     const uid = user.uid;
     const label = `S${episode.seasonIndex + 1}E${episode.episodeIndex + 1}`;
     const nowUnix = Math.floor(Date.now() / 1000);
 
-    // Snapshot vorher lesen
     try {
-      const [watchCountSnap, firstSnap, lastSnap, watchedSnap] = await Promise.all([
-        db.ref(`${seasonPath}/c/${eIdx}`).once('value'),
-        db.ref(`${seasonPath}/f/${eIdx}`).once('value'),
-        db.ref(`${seasonPath}/l/${eIdx}`).once('value'),
-        db.ref(`${seasonPath}/w/${eIdx}`).once('value'),
-      ]);
+      const snap = await db.ref(epPath).once('value');
+      const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
+      const prevCount: number = val.c || 0;
+      const prevFirst: number = val.f || 0;
+      const prevLast: number = val.l || 0;
+      const prevWatched: number = val.w || 0;
 
-      const prevCount: number = watchCountSnap.val() || 0;
-      const prevFirst: number = firstSnap.val() || 0;
-      const prevLast: number = lastSnap.val() || 0;
-      const prevWatched: number = watchedSnap.val() || 0;
-
-      // Atomar schreiben um Zwischenzustände zu vermeiden
       const updates: Record<string, unknown> = {
-        [`${seasonPath}/w/${eIdx}`]: 1,
-        [`${seasonPath}/c/${eIdx}`]: prevCount + 1,
-        [`${seasonPath}/l/${eIdx}`]: nowUnix,
+        [`${epPath}/w`]: 1,
+        [`${epPath}/c`]: prevCount + 1,
+        [`${epPath}/l`]: nowUnix,
       };
       if (!episode.isRewatch && !prevFirst) {
-        updates[`${seasonPath}/f/${eIdx}`] = nowUnix;
+        updates[`${epPath}/f`] = nowUnix;
       }
       await db.ref().update(updates);
 
-      // Undo-Toast mit verzögerten Side-Effects
       showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
         onUndo: async () => {
           setHiddenEpisodes((prev) => {
@@ -127,10 +124,16 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
             return s;
           });
           try {
-            await db.ref(`${seasonPath}/w/${eIdx}`).set(prevWatched);
-            await db.ref(`${seasonPath}/c/${eIdx}`).set(prevCount);
-            await db.ref(`${seasonPath}/f/${eIdx}`).set(prevFirst);
-            await db.ref(`${seasonPath}/l/${eIdx}`).set(prevLast);
+            if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
+              await db.ref(epPath).remove();
+            } else {
+              await db.ref(epPath).set({
+                ...(prevWatched ? { w: prevWatched } : {}),
+                ...(prevCount ? { c: prevCount } : {}),
+                ...(prevFirst ? { f: prevFirst } : {}),
+                ...(prevLast ? { l: prevLast } : {}),
+              });
+            }
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }

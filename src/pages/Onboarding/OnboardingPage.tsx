@@ -197,7 +197,13 @@ export const OnboardingPage: React.FC = () => {
           const maxSeason = selection === 'all' ? numberOfSeasons : (selection as number);
 
           // Fetch episodes for each season and build the structure
-          const seasons = [];
+          // Neues Format: seasons/{sn-1}/eps/{epId}: {w,c,f,l}
+          // Nur Seasons mit gesehenen Eps schreiben, leere Seasons weglassen.
+          const seasonsObj: Record<
+            string,
+            { eps: Record<string, { w: 1; c: 1; f: number; l: number }> }
+          > = {};
+          const nowUnix = Math.floor(new Date(now).getTime() / 1000);
           for (let seasonNum = 1; seasonNum <= numberOfSeasons; seasonNum++) {
             const seasonRes = await fetch(
               `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNum}?api_key=${API_KEY}&language=de-DE`
@@ -206,35 +212,26 @@ export const OnboardingPage: React.FC = () => {
               console.warn(`Staffel ${seasonNum} von Serie ${tmdbId} konnte nicht geladen werden`);
               continue;
             }
+            if (seasonNum > maxSeason) continue; // nicht gesehen, skippen
 
             const seasonData = await seasonRes.json();
-            const episodes = (seasonData.episodes || []).map((ep: Record<string, unknown>) => {
-              const shouldMarkWatched = seasonNum <= maxSeason;
-              return {
-                id: ep.id,
-                episode_number: ep.episode_number,
-                name: ep.name || '',
-                air_date: ep.air_date || '',
-                watched: shouldMarkWatched,
-                watchCount: shouldMarkWatched ? 1 : 0,
-                firstWatchedAt: shouldMarkWatched ? now : null,
-                lastWatchedAt: shouldMarkWatched ? now : null,
-              };
-            });
-
-            seasons.push({
-              season_number: seasonNum,
-              name: seasonData.name || `Staffel ${seasonNum}`,
-              episode_count: seasonData.episodes?.length || 0,
-              episodes,
-            });
+            const epsMap: Record<string, { w: 1; c: 1; f: number; l: number }> = {};
+            for (const ep of seasonData.episodes || []) {
+              if (typeof ep.id !== 'number') continue;
+              epsMap[String(ep.id)] = { w: 1, c: 1, f: nowUnix, l: nowUnix };
+            }
+            if (Object.keys(epsMap).length > 0) {
+              seasonsObj[String(seasonNum - 1)] = { eps: epsMap };
+            }
           }
 
-          // Write seasons to Firebase
-          await firebase
-            .database()
-            .ref(`users/${user.uid}/seriesWatch/${tmdbId}/seasons`)
-            .set(seasons);
+          // Write seasons to Firebase (neues ID-basiertes Format)
+          if (Object.keys(seasonsObj).length > 0) {
+            await firebase
+              .database()
+              .ref(`users/${user.uid}/seriesWatch/${tmdbId}/seasons`)
+              .set(seasonsObj);
+          }
 
           // Update progress
           completedSeries++;
