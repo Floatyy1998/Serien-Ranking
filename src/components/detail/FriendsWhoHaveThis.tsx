@@ -55,11 +55,26 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
               const foundItem = snapshot.val() as Record<string, unknown> | null;
               if (!foundItem) return;
 
+              // Fallback: photoURL aus users/{uid}/photoURL nachladen, falls der
+              // Snapshot im Friend-Objekt veraltet/leer ist.
+              let photoURL = friend.photoURL;
+              if (!photoURL) {
+                try {
+                  const photoSnap = await firebase
+                    .database()
+                    .ref(`users/${friend.uid}/photoURL`)
+                    .once('value');
+                  photoURL = photoSnap.val() || undefined;
+                } catch {
+                  // ignore
+                }
+              }
+
               const rating = calculateOverallRating(foundItem as unknown as Series | Movie);
               friendsWithThisItem.push({
                 uid: friend.uid,
                 displayName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
-                photoURL: friend.photoURL,
+                photoURL,
                 rating,
               });
             } catch (error) {
