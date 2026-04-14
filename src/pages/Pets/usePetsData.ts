@@ -102,7 +102,6 @@ export function usePetsData() {
               ub: p.unlockedBackgrounds || [],
               eb: p.equippedBackground || null,
               acc: p.accessories || [],
-              eq: p.equippedAccessories || [],
             }))
           );
         if (relevantFields(prev) === relevantFields(updatedPets)) return prev;
@@ -117,7 +116,6 @@ export function usePetsData() {
             unlockedBackgrounds: fresh.unlockedBackgrounds,
             equippedBackground: fresh.equippedBackground,
             accessories: fresh.accessories,
-            equippedAccessories: fresh.equippedAccessories,
           };
         });
       });
