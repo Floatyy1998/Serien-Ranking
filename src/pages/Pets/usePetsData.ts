@@ -12,8 +12,6 @@ import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 
-const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
-
 export function usePetsData() {
   const authContext = useAuth();
   const user = authContext?.user;
@@ -54,29 +52,6 @@ export function usePetsData() {
     try {
       const updatedPets = await petService.updateAllPetsStatus(user.uid);
 
-      // Admin helper: remove all preview backgrounds from the admin account
-      if (user.uid === ADMIN_UID && updatedPets.length > 0) {
-        for (const p of updatedPets) {
-          const hasAny =
-            (p.unlockedBackgrounds && p.unlockedBackgrounds.length > 0) || p.equippedBackground;
-          if (!hasAny) continue;
-          try {
-            await firebase
-              .database()
-              .ref(`users/${user.uid}/pets/${p.id}/unlockedBackgrounds`)
-              .remove();
-            await firebase
-              .database()
-              .ref(`users/${user.uid}/pets/${p.id}/equippedBackground`)
-              .remove();
-            delete p.unlockedBackgrounds;
-            delete p.equippedBackground;
-          } catch (err) {
-            console.error('Error clearing admin backgrounds:', err);
-          }
-        }
-      }
-
       if (updatedPets.length > 0) {
         setPets(updatedPets);
         setActiveColorBorder(updatedPets[selectedPetIndex]?.color || updatedPets[0].color);
@@ -105,6 +80,53 @@ export function usePetsData() {
       loadPets();
     }
   }, [user, loadPets]);
+
+  // Realtime-Listener auf pets-Node: reagiert auf externe Writes wie
+  // Daily-Spin-Rewards (unlockedBackgrounds, accessories, etc.) ohne dass
+  // der User die Seite neu laden muss.
+  useEffect(() => {
+    if (!user) return;
+    const ref = firebase.database().ref(`users/${user.uid}/pets`);
+    const handler = (snap: firebase.database.DataSnapshot) => {
+      const val = snap.val();
+      if (!val || typeof val !== 'object') return;
+      const updatedPets = Object.values(val) as Pet[];
+      if (updatedPets.length === 0) return;
+      setPets((prev) => {
+        // nur updaten wenn sich wirklich etwas geaendert hat — primitiver
+        // Tiefvergleich auf den fuer Backgrounds relevanten Feldern
+        const relevantFields = (arr: Pet[]) =>
+          JSON.stringify(
+            arr.map((p) => ({
+              id: p.id,
+              ub: p.unlockedBackgrounds || [],
+              eb: p.equippedBackground || null,
+              acc: p.accessories || [],
+              eq: p.equippedAccessories || [],
+            }))
+          );
+        if (relevantFields(prev) === relevantFields(updatedPets)) return prev;
+        // Merge: bestehende Felder (hunger/happiness/lastUpdate) behalten,
+        // nur die vom Listener gelieferten Werte ueberschreiben damit kein
+        // Race mit lokalen State-Updates entsteht.
+        return prev.map((p) => {
+          const fresh = updatedPets.find((u) => u.id === p.id);
+          if (!fresh) return p;
+          return {
+            ...p,
+            unlockedBackgrounds: fresh.unlockedBackgrounds,
+            equippedBackground: fresh.equippedBackground,
+            accessories: fresh.accessories,
+            equippedAccessories: fresh.equippedAccessories,
+          };
+        });
+      });
+    };
+    ref.on('value', handler);
+    return () => {
+      ref.off('value', handler);
+    };
+  }, [user]);
 
   const createPet = async () => {
     if (!user || !petName.trim()) return;
