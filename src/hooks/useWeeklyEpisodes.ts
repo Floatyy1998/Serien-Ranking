@@ -223,16 +223,30 @@ export const useWeeklyEpisodes = (
       }
     }
 
-    // Deduplicate: if same series has same air_date from different seasons, keep highest season
+    // Deduplicate: wenn dieselbe Serie dieselbe Episode aus verschiedenen
+    // Seasons listet, die aus der hoechsten Season behalten. Dedup nur per
+    // echtem Titel — Placeholder-Namen ("TBA", "Folge X", "Episode X", leer)
+    // bekommen einen eindeutigen Key inkl. seasonNumber+episodeNumber, damit
+    // Netflix-Binge-Drops (alle 8 Folgen gleicher Tag, alle "TBA") nicht
+    // bis auf die erste weggefiltert werden.
+    const isPlaceholderTitle = (name: string | undefined | null): boolean => {
+      if (!name) return true;
+      const trimmed = name.trim();
+      if (trimmed.length === 0) return true;
+      if (/^tba$/i.test(trimmed)) return true;
+      if (/^(episode|folge)\s*\d+$/i.test(trimmed)) return true;
+      return false;
+    };
     for (const [dateKey, episodes] of schedule) {
-      const seen = new Map<string, number>(); // key: seriesId-epName → index in array
+      const seen = new Map<string, number>();
       const toRemove = new Set<number>();
       for (let i = 0; i < episodes.length; i++) {
         const ep = episodes[i];
-        const key = `${ep.seriesId}-${ep.episodeName}`;
+        const key = isPlaceholderTitle(ep.episodeName)
+          ? `${ep.seriesId}-S${ep.seasonNumber}E${ep.episodeNumber}`
+          : `${ep.seriesId}-${ep.episodeName}`;
         if (seen.has(key)) {
           const prevIdx = seen.get(key) ?? 0;
-          // Keep the one with the higher season number (more recent source)
           if (ep.seasonNumber > episodes[prevIdx].seasonNumber) {
             toRemove.add(prevIdx);
             seen.set(key, i);
