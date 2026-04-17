@@ -194,13 +194,26 @@ export function useEnhancedFirebaseCache<T = unknown>(
     (ref: firebase.database.Reference, initialData: T) => {
       const cleanups: (() => void)[] = [];
 
-      // Deep delta: Listener pro Child auf deren Sub-Key (z.B. seasons)
+      // Deep delta: Listener pro Child auf deren Sub-Key (z.B. seasons).
+      // child_changed: bestehender Season-Knoten wurde geaendert (Episode
+      //   markiert/unmarkiert in einer Season die bereits Watch-Daten hatte)
+      // child_added: neuer Season-Knoten erzeugt (erste Episode in einer
+      //   neuen Staffel markiert — z.B. via Extension)
+      // child_removed: Season-Knoten geloescht (letzte Episode in einer
+      //   Staffel unmarkiert → Firebase loescht leere Knoten)
       const subKeyName = deltaSubKey ?? '';
+      const knownSubChildren = new Map<string, Set<string>>();
       const attachSubListener = (childKey: string) => {
         const subRef = firebase.database().ref(`${path}/${childKey}/${subKeyName}`);
-        const onSubChanged = subRef.on('child_changed', (snap) => {
-          const subChildKey = snap.key;
-          if (!subChildKey) return;
+        // Track bekannte Sub-Children um initiale child_added Events zu skippen
+        const initChild = (initialData as Record<string, Record<string, unknown>>)[childKey];
+        const initSub = initChild?.[subKeyName];
+        const knownKeys = new Set<string>(
+          initSub && typeof initSub === 'object' ? Object.keys(initSub) : []
+        );
+        knownSubChildren.set(childKey, knownKeys);
+
+        const applySubUpdate = (subChildKey: string, value: unknown) => {
           setData((prev) => {
             const prevRecord = prev as Record<string, Record<string, unknown>>;
             const child = prevRecord[childKey];
@@ -209,11 +222,11 @@ export function useEnhancedFirebaseCache<T = unknown>(
             let updatedSub: unknown;
             if (Array.isArray(subCollection)) {
               updatedSub = [...subCollection];
-              (updatedSub as unknown[])[Number(subChildKey)] = snap.val();
+              (updatedSub as unknown[])[Number(subChildKey)] = value;
             } else {
               updatedSub = {
                 ...(subCollection as Record<string, unknown>),
-                [subChildKey]: snap.val(),
+                [subChildKey]: value,
               };
             }
             const updated = {
@@ -224,8 +237,53 @@ export function useEnhancedFirebaseCache<T = unknown>(
             return updated;
           });
           setLastUpdated(Date.now());
+        };
+
+        const onSubChanged = subRef.on('child_changed', (snap) => {
+          if (snap.key) applySubUpdate(snap.key, snap.val());
         });
-        cleanups.push(() => subRef.off('child_changed', onSubChanged));
+        const onSubAdded = subRef.on('child_added', (snap) => {
+          const k = snap.key;
+          if (!k) return;
+          // Initiale Kinder skippen (werden beim Setup gefeuert)
+          const known = knownSubChildren.get(childKey);
+          if (known?.has(k)) {
+            known.delete(k);
+            return;
+          }
+          applySubUpdate(k, snap.val());
+        });
+        const onSubRemoved = subRef.on('child_removed', (snap) => {
+          const k = snap.key;
+          if (!k) return;
+          setData((prev) => {
+            const prevRecord = prev as Record<string, Record<string, unknown>>;
+            const child = prevRecord[childKey];
+            if (!child) return prev;
+            const subCollection = child[subKeyName];
+            if (!subCollection || typeof subCollection !== 'object') return prev;
+            const copy = Array.isArray(subCollection)
+              ? [...subCollection]
+              : { ...(subCollection as Record<string, unknown>) };
+            if (Array.isArray(copy)) {
+              delete (copy as unknown[])[Number(k)];
+            } else {
+              delete (copy as Record<string, unknown>)[k];
+            }
+            const updated = {
+              ...prevRecord,
+              [childKey]: { ...child, [subKeyName]: copy },
+            } as T;
+            saveToCache(updated);
+            return updated;
+          });
+          setLastUpdated(Date.now());
+        });
+        cleanups.push(
+          () => subRef.off('child_changed', onSubChanged),
+          () => subRef.off('child_added', onSubAdded),
+          () => subRef.off('child_removed', onSubRemoved)
+        );
       };
 
       // Property-Level Listener: fängt Änderungen, Hinzufügen und Entfernen

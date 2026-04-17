@@ -67,7 +67,7 @@ export const useEpisodeDiscussion = () => {
   const { seriesId, seasonNumber, episodeNumber } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth() || {};
-  const { seriesList } = useSeriesList();
+  const { seriesList, refetchSeries } = useSeriesList();
 
   const [tmdbDetails, setTmdbDetails] = useState<TMDBEpisodeDetails | null>(null);
   const [seasonDetails, setSeasonDetails] = useState<TMDBSeasonDetails | null>(null);
@@ -281,6 +281,10 @@ export const useEpisodeDiscussion = () => {
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       }
+
+      // Force context refresh damit UI sofort reagiert (Delta-Sync kann bei
+      // DELETE-Operationen den leeren State nicht immer korrekt mergen)
+      refetchSeries();
 
       // Auto-navigate to next unwatched episode (delayed so user sees the checkmark)
       if (!isCurrentlyWatched && series) {
