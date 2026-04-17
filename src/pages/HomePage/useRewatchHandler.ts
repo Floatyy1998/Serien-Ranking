@@ -95,6 +95,7 @@ export function useRewatchHandler() {
         [`${epPath}/c`]: newWatchCount,
         [`${epPath}/l`]: nowUnix,
         [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
+        [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
       };
       if (!prevWatched) {
         updates[`${epPath}/w`] = 1;
@@ -159,6 +160,9 @@ export function useRewatchHandler() {
             if (rewatchRemoved && series?.rewatch) {
               await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).set(series.rewatch);
             }
+            await db
+              .ref(`users/${user.uid}/meta/serienVersion`)
+              .set(firebase.database.ServerValue.TIMESTAMP);
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }
