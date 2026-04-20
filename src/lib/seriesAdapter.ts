@@ -110,6 +110,7 @@ export function mergeToSeriesView(
     id: tmdbId,
     title: catalog.title,
     nmr: userRef.legacyNmr ?? 0,
+    addedAt: userRef.addedAt,
     poster: { poster: catalog.poster },
     genre: { genres: ensureArray<string>(catalog.genres) },
     provider: { provider: ensureArray(catalog.providers) },
