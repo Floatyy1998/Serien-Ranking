@@ -64,10 +64,7 @@ export const useWebWorkerStatsOptimized = (): WorkerStats => {
     }
     return count;
   }, [seriesList]);
-  const watchedMovieCount = useMemo(
-    () => movieList.filter((m) => m.watched).length,
-    [movieList],
-  );
+  const watchedMovieCount = useMemo(() => movieList.filter((m) => m.watched).length, [movieList]);
   const depsKey = `${seriesList.length}-${movieList.length}-${watchedCount}-${watchedMovieCount}-${user?.uid}`;
 
   const workerInput = useMemo<StatsWorkerInput>(
