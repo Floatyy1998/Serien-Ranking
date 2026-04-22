@@ -11,6 +11,8 @@ export interface WorkerStats {
   totalMovies: number;
   watchedEpisodes: number;
   watchedEpisodesActive: number;
+  /** Summe aller watchCounts — zählt Rewatches mit. Für Mystery Box, Level, etc. */
+  totalViews: number;
   totalEpisodes: number;
   watchedMovies: number;
   watchlistCount: number;
@@ -29,6 +31,7 @@ const INITIAL_STATS: WorkerStats = {
   totalMovies: 0,
   watchedEpisodes: 0,
   watchedEpisodesActive: 0,
+  totalViews: 0,
   totalEpisodes: 0,
   watchedMovies: 0,
   watchlistCount: 0,
@@ -47,25 +50,26 @@ export const useWebWorkerStatsOptimized = (): WorkerStats => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
-  // watchedCount mit in den depsKey damit der Worker auch neu rennt wenn
-  // sich nur Watch-States aendern (User hakt eine Episode ab) statt nur bei
-  // Aenderung der Anzahl Serien/Filme. Ohne das blieben z.B. die Mystery-Box-
-  // Progress und "watched episodes" stats stale.
-  const watchedCount = useMemo(() => {
+  // Sum der watchCounts mit in den depsKey, damit der Worker auch bei
+  // Rewatches neu rennt (watchCount 1→2 ohne dass isWatched sich aendert).
+  // Ohne das bliebe z.B. der Mystery-Box-Progress stale, weil der Worker-
+  // Trigger nur auf Array-Laengen geschaut hat.
+  const viewCount = useMemo(() => {
     let count = 0;
     for (const s of seriesList) {
       if (!s.seasons) continue;
       for (const season of s.seasons) {
         if (!season.episodes) continue;
         for (const ep of season.episodes) {
-          if (ep.watched) count++;
+          if (ep.watchCount) count += ep.watchCount;
+          else if (ep.watched) count += 1;
         }
       }
     }
     return count;
   }, [seriesList]);
   const watchedMovieCount = useMemo(() => movieList.filter((m) => m.watched).length, [movieList]);
-  const depsKey = `${seriesList.length}-${movieList.length}-${watchedCount}-${watchedMovieCount}-${user?.uid}`;
+  const depsKey = `${seriesList.length}-${movieList.length}-${viewCount}-${watchedMovieCount}-${user?.uid}`;
 
   const workerInput = useMemo<StatsWorkerInput>(
     () => ({ seriesList, movieList, userId: user?.uid }),

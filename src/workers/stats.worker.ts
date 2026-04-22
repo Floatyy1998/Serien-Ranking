@@ -106,7 +106,8 @@ function calculateStats(data: {
 
   let totalSeries = 0;
   let watchlistCount = 0;
-  let watchedEpisodes = 0; // all series incl. hidden (for episode chip)
+  let watchedEpisodes = 0; // unique watched episodes (all series incl. hidden)
+  let totalViews = 0; // sum of watchCounts — counts rewatches too (for mystery box etc.)
   let totalAiredEpisodes = 0; // non-hidden only (denominator for progress %)
   let watchedEpisodesVisible = 0; // non-hidden only (numerator for progress %)
   let todayTotalEpisodes = 0;
@@ -138,29 +139,31 @@ function calculateStats(data: {
         if (!episode) continue;
 
         const isWatched = isEpisodeWatched(episode);
+        const viewCount = episode.watchCount || (isWatched ? 1 : 0);
+
+        // watchedEpisodes und totalViews: immer zaehlen wenn gesehen,
+        // unabhaengig vom Air-Date. Sonst werden early-watches (Netflix drops
+        // vor offiziellem Air-Date) nicht gezaehlt. Der Aired-Check gilt nur
+        // noch fuer watchedEpisodesVisible/todayTotalEpisodes wo er fachlich
+        // Sinn macht.
+        if (isWatched) watchedEpisodes++;
+        totalViews += viewCount;
 
         if (episode.air_date || episode.airstamp) {
           const airDate = parseEpisodeDateLocal(episode);
           if (airDate) {
             const airDateTime = airDate.getTime();
 
-            if (airDateTime <= todayTime) {
-              if (isWatched) watchedEpisodes++;
-
-              if (!isHidden) {
-                seriesTotalVisible++;
-                if (isWatched) seriesWatchedVisible++;
-                if (airDateTime === todayTime) todayTotalEpisodes++;
-              }
+            if (airDateTime <= todayTime && !isHidden) {
+              seriesTotalVisible++;
+              if (isWatched) seriesWatchedVisible++;
+              if (airDateTime === todayTime) todayTotalEpisodes++;
             }
           }
-        } else {
-          // No air_date means it's probably an old episode that's already aired
-          if (isWatched) watchedEpisodes++;
-          if (!isHidden) {
-            seriesTotalVisible++;
-            if (isWatched) seriesWatchedVisible++;
-          }
+        } else if (!isHidden) {
+          // Kein Datum = alte Episode, immer als aired behandeln
+          seriesTotalVisible++;
+          if (isWatched) seriesWatchedVisible++;
         }
       }
     }
@@ -199,6 +202,7 @@ function calculateStats(data: {
     totalMovies,
     watchedEpisodes,
     watchedEpisodesActive: watchedEpisodesVisible,
+    totalViews,
     totalEpisodes: totalAiredEpisodes,
     watchedMovies,
     watchlistCount,
