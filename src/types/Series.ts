@@ -65,6 +65,13 @@ export interface Series {
     round: number;
     startedAt?: string;
     lastWatchedAt?: string;
+    /**
+     * Episoden-IDs die in der aktuellen Rewatch-Runde schon abgehakt wurden.
+     * Entkoppelt die Rewatch-Liste vom watchCount: sobald ein Ep hier drin ist,
+     * verschwindet es aus der Liste, egal ob watchCount schon das Round-Target
+     * erreicht hat.
+     */
+    rewatchedEps?: Record<string, true>;
   };
   release_date: string;
   media_type?: string;

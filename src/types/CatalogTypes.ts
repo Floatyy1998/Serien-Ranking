@@ -65,6 +65,7 @@ export interface UserSeriesRef {
     round: number;
     startedAt?: string;
     lastWatchedAt?: string;
+    rewatchedEps?: Record<string, true>;
   };
 }
 

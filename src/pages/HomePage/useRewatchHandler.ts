@@ -52,16 +52,14 @@ export function useRewatchHandler() {
     setRewatchSwipeDirections((prev) => ({ ...prev, [key]: swipeDirection }));
     setCompletingRewatches((prev) => new Set(prev).add(key));
 
-    setTimeout(() => {
-      setHiddenRewatches((prev) => new Set(prev).add(key));
+    if (!user) {
       setCompletingRewatches((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(key);
-        return newSet;
+        const s = new Set(prev);
+        s.delete(key);
+        return s;
       });
-    }, 300);
-
-    if (!user) return;
+      return;
+    }
 
     const label = `S${item.seasonNumber}E${item.episodeNumber}`;
     const itemSeries = seriesList.find((s) => s.id === item.id);
@@ -69,6 +67,11 @@ export function useRewatchHandler() {
     const epId = itemEp?.id;
     if (!epId) {
       showToast('Episode-ID fehlt', 2000, 'error');
+      setCompletingRewatches((prev) => {
+        const s = new Set(prev);
+        s.delete(key);
+        return s;
+      });
       return;
     }
     const epPath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}/eps/${epId}`;
@@ -91,9 +94,11 @@ export function useRewatchHandler() {
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
       const newWatchCount = prevCount + 1;
+      const rewatchEpsPath = `users/${user.uid}/series/${item.id}/rewatch/rewatchedEps/${epId}`;
       const updates: Record<string, unknown> = {
         [`${epPath}/c`]: newWatchCount,
         [`${epPath}/l`]: nowUnix,
+        [rewatchEpsPath]: true,
         [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
         [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
       };
@@ -105,28 +110,37 @@ export function useRewatchHandler() {
       }
       await db.ref().update(updates);
 
-      // Auto-complete rewatch check (muss sofort passieren, da es Episode-Daten ändert)
+      // Ep aus der UI ausblenden — jeder Swipe = Ep fertig fuer diese Runde
+      // (rewatchedEps-Flag ist jetzt gesetzt, unabhaengig vom watchCount).
+      setTimeout(() => {
+        setHiddenRewatches((prev) => new Set(prev).add(key));
+        setCompletingRewatches((prev) => {
+          const s = new Set(prev);
+          s.delete(key);
+          return s;
+        });
+      }, 300);
+
+      // Auto-complete rewatch check: alle gesehenen Eps in rewatchedEps?
       const series = itemSeries;
       let rewatchRemoved = false;
       if (series?.rewatch?.active) {
-        const targetCount = item.targetWatchCount;
+        const rewatchedEps = { ...(series.rewatch.rewatchedEps || {}), [String(epId)]: true };
         let allDone = true;
-        for (let sIdx = 0; sIdx < (series.seasons?.length || 0); sIdx++) {
-          const s = series.seasons[sIdx];
-          if (!s || typeof s !== 'object') continue;
-          const episodes = normalizeEpisodes(s.episodes);
-          for (let i = 0; i < episodes.length; i++) {
-            const ep = episodes[i];
+        for (const season of series.seasons || []) {
+          if (!season || typeof season !== 'object') continue;
+          const episodes = normalizeEpisodes(season.episodes);
+          for (const ep of episodes) {
             if (!ep.watched) continue;
-            if (sIdx === item.seasonIndex && i === item.episodeIndex) continue;
-            if ((ep.watchCount || 1) < targetCount) {
+            if (!ep.id) continue;
+            if (!rewatchedEps[String(ep.id)]) {
               allDone = false;
               break;
             }
           }
           if (!allDone) break;
         }
-        if (allDone && newWatchCount >= targetCount) {
+        if (allDone) {
           await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).remove();
           rewatchRemoved = true;
         }
@@ -150,15 +164,19 @@ export function useRewatchHandler() {
                 ...(prevLast ? { l: prevLast } : {}),
               });
             }
-            if (prevRewatchLastWatchedAt) {
-              await db
-                .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)
-                .set(prevRewatchLastWatchedAt);
-            } else {
-              await db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).remove();
-            }
             if (rewatchRemoved && series?.rewatch) {
+              // rewatch wurde komplett entfernt — original wiederherstellen
               await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).set(series.rewatch);
+            } else {
+              // rewatchedEps-Flag fuer diese Episode zuruecknehmen
+              await db.ref(rewatchEpsPath).remove();
+              if (prevRewatchLastWatchedAt) {
+                await db
+                  .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)
+                  .set(prevRewatchLastWatchedAt);
+              } else {
+                await db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).remove();
+              }
             }
             await db
               .ref(`users/${user.uid}/meta/serienVersion`)

@@ -32,15 +32,21 @@ export const getRewatchRound = (series: Series): number => {
 
 /**
  * Findet die nächste Episode für einen Rewatch.
- * Sucht die erste gesehene Episode deren watchCount noch unter der Ziel-Runde liegt.
+ * Ein Ep qualifiziert wenn es gesehen ist und noch nicht in der aktuellen
+ * Rewatch-Runde (rewatch.rewatchedEps) abgehakt wurde. watchCount ist nicht
+ * mehr entkoppelt: der User entscheidet per Swipe welche Eps "done" sind,
+ * unabhaengig von der tatsaechlichen View-Zahl.
  * Gibt null zurück wenn: kein aktiver Rewatch, keine Seasons, oder alle Episoden fertig.
  */
 export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null => {
   if (!series.seasons || series.seasons.length === 0) return null;
   if (!hasActiveRewatch(series)) return null;
 
-  // Ensure target is at least 2 — an active rewatch always means "watch again"
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
+  const rewatchedEps = series.rewatch?.rewatchedEps;
+  // Legacy-Fallback: wenn rewatchedEps noch nicht existiert (Rewatch von vor
+  // dem rewatchedEps-Field), benutze watchCount >= target als Progress-Signal.
+  const useLegacyMode = !rewatchedEps;
 
   for (let sIdx = 0; sIdx < series.seasons.length; sIdx++) {
     const season = series.seasons[sIdx];
@@ -56,16 +62,20 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
       if (!episode.watched) continue;
       const currentWatchCount = episode.watchCount || 1;
 
-      if (currentWatchCount < targetWatchCount) {
-        return {
-          ...episode,
-          seasonNumber: season.seasonNumber,
-          seasonIndex: sIdx,
-          episodeIndex: i,
-          currentWatchCount,
-          targetWatchCount,
-        };
+      if (useLegacyMode) {
+        if (currentWatchCount >= targetWatchCount) continue;
+      } else {
+        if (episode.id && rewatchedEps[String(episode.id)]) continue;
       }
+
+      return {
+        ...episode,
+        seasonNumber: season.seasonNumber,
+        seasonIndex: sIdx,
+        episodeIndex: i,
+        currentWatchCount,
+        targetWatchCount,
+      };
     }
   }
 
@@ -74,7 +84,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
 
 /**
  * Berechnet den Rewatch-Fortschritt einer Serie.
- * Zählt gesehene Episoden die die Ziel-watchCount erreicht haben.
+ * Zählt gesehene Episoden die in der aktuellen Rewatch-Runde abgehakt wurden.
  * Gibt { current: 0, total: 0 } für leere/uninitialisierte Serien.
  */
 export const getRewatchProgress = (series: Series): { current: number; total: number } => {
@@ -82,24 +92,27 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
     return { current: 0, total: 0 };
   }
 
+  const rewatchedEps = series.rewatch?.rewatchedEps;
+  const useLegacyMode = !rewatchedEps;
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
   let totalWatchedEpisodes = 0;
-  let episodesAtTarget = 0;
+  let episodesRewatchedInRound = 0;
 
   for (const season of series.seasons) {
     const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
       totalWatchedEpisodes++;
-      const currentWatchCount = episode.watchCount || 1;
-      if (currentWatchCount >= targetWatchCount) {
-        episodesAtTarget++;
+      if (useLegacyMode) {
+        if ((episode.watchCount || 1) >= targetWatchCount) episodesRewatchedInRound++;
+      } else {
+        if (episode.id && rewatchedEps[String(episode.id)]) episodesRewatchedInRound++;
       }
     }
   }
 
   return {
-    current: episodesAtTarget,
+    current: episodesRewatchedInRound,
     total: totalWatchedEpisodes,
   };
 };
