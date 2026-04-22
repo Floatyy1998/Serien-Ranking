@@ -43,10 +43,7 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
   if (!hasActiveRewatch(series)) return null;
 
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
-  const rewatchedEps = series.rewatch?.rewatchedEps;
-  // Legacy-Fallback: wenn rewatchedEps noch nicht existiert (Rewatch von vor
-  // dem rewatchedEps-Field), benutze watchCount >= target als Progress-Signal.
-  const useLegacyMode = !rewatchedEps;
+  const rewatchedEps = series.rewatch?.rewatchedEps || {};
 
   for (let sIdx = 0; sIdx < series.seasons.length; sIdx++) {
     const season = series.seasons[sIdx];
@@ -62,11 +59,13 @@ export const getNextRewatchEpisode = (series: Series): NextRewatchEpisode | null
       if (!episode.watched) continue;
       const currentWatchCount = episode.watchCount || 1;
 
-      if (useLegacyMode) {
-        if (currentWatchCount >= targetWatchCount) continue;
-      } else {
-        if (episode.id && rewatchedEps[String(episode.id)]) continue;
-      }
+      // Ep gilt als "done fuer diese Runde" wenn:
+      //  - bereits explizit in rewatchedEps gemarkt, ODER
+      //  - watchCount hat das Round-Target bereits erreicht (z.B. beim
+      //    Neustart eines Rewatch zaehlen schon vorhandene Rewatches mit)
+      const explicitlyDone = episode.id ? !!rewatchedEps[String(episode.id)] : false;
+      const impliedDone = currentWatchCount >= targetWatchCount;
+      if (explicitlyDone || impliedDone) continue;
 
       return {
         ...episode,
@@ -92,8 +91,7 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
     return { current: 0, total: 0 };
   }
 
-  const rewatchedEps = series.rewatch?.rewatchedEps;
-  const useLegacyMode = !rewatchedEps;
+  const rewatchedEps = series.rewatch?.rewatchedEps || {};
   const targetWatchCount = Math.max(2, (series.rewatch?.round || 0) + 1);
   let totalWatchedEpisodes = 0;
   let episodesRewatchedInRound = 0;
@@ -103,11 +101,9 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
     for (const episode of episodes) {
       if (!episode.watched) continue;
       totalWatchedEpisodes++;
-      if (useLegacyMode) {
-        if ((episode.watchCount || 1) >= targetWatchCount) episodesRewatchedInRound++;
-      } else {
-        if (episode.id && rewatchedEps[String(episode.id)]) episodesRewatchedInRound++;
-      }
+      const explicitlyDone = episode.id ? !!rewatchedEps[String(episode.id)] : false;
+      const impliedDone = (episode.watchCount || 1) >= targetWatchCount;
+      if (explicitlyDone || impliedDone) episodesRewatchedInRound++;
     }
   }
 
