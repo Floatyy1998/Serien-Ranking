@@ -18,9 +18,10 @@ export const MilestoneBoxCard: React.FC = () => {
   const [availableBoxes, setAvailableBoxes] = useState(0);
   const [showBox, setShowBox] = useState(false);
 
-  // totalViews zaehlt Rewatches mit — jeder View = +1 Progress Richtung
-  // naechster Mystery Box, nicht nur Erstansichten.
-  const totalEpisodes = stats.totalViews || stats.watchedEpisodes || 0;
+  // Unique watched Episoden (nicht totalViews) damit die Anzeige mit dem
+  // "Eps. gesamt" Counter synchron laeuft und User-Erwartung matcht:
+  // 1 Folge gesehen = +1 Progress, Rewatches zaehlen nicht doppelt.
+  const totalEpisodes = stats.watchedEpisodes || 0;
   const nextThreshold = getNextBoxThreshold(totalEpisodes);
   const progress = getProgressToNextBox(totalEpisodes);
 
