@@ -47,7 +47,28 @@ export const useWebWorkerStatsOptimized = (): WorkerStats => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
 
-  const depsKey = `${seriesList.length}-${movieList.length}-${user?.uid}`;
+  // watchedCount mit in den depsKey damit der Worker auch neu rennt wenn
+  // sich nur Watch-States aendern (User hakt eine Episode ab) statt nur bei
+  // Aenderung der Anzahl Serien/Filme. Ohne das blieben z.B. die Mystery-Box-
+  // Progress und "watched episodes" stats stale.
+  const watchedCount = useMemo(() => {
+    let count = 0;
+    for (const s of seriesList) {
+      if (!s.seasons) continue;
+      for (const season of s.seasons) {
+        if (!season.episodes) continue;
+        for (const ep of season.episodes) {
+          if (ep.watched) count++;
+        }
+      }
+    }
+    return count;
+  }, [seriesList]);
+  const watchedMovieCount = useMemo(
+    () => movieList.filter((m) => m.watched).length,
+    [movieList],
+  );
+  const depsKey = `${seriesList.length}-${movieList.length}-${watchedCount}-${watchedMovieCount}-${user?.uid}`;
 
   const workerInput = useMemo<StatsWorkerInput>(
     () => ({ seriesList, movieList, userId: user?.uid }),
