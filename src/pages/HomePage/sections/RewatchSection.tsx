@@ -170,7 +170,7 @@ export const RewatchSection = React.memo(function RewatchSection({
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {item.currentWatchCount}x → {item.targetWatchCount}x
+                        {item.currentWatchCount}x → {item.currentWatchCount + 1}x
                       </p>
                       <div
                         style={{
