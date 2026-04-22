@@ -183,12 +183,15 @@ export function useSeriesActions(
         let rewatchRemoved = false;
         if (hadRewatch) {
           const rewatchedEps = { ...(series.rewatch?.rewatchedEps || {}), [String(epId)]: true };
+          const targetCount = Math.max(2, (series.rewatch?.round || 0) + 1);
           let allDone = true;
           for (const s of series.seasons || []) {
             for (const ep of s.episodes || []) {
               if (!ep.watched) continue;
               if (!ep.id) continue;
-              if (!rewatchedEps[String(ep.id)]) {
+              const explicit = !!rewatchedEps[String(ep.id)];
+              const implied = (ep.watchCount || 1) >= targetCount;
+              if (!explicit && !implied) {
                 allDone = false;
                 break;
               }

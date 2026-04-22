@@ -121,11 +121,13 @@ export function useRewatchHandler() {
         });
       }, 300);
 
-      // Auto-complete rewatch check: alle gesehenen Eps in rewatchedEps?
+      // Auto-complete rewatch check: alle gesehenen Eps als done markiert?
+      // (entweder explizit in rewatchedEps ODER watchCount >= target)
       const series = itemSeries;
       let rewatchRemoved = false;
       if (series?.rewatch?.active) {
         const rewatchedEps = { ...(series.rewatch.rewatchedEps || {}), [String(epId)]: true };
+        const targetCount = item.targetWatchCount;
         let allDone = true;
         for (const season of series.seasons || []) {
           if (!season || typeof season !== 'object') continue;
@@ -133,7 +135,9 @@ export function useRewatchHandler() {
           for (const ep of episodes) {
             if (!ep.watched) continue;
             if (!ep.id) continue;
-            if (!rewatchedEps[String(ep.id)]) {
+            const explicit = !!rewatchedEps[String(ep.id)];
+            const implied = (ep.watchCount || 1) >= targetCount;
+            if (!explicit && !implied) {
               allDone = false;
               break;
             }
