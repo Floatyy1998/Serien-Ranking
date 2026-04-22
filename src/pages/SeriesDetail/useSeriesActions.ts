@@ -169,30 +169,36 @@ export function useSeriesActions(
         const prevLast: number = lastSnap.val() || 0;
 
         const newWatchCount = prevWatchCount + 1;
+        const rewatchEpsPath = `users/${userId}/series/${series.id}/rewatch/rewatchedEps/${epId}`;
+        const hadRewatch = !!series.rewatch?.active;
         await db.ref(`${epPath}/c`).set(newWatchCount);
         await db.ref(`${epPath}/l`).set(Math.floor(Date.now() / 1000));
+        if (hadRewatch) {
+          await db.ref(rewatchEpsPath).set(true);
+        }
         bumpSeriesVersion(userId);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
 
         let rewatchRemoved = false;
-        if (series.rewatch?.active) {
-          const targetCount = Math.max(2, (series.rewatch.round || 0) + 1);
+        if (hadRewatch) {
+          const rewatchedEps = { ...(series.rewatch?.rewatchedEps || {}), [String(epId)]: true };
           let allDone = true;
           for (const s of series.seasons || []) {
             for (const ep of s.episodes || []) {
-              if (!ep.watched || ep.id === episode.id) continue;
-              if ((ep.watchCount || 1) < targetCount) {
+              if (!ep.watched) continue;
+              if (!ep.id) continue;
+              if (!rewatchedEps[String(ep.id)]) {
                 allDone = false;
                 break;
               }
             }
             if (!allDone) break;
           }
-          if (allDone && newWatchCount >= targetCount) {
+          if (allDone) {
             await db.ref(`users/${userId}/series/${series.id}/rewatch`).remove();
             bumpSeriesVersion(userId);
-            showSnackbar(`Rewatch #${series.rewatch.round} abgeschlossen!`);
+            showSnackbar(`Rewatch #${series.rewatch?.round} abgeschlossen!`);
             rewatchRemoved = true;
           }
         }
@@ -205,6 +211,8 @@ export function useSeriesActions(
               await db.ref(`${epPath}/l`).set(prevLast);
               if (rewatchRemoved && series.rewatch) {
                 await db.ref(`users/${userId}/series/${series.id}/rewatch`).set(series.rewatch);
+              } else if (hadRewatch) {
+                await db.ref(rewatchEpsPath).remove();
               }
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
@@ -313,6 +321,7 @@ export function useSeriesActions(
           active: true,
           round: newRound,
           startedAt: new Date().toISOString(),
+          rewatchedEps: {},
         });
 
         if (!series.watchlist) {
