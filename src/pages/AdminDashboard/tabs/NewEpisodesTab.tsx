@@ -16,11 +16,21 @@ interface NewEpisodesSeries {
   episodes: NewEpisode[];
 }
 
-interface NewEpisodesData {
+interface NewEpisodesRun {
   runStart: string;
   totalNewEpisodes: number;
   seriesCount: number;
   series: NewEpisodesSeries[] | Record<string, NewEpisodesSeries>;
+}
+
+interface NewEpisodesData {
+  lastRunStart?: string;
+  runs?: Record<string, NewEpisodesRun>;
+  // Legacy flat fields (pre rolling-history format)
+  runStart?: string;
+  totalNewEpisodes?: number;
+  seriesCount?: number;
+  series?: NewEpisodesSeries[] | Record<string, NewEpisodesSeries>;
 }
 
 const toSeriesArray = (
@@ -37,6 +47,42 @@ const toEpisodesArray = (
   if (!episodes) return [];
   if (Array.isArray(episodes)) return episodes;
   return Object.values(episodes);
+};
+
+/**
+ * Aggregiert alle Runs der letzten 7 Tage zu einer einzigen Serien-Liste.
+ * Gleiche Serie in mehreren Runs → Episoden werden per S/E dedupliziert.
+ */
+const aggregateRuns = (data: NewEpisodesData | null): NewEpisodesSeries[] => {
+  if (!data) return [];
+  const runs = data.runs ? Object.values(data.runs) : [];
+  // Legacy fallback: wenn runs noch nicht existiert, zeig das flache Format
+  if (runs.length === 0 && data.series) {
+    return toSeriesArray(data.series);
+  }
+  const bySerie = new Map<number, NewEpisodesSeries>();
+  for (const run of runs) {
+    for (const serie of toSeriesArray(run.series)) {
+      const existing = bySerie.get(serie.serieId);
+      if (!existing) {
+        bySerie.set(serie.serieId, {
+          title: serie.title,
+          serieId: serie.serieId,
+          episodes: [...toEpisodesArray(serie.episodes)],
+        });
+      } else {
+        const seen = new Set(existing.episodes.map((e) => `${e.season}-${e.episode}`));
+        for (const ep of toEpisodesArray(serie.episodes)) {
+          const key = `${ep.season}-${ep.episode}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            existing.episodes.push(ep);
+          }
+        }
+      }
+    }
+  }
+  return Array.from(bySerie.values());
 };
 
 export function NewEpisodesTab({
@@ -67,11 +113,10 @@ export function NewEpisodesTab({
     );
   }
 
-  const seriesList = toSeriesArray(data?.series);
-  const totalNew =
-    data?.totalNewEpisodes ||
-    seriesList.reduce((sum, s) => sum + toEpisodesArray(s.episodes).length, 0);
+  const seriesList = aggregateRuns(data);
+  const totalNew = seriesList.reduce((sum, s) => sum + toEpisodesArray(s.episodes).length, 0);
   const hasNew = totalNew > 0;
+  const lastRun = data?.lastRunStart || data?.runStart;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -96,7 +141,7 @@ export function NewEpisodesTab({
           >
             {totalNew}
           </div>
-          <div style={{ fontSize: 12, color: theme.text.muted }}>Neue Episoden</div>
+          <div style={{ fontSize: 12, color: theme.text.muted }}>Neue Episoden (7 Tage)</div>
         </div>
         <div style={{ flex: 1, textAlign: 'center' }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: theme.text.primary }}>
@@ -107,7 +152,7 @@ export function NewEpisodesTab({
         <div style={{ flex: 1, textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: theme.text.muted }}>Letzter Lauf</div>
           <div style={{ fontSize: 12, fontWeight: 600, color: theme.text.primary, marginTop: 2 }}>
-            {data?.runStart ? new Date(data.runStart).toLocaleString('de-DE') : '—'}
+            {lastRun ? new Date(lastRun).toLocaleString('de-DE') : '—'}
           </div>
         </div>
       </div>
@@ -187,7 +232,7 @@ export function NewEpisodesTab({
       {!hasNew && (
         <div style={{ textAlign: 'center', padding: 40, color: theme.text.muted }}>
           <CheckCircle style={{ fontSize: 48, opacity: 0.3, marginBottom: 8 }} />
-          <div>Keine neuen Episoden beim letzten Lauf</div>
+          <div>Keine neuen Episoden in den letzten 7 Tagen</div>
         </div>
       )}
     </div>
