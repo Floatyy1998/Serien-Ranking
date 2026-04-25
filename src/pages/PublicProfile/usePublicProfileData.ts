@@ -109,7 +109,10 @@ export function usePublicProfileData() {
                 ? { provider: cat.providers as { id: number; logo: string; name: string }[] }
                 : undefined,
               seasons: [],
-            };
+              status: cat?.status as string | undefined,
+              production:
+                cat?.production != null ? { production: cat.production as boolean } : undefined,
+            } as PublicItem;
           });
           setProfileSeries(seriesArray);
         }
@@ -136,7 +139,10 @@ export function usePublicProfileData() {
                 ? { provider: cat.providers as { id: number; logo: string; name: string }[] }
                 : undefined,
               release_date: cat?.releaseDate as string | undefined,
-            };
+              status: cat?.status as string | undefined,
+              production:
+                cat?.production != null ? { production: cat.production as boolean } : undefined,
+            } as PublicItem;
           });
           setProfileMovies(moviesArray);
         }
