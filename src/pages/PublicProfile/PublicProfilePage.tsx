@@ -185,11 +185,17 @@ export const PublicProfilePage: React.FC = () => {
                   const providers = (
                     item.provider?.provider && item.provider.provider.length > 0
                       ? Array.from(new Set(item.provider.provider.map((p) => p.name)))
-                          .slice(0, 2)
                           .map((name) => item.provider?.provider.find((p) => p.name === name))
                           .filter(Boolean)
                       : []
                   ) as ProfileCardProvider[];
+                  const genreList = (item.genres || item.genre?.genres || []).filter(
+                    (g) => g.toLowerCase() !== 'all'
+                  );
+                  const genres =
+                    genreList.length > 0 ? genreList.slice(0, 2).join(', ') : undefined;
+                  const year =
+                    isMovie && item.release_date ? item.release_date.slice(0, 4) : undefined;
 
                   return (
                     <ProfileItemCard
@@ -198,8 +204,10 @@ export const PublicProfilePage: React.FC = () => {
                       posterUrl={getImageUrl(item.poster)}
                       isMovie={isMovie}
                       rating={isNaN(rating) ? 0 : rating}
-                      progress={progress}
+                      progress={progress > 0 ? progress : undefined}
                       providers={providers}
+                      year={year}
+                      genres={genres}
                       index={index}
                       currentTheme={currentTheme}
                       onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
