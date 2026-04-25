@@ -3,7 +3,7 @@ import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../lib/st
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { PublicItem, PublicFilters, PublicUserData } from './publicProfileHelpers';
+import type { PublicItem, PublicFilters } from './publicProfileHelpers';
 import { useResolvedTheme, calculatePublicRating, applyFilters } from './publicProfileHelpers';
 
 // Re-export types for backward compatibility
@@ -60,28 +60,32 @@ export function usePublicProfileData() {
           return;
         }
 
-        // Step 2: User-Profil-Felder laden (username, displayName, isPublicProfile).
+        // Step 2: Einzelne Profil-Felder laden — Public-Rules erlauben Read
+        // nur auf den whitelisted Subnodes, nicht auf dem ganzen $uid-Node.
         const [
-          profileSnap,
+          isPublicSnap,
+          usernameSnap,
+          displayNameSnap,
           seriesSnapshot,
           moviesSnapshot,
           staticSeriesCatalog,
           staticMoviesCatalog,
         ] = await Promise.all([
-          firebase.database().ref(`users/${foundUserId}`).once('value'),
+          firebase.database().ref(`users/${foundUserId}/isPublicProfile`).once('value'),
+          firebase.database().ref(`users/${foundUserId}/username`).once('value'),
+          firebase.database().ref(`users/${foundUserId}/displayName`).once('value'),
           firebase.database().ref(`users/${foundUserId}/series`).once('value'),
           firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
           fetchStaticCatalogSeries(),
           fetchStaticCatalogMovies(),
         ]);
 
-        const profile = profileSnap.val() as PublicUserData | null;
-        if (!profile || !profile.isPublicProfile) {
+        if (!isPublicSnap.val()) {
           setProfileExists(false);
           setLoading(false);
           return;
         }
-        setProfileName(profile.username || profile.displayName || 'Unbekannt');
+        setProfileName(usernameSnap.val() || displayNameSnap.val() || 'Unbekannt');
 
         const series = seriesSnapshot.val();
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
