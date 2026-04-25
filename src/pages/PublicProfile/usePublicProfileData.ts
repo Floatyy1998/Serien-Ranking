@@ -44,40 +44,39 @@ export function usePublicProfileData() {
       if (!publicId) return;
 
       try {
-        const usersRef = firebase.database().ref('users');
-        const usersSnapshot = await usersRef.once('value');
-        const users = usersSnapshot.val();
+        // Step 1: publicId -> userId via oeffentlich lesbarer Lookup-Node.
+        // (Vorher wurde der gesamte /users-Tree iteriert, was unter den
+        // aktuellen Security-Rules ohne Auth nicht mehr erlaubt ist.)
+        const lookupSnap = await firebase
+          .database()
+          .ref(`publicProfiles/${publicId}`)
+          .once('value');
+        const lookup = lookupSnap.val() as { userId?: string } | null;
+        const foundUserId = lookup?.userId || null;
 
-        let foundUser: PublicUserData | null = null;
-        let foundUserId: string | null = null;
-
-        if (users) {
-          for (const [userId, userData] of Object.entries(users)) {
-            const user = userData as PublicUserData;
-            if (user.publicProfileId === publicId && user.isPublicProfile) {
-              foundUser = user;
-              foundUserId = userId;
-              break;
-            }
-          }
-        }
-
-        if (!foundUser || !foundUserId) {
+        if (!foundUserId) {
           setProfileExists(false);
           setLoading(false);
           return;
         }
 
-        setProfileName(foundUser.username || foundUser.displayName || 'Unbekannt');
-
-        // Load user refs + catalog parallel. Catalog aus Static-File, Firebase-Fallback.
-        const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
+        // Step 2: User-Profil-Felder laden (username, displayName, isPublicProfile).
+        const [profileSnap, seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
           await Promise.all([
+            firebase.database().ref(`users/${foundUserId}`).once('value'),
             firebase.database().ref(`users/${foundUserId}/series`).once('value'),
             firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
             fetchStaticCatalogSeries(),
             fetchStaticCatalogMovies(),
           ]);
+
+        const profile = profileSnap.val() as PublicUserData | null;
+        if (!profile || !profile.isPublicProfile) {
+          setProfileExists(false);
+          setLoading(false);
+          return;
+        }
+        setProfileName(profile.username || profile.displayName || 'Unbekannt');
 
         const series = seriesSnapshot.val();
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<

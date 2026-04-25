@@ -176,13 +176,20 @@ export const useSettingsData = () => {
           newPublicProfileId = generatePublicId();
         }
 
-        await firebase
-          .database()
-          .ref(`users/${user.uid}`)
-          .update({
-            isPublicProfile: enabled,
-            publicProfileId: enabled ? newPublicProfileId : null,
-          });
+        // Multi-Path Update: user-eigene Felder UND oeffentlicher Lookup
+        // (publicProfiles/{publicId}/userId) damit unauthentifizierte
+        // Visitor das Profil ueber den publicId-Path resolven koennen.
+        const updates: Record<string, unknown> = {
+          [`users/${user.uid}/isPublicProfile`]: enabled,
+          [`users/${user.uid}/publicProfileId`]: enabled ? newPublicProfileId : null,
+        };
+        if (enabled && newPublicProfileId) {
+          updates[`publicProfiles/${newPublicProfileId}`] = { userId: user.uid };
+        }
+        if (!enabled && publicProfileId) {
+          updates[`publicProfiles/${publicProfileId}`] = null;
+        }
+        await firebase.database().ref('/').update(updates);
 
         setIsPublicProfile(enabled);
         setPublicProfileId(enabled ? newPublicProfileId : '');
@@ -213,10 +220,17 @@ export const useSettingsData = () => {
     setIsLoadingProfile(true);
     try {
       const newPublicProfileId = generatePublicId();
+      const oldPublicId = publicProfileId;
 
-      await firebase.database().ref(`users/${user.uid}`).update({
-        publicProfileId: newPublicProfileId,
-      });
+      // Atomic: alten Lookup loeschen, neuen anlegen, user-Feld updaten.
+      const updates: Record<string, unknown> = {
+        [`users/${user.uid}/publicProfileId`]: newPublicProfileId,
+        [`publicProfiles/${newPublicProfileId}`]: { userId: user.uid },
+      };
+      if (oldPublicId && oldPublicId !== newPublicProfileId) {
+        updates[`publicProfiles/${oldPublicId}`] = null;
+      }
+      await firebase.database().ref('/').update(updates);
 
       setPublicProfileId(newPublicProfileId);
 
@@ -226,7 +240,7 @@ export const useSettingsData = () => {
     } finally {
       setIsLoadingProfile(false);
     }
-  }, [user, isPublicProfile]);
+  }, [user, isPublicProfile, publicProfileId]);
 
   return {
     // Profile state
