@@ -61,14 +61,19 @@ export function usePublicProfileData() {
         }
 
         // Step 2: User-Profil-Felder laden (username, displayName, isPublicProfile).
-        const [profileSnap, seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
-          await Promise.all([
-            firebase.database().ref(`users/${foundUserId}`).once('value'),
-            firebase.database().ref(`users/${foundUserId}/series`).once('value'),
-            firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
-            fetchStaticCatalogSeries(),
-            fetchStaticCatalogMovies(),
-          ]);
+        const [
+          profileSnap,
+          seriesSnapshot,
+          moviesSnapshot,
+          staticSeriesCatalog,
+          staticMoviesCatalog,
+        ] = await Promise.all([
+          firebase.database().ref(`users/${foundUserId}`).once('value'),
+          firebase.database().ref(`users/${foundUserId}/series`).once('value'),
+          firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
+          fetchStaticCatalogSeries(),
+          fetchStaticCatalogMovies(),
+        ]);
 
         const profile = profileSnap.val() as PublicUserData | null;
         if (!profile || !profile.isPublicProfile) {
