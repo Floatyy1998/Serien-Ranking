@@ -1,5 +1,5 @@
 import { Movie as MovieIcon, Public, Star, Tv as TvIcon } from '@mui/icons-material';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import {
   EmptyState,
@@ -7,6 +7,7 @@ import {
   PageLayout,
   ProfileItemCard,
   QuickFilter,
+  ScrollToTopButton,
   TabSwitcher,
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
@@ -154,48 +155,63 @@ export const PublicProfilePage: React.FC = () => {
         />
 
         <div className="pp-grid-area">
-          {currentItems.length === 0 ? (
-            <EmptyState
-              icon={<Star style={{ fontSize: '56px' }} />}
-              title={`Keine ${label} gefunden`}
-              description="Versuche andere Filter oder entferne sie."
-              iconColor={currentTheme.primary}
-            />
-          ) : (
-            <div className="pp-grid">
-              {currentItems.map((item, index) => {
-                const isMovie = activeTab === 'movies';
-                const rating = parseFloat(calculatePublicRating(item));
-                const progress = isMovie ? 0 : calculateProgress(item);
-                const providers = (
-                  item.provider?.provider && item.provider.provider.length > 0
-                    ? Array.from(new Set(item.provider.provider.map((p) => p.name)))
-                        .slice(0, 2)
-                        .map((name) => item.provider?.provider.find((p) => p.name === name))
-                        .filter(Boolean)
-                    : []
-                ) as ProfileCardProvider[];
+          <AnimatePresence mode="wait">
+            {currentItems.length === 0 ? (
+              <motion.div
+                key="empty"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+              >
+                <EmptyState
+                  icon={<Star style={{ fontSize: '56px' }} />}
+                  title={`Keine ${label} gefunden`}
+                  description="Versuche andere Filter oder entferne sie."
+                  iconColor={currentTheme.primary}
+                />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="pp-grid"
+              >
+                {currentItems.map((item, index) => {
+                  const isMovie = 'release_date' in item && !item.seasons?.length;
+                  const rating = parseFloat(calculatePublicRating(item));
+                  const progress = isMovie ? 0 : calculateProgress(item);
+                  const providers = (
+                    item.provider?.provider && item.provider.provider.length > 0
+                      ? Array.from(new Set(item.provider.provider.map((p) => p.name)))
+                          .slice(0, 2)
+                          .map((name) => item.provider?.provider.find((p) => p.name === name))
+                          .filter(Boolean)
+                      : []
+                  ) as ProfileCardProvider[];
 
-                return (
-                  <ProfileItemCard
-                    key={item.id}
-                    title={item.title}
-                    posterUrl={getImageUrl(item.poster, 'w500')}
-                    isMovie={isMovie}
-                    rating={isNaN(rating) ? 0 : rating}
-                    progress={progress}
-                    providers={providers}
-                    index={index}
-                    animated={false}
-                    currentTheme={currentTheme}
-                    onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
-                  />
-                );
-              })}
-            </div>
-          )}
+                  return (
+                    <ProfileItemCard
+                      key={item.id}
+                      title={item.title}
+                      posterUrl={getImageUrl(item.poster)}
+                      isMovie={isMovie}
+                      rating={isNaN(rating) ? 0 : rating}
+                      progress={progress}
+                      providers={providers}
+                      index={index}
+                      currentTheme={currentTheme}
+                      onClick={() => handleItemClick(item, isMovie ? 'movie' : 'series')}
+                    />
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
+      <ScrollToTopButton scrollContainerSelector=".mobile-content" />
     </PageLayout>
   );
 };
