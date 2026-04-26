@@ -164,18 +164,38 @@ export function useSeriesActions(
         const epId = episode.id;
         if (!epId) throw new Error('Episode-ID fehlt');
         const epPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
-        const prevWatchCount = episode.watchCount || 1;
-        const lastSnap = await db.ref(`${epPath}/l`).once('value');
-        const prevLast: number = lastSnap.val() || 0;
 
+        // DB-Snapshot lesen statt nur lokalen State, damit `w` immer korrekt
+        // gesetzt wird (Edge-Case: lokal watched=true aber DB-Wert ohne `w`,
+        // z.B. nach Catalog-Reorganization mit verwaister rewatchedEps-Map).
+        const epSnap = await db.ref(epPath).once('value');
+        const epVal =
+          (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
+        const prevWatched: number = epVal.w || 0;
+        const prevWatchCount: number = epVal.c || episode.watchCount || 1;
+        const prevFirst: number = epVal.f || 0;
+        const prevLast: number = epVal.l || 0;
+
+        const nowUnix = Math.floor(Date.now() / 1000);
         const newWatchCount = prevWatchCount + 1;
         const rewatchEpsPath = `users/${userId}/series/${series.id}/rewatch/rewatchedEps/${epId}`;
         const hadRewatch = !!series.rewatch?.active;
-        await db.ref(`${epPath}/c`).set(newWatchCount);
-        await db.ref(`${epPath}/l`).set(Math.floor(Date.now() / 1000));
-        if (hadRewatch) {
-          await db.ref(rewatchEpsPath).set(true);
+
+        // Atomarer Multi-Path Update — w und f defensiv setzen falls fehlend.
+        const updates: Record<string, unknown> = {
+          [`${epPath}/c`]: newWatchCount,
+          [`${epPath}/l`]: nowUnix,
+        };
+        if (!prevWatched) {
+          updates[`${epPath}/w`] = 1;
+          if (!prevFirst) {
+            updates[`${epPath}/f`] = nowUnix;
+          }
         }
+        if (hadRewatch) {
+          updates[rewatchEpsPath] = true;
+        }
+        await db.ref().update(updates);
         bumpSeriesVersion(userId);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
@@ -210,13 +230,22 @@ export function useSeriesActions(
         showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, {
           onUndo: async () => {
             try {
-              await db.ref(`${epPath}/c`).set(prevWatchCount);
-              await db.ref(`${epPath}/l`).set(prevLast);
-              if (rewatchRemoved && series.rewatch) {
-                await db.ref(`users/${userId}/series/${series.id}/rewatch`).set(series.rewatch);
-              } else if (hadRewatch) {
-                await db.ref(rewatchEpsPath).remove();
+              const undoUpdates: Record<string, unknown> = {
+                [`${epPath}/c`]: prevWatchCount || null,
+                [`${epPath}/l`]: prevLast || null,
+              };
+              if (!prevWatched) {
+                undoUpdates[`${epPath}/w`] = null;
+                if (!prevFirst) {
+                  undoUpdates[`${epPath}/f`] = null;
+                }
               }
+              if (rewatchRemoved && series.rewatch) {
+                undoUpdates[`users/${userId}/series/${series.id}/rewatch`] = series.rewatch;
+              } else if (hadRewatch) {
+                undoUpdates[rewatchEpsPath] = null;
+              }
+              await db.ref().update(undoUpdates);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }
