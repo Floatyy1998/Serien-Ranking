@@ -155,7 +155,10 @@ export function useLeaderboardData() {
     if (mode === 'global') {
       const entries = globalEntries.map((e) => ({
         uid: e.uid,
-        displayName: e.displayName,
+        displayName:
+          typeof e.displayName === 'string' && e.displayName.trim().length > 0
+            ? e.displayName
+            : 'Unbekannt',
         photoURL: e.photoURL,
         username: e.username,
         value: e[activeCategory] || 0,
@@ -168,15 +171,19 @@ export function useLeaderboardData() {
       });
       return entries;
     }
-    const entries = Object.entries(statsData).map(([uid, stats]) => ({
-      uid,
-      displayName: profiles[uid]?.displayName || 'Unbekannt',
-      photoURL: profiles[uid]?.photoURL,
-      username: profiles[uid]?.username,
-      value: stats[activeCategory] || 0,
-      rank: 0,
-      isCurrentUser: uid === user.uid,
-    }));
+    const entries = Object.entries(statsData).map(([uid, stats]) => {
+      const rawName = profiles[uid]?.displayName;
+      return {
+        uid,
+        displayName:
+          typeof rawName === 'string' && rawName.trim().length > 0 ? rawName : 'Unbekannt',
+        photoURL: profiles[uid]?.photoURL,
+        username: profiles[uid]?.username,
+        value: stats[activeCategory] || 0,
+        rank: 0,
+        isCurrentUser: uid === user.uid,
+      };
+    });
     entries.sort((a, b) => b.value - a.value);
     entries.forEach((e, i) => {
       e.rank = i + 1;
