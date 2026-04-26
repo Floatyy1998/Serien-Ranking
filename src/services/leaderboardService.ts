@@ -337,6 +337,35 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
     });
   }
 
+  // Backfill: für Einträge ohne sauberen Namen/Avatar die öffentlich lesbaren
+  // Subnodes aus /users/{uid} nachladen. Passiert wenn /leaderboardStats noch
+  // keinen Profil-Cache hat (z. B. alte Writes vor dem displayName-Patch).
+  await Promise.all(
+    entries.map(async (e) => {
+      const needsName = e.displayName === 'Unbekannt';
+      const needsPhoto = !e.photoURL;
+      if (!needsName && !needsPhoto) return;
+      try {
+        const [unameSnap, dnameSnap, photoSnap] = await Promise.all([
+          firebase.database().ref(`users/${e.uid}/username`).once('value'),
+          firebase.database().ref(`users/${e.uid}/displayName`).once('value'),
+          firebase.database().ref(`users/${e.uid}/photoURL`).once('value'),
+        ]);
+        if (needsName) {
+          e.displayName = toDisplayName(unameSnap.val(), dnameSnap.val());
+          const uname = unameSnap.val();
+          if (typeof uname === 'string' && uname.trim().length > 0) e.username = uname;
+        }
+        if (needsPhoto) {
+          const photo = photoSnap.val();
+          if (typeof photo === 'string' && photo.length > 0) e.photoURL = photo;
+        }
+      } catch {
+        // Permission-Fehler: Eintrag bleibt 'Unbekannt'.
+      }
+    })
+  );
+
   return entries;
 }
 
