@@ -18,6 +18,13 @@ function getYesterdayStr(): string {
   return toLocalDateString(d);
 }
 
+function toDisplayName(...candidates: unknown[]): string {
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.trim().length > 0) return c;
+  }
+  return 'Unbekannt';
+}
+
 function getDefaultStats(): LeaderboardStats {
   return {
     episodesThisMonth: 0,
@@ -127,7 +134,7 @@ export async function updateLeaderboardStats(
         .ref(`users/${userId}/displayName`)
         .once('value');
       const usernameSnap = await firebase.database().ref(`users/${userId}/username`).once('value');
-      publicEntry.displayName = profileSnap.val() || usernameSnap.val() || 'Unbekannt';
+      publicEntry.displayName = toDisplayName(profileSnap.val(), usernameSnap.val());
       publicEntry.username = usernameSnap.val() || null;
     } catch {
       publicEntry.displayName = 'Unbekannt';
@@ -192,8 +199,7 @@ export async function seedLeaderboardStats(
           .ref(`leaderboardStats/${uid}`)
           .set({
             ...stats,
-            displayName:
-              (userData?.displayName as string) || (userData?.username as string) || 'Unbekannt',
+            displayName: toDisplayName(userData?.displayName, userData?.username),
             photoURL: (userData?.photoURL as string) || null,
             username: (userData?.username as string) || null,
           });
@@ -270,7 +276,7 @@ export async function fetchLeaderboardProfiles(
         return {
           uid,
           profile: {
-            displayName: (data?.displayName as string) || (data?.username as string) || 'Unbekannt',
+            displayName: toDisplayName(data?.displayName, data?.username),
             photoURL: (data?.photoURL as string) || undefined,
             username: (data?.username as string) || undefined,
           },
@@ -324,7 +330,7 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
       watchtimeThisMonth: watchtime,
       streakThisMonth: (entry.streakThisMonth as number) || 0,
       streakAllTime: (entry.streakAllTime as number) || 0,
-      displayName: (entry.displayName as string) || 'Unbekannt',
+      displayName: toDisplayName(entry.displayName, entry.username),
       photoURL: (entry.photoURL as string) || undefined,
       username: (entry.username as string) || undefined,
       lastUpdated: (entry.lastUpdated as number) || 0,
@@ -401,7 +407,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
             const entry = allStats[uid];
             entryList.push({
               uid,
-              displayName: (entry?.displayName as string) || 'Unbekannt',
+              displayName: toDisplayName(entry?.displayName, entry?.username),
               photoURL: (entry?.photoURL as string) || undefined,
               score: hist.watchtimeThisMonth,
             });
@@ -416,7 +422,7 @@ export async function checkAndArchiveMonth(): Promise<void> {
 
           entryList.push({
             uid,
-            displayName: (statsEntry.displayName as string) || 'Unbekannt',
+            displayName: toDisplayName(statsEntry.displayName, statsEntry.username),
             photoURL: (statsEntry.photoURL as string) || undefined,
             score: watchtime,
           });
@@ -489,13 +495,25 @@ export async function fetchTrophyHistory(): Promise<MonthlyTrophy[]> {
     const data = snapshot.val() as Record<string, Record<string, unknown>> | null;
     if (!data) return [];
 
+    const normalizeTrophyEntry = (raw: unknown): MonthlyTrophy['first'] => {
+      if (!raw || typeof raw !== 'object') return null;
+      const r = raw as Record<string, unknown>;
+      if (typeof r.uid !== 'string') return null;
+      return {
+        uid: r.uid,
+        displayName: toDisplayName(r.displayName),
+        photoURL: typeof r.photoURL === 'string' ? r.photoURL : undefined,
+        score: typeof r.score === 'number' ? r.score : 0,
+      };
+    };
+
     return Object.entries(data)
       .map(([monthKey, v]) => ({
         monthKey,
         category: (v.category as string) || 'watchtimeThisMonth',
-        first: (v.first as MonthlyTrophy['first']) || null,
-        second: (v.second as MonthlyTrophy['second']) || null,
-        third: (v.third as MonthlyTrophy['third']) || null,
+        first: normalizeTrophyEntry(v.first),
+        second: normalizeTrophyEntry(v.second),
+        third: normalizeTrophyEntry(v.third),
       }))
       .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
   } catch (error) {
