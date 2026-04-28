@@ -141,6 +141,14 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
     }
   }, [currentIndex, series.length]);
 
+  // Wenn die Liste schrumpft (z. B. nach Entfernen) den Index in den gültigen
+  // Bereich klemmen, sonst zeigt series[currentIndex] auf undefined.
+  useEffect(() => {
+    if (series.length > 0 && currentIndex >= series.length) {
+      setCurrentIndex(series.length - 1);
+    }
+  }, [series.length, currentIndex]);
+
   const markAsNotified = async (seriesIds: number[]) => {
     if (!user) return;
     if (variant === 'new-season') {
@@ -211,7 +219,9 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   if (series.length === 0) return null;
 
-  const currentSeries = series[currentIndex];
+  const safeIndex = Math.min(currentIndex, series.length - 1);
+  const currentSeries = series[safeIndex];
+  if (!currentSeries) return null;
   const isActioned =
     variant === 'new-season'
       ? actionedIds.has(currentSeries.id) || currentSeries.watchlist
@@ -260,7 +270,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentIndex}
+                key={safeIndex}
                 className="series-info"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -343,7 +353,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   <span>
                     <button
                       onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-                      disabled={currentIndex === 0}
+                      disabled={safeIndex === 0}
                       className="nav-button"
                       style={{ color: currentTheme.text.primary + '60' }}
                     >
@@ -362,10 +372,10 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                     <span
                       key={index}
                       role="tab"
-                      aria-selected={index === currentIndex}
+                      aria-selected={index === safeIndex}
                       aria-label={`${s.title || s.original_name || 'Serie'} (${index + 1} von ${series.length})`}
                       tabIndex={0}
-                      className={`dot ${index === currentIndex ? 'active' : ''}`}
+                      className={`dot ${index === safeIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -375,7 +385,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                       }}
                       style={{
                         backgroundColor:
-                          index === currentIndex ? color : currentTheme.text.primary + '30',
+                          index === safeIndex ? color : currentTheme.text.primary + '30',
                         cursor: 'pointer',
                       }}
                     />
@@ -386,7 +396,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   <span>
                     <button
                       onClick={() => setCurrentIndex((i) => Math.min(series.length - 1, i + 1))}
-                      disabled={currentIndex === series.length - 1}
+                      disabled={safeIndex === series.length - 1}
                       className="nav-button"
                       style={{ color: currentTheme.text.primary + '60' }}
                     >
@@ -399,7 +409,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
             {series.length > 1 && (
               <p className="counter">
-                {currentIndex + 1} von {series.length} {config.counterSuffix}
+                {safeIndex + 1} von {series.length} {config.counterSuffix}
               </p>
             )}
           </div>
