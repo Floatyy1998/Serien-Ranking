@@ -134,20 +134,16 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const config = variantConfigs[variant];
   const color = config.themeColor(currentTheme);
 
+  // Wenn die Liste schrumpft (z. B. nach Entfernen), zeigt series[currentIndex]
+  // auf undefined — daher abgeleiteten safeIndex statt setState im Effect.
+  const safeIndex = series.length > 0 ? Math.min(currentIndex, series.length - 1) : 0;
+
   useEffect(() => {
     if (dotsContainerRef.current && series.length > 1) {
-      const activeDot = dotsContainerRef.current.children[currentIndex] as HTMLElement;
+      const activeDot = dotsContainerRef.current.children[safeIndex] as HTMLElement;
       activeDot?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
-  }, [currentIndex, series.length]);
-
-  // Wenn die Liste schrumpft (z. B. nach Entfernen) den Index in den gültigen
-  // Bereich klemmen, sonst zeigt series[currentIndex] auf undefined.
-  useEffect(() => {
-    if (series.length > 0 && currentIndex >= series.length) {
-      setCurrentIndex(series.length - 1);
-    }
-  }, [series.length, currentIndex]);
+  }, [safeIndex, series.length]);
 
   const markAsNotified = async (seriesIds: number[]) => {
     if (!user) return;
@@ -219,7 +215,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   if (series.length === 0) return null;
 
-  const safeIndex = Math.min(currentIndex, series.length - 1);
   const currentSeries = series[safeIndex];
   if (!currentSeries) return null;
   const isActioned =
@@ -352,7 +347,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 <Tooltip title="Vorherige" arrow>
                   <span>
                     <button
-                      onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
+                      onClick={() => setCurrentIndex(Math.max(0, safeIndex - 1))}
                       disabled={safeIndex === 0}
                       className="nav-button"
                       style={{ color: currentTheme.text.primary + '60' }}
@@ -395,7 +390,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 <Tooltip title="Nächste" arrow>
                   <span>
                     <button
-                      onClick={() => setCurrentIndex((i) => Math.min(series.length - 1, i + 1))}
+                      onClick={() => setCurrentIndex(Math.min(series.length - 1, safeIndex + 1))}
                       disabled={safeIndex === series.length - 1}
                       className="nav-button"
                       style={{ color: currentTheme.text.primary + '60' }}
