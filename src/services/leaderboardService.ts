@@ -25,6 +25,32 @@ function toDisplayName(...candidates: unknown[]): string {
   return 'Unbekannt';
 }
 
+/**
+ * Liest die öffentlich lesbaren Profil-Subnodes (username/displayName/photoURL)
+ * eines Users. Wird zum Backfill genutzt, wenn /leaderboardStats oder
+ * /leaderboardTrophies veraltete oder fehlende Werte cachen.
+ */
+async function fetchProfileSubnode(
+  uid: string
+): Promise<{ displayName: string; photoURL?: string; username?: string }> {
+  try {
+    const [unameSnap, dnameSnap, photoSnap] = await Promise.all([
+      firebase.database().ref(`users/${uid}/username`).once('value'),
+      firebase.database().ref(`users/${uid}/displayName`).once('value'),
+      firebase.database().ref(`users/${uid}/photoURL`).once('value'),
+    ]);
+    const uname = unameSnap.val();
+    const photo = photoSnap.val();
+    return {
+      displayName: toDisplayName(unameSnap.val(), dnameSnap.val()),
+      photoURL: typeof photo === 'string' && photo.length > 0 ? photo : undefined,
+      username: typeof uname === 'string' && uname.trim().length > 0 ? uname : undefined,
+    };
+  } catch {
+    return { displayName: 'Unbekannt' };
+  }
+}
+
 function getDefaultStats(): LeaderboardStats {
   return {
     episodesThisMonth: 0,
@@ -337,32 +363,17 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
     });
   }
 
-  // Backfill: für Einträge ohne sauberen Namen/Avatar die öffentlich lesbaren
-  // Subnodes aus /users/{uid} nachladen. Passiert wenn /leaderboardStats noch
-  // keinen Profil-Cache hat (z. B. alte Writes vor dem displayName-Patch).
+  // Profil-Daten in /leaderboardStats sind nur ein Cache und können stale sein
+  // (alte Namen, fehlende Bilder). Daher für jeden Eintrag die öffentlich
+  // lesbaren Subnodes aus /users/{uid} nachladen und überschreiben.
   await Promise.all(
     entries.map(async (e) => {
-      const needsName = e.displayName === 'Unbekannt';
-      const needsPhoto = !e.photoURL;
-      if (!needsName && !needsPhoto) return;
-      try {
-        const [unameSnap, dnameSnap, photoSnap] = await Promise.all([
-          firebase.database().ref(`users/${e.uid}/username`).once('value'),
-          firebase.database().ref(`users/${e.uid}/displayName`).once('value'),
-          firebase.database().ref(`users/${e.uid}/photoURL`).once('value'),
-        ]);
-        if (needsName) {
-          e.displayName = toDisplayName(unameSnap.val(), dnameSnap.val());
-          const uname = unameSnap.val();
-          if (typeof uname === 'string' && uname.trim().length > 0) e.username = uname;
-        }
-        if (needsPhoto) {
-          const photo = photoSnap.val();
-          if (typeof photo === 'string' && photo.length > 0) e.photoURL = photo;
-        }
-      } catch {
-        // Permission-Fehler: Eintrag bleibt 'Unbekannt'.
+      const profile = await fetchProfileSubnode(e.uid);
+      if (profile.displayName !== 'Unbekannt' || e.displayName === 'Unbekannt') {
+        e.displayName = profile.displayName;
       }
+      if (profile.photoURL) e.photoURL = profile.photoURL;
+      if (profile.username) e.username = profile.username;
     })
   );
 
@@ -516,6 +527,70 @@ export async function checkAndArchiveMonth(): Promise<void> {
 }
 
 /**
+ * Erzwingt das Neu-Berechnen des Trophys für einen einzelnen Monat. Im
+ * Gegensatz zu checkAndArchiveMonth überschreibt das auch existierende Einträge
+ * und nutzt für jeden User den maximalen Wert aus History-Snapshot UND
+ * leaderboardStats — falls beim ersten Archivieren ein User übersprungen wurde
+ * (z. B. weil sein monthKey schon weitergerollt hatte und die History noch
+ * nicht geschrieben war).
+ */
+export async function forceRebuildArchive(monthKey: string): Promise<void> {
+  const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
+  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
+  const uids = Object.keys(allStats);
+
+  const entryList: { uid: string; displayName: string; photoURL?: string; score: number }[] = [];
+
+  await Promise.all(
+    uids.map(async (uid) => {
+      try {
+        const histSnap = await firebase
+          .database()
+          .ref(`users/${uid}/leaderboard/history/${monthKey}`)
+          .once('value');
+        const hist = histSnap.val() as Record<string, number> | null;
+        const histWatchtime = hist?.watchtimeThisMonth ?? 0;
+
+        const statsEntry = allStats[uid];
+        const statsWatchtime =
+          statsEntry?.monthKey === monthKey ? (statsEntry.watchtimeThisMonth as number) || 0 : 0;
+
+        const watchtime = Math.max(histWatchtime, statsWatchtime);
+        if (watchtime <= 0) return;
+
+        entryList.push({
+          uid,
+          displayName: toDisplayName(statsEntry?.displayName, statsEntry?.username),
+          photoURL: (statsEntry?.photoURL as string) || undefined,
+          score: watchtime,
+        });
+      } catch {
+        // Skip user
+      }
+    })
+  );
+
+  if (entryList.length === 0) return;
+
+  const entries = entryList.sort((a, b) => b.score - a.score);
+  const toEntry = (e: (typeof entries)[0] | undefined) =>
+    e && e.score > 0
+      ? { uid: e.uid, displayName: e.displayName, photoURL: e.photoURL || null, score: e.score }
+      : null;
+
+  await firebase
+    .database()
+    .ref(`leaderboardTrophies/${monthKey}`)
+    .set({
+      archived: true,
+      category: 'watchtimeThisMonth',
+      first: toEntry(entries[0]),
+      second: toEntry(entries[1]),
+      third: toEntry(entries[2]),
+    });
+}
+
+/**
  * Lädt alle monatlichen Trophäen, sortiert nach Monat (neueste zuerst).
  */
 export async function fetchTrophyHistory(): Promise<MonthlyTrophy[]> {
@@ -536,7 +611,7 @@ export async function fetchTrophyHistory(): Promise<MonthlyTrophy[]> {
       };
     };
 
-    return Object.entries(data)
+    const trophies = Object.entries(data)
       .map(([monthKey, v]) => ({
         monthKey,
         category: (v.category as string) || 'watchtimeThisMonth',
@@ -545,6 +620,46 @@ export async function fetchTrophyHistory(): Promise<MonthlyTrophy[]> {
         third: normalizeTrophyEntry(v.third),
       }))
       .sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+
+    // Profil-Daten in Trophäen sind ein Snapshot vom Archivierungs-Zeitpunkt
+    // und können stale sein (alte Namen, fehlende Bilder, "Unbekannt").
+    // Daher für jeden Slot frische Profil-Daten aus /users/{uid} mergen.
+    const uniqueUids = new Set<string>();
+    trophies.forEach((t) => {
+      if (t.first) uniqueUids.add(t.first.uid);
+      if (t.second) uniqueUids.add(t.second.uid);
+      if (t.third) uniqueUids.add(t.third.uid);
+    });
+    const profileMap = new Map<
+      string,
+      { displayName: string; photoURL?: string; username?: string }
+    >();
+    await Promise.all(
+      Array.from(uniqueUids).map(async (uid) => {
+        profileMap.set(uid, await fetchProfileSubnode(uid));
+      })
+    );
+
+    const merge = (slot: MonthlyTrophy['first']): MonthlyTrophy['first'] => {
+      if (!slot) return null;
+      const profile = profileMap.get(slot.uid);
+      if (!profile) return slot;
+      return {
+        ...slot,
+        displayName:
+          profile.displayName !== 'Unbekannt' || slot.displayName === 'Unbekannt'
+            ? profile.displayName
+            : slot.displayName,
+        photoURL: profile.photoURL ?? slot.photoURL,
+      };
+    };
+
+    return trophies.map((t) => ({
+      ...t,
+      first: merge(t.first),
+      second: merge(t.second),
+      third: merge(t.third),
+    }));
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Leaderboard] Failed to fetch trophy history: ${message}`);
