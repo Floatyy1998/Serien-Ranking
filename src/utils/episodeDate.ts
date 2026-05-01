@@ -1,4 +1,37 @@
 /**
+ * TVMaze-Quirk: Wenn ein Sender keine echte Sendezeit gepflegt hat (airtime
+ * "00:00"), schreibt TVMaze den airstamp aufs ENDE des Tages — d. h. lokal
+ * exakt Mitternacht des Folgetages. Beispiel:
+ *   airdate  = "2026-04-30"
+ *   airstamp = "2026-04-30T22:00:00+00:00" → in Berlin = 01.05. 00:00
+ * Diese Funktion erkennt den Fall (lokal Mitternacht UND ein Tag nach airdate)
+ * und gibt den korrekten Date für airdate 00:00 lokal zurück.
+ */
+function tvMazeMidnightQuirk(
+  airstamp: string | undefined,
+  airDateStr: string | undefined
+): Date | null {
+  if (!airstamp || !airDateStr) return null;
+  const stampDate = new Date(airstamp);
+  if (isNaN(stampDate.getTime())) return null;
+  if (stampDate.getHours() !== 0 || stampDate.getMinutes() !== 0) return null;
+
+  const parts = airDateStr.split('-');
+  if (parts.length !== 3) return null;
+  const airDateLocal = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  if (isNaN(airDateLocal.getTime())) return null;
+
+  const stampMidnightLocal = new Date(
+    stampDate.getFullYear(),
+    stampDate.getMonth(),
+    stampDate.getDate()
+  );
+  if (stampMidnightLocal.getTime() - airDateLocal.getTime() !== 86_400_000) return null;
+
+  return airDateLocal;
+}
+
+/**
  * Extracts the best available air date from an episode object.
  * Prefers airstamp (exact UTC) > air_date > airDate > firstAired.
  * Returns null if no date is available.
@@ -15,7 +48,11 @@ export function getEpisodeAirDateStr(
     | undefined
 ): string | null {
   if (!ep) return null;
-  return ep.airstamp?.split('T')[0] || ep.air_date || ep.airDate || ep.firstAired || null;
+  const dateStr = ep.air_date || ep.airDate || ep.firstAired;
+  if (ep.airstamp && tvMazeMidnightQuirk(ep.airstamp, dateStr)) {
+    return dateStr || null;
+  }
+  return ep.airstamp?.split('T')[0] || dateStr || null;
 }
 
 /**
@@ -36,8 +73,10 @@ export function getEpisodeAirDate(
 ): Date | null {
   if (!ep) return null;
 
-  // Prefer airstamp for timezone-accurate date
   if (ep.airstamp) {
+    const dateStr = ep.air_date || ep.airDate || ep.firstAired;
+    const corrected = tvMazeMidnightQuirk(ep.airstamp, dateStr);
+    if (corrected) return corrected;
     const d = new Date(ep.airstamp);
     if (!isNaN(d.getTime())) return d;
   }
