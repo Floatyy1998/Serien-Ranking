@@ -54,8 +54,6 @@ export function SeasonsSection({
   );
   const selectedSeason = series.seasons[safeSeasonIndex];
 
-  if (!selectedSeason) return null;
-
   const handleSeasonSwipe = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const threshold = 50;
@@ -69,6 +67,9 @@ export function SeasonsSection({
     },
     [selectedSeasonIndex, series.seasons.length, setSelectedSeasonIndex]
   );
+
+  if (!selectedSeason) return null;
+
   const watchedEpisodes = selectedSeason?.episodes?.filter((ep) => ep.watched).length || 0;
   const totalEpisodes = selectedSeason?.episodes?.length || 0;
   const seasonProgress =
