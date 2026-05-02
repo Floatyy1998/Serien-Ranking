@@ -48,7 +48,13 @@ export function SeasonsSection({
   navigate,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
-  const selectedSeason = series.seasons[selectedSeasonIndex];
+  const safeSeasonIndex = Math.min(
+    Math.max(selectedSeasonIndex, 0),
+    Math.max(series.seasons.length - 1, 0)
+  );
+  const selectedSeason = series.seasons[safeSeasonIndex];
+
+  if (!selectedSeason) return null;
 
   const handleSeasonSwipe = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
