@@ -7,7 +7,7 @@ import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
-import { CastCrew } from '../../components/detail';
+import { CastCrew, RecommendationsSection } from '../../components/detail';
 import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
@@ -398,6 +398,9 @@ export const SeriesDetailPage = memo(() => {
               />
             </div>
           )}
+
+          {/* TMDB-Empfehlungen */}
+          <RecommendationsSection id={series.tmdb_id || series.id} mediaType="tv" />
         </>
       )}
 

@@ -4,7 +4,7 @@ import Star from '@mui/icons-material/Star';
 import { memo } from 'react';
 import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
-import { CastCrew } from '../../components/detail';
+import { CastCrew, RecommendationsSection } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';
@@ -124,7 +124,10 @@ export const MovieDetailPage = memo(() => {
       {activeTab === 'cast' ? (
         <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
       ) : (
-        <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
+        <>
+          <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
+          <RecommendationsSection id={movie.id} mediaType="movie" />
+        </>
       )}
 
       {/* Discussions Section */}
