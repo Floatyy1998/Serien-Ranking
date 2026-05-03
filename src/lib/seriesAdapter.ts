@@ -62,13 +62,20 @@ export function mergeToSeriesView(
         let firstWatchedAt: string | undefined;
         let lastWatchedAt: string | undefined;
 
-        if (seasonWatch && isEpidSeason(seasonWatch) && ep.id) {
-          const cw = readEpisodeById(seasonWatch as EpidSeason, ep.id);
+        const epidSeason =
+          seasonWatch && isEpidSeason(seasonWatch) ? (seasonWatch as unknown as EpidSeason) : null;
+        const epidHit = epidSeason && ep.id != null ? epidSeason.eps[String(ep.id)] : undefined;
+
+        if (epidHit && epidSeason && ep.id != null) {
+          const cw = readEpisodeById(epidSeason, ep.id);
           watched = cw.watched;
           watchCount = cw.watchCount;
           firstWatchedAt = cw.firstWatchedAt;
           lastWatchedAt = cw.lastWatchedAt;
         } else if (seasonWatch && isLegacyArraySeason(seasonWatch)) {
+          // Fallback wenn Season teil-migriert ist (eps existiert, aber diese
+          // Episode steht noch im Legacy-Array). Sonst gehen vorher gesehene
+          // Episoden bei der ersten ID-basierten Swipe-Markierung verloren.
           const cw = readEpisodeFromLegacyArray(seasonWatch as LegacyArraySeason, idx);
           watched = cw.watched;
           watchCount = cw.watchCount;

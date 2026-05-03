@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -113,21 +115,65 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAllAsRead,
   } = useNotifications();
 
-  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('dismissed_announcements') || '[]');
-    } catch {
-      return [];
-    }
-  });
+  // Source of truth: Firebase. localStorage wurde von PWAs geleert
+  // (iOS WebKit 7-Tage-Regel, Android unter Storage-Pressure), wodurch der
+  // Bell-Badge nach jedem Cold-Start auf ANNOUNCEMENTS.length zurueckschnellte.
+  const [lastReadAnnouncementsTime, setLastReadAnnouncementsTime] = useState<number | null>(null);
+  const lastReadAnnouncementsRef = useRef<number | null>(null);
+  useEffect(() => {
+    lastReadAnnouncementsRef.current = lastReadAnnouncementsTime;
+  }, [lastReadAnnouncementsTime]);
 
-  const dismissAnnouncement = useCallback((id: string) => {
-    setDismissedAnnouncements((prev) => {
-      const updated = [...prev, id];
-      localStorage.setItem('dismissed_announcements', JSON.stringify(updated));
-      return updated;
-    });
-  }, []);
+  useEffect(() => {
+    if (!user) {
+      setLastReadAnnouncementsTime(null);
+      return;
+    }
+    const ref = firebase.database().ref(`users/${user.uid}/readTimes/announcements`);
+    ref
+      .once('value')
+      .then((snap) => {
+        const val = snap.val();
+        if (typeof val === 'number') {
+          setLastReadAnnouncementsTime(val);
+        } else {
+          // First-time hydration: alte Announcements nicht als "neu" auferstehen lassen
+          const now = Date.now();
+          setLastReadAnnouncementsTime(now);
+          ref.set(now).catch(() => {});
+        }
+      })
+      .catch(() => {
+        // offline — Badge faellt auf 0 zurueck statt faelschlich auf 5
+      });
+  }, [user]);
+
+  const persistAnnouncementsRead = useCallback(
+    (ts: number) => {
+      setLastReadAnnouncementsTime(ts);
+      lastReadAnnouncementsRef.current = ts;
+      if (user) {
+        firebase
+          .database()
+          .ref(`users/${user.uid}/readTimes/announcements`)
+          .set(ts)
+          .catch(() => {});
+      }
+    },
+    [user]
+  );
+
+  const dismissAnnouncement = useCallback(
+    (id: string) => {
+      const ann = ANNOUNCEMENTS.find((a) => a.id === id);
+      if (!ann) return;
+      const next = Math.max(lastReadAnnouncementsRef.current ?? 0, ann.timestamp);
+      if (next !== lastReadAnnouncementsRef.current) {
+        persistAnnouncementsRead(next);
+      }
+    },
+    [persistAnnouncementsRead]
+  );
 
   const unifiedNotifications = useMemo(() => {
     const items: UnifiedNotification[] = [];
@@ -140,7 +186,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         title: ann.title,
         message: ann.message,
         timestamp: ann.timestamp,
-        read: dismissedAnnouncements.includes(ann.id),
+        read: lastReadAnnouncementsTime !== null && ann.timestamp <= lastReadAnnouncementsTime,
         navigateTo: ann.navigateTo,
         icon: 'announcement',
       });
@@ -264,24 +310,23 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     notifications,
     unreadActivitiesCount,
     unreadRequestsCount,
-    dismissedAnnouncements,
+    lastReadAnnouncementsTime,
     isAdmin,
   ]);
 
   const totalUnreadBadge =
     unreadActivitiesCount +
     notificationUnreadCount +
-    ANNOUNCEMENTS.filter((a) => !dismissedAnnouncements.includes(a.id)).length;
+    (lastReadAnnouncementsTime !== null
+      ? ANNOUNCEMENTS.filter((a) => a.timestamp > lastReadAnnouncementsTime).length
+      : 0);
 
   const handleMarkAllNotificationsRead = useCallback(() => {
     markActivitiesAsRead();
     markRequestsAsRead();
     markAllAsRead();
-    // Dismiss all announcements
-    const allIds = ANNOUNCEMENTS.map((a) => a.id);
-    setDismissedAnnouncements(allIds);
-    localStorage.setItem('dismissed_announcements', JSON.stringify(allIds));
-  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead]);
+    persistAnnouncementsRead(Date.now());
+  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, persistAnnouncementsRead]);
 
   return {
     unifiedNotifications,
