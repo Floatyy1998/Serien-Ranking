@@ -31,10 +31,12 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // HTML nicht precachen - muss immer frisch vom Server kommen,
-        // damit nach einem Deploy sofort die neuen Chunk-Referenzen geladen werden
-        globPatterns: ['**/*.{js,css,svg,png,jpg,jpeg,webp}'],
-        navigateFallback: null, // Disable navigate fallback to prevent loops
+        // index.html mitprecachen + als Navigation-Fallback: PWA muss auch
+        // bei schlechter/keiner Verbindung laden koennen. Stale-Chunks nach
+        // Deploy sind ok: skipWaiting + clientsClaim + controllerchange-
+        // Reload (serviceWorkerManager.ts) holen den neuen Stand.
+        globPatterns: ['**/*.{js,css,svg,png,jpg,jpeg,webp,html}'],
+        navigateFallback: 'index.html',
         skipWaiting: true, // Auto-update: neuer Worker übernimmt sofort
         clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
