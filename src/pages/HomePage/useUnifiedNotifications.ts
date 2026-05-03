@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
@@ -118,61 +118,61 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   // Source of truth: Firebase. localStorage wurde von PWAs geleert
   // (iOS WebKit 7-Tage-Regel, Android unter Storage-Pressure), wodurch der
   // Bell-Badge nach jedem Cold-Start auf ANNOUNCEMENTS.length zurueckschnellte.
-  const [lastReadAnnouncementsTime, setLastReadAnnouncementsTime] = useState<number | null>(null);
-  const lastReadAnnouncementsRef = useRef<number | null>(null);
-  useEffect(() => {
-    lastReadAnnouncementsRef.current = lastReadAnnouncementsTime;
-  }, [lastReadAnnouncementsTime]);
+  // Wert wird mit der uid getaggt, sodass beim User-Wechsel der derived
+  // lastReadAnnouncementsTime per useMemo zurueck auf null faellt — ohne
+  // synchronen setState im Effect-Body.
+  const [storedReadTime, setStoredReadTime] = useState<{ uid: string; ts: number } | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      setLastReadAnnouncementsTime(null);
-      return;
-    }
-    const ref = firebase.database().ref(`users/${user.uid}/readTimes/announcements`);
+    if (!user) return;
+    const uid = user.uid;
+    let cancelled = false;
+    const ref = firebase.database().ref(`users/${uid}/readTimes/announcements`);
     ref
       .once('value')
       .then((snap) => {
+        if (cancelled) return;
         const val = snap.val();
         if (typeof val === 'number') {
-          setLastReadAnnouncementsTime(val);
+          setStoredReadTime({ uid, ts: val });
         } else {
           // First-time hydration: alte Announcements nicht als "neu" auferstehen lassen
           const now = Date.now();
-          setLastReadAnnouncementsTime(now);
+          setStoredReadTime({ uid, ts: now });
           ref.set(now).catch(() => {});
         }
       })
       .catch(() => {
         // offline — Badge faellt auf 0 zurueck statt faelschlich auf 5
       });
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
-  const persistAnnouncementsRead = useCallback(
-    (ts: number) => {
-      setLastReadAnnouncementsTime(ts);
-      lastReadAnnouncementsRef.current = ts;
-      if (user) {
-        firebase
-          .database()
-          .ref(`users/${user.uid}/readTimes/announcements`)
-          .set(ts)
-          .catch(() => {});
-      }
-    },
-    [user]
+  const lastReadAnnouncementsTime = useMemo(
+    () => (user && storedReadTime?.uid === user.uid ? storedReadTime.ts : null),
+    [user, storedReadTime]
   );
 
   const dismissAnnouncement = useCallback(
     (id: string) => {
       const ann = ANNOUNCEMENTS.find((a) => a.id === id);
-      if (!ann) return;
-      const next = Math.max(lastReadAnnouncementsRef.current ?? 0, ann.timestamp);
-      if (next !== lastReadAnnouncementsRef.current) {
-        persistAnnouncementsRead(next);
-      }
+      if (!ann || !user) return;
+      const uid = user.uid;
+      setStoredReadTime((prev) => {
+        const current = prev?.uid === uid ? prev.ts : 0;
+        const next = Math.max(current, ann.timestamp);
+        if (next === current) return prev;
+        firebase
+          .database()
+          .ref(`users/${uid}/readTimes/announcements`)
+          .set(next)
+          .catch(() => {});
+        return { uid, ts: next };
+      });
     },
-    [persistAnnouncementsRead]
+    [user]
   );
 
   const unifiedNotifications = useMemo(() => {
@@ -325,8 +325,16 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markActivitiesAsRead();
     markRequestsAsRead();
     markAllAsRead();
-    persistAnnouncementsRead(Date.now());
-  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, persistAnnouncementsRead]);
+    if (!user) return;
+    const uid = user.uid;
+    const now = Date.now();
+    setStoredReadTime({ uid, ts: now });
+    firebase
+      .database()
+      .ref(`users/${uid}/readTimes/announcements`)
+      .set(now)
+      .catch(() => {});
+  }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, user]);
 
   return {
     unifiedNotifications,
