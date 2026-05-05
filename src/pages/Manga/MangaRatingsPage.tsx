@@ -7,7 +7,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
-import { getDisplayFormat } from './mangaUtils';
+import { getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
 import './MangaPage.css';
 
 type SortBy = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc' | 'progress-desc';
@@ -188,8 +188,9 @@ export const MangaRatingsPage = () => {
         <div className="manga-collection-grid" style={{ paddingBottom: 100 }}>
           {items.map((manga) => {
             const rating = getRating(manga);
-            const progress = manga.chapters
-              ? Math.min((manga.currentChapter / manga.chapters) * 100, 100)
+            const totalChapters = getEffectiveChapterCount(manga);
+            const progress = totalChapters
+              ? Math.min((manga.currentChapter / totalChapters) * 100, 100)
               : 0;
 
             return (

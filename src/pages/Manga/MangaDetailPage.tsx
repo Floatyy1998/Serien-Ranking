@@ -40,7 +40,7 @@ const STATUS_OPTIONS: { value: Manga['readStatus']; label: string; color: string
   { value: 'planned', label: 'Geplant', color: '#8b5cf6' },
 ];
 
-import { ANILIST_STATUS_LABELS, getDisplayFormat } from './mangaUtils';
+import { ANILIST_STATUS_LABELS, getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
 
 const PLATFORM_OPTIONS = [
   'MangaDex',
@@ -97,12 +97,13 @@ export const MangaDetailPage = () => {
 
   // Extract stable values for effect deps
   const mangaTitle = manga?.title;
-  const mangaChapters = manga?.chapters;
   const mangaStatus = manga?.status;
 
-  // Fetch latest chapter from MangaDex for ongoing manga without chapter count
+  // Fetch latest chapter from MangaUpdates for releasing manga. AniList's
+  // chapters-Feld ist bei laufenden Serien oft veraltet/falsch (z.B. nur die
+  // Post-Hiatus-Chapter), MangaUpdates kennt den echten letzten Stand.
   useEffect(() => {
-    if (!user || !mangaTitle || mangaChapters || mangaStatus !== 'RELEASING') return;
+    if (!user || !mangaTitle || mangaStatus !== 'RELEASING') return;
     getMangaDexInfo(mangaTitle)
       .then((info) => {
         setMangadexInfo(info);
@@ -114,7 +115,7 @@ export const MangaDetailPage = () => {
         }
       })
       .catch(() => {});
-  }, [user, mangaTitle, mangaChapters, mangaStatus, anilistId]);
+  }, [user, mangaTitle, mangaStatus, anilistId]);
 
   // Fetch chapter release dates from MangaDex for releasing manga
   useEffect(() => {
@@ -135,7 +136,7 @@ export const MangaDetailPage = () => {
   const handleChapterChange = useCallback(
     async (newChapter: number) => {
       if (!user || !manga) return;
-      const effectiveMax = manga.chapters || manga.latestChapterAvailable || null;
+      const effectiveMax = getEffectiveChapterCount(manga);
       const clamped = effectiveMax
         ? Math.max(0, Math.min(newChapter, effectiveMax))
         : Math.max(0, newChapter);
@@ -152,7 +153,7 @@ export const MangaDetailPage = () => {
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
 
-      if (manga.chapters && clamped >= manga.chapters) {
+      if (effectiveMax && clamped >= effectiveMax) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
       }
@@ -357,9 +358,19 @@ export const MangaDetailPage = () => {
   const cleanDescription = description.replace(/<[^>]*>/g, '');
   const userRating = user ? manga.rating?.[user.uid] || 0 : 0;
 
-  // Effective total chapters: AniList > Firebase (from MangaDex) > live MangaDex > null
-  const effectiveChapters =
-    manga.chapters || manga.latestChapterAvailable || mangadexInfo?.latestChapter || null;
+  // Effective total chapters: MAX aus allen Quellen. AniList's chapters ist
+  // bei laufenden Serien oft veraltet (z.B. Vagabond meldet 2 statt 326),
+  // also MangaUpdates-Daten dazunehmen statt First-truthy-Wins.
+  const latestFromReleases = chapterInfo?.recentChapters?.length
+    ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
+    : 0;
+  const sourcesMax = Math.max(
+    manga.chapters || 0,
+    manga.latestChapterAvailable || 0,
+    mangadexInfo?.latestChapter || 0,
+    latestFromReleases
+  );
+  const effectiveChapters = sourcesMax > 0 ? sourcesMax : null;
   const progress =
     effectiveChapters && effectiveChapters > 0
       ? Math.min((editChapter / effectiveChapters) * 100, 100)

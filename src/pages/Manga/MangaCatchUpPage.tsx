@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
-import type { AppTheme } from './mangaUtils';
+import { getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
@@ -27,16 +27,12 @@ export const MangaCatchUpPage = () => {
     const data: CatchUpManga[] = [];
 
     for (const manga of mangaList) {
-      if (
-        manga.readStatus === 'reading' &&
-        manga.chapters &&
-        manga.chapters > 0 &&
-        manga.currentChapter < manga.chapters
-      ) {
+      const total = getEffectiveChapterCount(manga);
+      if (manga.readStatus === 'reading' && total && total > 0 && manga.currentChapter < total) {
         data.push({
           manga,
-          remainingChapters: manga.chapters - manga.currentChapter,
-          progress: (manga.currentChapter / manga.chapters) * 100,
+          remainingChapters: total - manga.currentChapter,
+          progress: (manga.currentChapter / total) * 100,
           lastReadDate: manga.lastReadAt,
         });
       }
@@ -178,7 +174,7 @@ export const MangaCatchUpPage = () => {
                   {item.manga.title}
                 </div>
                 <div style={{ fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}>
-                  Kap. {item.manga.currentChapter} / {item.manga.chapters} ·{' '}
+                  Kap. {item.manga.currentChapter} / {getEffectiveChapterCount(item.manga)} ·{' '}
                   {item.remainingChapters} offen
                 </div>
                 <div

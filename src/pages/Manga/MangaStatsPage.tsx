@@ -12,7 +12,7 @@ import { useAuth } from '../../AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { getDisplayFormat, type AppTheme } from './mangaUtils';
+import { getDisplayFormat, getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 
 export const MangaStatsPage = () => {
   const { currentTheme } = useTheme();
@@ -39,9 +39,9 @@ export const MangaStatsPage = () => {
         : 0;
 
     // Progress
-    const withChapters = mangaList.filter((m) => m.chapters && m.chapters > 0);
+    const withChapters = mangaList.filter((m) => (getEffectiveChapterCount(m) ?? 0) > 0);
     const readInKnown = withChapters.reduce((sum, m) => sum + m.currentChapter, 0);
-    const totalKnown = withChapters.reduce((sum, m) => sum + (m.chapters || 0), 0);
+    const totalKnown = withChapters.reduce((sum, m) => sum + (getEffectiveChapterCount(m) ?? 0), 0);
     const progressPct = totalKnown > 0 ? Math.round((readInKnown / totalKnown) * 100) : 0;
 
     // Format distribution

@@ -55,3 +55,17 @@ export const ANILIST_STATUS_LABELS: Record<string, string> = {
   HIATUS: 'Hiatus',
   NOT_YET_RELEASED: 'Noch nicht erschienen',
 };
+
+/**
+ * AniList's chapters-Feld ist bei laufenden Serien oft veraltet (z.B.
+ * Vagabond meldet 2 statt 326). MangaUpdates' latestChapterAvailable ist
+ * dann hoeher. First-truthy-Wins (chapters || latestChapterAvailable)
+ * waehlt aber die falsche Quelle. Stattdessen den Max nehmen.
+ */
+export function getEffectiveChapterCount(manga: {
+  chapters?: number | null;
+  latestChapterAvailable?: number | null;
+}): number | null {
+  const max = Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
+  return max > 0 ? max : null;
+}
