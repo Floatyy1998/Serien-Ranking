@@ -98,6 +98,7 @@ export const MangaDetailPage = () => {
   // Extract stable values for effect deps
   const mangaTitle = manga?.title;
   const mangaStatus = manga?.status;
+  const mangaLatestChapterAvailable = manga?.latestChapterAvailable;
 
   // Fetch latest chapter from MangaUpdates for releasing manga. AniList's
   // chapters-Feld ist bei laufenden Serien oft veraltet/falsch (z.B. nur die
@@ -105,17 +106,9 @@ export const MangaDetailPage = () => {
   useEffect(() => {
     if (!user || !mangaTitle || mangaStatus !== 'RELEASING') return;
     getMangaDexInfo(mangaTitle)
-      .then((info) => {
-        setMangadexInfo(info);
-        if (info.latestChapter && info.latestChapter > 0) {
-          firebase
-            .database()
-            .ref(`users/${user.uid}/manga/${anilistId}/latestChapterAvailable`)
-            .set(info.latestChapter);
-        }
-      })
+      .then(setMangadexInfo)
       .catch(() => {});
-  }, [user, mangaTitle, mangaStatus, anilistId]);
+  }, [user, mangaTitle, mangaStatus]);
 
   // Fetch chapter release dates from MangaDex for releasing manga
   useEffect(() => {
@@ -124,6 +117,25 @@ export const MangaDetailPage = () => {
       .then(setChapterInfo)
       .catch(() => {});
   }, [mangaTitle, mangaStatus]);
+
+  // latestChapterAvailable in Firebase persistieren — den Max aus beiden Live-
+  // Quellen, weil MangaUpdates' /search bei manchen Titeln (z.B. Vagabond) null
+  // liefert, /releases aber funktioniert. Listen-Ansichten kennen nur die
+  // Firebase-Felder, brauchen also den persistierten Wert.
+  useEffect(() => {
+    if (!user || mangaStatus !== 'RELEASING') return;
+    const latestFromReleases = chapterInfo?.recentChapters?.length
+      ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
+      : 0;
+    const live = Math.max(mangadexInfo?.latestChapter || 0, latestFromReleases);
+    if (live > 0 && live > (mangaLatestChapterAvailable || 0)) {
+      firebase
+        .database()
+        .ref(`users/${user.uid}/manga/${anilistId}/latestChapterAvailable`)
+        .set(live)
+        .catch(() => {});
+    }
+  }, [user, mangaStatus, mangadexInfo, chapterInfo, mangaLatestChapterAvailable, anilistId]);
 
   const updateField = useCallback(
     async (field: string, value: unknown) => {
