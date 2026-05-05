@@ -27,7 +27,12 @@ import { MangaCarouselSection } from './sections/MangaCarouselSection';
 import { useMangaTrending, useMangaPopular, useMangaTopRated } from '../../hooks/useMangaTrending';
 import { RecentlyAddedMangaSection } from './sections/RecentlyAddedMangaSection';
 import type { Manga } from '../../types/Manga';
-import { STATUS_COLORS, STATUS_LABELS, type AppTheme } from './mangaUtils';
+import {
+  getEffectiveChapterCount,
+  STATUS_COLORS,
+  STATUS_LABELS,
+  type AppTheme,
+} from './mangaUtils';
 import './MangaPage.css';
 
 export const MangaPage = () => {
@@ -409,9 +414,10 @@ const MangaCard = ({
   onClick: () => void;
   userId?: string;
 }) => {
+  const totalChapters = getEffectiveChapterCount(manga);
   const progress =
-    manga.chapters && manga.chapters > 0
-      ? Math.min((manga.currentChapter / manga.chapters) * 100, 100)
+    totalChapters && totalChapters > 0
+      ? Math.min((manga.currentChapter / totalChapters) * 100, 100)
       : 0;
 
   const userRating = userId ? manga.rating?.[userId] || 0 : 0;

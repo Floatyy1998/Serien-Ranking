@@ -6,6 +6,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
+import { getEffectiveChapterCount } from './mangaUtils';
 
 const TIME_RANGES = [
   { days: 7, label: '7 Tage' },
@@ -175,7 +176,9 @@ export const RecentlyReadPage = () => {
                         style={{ fontSize: 11, color: currentTheme.text.secondary, marginTop: 2 }}
                       >
                         Kap. {manga.currentChapter}
-                        {manga.chapters ? ` / ${manga.chapters}` : ''}
+                        {getEffectiveChapterCount(manga)
+                          ? ` / ${getEffectiveChapterCount(manga)}`
+                          : ''}
                       </div>
                     </div>
                     <div style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.5 }}>

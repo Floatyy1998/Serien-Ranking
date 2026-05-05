@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { IconContainer, NavCard } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { getEffectiveChapterCount } from '../mangaUtils';
 
 export const MangaCatchUpCard: React.FC = React.memo(() => {
   const { mangaList } = useMangaList();
@@ -15,14 +16,10 @@ export const MangaCatchUpCard: React.FC = React.memo(() => {
     let chapters = 0;
 
     for (const manga of mangaList) {
-      if (
-        manga.readStatus === 'reading' &&
-        manga.chapters &&
-        manga.chapters > 0 &&
-        manga.currentChapter < manga.chapters
-      ) {
+      const total = getEffectiveChapterCount(manga);
+      if (manga.readStatus === 'reading' && total && total > 0 && manga.currentChapter < total) {
         count++;
-        chapters += manga.chapters - manga.currentChapter;
+        chapters += total - manga.currentChapter;
       }
     }
 

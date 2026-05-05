@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getEffectiveChapterCount } from './mangaUtils';
 
 export const HiddenMangaPage = () => {
   const { currentTheme } = useTheme();
@@ -13,11 +14,14 @@ export const HiddenMangaPage = () => {
 
   const mangaWithStats = useMemo(
     () =>
-      hiddenMangaList.map((manga) => ({
-        manga,
-        progress:
-          manga.chapters && manga.chapters > 0 ? (manga.currentChapter / manga.chapters) * 100 : 0,
-      })),
+      hiddenMangaList.map((manga) => {
+        const total = getEffectiveChapterCount(manga);
+        return {
+          manga,
+          totalChapters: total,
+          progress: total && total > 0 ? (manga.currentChapter / total) * 100 : 0,
+        };
+      }),
     [hiddenMangaList]
   );
 
@@ -34,7 +38,7 @@ export const HiddenMangaPage = () => {
 
       <div style={{ padding: '0 16px', paddingBottom: 100 }}>
         <AnimatePresence mode="popLayout">
-          {mangaWithStats.map(({ manga, progress }) => (
+          {mangaWithStats.map(({ manga, totalChapters, progress }) => (
             <motion.div
               key={manga.anilistId}
               layout
@@ -80,10 +84,10 @@ export const HiddenMangaPage = () => {
                 </div>
                 <div style={{ fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}>
                   Kap. {manga.currentChapter}
-                  {manga.chapters ? ` / ${manga.chapters}` : ''} ·{' '}
-                  {manga.chapters ? `${Math.round(progress)}%` : '—'}
+                  {totalChapters ? ` / ${totalChapters}` : ''} ·{' '}
+                  {totalChapters ? `${Math.round(progress)}%` : '—'}
                 </div>
-                {manga.chapters && (
+                {totalChapters && (
                   <div
                     style={{
                       height: 3,

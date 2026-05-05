@@ -19,7 +19,7 @@ import {
   ScrollToTopButton,
   SwipeableEpisodeRow,
 } from '../../components/ui';
-import { getDisplayFormat, STATUS_COLORS } from './mangaUtils';
+import { getDisplayFormat, getEffectiveChapterCount, STATUS_COLORS } from './mangaUtils';
 import type { Manga } from '../../types/Manga';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
@@ -145,7 +145,7 @@ export const MangaReadingListPage = () => {
         updates.readStatus = 'reading';
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
-      const effectiveTotal = manga.chapters || manga.latestChapterAvailable;
+      const effectiveTotal = getEffectiveChapterCount(manga);
       if (effectiveTotal && newChapter >= effectiveTotal) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
@@ -366,7 +366,7 @@ export const MangaReadingListPage = () => {
               <AnimatePresence mode="popLayout">
                 {items.map((manga) => {
                   const key = String(manga.anilistId);
-                  const effectiveTotal = manga.chapters || manga.latestChapterAvailable || null;
+                  const effectiveTotal = getEffectiveChapterCount(manga);
                   const progress =
                     effectiveTotal && effectiveTotal > 0
                       ? Math.min((manga.currentChapter / effectiveTotal) * 100, 100)

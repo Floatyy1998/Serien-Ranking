@@ -12,7 +12,7 @@ import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
-import { getDisplayFormat } from '../mangaUtils';
+import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';
 
 function formatLastRead(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -74,7 +74,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
           updates.readStatus = 'reading';
           if (!manga.startedAt) updates.startedAt = new Date().toISOString();
         }
-        const effectiveTotal = manga.chapters || manga.latestChapterAvailable;
+        const effectiveTotal = getEffectiveChapterCount(manga);
         if (effectiveTotal && newChapter >= effectiveTotal) {
           updates.readStatus = 'completed';
           updates.completedAt = new Date().toISOString();

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useMangaList } from '../contexts/MangaListContext';
+import { getEffectiveChapterCount } from '../pages/Manga/mangaUtils';
 import type { Manga } from '../types/Manga';
 
 export interface ContinueReadingItem {
@@ -19,7 +20,7 @@ export interface ContinueReadingItem {
 }
 
 function mangaToContinueReading(manga: Manga): ContinueReadingItem {
-  const effectiveTotal = manga.chapters || manga.latestChapterAvailable || null;
+  const effectiveTotal = getEffectiveChapterCount(manga);
   const progress =
     effectiveTotal && effectiveTotal > 0
       ? Math.min((manga.currentChapter / effectiveTotal) * 100, 100)

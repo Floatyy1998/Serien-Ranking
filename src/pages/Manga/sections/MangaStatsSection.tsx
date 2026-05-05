@@ -6,6 +6,7 @@ import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useAuth } from '../../../AuthContext';
 import type { Manga } from '../../../types/Manga';
+import { getEffectiveChapterCount } from '../mangaUtils';
 
 export const MangaStatsSection: React.FC = React.memo(() => {
   const { mangaList } = useMangaList();
@@ -35,12 +36,8 @@ export const MangaStatsSection: React.FC = React.memo(() => {
     const manhua = mangaList.filter((m) => m.format === 'MANHUA').length;
 
     // Progress ring: chapters read / total chapters
-    // Use chapters (AniList) or latestChapterAvailable (MangaDex) as total
-    const withChapters = mangaList.filter(
-      (m) =>
-        (m.chapters && m.chapters > 0) || (m.latestChapterAvailable && m.latestChapterAvailable > 0)
-    );
-    const getEffectiveTotal = (m: Manga) => m.chapters || m.latestChapterAvailable || 0;
+    const withChapters = mangaList.filter((m) => (getEffectiveChapterCount(m) ?? 0) > 0);
+    const getEffectiveTotal = (m: Manga) => getEffectiveChapterCount(m) ?? 0;
     const readChaptersInKnown = withChapters.reduce((sum, m) => sum + m.currentChapter, 0);
     const totalChaptersKnown = withChapters.reduce((sum, m) => sum + getEffectiveTotal(m), 0);
     const hasChapterTotals = totalChaptersKnown > 0;

@@ -46,8 +46,10 @@ export async function addMangaToList(
   if (result.bannerImage) manga.bannerImage = result.bannerImage;
   if (result.description) manga.description = result.description;
 
-  // Für laufende Manga ohne bekannte Kapitelzahl: MangaUpdates abfragen
-  if (!result.chapters && result.status === 'RELEASING') {
+  // Fuer laufende Manga MangaUpdates abfragen — AniList's chapters-Feld ist
+  // bei vielen ongoing/hiatus Serien veraltet (z.B. Vagabond meldet 2 statt
+  // 326), MangaUpdates spiegelt den echten Releasestand.
+  if (result.status === 'RELEASING') {
     try {
       const mdInfo = await getMangaDexInfo(result.title.english || result.title.romaji);
       if (mdInfo.latestChapter && mdInfo.latestChapter > 0) {
