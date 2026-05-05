@@ -136,7 +136,17 @@ export const MangaDetailPage = () => {
   const handleChapterChange = useCallback(
     async (newChapter: number) => {
       if (!user || !manga) return;
-      const effectiveMax = getEffectiveChapterCount(manga);
+      // Live-Daten (mangadexInfo, chapterInfo) als Fallback einrechnen,
+      // bevor der Firebase-Write von latestChapterAvailable durch ist —
+      // sonst klemmt der Counter auf dem veralteten manga.chapters-Wert.
+      const latestFromReleases = chapterInfo?.recentChapters?.length
+        ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
+        : 0;
+      const effectiveMax = getEffectiveChapterCount(
+        manga,
+        mangadexInfo?.latestChapter,
+        latestFromReleases
+      );
       const clamped = effectiveMax
         ? Math.max(0, Math.min(newChapter, effectiveMax))
         : Math.max(0, newChapter);
@@ -165,7 +175,7 @@ export const MangaDetailPage = () => {
         await logChapterRead(user.uid, manga, clamped, previousChapter);
       }
     },
-    [user, manga, anilistId, editChapter]
+    [user, manga, anilistId, editChapter, mangadexInfo, chapterInfo]
   );
 
   const handleStatusChange = useCallback(
@@ -364,13 +374,11 @@ export const MangaDetailPage = () => {
   const latestFromReleases = chapterInfo?.recentChapters?.length
     ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
     : 0;
-  const sourcesMax = Math.max(
-    manga.chapters || 0,
-    manga.latestChapterAvailable || 0,
-    mangadexInfo?.latestChapter || 0,
+  const effectiveChapters = getEffectiveChapterCount(
+    manga,
+    mangadexInfo?.latestChapter,
     latestFromReleases
   );
-  const effectiveChapters = sourcesMax > 0 ? sourcesMax : null;
   const progress =
     effectiveChapters && effectiveChapters > 0
       ? Math.min((editChapter / effectiveChapters) * 100, 100)

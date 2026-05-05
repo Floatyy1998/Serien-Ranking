@@ -61,11 +61,22 @@ export const ANILIST_STATUS_LABELS: Record<string, string> = {
  * Vagabond meldet 2 statt 326). MangaUpdates' latestChapterAvailable ist
  * dann hoeher. First-truthy-Wins (chapters || latestChapterAvailable)
  * waehlt aber die falsche Quelle. Stattdessen den Max nehmen.
+ *
+ * Optionale extraSources erlauben es, live geladene Daten (z.B. mangadexInfo
+ * aus useEffect) einzurechnen, bevor der Firebase-Write durchgelaufen ist —
+ * sonst klemmt z.B. der Chapter-Counter auf dem alten chapters-Wert fest.
  */
-export function getEffectiveChapterCount(manga: {
-  chapters?: number | null;
-  latestChapterAvailable?: number | null;
-}): number | null {
-  const max = Math.max(manga.chapters || 0, manga.latestChapterAvailable || 0);
+export function getEffectiveChapterCount(
+  manga: {
+    chapters?: number | null;
+    latestChapterAvailable?: number | null;
+  },
+  ...extraSources: (number | null | undefined)[]
+): number | null {
+  const max = Math.max(
+    manga.chapters || 0,
+    manga.latestChapterAvailable || 0,
+    ...extraSources.map((v) => v || 0)
+  );
   return max > 0 ? max : null;
 }
