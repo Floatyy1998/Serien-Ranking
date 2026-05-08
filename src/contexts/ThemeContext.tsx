@@ -94,23 +94,39 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
   // Initialisiere Theme aus localStorage beim Start — mit Auto-Recovery bei kaputten Werten
   const getInitialConfig = (): UserThemeConfig => {
+    let savedConfig: string | null = null;
     try {
-      const savedConfig = localStorage.getItem('customTheme');
-      if (savedConfig) {
-        const parsed = JSON.parse(savedConfig);
-        const validated = validateThemeConfig(parsed);
-        // Repariertes Theme zurückschreiben falls es korrigiert wurde
-        const repaired = JSON.stringify(validated);
-        if (repaired !== savedConfig) {
-          localStorage.setItem('customTheme', repaired);
-        }
-        return validated;
+      savedConfig = localStorage.getItem('customTheme');
+    } catch {
+      // localStorage komplett unzugaenglich (Privacy-Mode etc.) — Default
+      return defaultThemeConfig;
+    }
+    if (!savedConfig) return defaultThemeConfig;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(savedConfig);
+    } catch {
+      // Wirklich korrupte JSON-Daten — vorsichtig wegraeumen
+      try {
+        localStorage.removeItem('customTheme');
+      } catch {
+        // ignore
+      }
+      return defaultThemeConfig;
+    }
+    const validated = validateThemeConfig(parsed as Partial<UserThemeConfig>);
+    // Repariertes Theme zurueckschreiben falls es korrigiert wurde — best-effort.
+    // WICHTIG: setItem darf hier NIEMALS das Theme loeschen, falls quota voll
+    // ist (siehe iOS-Safari-Quota-Problem). Der eingelesene Wert bleibt gueltig.
+    try {
+      const repaired = JSON.stringify(validated);
+      if (repaired !== savedConfig) {
+        localStorage.setItem('customTheme', repaired);
       }
     } catch {
-      // localStorage ist korrupt — aufräumen
-      localStorage.removeItem('customTheme');
+      // ignore — Quota voll oder Storage disabled, in-memory Theme reicht
     }
-    return defaultThemeConfig;
+    return validated;
   };
 
   const initialConfig = getInitialConfig();
@@ -121,8 +137,10 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
       return theme;
     } catch {
-      // Fallback auf Default-Theme wenn alles schiefgeht
-      localStorage.removeItem('customTheme');
+      // Fallback auf Default-Theme wenn die Theme-Generation selbst scheitert.
+      // localStorage-Eintrag NICHT loeschen — der ist ja noch gueltig und nur
+      // ein temporaerer Generierungsfehler darf die Theme-Praeferenz nicht
+      // zerstoeren.
       const fallback = generateDynamicTheme(defaultThemeConfig);
       setTimeout(() => applyCSSVariables(fallback, defaultThemeConfig, isMobile()), 0);
       return fallback;
@@ -148,7 +166,13 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     async (config: UserThemeConfig) => {
       // Speichere IMMER lokal (wie im Desktop ThemeEditor)
       // WICHTIG: Verwende 'customTheme' als Key, genau wie Desktop!
-      localStorage.setItem('customTheme', JSON.stringify(config));
+      // setItem in try/catch — auf iOS Safari kann das Quota voll sein, dann
+      // soll es nicht den Save-Flow oder andere Theme-Logik unterbrechen.
+      try {
+        localStorage.setItem('customTheme', JSON.stringify(config));
+      } catch {
+        // ignore — Theme bleibt im React-State, Cloud-Save unten greift evtl.
+      }
 
       // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
       if (syncMode === 'cloud' && user?.uid) {
@@ -188,22 +212,27 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
   // Theme laden (localStorage hat IMMER Priorität, dann Firebase als Fallback)
   const loadTheme = useCallback(async () => {
+    let loadedConfig: unknown = null;
+
+    // WICHTIG: Lokales Theme hat Vorrang (wie im Desktop ThemeEditor)
+    // Verwende 'customTheme' als Key, genau wie Desktop!
+    let savedConfig: string | null = null;
     try {
-      let loadedConfig = null;
-
-      // WICHTIG: Lokales Theme hat Vorrang (wie im Desktop ThemeEditor)
-      // Verwende 'customTheme' als Key, genau wie Desktop!
-      const savedConfig = localStorage.getItem('customTheme');
-      if (savedConfig) {
-        try {
-          loadedConfig = JSON.parse(savedConfig);
-        } catch {
-          // console.error('Fehler beim Parsen des lokalen Themes:', error);
-        }
+      savedConfig = localStorage.getItem('customTheme');
+    } catch {
+      // localStorage unzugaenglich — wir versuchen Cloud-Fallback unten
+    }
+    if (savedConfig) {
+      try {
+        loadedConfig = JSON.parse(savedConfig);
+      } catch {
+        // Korrupt — wird unten ueber Cloud-Fallback ersetzt
       }
+    }
 
-      // Falls kein lokales Theme, Cloud-Theme als Fallback
-      if (!loadedConfig && user?.uid) {
+    // Falls kein lokales Theme, Cloud-Theme als Fallback
+    if (!loadedConfig && user?.uid) {
+      try {
         const snapshot = await firebase
           .database()
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
@@ -211,29 +240,34 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
         if (snapshot.exists()) {
           loadedConfig = snapshot.val();
-          // WICHTIG: Speichere Cloud-Theme im localStorage für nächsten Load
-          localStorage.setItem('customTheme', JSON.stringify(loadedConfig));
+          // Cloud-Theme im localStorage spiegeln — best-effort. Quota-Fehler
+          // hier darf NICHT das Cloud-Theme zerstoeren (frueher loeschte der
+          // generische Catch resetTheme das auch aus Firebase!).
+          try {
+            localStorage.setItem('customTheme', JSON.stringify(loadedConfig));
+          } catch {
+            // ignore — in-memory + Cloud reichen
+          }
         }
+      } catch {
+        // Firebase-Read fehlgeschlagen — Default-Theme wird unten gesetzt
       }
+    }
 
-      // Wende das geladene Theme an
-      if (loadedConfig) {
-        const validatedConfig = validateThemeConfig(loadedConfig);
-        setUserConfig(validatedConfig);
+    // Wende das geladene Theme an
+    if (loadedConfig) {
+      const validatedConfig = validateThemeConfig(loadedConfig);
+      setUserConfig(validatedConfig);
 
-        const newTheme = generateDynamicTheme(validatedConfig);
-        setCurrentTheme(newTheme);
-        updateCSSVariables(newTheme, validatedConfig);
-      } else {
-        // Ensure CSS variables are set even with default theme
-        updateCSSVariables(currentTheme);
-      }
-    } catch {
-      // console.error('Fehler beim Laden des Themes:', error);
-      resetTheme();
+      const newTheme = generateDynamicTheme(validatedConfig);
+      setCurrentTheme(newTheme);
+      updateCSSVariables(newTheme, validatedConfig);
+    } else {
+      // Ensure CSS variables are set even with default theme
+      updateCSSVariables(currentTheme);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid, updateCSSVariables, resetTheme]);
+  }, [user?.uid, updateCSSVariables]);
 
   // Theme aus localStorage laden (mit Firebase als Fallback)
   useEffect(() => {
@@ -267,7 +301,11 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   // Sync-Mode setzen und speichern
   const setSyncMode = useCallback((mode: 'local' | 'cloud') => {
     setSyncModeState(mode);
-    localStorage.setItem('themeSyncMode', mode);
+    try {
+      localStorage.setItem('themeSyncMode', mode);
+    } catch {
+      // ignore — Mode bleibt im React-State, Persistenz best-effort
+    }
   }, []);
 
   // Funktion für dynamische Mobile-Hintergründe
