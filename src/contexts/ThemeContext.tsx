@@ -94,7 +94,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
 
   // Initialisiere Theme aus localStorage beim Start — mit Auto-Recovery bei kaputten Werten
   const getInitialConfig = (): UserThemeConfig => {
-    let savedConfig: string | null = null;
+    let savedConfig: string | null;
     try {
       savedConfig = localStorage.getItem('customTheme');
     } catch {
