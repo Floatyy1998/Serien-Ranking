@@ -13,11 +13,15 @@
  *
  * Caching-Strategie:
  *   1. In-Memory-Cache pro Tab (keine Netzwerk-Requests waehrend Session)
- *   2. localStorage-Cache mit Version-Check (spart Traffic ueber Reloads)
+ *   2. IndexedDB-Cache mit Version-Check (spart Traffic ueber Reloads).
+ *      Frueher localStorage — wurde aber auf iOS Safari (UTF-16, ~5 MB Quota)
+ *      bei vielen Serien zu eng und liess QuotaExceededError fuer ALLE
+ *      anderen localStorage-Writes (Theme, HomeConfig, ...) durchschlagen.
  *   3. Bei Fehler: Firebase-Fallback (robust gegen Server-Ausfall)
  */
 
 import type { CatalogSeries, CatalogMovie, CatalogSeason } from '../types/CatalogTypes';
+import { idbGetVersioned, idbSetVersioned, idbRemove, idbRemovePrefix } from './catalogIDB';
 
 // Vite injiziert process.env.VITE_* via define() in vite.config.ts
 declare const process: { env: Record<string, string | undefined> };
@@ -31,6 +35,34 @@ const LS_META_KEY = LS_PREFIX + 'seriesMeta';
 const LS_MOVIES_KEY = LS_PREFIX + 'moviesMeta';
 const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
 
+// Einmalige Migration: Alte localStorage-Eintraege mit catalog-static:*-
+// Prefix entfernen. Wichtig fuer Bestands-User, deren localStorage durch
+// die alte Strategie voll ist und dadurch andere setItem-Aufrufe (Theme,
+// HomeConfig, Watch-Next-Settings) blockiert.
+let lsMigrationDone = false;
+function migrateLocalStorageOnce(): void {
+  if (lsMigrationDone) return;
+  lsMigrationDone = true;
+  try {
+    const ls = typeof localStorage !== 'undefined' ? localStorage : null;
+    if (!ls) return;
+    const toRemove: string[] = [];
+    for (let i = 0; i < ls.length; i++) {
+      const k = ls.key(i);
+      if (k && k.startsWith(LS_PREFIX)) toRemove.push(k);
+    }
+    for (const k of toRemove) {
+      try {
+        ls.removeItem(k);
+      } catch {
+        // ignore
+      }
+    }
+  } catch {
+    // ignore
+  }
+}
+
 interface VersionResponse {
   version: number;
   updatedAt: string;
@@ -41,90 +73,6 @@ let memoryMovies: Record<string, CatalogMovie> | null = null;
 const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
-
-function getLS(): Storage | null {
-  try {
-    return typeof localStorage !== 'undefined' ? localStorage : null;
-  } catch {
-    return null;
-  }
-}
-
-// Wrapper fuer versioned Storage: Datenwerte werden als { v, data } abgelegt,
-// damit beim Lesen sofort geprueft werden kann ob der Eintrag zur aktuellen
-// Catalog-Version gehoert. Falls nicht, wird null zurueckgegeben (und im
-// Zweifel der Key geloescht) — sodass der Caller einen frischen Fetch
-// ausloest. Verhindert den Edge-Case, dass localStorage-Version und -Content
-// auseinanderlaufen.
-interface VersionedEntry<T> {
-  v: number;
-  data: T;
-}
-
-function lsGet<T>(key: string): T | null {
-  try {
-    const raw = getLS()?.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-function lsGetVersioned<T>(key: string, expectedVersion: number | null): T | null {
-  try {
-    const raw = getLS()?.getItem(key);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as VersionedEntry<T> | T;
-    // Nur akzeptieren wenn der Eintrag das neue Format hat UND die Version matcht.
-    // Alte Eintraege ohne `v`-Feld werden bewusst verworfen und neu geholt.
-    if (
-      parsed &&
-      typeof parsed === 'object' &&
-      'v' in (parsed as VersionedEntry<T>) &&
-      'data' in (parsed as VersionedEntry<T>)
-    ) {
-      const entry = parsed as VersionedEntry<T>;
-      if (expectedVersion != null && entry.v === expectedVersion) {
-        return entry.data;
-      }
-      // Version mismatch → alten Eintrag entfernen
-      getLS()?.removeItem(key);
-      return null;
-    }
-    // Legacy-Format ohne Versionsmarkierung → als stale betrachten
-    getLS()?.removeItem(key);
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function lsSet(key: string, value: unknown): void {
-  try {
-    getLS()?.setItem(key, JSON.stringify(value));
-  } catch {
-    // quota exceeded or storage disabled - ignore silently
-  }
-}
-
-function lsSetVersioned<T>(key: string, version: number | null, data: T): void {
-  if (version == null) return;
-  try {
-    const entry: VersionedEntry<T> = { v: version, data };
-    getLS()?.setItem(key, JSON.stringify(entry));
-  } catch {
-    // ignore
-  }
-}
-
-function lsRemove(key: string): void {
-  try {
-    getLS()?.removeItem(key);
-  } catch {
-    // ignore
-  }
-}
 
 async function fetchJson<T>(
   path: string,
@@ -174,38 +122,43 @@ async function getRemoteVersion(): Promise<number | null> {
   return versionFetchPromise;
 }
 
-function getLocalVersion(): number | null {
-  const v = lsGet<number>(LS_VERSION_KEY);
-  return typeof v === 'number' ? v : null;
+// Lokal gespeicherte Catalog-Version (in IDB). In-Memory gespiegelt damit
+// die meisten Aufrufe synchron sind.
+let localVersionCache: number | null | undefined = undefined;
+const LOCAL_VERSION_KEY = LS_VERSION_KEY; // wiederverwenden als IDB-Key
+
+async function getLocalVersion(): Promise<number | null> {
+  if (localVersionCache !== undefined) return localVersionCache;
+  // Stable sentinel-Version 0, damit idbGetVersioned den Wert mit jeder
+  // erwarteten Version 0 ausliefert (wir interessieren uns hier nicht fuer
+  // einen separaten Versions-Check, der "Wert" ist die Version selbst).
+  const stored = await idbGetVersioned<number>(LOCAL_VERSION_KEY, 0);
+  localVersionCache = typeof stored === 'number' ? stored : null;
+  return localVersionCache;
 }
 
-function setLocalVersion(v: number): void {
-  lsSet(LS_VERSION_KEY, v);
+async function setLocalVersion(v: number): Promise<void> {
+  localVersionCache = v;
+  await idbSetVersioned<number>(LOCAL_VERSION_KEY, 0, v);
 }
 
-function invalidateLocalCaches(): void {
-  lsRemove(LS_META_KEY);
-  lsRemove(LS_MOVIES_KEY);
-  // seasons werden einzeln gekeyed; loesche alle seasons-Eintraege mit
-  // passendem prefix damit keine stale-Daten nach version-bump bleiben
-  const ls = getLS();
-  if (!ls) return;
-  const toRemove: string[] = [];
-  for (let i = 0; i < ls.length; i++) {
-    const key = ls.key(i);
-    if (key && key.startsWith(LS_SEASONS_PREFIX)) toRemove.push(key);
-  }
-  for (const key of toRemove) lsRemove(key);
+async function invalidateLocalCaches(): Promise<void> {
+  await Promise.all([
+    idbRemove(LS_META_KEY),
+    idbRemove(LS_MOVIES_KEY),
+    idbRemovePrefix(LS_SEASONS_PREFIX),
+  ]);
 }
 
 async function ensureVersionFresh(): Promise<number | null> {
+  migrateLocalStorageOnce();
   const remote = await getRemoteVersion();
   if (remote === null) return null;
-  const local = getLocalVersion();
+  const local = await getLocalVersion();
   if (local !== null && local !== remote) {
-    invalidateLocalCaches();
+    await invalidateLocalCaches();
   }
-  setLocalVersion(remote);
+  await setLocalVersion(remote);
   return remote;
 }
 
@@ -217,7 +170,7 @@ async function ensureVersionFresh(): Promise<number | null> {
 export async function fetchStaticCatalogSeries(): Promise<Record<string, CatalogSeries> | null> {
   if (memoryMeta) return memoryMeta;
   const version = await ensureVersionFresh();
-  const cached = lsGetVersioned<Record<string, CatalogSeries>>(LS_META_KEY, version);
+  const cached = await idbGetVersioned<Record<string, CatalogSeries>>(LS_META_KEY, version);
   if (cached) {
     memoryMeta = cached;
     return cached;
@@ -227,7 +180,7 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
       version,
     });
     memoryMeta = data;
-    lsSetVersioned(LS_META_KEY, version, data);
+    void idbSetVersioned(LS_META_KEY, version, data);
     return data;
   } catch (e) {
     console.warn('[staticCatalog] seriesMeta fetch failed, returning null', e);
@@ -241,7 +194,7 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
 export async function fetchStaticCatalogMovies(): Promise<Record<string, CatalogMovie> | null> {
   if (memoryMovies) return memoryMovies;
   const version = await ensureVersionFresh();
-  const cached = lsGetVersioned<Record<string, CatalogMovie>>(LS_MOVIES_KEY, version);
+  const cached = await idbGetVersioned<Record<string, CatalogMovie>>(LS_MOVIES_KEY, version);
   if (cached) {
     memoryMovies = cached;
     return cached;
@@ -251,7 +204,7 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
       version,
     });
     memoryMovies = data;
-    lsSetVersioned(LS_MOVIES_KEY, version, data);
+    void idbSetVersioned(LS_MOVIES_KEY, version, data);
     return data;
   } catch (e) {
     console.warn('[staticCatalog] moviesMeta fetch failed, returning null', e);
@@ -269,8 +222,8 @@ export async function fetchStaticCatalogSeasons(
   const mem = memorySeasons.get(id);
   if (mem) return mem;
   const version = await ensureVersionFresh();
-  const lsKey = LS_SEASONS_PREFIX + id;
-  const cached = lsGetVersioned<Record<string, CatalogSeason>>(lsKey, version);
+  const cacheKey = LS_SEASONS_PREFIX + id;
+  const cached = await idbGetVersioned<Record<string, CatalogSeason>>(cacheKey, version);
   if (cached) {
     memorySeasons.set(id, cached);
     return cached;
@@ -280,7 +233,7 @@ export async function fetchStaticCatalogSeasons(
       version,
     });
     memorySeasons.set(id, data);
-    lsSetVersioned(lsKey, version, data);
+    void idbSetVersioned(cacheKey, version, data);
     return data;
   } catch (e) {
     // 404 bedeutet einfach: noch keine Seasons fuer diese Serie exportiert
@@ -312,17 +265,17 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   }
   if (remote === null) return false;
   cachedVersion = remote;
-  const local = getLocalVersion();
+  const local = await getLocalVersion();
   if (local !== null && local === remote) {
     // unveraendert — nichts zu tun
     return false;
   }
-  // Bump detected: memory + localStorage komplett invalidieren
+  // Bump detected: memory + IDB komplett invalidieren
   memoryMeta = null;
   memoryMovies = null;
   memorySeasons.clear();
-  invalidateLocalCaches();
-  setLocalVersion(remote);
+  await invalidateLocalCaches();
+  await setLocalVersion(remote);
   return true;
 }
 
@@ -347,7 +300,7 @@ export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
     // Update caches with fresh data
     memoryMeta = data;
     const version = await getRemoteVersion();
-    if (version != null) lsSetVersioned(LS_META_KEY, version, data);
+    if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
     return data;
   } catch {
     return null;
@@ -365,7 +318,7 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
     const data = (await res.json()) as Record<string, CatalogMovie>;
     memoryMovies = data;
     const version = await getRemoteVersion();
-    if (version != null) lsSetVersioned(LS_MOVIES_KEY, version, data);
+    if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
     return data;
   } catch {
     return null;
@@ -377,21 +330,9 @@ export function clearStaticCatalogCache(): void {
   memoryMovies = null;
   memorySeasons.clear();
   cachedVersion = null;
-  lsRemove(LS_META_KEY);
-  lsRemove(LS_MOVIES_KEY);
-  lsRemove(LS_VERSION_KEY);
-  // seasons/*-Eintraege sind numeriert, einmal durch den storage iterieren
-  try {
-    const ls = getLS();
-    if (ls) {
-      const toRemove: string[] = [];
-      for (let i = 0; i < ls.length; i++) {
-        const k = ls.key(i);
-        if (k && k.startsWith(LS_SEASONS_PREFIX)) toRemove.push(k);
-      }
-      for (const k of toRemove) lsRemove(k);
-    }
-  } catch {
-    // ignore
-  }
+  localVersionCache = undefined;
+  void idbRemove(LS_META_KEY);
+  void idbRemove(LS_MOVIES_KEY);
+  void idbRemove(LS_VERSION_KEY);
+  void idbRemovePrefix(LS_SEASONS_PREFIX);
 }
