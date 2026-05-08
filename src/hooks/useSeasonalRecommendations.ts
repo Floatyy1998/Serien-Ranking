@@ -153,7 +153,7 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
   const [rawMovies, setRawMovies] = useState<SeasonalItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const config = useMemo(() => getSeasonConfig(), []);
+  const config = getSeasonConfig();
 
   useEffect(() => {
     let cancelled = false;
@@ -219,7 +219,7 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
     return () => {
       cancelled = true;
     };
-  }, [config]);
+  }, [config.title, config.genres, config.keywords]);
 
   const items = useMemo(() => {
     const seriesIds = new Set(allSeriesList.map((s) => s.id));
