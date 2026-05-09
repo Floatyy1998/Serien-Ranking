@@ -175,7 +175,11 @@ export const MangaDetailPage = () => {
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
 
-      if (effectiveMax && clamped >= effectiveMax) {
+      // Nur auto-completen, wenn der vorherige Wert noch unter effectiveMax lag.
+      // Schutz gegen stale Total-Werte: wenn manga.currentChapter bereits >= effectiveMax,
+      // ist effectiveMax offensichtlich nicht aktuell (z.B. AniList chapters=2 bei Vagabond,
+      // bevor Live-Quellen ankommen).
+      if (effectiveMax && manga.currentChapter < effectiveMax && clamped >= effectiveMax) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
       }
