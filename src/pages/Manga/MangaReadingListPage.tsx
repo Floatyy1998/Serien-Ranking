@@ -146,7 +146,10 @@ export const MangaReadingListPage = () => {
         if (!manga.startedAt) updates.startedAt = new Date().toISOString();
       }
       const effectiveTotal = getEffectiveChapterCount(manga);
-      if (effectiveTotal && newChapter >= effectiveTotal) {
+      // Nur auto-completen, wenn das Total wirklich plausibel ist:
+      // currentChapter muss vor dem Increment darunter gelegen haben.
+      // Schutz gegen stale chapters-Werte (z.B. Vagabond: AniList meldet 2).
+      if (effectiveTotal && manga.currentChapter < effectiveTotal && newChapter >= effectiveTotal) {
         updates.readStatus = 'completed';
         updates.completedAt = new Date().toISOString();
       }
