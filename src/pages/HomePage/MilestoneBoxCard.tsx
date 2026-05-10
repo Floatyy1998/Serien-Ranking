@@ -1,21 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import Inventory2 from '@mui/icons-material/Inventory2';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
-import {
-  getAvailableBoxCount,
-  getNextBoxThreshold,
-  getProgressToNextBox,
-} from '../../services/pet/mysteryBoxService';
+import { getNextBoxThreshold, getProgressToNextBox } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
+
+const BOX_EVERY_N_EPISODES = 50;
 
 export const MilestoneBoxCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const stats = useWebWorkerStatsOptimized();
-  const [availableBoxes, setAvailableBoxes] = useState(0);
+  const [lastOpenedBoxNumber, setLastOpenedBoxNumber] = useState<number | null>(null);
   const [showBox, setShowBox] = useState(false);
 
   // Unique watched Episoden (nicht totalViews) damit die Anzeige mit dem
@@ -25,18 +25,52 @@ export const MilestoneBoxCard: React.FC = () => {
   const nextThreshold = getNextBoxThreshold(totalEpisodes);
   const progress = getProgressToNextBox(totalEpisodes);
 
+  // Aktuellster totalEpisodes-Wert fuer den Bootstrap-Write, ohne dass
+  // der Listener bei jeder Episodenaenderung neu subscribed werden muss.
+  const totalEpisodesRef = useRef(totalEpisodes);
+  useEffect(() => {
+    totalEpisodesRef.current = totalEpisodes;
+  }, [totalEpisodes]);
+
+  // Live subscription auf den Box-Counter. Bootstrap (Baseline anlegen
+  // fuer neue User) passiert inline beim ersten Snapshot, damit kein
+  // separater ref.once auf denselben Pfad noetig ist.
   useEffect(() => {
     if (!user?.uid) return;
-    getAvailableBoxCount(user.uid, totalEpisodes).then(setAvailableBoxes);
-  }, [user?.uid, totalEpisodes]);
+    const ref = firebase.database().ref(`users/${user.uid}/mysteryBox`);
+    const handler = (snap: firebase.database.DataSnapshot) => {
+      const data = snap.val() as {
+        lastOpenedBoxNumber?: number;
+        boxesOpened?: number;
+      } | null;
+      const last = typeof data?.lastOpenedBoxNumber === 'number' ? data.lastOpenedBoxNumber : null;
+
+      // Erstbesuch (data === null) ODER Baseline noch nicht gesetzt
+      // (lastOpenedBoxNumber === 0): aktuellen Episoden-Stand als
+      // Baseline schreiben, damit nicht rueckwirkend Boxen aufploppen.
+      if (data === null || last === 0) {
+        const baseline = Math.floor(totalEpisodesRef.current / BOX_EVERY_N_EPISODES);
+        if (baseline > 0 && baseline !== last) {
+          void ref.set({ boxesOpened: data?.boxesOpened ?? 0, lastOpenedBoxNumber: baseline });
+          return; // Listener feuert gleich nochmal mit den geschriebenen Daten
+        }
+      }
+      setLastOpenedBoxNumber(last);
+    };
+    ref.on('value', handler);
+    return () => ref.off('value', handler);
+  }, [user?.uid]);
 
   const handleClose = () => {
     setShowBox(false);
-    if (user?.uid) {
-      getAvailableBoxCount(user.uid, totalEpisodes).then(setAvailableBoxes);
-    }
   };
 
+  const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+  // Solange Bootstrap noch nicht durch ist, keine Boxen anzeigen
+  // (sonst wuerden bei einem etablierten User mit z.B. 500 Eps fuer
+  // einen Frame 10 Boxen aufploppen).
+  const availableBoxes =
+    lastOpenedBoxNumber === null ? 0 : Math.max(0, earnedBoxes - lastOpenedBoxNumber);
   const hasBox = availableBoxes > 0;
 
   return (
