@@ -38,6 +38,7 @@ export const SearchPage = memo(() => {
     setDialog,
     handleItemClick,
     addToList,
+    pendingAddIds,
     removeRecentSearch,
   } = useSearchPage();
 
@@ -197,6 +198,7 @@ export const SearchPage = memo(() => {
                     onAddToList={addToList}
                     currentTheme={currentTheme}
                     isDesktop={isDesktop}
+                    isPending={pendingAddIds.has(`${item.type}-${item.id}`)}
                   />
                 ))}
               </div>
