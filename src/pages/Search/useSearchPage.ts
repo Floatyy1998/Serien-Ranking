@@ -55,6 +55,7 @@ export interface UseSearchPageResult {
   >;
   handleItemClick: (item: SearchResult) => void;
   addToList: (item: SearchResult) => Promise<void>;
+  pendingAddIds: Set<string>;
   removeRecentSearch: (term: string) => void;
 }
 
@@ -130,6 +131,9 @@ export const useSearchPage = (): UseSearchPageResult => {
     open: false,
     message: '',
   });
+  // IDs der Items, die gerade hinzugefuegt werden — fuer Spinner-Anzeige.
+  // Key: `${type}-${id}` damit Serie und Film mit gleicher TMDB-ID kollisionsfrei sind.
+  const [pendingAddIds, setPendingAddIds] = useState<Set<string>>(new Set());
   const { isDesktop } = useDeviceType();
   const [popularSearches] = useState([
     'Breaking Bad',
@@ -352,6 +356,13 @@ export const useSearchPage = (): UseSearchPageResult => {
           ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
           : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
 
+      const pendingKey = `${item.type}-${item.id}`;
+      setPendingAddIds((prev) => {
+        const next = new Set(prev);
+        next.add(pendingKey);
+        return next;
+      });
+
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -394,6 +405,13 @@ export const useSearchPage = (): UseSearchPageResult => {
       } catch (error) {
         console.error('Error adding item:', error);
         setDialog({ open: true, message: 'Fehler beim Hinzufügen des Inhalts.', type: 'error' });
+      } finally {
+        setPendingAddIds((prev) => {
+          if (!prev.has(pendingKey)) return prev;
+          const next = new Set(prev);
+          next.delete(pendingKey);
+          return next;
+        });
       }
     },
     [user]
@@ -423,6 +441,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     setDialog,
     handleItemClick,
     addToList,
+    pendingAddIds,
     removeRecentSearch,
   };
 };
