@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
-import { getMangaDexInfo } from '../services/mangadexService';
+import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangadexService';
 import type { Manga } from '../types/Manga';
 import { MangaListContext } from './MangaListContext';
 
@@ -32,10 +32,14 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     [allMangaList]
   );
 
-  // Background refresh: update latestChapterAvailable for releasing manga
-  // Two triggers:
-  // 1. Once per session: refresh ALL releasing manga (catches new chapters)
-  // 2. Always: fetch for any releasing manga that has NO latestChapterAvailable yet (newly added)
+  // Background refresh: update latestChapterAvailable for releasing manga.
+  // Trigger-Regeln:
+  // 1. Stale (currentChapter > persistedTotal): immer refetchen — z.B. Vagabond,
+  //    wo AniList chapters=2 meldet aber user schon bei 59 ist.
+  // 2. Kein persistierter Total-Wert: immer refetchen (frisch hinzugefügt).
+  // 3. Sonst: einmal pro Session, um neue Chapter zu erfassen.
+  // Holt MAX aus /search (getMangaDexInfo) UND /releases (getMangaDexChapterDates),
+  // weil bei manchen Titeln nur einer der beiden Endpoints liefert.
   const refreshedIdsRef = useRef(new Set<number>());
   useEffect(() => {
     if (!user || loading || allMangaList.length === 0) return;
@@ -43,12 +47,16 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     const sessionDone = sessionStorage.getItem('mangaChapterRefreshDone') === 'true';
 
     const toFetch = allMangaList.filter((m) => {
-      if (m.status !== 'RELEASING' || m.chapters) return false;
-      // Always fetch if no latestChapterAvailable (newly added)
-      if (!m.latestChapterAvailable) return !refreshedIdsRef.current.has(m.anilistId);
-      // Otherwise only on first session load
-      if (sessionDone) return false;
-      return !refreshedIdsRef.current.has(m.anilistId);
+      if (m.status !== 'RELEASING') return false;
+      if (refreshedIdsRef.current.has(m.anilistId)) return false;
+
+      const persistedTotal = Math.max(m.chapters || 0, m.latestChapterAvailable || 0);
+      // Stale: user ist schon weiter als jeder gespeicherte Total-Wert
+      if (m.currentChapter > persistedTotal) return true;
+      // Noch gar kein Total bekannt
+      if (persistedTotal === 0) return true;
+      // Sonst nur einmal pro Session
+      return !sessionDone;
     });
 
     if (toFetch.length === 0) {
@@ -62,16 +70,19 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
       refreshedIdsRef.current.add(manga.anilistId);
       setTimeout(async () => {
         try {
-          const info = await getMangaDexInfo(manga.title);
-          if (
-            info.latestChapter &&
-            info.latestChapter > 0 &&
-            info.latestChapter !== manga.latestChapterAvailable
-          ) {
+          const [info, chapterInfo] = await Promise.all([
+            getMangaDexInfo(manga.title),
+            getMangaDexChapterDates(manga.title),
+          ]);
+          const latestFromReleases = chapterInfo?.recentChapters?.length
+            ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
+            : 0;
+          const live = Math.max(info.latestChapter || 0, latestFromReleases);
+          if (live > 0 && live > (manga.latestChapterAvailable || 0)) {
             await firebase
               .database()
               .ref(`users/${user.uid}/manga/${manga.anilistId}/latestChapterAvailable`)
-              .set(info.latestChapter);
+              .set(live);
           }
         } catch {
           // Silent fail per manga
