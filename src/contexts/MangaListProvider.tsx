@@ -2,9 +2,13 @@ import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
+import { getMangaById } from '../services/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangadexService';
 import type { Manga } from '../types/Manga';
 import { MangaListContext } from './MangaListContext';
+
+const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
+const ANILIST_REFRESH_KEY_PREFIX = 'mangaAniListRefreshLastRun:';
 
 export const MangaListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
@@ -47,7 +51,10 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     const sessionDone = sessionStorage.getItem('mangaChapterRefreshDone') === 'true';
 
     const toFetch = allMangaList.filter((m) => {
-      if (m.status !== 'RELEASING') return false;
+      // RELEASING und HIATUS — letztere können trotzdem neue Chapter bekommen
+      // (Berserk-Studio-Gaga, Vagabond-Comeback). FINISHED/CANCELLED werden
+      // ueber den AniList-Refresh erfasst.
+      if (m.status !== 'RELEASING' && m.status !== 'HIATUS') return false;
       if (refreshedIdsRef.current.has(m.anilistId)) return false;
 
       const persistedTotal = Math.max(m.chapters || 0, m.latestChapterAvailable || 0);
@@ -88,6 +95,76 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           // Silent fail per manga
         }
       }, i * 250);
+    });
+  }, [user, loading, allMangaList]);
+
+  // AniList-Metadaten-Refresh: status, chapters, volumes, averageScore,
+  // format, genres etc. werden beim Add einmalig persistiert und sonst nie
+  // aktualisiert. Damit ein Manga, das auf HIATUS oder FINISHED wechselt
+  // (Berserk → HIATUS, Vagabond → HIATUS), nicht ewig "Laufend" anzeigt:
+  // Einmal pro Tag pro User die ganze Liste gegen AniList syncen.
+  const anilistRefreshedIdsRef = useRef(new Set<number>());
+  useEffect(() => {
+    if (!user || loading || allMangaList.length === 0) return;
+
+    const storageKey = `${ANILIST_REFRESH_KEY_PREFIX}${user.uid}`;
+    const lastRunStr = localStorage.getItem(storageKey);
+    const lastRun = lastRunStr ? parseInt(lastRunStr, 10) : 0;
+    if (Date.now() - lastRun < ANILIST_REFRESH_INTERVAL_MS) return;
+
+    const toRefresh = allMangaList.filter((m) => !anilistRefreshedIdsRef.current.has(m.anilistId));
+    if (toRefresh.length === 0) return;
+
+    localStorage.setItem(storageKey, String(Date.now()));
+
+    toRefresh.forEach((manga, i) => {
+      anilistRefreshedIdsRef.current.add(manga.anilistId);
+      // 1s Delay zwischen Anfragen — AniList rate-limit ist ~90/min
+      setTimeout(async () => {
+        try {
+          const data = await getMangaById(manga.anilistId);
+          if (!data) return;
+
+          const updates: Record<string, unknown> = {};
+          if (data.status && data.status !== manga.status) updates.status = data.status;
+          // Numerische Felder nur ueberschreiben, wenn AniList einen positiven
+          // Wert liefert. Null heisst meist "unbekannt" — alten Wert behalten.
+          if (data.chapters && data.chapters !== manga.chapters) {
+            updates.chapters = data.chapters;
+          }
+          if (data.volumes && data.volumes !== manga.volumes) {
+            updates.volumes = data.volumes;
+          }
+          if (data.averageScore && data.averageScore !== manga.averageScore) {
+            updates.averageScore = data.averageScore;
+          }
+          if (data.format && data.format !== manga.format) updates.format = data.format;
+          if (data.countryOfOrigin && data.countryOfOrigin !== manga.countryOfOrigin) {
+            updates.countryOfOrigin = data.countryOfOrigin;
+          }
+          if (
+            data.genres &&
+            data.genres.length > 0 &&
+            JSON.stringify(data.genres) !== JSON.stringify(manga.genres ?? [])
+          ) {
+            updates.genres = data.genres;
+          }
+          // Cover/Banner/Description nur fuellen wenn vorher leer — niemand
+          // soll seinen manuellen Stand ueberschrieben bekommen.
+          if (!manga.poster && data.coverImage?.large) updates.poster = data.coverImage.large;
+          if (!manga.bannerImage && data.bannerImage) updates.bannerImage = data.bannerImage;
+          if (!manga.description && data.description) updates.description = data.description;
+
+          if (Object.keys(updates).length > 0) {
+            await firebase
+              .database()
+              .ref(`users/${user.uid}/manga/${manga.anilistId}`)
+              .update(updates);
+          }
+        } catch {
+          // Silent fail per manga
+        }
+      }, i * 1000);
     });
   }, [user, loading, allMangaList]);
 
