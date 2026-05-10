@@ -452,6 +452,7 @@ export const MangaDetailPage = () => {
             backgroundPosition: 'center top',
             filter: isMobile ? 'blur(50px) brightness(0.25) saturate(1.8)' : 'brightness(0.35)',
             transform: isMobile ? 'scale(1.3)' : 'none',
+            pointerEvents: 'none',
           }}
         />
         {/* Gradient */}
@@ -464,6 +465,7 @@ export const MangaDetailPage = () => {
             height: isMobile ? '60%' : '80%',
             zIndex: 1,
             background: `linear-gradient(transparent, ${currentTheme.background.default})`,
+            pointerEvents: 'none',
           }}
         />
         {/* Vignette on desktop */}
