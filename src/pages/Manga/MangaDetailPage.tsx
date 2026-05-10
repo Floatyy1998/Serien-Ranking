@@ -40,7 +40,13 @@ const STATUS_OPTIONS: { value: Manga['readStatus']; label: string; color: string
   { value: 'planned', label: 'Geplant', color: '#8b5cf6' },
 ];
 
-import { ANILIST_STATUS_LABELS, getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
+import {
+  ANILIST_STATUS_LABELS,
+  getDisplayFormat,
+  getEffectiveChapterCount,
+  getStatusLabel,
+  inferStatus,
+} from './mangaUtils';
 
 const PLATFORM_OPTIONS = [
   'MangaDex',
@@ -99,43 +105,64 @@ export const MangaDetailPage = () => {
   const mangaTitle = manga?.title;
   const mangaStatus = manga?.status;
   const mangaLatestChapterAvailable = manga?.latestChapterAvailable;
+  const mangaLastReleaseDate = manga?.lastReleaseDate;
 
-  // Fetch latest chapter from MangaUpdates for releasing manga. AniList's
-  // chapters-Feld ist bei laufenden Serien oft veraltet/falsch (z.B. nur die
-  // Post-Hiatus-Chapter), MangaUpdates kennt den echten letzten Stand.
+  // RELEASING und HIATUS — letztere koennen trotzdem neue Chapter bekommen
+  // (Berserk → Studio Gaga, Vagabond → 2020er Comeback-Special).
+  const shouldFetchLive = mangaStatus === 'RELEASING' || mangaStatus === 'HIATUS';
+
+  // Fetch latest chapter from MangaUpdates. AniList's chapters-Feld ist bei
+  // laufenden Serien oft veraltet/falsch — MangaUpdates kennt den echten
+  // letzten Stand.
   useEffect(() => {
-    if (!user || !mangaTitle || mangaStatus !== 'RELEASING') return;
+    if (!user || !mangaTitle || !shouldFetchLive) return;
     getMangaDexInfo(mangaTitle)
       .then(setMangadexInfo)
       .catch(() => {});
-  }, [user, mangaTitle, mangaStatus]);
+  }, [user, mangaTitle, shouldFetchLive]);
 
-  // Fetch chapter release dates from MangaDex for releasing manga
   useEffect(() => {
-    if (!mangaTitle || mangaStatus !== 'RELEASING') return;
+    if (!mangaTitle || !shouldFetchLive) return;
     getMangaDexChapterDates(mangaTitle)
       .then(setChapterInfo)
       .catch(() => {});
-  }, [mangaTitle, mangaStatus]);
+  }, [mangaTitle, shouldFetchLive]);
 
-  // latestChapterAvailable in Firebase persistieren — den Max aus beiden Live-
-  // Quellen, weil MangaUpdates' /search bei manchen Titeln (z.B. Vagabond) null
-  // liefert, /releases aber funktioniert. Listen-Ansichten kennen nur die
-  // Firebase-Felder, brauchen also den persistierten Wert.
+  // latestChapterAvailable + lastReleaseDate in Firebase persistieren. Listen-
+  // Ansichten kennen nur die Firebase-Felder, brauchen also die persistierten
+  // Werte. /search liefert bei manchen Titeln keinen latestChapter, /releases
+  // hingegen schon — deshalb beide Quellen einrechnen.
   useEffect(() => {
-    if (!user || mangaStatus !== 'RELEASING') return;
+    if (!user || !shouldFetchLive) return;
     const latestFromReleases = chapterInfo?.recentChapters?.length
       ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
       : 0;
     const live = Math.max(mangadexInfo?.latestChapter || 0, latestFromReleases);
+    const newestRelease = chapterInfo?.recentChapters?.[0]?.publishedAt;
+
+    const updates: Record<string, unknown> = {};
     if (live > 0 && live > (mangaLatestChapterAvailable || 0)) {
+      updates.latestChapterAvailable = live;
+    }
+    if (newestRelease && newestRelease !== mangaLastReleaseDate) {
+      updates.lastReleaseDate = newestRelease;
+    }
+    if (Object.keys(updates).length > 0) {
       firebase
         .database()
-        .ref(`users/${user.uid}/manga/${anilistId}/latestChapterAvailable`)
-        .set(live)
+        .ref(`users/${user.uid}/manga/${anilistId}`)
+        .update(updates)
         .catch(() => {});
     }
-  }, [user, mangaStatus, mangadexInfo, chapterInfo, mangaLatestChapterAvailable, anilistId]);
+  }, [
+    user,
+    shouldFetchLive,
+    mangadexInfo,
+    chapterInfo,
+    mangaLatestChapterAvailable,
+    mangaLastReleaseDate,
+    anilistId,
+  ]);
 
   const updateField = useCallback(
     async (field: string, value: unknown) => {
@@ -565,7 +592,7 @@ export const MangaDetailPage = () => {
               }}
             >
               <span style={{ fontWeight: 600, color: currentTheme.primary }}>{displayFormat}</span>
-              {manga.status && <span>{ANILIST_STATUS_LABELS[manga.status] || manga.status}</span>}
+              {manga.status && <span>{getStatusLabel(manga)}</span>}
               {effectiveChapters && <span>{effectiveChapters} Kapitel</span>}
               {manga.averageScore && <span>⭐ {manga.averageScore}%</span>}
             </div>
@@ -732,100 +759,104 @@ export const MangaDetailPage = () => {
 
       <div className="manga-detail-content">
         {/* Chapter Releases (MangaDex) */}
-        {chapterInfo && chapterInfo.recentChapters.length > 0 && manga.status === 'RELEASING' && (
-          <Section bg={`${currentTheme.text.primary}08`} delay={0.12}>
-            <SectionTitle color={currentTheme.text.primary}>Kapitel-Releases</SectionTitle>
+        {chapterInfo &&
+          chapterInfo.recentChapters.length > 0 &&
+          (inferStatus(manga) === 'RELEASING' || inferStatus(manga) === 'HIATUS') && (
+            <Section bg={`${currentTheme.text.primary}08`} delay={0.12}>
+              <SectionTitle color={currentTheme.text.primary}>Kapitel-Releases</SectionTitle>
 
-            {/* Estimated next release */}
-            {chapterInfo.estimatedNextDate &&
-              new Date(chapterInfo.estimatedNextDate) > new Date() && (
-                <div
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: 12,
-                    background: `${currentTheme.primary}15`,
-                    border: `1px solid ${currentTheme.primary}30`,
-                    marginBottom: 12,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                  }}
-                >
-                  <div style={{ fontSize: 20 }}>📅</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
-                      Nächstes Kapitel ~
-                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString('de-DE', {
+              {/* Estimated next release — nur bei echt laufenden Manga,
+                nicht bei inferred Hiatus (da macht ein Schaetzer keinen Sinn). */}
+              {inferStatus(manga) === 'RELEASING' &&
+                chapterInfo.estimatedNextDate &&
+                new Date(chapterInfo.estimatedNextDate) > new Date() && (
+                  <div
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: 12,
+                      background: `${currentTheme.primary}15`,
+                      border: `1px solid ${currentTheme.primary}30`,
+                      marginBottom: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                    }}
+                  >
+                    <div style={{ fontSize: 20 }}>📅</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
+                        Nächstes Kapitel ~
+                        {new Date(chapterInfo.estimatedNextDate).toLocaleDateString('de-DE', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </div>
+                      {chapterInfo.avgDaysBetweenReleases && (
+                        <div
+                          style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.7 }}
+                        >
+                          Erscheint ca. alle {chapterInfo.avgDaysBetweenReleases} Tage
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Recent chapters */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {chapterInfo.recentChapters.map((ch) => (
+                  <div
+                    key={ch.chapter}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '6px 0',
+                      borderBottom: '1px solid rgba(255,255,255,0.04)',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: currentTheme.text.primary,
+                        minWidth: 50,
+                      }}
+                    >
+                      Kap. {ch.chapter}
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 12,
+                        color: currentTheme.text.secondary,
+                        opacity: 0.7,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {ch.title || ''}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: currentTheme.text.secondary,
+                        opacity: 0.5,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {new Date(ch.publishedAt).toLocaleDateString('de-DE', {
                         day: 'numeric',
                         month: 'short',
-                        year: 'numeric',
                       })}
-                    </div>
-                    {chapterInfo.avgDaysBetweenReleases && (
-                      <div
-                        style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.7 }}
-                      >
-                        Erscheint ca. alle {chapterInfo.avgDaysBetweenReleases} Tage
-                      </div>
-                    )}
+                    </span>
                   </div>
-                </div>
-              )}
-
-            {/* Recent chapters */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {chapterInfo.recentChapters.map((ch) => (
-                <div
-                  key={ch.chapter}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '6px 0',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                  }}
-                >
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                      minWidth: 50,
-                    }}
-                  >
-                    Kap. {ch.chapter}
-                  </span>
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      color: currentTheme.text.secondary,
-                      opacity: 0.7,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {ch.title || ''}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: currentTheme.text.secondary,
-                      opacity: 0.5,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {new Date(ch.publishedAt).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
+                ))}
+              </div>
+            </Section>
+          )}
 
         {/* Status */}
         <Section bg={`${currentTheme.text.primary}08`} delay={0.15}>

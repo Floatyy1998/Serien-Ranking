@@ -19,7 +19,12 @@ import {
   ScrollToTopButton,
   SwipeableEpisodeRow,
 } from '../../components/ui';
-import { getDisplayFormat, getEffectiveChapterCount, STATUS_COLORS } from './mangaUtils';
+import {
+  getDisplayFormat,
+  getEffectiveChapterCount,
+  inferStatus,
+  STATUS_COLORS,
+} from './mangaUtils';
 import type { Manga } from '../../types/Manga';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
@@ -465,9 +470,11 @@ export const MangaReadingListPage = () => {
                           >
                             {effectiveTotal && manga.currentChapter < effectiveTotal
                               ? `${effectiveTotal - manga.currentChapter} Kapitel übrig`
-                              : manga.status === 'RELEASING'
+                              : inferStatus(manga) === 'RELEASING'
                                 ? 'Laufend · Wartet auf neue Kapitel'
-                                : 'Fortschritt unbekannt'}
+                                : inferStatus(manga) === 'HIATUS'
+                                  ? 'Hiatus · Keine neuen Kapitel'
+                                  : 'Fortschritt unbekannt'}
                           </p>
                           <div
                             style={{

@@ -85,11 +85,24 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
             ? Math.max(...chapterInfo.recentChapters.map((c) => c.chapter))
             : 0;
           const live = Math.max(info.latestChapter || 0, latestFromReleases);
+
+          const updates: Record<string, unknown> = {};
           if (live > 0 && live > (manga.latestChapterAvailable || 0)) {
+            updates.latestChapterAvailable = live;
+          }
+          // lastReleaseDate = juengstes valides Release. recentChapters sind
+          // bereits durch den Renumbering-Filter im Service bereinigt.
+          if (chapterInfo?.recentChapters?.length) {
+            const newest = chapterInfo.recentChapters[0].publishedAt;
+            if (newest && newest !== manga.lastReleaseDate) {
+              updates.lastReleaseDate = newest;
+            }
+          }
+          if (Object.keys(updates).length > 0) {
             await firebase
               .database()
-              .ref(`users/${user.uid}/manga/${manga.anilistId}/latestChapterAvailable`)
-              .set(live);
+              .ref(`users/${user.uid}/manga/${manga.anilistId}`)
+              .update(updates);
           }
         } catch {
           // Silent fail per manga
