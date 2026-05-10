@@ -4,6 +4,7 @@
  */
 
 import { Add, Check, Star } from '@mui/icons-material';
+import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { SearchResult } from './useSearchPage';
@@ -14,10 +15,18 @@ export interface SearchResultCardProps {
   onAddToList: (item: SearchResult) => void;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   isDesktop: boolean;
+  isPending?: boolean;
 }
 
 export const SearchResultCard = memo(
-  ({ item, onItemClick, onAddToList, currentTheme, isDesktop }: SearchResultCardProps) => {
+  ({
+    item,
+    onItemClick,
+    onAddToList,
+    currentTheme,
+    isDesktop,
+    isPending = false,
+  }: SearchResultCardProps) => {
     const imageUrl = useMemo(() => {
       if (!item.poster_path) return '/placeholder.jpg';
       return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
@@ -76,19 +85,36 @@ export const SearchResultCard = memo(
               className={`search-add-btn ${isDesktop ? 'search-add-btn--desktop' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
+                if (isPending) return;
                 onAddToList(item);
               }}
+              disabled={isPending}
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 boxShadow: `0 4px 12px ${currentTheme.primary}50`,
+                cursor: isPending ? 'wait' : 'pointer',
               }}
             >
-              <Add
-                style={{
-                  fontSize: isDesktop ? '20px' : '18px',
-                  color: currentTheme.text.secondary,
-                }}
-              />
+              {isPending ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                  style={{
+                    width: isDesktop ? 18 : 16,
+                    height: isDesktop ? 18 : 16,
+                    border: `2px solid ${currentTheme.text.secondary}40`,
+                    borderTopColor: currentTheme.text.secondary,
+                    borderRadius: '50%',
+                  }}
+                />
+              ) : (
+                <Add
+                  style={{
+                    fontSize: isDesktop ? '20px' : '18px',
+                    color: currentTheme.text.secondary,
+                  }}
+                />
+              )}
             </button>
           ) : (
             <div
