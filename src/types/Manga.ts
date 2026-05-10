@@ -31,6 +31,10 @@ export interface Manga {
   startedAt?: string;
   completedAt?: string;
   latestChapterAvailable?: number;
+  // ISO-Datum des juengsten validen Releases (nach Renumbering-Filter).
+  // Wird fuer Hiatus-Inferenz genutzt: Wenn ein RELEASING-Manga > 180 Tage
+  // kein neues Kapitel hatte, zeigen wir UI-seitig "Hiatus".
+  lastReleaseDate?: string;
 }
 
 export interface AniListMangaSearchResult {

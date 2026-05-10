@@ -46,10 +46,11 @@ export async function addMangaToList(
   if (result.bannerImage) manga.bannerImage = result.bannerImage;
   if (result.description) manga.description = result.description;
 
-  // Fuer laufende Manga MangaUpdates abfragen — AniList's chapters-Feld ist
-  // bei vielen ongoing/hiatus Serien veraltet (z.B. Vagabond meldet 2 statt
-  // 326), MangaUpdates spiegelt den echten Releasestand.
-  if (result.status === 'RELEASING') {
+  // Fuer laufende und Hiatus-Manga MangaUpdates abfragen — AniList's chapters-
+  // Feld ist bei vielen ongoing/hiatus Serien veraltet (z.B. Vagabond meldet 2
+  // statt 326), MangaUpdates spiegelt den echten Releasestand. Hiatus-Manga
+  // koennen trotzdem neue Chapter bekommen (Berserk-Studio-Gaga, Comebacks).
+  if (result.status === 'RELEASING' || result.status === 'HIATUS') {
     try {
       const mdInfo = await getMangaDexInfo(result.title.english || result.title.romaji);
       if (mdInfo.latestChapter && mdInfo.latestChapter > 0) {

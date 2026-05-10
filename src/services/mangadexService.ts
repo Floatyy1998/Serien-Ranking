@@ -88,12 +88,27 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
     if (!res.ok) return nullChapterResult();
 
     const data = await res.json();
-    const chapters: ChapterRelease[] = (data.releases || []).map(
+    const rawChapters: ChapterRelease[] = (data.releases || []).map(
       (r: { chapter: number; date: string }) => ({
         chapter: r.chapter,
         publishedAt: r.date,
       })
     );
+
+    // Renumbering-Anomalien rausfiltern: chronologisch (alt → neu) lesen,
+    // nur Releases akzeptieren deren Chapter-Nr >= bisherigem Max ist. Bei
+    // Vagabond fliegt so der 2020er "Comeback Chapter 2" raus, der sonst
+    // oben in der Liste stehen wuerde.
+    const oldestFirst = [...rawChapters].reverse();
+    let maxSeen = 0;
+    const valid: ChapterRelease[] = [];
+    for (const r of oldestFirst) {
+      if (r.chapter >= maxSeen) {
+        valid.push(r);
+        maxSeen = r.chapter;
+      }
+    }
+    const chapters = valid.reverse();
 
     // Calculate average days between releases
     let avgDays: number | null = null;
