@@ -4,6 +4,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   isElectron: true,
   getAutoStart: () => ipcRenderer.invoke('get-auto-start'),
   setAutoStart: (enabled) => ipcRenderer.invoke('set-auto-start', enabled),
+  // Auto-Update API
+  onUpdateStatus: (cb) => {
+    const listener = (_event, status) => cb(status);
+    ipcRenderer.on('update-status', listener);
+    return () => ipcRenderer.removeListener('update-status', listener);
+  },
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
 });
 
 // Mark the page as running in Electron and add drag region for window moving.

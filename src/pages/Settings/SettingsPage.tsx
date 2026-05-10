@@ -112,7 +112,7 @@ export const SettingsPage = () => {
           <AutoStartToggle currentTheme={currentTheme} />
         ) : (
           <motion.a
-            href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.exe`}
+            href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank-Setup.exe"
             download
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

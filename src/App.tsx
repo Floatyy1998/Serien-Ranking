@@ -14,6 +14,7 @@ import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
+import { ElectronUpdateToast } from './components/ElectronUpdateToast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteTracker } from './components/RouteTracker';
 
@@ -171,6 +172,7 @@ function AppContent() {
                       <DynamicThemeProvider>
                         <CssBaseline />
                         <RouteTracker />
+                        <ElectronUpdateToast />
                         <div className="w-full">
                           <a href="#main-content" className="skip-to-content">
                             Zum Hauptinhalt springen

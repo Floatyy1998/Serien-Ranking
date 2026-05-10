@@ -1,6 +1,7 @@
 const { app, BrowserWindow, shell, ipcMain, session, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { autoUpdater } = require('electron-updater');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 try {
@@ -174,9 +175,57 @@ ipcMain.handle('set-auto-start', (_event, enabled) => {
   return enabled;
 });
 
+// ─── Auto-Update via electron-updater ─────────────────────
+// Sucht nach neuen Releases auf GitHub (Owner/Repo aus electron-builder.yml).
+// Download laeuft im Hintergrund. UI in der App entscheidet, wann installiert
+// wird — User-Interaction via 'install-update' IPC.
+function setupAutoUpdater(window) {
+  autoUpdater.autoDownload = true;
+  // Wir wollen User-Bestaetigung, kein Silent-Install beim naechsten Quit
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  const send = (status) => {
+    if (window && !window.isDestroyed()) {
+      window.webContents.send('update-status', status);
+    }
+  };
+
+  autoUpdater.on('checking-for-update', () => send({ state: 'checking' }));
+  autoUpdater.on('update-available', (info) => {
+    send({ state: 'downloading', version: info.version, percent: 0 });
+  });
+  autoUpdater.on('update-not-available', () => send({ state: 'idle' }));
+  autoUpdater.on('download-progress', (progress) => {
+    send({ state: 'downloading', percent: Math.round(progress.percent) });
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    send({ state: 'ready', version: info.version });
+  });
+  autoUpdater.on('error', (err) => {
+    send({ state: 'error', message: err?.message || 'Unknown error' });
+  });
+
+  // Initial check kurz nach App-Start, dann alle 60 Min wiederholen
+  const check = () => autoUpdater.checkForUpdates().catch(() => {});
+  setTimeout(check, 5000);
+  setInterval(check, 60 * 60 * 1000);
+}
+
+ipcMain.handle('install-update', () => {
+  autoUpdater.quitAndInstall();
+});
+ipcMain.handle('check-for-updates', () => {
+  return autoUpdater.checkForUpdates().catch((err) => ({ error: err?.message }));
+});
+
 app.whenReady().then(async () => {
   await clearStartupCache();
   createWindow();
+  if (app.isPackaged) {
+    // Updates nur in installierter App pruefen — im Dev-Mode (npm run dev)
+    // bringt das nichts und wuerde Fehler werfen.
+    setupAutoUpdater(mainWindow);
+  }
 });
 
 app.on('window-all-closed', () => {

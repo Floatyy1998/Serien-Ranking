@@ -84,7 +84,7 @@ export const HeroSection = () => (
       {!window.electronAPI?.isElectron && (
         <Button
           component="a"
-          href={`${import.meta.env.VITE_BACKEND_API_URL}/downloads/TV-Rank-Setup.exe`}
+          href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank-Setup.exe"
           download
           startIcon={<DesktopWindows />}
           size="small"
