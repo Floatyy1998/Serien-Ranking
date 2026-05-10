@@ -72,13 +72,24 @@ export const IconButton: React.FC<IconButtonProps> = ({
         transition: 'background 0.2s ease, border-color 0.2s ease, color 0.2s ease',
         padding: 0,
         flexShrink: 0,
+        pointerEvents: 'auto',
+        position: 'relative',
         ...variantStyles[variant],
         ...style,
       }}
     >
       {/* pointer-events:none — Klicks aufs Icon sollen am <button> ankommen,
           nicht am Icon-DOM-Element haengen bleiben */}
-      <span style={{ pointerEvents: 'none', display: 'inline-flex' }}>{icon}</span>
+      <span
+        style={{
+          pointerEvents: 'none',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </span>
     </motion.button>
   );
 

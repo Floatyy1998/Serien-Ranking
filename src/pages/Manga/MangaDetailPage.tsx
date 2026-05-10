@@ -488,7 +488,8 @@ export const MangaDetailPage = () => {
             position: 'absolute',
             top: 'calc(12px + env(safe-area-inset-top))',
             left: isMobile ? 12 : 20,
-            zIndex: 10,
+            zIndex: 100,
+            pointerEvents: 'auto',
           }}
         >
           <BackButton style={{ backdropFilter: 'blur(10px)' }} />
