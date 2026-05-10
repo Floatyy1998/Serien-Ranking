@@ -49,7 +49,7 @@ export const IconButton: React.FC<IconButtonProps> = ({
 
   const effectiveAriaLabel = ariaLabel || tooltip;
 
-  if (process.env.NODE_ENV === 'development' && !ariaLabel && !tooltip) {
+  if (import.meta.env.DEV && !ariaLabel && !tooltip) {
     console.warn(
       'IconButton: Neither ariaLabel nor tooltip provided. This button is not accessible to screen readers.'
     );

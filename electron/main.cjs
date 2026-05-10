@@ -1,5 +1,6 @@
-const { app, BrowserWindow, shell, ipcMain, session } = require('electron');
+const { app, BrowserWindow, shell, ipcMain, session, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 try {
@@ -17,10 +18,86 @@ function getIconPath() {
     : path.join(__dirname, '..', 'public', 'app-icon.ico');
 }
 
+// ─── Window-State-Persistence ──────────────────────────────
+// Speichert Position, Groesse und Maximize-Status zwischen App-Starts.
+// Datei liegt in userData (z.B. %APPDATA%/<App>/window-state.json) und
+// wird bei resize/move (throttled) sowie close geschrieben — letzteres
+// als Sicherheitsnetz fuer Crashes.
+
+const WINDOW_STATE_FILE = () => path.join(app.getPath('userData'), 'window-state.json');
+const DEFAULT_BOUNDS = { width: 1280, height: 800 };
+
+function loadWindowState() {
+  try {
+    const raw = fs.readFileSync(WINDOW_STATE_FILE(), 'utf-8');
+    const state = JSON.parse(raw);
+    if (
+      typeof state.width !== 'number' ||
+      typeof state.height !== 'number' ||
+      state.width < 400 ||
+      state.height < 600
+    ) {
+      return null;
+    }
+    return state;
+  } catch {
+    return null;
+  }
+}
+
+function saveWindowState() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  try {
+    const isMaximized = mainWindow.isMaximized();
+    // getNormalBounds liefert die Bounds vor Maximize, sonst beim
+    // Wiederherstellen liegt das Fenster zwar nicht-maximiert vor, aber
+    // mit Bildschirmgroesse — und User kommt nicht ans normale Layout.
+    const bounds = isMaximized ? mainWindow.getNormalBounds() : mainWindow.getBounds();
+    const state = {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: bounds.height,
+      isMaximized,
+    };
+    fs.writeFileSync(WINDOW_STATE_FILE(), JSON.stringify(state));
+  } catch {
+    // best-effort
+  }
+}
+
+// Pruefen ob die gespeicherte Position noch auf einem aktuell verbundenen
+// Display liegt — sonst startet das Fenster auf einem unsichtbaren Monitor,
+// wenn der User den Bildschirm-Setup geaendert hat.
+function isWithinDisplayBounds(state) {
+  if (typeof state.x !== 'number' || typeof state.y !== 'number') return false;
+  const displays = screen.getAllDisplays();
+  return displays.some((d) => {
+    const b = d.workArea;
+    return (
+      state.x >= b.x &&
+      state.y >= b.y &&
+      state.x + state.width <= b.x + b.width &&
+      state.y + state.height <= b.y + b.height
+    );
+  });
+}
+
+let saveTimer = null;
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveWindowState, 500);
+}
+
 function createWindow() {
+  const savedState = loadWindowState();
+  const bounds =
+    savedState && isWithinDisplayBounds(savedState)
+      ? { x: savedState.x, y: savedState.y, width: savedState.width, height: savedState.height }
+      : DEFAULT_BOUNDS;
+
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
+    ...bounds,
     minWidth: 400,
     minHeight: 600,
     icon: getIconPath(),
@@ -39,9 +116,19 @@ function createWindow() {
     show: false,
   });
 
+  if (savedState?.isMaximized) {
+    mainWindow.maximize();
+  }
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
+
+  mainWindow.on('resize', scheduleSave);
+  mainWindow.on('move', scheduleSave);
+  mainWindow.on('maximize', scheduleSave);
+  mainWindow.on('unmaximize', scheduleSave);
+  mainWindow.on('close', saveWindowState);
 
   // DevTools-Shortcuts manuell registrieren (packaged Electron deaktiviert
   // das Default-Menu, deshalb greifen Ctrl+Shift+I / F12 sonst nicht).
