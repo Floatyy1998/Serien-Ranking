@@ -14,6 +14,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { logChapterRead } from '../../services/readActivityService';
 import {
+  BackButton,
   GradientText,
   PageLayout,
   ScrollToTopButton,
@@ -187,29 +188,32 @@ export const MangaReadingListPage = () => {
           <div
             style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
           >
-            <div>
-              <GradientText
-                as="h1"
-                from={currentTheme.primary}
-                to={currentTheme.accent}
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 800,
-                  fontFamily: 'var(--font-display)',
-                  margin: 0,
-                }}
-              >
-                Leseliste
-              </GradientText>
-              <p
-                style={{
-                  color: currentTheme.text.secondary,
-                  fontSize: '14px',
-                  margin: '4px 0 0 0',
-                }}
-              >
-                {items.length} Manga zum Lesen
-              </p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <BackButton />
+              <div>
+                <GradientText
+                  as="h1"
+                  from={currentTheme.primary}
+                  to={currentTheme.accent}
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: 800,
+                    fontFamily: 'var(--font-display)',
+                    margin: 0,
+                  }}
+                >
+                  Leseliste
+                </GradientText>
+                <p
+                  style={{
+                    color: currentTheme.text.secondary,
+                    fontSize: '14px',
+                    margin: '4px 0 0 0',
+                  }}
+                >
+                  {items.length} Manga zum Lesen
+                </p>
+              </div>
             </div>
             <motion.button
               whileTap={{ scale: 0.95 }}
