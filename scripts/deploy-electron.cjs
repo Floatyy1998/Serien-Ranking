@@ -21,37 +21,48 @@ const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'
 const version = pkg.version;
 const tag = `v${version}`;
 
-// gh check
-try {
-  execSync('gh --version', { stdio: 'ignore' });
-} catch {
+// gh CLI suchen — auf Windows ist's gh.cmd / gh.exe, Node findet's nur via shell.
+// Wir nutzen "where" (Windows) bzw. "which" (Unix) um den absoluten Pfad zu
+// holen und dann spawnSync ohne shell aufzurufen. Das vermeidet Quoting-
+// Probleme bei Argumenten mit Spaces.
+function findGhPath() {
+  const isWin = process.platform === 'win32';
+  try {
+    const out = execSync(`${isWin ? 'where' : 'which'} gh`, { encoding: 'utf-8' });
+    const firstLine = out.split(/\r?\n/).find((l) => l.trim());
+    return firstLine ? firstLine.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
+const ghPath = findGhPath();
+if (!ghPath) {
   console.error('ERROR: gh CLI not found. Install via "winget install GitHub.cli".');
   process.exit(1);
 }
 
+function runGh(args, opts = {}) {
+  return spawnSync(ghPath, args, { stdio: 'inherit', ...opts });
+}
+
 // Release anlegen falls noch nicht vorhanden — sonst nur Asset hochladen.
-const checkRelease = spawnSync('gh', ['release', 'view', tag, '--repo', REPO], {
-  stdio: 'ignore',
-});
+const checkRelease = runGh(['release', 'view', tag, '--repo', REPO], { stdio: 'ignore' });
 const releaseExists = checkRelease.status === 0;
 
 if (!releaseExists) {
   console.log(`Creating release ${tag}...`);
-  const create = spawnSync(
-    'gh',
-    [
-      'release',
-      'create',
-      tag,
-      '--repo',
-      REPO,
-      '--title',
-      `TV-Rank ${tag}`,
-      '--notes',
-      `Automatisch erstellter Build von ${tag}.`,
-    ],
-    { stdio: 'inherit' }
-  );
+  const create = runGh([
+    'release',
+    'create',
+    tag,
+    '--repo',
+    REPO,
+    '--title',
+    `TV-Rank ${tag}`,
+    '--notes',
+    `Automatisch erstellter Build von ${tag}.`,
+  ]);
   if (create.status !== 0) {
     console.error('ERROR: gh release create failed.');
     process.exit(1);
@@ -68,11 +79,7 @@ const existingAssets = assetPaths.filter((p) => {
 });
 
 console.log(`Uploading ${existingAssets.length} asset(s) to ${REPO}@${tag}...`);
-const upload = spawnSync(
-  'gh',
-  ['release', 'upload', tag, ...existingAssets, '--repo', REPO, '--clobber'],
-  { stdio: 'inherit' }
-);
+const upload = runGh(['release', 'upload', tag, ...existingAssets, '--repo', REPO, '--clobber']);
 if (upload.status !== 0) {
   console.error('ERROR: gh release upload failed.');
   process.exit(1);
