@@ -16,10 +16,20 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+type ElectronUpdateStatus =
+  | { state: 'idle' }
+  | { state: 'checking' }
+  | { state: 'downloading'; version?: string; percent?: number }
+  | { state: 'ready'; version: string }
+  | { state: 'error'; message: string };
+
 interface Window {
   electronAPI?: {
     isElectron: boolean;
     getAutoStart: () => Promise<boolean>;
     setAutoStart: (enabled: boolean) => Promise<boolean>;
+    onUpdateStatus: (cb: (status: ElectronUpdateStatus) => void) => () => void;
+    installUpdate: () => Promise<void>;
+    checkForUpdates: () => Promise<unknown>;
   };
 }

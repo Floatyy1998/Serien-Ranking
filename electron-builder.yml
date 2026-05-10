@@ -2,12 +2,17 @@ appId: de.tv-rank.app
 productName: TV-Rank
 artifactName: "TV-Rank-Setup.${ext}"
 afterPack: ./scripts/afterPack.cjs
+compression: maximum
 directories:
   output: release
   buildResources: public
 files:
   - electron/**/*
   - package.json
+  # Nur en-US Locale behalten — die anderen 50+ Chromium-Locales kosten ~10MB
+  # und werden eh nicht genutzt (App ist nur Deutsch).
+  - "!**/locales/*.pak"
+  - "**/locales/en-US.pak"
 extraResources:
   - from: public/app-icon.ico
     to: app-icon.ico
@@ -25,3 +30,8 @@ nsis:
   deleteAppDataOnUninstall: false
   shortcutName: TV-Rank
   installerIcon: public/app-icon.ico
+publish:
+  provider: github
+  owner: Floatyy1998
+  repo: Serien-Ranking
+  releaseType: release
