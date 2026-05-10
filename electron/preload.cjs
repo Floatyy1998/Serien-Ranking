@@ -6,7 +6,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setAutoStart: (enabled) => ipcRenderer.invoke('set-auto-start', enabled),
 });
 
-// Mark the page as running in Electron and add drag region for window moving
+// Mark the page as running in Electron and add drag region for window moving.
+// left: 100px laesst Platz fuer BackButtons (typisch 90px breit auf top:12-20px),
+// rechts werden 138px freigelassen fuer Window-Steuerung (min/max/close).
 window.addEventListener('DOMContentLoaded', () => {
   document.documentElement.classList.add('electron');
 
@@ -14,7 +16,7 @@ window.addEventListener('DOMContentLoaded', () => {
   dragBar.style.cssText = `
     position: fixed;
     top: 0;
-    left: 0;
+    left: 100px;
     right: 138px;
     height: 36px;
     z-index: 99999;
