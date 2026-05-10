@@ -6,21 +6,29 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
-import { canSpinToday } from '../../services/pet/dailySpinService';
+import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 
 export const DailySpinCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const [available, setAvailable] = useState(false);
+  const [lastSpinDate, setLastSpinDate] = useState<string | null>(null);
   const [showWheel, setShowWheel] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
   const [totalSpins, setTotalSpins] = useState(0);
 
-  // Check if spin is available today
+  const available = lastSpinDate !== toLocalDateString(new Date());
+
+  // Live subscription auf lastSpinDate, damit die Card sofort updated
+  // wenn der User im DailySpinWheel oder anderswo gespint hat.
   useEffect(() => {
     if (!user?.uid) return;
-    canSpinToday(user.uid).then(setAvailable);
+    const ref = firebase.database().ref(`users/${user.uid}/dailySpin/lastSpinDate`);
+    const handler = (snap: firebase.database.DataSnapshot) => {
+      setLastSpinDate(snap.val());
+    };
+    ref.on('value', handler);
+    return () => ref.off('value', handler);
   }, [user?.uid]);
 
   // Load streak for bonus display
@@ -49,10 +57,6 @@ export const DailySpinCard: React.FC = () => {
 
   const handleClose = () => {
     setShowWheel(false);
-    // Verfügbarkeit neu prüfen statt blind auf false setzen
-    if (user?.uid) {
-      canSpinToday(user.uid).then(setAvailable);
-    }
   };
 
   return (
