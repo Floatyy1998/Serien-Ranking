@@ -3,7 +3,7 @@
  * Manages search state, TMDB API calls, session persistence, and list operations.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -177,15 +177,13 @@ export const useSearchPage = (): UseSearchPageResult => {
     });
   }, []);
 
-  const isInList = useCallback(
-    (id: string | number, type: 'series' | 'movie') => {
-      const numId = typeof id === 'string' ? parseInt(id) : id;
-      if (type === 'series') {
-        return seriesList.some((s: Series) => s.id === numId);
-      } else {
-        return movieList.some((m: MovieType) => m.id === numId);
-      }
-    },
+  // Live abgeleitete Sets der bereits hinzugefuegten IDs. Memoisiert damit
+  // der enrichedResults-Memo unten stabile Item-Refs liefern kann.
+  const inListIds = useMemo(
+    () => ({
+      series: new Set(seriesList.map((s: Series) => s.id)),
+      movies: new Set(movieList.map((m: MovieType) => m.id)),
+    }),
     [seriesList, movieList]
   );
 
@@ -256,7 +254,8 @@ export const useSearchPage = (): UseSearchPageResult => {
                 name,
                 title: name,
                 type: 'series' as const,
-                inList: isInList(item.id, 'series'),
+                // inList wird live aus den Contexts abgeleitet (s. enrichedResults)
+                inList: false,
               };
             })
           );
@@ -273,7 +272,7 @@ export const useSearchPage = (): UseSearchPageResult => {
                 title,
                 name: title,
                 type: 'movie' as const,
-                inList: isInList(item.id, 'movie'),
+                inList: false,
               };
             })
           );
@@ -288,8 +287,18 @@ export const useSearchPage = (): UseSearchPageResult => {
         setLoading(false);
       }
     },
-    [searchType, isInList, saveToRecent]
+    [searchType, saveToRecent]
   );
+
+  // inList live ableiten — nur betroffene Items kriegen einen neuen Ref,
+  // damit memo'd SearchResultCards nicht unnoetig re-rendern.
+  const enrichedResults = useMemo(() => {
+    return searchResults.map((r) => {
+      const inList = r.type === 'series' ? inListIds.series.has(r.id) : inListIds.movies.has(r.id);
+      if (inList === r.inList) return r;
+      return { ...r, inList };
+    });
+  }, [searchResults, inListIds]);
 
   // Debounced search with skip-on-return logic
   const [skipInitialSearch, setSkipInitialSearch] = useState(() => {
@@ -355,8 +364,10 @@ export const useSearchPage = (): UseSearchPageResult => {
         });
 
         if (response.ok) {
-          setSearchResults((prev) => prev.filter((r) => r.id !== item.id));
-
+          // Nicht mehr aus searchResults filtern — der inList-Wert wird
+          // live aus den Contexts abgeleitet (enrichedResults), das Item
+          // bleibt sichtbar und der Add-Button wird zum Check-Badge sobald
+          // Firebase die neue Liste pusht.
           const title = item.title || item.name || '';
 
           setSnackbar({
@@ -402,7 +413,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     setSearchQuery,
     searchType,
     setSearchType,
-    searchResults,
+    searchResults: enrichedResults,
     loading,
     recentSearches,
     popularSearches,
