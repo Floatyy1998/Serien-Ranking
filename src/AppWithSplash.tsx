@@ -32,20 +32,8 @@ if (typeof window !== 'undefined') {
     homeConfig: false,
   };
 
-  // Splash-Debug-Logging: jeder setAppReady-Call wird mit Zeitstempel
-  // (relativ zum Page-Load via performance.now()) geloggt. So sieht man in
-  // der Console genau, welcher Flag wie lange braucht und welcher haengt.
   window.setAppReady = (key, value) => {
-    const prev = window.appReadyStatus[key];
     window.appReadyStatus[key] = value;
-    if (prev !== value) {
-      const t = Math.round(performance.now());
-      const missing = Object.entries(window.appReadyStatus)
-        .filter(([, v]) => !v)
-        .map(([k]) => k);
-      // eslint-disable-next-line no-console
-      console.log(`[splash] +${t}ms ${key}=${value} | still missing: [${missing.join(', ')}]`);
-    }
   };
 
   window.splashScreenComplete = false;
@@ -64,7 +52,6 @@ export const AppWithSplash: React.FC = () => {
   useEffect(() => {
     // Mount App im Hintergrund nach kurzer Verzögerung
     const mountTimer = setTimeout(() => {
-      // console.log('[AppWithSplash] Mounting App in background...');
       setIsAppMounted(true);
     }, 200);
 
@@ -80,7 +67,6 @@ export const AppWithSplash: React.FC = () => {
         status.homeConfig;
 
       if (isReady && !allSystemsReady) {
-        // console.log('[AppWithSplash] 🎉 ALLE SYSTEME BEREIT!', status);
         setAllSystemsReady(true);
         clearInterval(checkInterval.current);
       }
@@ -88,17 +74,14 @@ export const AppWithSplash: React.FC = () => {
 
     // Hard-Fallback: 8 s. Reicht fuer den seltenen Cold-Start ohne Cache,
     // verhindert aber dass User bei Edge-Cases (langsames Firebase, broken
-    // Catalog-Fetch) ewig vor dem Splash sitzen. Die App rendert Skeletons
-    // wenn Daten noch fehlen.
+    // Catalog-Fetch) ewig vor dem Splash sitzen.
     const fallbackTimeout = setTimeout(() => {
-      const missing = Object.entries(window.appReadyStatus)
-        .filter(([, v]) => !v)
-        .map(([k]) => k);
-      // eslint-disable-next-line no-console
-      console.warn(
-        `[splash] HARD-FALLBACK after 8s — flags still missing: [${missing.join(', ')}]`,
-        window.appReadyStatus
-      );
+      // Splash hat sich bereits selbst geschlossen (via SplashScreen.finish über
+      // progress=1) — kein Warning, kein lautes Re-Render.
+      if (window.splashScreenComplete) {
+        setAllSystemsReady(true);
+        return;
+      }
       setAllSystemsReady(true);
       if (checkInterval.current) {
         clearInterval(checkInterval.current);
