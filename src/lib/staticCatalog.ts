@@ -11,17 +11,25 @@
  *   - nginx served das unter https://serienapi.konrad-dinges.de/catalog/
  *     mit gzip-Kompression + 24h Cache-Control
  *
- * Caching-Strategie:
- *   1. In-Memory-Cache pro Tab (keine Netzwerk-Requests waehrend Session)
- *   2. IndexedDB-Cache mit Version-Check (spart Traffic ueber Reloads).
- *      Frueher localStorage — wurde aber auf iOS Safari (UTF-16, ~5 MB Quota)
- *      bei vielen Serien zu eng und liess QuotaExceededError fuer ALLE
- *      anderen localStorage-Writes (Theme, HomeConfig, ...) durchschlagen.
- *   3. Bei Fehler: Firebase-Fallback (robust gegen Server-Ausfall)
+ * Caching-Strategie (Stale-While-Revalidate):
+ *   1. In-Memory-Cache pro Tab — sofortige Returns waehrend Session
+ *   2. IndexedDB-Cache — wird bei Cache-Hit SOFORT ausgeliefert, der
+ *      Versions-Check laeuft asynchron im Hintergrund. Erst wenn der
+ *      Server eine neue Version meldet, werden Caches invalidiert; der
+ *      naechste Aufruf (bzw. der naechste visibilitychange-Poll im
+ *      Provider) holt frisch.
+ *   3. Bei Fehler / leerem Cache: direkter Fetch vom Server
+ *   4. Fetch-Timeout (15s) verhindert haengende Requests
  */
 
 import type { CatalogSeries, CatalogMovie, CatalogSeason } from '../types/CatalogTypes';
-import { idbGetVersioned, idbSetVersioned, idbRemove, idbRemovePrefix } from './catalogIDB';
+import {
+  idbGetVersioned,
+  idbGetAny,
+  idbSetVersioned,
+  idbRemove,
+  idbRemovePrefix,
+} from './catalogIDB';
 
 // Vite injiziert process.env.VITE_* via define() in vite.config.ts
 declare const process: { env: Record<string, string | undefined> };
@@ -34,6 +42,11 @@ const LS_VERSION_KEY = LS_PREFIX + 'version';
 const LS_META_KEY = LS_PREFIX + 'seriesMeta';
 const LS_MOVIES_KEY = LS_PREFIX + 'moviesMeta';
 const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
+const LS_SEASONS_BULK_KEY = LS_PREFIX + 'seasonsBulk';
+
+// Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
+// haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
+const DEFAULT_FETCH_TIMEOUT_MS = 15_000;
 
 // Einmalige Migration: Alte localStorage-Eintraege mit catalog-static:*-
 // Prefix entfernen. Wichtig fuer Bestands-User, deren localStorage durch
@@ -71,12 +84,13 @@ interface VersionResponse {
 let memoryMeta: Record<string, CatalogSeries> | null = null;
 let memoryMovies: Record<string, CatalogMovie> | null = null;
 const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
+let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
 async function fetchJson<T>(
   path: string,
-  opts?: { noStore?: boolean; version?: number | null }
+  opts?: { noStore?: boolean; version?: number | null; timeoutMs?: number }
 ): Promise<T> {
   // Version-basierter Cache-Bust fuer Catalog-Files (seriesMeta, moviesMeta,
   // seasons/*). Der Browser-HTTP-Cache respektiert `max-age=86400` auch wenn
@@ -85,18 +99,26 @@ async function fetchJson<T>(
   // ein neuer URL-Key und wird vom Netz geholt.
   const query = opts?.version != null ? `?v=${opts.version}` : '';
   const url = `${CATALOG_BASE_URL}/${path}${query}`;
-  const res = await fetch(url, {
-    method: 'GET',
-    credentials: 'omit',
-    // version.json selbst muss immer frisch sein (sonst sehen wir den Bump nie),
-    // deshalb no-store. Die grossen Files duerfen 24h gecacht bleiben, weil
-    // ihre URL durch den ?v=-Query automatisch invalidiert wird.
-    cache: opts?.noStore ? 'no-store' : 'default',
-  });
-  if (!res.ok) {
-    throw new Error(`static catalog fetch failed ${res.status} ${url}`);
+  const timeoutMs = opts?.timeoutMs ?? DEFAULT_FETCH_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      credentials: 'omit',
+      // version.json selbst muss immer frisch sein (sonst sehen wir den Bump nie),
+      // deshalb no-store. Die grossen Files duerfen 24h gecacht bleiben, weil
+      // ihre URL durch den ?v=-Query automatisch invalidiert wird.
+      cache: opts?.noStore ? 'no-store' : 'default',
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`static catalog fetch failed ${res.status} ${url}`);
+    }
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return (await res.json()) as T;
 }
 
 /**
@@ -109,7 +131,12 @@ async function getRemoteVersion(): Promise<number | null> {
   if (versionFetchPromise) return versionFetchPromise;
   versionFetchPromise = (async () => {
     try {
-      const v = await fetchJson<VersionResponse>('version.json', { noStore: true });
+      const v = await fetchJson<VersionResponse>('version.json', {
+        noStore: true,
+        // version.json ist 100 Bytes — kurzer Timeout reicht und verhindert
+        // dass der ganze Stale-While-Revalidate-Check ewig haengt
+        timeoutMs: 5_000,
+      });
       cachedVersion = typeof v?.version === 'number' ? v.version : null;
       return cachedVersion;
     } catch (e) {
@@ -146,8 +173,36 @@ async function invalidateLocalCaches(): Promise<void> {
   await Promise.all([
     idbRemove(LS_META_KEY),
     idbRemove(LS_MOVIES_KEY),
+    idbRemove(LS_SEASONS_BULK_KEY),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
+}
+
+/**
+ * Hintergrund-Versionscheck: vergleicht Remote-Version mit der lokal
+ * gespeicherten Version. Bei Mismatch werden alle Caches invalidiert,
+ * damit der naechste Catalog-Aufruf frisch holt.
+ *
+ * Diese Funktion wird im Stale-While-Revalidate-Pfad ohne `await` aufgerufen
+ * — UI bekommt die gecachten Daten sofort, der Refresh kommt beim naechsten
+ * Tick (z.B. via checkForCatalogVersionBump()).
+ */
+async function revalidateInBackground(localV: number | null): Promise<void> {
+  migrateLocalStorageOnce();
+  const remote = await getRemoteVersion();
+  if (remote === null) return;
+  if (localV !== null && localV === remote) {
+    // Nichts zu tun — Cache ist aktuell
+    return;
+  }
+  // Bump erkannt: Caches komplett invalidieren. UI sieht noch die alten
+  // Daten bis zum naechsten Refresh.
+  memoryMeta = null;
+  memoryMovies = null;
+  memorySeasons.clear();
+  memorySeasonsBulk = null;
+  await invalidateLocalCaches();
+  await setLocalVersion(remote);
 }
 
 async function ensureVersionFresh(): Promise<number | null> {
@@ -166,15 +221,23 @@ async function ensureVersionFresh(): Promise<number | null> {
 
 /**
  * Laedt catalog/seriesMeta (alle Serien, ohne Seasons, ~400 KB gzipped ~80 KB).
+ *
+ * Stale-While-Revalidate: bei vorhandenem Cache wird sofort zurueckgegeben,
+ * der Versions-Check laeuft im Hintergrund.
  */
 export async function fetchStaticCatalogSeries(): Promise<Record<string, CatalogSeries> | null> {
   if (memoryMeta) return memoryMeta;
-  const version = await ensureVersionFresh();
-  const cached = await idbGetVersioned<Record<string, CatalogSeries>>(LS_META_KEY, version);
+
+  // Stale-While-Revalidate: IDB sofort lesen, ohne Versions-Roundtrip abzuwarten
+  const cached = await idbGetAny<Record<string, CatalogSeries>>(LS_META_KEY);
   if (cached) {
-    memoryMeta = cached;
-    return cached;
+    memoryMeta = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
   }
+
+  // Cold path: Version + Daten holen
+  const version = await ensureVersionFresh();
   try {
     const data = await fetchJson<Record<string, CatalogSeries>>('seriesMeta.json', {
       version,
@@ -193,12 +256,15 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
  */
 export async function fetchStaticCatalogMovies(): Promise<Record<string, CatalogMovie> | null> {
   if (memoryMovies) return memoryMovies;
-  const version = await ensureVersionFresh();
-  const cached = await idbGetVersioned<Record<string, CatalogMovie>>(LS_MOVIES_KEY, version);
+
+  const cached = await idbGetAny<Record<string, CatalogMovie>>(LS_MOVIES_KEY);
   if (cached) {
-    memoryMovies = cached;
-    return cached;
+    memoryMovies = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
   }
+
+  const version = await ensureVersionFresh();
   try {
     const data = await fetchJson<Record<string, CatalogMovie>>('moviesMeta.json', {
       version,
@@ -214,6 +280,8 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
 
 /**
  * Laedt catalog/seasons/{tmdbId} (Seasons einer einzelnen Serie, ~10 KB).
+ * Wird heute nur noch fuer Edge-Cases verwendet — der Provider lädt normalerweise
+ * den Bulk via fetchStaticCatalogSeasonsBulk().
  */
 export async function fetchStaticCatalogSeasons(
   tmdbId: string | number
@@ -221,13 +289,22 @@ export async function fetchStaticCatalogSeasons(
   const id = String(tmdbId);
   const mem = memorySeasons.get(id);
   if (mem) return mem;
-  const version = await ensureVersionFresh();
-  const cacheKey = LS_SEASONS_PREFIX + id;
-  const cached = await idbGetVersioned<Record<string, CatalogSeason>>(cacheKey, version);
-  if (cached) {
-    memorySeasons.set(id, cached);
-    return cached;
+
+  // Falls bulk-Daten geladen sind, daraus bedienen
+  if (memorySeasonsBulk && memorySeasonsBulk[id]) {
+    memorySeasons.set(id, memorySeasonsBulk[id]);
+    return memorySeasonsBulk[id];
   }
+
+  const cacheKey = LS_SEASONS_PREFIX + id;
+  const cached = await idbGetAny<Record<string, CatalogSeason>>(cacheKey);
+  if (cached) {
+    memorySeasons.set(id, cached.data);
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
   try {
     const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
       version,
@@ -236,7 +313,6 @@ export async function fetchStaticCatalogSeasons(
     void idbSetVersioned(cacheKey, version, data);
     return data;
   } catch (e) {
-    // 404 bedeutet einfach: noch keine Seasons fuer diese Serie exportiert
     if (!String(e).includes('404')) {
       console.warn(`[staticCatalog] seasons/${id} fetch failed`, e);
     }
@@ -245,8 +321,50 @@ export async function fetchStaticCatalogSeasons(
 }
 
 /**
+ * Laedt catalog/seasonsAll.json (alle Seasons aller Serien in einem Request).
+ * Ersetzt die frueheren N parallelen Requests pro User-Serie und reduziert
+ * die Initialladezeit dramatisch bei vielen Serien (Browser-Limit von 6
+ * parallelen Connections pro Origin).
+ *
+ * Returnt null wenn das Bulk-File noch nicht existiert (Server-Cron nicht
+ * gelaufen oder alte Server-Version) — Provider faellt dann auf einzelne
+ * fetchStaticCatalogSeasons-Calls zurueck.
+ */
+export async function fetchStaticCatalogSeasonsBulk(): Promise<Record<
+  string,
+  Record<string, CatalogSeason>
+> | null> {
+  if (memorySeasonsBulk) return memorySeasonsBulk;
+
+  const cached =
+    await idbGetAny<Record<string, Record<string, CatalogSeason>>>(LS_SEASONS_BULK_KEY);
+  if (cached) {
+    memorySeasonsBulk = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<Record<string, Record<string, CatalogSeason>>>('seasonsAll.json', {
+      version,
+    });
+    memorySeasonsBulk = data;
+    void idbSetVersioned(LS_SEASONS_BULK_KEY, version, data);
+    return data;
+  } catch (e) {
+    // 404 = Bulk-File existiert noch nicht (Backend nicht aktuell). Kein Fehler-Log,
+    // der Provider faellt auf einzelne Season-Fetches zurueck.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] seasonsAll fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
  * Prueft ob serverseitig eine neue Catalog-Version vorliegt und invalidiert
- * in diesem Fall Memory + localStorage (aber ohne direkt neu zu fetchen).
+ * in diesem Fall Memory + IDB (aber ohne direkt neu zu fetchen).
  * Wird beim Tab-visibilitychange aufgerufen, damit der Client neue Cron-
  * Daten nach laengerer Inaktivitaet automatisch zieht — ohne App-Reload.
  *
@@ -258,7 +376,10 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   cachedVersion = null;
   let remote: number | null;
   try {
-    const v = await fetchJson<VersionResponse>('version.json', { noStore: true });
+    const v = await fetchJson<VersionResponse>('version.json', {
+      noStore: true,
+      timeoutMs: 5_000,
+    });
     remote = typeof v?.version === 'number' ? v.version : null;
   } catch {
     return false;
@@ -267,25 +388,21 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   cachedVersion = remote;
   const local = await getLocalVersion();
   if (local !== null && local === remote) {
-    // unveraendert — nichts zu tun
     return false;
   }
   // Bump detected: memory + IDB komplett invalidieren
   memoryMeta = null;
   memoryMovies = null;
   memorySeasons.clear();
+  memorySeasonsBulk = null;
   await invalidateLocalCaches();
   await setLocalVersion(remote);
   return true;
 }
 
 /**
- * Clear all in-memory AND localStorage caches (used after catalog-version
- * changes at runtime, e.g. nach /add).
- */
-/**
- * Erzwingt einen frischen Fetch vom Server, ohne Memory-, localStorage-
- * oder Browser-HTTP-Cache. Nützlich wenn bekannt ist, dass Daten fehlen
+ * Erzwingt einen frischen Fetch vom Server, ohne Memory-, IDB-
+ * oder Browser-HTTP-Cache. Nuetzlich wenn bekannt ist, dass Daten fehlen
  * (z.B. nach /add oder bei stale Cache).
  */
 export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
@@ -294,14 +411,24 @@ export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
 > | null> {
   try {
     const url = `${CATALOG_BASE_URL}/seriesMeta.json?_=${Date.now()}`;
-    const res = await fetch(url, { method: 'GET', credentials: 'omit', cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = (await res.json()) as Record<string, CatalogSeries>;
-    // Update caches with fresh data
-    memoryMeta = data;
-    const version = await getRemoteVersion();
-    if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
-    return data;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as Record<string, CatalogSeries>;
+      memoryMeta = data;
+      const version = await getRemoteVersion();
+      if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
+      return data;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     return null;
   }
@@ -313,13 +440,24 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
 > | null> {
   try {
     const url = `${CATALOG_BASE_URL}/moviesMeta.json?_=${Date.now()}`;
-    const res = await fetch(url, { method: 'GET', credentials: 'omit', cache: 'no-store' });
-    if (!res.ok) return null;
-    const data = (await res.json()) as Record<string, CatalogMovie>;
-    memoryMovies = data;
-    const version = await getRemoteVersion();
-    if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
-    return data;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as Record<string, CatalogMovie>;
+      memoryMovies = data;
+      const version = await getRemoteVersion();
+      if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
+      return data;
+    } finally {
+      clearTimeout(timeoutId);
+    }
   } catch {
     return null;
   }
@@ -329,10 +467,12 @@ export function clearStaticCatalogCache(): void {
   memoryMeta = null;
   memoryMovies = null;
   memorySeasons.clear();
+  memorySeasonsBulk = null;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
   void idbRemove(LS_VERSION_KEY);
+  void idbRemove(LS_SEASONS_BULK_KEY);
   void idbRemovePrefix(LS_SEASONS_PREFIX);
 }

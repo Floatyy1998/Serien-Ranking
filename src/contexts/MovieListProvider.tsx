@@ -40,34 +40,36 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
       if (!userMovieRefs || Object.keys(userMovieRefs).length === 0) return;
       setCatalogLoading(true);
       if (forceFresh) clearStaticCatalogCache();
-      let merged: Record<string, CatalogMovie> | null = null;
 
+      // 1) Static-File (Stale-While-Revalidate liefert Cache sofort)
+      let merged: Record<string, CatalogMovie> | null = null;
       try {
-        const staticData = await fetchStaticCatalogMovies();
-        if (staticData) merged = staticData;
+        merged = await fetchStaticCatalogMovies();
       } catch {
         // ignore
       }
 
-      const userIds = Object.keys(userMovieRefs);
-      const missingIds = userIds.filter((id) => !merged || !merged[id]);
-      if (missingIds.length > 0) {
+      // 2) Wenn komplett leer: einmal force-fresh
+      if (!merged) {
         try {
-          const freshData = await fetchStaticCatalogMoviesFresh();
-          if (freshData) {
-            merged = freshData;
-          }
+          merged = await fetchStaticCatalogMoviesFresh();
         } catch (e) {
-          console.warn('[catalog] fresh refetch failed', e);
+          console.warn('[catalog] retry fresh fetch failed', e);
         }
       }
 
-      if (!merged) {
-        try {
-          clearStaticCatalogCache();
-          merged = await fetchStaticCatalogMovies();
-        } catch (e) {
-          console.warn('[catalog] retry static fetch failed', e);
+      // 3) Bei forceFresh + fehlenden IDs explizit nachladen.
+      //    Der periodische Versions-Bump-Check pflegt stale Daten ohnehin nach.
+      if (forceFresh && merged) {
+        const userIds = Object.keys(userMovieRefs);
+        const missingIds = userIds.filter((id) => !merged![id]);
+        if (missingIds.length > 0) {
+          try {
+            const freshData = await fetchStaticCatalogMoviesFresh();
+            if (freshData) merged = freshData;
+          } catch (e) {
+            console.warn('[catalog] fresh refetch failed', e);
+          }
         }
       }
 

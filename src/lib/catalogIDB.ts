@@ -75,6 +75,34 @@ export async function idbGetVersioned<T>(
   });
 }
 
+/**
+ * Liefert den IDB-Eintrag inklusive der gespeicherten Version, ohne Versions-Check.
+ * Wird vom Stale-While-Revalidate-Pfad genutzt: Caller bekommt Daten sofort,
+ * triggert dann selbst einen Versions-Check im Hintergrund.
+ */
+export async function idbGetAny<T>(key: string): Promise<{ v: number; data: T } | null> {
+  const db = await openDB();
+  if (!db) return null;
+  return new Promise<{ v: number; data: T } | null>((resolve) => {
+    try {
+      const tx = db.transaction([STORE], 'readonly');
+      const store = tx.objectStore(STORE);
+      const req = store.get(key);
+      req.onsuccess = () => {
+        const result = req.result as VersionedRecord | undefined;
+        if (!result) {
+          resolve(null);
+          return;
+        }
+        resolve({ v: result.v, data: result.data as T });
+      };
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 export async function idbSetVersioned<T>(
   key: string,
   version: number | null,
