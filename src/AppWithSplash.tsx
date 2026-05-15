@@ -32,9 +32,20 @@ if (typeof window !== 'undefined') {
     homeConfig: false,
   };
 
+  // Splash-Debug-Logging: jeder setAppReady-Call wird mit Zeitstempel
+  // (relativ zum Page-Load via performance.now()) geloggt. So sieht man in
+  // der Console genau, welcher Flag wie lange braucht und welcher haengt.
   window.setAppReady = (key, value) => {
+    const prev = window.appReadyStatus[key];
     window.appReadyStatus[key] = value;
-    // console.log(`[AppReady] ${key}: ${value}`, window.appReadyStatus);
+    if (prev !== value) {
+      const t = Math.round(performance.now());
+      const missing = Object.entries(window.appReadyStatus)
+        .filter(([, v]) => !v)
+        .map(([k]) => k);
+      // eslint-disable-next-line no-console
+      console.log(`[splash] +${t}ms ${key}=${value} | still missing: [${missing.join(', ')}]`);
+    }
   };
 
   window.splashScreenComplete = false;
@@ -80,6 +91,14 @@ export const AppWithSplash: React.FC = () => {
     // Catalog-Fetch) ewig vor dem Splash sitzen. Die App rendert Skeletons
     // wenn Daten noch fehlen.
     const fallbackTimeout = setTimeout(() => {
+      const missing = Object.entries(window.appReadyStatus)
+        .filter(([, v]) => !v)
+        .map(([k]) => k);
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[splash] HARD-FALLBACK after 8s — flags still missing: [${missing.join(', ')}]`,
+        window.appReadyStatus
+      );
       setAllSystemsReady(true);
       if (checkInterval.current) {
         clearInterval(checkInterval.current);
