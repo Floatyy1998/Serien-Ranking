@@ -75,14 +75,15 @@ export const AppWithSplash: React.FC = () => {
       }
     }, 100);
 
-    // Timeout nach 5 Sekunden als Fallback
+    // Hard-Fallback: 20 s. Lieber laenger warten als eine leere Serienliste
+    // zeigen. Greift nur bei echtem Netzwerk-/Daten-Hang — der Splash schliesst
+    // normalerweise direkt nachdem `initialData` ready ist (Cache: <100 ms).
     const fallbackTimeout = setTimeout(() => {
-      // console.warn('[AppWithSplash] Timeout - zeige App trotzdem');
       setAllSystemsReady(true);
       if (checkInterval.current) {
         clearInterval(checkInterval.current);
       }
-    }, 5000);
+    }, 20000);
 
     return () => {
       clearTimeout(mountTimer);

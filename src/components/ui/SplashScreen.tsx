@@ -89,8 +89,10 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
         return;
       }
 
-      // Hard fallback: never hang longer than 4 seconds
-      if (Date.now() - startTime > 4000) {
+      // Hard fallback: aussteigen wenn die Daten partout nicht kommen.
+      // 20 s gibt der Stale-While-Revalidate-Strategie genug Spielraum, auch
+      // beim allerersten Besuch (kein Cache) saubere Serien-Daten zu laden.
+      if (Date.now() - startTime > 20000) {
         finish();
       }
     }, 50);
