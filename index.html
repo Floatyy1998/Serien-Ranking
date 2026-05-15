@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="de">
   <head>
@@ -6,9 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/tv-logo.svg" />
     <link rel="apple-touch-icon" href="/logo180.png?v=2" />
     <link rel="apple-touch-icon" sizes="180x180" href="/logo180.png?v=2" />
-    <title>
-      TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien
-    </title>
+    <title>TV-RANK - Entdecke, bewerte und verwalte deine Lieblingsserien</title>
     <meta
       name="description"
       content="Entdecke, bewerte und verwalte deine Lieblingsserien mit TV-RANK. Finde neue Serien, führe deine Watchlist und verpasse keine Folge mehr."
@@ -35,34 +33,23 @@
     <!-- Performance optimizations: Resource hints -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preconnect"
-      href="https://identitytoolkit.googleapis.com"
-      crossorigin
-    />
-    <link
-      rel="preconnect"
-      href="https://securetoken.googleapis.com"
-      crossorigin
-    />
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+    <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
+    <!-- Catalog-API: TLS-Handshake parallel zum HTML-Parse starten,
+         spart 100-300 ms beim ersten Catalog-Fetch (seriesMeta, seasonsAll, moviesMeta) -->
+    <link rel="preconnect" href="https://serienapi.konrad-dinges.de" crossorigin />
     <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
     <link rel="dns-prefetch" href="https://api.themoviedb.org" />
 
     <!-- PWA Theme Color - wird dynamisch per JavaScript aktualisiert -->
     <meta name="theme-color" content="#0a0a0a" id="theme-color-meta" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
     <!-- Cache Control für aggressive Cache-Invalidierung -->
-    <meta
-      http-equiv="Cache-Control"
-      content="no-cache, no-store, must-revalidate"
-    />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
 
     <!-- Allow external resources including Firebase WebSocket -->

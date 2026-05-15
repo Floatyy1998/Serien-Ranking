@@ -317,26 +317,34 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   }, [user, watchDataMap, loading]);
 
   // Signal when initial data is loaded.
-  // initialData ist erst dann "ready", wenn die seriesList wirklich gemerget ist:
-  //   - User hat keine Serien (userSeriesRefs leer) → sofort ready
-  //   - User hat Serien → erst wenn seriesList nicht leer ist (Merge fertig)
-  // Sonst riskiert der Splashscreen, eine leere Homepage zu zeigen, obwohl die
-  // Daten gleich kommen.
+  // Mehrere Pfade, damit der Splashscreen nicht haengt, wenn Edge-Cases zuschlagen:
+  //   1) Kein User eingeloggt → sofort ready
+  //   2) seriesList hat schon Eintraege → ready (auch wenn Hintergrund-Loads noch laufen)
+  //   3) User-Refs sind geladen und leer → ready (User hat halt keine Serien)
+  //   4) Komplett-Loading durch (kein Fetch mehr aktiv) → ready, selbst wenn
+  //      catalogMeta leer ist (z.B. Server hat IDs nicht). Lieber Skeleton-State
+  //      zeigen als ewig auf Daten warten, die nicht kommen.
   useEffect(() => {
     if (!user) {
       window.setAppReady?.('initialData', true);
       return;
     }
-    if (loading) return;
-    const refCount = userSeriesRefs ? Object.keys(userSeriesRefs).length : 0;
-    if (refCount === 0) {
+    if (seriesList.length > 0) {
       window.setAppReady?.('initialData', true);
       return;
     }
-    if (seriesList.length > 0) {
+    const refsKnown = !refsLoading && userSeriesRefs !== null;
+    const refCount = userSeriesRefs ? Object.keys(userSeriesRefs).length : 0;
+    if (refsKnown && refCount === 0) {
+      window.setAppReady?.('initialData', true);
+      return;
+    }
+    if (!loading) {
+      // Catalog-Fetch ist durch — wenn jetzt immer noch nichts da ist, sind
+      // wir in einem broken-state. App trotzdem zeigen.
       window.setAppReady?.('initialData', true);
     }
-  }, [user, loading, userSeriesRefs, seriesList]);
+  }, [user, loading, refsLoading, userSeriesRefs, seriesList]);
 
   // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
   const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);

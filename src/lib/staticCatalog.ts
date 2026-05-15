@@ -217,6 +217,51 @@ async function ensureVersionFresh(): Promise<number | null> {
   return remote;
 }
 
+// ---------- Provider-Dedup-Expansion ----------
+
+interface ProviderEntry {
+  logo?: string;
+  name?: string;
+}
+
+interface DedupedMetaPayload {
+  _meta?: { providers?: Record<string, ProviderEntry> };
+  [tmdbId: string]: unknown;
+}
+
+/**
+ * Bei Provider-Dedup im Server steht oben im JSON ein `_meta.providers`-Mapping
+ * von ID -> {logo, name}, und in jedem Series/Movie-Eintrag sind die Provider
+ * nur noch als `[id, id, id]` gespeichert. Wir expandieren das nach dem Fetch
+ * zurueck zur alten Full-Object-Struktur, sodass das uebrige Frontend
+ * unveraendert bleibt.
+ *
+ * Bei alten Payloads (ohne _meta) ist das ein No-Op.
+ */
+function expandProviders<T extends { providers?: unknown }>(raw: unknown): Record<string, T> {
+  if (!raw || typeof raw !== 'object') return {};
+  const payload = raw as DedupedMetaPayload;
+  const providerMap = payload._meta?.providers;
+  const out: Record<string, T> = {};
+  for (const key in payload) {
+    if (key === '_meta') continue;
+    const entry = payload[key] as T & { providers?: unknown };
+    if (entry && providerMap && Array.isArray(entry.providers)) {
+      const expanded = (entry.providers as unknown[]).map((p) => {
+        if (typeof p === 'number') {
+          const info = providerMap[String(p)] || {};
+          return { id: p, logo: info.logo || '', name: info.name || '' };
+        }
+        return p;
+      });
+      out[key] = { ...entry, providers: expanded } as T;
+    } else {
+      out[key] = entry as T;
+    }
+  }
+  return out;
+}
+
 // ---------- Public API ----------
 
 /**
@@ -239,9 +284,8 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
   // Cold path: Version + Daten holen
   const version = await ensureVersionFresh();
   try {
-    const data = await fetchJson<Record<string, CatalogSeries>>('seriesMeta.json', {
-      version,
-    });
+    const raw = await fetchJson<unknown>('seriesMeta.json', { version });
+    const data = expandProviders<CatalogSeries>(raw);
     memoryMeta = data;
     void idbSetVersioned(LS_META_KEY, version, data);
     return data;
@@ -266,9 +310,8 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
 
   const version = await ensureVersionFresh();
   try {
-    const data = await fetchJson<Record<string, CatalogMovie>>('moviesMeta.json', {
-      version,
-    });
+    const raw = await fetchJson<unknown>('moviesMeta.json', { version });
+    const data = expandProviders<CatalogMovie>(raw);
     memoryMovies = data;
     void idbSetVersioned(LS_MOVIES_KEY, version, data);
     return data;
@@ -421,7 +464,8 @@ export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
         signal: controller.signal,
       });
       if (!res.ok) return null;
-      const data = (await res.json()) as Record<string, CatalogSeries>;
+      const raw = await res.json();
+      const data = expandProviders<CatalogSeries>(raw);
       memoryMeta = data;
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
@@ -450,7 +494,8 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
         signal: controller.signal,
       });
       if (!res.ok) return null;
-      const data = (await res.json()) as Record<string, CatalogMovie>;
+      const raw = await res.json();
+      const data = expandProviders<CatalogMovie>(raw);
       memoryMovies = data;
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
