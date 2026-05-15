@@ -188,12 +188,42 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     }
   }, []); // setter-Funktionen sind stabil, daher leeres Dependency-Array
 
-  // Load homeConfig from Firebase (background sync)
+  // Load homeConfig from Firebase (background sync).
+  // setAppReady('homeConfig') wird in mehreren Faellen gefeuert, damit der
+  // Splashscreen nicht haengt, falls Firebase RTDB nicht antwortet:
+  //   1) Cached Config in localStorage → sofort ready (Firebase laeuft im Hintergrund)
+  //   2) Firebase-once antwortet → ready
+  //   3) Hard-Timeout 2.5s → ready, egal ob Firebase noch laeuft
+  //   4) Firebase wirft → ready (.catch)
   useEffect(() => {
     if (!uid) {
       window.setAppReady?.('homeConfig', true);
       return;
     }
+    // 1) Wenn wir schon einen Cache haben, ist die App "bereit zum Rendern".
+    //    Firebase darf im Hintergrund nachladen, blockiert aber nicht den Splash.
+    const hasCache = (() => {
+      try {
+        return !!localStorage.getItem('homeConfig_cache');
+      } catch {
+        return false;
+      }
+    })();
+    if (hasCache) {
+      window.setAppReady?.('homeConfig', true);
+    }
+
+    let done = false;
+    const markReady = () => {
+      if (done) return;
+      done = true;
+      window.setAppReady?.('homeConfig', true);
+    };
+
+    // 3) Hard-Timeout: spaetestens nach 2.5s ist homeConfig "ready",
+    //    egal ob Firebase noch antwortet
+    const timeoutId = window.setTimeout(markReady, 2500);
+
     firebase
       .database()
       .ref(`users/${uid}/homeConfig`)
@@ -201,8 +231,18 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
       .then((snap) => {
         const data = snap.val();
         if (data) applyConfigData(data);
-        window.setAppReady?.('homeConfig', true);
+      })
+      .catch((err) => {
+        console.warn('[homeConfig] firebase fetch failed', err);
+      })
+      .finally(() => {
+        window.clearTimeout(timeoutId);
+        markReady();
       });
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
   }, [uid, applyConfigData]);
 
   // Memoize derived value to avoid re-computation on unrelated renders
