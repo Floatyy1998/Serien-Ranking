@@ -13,6 +13,7 @@ import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeriesFresh,
   fetchStaticCatalogSeasons,
+  fetchStaticCatalogSeasonsBulk,
   clearStaticCatalogCache,
   checkForCatalogVersionBump,
 } from '../lib/staticCatalog';
@@ -83,38 +84,38 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (!userSeriesRefs || Object.keys(userSeriesRefs).length === 0) return;
       setCatalogLoading(true);
       if (forceFresh) clearStaticCatalogCache();
+
+      // 1) Static-File versuchen (Stale-While-Revalidate liefert Cache sofort)
       let merged: Record<string, CatalogSeries> | null = null;
-
-      // 1) Static-File versuchen
       try {
-        const staticData = await fetchStaticCatalogSeries();
-        if (staticData) merged = staticData;
+        merged = await fetchStaticCatalogSeries();
       } catch {
-        // ignore, firebase fallback unten
+        // weiter mit Fallback
       }
 
-      // 2) Fehlende IDs? Cache ist stale → frisch vom Server holen (no-store,
-      //    kein Memory/LS/Browser-Cache). Passiert z.B. wenn Serien nach dem
-      //    letzten Besuch hinzugefuegt wurden und der Cache die alte Version hat.
-      const userIds = Object.keys(userSeriesRefs);
-      const missingIds = userIds.filter((id) => !merged || !merged[id]);
-      if (missingIds.length > 0) {
-        try {
-          const freshData = await fetchStaticCatalogSeriesFresh();
-          if (freshData) {
-            merged = freshData;
-          }
-        } catch (e) {
-          console.warn('[catalog] fresh refetch failed', e);
-        }
-      }
-
-      // 3) Wenn static komplett versagt hat: force-fresh
+      // 2) Wenn komplett leer (kein Cache, fetch fehlgeschlagen): einmal force-fresh
       if (!merged) {
         try {
           merged = await fetchStaticCatalogSeriesFresh();
         } catch (e) {
           console.warn('[catalog] retry fresh fetch failed', e);
+        }
+      }
+
+      // 3) Falls Daten da sind aber User-IDs fehlen UND forceFresh angefordert wurde,
+      //    holen wir explizit frisch. Sonst nicht — der periodische Versions-Bump-
+      //    Check (visibilitychange / 5min-Poll) zieht stale Daten ohnehin nach,
+      //    und der separate Effect unten ruft refetchCatalog(true) bei Bedarf.
+      if (forceFresh && merged) {
+        const userIds = Object.keys(userSeriesRefs);
+        const missingIds = userIds.filter((id) => !merged![id]);
+        if (missingIds.length > 0) {
+          try {
+            const freshData = await fetchStaticCatalogSeriesFresh();
+            if (freshData) merged = freshData;
+          } catch (e) {
+            console.warn('[catalog] fresh refetch failed', e);
+          }
         }
       }
 
@@ -145,7 +146,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSeriesRefs]);
 
-  // 4. Catalog-Seasons nur für User-Serien (on-demand, parallel)
+  // 4. Catalog-Seasons fuer User-Serien.
+  //    Primaer: ein einziger Bulk-Request (seasonsAll.json) — vermeidet das
+  //    Browser-Limit von 6 parallelen Connections pro Origin bei vielen Serien.
+  //    Fallback: einzelne Season-Files, falls Bulk noch nicht auf dem Server liegt.
   const [catalogSeasons, setCatalogSeasons] = useState<
     Record<string, Record<string, CatalogSeason>>
   >({});
@@ -160,16 +164,37 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
     let cancelled = false;
 
-    Promise.all(
-      tmdbIds.map(async (tmdbId) => {
-        try {
-          const data = await fetchStaticCatalogSeasons(tmdbId);
-          return [tmdbId, data || {}] as const;
-        } catch {
-          return [tmdbId, {}] as const;
+    (async () => {
+      // Bulk versuchen
+      let bulk: Record<string, Record<string, CatalogSeason>> | null = null;
+      try {
+        bulk = await fetchStaticCatalogSeasonsBulk();
+      } catch {
+        // ignore — Fallback unten
+      }
+      if (cancelled) return;
+
+      if (bulk) {
+        const seasons: Record<string, Record<string, CatalogSeason>> = {};
+        for (const tmdbId of tmdbIds) {
+          seasons[tmdbId] = bulk[tmdbId] || {};
         }
-      })
-    ).then((results) => {
+        seasonsLoadedRef.current = true;
+        setCatalogSeasons(seasons);
+        return;
+      }
+
+      // Fallback: einzelne Files
+      const results = await Promise.all(
+        tmdbIds.map(async (tmdbId) => {
+          try {
+            const data = await fetchStaticCatalogSeasons(tmdbId);
+            return [tmdbId, data || {}] as const;
+          } catch {
+            return [tmdbId, {}] as const;
+          }
+        })
+      );
       if (cancelled) return;
       const seasons: Record<string, Record<string, CatalogSeason>> = {};
       for (const [tmdbId, data] of results) {
@@ -177,7 +202,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       }
       seasonsLoadedRef.current = true;
       setCatalogSeasons(seasons);
-    });
+    })();
 
     return () => {
       cancelled = true;
@@ -209,20 +234,33 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         // Neue Version: silent refetch ohne catalogLoading-Flag.
         const tmdbIds = Object.keys(userSeriesRefs);
         if (tmdbIds.length === 0) return;
-        const [newMeta, ...seasonResults] = await Promise.all([
+        const [newMeta, newBulk] = await Promise.all([
           fetchStaticCatalogSeries(),
-          ...tmdbIds.map(async (tmdbId) => {
-            const data = await fetchStaticCatalogSeasons(tmdbId);
-            return [tmdbId, data || {}] as const;
-          }),
+          fetchStaticCatalogSeasonsBulk(),
         ]);
         if (cancelled) return;
         if (newMeta) setCatalogMeta(newMeta);
-        const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
-        for (const [tmdbId, data] of seasonResults) {
-          newSeasons[tmdbId] = data as Record<string, CatalogSeason>;
+        if (newBulk) {
+          const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
+          for (const tmdbId of tmdbIds) {
+            newSeasons[tmdbId] = newBulk[tmdbId] || {};
+          }
+          setCatalogSeasons(newSeasons);
+        } else {
+          // Bulk nicht verfuegbar — Einzel-Fallback (selten)
+          const seasonResults = await Promise.all(
+            tmdbIds.map(async (tmdbId) => {
+              const data = await fetchStaticCatalogSeasons(tmdbId);
+              return [tmdbId, data || {}] as const;
+            })
+          );
+          if (cancelled) return;
+          const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
+          for (const [tmdbId, data] of seasonResults) {
+            newSeasons[tmdbId] = data as Record<string, CatalogSeason>;
+          }
+          setCatalogSeasons(newSeasons);
         }
-        setCatalogSeasons(newSeasons);
       } catch {
         // silent fail — nicht das haupt-flow stoeren
       }
@@ -278,17 +316,27 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   }, [user, watchDataMap, loading]);
 
-  // Signal when initial data is loaded
+  // Signal when initial data is loaded.
+  // initialData ist erst dann "ready", wenn die seriesList wirklich gemerget ist:
+  //   - User hat keine Serien (userSeriesRefs leer) → sofort ready
+  //   - User hat Serien → erst wenn seriesList nicht leer ist (Merge fertig)
+  // Sonst riskiert der Splashscreen, eine leere Homepage zu zeigen, obwohl die
+  // Daten gleich kommen.
   useEffect(() => {
     if (!user) {
       window.setAppReady?.('initialData', true);
       return;
     }
-
-    if (!loading) {
+    if (loading) return;
+    const refCount = userSeriesRefs ? Object.keys(userSeriesRefs).length : 0;
+    if (refCount === 0) {
+      window.setAppReady?.('initialData', true);
+      return;
+    }
+    if (seriesList.length > 0) {
       window.setAppReady?.('initialData', true);
     }
-  }, [user, loading]);
+  }, [user, loading, userSeriesRefs, seriesList]);
 
   // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
   const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);
