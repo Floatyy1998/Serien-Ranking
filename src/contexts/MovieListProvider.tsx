@@ -61,8 +61,9 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
       // 3) Bei forceFresh + fehlenden IDs explizit nachladen.
       //    Der periodische Versions-Bump-Check pflegt stale Daten ohnehin nach.
       if (forceFresh && merged) {
+        const currentMerged = merged;
         const userIds = Object.keys(userMovieRefs);
-        const missingIds = userIds.filter((id) => !merged![id]);
+        const missingIds = userIds.filter((id) => !currentMerged[id]);
         if (missingIds.length > 0) {
           try {
             const freshData = await fetchStaticCatalogMoviesFresh();

@@ -107,8 +107,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       //    Check (visibilitychange / 5min-Poll) zieht stale Daten ohnehin nach,
       //    und der separate Effect unten ruft refetchCatalog(true) bei Bedarf.
       if (forceFresh && merged) {
+        const currentMerged = merged;
         const userIds = Object.keys(userSeriesRefs);
-        const missingIds = userIds.filter((id) => !merged![id]);
+        const missingIds = userIds.filter((id) => !currentMerged[id]);
         if (missingIds.length > 0) {
           try {
             const freshData = await fetchStaticCatalogSeriesFresh();
