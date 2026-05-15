@@ -41,6 +41,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   const detectionRunRef = useRef(false);
 
+  // --- Debug-Logging: Firebase-Cache-Zustände tracken ---
+  const prevRefsLoadingRef = useRef<boolean | null>(null);
+  const prevWatchLoadingRef = useRef<boolean | null>(null);
+
   // 1. User-Referenzen (klein, welche Serien hat der User + Ratings)
   const {
     data: userSeriesRefs,
@@ -75,6 +79,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     }
   );
 
+  // Debug: refsLoading/watchLoading-Transitionen mit Zeitstempel loggen
+  useEffect(() => {
+    if (prevRefsLoadingRef.current !== refsLoading) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(performance.now())}ms firebase: refsLoading=${refsLoading} (refs-count=${userSeriesRefs ? Object.keys(userSeriesRefs).length : 'null'})`
+      );
+      prevRefsLoadingRef.current = refsLoading;
+    }
+  }, [refsLoading, userSeriesRefs]);
+  useEffect(() => {
+    if (prevWatchLoadingRef.current !== watchLoading) {
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(performance.now())}ms firebase: watchLoading=${watchLoading} (watch-keys=${watchDataMap ? Object.keys(watchDataMap).length : 'null'})`
+      );
+      prevWatchLoadingRef.current = watchLoading;
+    }
+  }, [watchLoading, watchDataMap]);
+
   // 3. Catalog-Meta (shared, ~350KB): aus Static-File vom eigenen Server,
   //    Firebase als Fallback. Spart Firebase Download-Egress.
   const [catalogMeta, setCatalogMeta] = useState<Record<string, CatalogSeries> | null>(null);
@@ -82,6 +106,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const refetchCatalog = useCallback(
     async (forceFresh: boolean = false) => {
       if (!userSeriesRefs || Object.keys(userSeriesRefs).length === 0) return;
+      const t0 = performance.now();
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(t0)}ms catalog: refetchCatalog start (forceFresh=${forceFresh}, refs=${Object.keys(userSeriesRefs).length})`
+      );
       setCatalogLoading(true);
       if (forceFresh) clearStaticCatalogCache();
 
@@ -92,6 +121,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       } catch {
         // weiter mit Fallback
       }
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(performance.now())}ms catalog: seriesMeta fetched (size=${merged ? Object.keys(merged).length : 'null'}, took=${Math.round(performance.now() - t0)}ms)`
+      );
 
       // 2) Wenn komplett leer (kein Cache, fetch fehlgeschlagen): einmal force-fresh
       if (!merged) {
@@ -121,6 +154,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
       setCatalogMeta(merged || {});
       setCatalogLoading(false);
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(performance.now())}ms catalog: refetchCatalog done (final-size=${merged ? Object.keys(merged).length : 0}, total=${Math.round(performance.now() - t0)}ms)`
+      );
     },
     [userSeriesRefs]
   );
@@ -164,6 +201,9 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
     let cancelled = false;
 
+    const t0 = performance.now();
+    // eslint-disable-next-line no-console
+    console.log(`[splash] +${Math.round(t0)}ms seasons: bulk-fetch start (${tmdbIds.length} ids)`);
     (async () => {
       // Bulk versuchen
       let bulk: Record<string, Record<string, CatalogSeason>> | null = null;
@@ -172,6 +212,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       } catch {
         // ignore — Fallback unten
       }
+      // eslint-disable-next-line no-console
+      console.log(
+        `[splash] +${Math.round(performance.now())}ms seasons: bulk-fetch done (got=${bulk ? Object.keys(bulk).length : 'null'}, took=${Math.round(performance.now() - t0)}ms)`
+      );
       if (cancelled) return;
 
       if (bulk) {
@@ -325,26 +369,52 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   //      catalogMeta leer ist (z.B. Server hat IDs nicht). Lieber Skeleton-State
   //      zeigen als ewig auf Daten warten, die nicht kommen.
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    const log = (reason: string) =>
+      console.log(`[splash] +${Math.round(performance.now())}ms initialData-check: ${reason}`, {
+        user: !!user,
+        refsLoading,
+        watchLoading,
+        catalogLoading,
+        loading,
+        refCount: userSeriesRefs ? Object.keys(userSeriesRefs).length : 'null',
+        seriesListLen: seriesList.length,
+        catalogMetaSize: catalogMeta ? Object.keys(catalogMeta).length : 'null',
+      });
+
     if (!user) {
+      log('no user → ready');
       window.setAppReady?.('initialData', true);
       return;
     }
     if (seriesList.length > 0) {
+      log('seriesList has entries → ready');
       window.setAppReady?.('initialData', true);
       return;
     }
     const refsKnown = !refsLoading && userSeriesRefs !== null;
     const refCount = userSeriesRefs ? Object.keys(userSeriesRefs).length : 0;
     if (refsKnown && refCount === 0) {
+      log('refs known + empty → ready');
       window.setAppReady?.('initialData', true);
       return;
     }
     if (!loading) {
-      // Catalog-Fetch ist durch — wenn jetzt immer noch nichts da ist, sind
-      // wir in einem broken-state. App trotzdem zeigen.
+      log('all loads done (broken state?) → ready anyway');
       window.setAppReady?.('initialData', true);
+      return;
     }
-  }, [user, loading, refsLoading, userSeriesRefs, seriesList]);
+    log('still waiting');
+  }, [
+    user,
+    loading,
+    refsLoading,
+    watchLoading,
+    catalogLoading,
+    userSeriesRefs,
+    seriesList,
+    catalogMeta,
+  ]);
 
   // Sequentielle Detection — einmal nach dem Laden (warte auf Seasons!)
   const hasSeasons = seriesList.some((s) => s.seasons && s.seasons.length > 0);
