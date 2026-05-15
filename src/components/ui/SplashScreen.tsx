@@ -89,10 +89,9 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
         return;
       }
 
-      // Hard fallback: aussteigen wenn die Daten partout nicht kommen.
-      // 20 s gibt der Stale-While-Revalidate-Strategie genug Spielraum, auch
-      // beim allerersten Besuch (kein Cache) saubere Serien-Daten zu laden.
-      if (Date.now() - startTime > 20000) {
+      // Hard fallback: 8 s. Splash darf nie laenger haengen, selbst wenn
+      // Daten kaputt sind — App rendert Skeletons.
+      if (Date.now() - startTime > 8000) {
         finish();
       }
     }, 50);
