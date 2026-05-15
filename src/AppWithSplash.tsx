@@ -75,15 +75,16 @@ export const AppWithSplash: React.FC = () => {
       }
     }, 100);
 
-    // Hard-Fallback: 20 s. Lieber laenger warten als eine leere Serienliste
-    // zeigen. Greift nur bei echtem Netzwerk-/Daten-Hang — der Splash schliesst
-    // normalerweise direkt nachdem `initialData` ready ist (Cache: <100 ms).
+    // Hard-Fallback: 8 s. Reicht fuer den seltenen Cold-Start ohne Cache,
+    // verhindert aber dass User bei Edge-Cases (langsames Firebase, broken
+    // Catalog-Fetch) ewig vor dem Splash sitzen. Die App rendert Skeletons
+    // wenn Daten noch fehlen.
     const fallbackTimeout = setTimeout(() => {
       setAllSystemsReady(true);
       if (checkInterval.current) {
         clearInterval(checkInterval.current);
       }
-    }, 20000);
+    }, 8000);
 
     return () => {
       clearTimeout(mountTimer);

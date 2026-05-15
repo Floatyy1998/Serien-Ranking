@@ -97,8 +97,10 @@ export function mergeToSeriesView(
           name: ep.name,
           air_date: ep.airDate || (rawEp.air_date as string) || '',
           airstamp: ep.airstamp || (rawEp.airstamp as string) || undefined,
-          season_number: ep.seasonNumber ?? (rawEp.season_number as number) ?? 0,
-          episode_number: ep.episodeNumber ?? (rawEp.episode_number as number) ?? 0,
+          // season_number wird serverseitig nicht mehr in jede Episode geschrieben
+          // (Bulk-File-Slim-Down). Outer Key `sn` ist die zuverlaessige Quelle.
+          season_number: ep.seasonNumber ?? (rawEp.season_number as number) ?? sn,
+          episode_number: ep.episodeNumber ?? (rawEp.episode_number as number) ?? idx + 1,
           runtime: ep.runtime ?? (rawEp.runtime as number) ?? undefined,
           watched,
           watchCount,
