@@ -1,5 +1,6 @@
 // Web Worker for heavy statistics calculations
 import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
+import { getEpisodeAirDate } from '../utils/episodeDate';
 interface WorkerEpisode {
   air_date?: string;
   airstamp?: string;
@@ -13,21 +14,13 @@ interface WorkerEpisode {
   episode_number?: number;
 }
 
-/** Parse episode date as local midnight. Prefers airstamp for timezone accuracy. */
+/** Parse episode date as local midnight. Honors TVMaze midnight quirk via getEpisodeAirDate. */
 function parseEpisodeDateLocal(episode: WorkerEpisode): Date | null {
-  if (episode.airstamp) {
-    const d = new Date(episode.airstamp);
-    if (!isNaN(d.getTime())) {
-      d.setHours(0, 0, 0, 0);
-      return d;
-    }
-  }
-  if (episode.air_date) {
-    const p = episode.air_date.split('-');
-    const d = new Date(+p[0], +p[1] - 1, +p[2]);
-    if (!isNaN(d.getTime())) return d;
-  }
-  return null;
+  const airDate = getEpisodeAirDate(episode);
+  if (!airDate) return null;
+  const d = new Date(airDate);
+  d.setHours(0, 0, 0, 0);
+  return d;
 }
 
 interface WorkerSeason {
