@@ -1,6 +1,5 @@
 // Web Worker for heavy statistics calculations
 import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
-import { getEpisodeAirDate } from '../utils/episodeDate';
 interface WorkerEpisode {
   air_date?: string;
   airstamp?: string;
@@ -14,13 +13,45 @@ interface WorkerEpisode {
   episode_number?: number;
 }
 
-/** Parse episode date as local midnight. Honors TVMaze midnight quirk via getEpisodeAirDate. */
+// TVMaze-Quirk inline (Worker baut als classic worker, keine zusaetzlichen Imports moeglich):
+// Wenn airstamp lokal Mitternacht ist UND einen Tag nach air_date liegt, ist es ein
+// "00:00 airtime"-Eintrag, der eigentlich am Vortag stattfindet.
+function tvMazeMidnightQuirk(airstamp: string, airDateStr: string): Date | null {
+  const stampDate = new Date(airstamp);
+  if (isNaN(stampDate.getTime())) return null;
+  if (stampDate.getHours() !== 0 || stampDate.getMinutes() !== 0) return null;
+  const parts = airDateStr.split('-');
+  if (parts.length !== 3) return null;
+  const airDateLocal = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  if (isNaN(airDateLocal.getTime())) return null;
+  const stampMidnightLocal = new Date(
+    stampDate.getFullYear(),
+    stampDate.getMonth(),
+    stampDate.getDate()
+  );
+  if (stampMidnightLocal.getTime() - airDateLocal.getTime() !== 86_400_000) return null;
+  return airDateLocal;
+}
+
+/** Parse episode date as local midnight, honoring the TVMaze midnight quirk. */
 function parseEpisodeDateLocal(episode: WorkerEpisode): Date | null {
-  const airDate = getEpisodeAirDate(episode);
-  if (!airDate) return null;
-  const d = new Date(airDate);
-  d.setHours(0, 0, 0, 0);
-  return d;
+  if (episode.airstamp) {
+    if (episode.air_date) {
+      const corrected = tvMazeMidnightQuirk(episode.airstamp, episode.air_date);
+      if (corrected) return corrected;
+    }
+    const d = new Date(episode.airstamp);
+    if (!isNaN(d.getTime())) {
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+  }
+  if (episode.air_date) {
+    const p = episode.air_date.split('-');
+    const d = new Date(+p[0], +p[1] - 1, +p[2]);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
 }
 
 interface WorkerSeason {

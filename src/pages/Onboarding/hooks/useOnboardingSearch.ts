@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../AuthContext';
+import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {
   id: number;
@@ -13,173 +14,93 @@ export interface OnboardingItem {
   number_of_seasons?: number;
 }
 
-export interface Genre {
-  id: number;
-  name: string;
-}
-
 const API_KEY = import.meta.env.VITE_API_TMDB;
 const BASE = 'https://api.themoviedb.org/3';
+const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
 
 export function useOnboardingSearch() {
   const { user } = useAuth() || {};
-  const [genres, setGenres] = useState<Genre[]>([]);
   const [suggestions, setSuggestions] = useState<OnboardingItem[]>([]);
   const [searchResults, setSearchResults] = useState<OnboardingItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
-  const [addingId, setAddingId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  // Fetch genres on mount
-  useEffect(() => {
-    if (!API_KEY) return;
-    Promise.all([
-      fetch(`${BASE}/genre/tv/list?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
-      fetch(`${BASE}/genre/movie/list?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
-    ])
-      .then(([tv, movie]) => {
-        const seen = new Set<number>();
-        const merged: Genre[] = [];
-        for (const g of [...(tv.genres || []), ...(movie.genres || [])]) {
-          if (!seen.has(g.id)) {
-            seen.add(g.id);
-            merged.push(g);
-          }
-        }
-        merged.sort((a, b) => a.name.localeCompare(b.name, 'de'));
-        setGenres(merged);
-      })
-      .catch(() => {});
-  }, []);
-
-  // Fetch suggestions based on selected genres
-  const fetchSuggestions = useCallback(async (selectedGenreIds: number[]) => {
+  const fetchSuggestions = useCallback(async (selectedSlugs: string[]) => {
     if (!API_KEY) {
       console.error('TMDB API Key fehlt');
       setLoading(false);
       return;
     }
     setLoading(true);
-
     try {
-      let tvItems: OnboardingItem[] = [];
-      let movieItems: OnboardingItem[] = [];
+      const selectedGenres = CURATED_GENRES.filter((g) => selectedSlugs.includes(g.slug));
+      const tvBuckets: OnboardingItem[] = [];
+      const movieBuckets: OnboardingItem[] = [];
 
-      if (selectedGenreIds.length > 0) {
-        // Genre-basierte Discovery: Maximal 4 Genres für Performance
-        const limitedGenreIds = selectedGenreIds.slice(0, 4);
-        // Genre-basierte Suggestions laden
+      const targets =
+        selectedGenres.length > 0
+          ? selectedGenres.slice(0, 4).map((g) => ({ tvId: g.tvId, movieId: g.movieId }))
+          : [null];
 
-        const allTvResults: OnboardingItem[] = [];
-        const allMovieResults: OnboardingItem[] = [];
+      for (const t of targets) {
+        const tvUrl = t
+          ? `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${t.tvId}&sort_by=popularity.desc&page=1`
+          : `${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`;
+        const movieUrl = t
+          ? `${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${t.movieId}&sort_by=popularity.desc&page=1`
+          : `${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`;
 
-        // Pro Genre: 1 Page TV + 1 Page Movie holen
-        for (const genreId of limitedGenreIds) {
-          const [tvRes, movieRes] = await Promise.all([
-            fetch(
-              `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`
-            ).then((r) => r.json()),
-            fetch(
-              `${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${genreId}&sort_by=popularity.desc&page=1`
-            ).then((r) => r.json()),
-          ]);
-
-          // TV items sammeln
-          (tvRes.results || []).forEach((item: Record<string, unknown>) => {
-            if (item.poster_path && !allTvResults.find((i) => i.id === item.id)) {
-              allTvResults.push({
-                id: item.id as number,
-                title: (item.name || item.title || '') as string,
-                name: item.name as string,
-                poster_path: item.poster_path as string,
-                vote_average: (item.vote_average || 0) as number,
-                first_air_date: item.first_air_date as string,
-                type: 'series' as const,
-              });
-            }
-          });
-
-          // Movie items sammeln
-          (movieRes.results || []).forEach((item: Record<string, unknown>) => {
-            if (item.poster_path && !allMovieResults.find((i) => i.id === item.id)) {
-              allMovieResults.push({
-                id: item.id as number,
-                title: (item.title || item.name || '') as string,
-                poster_path: item.poster_path as string,
-                vote_average: (item.vote_average || 0) as number,
-                release_date: item.release_date as string,
-                type: 'movie' as const,
-              });
-            }
-          });
-        }
-
-        // Sortiere nach Popularität und nimm Top Items
-        tvItems = allTvResults.sort((a, b) => b.vote_average - a.vote_average).slice(0, 60);
-
-        movieItems = allMovieResults.sort((a, b) => b.vote_average - a.vote_average).slice(0, 60);
-      } else {
-        // Fallback: Trending wenn keine Genres gewählt
-        // Trending als Fallback laden
         const [tvRes, movieRes] = await Promise.all([
-          fetch(`${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`).then((r) => r.json()),
-          fetch(`${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`).then((r) =>
-            r.json()
-          ),
+          fetch(tvUrl).then((r) => r.json()),
+          fetch(movieUrl).then((r) => r.json()),
         ]);
 
-        tvItems = (tvRes.results || [])
-          .filter((item: Record<string, unknown>) => item.poster_path)
-          .slice(0, 40)
-          .map((item: Record<string, unknown>) => ({
+        for (const item of tvRes.results || []) {
+          if (!item.poster_path) continue;
+          if (tvBuckets.find((i) => i.id === item.id)) continue;
+          tvBuckets.push({
             id: item.id,
             title: item.name || item.title || '',
-            name: item.name as string,
+            name: item.name,
             poster_path: item.poster_path,
             vote_average: item.vote_average || 0,
-            first_air_date: item.first_air_date as string,
-            type: 'series' as const,
-          }));
-
-        movieItems = (movieRes.results || [])
-          .filter((item: Record<string, unknown>) => item.poster_path)
-          .slice(0, 40)
-          .map((item: Record<string, unknown>) => ({
+            first_air_date: item.first_air_date,
+            type: 'series',
+          });
+        }
+        for (const item of movieRes.results || []) {
+          if (!item.poster_path) continue;
+          if (movieBuckets.find((i) => i.id === item.id)) continue;
+          movieBuckets.push({
             id: item.id,
             title: item.title || item.name || '',
             poster_path: item.poster_path,
             vote_average: item.vote_average || 0,
-            release_date: item.release_date as string,
-            type: 'movie' as const,
-          }));
+            release_date: item.release_date,
+            type: 'movie',
+          });
+        }
       }
 
-      // Combine: Series first, then movies
-      const combined: OnboardingItem[] = [...tvItems, ...movieItems];
-
-      setSuggestions(combined);
-    } catch (error) {
-      console.error('Fehler beim Laden der Vorschläge:', error);
+      tvBuckets.sort((a, b) => b.vote_average - a.vote_average);
+      movieBuckets.sort((a, b) => b.vote_average - a.vote_average);
+      setSuggestions([...tvBuckets.slice(0, 60), ...movieBuckets.slice(0, 60)]);
+    } catch (e) {
+      console.error('Fehler beim Laden der Vorschläge:', e);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Search TMDB
   const search = useCallback((query: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
     if (!query.trim()) {
       setSearchResults([]);
       setSearchLoading(false);
       return;
     }
-
     setSearchLoading(true);
-    const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
-
     debounceRef.current = setTimeout(async () => {
       try {
         const encoded = encodeURIComponent(query.trim());
@@ -197,47 +118,47 @@ export function useOnboardingSearch() {
             (r) => r.json()
           ),
         ]);
-
         const enTvMap = new Map<number, string>();
-        for (const item of tvEN.results || []) {
-          enTvMap.set(item.id, item.name || item.title || '');
-        }
+        for (const item of tvEN.results || []) enTvMap.set(item.id, item.name || item.title || '');
         const enMovieMap = new Map<number, string>();
-        for (const item of movieEN.results || []) {
+        for (const item of movieEN.results || [])
           enMovieMap.set(item.id, item.title || item.name || '');
-        }
 
         const results: OnboardingItem[] = [
-          ...(tvDE.results || []).map((item: Record<string, unknown>) => {
-            const deName = (item.name || item.title || '') as string;
-            const enName = enTvMap.get(item.id as number);
-            const title = hasNonLatin(deName) && enName ? enName : deName;
-            return {
-              id: item.id,
-              title,
-              name: title,
-              poster_path: item.poster_path,
-              vote_average: item.vote_average || 0,
-              first_air_date: item.first_air_date as string,
-              type: 'series' as const,
-            };
-          }),
-          ...(movieDE.results || []).map((item: Record<string, unknown>) => {
-            const deTitle = (item.title || item.name || '') as string;
-            const enTitle = enMovieMap.get(item.id as number);
-            const title = hasNonLatin(deTitle) && enTitle ? enTitle : deTitle;
-            return {
-              id: item.id,
-              title,
-              poster_path: item.poster_path,
-              vote_average: item.vote_average || 0,
-              release_date: item.release_date as string,
-              type: 'movie' as const,
-            };
-          }),
+          ...(tvDE.results || [])
+            .filter((it: { poster_path?: unknown }) => it.poster_path)
+            .map((item: Record<string, unknown>) => {
+              const deName = (item.name || item.title || '') as string;
+              const enName = enTvMap.get(item.id as number);
+              const title = hasNonLatin(deName) && enName ? enName : deName;
+              return {
+                id: item.id as number,
+                title,
+                name: title,
+                poster_path: item.poster_path as string,
+                vote_average: (item.vote_average || 0) as number,
+                first_air_date: item.first_air_date as string,
+                type: 'series' as const,
+              };
+            }),
+          ...(movieDE.results || [])
+            .filter((it: { poster_path?: unknown }) => it.poster_path)
+            .map((item: Record<string, unknown>) => {
+              const deTitle = (item.title || item.name || '') as string;
+              const enTitle = enMovieMap.get(item.id as number);
+              const title = hasNonLatin(deTitle) && enTitle ? enTitle : deTitle;
+              return {
+                id: item.id as number,
+                title,
+                poster_path: item.poster_path as string,
+                vote_average: (item.vote_average || 0) as number,
+                release_date: item.release_date as string,
+                type: 'movie' as const,
+              };
+            }),
         ]
-          .sort((a, b) => (b.vote_average as number) - (a.vote_average as number))
-          .slice(0, 20);
+          .sort((a, b) => b.vote_average - a.vote_average)
+          .slice(0, 24);
 
         setSearchResults(results);
       } catch {
@@ -245,22 +166,17 @@ export function useOnboardingSearch() {
       } finally {
         setSearchLoading(false);
       }
-    }, 500);
+    }, 400);
   }, []);
 
-  // Add item to user's list
   const addToList = useCallback(
     async (item: OnboardingItem): Promise<boolean> => {
-      if (!user?.uid) return false;
-
-      const itemKey = `${item.type}-${item.id}`;
-      setAddingId(itemKey);
-
+      const uid = user?.uid;
+      if (!uid) return false;
       const endpoint =
         item.type === 'series'
           ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
           : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
-
       try {
         const response = await fetch(endpoint, {
           method: 'POST',
@@ -268,46 +184,25 @@ export function useOnboardingSearch() {
           body: JSON.stringify({
             user: import.meta.env.VITE_USER,
             id: item.id,
-            uuid: user.uid,
+            uuid: uid,
           }),
         });
-
-        if (response.ok) {
-          setAddedIds((prev) => new Set(prev).add(itemKey));
-          return true;
-        }
-        return false;
+        return response.ok;
       } catch {
         return false;
-      } finally {
-        setAddingId(null);
       }
     },
     [user?.uid]
   );
 
-  // Remove item from added list (client-side only, doesn't delete from backend)
-  const removeFromList = useCallback((item: OnboardingItem) => {
-    const itemKey = `${item.type}-${item.id}`;
-    setAddedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(itemKey);
-      return next;
-    });
-  }, []);
-
   return {
-    genres,
     suggestions,
     searchResults,
     loading,
     searchLoading,
-    addedIds,
-    addingId,
     fetchSuggestions,
     search,
     addToList,
-    removeFromList,
     setSearchResults,
   };
 }

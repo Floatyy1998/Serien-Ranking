@@ -15,21 +15,12 @@ interface MainActionsProps {
     hiddenMainActions: string[];
   };
   totalSeriesWithUnwatched: number;
-  featuredSeries:
-    | {
-        poster: string;
-        title: string;
-        nextEpisode: { seasonNumber: number; episodeNumber: number; name?: string };
-        progress: number;
-      }
-    | undefined;
   navigate: (path: string) => void;
 }
 
 export const MainActionsSection: React.FC<MainActionsProps> = ({
   config,
   totalSeriesWithUnwatched,
-  featuredSeries,
   navigate,
 }) => {
   const { currentTheme } = useTheme();
@@ -84,131 +75,6 @@ export const MainActionsSection: React.FC<MainActionsProps> = ({
         marginBottom: '16px',
       }}
     >
-      {/* Featured Hero Card */}
-      {featuredSeries && (
-        <motion.div
-          whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/watchlist')}
-          style={{
-            position: 'relative',
-            height: '140px',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            cursor: 'pointer',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-          }}
-        >
-          {/* Blurred backdrop */}
-          <img
-            src={featuredSeries.poster}
-            alt=""
-            aria-hidden
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'blur(20px) brightness(0.4)',
-              transform: 'scale(1.2)',
-            }}
-          />
-          {/* Gradient overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'linear-gradient(135deg, rgba(6, 9, 15, 0.7) 0%, rgba(6, 9, 15, 0.3) 50%, rgba(6, 9, 15, 0.8) 100%)',
-            }}
-          />
-          {/* Content */}
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 1,
-              height: '100%',
-              display: 'flex',
-              alignItems: 'flex-end',
-              padding: '16px',
-              gap: '14px',
-            }}
-          >
-            {/* Small poster */}
-            <img
-              src={featuredSeries.poster}
-              alt={featuredSeries.title}
-              style={{
-                width: '68px',
-                aspectRatio: '2/3',
-                objectFit: 'cover',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-                flexShrink: 0,
-              }}
-            />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: currentTheme.primary,
-                  margin: '0 0 4px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                Weiterschauen
-              </p>
-              <h2
-                style={{
-                  fontSize: '16px',
-                  fontWeight: 800,
-                  fontFamily: 'var(--font-display)',
-                  margin: '0 0 4px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {featuredSeries.title}
-              </h2>
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: currentTheme.text.secondary,
-                  margin: '0 0 8px',
-                }}
-              >
-                S{featuredSeries.nextEpisode.seasonNumber}E
-                {featuredSeries.nextEpisode.episodeNumber}
-                {featuredSeries.nextEpisode.name ? ` · ${featuredSeries.nextEpisode.name}` : ''}
-              </p>
-              {/* Progress bar */}
-              <div
-                style={{
-                  height: '4px',
-                  borderRadius: '2px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${featuredSeries.progress}%`,
-                    background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.status.success})`,
-                    borderRadius: '2px',
-                    boxShadow: `0 0 8px ${currentTheme.primary}60`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
       {/* Action buttons row */}
       <div
         style={{
