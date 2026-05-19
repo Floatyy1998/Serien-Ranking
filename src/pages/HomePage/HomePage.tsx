@@ -242,7 +242,6 @@ export const HomePage: React.FC = () => {
             key="main-actions"
             config={config}
             totalSeriesWithUnwatched={totalSeriesWithUnwatched}
-            featuredSeries={continueWatching[0]}
             navigate={navigate}
           />
         );
