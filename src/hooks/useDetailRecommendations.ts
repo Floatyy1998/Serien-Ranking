@@ -25,7 +25,7 @@ export const useDetailRecommendations = (
   mediaType: 'tv' | 'movie',
   enabled = true
 ): UseDetailRecommendationsResult => {
-  const { allSeriesList } = useSeriesList();
+  const { allSeriesList, refetchAfterAdd } = useSeriesList();
   const { movieList } = useMovieList();
   const { user } = useAuth() || {};
   const [items, setItems] = useState<DiscoverItem[]>([]);
@@ -132,6 +132,7 @@ export const useDetailRecommendations = (
         const title = item.title || item.name || 'Unbekannt';
         if (item.type === 'series') {
           trackSeriesAdded(String(item.id), title, 'detail-recommendations');
+          await refetchAfterAdd();
           await logSeriesAdded(user.uid, title, item.id, item.poster_path ?? undefined);
         } else {
           trackMovieAdded(String(item.id), title, 'detail-recommendations');
@@ -147,7 +148,7 @@ export const useDetailRecommendations = (
         setAddingId(null);
       }
     },
-    [user]
+    [user, refetchAfterAdd]
   );
 
   return { items, loading, error, addingId, addToList };
