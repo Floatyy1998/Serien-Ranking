@@ -36,7 +36,7 @@ export function useSeriesActions(
   tmdbSeries: Series | null | undefined
 ) {
   const navigate = useNavigate();
-  const { toggleHideSeries } = useSeriesList();
+  const { toggleHideSeries, refetchAfterAdd } = useSeriesList();
 
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -80,6 +80,7 @@ export function useSeriesActions(
           posterPath
         );
         trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
+        await refetchAfterAdd();
         showSnackbar('Serie erfolgreich hinzugefügt!');
         navigate(`/series/${series.id}`, { replace: true });
       } else {
@@ -95,7 +96,7 @@ export function useSeriesActions(
     } finally {
       setIsAdding(false);
     }
-  }, [series, userId, tmdbSeries, navigate, showSnackbar]);
+  }, [series, userId, tmdbSeries, navigate, showSnackbar, refetchAfterAdd]);
 
   const handleDeleteSeries = useCallback(() => {
     if (!series || !userId) return;

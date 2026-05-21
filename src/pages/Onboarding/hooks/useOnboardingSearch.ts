@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../AuthContext';
+import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {
@@ -20,6 +21,7 @@ const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
 
 export function useOnboardingSearch() {
   const { user } = useAuth() || {};
+  const { refetchAfterAdd } = useSeriesList();
   const [suggestions, setSuggestions] = useState<OnboardingItem[]>([]);
   const [searchResults, setSearchResults] = useState<OnboardingItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -187,12 +189,15 @@ export function useOnboardingSearch() {
             uuid: uid,
           }),
         });
+        if (response.ok && item.type === 'series') {
+          await refetchAfterAdd();
+        }
         return response.ok;
       } catch {
         return false;
       }
     },
-    [user?.uid]
+    [user?.uid, refetchAfterAdd]
   );
 
   return {

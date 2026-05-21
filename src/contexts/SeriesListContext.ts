@@ -21,6 +21,7 @@ export interface SeriesListContextType {
   clearProviderChanges: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
+  refetchAfterAdd: () => Promise<void>;
   toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
   isOffline: boolean;
   isStale: boolean;
@@ -48,6 +49,7 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   clearProviderChanges: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
+  refetchAfterAdd: async () => {},
   toggleHideSeries: async () => {},
   isOffline: false,
   isStale: false,

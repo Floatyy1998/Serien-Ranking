@@ -446,6 +446,26 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetchWatch();
   }, [refetchRefs, refetchWatch]);
 
+  // Nach /add: deterministisch sowohl seriesMeta als auch seasonsBulk frisch
+  // ziehen. Loest die Race zwischen userSeriesRefs-Listener und dem
+  // Stale-While-Revalidate-Cache, bei der direkt nach Hinzufuegen einer Serie
+  // catalogSeasons noch keine Daten fuer die neue tmdbId enthielt und das
+  // Detail die Folgen erst nach Hard-Reload anzeigte.
+  const refetchAfterAdd = useCallback(async () => {
+    clearStaticCatalogCache();
+    const [meta, bulk] = await Promise.all([
+      fetchStaticCatalogSeriesFresh(),
+      fetchStaticCatalogSeasonsBulk(),
+    ]);
+    if (meta) setCatalogMeta(meta);
+    if (bulk) {
+      const tmdbIds = userSeriesRefs ? Object.keys(userSeriesRefs) : [];
+      const next: Record<string, Record<string, CatalogSeason>> = {};
+      for (const tmdbId of tmdbIds) next[tmdbId] = bulk[tmdbId] || {};
+      setCatalogSeasons(next);
+    }
+  }, [userSeriesRefs]);
+
   const toggleHideSeries = useCallback(
     async (nmr: number, hidden: boolean) => {
       if (!user) return;
@@ -507,6 +527,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         clearProviderChanges,
         recheckForNewSeasons,
         refetchSeries,
+        refetchAfterAdd,
         toggleHideSeries,
         isOffline,
         isStale,
