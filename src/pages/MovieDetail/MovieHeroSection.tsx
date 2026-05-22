@@ -3,6 +3,7 @@ import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Movie } from '../../types/Movie';
+import { getImageUrl } from '../../utils/imageUrl';
 import type { TMDBWatchProvider } from './useMovieData';
 
 interface MovieHeroSectionProps {
@@ -23,9 +24,9 @@ interface MovieHeroSectionProps {
 }
 
 const getPosterUrl = (posterPath: string | undefined): string => {
-  if (!posterPath) return '';
-  if (posterPath.startsWith('http')) return posterPath;
-  return `https://image.tmdb.org/t/p/w500${posterPath}`;
+  // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
+  // und greift dann auf den Placeholder zurueck.
+  return getImageUrl(posterPath, 'w500', '/placeholder.svg');
 };
 
 export const MovieHeroSection = memo(

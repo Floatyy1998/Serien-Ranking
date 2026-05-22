@@ -451,20 +451,29 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   // Stale-While-Revalidate-Cache, bei der direkt nach Hinzufuegen einer Serie
   // catalogSeasons noch keine Daten fuer die neue tmdbId enthielt und das
   // Detail die Folgen erst nach Hard-Reload anzeigte.
-  const refetchAfterAdd = useCallback(async () => {
-    clearStaticCatalogCache();
-    const [meta, bulk] = await Promise.all([
-      fetchStaticCatalogSeriesFresh(),
-      fetchStaticCatalogSeasonsBulk(),
-    ]);
-    if (meta) setCatalogMeta(meta);
-    if (bulk) {
-      const tmdbIds = userSeriesRefs ? Object.keys(userSeriesRefs) : [];
-      const next: Record<string, Record<string, CatalogSeason>> = {};
-      for (const tmdbId of tmdbIds) next[tmdbId] = bulk[tmdbId] || {};
-      setCatalogSeasons(next);
-    }
-  }, [userSeriesRefs]);
+  //
+  // newSeriesId ist die gerade hinzugefuegte TMDB-ID. Sie kann im
+  // userSeriesRefs-Snapshot noch fehlen (Realtime-Listener feuert async nach
+  // dem HTTP-Response), darum explizit in die Set-Liste aufnehmen — sonst
+  // bleiben die Staffeln nach dem Add leer.
+  const refetchAfterAdd = useCallback(
+    async (newSeriesId?: number | string) => {
+      clearStaticCatalogCache();
+      const [meta, bulk] = await Promise.all([
+        fetchStaticCatalogSeriesFresh(),
+        fetchStaticCatalogSeasonsBulk(),
+      ]);
+      if (meta) setCatalogMeta(meta);
+      if (bulk) {
+        const ids = new Set<string>(userSeriesRefs ? Object.keys(userSeriesRefs) : []);
+        if (newSeriesId != null) ids.add(String(newSeriesId));
+        const next: Record<string, Record<string, CatalogSeason>> = {};
+        for (const tmdbId of ids) next[tmdbId] = bulk[tmdbId] || {};
+        setCatalogSeasons(next);
+      }
+    },
+    [userSeriesRefs]
+  );
 
   const toggleHideSeries = useCallback(
     async (nmr: number, hidden: boolean) => {

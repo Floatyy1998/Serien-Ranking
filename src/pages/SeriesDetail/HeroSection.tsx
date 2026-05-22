@@ -15,6 +15,7 @@ import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../componen
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
+import { getImageUrl } from '../../utils/imageUrl';
 import type { TMDBWatchProvider } from '../MovieDetail/useMovieData';
 import { RatingsCard } from './RatingsCard';
 import { StatusBadge, NextEpisodeChip } from './StatusBadge';
@@ -51,9 +52,9 @@ const getBackdropUrl = (backdropPath: string | undefined): string => {
 };
 
 const getPosterUrl = (posterPath: string | undefined): string => {
-  if (!posterPath) return '';
-  if (posterPath.startsWith('http')) return posterPath;
-  return `https://image.tmdb.org/t/p/w500${posterPath}`;
+  // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
+  // und greift dann auf den Placeholder zurueck.
+  return getImageUrl(posterPath, 'w500', '/placeholder.svg');
 };
 
 export const HeroSection = memo<HeroSectionProps>(

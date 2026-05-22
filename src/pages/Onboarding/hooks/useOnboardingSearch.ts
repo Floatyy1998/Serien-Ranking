@@ -190,7 +190,7 @@ export function useOnboardingSearch() {
           }),
         });
         if (response.ok && item.type === 'series') {
-          await refetchAfterAdd();
+          await refetchAfterAdd(item.id);
         }
         return response.ok;
       } catch {

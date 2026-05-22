@@ -80,7 +80,7 @@ export function useSeriesActions(
           posterPath
         );
         trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
-        await refetchAfterAdd();
+        await refetchAfterAdd(series.id);
         showSnackbar('Serie erfolgreich hinzugefügt!');
         navigate(`/series/${series.id}`, { replace: true });
       } else {
