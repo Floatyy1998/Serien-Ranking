@@ -21,7 +21,7 @@ export interface SeriesListContextType {
   clearProviderChanges: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
-  refetchAfterAdd: () => Promise<void>;
+  refetchAfterAdd: (newSeriesId?: number | string) => Promise<void>;
   toggleHideSeries: (nmr: number, hidden: boolean) => Promise<void>;
   isOffline: boolean;
   isStale: boolean;

@@ -132,7 +132,7 @@ export const useDetailRecommendations = (
         const title = item.title || item.name || 'Unbekannt';
         if (item.type === 'series') {
           trackSeriesAdded(String(item.id), title, 'detail-recommendations');
-          await refetchAfterAdd();
+          await refetchAfterAdd(item.id);
           await logSeriesAdded(user.uid, title, item.id, item.poster_path ?? undefined);
         } else {
           trackMovieAdded(String(item.id), title, 'detail-recommendations');

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 450" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1f2e"/>
+      <stop offset="100%" stop-color="#0c0f1a"/>
+    </linearGradient>
+    <linearGradient id="ico" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00fed7" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#00a89a" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="450" fill="url(#bg)"/>
+  <g transform="translate(150 200)" fill="url(#ico)">
+    <rect x="-60" y="-40" width="120" height="80" rx="10" fill="none" stroke="url(#ico)" stroke-width="6"/>
+    <rect x="-25" y="45" width="50" height="6" rx="3"/>
+    <circle cx="0" cy="0" r="8" fill="url(#ico)"/>
+  </g>
+  <text x="150" y="320" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="500" fill="#5a6478">Kein Poster</text>
+  <text x="150" y="345" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="12" fill="#3a4258">verfügbar</text>
+</svg>
