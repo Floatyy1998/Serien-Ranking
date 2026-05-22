@@ -125,8 +125,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     },
     [userSeriesRefs]
   );
+  // Initial-Load und Auto-Refetch des Catalogs. refetchCatalog selbst ruft
+  // setState — das ist legitime External-System-Sync (HTTP-Fetch + Cache),
+  // genau das, wofuer useEffect da ist. Die set-state-in-effect-Rule kann
+  // den async-Pfad nicht erkennen, deshalb hier bewusst disabled.
   useEffect(() => {
-    refetchCatalog();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refetchCatalog();
   }, [refetchCatalog]);
 
   // Auto-Refetch: Wenn eine neue Serie in userRefs auftaucht die nicht im Catalog ist.
@@ -142,7 +147,8 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     const missingInCatalog = Object.keys(userSeriesRefs).some((id) => !catalogMeta[id]);
     if (missingInCatalog) {
       lastRefetchKeysRef.current = currentKeys;
-      refetchCatalog(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void refetchCatalog(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSeriesRefs]);

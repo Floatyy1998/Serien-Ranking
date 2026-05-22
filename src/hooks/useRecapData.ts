@@ -198,6 +198,11 @@ export const useRecapData = (series: Series | undefined): RecapData => {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
 
+  // Berechnet Recap-State aus series + watch-Daten. Multiple setStates die
+  // den abgeleiteten "show recap"-Zustand cachen — derived useMemo wuerde
+  // hier sehr viel duplizieren (fetchEpisodeOverviews-Cache braucht den
+  // setLoading-Trigger). Pragmatisch: disabled.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (!series || dismissed) {
       setShouldShowRecap(false);

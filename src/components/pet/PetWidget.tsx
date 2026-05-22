@@ -174,8 +174,10 @@ export const PetWidget: React.FC = () => {
     }
   }, [user]);
 
+  // Async External-Sync (Firebase). Promise-Pfad ist fuer die Rule unsichtbar.
   useEffect(() => {
     if (user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       loadPet();
       loadPosition();
     }

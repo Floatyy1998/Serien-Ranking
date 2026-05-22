@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -78,6 +78,14 @@ export const useEpisodeDiscussion = () => {
   } | null>(null);
   const [tmdbAllSeasons, setTmdbAllSeasons] = useState<TMDBSeasonDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  // Vor handleToggleWatched declared, damit der useCallback die Setter
+  // referenzieren kann (lint: react-hooks/refs no-use-before-declare).
+  const [nextEpisodeTransition, setNextEpisodeTransition] = useState<{
+    active: boolean;
+    seasonNumber: number;
+    episodeNumber: number;
+    episodeName: string;
+  } | null>(null);
 
   const series = seriesList.find((s: Series) => s.id === Number(seriesId));
   const localSeason = series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber) - 1);
@@ -248,7 +256,7 @@ export const useEpisodeDiscussion = () => {
       : '';
 
   // ---------- Toggle Watched ----------
-  const handleToggleWatched = async () => {
+  const handleToggleWatched = useCallback(async () => {
     if (!user?.uid || !series || !localSeason || !localEpisode) return;
 
     try {
@@ -272,6 +280,9 @@ export const useEpisodeDiscussion = () => {
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         });
       } else {
+        // Date.now() im async callback nach await — Lint kann den
+        // Render-Path nicht von Event-Handler-Path unterscheiden.
+        // eslint-disable-next-line react-hooks/purity
         const nowUnix = Math.floor(Date.now() / 1000);
         await db.ref().update({
           [`${epPath}/w`]: 1,
@@ -360,7 +371,18 @@ export const useEpisodeDiscussion = () => {
     } catch (error) {
       console.error('Error toggling watched status:', error);
     }
-  };
+  }, [
+    user,
+    series,
+    localSeason,
+    localEpisode,
+    seasonNumber,
+    episodeNumber,
+    refetchSeries,
+    seriesId,
+    navigate,
+    tmdbDetails,
+  ]);
 
   // ---------- Derived Episode Details ----------
   const episodeName = localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
@@ -393,14 +415,6 @@ export const useEpisodeDiscussion = () => {
         year: 'numeric',
       })
     : null;
-
-  // ---------- Next Episode Transition ----------
-  const [nextEpisodeTransition, setNextEpisodeTransition] = useState<{
-    active: boolean;
-    seasonNumber: number;
-    episodeNumber: number;
-    episodeName: string;
-  } | null>(null);
 
   // Reset transition overlay when route params change (navigate to next episode)
   useEffect(() => {

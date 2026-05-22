@@ -77,10 +77,14 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
     }
   }, [user]);
 
-  // Zeige Badges nacheinander an
+  // Zeige Badges nacheinander an. Trigger-Pattern: wenn neue Badges
+  // gekommen sind, oeffne Notification. setShowNotification(false) liegt
+  // im Close-Handler, deshalb laesst sich das nicht trivial als derived
+  // state ausdruecken.
   useEffect(() => {
     if (newBadges.length > 0 && !showNotification) {
       if (currentBadgeIndex < newBadges.length) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowNotification(true);
       }
     }

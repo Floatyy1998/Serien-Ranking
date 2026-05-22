@@ -197,10 +197,15 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     }
   }, [mediaType, tmdbId]);
 
+  // Async External-Sync: TMDB- und AniList-Fetches. Die set-state-in-effect-
+  // Rule kann den Promise-Pfad nicht tracen und flagt setLoading/setCast etc.,
+  // obwohl genau das der useEffect-Zweck ist (mit externem System syncen).
   useEffect(() => {
     if (isAnime && mediaType === 'tv') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAnimeCharacters();
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCredits();
   }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
 

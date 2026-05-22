@@ -31,7 +31,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [sentRequests, setSentRequests] = useState<FriendRequest[]>([]);
   const [friendActivities, setFriendActivities] = useState<FriendActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+  // loading direkt aus friendsLoading abgeleitet (vorher: useState + Effect-
+  // Mirror — sinnloser Doppelzustand, der set-state-in-effect verletzte).
+  const loading = user ? friendsLoading : false;
   const [lastReadRequestsTime, setLastReadRequestsTime] = useState<number>(0);
   const [lastReadActivitiesTime, setLastReadActivitiesTime] = useState<number>(0);
   const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
@@ -90,14 +92,10 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     }
   }, [user]);
 
-  // Friend Requests mit Realtime Listener
+  // Friend Requests mit Realtime Listener. Reset auf [] passiert im Cleanup
+  // (legitim als Teardown), nicht im Effect-Body (das war set-state-in-effect).
   useEffect(() => {
-    if (!user) {
-      setFriendRequests([]);
-      setSentRequests([]);
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
 
     const incomingRef = firebase
       .database()
@@ -145,6 +143,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     return () => {
       incomingRef.off('value', incomingListener);
       outgoingRef.off('value', outgoingListener);
+      setFriendRequests([]);
+      setSentRequests([]);
     };
   }, [user]);
 
@@ -280,10 +280,6 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       clearInterval(interval);
     };
   }, [user, friends, readTimesLoaded]);
-
-  useEffect(() => {
-    setLoading(friendsLoading);
-  }, [friendsLoading]);
 
   // Sync eigenes Profil (photoURL, displayName, username) in die friend-Einträge
   // bei allen Freunden. Der Snapshot in users/{friend}/friends/{user} wird sonst

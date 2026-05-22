@@ -3,7 +3,7 @@
  * Manages search state, TMDB API calls, session persistence, and list operations.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -121,7 +121,14 @@ export const useSearchPage = (): UseSearchPageResult => {
   });
 
   const [loading, setLoading] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => {
+    try {
+      const recent = localStorage.getItem('recentSearches');
+      return recent ? (JSON.parse(recent) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [dialog, setDialog] = useState<{
     open: boolean;
     message: string;
@@ -143,14 +150,6 @@ export const useSearchPage = (): UseSearchPageResult => {
     'Barbie',
     'Wednesday',
   ]);
-
-  // Load recent searches from localStorage
-  useEffect(() => {
-    const recent = localStorage.getItem('recentSearches');
-    if (recent) {
-      setRecentSearches(JSON.parse(recent));
-    }
-  }, []);
 
   // Cache results in sessionStorage for back-navigation
   useEffect(() => {
@@ -304,14 +303,14 @@ export const useSearchPage = (): UseSearchPageResult => {
     });
   }, [searchResults, inListIds]);
 
-  // Debounced search with skip-on-return logic
-  const [skipInitialSearch, setSkipInitialSearch] = useState(() => {
-    return isReturning && searchResults.length > 0;
-  });
+  // Debounced search with skip-on-return logic. Ref statt State, damit das
+  // einmalige "Skip" beim Re-Mount keine zusaetzliche Re-Render-Welle
+  // ausloest (set-state-in-effect-Pattern war hier ueberfluessig).
+  const skipInitialSearchRef = useRef(isReturning && searchResults.length > 0);
 
   useEffect(() => {
-    if (skipInitialSearch) {
-      setSkipInitialSearch(false);
+    if (skipInitialSearchRef.current) {
+      skipInitialSearchRef.current = false;
       return;
     }
 
@@ -320,7 +319,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, searchTMDB, skipInitialSearch]);
+  }, [searchQuery, searchTMDB]);
 
   const handleItemClick = useCallback(
     (item: SearchResult) => {
