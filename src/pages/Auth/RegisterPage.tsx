@@ -69,7 +69,11 @@ export const RegisterPage = () => {
           displayName: username,
         });
 
-        // Save user data to database
+        // Save user data to database. onboardingComplete muss hier gesetzt werden,
+        // sonst rennt authProvider in eine Race: trifft die snapshot.once('value')
+        // diesen set()-Write bereits an, geht es in den "bestehender User"-Branch
+        // mit `existingData?.onboardingComplete !== false` → undefined !== false →
+        // true, und das Onboarding wird nie angezeigt.
         await firebase.database().ref(`users/${userCredential.user.uid}`).set({
           uid: userCredential.user.uid,
           email: userCredential.user.email,
@@ -78,6 +82,7 @@ export const RegisterPage = () => {
           createdAt: firebase.database.ServerValue.TIMESTAMP,
           lastActive: firebase.database.ServerValue.TIMESTAMP,
           isOnline: true,
+          onboardingComplete: false,
         });
 
         // Send verification email
