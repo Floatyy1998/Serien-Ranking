@@ -11,6 +11,8 @@ import {
   generateDynamicTheme,
   validateThemeConfig,
 } from '../theme/dynamicTheme';
+import { setThemedPlaceholder } from '../utils/imageUrl';
+import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
 import { ThemeContext } from './ThemeContextDef';
 import type { ThemeContextType } from './ThemeContextDef';
 
@@ -135,6 +137,12 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     try {
       const theme = generateDynamicTheme(initialConfig);
       setTimeout(() => applyCSSVariables(theme, initialConfig, isMobile()), 0);
+      // Themed Poster-Placeholder vor dem ersten Render setzen, sonst rendert
+      // jede vor dem ThemeContext-Effect ausgefuehrte getImageUrl-Aufrufkette
+      // mit dem statischen Placeholder.
+      setThemedPlaceholder(
+        buildThemedPlaceholderDataUrl(theme.primary, theme.secondary || theme.accent)
+      );
       return theme;
     } catch {
       // Fallback auf Default-Theme wenn die Theme-Generation selbst scheitert.
@@ -143,6 +151,9 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       // zerstoeren.
       const fallback = generateDynamicTheme(defaultThemeConfig);
       setTimeout(() => applyCSSVariables(fallback, defaultThemeConfig, isMobile()), 0);
+      setThemedPlaceholder(
+        buildThemedPlaceholderDataUrl(fallback.primary, fallback.secondary || fallback.accent)
+      );
       return fallback;
     }
   });
@@ -331,6 +342,17 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     },
     [currentTheme.primary]
   );
+
+  // Themed Poster-Placeholder als data:-URL hinterlegen, damit getImageUrl
+  // ohne expliziten Fallback automatisch die Theme-Akzentfarben verwendet
+  // (gilt fuer alle Hooks, Helpers und Views ohne useTheme-Zugang).
+  useEffect(() => {
+    const url = buildThemedPlaceholderDataUrl(
+      currentTheme.primary,
+      currentTheme.secondary || currentTheme.accent
+    );
+    setThemedPlaceholder(url);
+  }, [currentTheme.primary, currentTheme.secondary, currentTheme.accent]);
 
   // Material-UI Theme erstellen - nur neu wenn sich currentTheme ändert
   const muiTheme = useMemo(() => createTheme(createMuiTheme(currentTheme)), [currentTheme]);

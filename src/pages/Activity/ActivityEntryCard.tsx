@@ -5,6 +5,7 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import React from 'react';
 import type { FriendActivity } from '../../types/Friend';
+import { isPlaceholderUrl } from '../../utils/imageUrl';
 
 interface ActivityEntryCardProps {
   activity: FriendActivity;
@@ -52,7 +53,7 @@ export const ActivityEntryCard = React.memo(
           cursor: 'pointer',
         }}
       >
-        {posterUrl && posterUrl !== '/placeholder.jpg' && (
+        {posterUrl && !isPlaceholderUrl(posterUrl) && (
           <div
             style={{
               width: '55px',

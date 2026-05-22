@@ -5,6 +5,7 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
 
+import { getImageUrl } from '../../utils/imageUrl';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { handleImgError } from './discoverItemHelpers';
 
@@ -13,10 +14,7 @@ export const ItemCard = memo(
   ({ item, onItemClick, onAddToList, addingItem, currentTheme, isDesktop }: ItemCardProps) => {
     const [showInfo, setShowInfo] = useState(false);
 
-    const imageUrl = useMemo(() => {
-      if (!item.poster_path) return '/placeholder.jpg';
-      return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-    }, [item.poster_path]);
+    const imageUrl = useMemo(() => getImageUrl(item.poster_path, 'w500'), [item.poster_path]);
 
     const handlePosterClick = useCallback(() => {
       if (showInfo) {
