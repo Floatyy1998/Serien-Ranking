@@ -38,6 +38,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
   const isFromAsianCountry =
     seriesData?.origin_country?.some((c: string) => ['JP', 'CN', 'KR'].includes(c)) || false;
+  const isAsianLanguage = ['ja', 'ko', 'zh'].includes(seriesData?.original_language || '');
 
   // Method 2: Check for anime-related keywords in title or genres
   const hasAnimeKeywords =
@@ -45,9 +46,13 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     seriesData?.title?.toLowerCase().includes('anime');
 
   // If we have Animation genre but no origin_country data, assume it's anime
-  // Most western animations don't have "Animation" as genre in TMDB
+  // Most western animations don't have "Animation" as genre in TMDB.
+  // Note: empty array is truthy in JS, so check length explicitly — otherwise
+  // locally adapted series (seriesAdapter sets origin_country: []) never match.
   const isAnime =
-    hasAnimeKeywords || (hasAnimationGenre && (isFromAsianCountry || !seriesData?.origin_country));
+    hasAnimeKeywords ||
+    (hasAnimationGenre &&
+      (isFromAsianCountry || isAsianLanguage || !seriesData?.origin_country?.length));
 
   // Set initial tab based on whether it's anime
   const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>(
