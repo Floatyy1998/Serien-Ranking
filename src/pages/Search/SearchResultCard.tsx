@@ -7,6 +7,8 @@ import { Add, Check, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { getImageUrl } from '../../utils/imageUrl';
+import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { SearchResult } from './useSearchPage';
 
 export interface SearchResultCardProps {
@@ -27,10 +29,18 @@ export const SearchResultCard = memo(
     isDesktop,
     isPending = false,
   }: SearchResultCardProps) => {
-    const imageUrl = useMemo(() => {
-      if (!item.poster_path) return '/placeholder.jpg';
-      return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-    }, [item.poster_path]);
+    const fallbackPoster = useMemo(
+      () =>
+        buildThemedPlaceholderDataUrl(
+          currentTheme.primary,
+          currentTheme.secondary || currentTheme.accent
+        ),
+      [currentTheme.primary, currentTheme.secondary, currentTheme.accent]
+    );
+    const imageUrl = useMemo(
+      () => getImageUrl(item.poster_path, 'w500', fallbackPoster),
+      [item.poster_path, fallbackPoster]
+    );
 
     const year = useMemo(() => {
       const date = item.release_date || item.first_air_date;
@@ -51,6 +61,10 @@ export const SearchResultCard = memo(
             loading="lazy"
             decoding="async"
             className="search-result-poster-img"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.src !== fallbackPoster) img.src = fallbackPoster;
+            }}
           />
 
           {/* Gradient Overlay */}

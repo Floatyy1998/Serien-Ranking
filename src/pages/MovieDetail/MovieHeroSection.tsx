@@ -1,9 +1,10 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
+import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from './useMovieData';
 
 interface MovieHeroSectionProps {
@@ -23,10 +24,10 @@ interface MovieHeroSectionProps {
   onAddMovie: () => void;
 }
 
-const getPosterUrl = (posterPath: string | undefined): string => {
+const getPosterUrl = (posterPath: string | undefined, fallback: string): string => {
   // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
-  // und greift dann auf den Placeholder zurueck.
-  return getImageUrl(posterPath, 'w500', '/placeholder.svg');
+  // und greift dann auf den themed Placeholder zurueck.
+  return getImageUrl(posterPath, 'w500', fallback);
 };
 
 export const MovieHeroSection = memo(
@@ -47,9 +48,17 @@ export const MovieHeroSection = memo(
     onAddMovie,
   }: MovieHeroSectionProps) => {
     const { currentTheme } = useTheme();
+    const themedPlaceholder = useMemo(
+      () =>
+        buildThemedPlaceholderDataUrl(
+          currentTheme.primary,
+          currentTheme.secondary || currentTheme.accent
+        ),
+      [currentTheme.primary, currentTheme.secondary, currentTheme.accent]
+    );
     const posterPath =
       movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined;
-    const posterUrl = getPosterUrl(posterPath);
+    const posterUrl = getPosterUrl(posterPath, themedPlaceholder);
     const backdropUrl = tmdbBackdrop ? getBackdropUrl(tmdbBackdrop) : '';
     const mobileBackdropUrl = backdropUrl || posterUrl;
 

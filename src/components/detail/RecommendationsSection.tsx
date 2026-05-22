@@ -17,6 +17,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
 import { handleImgError } from '../../pages/Discover/discoverItemHelpers';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
+import { getImageUrl } from '../../utils/imageUrl';
 import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
 
 interface RecommendationsSectionProps {
@@ -258,9 +259,7 @@ const MagneticCard = memo(
         ? new Date(item.release_date || item.first_air_date || '').getFullYear()
         : null;
     const rating = item.vote_average > 0 ? item.vote_average.toFixed(1) : null;
-    const poster = item.poster_path
-      ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
-      : '/placeholder.jpg';
+    const poster = getImageUrl(item.poster_path, 'w342');
 
     const handleAdd = async (e: React.MouseEvent) => {
       e.stopPropagation();

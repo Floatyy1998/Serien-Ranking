@@ -48,7 +48,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
       {/* Poster */}
       <div className="cu-card-poster">
         <img
-          src={getImageUrl(item.series.poster?.poster, 'w500', '')}
+          src={getImageUrl(item.series.poster?.poster, 'w500')}
           alt={item.series.title}
           loading="lazy"
           decoding="async"

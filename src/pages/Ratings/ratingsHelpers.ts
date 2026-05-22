@@ -153,7 +153,7 @@ export function prepareSeriesItem(s: Series, r: number): PreparedItem {
   return {
     id: s.id,
     title: s.title || '',
-    posterUrl: getImageUrl(s.poster, 'w342', ''),
+    posterUrl: getImageUrl(s.poster, 'w342'),
     rating: r,
     progress: getSeriesProgress(s),
     isMovie: false,
@@ -168,7 +168,7 @@ export function prepareMovieItem(m: Movie, r: number): PreparedItem {
   return {
     id: m.id,
     title: m.title || '',
-    posterUrl: getImageUrl(m.poster, 'w342', ''),
+    posterUrl: getImageUrl(m.poster, 'w342'),
     rating: r,
     progress: 0,
     isMovie: true,
