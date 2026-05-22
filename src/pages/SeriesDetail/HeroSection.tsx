@@ -9,13 +9,14 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
+import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from '../MovieDetail/useMovieData';
 import { RatingsCard } from './RatingsCard';
 import { StatusBadge, NextEpisodeChip } from './StatusBadge';
@@ -51,10 +52,10 @@ const getBackdropUrl = (backdropPath: string | undefined): string => {
   return `https://image.tmdb.org/t/p/original${backdropPath}`;
 };
 
-const getPosterUrl = (posterPath: string | undefined): string => {
+const getPosterUrl = (posterPath: string | undefined, fallback: string): string => {
   // Defer to central util — kennt kaputte "...w342null"-URLs (Backend-Altlast)
-  // und greift dann auf den Placeholder zurueck.
-  return getImageUrl(posterPath, 'w500', '/placeholder.svg');
+  // und greift dann auf den themed Placeholder zurueck.
+  return getImageUrl(posterPath, 'w500', fallback);
 };
 
 export const HeroSection = memo<HeroSectionProps>(
@@ -87,12 +88,17 @@ export const HeroSection = memo<HeroSectionProps>(
       (g) => g && g.trim() !== '' && g !== 'All'
     );
     const maxGenres = isMobile ? 3 : 4;
+    const themedPlaceholder = useMemo(
+      () =>
+        buildThemedPlaceholderDataUrl(fullTheme.primary, fullTheme.secondary || fullTheme.accent),
+      [fullTheme.primary, fullTheme.secondary, fullTheme.accent]
+    );
     const posterPath =
       (series.poster && typeof series.poster === 'object' ? series.poster.poster : undefined) ||
       (tmdbSeries?.poster && typeof tmdbSeries.poster === 'object'
         ? tmdbSeries.poster.poster
         : undefined);
-    const posterUrl = getPosterUrl(posterPath);
+    const posterUrl = getPosterUrl(posterPath, themedPlaceholder);
     const backdropUrl = getBackdropUrl(tmdbBackdrop || undefined);
     const mobileBackdropUrl = backdropUrl || posterUrl;
     const seriesId = series.tmdb_id || series.id;

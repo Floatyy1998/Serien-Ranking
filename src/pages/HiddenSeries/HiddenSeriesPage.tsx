@@ -166,7 +166,7 @@ export const HiddenSeriesPage: React.FC = () => {
                     }}
                   >
                     <img
-                      src={getImageUrl(series.poster?.poster, 'w342', '')}
+                      src={getImageUrl(series.poster?.poster, 'w342')}
                       alt={series.title}
                       loading="lazy"
                       decoding="async"

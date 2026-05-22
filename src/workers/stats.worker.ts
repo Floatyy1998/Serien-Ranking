@@ -235,12 +235,19 @@ function calculateStats(data: {
   };
 }
 
-// Worker kann keine Module importieren - lokale Kopie nötig
+// Worker kann keine Module importieren - lokale Kopie noetig. Themed-Placeholder
+// gibt's hier nicht (kein React-Context im Worker), Fallback bleibt der
+// statische /placeholder.svg — die UI ersetzt das beim Render durch den
+// themed Placeholder, wenn das Bild als <img src=> gerendert wird (404 oder
+// onError, je nach Caller).
 const getImageUrl = (posterObj: string | { poster?: string } | null | undefined): string => {
-  if (!posterObj) return '/placeholder.jpg';
+  if (!posterObj) return '/placeholder.svg';
   const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
-  if (!path) return '/placeholder.jpg';
-  if (path.startsWith('http')) return path;
+  if (!path) return '/placeholder.svg';
+  if (path.startsWith('http')) {
+    if (path.endsWith('null') || path.endsWith('undefined')) return '/placeholder.svg';
+    return path;
+  }
   return `https://image.tmdb.org/t/p/w342${path}`;
 };
 
