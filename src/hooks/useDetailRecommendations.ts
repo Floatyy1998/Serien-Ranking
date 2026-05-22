@@ -102,8 +102,10 @@ export const useDetailRecommendations = (
     }
   }, [id, mediaType, enabled]);
 
+  // Async External-Sync (TMDB-Recommendations).
   useEffect(() => {
     if (!enabled) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRecs();
   }, [fetchRecs, enabled]);
 

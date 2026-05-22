@@ -72,7 +72,9 @@ export const BadgesPage = () => {
   }, [user]);
 
   const loadBadgeDataRef = useRef(loadBadgeData);
-  loadBadgeDataRef.current = loadBadgeData;
+  useEffect(() => {
+    loadBadgeDataRef.current = loadBadgeData;
+  }, [loadBadgeData]);
 
   useEffect(() => {
     if (user) {
