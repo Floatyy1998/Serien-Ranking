@@ -172,7 +172,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     [userConfig]
   );
 
-  // Theme-Config direkt speichern (für updateTheme)
+  // Theme-Config direkt speichern (für updateTheme).
   const saveThemeConfig = useCallback(
     async (config: UserThemeConfig) => {
       // Speichere IMMER lokal (wie im Desktop ThemeEditor)
@@ -280,9 +280,12 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.uid, updateCSSVariables]);
 
-  // Theme aus localStorage laden (mit Firebase als Fallback)
+  // Theme aus localStorage laden (mit Firebase als Fallback). loadTheme
+  // ruft async setState — legitimer External-Sync, den die Rule nicht
+  // durch den async-Pfad tracen kann.
   useEffect(() => {
-    loadTheme();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void loadTheme();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 

@@ -295,7 +295,8 @@ export const useStatsData = (): StatsData => {
       .slice(0, 5)
       .map(([name, count]) => ({ name, count }));
 
-    // Last week
+    // Last week. Date.now() in useMemo durch deps stabilisiert.
+    // eslint-disable-next-line react-hooks/purity
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     let lastWeekWatched = 0;
     allSeriesList.forEach((series) => {

@@ -181,10 +181,12 @@ export function useHomeStats() {
     const topProvider =
       Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
-    // Activity - fix date handling and add safety checks
+    // Activity - fix date handling and add safety checks. Date.now() ist in
+    // useMemo() durch die Deps stabilisiert (laeuft nur bei Daten-Change neu),
+    // wird aber von der purity-Rule trotzdem geflaggt — pragmatisch disabled.
+    // eslint-disable-next-line react-hooks/purity
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const lastWeekWatched = allSeriesList.reduce((acc, series) => {
-      const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-
       if (!series.seasons) return acc;
 
       return (

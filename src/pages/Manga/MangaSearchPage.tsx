@@ -40,7 +40,9 @@ export const MangaSearchPage = () => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const recentSearchesRef = useRef(recentSearches);
-  recentSearchesRef.current = recentSearches;
+  useEffect(() => {
+    recentSearchesRef.current = recentSearches;
+  }, [recentSearches]);
 
   useEffect(() => {
     inputRef.current?.focus();
