@@ -1,8 +1,10 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getFormattedDate } from '../../lib/date/date.utils';
 import { HorizontalScrollContainer } from '../ui';
-import type { PersonDetailsData } from './CastCrew.types';
+import type { CreditItem, PersonDetailsData } from './CastCrew.types';
 
 interface PersonDetailsViewProps {
   personDetails: PersonDetailsData;
@@ -11,6 +13,15 @@ interface PersonDetailsViewProps {
 
 export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDetails, onBack }) => {
   const { currentTheme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleCreditClick = (credit: CreditItem) => {
+    if (credit.media_type === 'movie') {
+      navigate(`/movie/${credit.id}`);
+    } else {
+      navigate(`/series/${credit.id}`);
+    }
+  };
 
   return (
     <div style={{ padding: '20px' }}>
@@ -116,10 +127,20 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
 
         <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
           {personDetails.credits.map((credit, index) => (
-            <div
+            <motion.div
               key={`${credit.id}-${index}`}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => handleCreditClick(credit)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCreditClick(credit);
+                }
+              }}
               style={{
-                minWidth: '100px',
+                minWidth: '130px',
                 cursor: 'pointer',
               }}
             >
@@ -136,8 +157,8 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                     loading="lazy"
                     decoding="async"
                     style={{
-                      width: '100px',
-                      height: '150px',
+                      width: '130px',
+                      height: '195px',
                       objectFit: 'cover',
                       borderRadius: '8px',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
@@ -146,8 +167,8 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                 ) : (
                   <div
                     style={{
-                      width: '100px',
-                      height: '150px',
+                      width: '130px',
+                      height: '195px',
                       background: `linear-gradient(135deg, ${currentTheme.text.muted}0D, ${currentTheme.text.muted}05)`,
                       borderRadius: '8px',
                       display: 'flex',
@@ -233,7 +254,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                   als {credit.character}
                 </p>
               )}
-            </div>
+            </motion.div>
           ))}
         </HorizontalScrollContainer>
       </div>

@@ -1,7 +1,9 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { HorizontalScrollContainer } from '../ui';
-import type { VoiceActorDetailsData } from './CastCrew.types';
+import type { CharacterMediaEdge, VoiceActorDetailsData } from './CastCrew.types';
 
 interface VoiceActorDetailsViewProps {
   voiceActorDetails: VoiceActorDetailsData;
@@ -15,6 +17,47 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
   onBack,
 }) => {
   const { currentTheme } = useTheme();
+  const navigate = useNavigate();
+
+  // AniList-IDs mappen nicht auf TMDB. Wir suchen beim Klick per TMDB-Search
+  // nach dem Titel und navigieren intern, wenn ein Treffer existiert; sonst
+  // öffnen wir den AniList-Eintrag in einem neuen Tab als Fallback.
+  const handleMediaClick = async (edge: CharacterMediaEdge) => {
+    const isMovie = edge.node.type === 'MOVIE';
+    const query = edge.node.title.english || edge.node.title.romaji;
+    const anilistFallback = () => {
+      const path = isMovie ? 'manga' : 'anime';
+      window.open(`https://anilist.co/${path}/${edge.node.id}`, '_blank', 'noopener,noreferrer');
+    };
+    if (!query) {
+      anilistFallback();
+      return;
+    }
+    try {
+      const apiKey = import.meta.env.VITE_API_TMDB;
+      if (!apiKey) {
+        anilistFallback();
+        return;
+      }
+      const searchType = isMovie ? 'movie' : 'tv';
+      const res = await fetch(
+        `https://api.themoviedb.org/3/search/${searchType}?api_key=${apiKey}&language=de-DE&query=${encodeURIComponent(query)}`
+      );
+      if (!res.ok) {
+        anilistFallback();
+        return;
+      }
+      const data = await res.json();
+      const hit = data.results?.[0];
+      if (hit?.id) {
+        navigate(`/${isMovie ? 'movie' : 'series'}/${hit.id}`);
+      } else {
+        anilistFallback();
+      }
+    } catch {
+      anilistFallback();
+    }
+  };
 
   return (
     <div style={{ padding: '20px' }}>
@@ -137,10 +180,20 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
 
             <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
               {voiceActorDetails.characterMedia?.edges?.map((edge, index) => (
-                <div
+                <motion.div
                   key={`${edge.node.id}-${index}`}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => handleMediaClick(edge)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleMediaClick(edge);
+                    }
+                  }}
                   style={{
-                    minWidth: '100px',
+                    minWidth: '130px',
                     cursor: 'pointer',
                   }}
                 >
@@ -157,8 +210,8 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                         loading="lazy"
                         decoding="async"
                         style={{
-                          width: '100px',
-                          height: '150px',
+                          width: '130px',
+                          height: '195px',
                           objectFit: 'cover',
                           borderRadius: '8px',
                           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
@@ -167,8 +220,8 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                     ) : (
                       <div
                         style={{
-                          width: '100px',
-                          height: '150px',
+                          width: '130px',
+                          height: '195px',
                           background: `linear-gradient(135deg, ${currentTheme.text.muted}0D, ${currentTheme.text.muted}05)`,
                           borderRadius: '8px',
                           display: 'flex',
@@ -253,7 +306,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                       als {edge.characters[0].name.full}
                     </p>
                   )}
-                </div>
+                </motion.div>
               ))}
             </HorizontalScrollContainer>
           </div>
