@@ -172,7 +172,8 @@ export function useCharacterDescriptions(series: Series | undefined) {
   const hasAnimeKeywords = series?.genre?.genres?.some((g) => g.toLowerCase().includes('anime'));
   const isAnime =
     hasAnimeKeywords ||
-    (hasAnimationGenre && (isFromAsianCountry || isAsianLanguage || !series?.origin_country));
+    (hasAnimationGenre &&
+      (isFromAsianCountry || isAsianLanguage || !series?.origin_country?.length));
 
   const generate = useCallback(async () => {
     if (!series || !userProgress || !BACKEND_URL) return;

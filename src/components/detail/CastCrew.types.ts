@@ -14,6 +14,7 @@ export interface SeriesDataProp {
   genres?: { id: number; name: string }[];
   genre?: { genres?: string[] };
   origin_country?: string[];
+  original_language?: string;
 }
 
 export interface AnimeCharacterData {
