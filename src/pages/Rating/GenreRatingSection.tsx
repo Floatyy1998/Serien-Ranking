@@ -1,16 +1,25 @@
-import { Star } from '@mui/icons-material';
+import {
+  AutoAwesome,
+  Bolt,
+  Favorite,
+  Star,
+  TheaterComedy,
+  TrendingUp,
+  Mood,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { Drama, Heart, Smile, Sparkles, TrendingUp, Zap } from 'lucide-react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 
+const ICON_SIZE = { fontSize: 20 };
+
 const genreIcons: Record<string, React.ReactNode> = {
-  Action: <Zap size={20} />,
-  Comedy: <Smile size={20} />,
-  Drama: <Drama size={20} />,
-  Romance: <Heart size={20} />,
-  'Sci-Fi': <Sparkles size={20} />,
-  Fantasy: <Sparkles size={20} />,
-  Thriller: <TrendingUp size={20} />,
+  Action: <Bolt style={ICON_SIZE} />,
+  Comedy: <Mood style={ICON_SIZE} />,
+  Drama: <TheaterComedy style={ICON_SIZE} />,
+  Romance: <Favorite style={ICON_SIZE} />,
+  'Sci-Fi': <AutoAwesome style={ICON_SIZE} />,
+  Fantasy: <AutoAwesome style={ICON_SIZE} />,
+  Thriller: <TrendingUp style={ICON_SIZE} />,
 };
 
 const getGenreColors = (accent: string): Record<string, string> => ({
