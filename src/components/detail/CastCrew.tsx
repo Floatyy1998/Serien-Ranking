@@ -200,17 +200,9 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   useEffect(() => {
     if (isAnime && mediaType === 'tv') {
       fetchAnimeCharacters();
-      setActiveTab('characters');
     }
     fetchCredits();
   }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
-
-  // Update active tab when anime characters are loaded
-  useEffect(() => {
-    if (isAnime && animeCharacters.length > 0 && activeTab !== 'characters') {
-      setActiveTab('characters');
-    }
-  }, [animeCharacters, isAnime, activeTab]);
 
   const fetchPersonDetails = async (personId: number) => {
     try {

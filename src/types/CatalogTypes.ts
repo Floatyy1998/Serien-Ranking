@@ -18,6 +18,8 @@ export interface CatalogSeries {
   watchtime: number;
   seasonCount: number;
   lastUpdated: number;
+  originCountry?: string[];
+  originalLanguage?: string;
   seasons?: Record<string, CatalogSeason>;
 }
 

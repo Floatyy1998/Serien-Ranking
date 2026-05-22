@@ -137,9 +137,11 @@ export function mergeToSeriesView(
     watchtime: catalog.watchtime,
     seasonCount: catalog.seasonCount,
     seasons,
-    // Required by Series but not stored in catalog — provide defaults
-    origin_country: [],
-    original_language: '',
+    // origin_country / original_language stammen aus dem Catalog (Backend
+    // schreibt sie in processSeriesWithTVDB), Defaults für aeltere Catalog-
+    // Eintraege ohne diese Felder.
+    origin_country: ensureArray<string>(catalog.originCountry),
+    original_language: catalog.originalLanguage ?? '',
     original_name: '',
     popularity: 0,
     vote_average: 0,
