@@ -10,6 +10,7 @@ import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
+import { getOfflineBadgeSystem } from '../../features/badges/offlineBadgeSystem';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
 import {
@@ -37,7 +38,6 @@ export const BadgesPage = () => {
   const loadBadgeData = useCallback(async () => {
     if (!user) return;
 
-    const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
     const badgeSystem = getOfflineBadgeSystem(user.uid);
     const isCached = badgeSystem.isCacheValid();
 
@@ -86,7 +86,6 @@ export const BadgesPage = () => {
     const handleBadgeUpdate = async (event: CustomEvent) => {
       const { newBadges } = event.detail;
       if (newBadges && newBadges.length > 0) {
-        const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
         const badgeSystem = getOfflineBadgeSystem(user?.uid ?? '');
         badgeSystem.invalidateCache();
 
@@ -137,7 +136,6 @@ export const BadgesPage = () => {
     if (!user) return;
     setLoading(true);
     try {
-      const { getOfflineBadgeSystem } = await import('../../features/badges/offlineBadgeSystem');
       const badgeSystem = getOfflineBadgeSystem(user.uid);
       badgeSystem.invalidateCache();
       const newBadges = await badgeSystem.checkForNewBadges();

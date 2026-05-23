@@ -7,6 +7,7 @@ import BadgeNotification from './BadgeNotification';
 import { BadgeContext } from './BadgeContextDef';
 import type { BadgeContextType } from './BadgeContextDef';
 import type { EarnedBadge } from './badgeDefinitions';
+import { getOfflineBadgeSystem } from './offlineBadgeSystem';
 
 interface BadgeProviderProps {
   children: ReactNode;
@@ -128,7 +129,6 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
     // Cache invalidieren damit aktuelle Badge-Daten geladen werden
     if (user) {
       try {
-        const { getOfflineBadgeSystem } = await import('./offlineBadgeSystem');
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
       } catch {
