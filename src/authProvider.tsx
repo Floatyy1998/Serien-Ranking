@@ -4,6 +4,7 @@ import { initAnalyticsIfConsented, setAnalyticsUser } from './firebase/analytics
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './AuthContext';
+import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -99,8 +100,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               badgeCheckTimeout = setTimeout(async () => {
                 if (cancelled) return;
                 try {
-                  const { getOfflineBadgeSystem } =
-                    await import('./features/badges/offlineBadgeSystem');
                   const badgeSystem = getOfflineBadgeSystem(user.uid);
 
                   // Prüfe ob wir kürzlich schon gecheckt haben (innerhalb der letzten 5 Minuten)
