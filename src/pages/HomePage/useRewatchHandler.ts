@@ -87,10 +87,14 @@ export function useRewatchHandler() {
       ]);
 
       const val = (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
-      const prevCount: number = val.c || 0;
+      const prevWatched: number = val.w || 0;
+      // Legacy-Eps haben `{w:1, f:...}` ohne `c`. Default auf 1 (statt 0)
+      // wenn die Folge schon gewatcht war, damit der Counter beim Rewatch-
+      // Swipe auch sichtbar von 1 auf 2 hochgeht — sonst bleibt die Anzeige
+      // bei "1x gesehen" haengen.
+      const prevCount: number = val.c && val.c >= 1 ? val.c : prevWatched ? 1 : 0;
       const prevFirst: number = val.f || 0;
       const prevLast: number = val.l || 0;
-      const prevWatched: number = val.w || 0;
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
       const newWatchCount = prevCount + 1;
