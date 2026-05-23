@@ -169,15 +169,21 @@ export function useSeriesActions(
         // DB-Snapshot lesen statt nur lokalen State, damit `w` immer korrekt
         // gesetzt wird (Edge-Case: lokal watched=true aber DB-Wert ohne `w`,
         // z.B. nach Catalog-Reorganization mit verwaister rewatchedEps-Map).
-        const epSnap = await db.ref(epPath).once('value');
+        const rewatchLastWatchedAtPath = `users/${userId}/series/${series.id}/rewatch/lastWatchedAt`;
+        const [epSnap, rewatchLastSnap] = await Promise.all([
+          db.ref(epPath).once('value'),
+          db.ref(rewatchLastWatchedAtPath).once('value'),
+        ]);
         const epVal =
           (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
         const prevWatched: number = epVal.w || 0;
         const prevWatchCount: number = epVal.c || episode.watchCount || 1;
         const prevFirst: number = epVal.f || 0;
         const prevLast: number = epVal.l || 0;
+        const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
         const nowUnix = Math.floor(Date.now() / 1000);
+        const nowIso = new Date().toISOString();
         const newWatchCount = prevWatchCount + 1;
         const rewatchEpsPath = `users/${userId}/series/${series.id}/rewatch/rewatchedEps/${epId}`;
         const hadRewatch = !!series.rewatch?.active;
@@ -195,6 +201,7 @@ export function useSeriesActions(
         }
         if (hadRewatch) {
           updates[rewatchEpsPath] = true;
+          updates[rewatchLastWatchedAtPath] = nowIso;
         }
         await db.ref().update(updates);
         bumpSeriesVersion(userId);
@@ -245,6 +252,7 @@ export function useSeriesActions(
                 undoUpdates[`users/${userId}/series/${series.id}/rewatch`] = series.rewatch;
               } else if (hadRewatch) {
                 undoUpdates[rewatchEpsPath] = null;
+                undoUpdates[rewatchLastWatchedAtPath] = prevRewatchLastWatchedAt;
               }
               await db.ref().update(undoUpdates);
             } catch {
