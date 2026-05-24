@@ -145,7 +145,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
             // Cache aktualisieren
             await saveToCache(newData);
           } else {
-            setData(null);
+            // !exists kann transient sein wenn Firebase RTDB bei einem
+            // Netzwerk-Glitch kurz disconnected ist — sonst sehen alle
+            // abgeleiteten Listen (seriesList etc.) fuer 5-10s leer aus,
+            // bis der Reconnect den echten Snapshot liefert. Statt sofort
+            // null zu setzen, auf Cache zurueckfallen falls vorhanden.
+            // Echter Empty-Case (User hat keine Daten) kommt beim
+            // naechsten echten Snapshot durch und wird dort gesetzt.
+            const cached = await loadFromCache();
+            setData(cached ?? null);
           }
           setLoading(false);
         },
