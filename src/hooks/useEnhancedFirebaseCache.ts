@@ -435,12 +435,21 @@ export function useEnhancedFirebaseCache<T = unknown>(
         }
         const snapshot = await ref.once('value');
         const initialData = (snapshot.val() || {}) as T;
-        setData(initialData);
+        // Bei einem Reconnect-Glitch kann snapshot.val() null sein obwohl
+        // der User echte Daten hat → bestehenden State NICHT durch leeres
+        // Object ersetzen, sonst wirken alle Episoden ploetzlich "ungesehen".
+        const isEmpty = !snapshot.exists() || Object.keys(initialData as object).length === 0;
+        setData((prev) => {
+          if (isEmpty && prev && Object.keys(prev as object).length > 0) {
+            return prev;
+          }
+          return initialData;
+        });
         setLastUpdated(Date.now());
         setIsStale(false);
         setError(null);
         setLoading(false);
-        await saveToCache(initialData);
+        if (!isEmpty) await saveToCache(initialData);
         attachDeltaListeners(ref, initialData);
       } catch (err) {
         const errorMessage =
@@ -519,9 +528,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
       if (navigator.onLine) {
         // Online: Firebase laden
         const firebaseData = await fetchFromFirebase();
-        setData(firebaseData);
-        setLastUpdated(Date.now());
-        setIsStale(false);
+        // Wenn Firebase nichts zurueckliefert (transient empty snapshot bei
+        // einem Reconnect-Glitch), bestehenden State NICHT auf null setzen —
+        // sonst sieht der User ploetzlich "keine Serien". Echte Empty-Cases
+        // kommen via Realtime-Listener durch.
+        if (firebaseData !== null) {
+          setData(firebaseData);
+          setLastUpdated(Date.now());
+          setIsStale(false);
+        }
       } else {
         // Offline: Cache laden
         const cachedData = await loadFromCache();
