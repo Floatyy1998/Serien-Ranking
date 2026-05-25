@@ -386,7 +386,7 @@ export const useSearchPage = (): UseSearchPageResult => {
           });
 
           const posterPath = item.poster_path;
-          if (item.media_type === 'tv' || endpoint.includes('/add')) {
+          if (item.type === 'series') {
             await logSeriesAdded(
               user.uid,
               item.name || item.title || 'Unbekannte Serie',
