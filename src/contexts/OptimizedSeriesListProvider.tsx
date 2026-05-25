@@ -12,7 +12,6 @@ import { mergeToSeriesView } from '../lib/seriesAdapter';
 import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeriesFresh,
-  fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
   clearStaticCatalogCache,
   checkForCatalogVersionBump,
@@ -120,7 +119,16 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         }
       }
 
-      setCatalogMeta(merged || {});
+      // Wenn der Fetch fehlschlaegt: bestehenden State NICHT leeren — sonst
+      // sieht der User ploetzlich "keine Serien". Beim naechsten visibility-
+      // change / 5min-Poll wird's erneut versucht. Nur beim allerersten Run
+      // (initial state ist null) muss {} gesetzt werden, damit der Splash
+      // aufloest.
+      setCatalogMeta((prev) => {
+        if (merged) return merged;
+        if (prev !== null) return prev; // alten Stand behalten
+        return {}; // initial load + fail → leeres Object, App rendert Skeleton
+      });
       setCatalogLoading(false);
     },
     [userSeriesRefs]
@@ -172,14 +180,28 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     let cancelled = false;
 
     (async () => {
-      // Bulk versuchen
+      // Bulk versuchen — mit 1x Retry. Wenn auch das fehlschlaegt: nicht
+      // 293 einzelne seasons/N.json Requests feuern (das verstopft den
+      // Browser-Connection-Pool fuer Sekunden und fuehlt sich an wie
+      // "kein Internet"). Lieber leer rendern; der visibility-Trigger
+      // versucht's beim naechsten Tab-Wechsel erneut.
       let bulk: Record<string, Record<string, CatalogSeason>> | null = null;
       try {
         bulk = await fetchStaticCatalogSeasonsBulk();
       } catch {
-        // ignore — Fallback unten
+        // weiter mit retry
       }
       if (cancelled) return;
+      if (!bulk) {
+        await new Promise((r) => setTimeout(r, 1000));
+        if (cancelled) return;
+        try {
+          bulk = await fetchStaticCatalogSeasonsBulk();
+        } catch {
+          // weiter
+        }
+        if (cancelled) return;
+      }
 
       if (bulk) {
         const seasons: Record<string, Record<string, CatalogSeason>> = {};
@@ -188,27 +210,11 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         }
         seasonsLoadedRef.current = true;
         setCatalogSeasons(seasons);
-        return;
       }
-
-      // Fallback: einzelne Files
-      const results = await Promise.all(
-        tmdbIds.map(async (tmdbId) => {
-          try {
-            const data = await fetchStaticCatalogSeasons(tmdbId);
-            return [tmdbId, data || {}] as const;
-          } catch {
-            return [tmdbId, {}] as const;
-          }
-        })
-      );
-      if (cancelled) return;
-      const seasons: Record<string, Record<string, CatalogSeason>> = {};
-      for (const [tmdbId, data] of results) {
-        seasons[tmdbId] = data as Record<string, CatalogSeason>;
-      }
-      seasonsLoadedRef.current = true;
-      setCatalogSeasons(seasons);
+      // Wenn bulk auch nach Retry null ist: bestehenden State NICHT ueberschreiben.
+      // Sonst sieht der User ploetzlich Series ohne Staffel-Daten (= "keine
+      // naechste Folge", "Continue Watching leer" etc.). Naechster visibility-
+      // Tick versucht's erneut.
     })();
 
     return () => {
@@ -247,24 +253,13 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         ]);
         if (cancelled) return;
         if (newMeta) setCatalogMeta(newMeta);
+        // Bulk fehlt? Lieber im aktuellen Stand bleiben — beim naechsten
+        // visibilitychange/5min-Poll wird's erneut versucht. KEIN Einzel-
+        // Fallback (293 parallele Requests verstopfen den Connection-Pool).
         if (newBulk) {
           const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
           for (const tmdbId of tmdbIds) {
             newSeasons[tmdbId] = newBulk[tmdbId] || {};
-          }
-          setCatalogSeasons(newSeasons);
-        } else {
-          // Bulk nicht verfuegbar — Einzel-Fallback (selten)
-          const seasonResults = await Promise.all(
-            tmdbIds.map(async (tmdbId) => {
-              const data = await fetchStaticCatalogSeasons(tmdbId);
-              return [tmdbId, data || {}] as const;
-            })
-          );
-          if (cancelled) return;
-          const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
-          for (const [tmdbId, data] of seasonResults) {
-            newSeasons[tmdbId] = data as Record<string, CatalogSeason>;
           }
           setCatalogSeasons(newSeasons);
         }
