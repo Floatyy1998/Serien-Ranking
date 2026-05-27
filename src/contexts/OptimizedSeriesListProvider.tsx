@@ -477,10 +477,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   );
 
   const toggleHideSeries = useCallback(
-    async (nmr: number, hidden: boolean) => {
+    async (idOrNmr: number, hidden: boolean) => {
       if (!user) return;
-      // Finde tmdbId anhand von nmr (legacyNmr) oder direkt aus seriesList
-      const series = allSeries.find((s) => s.nmr === nmr || s.id === nmr);
+      // PREFER tmdbId match: viele Serien (z.B. via Search direkt addiert) haben
+      // keinen legacyNmr und kriegen im Adapter `nmr = 0` als Default. Ein
+      // reiner nmr-Lookup matched dann die ERSTE Serie ohne legacyNmr — also
+      // die falsche. Erst per id matchen, dann per nmr als Fallback.
+      const series =
+        allSeries.find((s) => s.id === idOrNmr) ||
+        (idOrNmr !== 0 ? allSeries.find((s) => s.nmr === idOrNmr) : undefined);
       if (!series) return;
       const ref = firebase.database().ref(`users/${user.uid}/series/${series.id}/hidden`);
       if (hidden) {

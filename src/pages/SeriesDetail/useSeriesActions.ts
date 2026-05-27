@@ -142,7 +142,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     const newHiddenStatus = !series.hidden;
     try {
-      await toggleHideSeries(series.nmr, newHiddenStatus);
+      await toggleHideSeries(series.id, newHiddenStatus);
       showSnackbar(newHiddenStatus ? 'Nicht weiterschauen' : 'Serie wieder aktiv');
     } catch {
       setDialog({ open: true, message: 'Fehler beim Ändern des Status.', type: 'error' });
