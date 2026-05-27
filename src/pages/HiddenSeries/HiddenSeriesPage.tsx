@@ -12,9 +12,9 @@ export const HiddenSeriesPage: React.FC = () => {
   const { hiddenSeriesList, toggleHideSeries } = useSeriesList();
   const { currentTheme } = useTheme();
 
-  const handleUnhide = async (nmr: number, e: React.MouseEvent) => {
+  const handleUnhide = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    await toggleHideSeries(nmr, false);
+    await toggleHideSeries(id, false);
   };
 
   const seriesWithStats = useMemo(() => {
@@ -234,7 +234,7 @@ export const HiddenSeriesPage: React.FC = () => {
                   {/* Unhide button */}
                   <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={(e) => handleUnhide(series.nmr, e)}
+                    onClick={(e) => handleUnhide(series.id, e)}
                     style={{
                       alignSelf: 'center',
                       padding: '10px 14px',
