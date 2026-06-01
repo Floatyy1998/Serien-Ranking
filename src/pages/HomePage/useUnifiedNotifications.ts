@@ -45,6 +45,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_streaming-abos-2026-06',
+    title: 'Neu: Streaming-Abos',
+    message:
+      'Pflege deine aktiven Anbieter, sieh was du ungenutzt zahlst, finde Watchlist-Lücken und filtere alles nach deinen Abos. Calendar bekommt Brand-Color-Streifen, Override pro Serie ist möglich.',
+    timestamp: new Date('2026-06-01T16:00:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_homepage-layout-2026-02',
     title: 'Neues Feature: Homepage Layout',
     message:

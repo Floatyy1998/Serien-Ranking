@@ -13,14 +13,17 @@ import { useWaitForBackendItem } from './hooks/useWaitForBackendItem';
 import './onboarding.css';
 import { CompletionStep } from './steps/CompletionStep';
 import { DiscoveryStep } from './steps/DiscoveryStep';
+import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
+import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 
-type Step = 'welcome' | 'series' | 'movies' | 'done';
-const STEPS: Step[] = ['welcome', 'series', 'movies', 'done'];
+type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
+const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];
 const STEP_LABELS: Record<Step, string> = {
   welcome: 'Kuration',
   series: 'Serien',
   movies: 'Filme',
+  subscriptions: 'Abos',
   done: 'Premiere',
 };
 
@@ -37,8 +40,18 @@ export const OnboardingPage: React.FC = () => {
   const [pendingItems, setPendingItems] = useState<Map<string, OnboardingItem>>(new Map());
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [watchTargets, setWatchTargets] = useState<Map<number, WatchTarget>>(new Map());
+  const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionProgress, setCompletionProgress] = useState(0);
+
+  const toggleProvider = useCallback((name: string) => {
+    setSelectedProviders((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
 
   const {
     suggestions,
@@ -165,6 +178,13 @@ export const OnboardingPage: React.FC = () => {
       for (const [id, t] of watchTargets.entries()) targetsObj[id] = t;
       await applyWatchProgress(targetsObj, () => tick());
 
+      if (selectedProviders.size > 0) {
+        const providersConfig: Record<string, { active: boolean }> = {};
+        for (const name of selectedProviders) providersConfig[name] = { active: true };
+        await firebase.database().ref(`users/${uid}/subscriptions/providers`).set(providersConfig);
+        invalidateActiveSubscriptions(uid);
+      }
+
       await firebase.database().ref(`users/${uid}/onboardingComplete`).set(true);
       setOnboardingComplete?.(true);
       setCompletionProgress(100);
@@ -179,6 +199,7 @@ export const OnboardingPage: React.FC = () => {
     user?.uid,
     pendingItems,
     watchTargets,
+    selectedProviders,
     addToList,
     waitForBackendItem,
     applyWatchProgress,
@@ -268,8 +289,18 @@ export const OnboardingPage: React.FC = () => {
               onRemovePending={removePending}
               onSetWatchTarget={setWatchTarget}
               onClearSearch={() => setSearchResults([])}
-              onNext={() => setStep('done')}
+              onNext={() => setStep('subscriptions')}
               onBack={() => setStep('series')}
+            />
+          )}
+          {step === 'subscriptions' && (
+            <SubscriptionsStep
+              key="subscriptions"
+              stepNumber={4}
+              selectedProviders={selectedProviders}
+              onToggle={toggleProvider}
+              onNext={() => setStep('done')}
+              onBack={() => setStep('movies')}
             />
           )}
           {step === 'done' && (
@@ -282,7 +313,7 @@ export const OnboardingPage: React.FC = () => {
               isCompleting={isCompleting}
               completionProgress={completionProgress}
               onFinish={finish}
-              onBack={() => setStep('movies')}
+              onBack={() => setStep('subscriptions')}
             />
           )}
         </AnimatePresence>

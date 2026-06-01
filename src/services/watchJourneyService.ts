@@ -24,6 +24,7 @@ import {
   normalizeGenre,
 } from './watchJourneyTypes';
 import { calculateMultiYearTrends } from './watchJourneyTrends';
+import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
 
 // Re-export types used by consumers
 export type { WatchJourneyData, MultiYearTrendsData };
@@ -141,9 +142,13 @@ export async function calculateWatchJourney(
       genreCounts.set(genre, (genreCounts.get(genre) || 0) + runtimePerGenre);
     });
 
-    // Providers
+    // Providers — normalisieren, damit retired/Ad-Tier-Namen (Freevee → Amazon
+    // Prime Video, "X Channel" → ignoriert) konsistent in den Stats landen.
+    const rawProviders = event.providers || (event.provider ? [event.provider] : []);
     const providers = [
-      ...new Set(event.providers || (event.provider ? [event.provider] : [])),
+      ...new Set(
+        rawProviders.map((p) => normalizeProviderName(p)).filter((p): p is string => p !== null)
+      ),
     ].filter(isValidProvider);
     providers.forEach((provider) => {
       providerMonthly[monthIndex].values[provider] =

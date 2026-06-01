@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { SUPPORTED_PROVIDERS } from '../config/menuItems';
+import { invalidateActiveSubscriptions } from './useActiveSubscriptions';
 import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
 import { mergeProviderNames } from '../lib/providerMerge';
 import { getYearlyActivity } from '../services/watchActivity/shared';
@@ -299,6 +300,9 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
     async (next: SubscriptionsConfig) => {
       if (!user) return;
       await firebase.database().ref(`users/${user.uid}/subscriptions`).set(next);
+      // Modul-Cache invalidieren: alle anderen Hook-Aufrufer (Calendar, HomePage
+      // Sections, WatchNext-Filter) sollen den neuen Override + Active-Set sehen.
+      invalidateActiveSubscriptions(user.uid);
     },
     [user]
   );

@@ -13,6 +13,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
@@ -50,6 +51,10 @@ export const WatchNextPage = () => {
   const [providerFilter, setProviderFilter] = useState<string | null>(
     localStorage.getItem('watchNextProvider') || null
   );
+  const [onlyMySubs, setOnlyMySubs] = useState<boolean>(
+    localStorage.getItem('watchNextOnlyMySubs') === 'true'
+  );
+  const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
   // Swipe hook
   const {
@@ -99,7 +104,8 @@ export const WatchNextPage = () => {
     sortOption,
     customOrderActive,
     [],
-    providerFilter
+    providerFilter,
+    onlyMySubs ? activeProviders : null
   );
 
   const {
@@ -123,7 +129,8 @@ export const WatchNextPage = () => {
     sortOption,
     customOrderActive,
     watchlistOrder,
-    providerFilter
+    providerFilter,
+    onlyMySubs ? activeProviders : null
   );
 
   useScrollRestore('watchNext-scroll', '.episodes-scroll-container', { restoreOnPop: true });
@@ -145,7 +152,8 @@ export const WatchNextPage = () => {
     } else {
       localStorage.removeItem('watchNextProvider');
     }
-  }, [showRewatches, customOrderActive, sortOption, providerFilter]);
+    localStorage.setItem('watchNextOnlyMySubs', String(onlyMySubs));
+  }, [showRewatches, customOrderActive, sortOption, providerFilter, onlyMySubs]);
 
   // Count active rewatches
   const activeRewatchCount = useMemo(() => {
@@ -317,6 +325,40 @@ export const WatchNextPage = () => {
                   onSelect={(p) => startTransition(() => setProviderFilter(p))}
                   theme={theme}
                 />
+
+                {hasAnySubscription && (
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => startTransition(() => setOnlyMySubs((v) => !v))}
+                    style={{
+                      marginTop: 10,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '7px 12px',
+                      borderRadius: 999,
+                      border: `1px solid ${onlyMySubs ? currentTheme.primary : currentTheme.border.default}`,
+                      background: onlyMySubs
+                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                        : 'rgba(255,255,255,0.04)',
+                      color: onlyMySubs ? currentTheme.text.secondary : currentTheme.text.primary,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                    aria-pressed={onlyMySubs}
+                  >
+                    <span
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderRadius: 3,
+                        background: onlyMySubs ? '#fff' : currentTheme.text.muted,
+                      }}
+                    />
+                    Nur meine Abos
+                  </motion.button>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

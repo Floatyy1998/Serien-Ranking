@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
+import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 
@@ -58,6 +60,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.status?.warning || '#f59e0b';
   const { isMobile } = useDeviceType();
+  const { getSeriesOverride } = useActiveSubscriptions();
 
   if (episodes.length === 0) return null;
 
@@ -95,13 +98,19 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   posterAlt={episode.seriesTitle}
                   accentColor={accentColor}
                   posterOverlay={(() => {
-                    const logo = episode.providerLogo || episode.provider?.provider?.[0]?.logo;
-                    const name =
+                    const fallbackLogo =
+                      episode.providerLogo || episode.provider?.provider?.[0]?.logo;
+                    const fallbackName =
                       episode.providerName || episode.provider?.provider?.[0]?.name || '';
-                    return logo ? (
+                    const resolved = resolveProviderOverlay(
+                      getSeriesOverride(episode.seriesId),
+                      fallbackLogo,
+                      fallbackName
+                    );
+                    return resolved ? (
                       <img
-                        src={`https://image.tmdb.org/t/p/w92${logo}`}
-                        alt={name}
+                        src={resolved.src}
+                        alt={resolved.name}
                         style={{
                           position: 'absolute',
                           bottom: -3,

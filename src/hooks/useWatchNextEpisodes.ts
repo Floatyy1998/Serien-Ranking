@@ -50,7 +50,9 @@ export const useWatchNextEpisodes = (
   sortOption: string,
   customOrderActive: boolean,
   watchlistOrder: number[],
-  providerFilter: string | null = null
+  providerFilter: string | null = null,
+  /** Wenn gesetzt: nur Serien deren Provider in diesem Set ist (aktive Abos). */
+  onlyActiveProviders: ReadonlySet<string> | null = null
 ): NextEpisode[] => {
   return useMemo(() => {
     const episodes: NextEpisode[] = [];
@@ -66,10 +68,15 @@ export const useWatchNextEpisodes = (
         ? series.seasons
         : Object.values(series.seasons);
       if (!seasonsArray.length) return false;
-      // Provider filter
+      // Provider filter (Single-Provider)
       if (providerFilter) {
         const providers = series.provider?.provider?.map((p) => p.name) || [];
         if (!providers.some((name) => name === providerFilter)) return false;
+      }
+      // "Nur meine Abos" Filter (Union der aktiven Subscriptions)
+      if (onlyActiveProviders && onlyActiveProviders.size > 0) {
+        const providers = series.provider?.provider?.map((p) => p.name) || [];
+        if (!providers.some((name) => onlyActiveProviders.has(name))) return false;
       }
       return true;
     });
@@ -234,5 +241,6 @@ export const useWatchNextEpisodes = (
     customOrderActive,
     watchlistOrder,
     providerFilter,
+    onlyActiveProviders,
   ]);
 };
