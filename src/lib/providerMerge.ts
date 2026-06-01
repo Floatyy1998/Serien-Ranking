@@ -27,13 +27,55 @@ const PROVIDER_LOGOS: Record<string, string> = {
   'Paramount Plus': 'https://image.tmdb.org/t/p/w342/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg',
   MagentaTV: 'https://image.tmdb.org/t/p/w342/uULoezj2skPc6amfwru72UPjYXV.jpg',
   'RTL+': 'https://image.tmdb.org/t/p/w342/3hI22hp7YDZXyrmXVqDGnVivNTI.jpg',
-  Freevee: 'https://image.tmdb.org/t/p/w342/uBE4RMH15mrkuz6vXzuJc7ZLXp1.jpg',
   'Animation Digital Network': 'https://image.tmdb.org/t/p/w342/w86FOwg0bbgUSHWWnjOTuEjsUvq.jpg',
   'HBO Max': 'https://image.tmdb.org/t/p/w342/aS2zvJWn9mwiCOeaaCkIh4wleZS.jpg',
 };
 
 export function getProviderLogoUrl(name: string): string | undefined {
   return PROVIDER_LOGOS[name];
+}
+
+/**
+ * Wendet einen User-Override auf eine Provider-Liste an: wenn ein Override
+ * existiert, wird DIESE als alleiniger Provider returnt (synthetisches
+ * Provider-Objekt mit Logo aus der statischen Map). Sonst Original.
+ *
+ * Format-agnostisch — funktioniert mit `{id, logo, name}` und `{provider_id,
+ * provider_name, logo_path}`.
+ */
+export function applyOverrideToProviders<T extends RawProvider>(
+  providers: T[] | undefined,
+  override: string | null
+): (T | { name: string; logo: string | undefined; id: undefined })[] {
+  if (!override) return providers ?? [];
+  return [
+    {
+      id: undefined,
+      logo: PROVIDER_LOGOS[override],
+      name: override,
+    },
+  ];
+}
+
+/**
+ * Helper für Overlay-Badges in HomePage-Sections: liefert die fertig fetchbare
+ * Bild-URL für ein Provider-Logo. Bevorzugt einen User-Override; fällt sonst
+ * auf das übergebene TMDB-Logo zurück.
+ */
+export function resolveProviderOverlay(
+  override: string | null,
+  fallbackLogo: string | undefined | null,
+  fallbackName: string | undefined | null
+): { src: string; name: string } | null {
+  if (override) {
+    const url = PROVIDER_LOGOS[override];
+    if (url) return { src: url, name: override };
+  }
+  if (!fallbackLogo) return null;
+  const src = fallbackLogo.startsWith('http')
+    ? fallbackLogo
+    : `https://image.tmdb.org/t/p/w92${fallbackLogo}`;
+  return { src, name: fallbackName || '' };
 }
 
 export interface RawProvider {

@@ -2,9 +2,64 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ExpandMore } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
+import { getProviderLogoUrl } from '../../lib/providerMerge';
+import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { getProviderBrand } from '../Subscriptions/providerBrands';
 import type { SeriesGroup } from './useCalendarData';
 import { contrastTextColor } from './useCalendarData';
+
+/**
+ * Liefert die Brand-Color der Episode (vom abonnierten Provider, sonst vom
+ * ersten Provider) + ob KEIN aktives Abo passt (User pflegt Abos, keiner
+ * matched).
+ */
+function useProviderColoring(
+  seriesId: number,
+  providers: WeeklyEpisodeProvider[]
+): {
+  brandColor: string | null;
+  hasNoActiveSub: boolean;
+  /** Effektiver Display-Provider: User-Override gewinnt, sonst erster TMDB-Provider. */
+  displayProvider: WeeklyEpisodeProvider | null;
+} {
+  const { activeProviders, getSeriesOverride } = useActiveSubscriptions();
+  const hasActiveSubs = activeProviders.size > 0;
+  const override = getSeriesOverride(seriesId);
+
+  // User-Override hat höchste Priorität — überschreibt Strip + Logo.
+  if (override) {
+    const brand = getProviderBrand(override);
+    const logoUrl = getProviderLogoUrl(override);
+    // Synthetisches Provider-Objekt; ProviderBadge nimmt full URL.
+    const displayProvider: WeeklyEpisodeProvider = {
+      id: 0,
+      logo: logoUrl ?? '',
+      name: override,
+    };
+    const hasNoActiveSub = hasActiveSubs && !activeProviders.has(override);
+    return { brandColor: brand.color, hasNoActiveSub, displayProvider };
+  }
+
+  const normalized = providers
+    .map((p) => ({ raw: p, norm: normalizeProviderName(p.name) }))
+    .filter((p): p is { raw: WeeklyEpisodeProvider; norm: string } => p.norm !== null);
+
+  if (normalized.length === 0) {
+    return {
+      brandColor: null,
+      hasNoActiveSub: hasActiveSubs,
+      displayProvider: providers[0] ?? null,
+    };
+  }
+
+  const onActive = normalized.find((p) => activeProviders.has(p.norm));
+  const pick = onActive ?? normalized[0];
+  const brandColor = getProviderBrand(pick.norm).color;
+  const hasNoActiveSub = hasActiveSubs && !normalized.some((p) => activeProviders.has(p.norm));
+  return { brandColor, hasNoActiveSub, displayProvider: pick.raw };
+}
 
 // ── Shared helpers ───────────────────────────────────────────────
 
@@ -47,16 +102,20 @@ function breakColor(type: NonNullable<WeeklyEpisode['breakType']>): string {
 // ── Provider badge (single logo) ─────────────────────────────────
 
 const ProviderBadge = memo(
-  ({ provider, className }: { provider: WeeklyEpisodeProvider; className: string }) => (
-    <img
-      src={`https://image.tmdb.org/t/p/w92${provider.logo}`}
-      alt={provider.name}
-      title={provider.name}
-      loading="lazy"
-      decoding="async"
-      className={className}
-    />
-  )
+  ({ provider, className }: { provider: WeeklyEpisodeProvider; className: string }) => {
+    const raw = provider.logo;
+    const src = raw?.startsWith('http') ? raw : `https://image.tmdb.org/t/p/w92${raw}`;
+    return (
+      <img
+        src={src}
+        alt={provider.name}
+        title={provider.name}
+        loading="lazy"
+        decoding="async"
+        className={className}
+      />
+    );
+  }
 );
 ProviderBadge.displayName = 'ProviderBadge';
 
@@ -220,27 +279,56 @@ export const SingleEpisodeCard = memo(
   ({ ep, backdropSrc, onMarkWatched }: SingleEpisodeCardProps) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
+    const { brandColor, hasNoActiveSub, displayProvider } = useProviderColoring(
+      ep.seriesId,
+      ep.providers
+    );
 
+    // Border-Left auf Mobile zeigt weiterhin den Sonderzustand (Premiere/Pause/Watched).
+    // Der Strip-Overlay daneben zeigt NUR die Provider-Brand — beide Informationen
+    // ergänzen sich statt zu kollidieren.
     const borderColor = ep.premiereType
       ? currentTheme.status.warning
       : ep.breakType
         ? breakColor(ep.breakType)
         : ep.watched
           ? currentTheme.status.success
-          : currentTheme.primary;
+          : (brandColor ?? currentTheme.primary);
+    const stripColor: string | null = brandColor;
 
     const handleClick = () =>
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
     const handleMark = () => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex);
     const airTime = formatAirTime(ep.airstamp);
-    const provider = ep.providers[0];
+    const provider = displayProvider ?? undefined;
 
     return (
       <div
-        className={`cal-ep${ep.premiereType ? ' cal-ep-premiere' : ''}${ep.breakType ? ' cal-ep-break' : ''}`}
-        style={{ borderLeftColor: borderColor }}
+        className={`cal-ep${ep.premiereType ? ' cal-ep-premiere' : ''}${ep.breakType ? ' cal-ep-break' : ''}${hasNoActiveSub ? ' cal-ep-no-sub' : ''}`}
+        style={{
+          borderLeftColor: borderColor,
+          position: 'relative',
+          opacity: hasNoActiveSub ? 0.55 : 1,
+        }}
         onClick={handleClick}
       >
+        {stripColor && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              background: stripColor,
+              zIndex: 4,
+              pointerEvents: 'none',
+              borderTopLeftRadius: 'var(--radius-md)',
+              borderBottomLeftRadius: 'var(--radius-md)',
+            }}
+          />
+        )}
         {/* Desktop: poster-overlay card */}
         <PosterWrap
           posterSrc={backdropSrc || ep.poster}
@@ -376,24 +464,52 @@ export const EpisodeGroupCard = memo(
     const allWatched = watchedInGroup === group.episodes.length;
     const groupPremiereType = group.episodes.find((ep) => ep.premiereType)?.premiereType;
     const groupBreakType = group.episodes[group.episodes.length - 1]?.breakType;
+    const { brandColor, hasNoActiveSub, displayProvider } = useProviderColoring(
+      firstEp.seriesId,
+      firstEp.providers
+    );
 
+    const isSpecialState = groupPremiereType || groupBreakType || allWatched;
+    void isSpecialState;
     const borderColor = groupPremiereType
       ? currentTheme.status.warning
       : groupBreakType
         ? breakColor(groupBreakType)
         : allWatched
           ? currentTheme.status.success
-          : currentTheme.primary;
+          : (brandColor ?? currentTheme.primary);
+    const stripColor: string | null = brandColor;
 
     const episodeRange = `S${String(firstEp.seasonNumber).padStart(2, '0')} E${String(firstEp.episodeNumber).padStart(2, '0')}–E${String(lastEp.episodeNumber).padStart(2, '0')}`;
     const countLabel = `${group.episodes.length} Folgen · ${watchedInGroup} gesehen`;
-    const provider = firstEp.providers[0];
+    const provider = displayProvider ?? undefined;
 
     return (
       <div
-        className={`cal-ep-group${groupPremiereType ? ' cal-ep-premiere' : ''}${groupBreakType ? ' cal-ep-break' : ''} ${isExpanded ? 'is-open' : ''}`}
-        style={{ borderLeftColor: borderColor }}
+        className={`cal-ep-group${groupPremiereType ? ' cal-ep-premiere' : ''}${groupBreakType ? ' cal-ep-break' : ''}${hasNoActiveSub ? ' cal-ep-no-sub' : ''} ${isExpanded ? 'is-open' : ''}`}
+        style={{
+          borderLeftColor: borderColor,
+          position: 'relative',
+          opacity: hasNoActiveSub ? 0.55 : 1,
+        }}
       >
+        {stripColor && (
+          <span
+            aria-hidden
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 4,
+              background: stripColor,
+              zIndex: 4,
+              pointerEvents: 'none',
+              borderTopLeftRadius: 'var(--radius-md)',
+              borderBottomLeftRadius: 'var(--radius-md)',
+            }}
+          />
+        )}
         {/* Group header */}
         <div className="cal-ep cal-ep-group-header" onClick={onToggle}>
           {/* Desktop: poster card */}

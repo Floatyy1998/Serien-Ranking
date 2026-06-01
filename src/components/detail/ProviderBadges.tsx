@@ -98,11 +98,6 @@ const PROVIDER_LINKS: Record<
     web: (title) => `https://web.magentatv.de/search?q=${encodeURIComponent(title)}`,
     name: 'MagentaTV',
   },
-  // Freevee (ID: 613)
-  613: {
-    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Freevee',
-  },
   // ADN - Animation Digital Network (ID: 415)
   415: {
     web: (title) => `https://animationdigitalnetwork.de/search/${encodeURIComponent(title)}`,
@@ -134,7 +129,6 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     'Apple TV Plus',
     'Crunchyroll',
     'Disney Plus',
-    'Freevee',
     'HBO Max',
     'Joyn Plus',
     'MagentaTV',
