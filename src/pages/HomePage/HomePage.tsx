@@ -8,6 +8,7 @@ import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
+import { UnsubscribedNewSeasonNotification } from '../../components/ui/UnsubscribedNewSeasonNotification';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -16,6 +17,7 @@ import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
 import { useProactiveRecaps } from '../../hooks/useProactiveRecaps';
 import { useSeasonalRecommendations } from '../../hooks/useSeasonalRecommendations';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
+import { useUnsubscribedNewSeasons } from '../../hooks/useUnsubscribedNewSeasons';
 import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
@@ -94,6 +96,8 @@ export const HomePage: React.FC = () => {
   const proactiveRecaps = useProactiveRecaps();
   const config = useHomeConfig(user?.uid ?? '');
   const notifs = useUnifiedNotifications();
+  const { entries: unsubscribedNewSeasons, dismiss: dismissUnsubscribedNewSeasons } =
+    useUnsubscribedNewSeasons(seriesWithNewSeasons);
 
   // Swipe handlers
   const {
@@ -419,6 +423,11 @@ export const HomePage: React.FC = () => {
           recaps={proactiveRecaps.recaps}
           onDismiss={proactiveRecaps.dismiss}
           onFetchRecap={proactiveRecaps.fetchRecap}
+        />
+      ) : unsubscribedNewSeasons.length > 0 ? (
+        <UnsubscribedNewSeasonNotification
+          entries={unsubscribedNewSeasons}
+          onDismiss={dismissUnsubscribedNewSeasons}
         />
       ) : providerChanges && providerChanges.length > 0 ? (
         <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />

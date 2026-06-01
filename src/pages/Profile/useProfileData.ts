@@ -22,6 +22,7 @@ import {
   Search,
   Settings,
   Star,
+  Subscriptions,
   Timeline,
   TrendingUp,
   ViewQuilt,
@@ -282,6 +283,12 @@ export const useProfileData = (): UseProfileDataResult => {
     () => [
       { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
       { label: 'Homepage Layout', icon: ViewQuilt, color: '#a855f7', path: '/home-layout' },
+      {
+        label: 'Streaming-Abos',
+        icon: Subscriptions,
+        color: '#00A8E1',
+        path: '/subscriptions',
+      },
       {
         label: 'Einstellungen',
         icon: Settings,

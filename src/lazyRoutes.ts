@@ -185,6 +185,11 @@ export const BugReportPage = lazyWithRetry(() =>
     default: m.BugReportPage,
   }))
 );
+export const SubscriptionsPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "subscriptions" */ './pages/Subscriptions').then((m) => ({
+    default: m.SubscriptionsPage,
+  }))
+);
 export const MangaPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "manga" */ './pages/Manga').then((m) => ({
     default: m.MangaPage,

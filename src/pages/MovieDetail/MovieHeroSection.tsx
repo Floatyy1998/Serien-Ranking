@@ -2,6 +2,7 @@ import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { mergeProviders } from '../../lib/providerMerge';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
@@ -65,6 +66,15 @@ export const MovieHeroSection = memo(
     const genres = (movie.genre?.genres || []).filter((g) => g && g.trim() !== '' && g !== 'All');
     const tmdbGenres = movie.genres?.map((g) => g.name) || [];
     const allGenres = genres.length > 0 ? genres : tmdbGenres;
+
+    const mergedDisplayProviders = useMemo(
+      () =>
+        mergeProviders({
+          catalog: movie.provider?.provider,
+          live: providers ?? undefined,
+        }),
+      [movie.provider, providers]
+    );
 
     return (
       <>
@@ -297,14 +307,9 @@ export const MovieHeroSection = memo(
                       {imdbRating?.rating?.toFixed(1) || '0.0'}/10
                     </span>
                   </a>
-                  {((movie.provider?.provider && movie.provider.provider.length > 0) ||
-                    providers) && (
+                  {mergedDisplayProviders.length > 0 && (
                     <ProviderBadges
-                      providers={
-                        movie.provider?.provider && movie.provider.provider.length > 0
-                          ? movie.provider.provider
-                          : (providers ?? undefined)
-                      }
+                      providers={mergedDisplayProviders}
                       size="medium"
                       maxDisplay={3}
                       showNames={false}
@@ -355,15 +360,10 @@ export const MovieHeroSection = memo(
                       </span>
                     </a>
                   </div>
-                  {((movie.provider?.provider && movie.provider.provider.length > 0) ||
-                    providers) && (
+                  {mergedDisplayProviders.length > 0 && (
                     <div style={{ marginTop: 10 }}>
                       <ProviderBadges
-                        providers={
-                          movie.provider?.provider && movie.provider.provider.length > 0
-                            ? movie.provider.provider
-                            : (providers ?? undefined)
-                        }
+                        providers={mergedDisplayProviders}
                         size="large"
                         maxDisplay={6}
                         showNames={false}

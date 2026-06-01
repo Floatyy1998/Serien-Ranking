@@ -13,6 +13,7 @@ import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { mergeProviders } from '../../lib/providerMerge';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -104,6 +105,14 @@ export const HeroSection = memo<HeroSectionProps>(
     const seriesId = series.tmdb_id || series.id;
     const hasRating = parseFloat(overallRating) > 0;
     const iconSize = isMobile ? 17 : 19;
+    const mergedDisplayProviders = useMemo(
+      () =>
+        mergeProviders({
+          catalog: series.provider?.provider,
+          live: providers ?? undefined,
+        }),
+      [series.provider, providers]
+    );
 
     const actionButtons = !isReadOnlyTmdbSeries && (
       <div className="hero-actions">
@@ -435,14 +444,9 @@ export const HeroSection = memo<HeroSectionProps>(
                     justifyContent: 'center',
                   }}
                 >
-                  {((series.provider?.provider && series.provider.provider.length > 0) ||
-                    providers) && (
+                  {mergedDisplayProviders.length > 0 && (
                     <ProviderBadges
-                      providers={
-                        series.provider?.provider && series.provider.provider.length > 0
-                          ? series.provider.provider
-                          : (providers ?? undefined)
-                      }
+                      providers={mergedDisplayProviders}
                       size="medium"
                       maxDisplay={4}
                       showNames={false}
@@ -473,14 +477,9 @@ export const HeroSection = memo<HeroSectionProps>(
                   noMargin
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {((series.provider?.provider && series.provider.provider.length > 0) ||
-                    providers) && (
+                  {mergedDisplayProviders.length > 0 && (
                     <ProviderBadges
-                      providers={
-                        series.provider?.provider && series.provider.provider.length > 0
-                          ? series.provider.provider
-                          : (providers ?? undefined)
-                      }
+                      providers={mergedDisplayProviders}
                       size="large"
                       maxDisplay={6}
                       showNames={false}
