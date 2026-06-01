@@ -18,8 +18,13 @@ type KnownProviders = Record<string, KnownProviderData>;
 const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
 /** Normalize provider names so ad-supported tiers map to the standard name */
-const normalizeProviderName = (name: string): string | null => {
+export const normalizeProviderName = (name: string): string | null => {
   const lower = name.toLowerCase();
+  // "X Channel"-Einträge auf TMDB sind kostenpflichtige Add-Ons innerhalb anderer
+  // Plattformen (z.B. "Wow Fiction Amazon Channel" — ein WOW-Channel über Prime).
+  // Diese gehören NICHT zum Standard-Abo des Wirts und werden ignoriert, sonst
+  // gibt es falsche Provider-Treffer ("Amazon Prime Video" obwohl nur ein Channel).
+  if (lower.includes(' channel')) return null;
   if (lower.includes('netflix')) return 'Netflix';
   if (lower.includes('amazon') || lower.includes('prime video')) return 'Amazon Prime Video';
   if (lower.includes('disney')) return 'Disney Plus';
