@@ -10,7 +10,6 @@ import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
   id: number;
-  nmr: number;
   title: string;
   poster: string;
   seasonIndex: number;

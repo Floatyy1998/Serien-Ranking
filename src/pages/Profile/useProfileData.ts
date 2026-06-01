@@ -90,7 +90,7 @@ function computeStats(
   let totalMinutesWatched = 0;
 
   seriesList.forEach((series) => {
-    if (!series || series.nmr === undefined || series.nmr === null) return;
+    if (!series) return;
     const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
     if (series.seasons) {
@@ -119,12 +119,11 @@ function computeStats(
   });
 
   movieList.forEach((movie: MovieType) => {
-    if (movie && movie.nmr !== undefined && movie.nmr !== null) {
-      const rating = parseFloat(calculateOverallRating(movie));
-      const isWatched = !isNaN(rating) && rating > 0;
-      if (isWatched) {
-        totalMinutesWatched += movie.runtime || 120;
-      }
+    if (!movie) return;
+    const rating = parseFloat(calculateOverallRating(movie));
+    const isWatched = !isNaN(rating) && rating > 0;
+    if (isWatched) {
+      totalMinutesWatched += movie.runtime || 120;
     }
   });
 

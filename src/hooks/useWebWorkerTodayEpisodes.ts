@@ -6,7 +6,6 @@ import { useWebWorker } from './useWebWorker';
 /** Episode die heute ausgestrahlt wird oder ausgestrahlt wurde und noch nicht gesehen wurde */
 export interface TodayEpisode {
   seriesId: string;
-  seriesNmr: string;
   seriesTitle: string;
   poster: string;
   seasonNumber: number;

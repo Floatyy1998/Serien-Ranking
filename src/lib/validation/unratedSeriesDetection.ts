@@ -96,7 +96,7 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
     if (hasCurrentlyAiringSeason(series)) continue;
 
     // Skip dismissed (with 30-day cooldown)
-    const seriesKey = String(series.id ?? series.nmr);
+    const seriesKey = String(series.id);
     const dismissEntry = dismissed[seriesKey];
     if (dismissEntry?.dismissed) {
       const dismissedAt = dismissEntry.timestamp || 0;

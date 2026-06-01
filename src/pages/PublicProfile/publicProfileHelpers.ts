@@ -32,7 +32,6 @@ export interface PublicSeason {
 
 export interface PublicItem {
   id: number;
-  nmr: number;
   title: string;
   poster: string | { poster: string };
   rating: Record<string, number> | number;
@@ -43,6 +42,7 @@ export interface PublicItem {
   release_date?: string;
   status?: string;
   production?: { production: boolean };
+  addedAt?: string | number;
 }
 
 export interface PublicFilters {
@@ -242,8 +242,17 @@ const sortItems = (items: PublicItem[], sortBy: string): PublicItem[] => {
         return (a.title || '').localeCompare(b.title || '');
       case 'name-desc':
         return (b.title || '').localeCompare(a.title || '');
-      case 'date-desc':
-        return Number(b.nmr) - Number(a.nmr);
+      case 'date-desc': {
+        const toMs = (v: unknown): number => {
+          if (typeof v === 'number') return v;
+          if (typeof v === 'string') {
+            const t = new Date(v).getTime();
+            return isNaN(t) ? 0 : t;
+          }
+          return 0;
+        };
+        return toMs(b.addedAt) - toMs(a.addedAt);
+      }
       default:
         return ratingB - ratingA;
     }

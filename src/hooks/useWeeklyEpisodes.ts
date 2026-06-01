@@ -25,7 +25,6 @@ export interface WeeklyEpisodeProvider {
 
 export interface WeeklyEpisode {
   seriesId: number;
-  seriesNmr: number;
   seriesTitle: string;
   poster: string;
   seasonNumber: number;
@@ -192,7 +191,6 @@ export const useWeeklyEpisodes = (
 
           const entry: WeeklyEpisode = {
             seriesId: series.id,
-            seriesNmr: series.nmr,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
             seasonNumber: season.seasonNumber + 1,

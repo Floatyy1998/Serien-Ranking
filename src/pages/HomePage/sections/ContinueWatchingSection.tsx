@@ -34,7 +34,6 @@ function formatLastWatched(lastWatchedAt: string): string | null {
 interface ContinueWatchingItem {
   type: 'series';
   id: number;
-  nmr: number;
   title: string;
   poster: string;
   progress: number;
