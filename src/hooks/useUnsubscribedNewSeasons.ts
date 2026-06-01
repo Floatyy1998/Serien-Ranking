@@ -57,9 +57,11 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
     };
   }, [user]);
 
+  // Snapshot von "jetzt" bei Mount — pure für useMemo (vs. impure Date.now()).
+  const [now] = useState(() => Date.now());
+
   const entries = useMemo<UnsubscribedNewSeasonEntry[]>(() => {
     if (!hasAnySubscription) return [];
-    const now = Date.now();
     const result: UnsubscribedNewSeasonEntry[] = [];
     for (const series of seriesWithNewSeasons) {
       const dismissAt = dismissed[String(series.id)];
@@ -73,7 +75,7 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
       result.push({ series, providers });
     }
     return result;
-  }, [seriesWithNewSeasons, activeProviders, hasAnySubscription, dismissed]);
+  }, [seriesWithNewSeasons, activeProviders, hasAnySubscription, dismissed, now]);
 
   const dismiss = async (): Promise<void> => {
     if (!user || entries.length === 0) return;
