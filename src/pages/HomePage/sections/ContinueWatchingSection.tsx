@@ -5,8 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
+import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 
@@ -84,6 +86,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.primary;
+  const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
 
   if (items.length === 0) return null;
@@ -126,11 +129,16 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   poster={item.poster}
                   posterAlt={item.title}
                   accentColor={accentColor}
-                  posterOverlay={
-                    item.provider?.provider?.[0]?.logo ? (
+                  posterOverlay={(() => {
+                    const resolved = resolveProviderOverlay(
+                      getSeriesOverride(item.id),
+                      item.provider?.provider?.[0]?.logo,
+                      item.provider?.provider?.[0]?.name
+                    );
+                    return resolved ? (
                       <img
-                        src={`https://image.tmdb.org/t/p/w92${item.provider.provider[0].logo}`}
-                        alt={item.provider.provider[0].name}
+                        src={resolved.src}
+                        alt={resolved.name}
                         style={{
                           position: 'absolute',
                           bottom: -3,
@@ -143,8 +151,8 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                           border: '1.5px solid rgba(15,20,35,1)',
                         }}
                       />
-                    ) : undefined
-                  }
+                    ) : undefined;
+                  })()}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}
                   dragOffset={dragOffsets[episodeKey] || 0}

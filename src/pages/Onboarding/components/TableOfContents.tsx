@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion';
 
-type Step = 'welcome' | 'series' | 'movies' | 'done';
+type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 
 const ACTS: { key: Step; num: string; label: string; sub: string }[] = [
   { key: 'welcome', num: '01', label: 'Kuration', sub: 'Richtungen wählen' },
   { key: 'series', num: '02', label: 'Serien', sub: 'Deine Favoriten' },
   { key: 'movies', num: '03', label: 'Filme', sub: 'Kino-Highlights' },
-  { key: 'done', num: '04', label: 'Premiere', sub: 'Vorhang auf' },
+  { key: 'subscriptions', num: '04', label: 'Abos', sub: 'Was streamst du' },
+  { key: 'done', num: '05', label: 'Premiere', sub: 'Vorhang auf' },
 ];
 
 interface Props {

@@ -1,20 +1,27 @@
 import {
   ArrowForward,
   AutoAwesome,
+  AutoFixHigh,
   CalendarMonth,
+  EuroSymbol,
   FilterAlt,
   LocalFireDepartment,
   Navigation,
   NewReleases,
+  Palette,
   PauseCircle,
   PlaylistAddCheck,
   Replay,
+  Search,
   SmartDisplay,
   Sort,
+  Subscriptions,
+  SwapHoriz,
   Today,
   TrendingUp,
   Tune,
   ViewQuilt,
+  WarningAmber,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -50,6 +57,82 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'Juni 2026 – Streaming-Abos',
+      date: '2026-06-01',
+      features: [
+        {
+          icon: <Subscriptions />,
+          color: '#00A8E1',
+          title: 'Neue Sektion: Streaming-Abos',
+          description:
+            'Pflege deine aktiven Abos (Netflix, Disney+, Crunchyroll …) mit Monatspreis und Schwellenwert für „ungenutzt". Live-Insights zeigen Total/Monat und wie viel du gerade für nichts zahlst.',
+          link: { label: 'Streaming-Abos öffnen', path: '/subscriptions' },
+        },
+        {
+          icon: <EuroSymbol />,
+          color: '#10b981',
+          title: 'Kosten transparent machen',
+          description:
+            'Pro Anbieter wird gezeigt was du seit Wochen nicht mehr geschaut hast und welche Serien deiner Watchlist nur dort laufen. Markiere ein Abo als „Kündigen wenn ungenutzt" und du bekommst einen klaren Vorschlag.',
+          link: { label: 'Abos verwalten', path: '/subscriptions' },
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: '#a855f7',
+          title: 'Smart-Attribution',
+          description:
+            'Eine Episode läuft auf mehreren Anbietern? Wir ordnen sie automatisch dem Provider zu, den du am häufigsten exklusiv nutzt. So weiß deine Statistik, wofür du wirklich Wert ziehst.',
+          link: { label: 'Insights ansehen', path: '/subscriptions' },
+        },
+        {
+          icon: <SwapHoriz />,
+          color: '#B026FF',
+          title: 'Pro-Serie Override',
+          description:
+            'Rick and Morty schaust du auf HBO Max, nicht Netflix? Tipp im Subscriptions-Diagnose-Panel auf „verschieben" und alle vergangenen & künftigen Watches wandern korrekt zum gewählten Anbieter – inkl. Logo + Brand-Color überall.',
+          link: { label: 'Konflikte auflösen', path: '/subscriptions' },
+        },
+        {
+          icon: <WarningAmber />,
+          color: '#f59e0b',
+          title: 'Watchlist-Lücken erkennen',
+          description:
+            'Auf der Subscriptions-Seite findest du alle Watchlist-Serien, die NUR auf Anbietern laufen, die du gerade nicht abonniert hast. Auf der Homepage erscheint außerdem eine Notification, wenn eine neue Staffel auf einem nicht-abonnierten Provider startet.',
+          link: { label: 'Lücken ansehen', path: '/subscriptions' },
+        },
+        {
+          icon: <Palette />,
+          color: '#E50914',
+          title: 'TV-Kalender mit Brand-Color',
+          description:
+            'Jede Episode-Card im Kalender bekommt links einen Streifen in Provider-Farbe (Netflix-Rot, Disney-Blau, HBO-Lila …). Serien, die nur auf Anbietern laufen die du nicht hast, werden ausgegraut – auf einen Blick erkennbar was läuft.',
+          link: { label: 'Kalender öffnen', path: '/calendar' },
+        },
+        {
+          icon: <FilterAlt />,
+          color: '#00cec9',
+          title: '„Nur meine Abos" Filter',
+          description:
+            'Im Weiterschauen-Tab ein neuer Toggle: zeigt nur Watchlist-Serien, die du auf deinen aktiven Abos schauen kannst. Spart das Hin- und Herklicken zwischen den Streaming-Diensten.',
+          link: { label: 'Weiterschauen öffnen', path: '/watchlist' },
+        },
+        {
+          icon: <Search />,
+          color: '#a78bfa',
+          title: 'Onboarding-Schritt: Abos',
+          description:
+            'Neue User werden im Onboarding direkt nach ihren Streaming-Abos gefragt – damit Empfehlungen, Filter und Kalender vom ersten Login an passen.',
+        },
+        {
+          icon: <AutoAwesome />,
+          color: '#ec4899',
+          title: 'Server-seitiges Catalog-Refresh',
+          description:
+            'Wenn TMDB neue Streaming-Provider für eine Serie hinzufügt (z. B. Chernobyl kommt zu Disney+), wird das jetzt täglich automatisch ins Catalog gespiegelt – kein 30-Tage-Lag mehr.',
+        },
+      ],
+    },
     {
       version: 'März 2026 – QoL Update',
       date: '2026-03-27',

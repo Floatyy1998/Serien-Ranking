@@ -26,6 +26,10 @@ export const normalizeProviderName = (name: string): string | null => {
   // gibt es falsche Provider-Treffer ("Amazon Prime Video" obwohl nur ein Channel).
   if (lower.includes(' channel')) return null;
   if (lower.includes('netflix')) return 'Netflix';
+  // Freevee wurde 2024 von Amazon eingestellt und in Prime Video integriert.
+  // Historische Freevee-Watches remappen wir auf Amazon Prime Video, statt sie
+  // zu verlieren — damit Stats/WatchJourney/Wrapped korrekt bleiben.
+  if (lower.includes('freevee')) return 'Amazon Prime Video';
   if (lower.includes('amazon') || lower.includes('prime video')) return 'Amazon Prime Video';
   if (lower.includes('disney')) return 'Disney Plus';
   if (lower.includes('paramount')) return 'Paramount Plus';

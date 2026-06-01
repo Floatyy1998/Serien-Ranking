@@ -4,12 +4,25 @@
 
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
 import type {
   TopSeriesEntry,
   TopMovieEntry,
   TopGenreEntry,
   TopProviderEntry,
 } from '../../types/Wrapped';
+
+/** Normalisiert + dedupliziert eine rohe Provider-Liste eines Watch-Events.
+ *  Mapped retired Provider (Freevee → Amazon Prime Video) und filtert
+ *  Channel-Add-Ons raus. Damit landen Wrapped/Stats konsistent. */
+function normalizeEventProviders(raw: string[]): string[] {
+  const out = new Set<string>();
+  for (const p of raw) {
+    const n = normalizeProviderName(p);
+    if (n) out.add(n);
+  }
+  return Array.from(out);
+}
 
 export function calculateTopSeries(episodes: EpisodeWatchEvent[], limit = 5): TopSeriesEntry[] {
   const seriesMap = new Map<number, TopSeriesEntry>();
@@ -127,9 +140,9 @@ export function calculateTopProviders(
   // Unterstützt sowohl das neue providers-Array als auch das alte provider-Feld
   // Jeder Provider bekommt die volle Watchzeit (nicht aufgeteilt)
   for (const episode of episodes) {
-    const providers = [
-      ...new Set<string>(episode.providers || (episode.provider ? [episode.provider] : [])),
-    ];
+    const providers = normalizeEventProviders(
+      episode.providers || (episode.provider ? [episode.provider] : [])
+    );
     const runtime = episode.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
     for (const providerName of providers) {
@@ -150,9 +163,9 @@ export function calculateTopProviders(
 
   // Sammle Provider aus Movie-Events
   for (const movie of movies) {
-    const providers = [
-      ...new Set<string>(movie.providers || (movie.provider ? [movie.provider] : [])),
-    ];
+    const providers = normalizeEventProviders(
+      movie.providers || (movie.provider ? [movie.provider] : [])
+    );
     const runtime = movie.runtime || 120;
 
     for (const providerName of providers) {
