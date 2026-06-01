@@ -58,15 +58,12 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
 
   const [config, setConfig] = useState<SubscriptionsConfig>({ providers: {} });
   const [activity, setActivity] = useState<ActivityEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
+  const loading = user ? dataLoading : false;
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     let cancelled = false;
-    setLoading(true);
     const currentYear = new Date().getFullYear();
     Promise.all([
       firebase.database().ref(`users/${user.uid}/subscriptions`).once('value'),
@@ -87,7 +84,7 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
         console.error('[useSubscriptionsData] Failed to load:', err);
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setDataLoading(false);
       });
     return () => {
       cancelled = true;
@@ -96,8 +93,17 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
 
   const unusedThresholdDays = config.unusedThresholdDays ?? DEFAULT_UNUSED_THRESHOLD_DAYS;
 
+  // Snapshot von "jetzt" bei Mount — bleibt für die Session stabil und vermeidet
+  // den react-hooks/purity-Lint (Date.now() im useMemo).
+  const [now] = useState(() => Date.now());
+  // Mitternacht heute (lokale Zeit) — damit "heute geschaut" wirklich kalendarisch
+  // heute heißt, nicht "innerhalb der letzten 24h".
+  const [startOfToday] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  });
+
   const insights = useMemo<ProviderInsight[]>(() => {
-    const now = Date.now();
     const thresholdMs = unusedThresholdDays * DAY_MS;
     const names = Array.from(SUPPORTED_PROVIDERS).sort();
 
@@ -217,8 +223,15 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, 5);
 
-      const daysSinceLastWatch =
-        lastWatchedAt !== null ? Math.max(0, Math.floor((now - lastWatchedAt) / DAY_MS)) : null;
+      // Kalendertag-basiert: "heute" = same Kalender-Day, "gestern" = Vortag, ...
+      // (vs. simpler 24h-Fenster-Vergleich, der gestern Abend → heute morgen
+      // fälschlich als "heute geschaut" zählt).
+      let daysSinceLastWatch: number | null = null;
+      if (lastWatchedAt !== null) {
+        const w = new Date(lastWatchedAt);
+        const startOfWatchDay = new Date(w.getFullYear(), w.getMonth(), w.getDate()).getTime();
+        daysSinceLastWatch = Math.max(0, Math.round((startOfToday - startOfWatchDay) / DAY_MS));
+      }
 
       const isUnused = active && recentCount === 0;
 
@@ -235,7 +248,7 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
         recentWatches,
       };
     });
-  }, [config, activity, unusedThresholdDays, allSeriesList]);
+  }, [config, activity, unusedThresholdDays, allSeriesList, now, startOfToday]);
 
   const activeInsights = useMemo(() => insights.filter((i) => i.active), [insights]);
   const unusedInsights = useMemo(
