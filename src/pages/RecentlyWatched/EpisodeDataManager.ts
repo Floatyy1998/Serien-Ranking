@@ -15,7 +15,6 @@ export interface WatchedEpisode {
   seriesId: number;
   seriesName: string;
   seriesPoster: string;
-  seriesNmr: number;
   seasonIndex: number;
   episodeIndex: number;
   episodeName: string;
@@ -173,7 +172,6 @@ export class EpisodeDataManager {
               seriesId: series.id,
               seriesName: series.title || '',
               seriesPoster: this.getImageUrl(series.poster),
-              seriesNmr: series.nmr,
               seasonIndex: seasonIdx,
               episodeIndex,
               episodeName: episode.name || `Episode ${episodeIndex + 1}`,

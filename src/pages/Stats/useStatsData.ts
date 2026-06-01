@@ -148,7 +148,7 @@ export const useStatsData = (): StatsData => {
   return useMemo(() => {
     if (!user?.uid) return EMPTY_STATS;
 
-    const totalSeries = seriesList.filter((s) => s && s.nmr !== undefined && s.nmr !== null).length;
+    const totalSeries = seriesList.length;
 
     // Progress: only non-hidden series, only started ones
     let watchedEpisodes = 0;
@@ -156,7 +156,7 @@ export const useStatsData = (): StatsData => {
     let completedSeries = 0;
 
     seriesList.forEach((series) => {
-      if (!series || series.nmr === undefined || series.nmr === null) return;
+      if (!series) return;
 
       let seriesTotal = 0;
       let seriesWatched = 0;
@@ -190,7 +190,7 @@ export const useStatsData = (): StatsData => {
     // Watch time: ALL series including hidden (you watched those episodes)
     let seriesMinutes = 0;
     allSeriesList.forEach((series) => {
-      if (!series || series.nmr === undefined || series.nmr === null) return;
+      if (!series) return;
       const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons?.forEach((season) => {
@@ -211,12 +211,12 @@ export const useStatsData = (): StatsData => {
     });
 
     // Movies
-    const totalMovies = movieList.filter((m) => m && m.nmr !== undefined && m.nmr !== null).length;
+    const totalMovies = movieList.length;
     let watchedMovies = 0;
     let movieMinutes = 0;
 
     movieList.forEach((movie: MovieType) => {
-      if (!movie || movie.nmr === undefined || movie.nmr === null) return;
+      if (!movie) return;
       const rating = parseFloat(calculateOverallRating(movie));
       if (!isNaN(rating) && rating > 0) {
         watchedMovies++;
@@ -226,7 +226,7 @@ export const useStatsData = (): StatsData => {
 
     // Ratings
     const seriesWithRating = seriesList.filter((s: Series) => {
-      if (!s || s.nmr === undefined) return false;
+      if (!s) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
     });
@@ -238,7 +238,7 @@ export const useStatsData = (): StatsData => {
         : 0;
 
     const moviesWithRating = movieList.filter((m: MovieType) => {
-      if (!m || m.nmr === undefined) return false;
+      if (!m) return false;
       const rating = parseFloat(calculateOverallRating(m));
       return !isNaN(rating) && rating > 0;
     });
@@ -253,7 +253,7 @@ export const useStatsData = (): StatsData => {
     const genreCounts: Record<string, number> = {};
     ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
-        if (!item || item.nmr === undefined) return;
+        if (!item) return;
         let genres: string[] = [];
         if (item.genre?.genres && Array.isArray(item.genre.genres)) {
           genres = item.genre.genres;
@@ -279,7 +279,7 @@ export const useStatsData = (): StatsData => {
     const providerCounts: Record<string, number> = {};
     ([...seriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
-        if (!item || item.nmr === undefined) return;
+        if (!item) return;
         if (item.provider?.provider && Array.isArray(item.provider.provider)) {
           item.provider.provider.forEach((p: { id: number; logo: string; name: string }) => {
             const name = p.name;

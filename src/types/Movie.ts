@@ -1,5 +1,4 @@
 export interface Movie {
-  nmr: number;
   begründung: string;
   beschreibung?: string;
   genre: {

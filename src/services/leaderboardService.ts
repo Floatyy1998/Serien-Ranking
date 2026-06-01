@@ -87,22 +87,52 @@ export async function updateLeaderboardStats(
     const today = getTodayStr();
     const yesterday = getYesterdayStr();
 
-    // Monat-Rollover: Alte Stats sichern, dann zurücksetzen
+    // Profil-Daten frueh laden, damit sie in den Archive-Snapshot und in
+    // leaderboardStats geschrieben werden koennen (vorher wurden displayName/
+    // username erst spaeter geladen, photoURL gar nicht).
+    let displayName = 'Unbekannt';
+    let username: string | null = null;
+    let photoURL: string | null = null;
+    try {
+      const [dnameSnap, unameSnap, photoSnap] = await Promise.all([
+        firebase.database().ref(`users/${userId}/displayName`).once('value'),
+        firebase.database().ref(`users/${userId}/username`).once('value'),
+        firebase.database().ref(`users/${userId}/photoURL`).once('value'),
+      ]);
+      displayName = toDisplayName(dnameSnap.val(), unameSnap.val());
+      const uname = unameSnap.val();
+      username = typeof uname === 'string' && uname.trim().length > 0 ? uname : null;
+      const photo = photoSnap.val();
+      photoURL = typeof photo === 'string' && photo.length > 0 ? photo : null;
+    } catch {
+      // defaults bleiben
+    }
+
+    // Schreib-Pfade fuer Multi-Path-Update sammeln, damit Rollover + Reset
+    // atomar passieren (vorher war der History-Write fire-and-forget und
+    // konnte vor dem Reset verloren gehen → User fehlte beim Archivieren).
+    const writes: Record<string, unknown> = {};
+
     const isNewMonth = current.monthKey && current.monthKey !== currentMonth;
     if (isNewMonth) {
-      // Alte Monats-Daten als Snapshot speichern, damit sie archiviert werden können
       if (current.watchtimeThisMonth > 0 || current.episodesThisMonth > 0) {
-        firebase
-          .database()
-          .ref(`users/${userId}/leaderboard/history/${current.monthKey}`)
-          .set({
-            episodesThisMonth: current.episodesThisMonth,
-            moviesThisMonth: current.moviesThisMonth,
-            watchtimeThisMonth: current.watchtimeThisMonth,
-            streakThisMonth: current.streakThisMonth,
-            streakAllTime: current.streakAllTime,
-          })
-          .catch(() => {});
+        const historySnapshot = {
+          episodesThisMonth: current.episodesThisMonth,
+          moviesThisMonth: current.moviesThisMonth,
+          watchtimeThisMonth: current.watchtimeThisMonth,
+          streakThisMonth: current.streakThisMonth,
+          streakAllTime: current.streakAllTime,
+        };
+        writes[`users/${userId}/leaderboard/history/${current.monthKey}`] = historySnapshot;
+        // Oeffentlicher Archiv-Knoten: ueberlebt den Reset von leaderboardStats
+        // und ist fuer alle auth User lesbar, damit jeder User checkAndArchiveMonth
+        // mit vollstaendigen Daten ausfuehren kann.
+        writes[`leaderboardArchive/${current.monthKey}/${userId}`] = {
+          ...historySnapshot,
+          displayName,
+          username,
+          photoURL,
+        };
       }
       current.episodesThisMonth = 0;
       current.moviesThisMonth = 0;
@@ -148,32 +178,17 @@ export async function updateLeaderboardStats(
 
     current.lastUpdated = Date.now();
 
-    // Atomar: User-Stats + oeffentliche Kopie in einem Write.
-    // Profile-Daten werden aus dem lokalen Cache geladen (AuthContext setzt
-    // displayName/username/photoURL bereits beim Login).
     const publicEntry: Record<string, unknown> = {
       ...current,
+      displayName,
+      username,
+      photoURL,
     };
-    try {
-      const profileSnap = await firebase
-        .database()
-        .ref(`users/${userId}/displayName`)
-        .once('value');
-      const usernameSnap = await firebase.database().ref(`users/${userId}/username`).once('value');
-      publicEntry.displayName = toDisplayName(profileSnap.val(), usernameSnap.val());
-      publicEntry.username = usernameSnap.val() || null;
-    } catch {
-      publicEntry.displayName = 'Unbekannt';
-    }
 
-    // Ein einziger Multi-Path Write statt 2 separate Writes
-    await firebase
-      .database()
-      .ref()
-      .update({
-        [`users/${userId}/leaderboard/stats`]: current,
-        [`leaderboardStats/${userId}`]: publicEntry,
-      });
+    writes[`users/${userId}/leaderboard/stats`] = current;
+    writes[`leaderboardStats/${userId}`] = publicEntry;
+
+    await firebase.database().ref().update(writes);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Leaderboard] Failed to update stats: ${message}`);
@@ -412,65 +427,92 @@ const MONTH_NAMES_SERVICE: Record<string, string> = {
   '12': 'Dezember',
 };
 
+type MonthEntry = { uid: string; displayName: string; photoURL?: string; score: number };
+
 /**
- * Prüft bis zu 12 vergangene Monate und archiviert alle, die noch nicht archiviert sind.
- * Datenquellen: leaderboardStats (falls monthKey noch passt) + leaderboardHistory (Snapshots).
+ * Sammelt die maximale Watchtime pro User fuer einen Monat aus allen
+ * verfuegbaren Quellen. Reihenfolge der Quellen ist egal — es zaehlt der
+ * groesste gefundene Wert, damit auch unvollstaendige Schreiboperationen
+ * (z. B. abgebrochenes Rollover) nicht zum Verlust fuehren.
+ *
+ * Quellen:
+ *  1) /leaderboardArchive/{monthKey} (oeffentlich, komplett — primaere Quelle)
+ *  2) /users/{uid}/leaderboard/history/{monthKey} (privater Snapshot)
+ *  3) /leaderboardStats/{uid} (nur falls dessen monthKey noch zum gefragten Monat passt)
  */
-export async function checkAndArchiveMonth(): Promise<void> {
-  const pastMonths = getPastMonthKeys(12);
+async function collectMonthEntries(
+  monthKey: string,
+  allStats: Record<string, Record<string, unknown>>
+): Promise<MonthEntry[]> {
+  const archiveSnap = await firebase.database().ref(`leaderboardArchive/${monthKey}`).once('value');
+  const archive = (archiveSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
 
-  // Prüfe welche Monate bereits archiviert sind
-  const trophiesSnap = await firebase.database().ref('leaderboardTrophies').once('value');
-  const existingTrophies = (trophiesSnap.val() as Record<string, unknown>) || {};
-  const missingMonths = pastMonths.filter((m) => !existingTrophies[m]);
-  if (missingMonths.length === 0) return;
+  const candidateUids = new Set<string>([...Object.keys(archive), ...Object.keys(allStats)]);
+  const results: MonthEntry[] = [];
 
-  // Leaderboard-Stats aus öffentlichem Knoten laden (statt /users komplett)
-  const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
-  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
-  const uids = Object.keys(allStats);
+  await Promise.all(
+    Array.from(candidateUids).map(async (uid) => {
+      try {
+        const archiveEntry = archive[uid];
+        const statsEntry = allStats[uid];
 
-  // Für jeden fehlenden Monat archivieren
-  for (const monthKey of missingMonths) {
-    const entryList: { uid: string; displayName: string; photoURL?: string; score: number }[] = [];
+        const archiveWatchtime = (archiveEntry?.watchtimeThisMonth as number) || 0;
+        const statsWatchtime =
+          statsEntry && (statsEntry.monthKey as string) === monthKey
+            ? (statsEntry.watchtimeThisMonth as number) || 0
+            : 0;
 
-    await Promise.all(
-      uids.map(async (uid) => {
+        let historyWatchtime = 0;
         try {
-          // Erst leaderboardHistory prüfen (Snapshot vom Monats-Rollover)
           const histSnap = await firebase
             .database()
             .ref(`users/${uid}/leaderboard/history/${monthKey}`)
             .once('value');
           const hist = histSnap.val() as Record<string, number> | null;
-          if (hist && hist.watchtimeThisMonth > 0) {
-            const entry = allStats[uid];
-            entryList.push({
-              uid,
-              displayName: toDisplayName(entry?.displayName, entry?.username),
-              photoURL: (entry?.photoURL as string) || undefined,
-              score: hist.watchtimeThisMonth,
-            });
-            return;
-          }
-
-          // Fallback: aktuelle leaderboardStats (falls Monat noch nicht gewechselt)
-          const statsEntry = allStats[uid];
-          if (!statsEntry || (statsEntry.monthKey as string) !== monthKey) return;
-          const watchtime = (statsEntry.watchtimeThisMonth as number) || 0;
-          if (watchtime <= 0) return;
-
-          entryList.push({
-            uid,
-            displayName: toDisplayName(statsEntry.displayName, statsEntry.username),
-            photoURL: (statsEntry.photoURL as string) || undefined,
-            score: watchtime,
-          });
+          historyWatchtime = hist?.watchtimeThisMonth ?? 0;
         } catch {
-          // Skip user
+          // History nicht lesbar — andere Quellen reichen ggf.
         }
-      })
-    );
+
+        const watchtime = Math.max(archiveWatchtime, statsWatchtime, historyWatchtime);
+        if (watchtime <= 0) return;
+
+        const displayName = toDisplayName(
+          archiveEntry?.displayName,
+          archiveEntry?.username,
+          statsEntry?.displayName,
+          statsEntry?.username
+        );
+        const photoURL =
+          (archiveEntry?.photoURL as string) || (statsEntry?.photoURL as string) || undefined;
+
+        results.push({ uid, displayName, photoURL, score: watchtime });
+      } catch {
+        // Skip user
+      }
+    })
+  );
+
+  return results;
+}
+
+/**
+ * Prüft bis zu 12 vergangene Monate und archiviert alle, die noch nicht archiviert sind.
+ * Datenquellen siehe collectMonthEntries.
+ */
+export async function checkAndArchiveMonth(): Promise<void> {
+  const pastMonths = getPastMonthKeys(12);
+
+  const trophiesSnap = await firebase.database().ref('leaderboardTrophies').once('value');
+  const existingTrophies = (trophiesSnap.val() as Record<string, unknown>) || {};
+  const missingMonths = pastMonths.filter((m) => !existingTrophies[m]);
+  if (missingMonths.length === 0) return;
+
+  const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
+  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
+
+  for (const monthKey of missingMonths) {
+    const entryList = await collectMonthEntries(monthKey, allStats);
 
     if (entryList.length === 0) continue;
 
@@ -537,38 +579,8 @@ export async function checkAndArchiveMonth(): Promise<void> {
 export async function forceRebuildArchive(monthKey: string): Promise<void> {
   const statsSnap = await firebase.database().ref('leaderboardStats').once('value');
   const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
-  const uids = Object.keys(allStats);
 
-  const entryList: { uid: string; displayName: string; photoURL?: string; score: number }[] = [];
-
-  await Promise.all(
-    uids.map(async (uid) => {
-      try {
-        const histSnap = await firebase
-          .database()
-          .ref(`users/${uid}/leaderboard/history/${monthKey}`)
-          .once('value');
-        const hist = histSnap.val() as Record<string, number> | null;
-        const histWatchtime = hist?.watchtimeThisMonth ?? 0;
-
-        const statsEntry = allStats[uid];
-        const statsWatchtime =
-          statsEntry?.monthKey === monthKey ? (statsEntry.watchtimeThisMonth as number) || 0 : 0;
-
-        const watchtime = Math.max(histWatchtime, statsWatchtime);
-        if (watchtime <= 0) return;
-
-        entryList.push({
-          uid,
-          displayName: toDisplayName(statsEntry?.displayName, statsEntry?.username),
-          photoURL: (statsEntry?.photoURL as string) || undefined,
-          score: watchtime,
-        });
-      } catch {
-        // Skip user
-      }
-    })
-  );
+  const entryList = await collectMonthEntries(monthKey, allStats);
 
   if (entryList.length === 0) return;
 

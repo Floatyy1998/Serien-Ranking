@@ -184,7 +184,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
       setCompletingContinueEpisodes((prev) => new Set(prev).add(episodeKey));
       scheduleEpisodeHide(episodeKey, setCompletingContinueEpisodes, setHiddenContinueEpisodes);
 
-      if (!user || item.nmr === undefined) return;
+      if (!user) return;
 
       const label = `S${item.nextEpisode.seasonNumber}E${item.nextEpisode.episodeNumber}`;
 

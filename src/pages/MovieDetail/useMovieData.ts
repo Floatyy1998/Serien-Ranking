@@ -169,7 +169,6 @@ export const useMovieData = () => {
           if (data.id) {
             const movie: Movie = {
               id: data.id,
-              nmr: 0,
               title: bestTitle,
               poster: { poster: data.poster_path },
               genre: {

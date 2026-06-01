@@ -59,7 +59,7 @@ export function checkSeriesIntegrity(
         bp,
         'Serie ohne Name — weder name noch title vorhanden',
         Object.keys(s),
-        { id: s.id, nmr: s.nmr }
+        { id: s.id }
       );
     if (s.id == null)
       add(
@@ -71,7 +71,7 @@ export function checkSeriesIntegrity(
         bp,
         'Serie ohne ID — id fehlt',
         Object.keys(s),
-        { name: s.name, title: s.title, nmr: s.nmr }
+        { name: s.name, title: s.title }
       );
 
     const genres = s.genre?.genres || [];

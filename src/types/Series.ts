@@ -10,7 +10,6 @@ export interface Series {
   imdb: {
     imdb_id: string;
   };
-  nmr: number;
   addedAt?: string | number;
   origin_country: string[];
   original_language: string;

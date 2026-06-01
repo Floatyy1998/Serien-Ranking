@@ -36,7 +36,6 @@ export interface FriendSeason {
 
 export interface FriendItem {
   id: number;
-  nmr: number;
   title: string;
   poster: string | { poster: string };
   rating: Record<string, number> | number;
@@ -47,6 +46,7 @@ export interface FriendItem {
   release_date?: string;
   status?: string;
   production?: { production: boolean };
+  addedAt?: string | number;
 }
 
 export interface Filters {
@@ -192,8 +192,17 @@ const sortItems = (items: FriendItem[], sortBy: string): FriendItem[] => {
         return (a.title || '').localeCompare(b.title || '');
       case 'name-desc':
         return (b.title || '').localeCompare(a.title || '');
-      case 'date-desc':
-        return Number(b.nmr) - Number(a.nmr);
+      case 'date-desc': {
+        const toMs = (v: unknown): number => {
+          if (typeof v === 'number') return v;
+          if (typeof v === 'string') {
+            const t = new Date(v).getTime();
+            return isNaN(t) ? 0 : t;
+          }
+          return 0;
+        };
+        return toMs(b.addedAt) - toMs(a.addedAt);
+      }
       default:
         return ratingB - ratingA;
     }
@@ -309,7 +318,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
           const catalog = catalogSeries[tmdbId] as Record<string, unknown> | undefined;
           seriesList.push({
             id: parseInt(tmdbId),
-            nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
             title: (catalog?.title as string) || 'Unknown',
             poster: catalog?.poster ? { poster: catalog.poster as string } : undefined,
             rating: ref.rating as Record<string, number>,
@@ -322,6 +330,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
               catalog?.production != null
                 ? { production: catalog.production as boolean }
                 : undefined,
+            addedAt: ref.addedAt as string | number | undefined,
           } as FriendItem);
         }
         setFriendSeries(seriesList);
@@ -338,7 +347,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
           const catalog = catalogMovies[tmdbId] as Record<string, unknown> | undefined;
           moviesList.push({
             id: parseInt(tmdbId),
-            nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
             title: (catalog?.title as string) || 'Unknown',
             poster: catalog?.poster ? { poster: catalog.poster as string } : undefined,
             rating: ref.rating as Record<string, number>,
@@ -351,6 +359,7 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
               catalog?.production != null
                 ? { production: catalog.production as boolean }
                 : undefined,
+            addedAt: ref.addedAt as string | number | undefined,
           } as FriendItem);
         }
         setFriendMovies(moviesList);
