@@ -142,7 +142,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             // Transform TMDB data to match our Series type
             const series: Series = {
               id: data.id,
-              nmr: 0, // No nmr for non-user series
               title: bestName,
               name: bestName,
               poster: { poster: data.poster_path },

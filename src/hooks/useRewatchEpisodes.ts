@@ -14,7 +14,6 @@ import type { Series } from '../types/Series';
 
 export interface RewatchItem {
   id: number;
-  nmr: number;
   title: string;
   poster: string;
   seasonIndex: number;
@@ -64,7 +63,6 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
 
       items.push({
         id: series.id,
-        nmr: series.nmr,
         title: series.title,
         poster: getImageUrl(series.poster),
         seasonIndex,

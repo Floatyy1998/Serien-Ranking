@@ -62,7 +62,6 @@ interface WorkerSeason {
 
 interface WorkerSeries {
   id: number;
-  nmr?: number;
   title: string;
   watchlist?: boolean;
   hidden?: boolean;
@@ -76,13 +75,11 @@ interface WorkerSeries {
 
 interface WorkerMovie {
   id: number;
-  nmr?: number;
   rating?: Record<string, number>;
 }
 
 interface WorkerProcessedEpisode {
   seriesId: number;
-  seriesNmr: number | undefined;
   seriesTitle: string;
   poster: string;
   seasonNumber: number;
@@ -139,8 +136,7 @@ function calculateStats(data: {
   // Process series in worker thread
   for (let i = 0; i < seriesList.length; i++) {
     const series = seriesList[i];
-    // Allow nmr: 0 as valid
-    if (!series || series.nmr === undefined || series.nmr === null) continue;
+    if (!series) continue;
 
     totalSeries++;
     if (series.watchlist === true) watchlistCount++;
@@ -205,8 +201,7 @@ function calculateStats(data: {
 
   for (let i = 0; i < movieList.length; i++) {
     const movie = movieList[i];
-    // Allow nmr: 0 as valid
-    if (!movie || movie.nmr === undefined || movie.nmr === null) continue;
+    if (!movie) continue;
 
     totalMovies++;
 
@@ -321,7 +316,6 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
           const isInProduction = series.production?.production !== false;
           episodes.push({
             seriesId: series.id,
-            seriesNmr: series.nmr,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
             seasonNumber: seasonNum,

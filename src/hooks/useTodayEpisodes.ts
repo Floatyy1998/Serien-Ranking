@@ -6,7 +6,6 @@ import { getImageUrl } from '../utils/imageUrl';
 
 interface TodayEpisode {
   seriesId: number;
-  seriesNmr: number;
   seriesTitle: string;
   poster: string;
   seasonNumber: number;
@@ -78,7 +77,6 @@ export const useTodayEpisodes = () => {
 
             episodes.push({
               seriesId: series.id,
-              seriesNmr: series.nmr,
               seriesTitle: series.title,
               poster: getImageUrl(series.poster),
               seasonNumber: season.seasonNumber || 1,

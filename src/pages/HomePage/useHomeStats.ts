@@ -39,21 +39,16 @@ export function useHomeStats() {
       };
     }
     // Series stats - total series count includes hidden (you own them all)
-    const totalSeries = allSeriesList.filter(
-      (s) => s && s.nmr !== undefined && s.nmr !== null
-    ).length;
+    const totalSeries = allSeriesList.length;
 
     // Episode progress ring: vom Worker (non-hidden, mind. 1 Folge gesehen = begonnen)
     const watchedEpisodes = workerStats.watchedEpisodesActive;
     const totalEpisodes = workerStats.totalEpisodes;
 
-    // Movies stats - only count valid movies with ratings
-    // Allow nmr: 0 as valid
-    const totalMovies = movieList.filter((m) => m && m.nmr !== undefined && m.nmr !== null).length;
+    // Movies stats - only count movies with ratings
+    const totalMovies = movieList.length;
     const watchedMovies = movieList.filter((movie: MovieType) => {
-      // Allow nmr: 0 as valid
-      if (!movie || movie.nmr === undefined || movie.nmr === null) return false;
-      // A movie is watched if it has a rating > 0
+      if (!movie) return false;
       const rating = parseFloat(calculateOverallRating(movie));
       return !isNaN(rating) && rating > 0;
     }).length;
@@ -64,8 +59,7 @@ export function useHomeStats() {
 
     // Series watch time
     allSeriesList.forEach((series) => {
-      // Allow nmr: 0 as valid (only skip if undefined/null)
-      if (!series || series.nmr === undefined || series.nmr === null) return;
+      if (!series) return;
       const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
       series.seasons?.forEach((season) => {
@@ -81,12 +75,11 @@ export function useHomeStats() {
 
     // Movie watch time
     movieList.forEach((movie: MovieType) => {
-      if (movie && movie.nmr !== undefined && movie.nmr !== null) {
-        const rating = parseFloat(calculateOverallRating(movie));
-        const isWatched = !isNaN(rating) && rating > 0;
-        if (isWatched) {
-          moviesMinutesWatched += movie.runtime || 120;
-        }
+      if (!movie) return;
+      const rating = parseFloat(calculateOverallRating(movie));
+      const isWatched = !isNaN(rating) && rating > 0;
+      if (isWatched) {
+        moviesMinutesWatched += movie.runtime || 120;
       }
     });
 
@@ -100,7 +93,7 @@ export function useHomeStats() {
 
     // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
     const seriesWithRating = allSeriesList.filter((s: Series) => {
-      if (!s || s.nmr === undefined || s.nmr === null) return false;
+      if (!s) return false;
       const rating = parseFloat(calculateOverallRating(s));
       return !isNaN(rating) && rating > 0;
     });
@@ -112,7 +105,7 @@ export function useHomeStats() {
         : 0;
 
     const moviesWithRating = movieList.filter((m: MovieType) => {
-      if (!m || m.nmr === undefined || m.nmr === null) return false;
+      if (!m) return false;
       const rating = parseFloat(calculateOverallRating(m));
       return !isNaN(rating) && rating > 0;
     });
@@ -127,7 +120,7 @@ export function useHomeStats() {
     const genreCounts: Record<string, number> = {};
     ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
-        if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
+        if (!item) return;
 
         // Handle different genre structures
         let genres: string[] = [];
@@ -160,7 +153,7 @@ export function useHomeStats() {
     const providerCounts: Record<string, number> = {};
     ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
-        if (!item || item.nmr === undefined || item.nmr === null) return; // Only count valid items
+        if (!item) return;
 
         // Check the actual provider structure used in the app
         let providers: { id: number; logo: string; name: string }[] = [];
@@ -229,8 +222,7 @@ export function useHomeStats() {
       topProvider,
       lastWeekWatched,
       completedSeries: allSeriesList.filter((s) => {
-        if (!s || s.nmr === undefined || s.nmr === null || !s.seasons || s.seasons.length === 0)
-          return false;
+        if (!s || !s.seasons || s.seasons.length === 0) return false;
 
         // Only count aired episodes for completion
         let totalAired = 0;

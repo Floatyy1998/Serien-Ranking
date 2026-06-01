@@ -99,7 +99,6 @@ export function usePublicProfileData() {
             const cat = catalogSeries[tmdbId] as Record<string, unknown> | undefined;
             return {
               id: parseInt(tmdbId),
-              nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
               title: cat?.title as string,
               poster: cat?.poster ? { poster: cat.poster as string } : { poster: '' },
               rating: (ref.rating || {}) as Record<string, number>,
@@ -112,6 +111,7 @@ export function usePublicProfileData() {
               status: cat?.status as string | undefined,
               production:
                 cat?.production != null ? { production: cat.production as boolean } : undefined,
+              addedAt: ref.addedAt as string | number | undefined,
             } as PublicItem;
           });
           setProfileSeries(seriesArray);
@@ -129,7 +129,6 @@ export function usePublicProfileData() {
             const cat = catalogMovies[tmdbId] as Record<string, unknown> | undefined;
             return {
               id: parseInt(tmdbId),
-              nmr: (ref.legacyNmr as number) || parseInt(tmdbId),
               title: cat?.title as string,
               poster: cat?.poster ? { poster: cat.poster as string } : { poster: '' },
               rating: (ref.rating || {}) as Record<string, number>,
@@ -142,6 +141,7 @@ export function usePublicProfileData() {
               status: cat?.status as string | undefined,
               production:
                 cat?.production != null ? { production: cat.production as boolean } : undefined,
+              addedAt: ref.addedAt as string | number | undefined,
             } as PublicItem;
           });
           setProfileMovies(moviesArray);

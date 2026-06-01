@@ -11,7 +11,6 @@ export const useContinueWatching = () => {
   interface ContinueWatchingItem {
     type: 'series';
     id: number;
-    nmr: number;
     title: string;
     poster: string;
     progress: number;
@@ -59,7 +58,6 @@ export const useContinueWatching = () => {
               items.push({
                 type: 'series',
                 id: series.id,
-                nmr: series.nmr,
                 title: series.title,
                 poster: getImageUrl(series.poster),
                 progress,

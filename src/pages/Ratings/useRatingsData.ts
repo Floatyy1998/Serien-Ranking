@@ -295,7 +295,6 @@ export const useRatingsData = (): UseRatingsDataResult => {
         case 'name-desc':
           return (b.s.title || '').localeCompare(a.s.title || '');
         case 'date-desc': {
-          // Neue Serien haben kein legacy-nmr mehr, dafuer addedAt. Fallback auf nmr.
           const toMs = (v: unknown): number => {
             if (typeof v === 'number') return v;
             if (typeof v === 'string') {
@@ -304,12 +303,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
             }
             return 0;
           };
-          const aTs = toMs(a.s.addedAt);
-          const bTs = toMs(b.s.addedAt);
-          if (aTs && bTs) return bTs - aTs;
-          if (bTs) return 1;
-          if (aTs) return -1;
-          return Number(b.s.nmr) - Number(a.s.nmr);
+          return toMs(b.s.addedAt) - toMs(a.s.addedAt);
         }
         default:
           return b.r - a.r;
@@ -361,8 +355,17 @@ export const useRatingsData = (): UseRatingsDataResult => {
           return (a.m.title || '').localeCompare(b.m.title || '');
         case 'name-desc':
           return (b.m.title || '').localeCompare(a.m.title || '');
-        case 'date-desc':
-          return Number(b.m.nmr) - Number(a.m.nmr);
+        case 'date-desc': {
+          const toMs = (v: unknown): number => {
+            if (typeof v === 'number') return v;
+            if (typeof v === 'string') {
+              const t = new Date(v).getTime();
+              return isNaN(t) ? 0 : t;
+            }
+            return 0;
+          };
+          return toMs(b.m.addedAt) - toMs(a.m.addedAt);
+        }
         default:
           return b.r - a.r;
       }

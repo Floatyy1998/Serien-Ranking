@@ -11,7 +11,6 @@ import type { Series } from '../../../types/Series';
 
 interface TodayEpisode {
   seriesId: string;
-  seriesNmr: string;
   seriesTitle: string;
   poster: string;
   seasonNumber: number;
