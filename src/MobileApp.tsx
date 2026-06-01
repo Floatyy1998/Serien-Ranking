@@ -61,6 +61,7 @@ import {
   MangaDiscoverPage,
   MangaReadJourneyPage,
   MangaReadingListPage,
+  SubscriptionsPage,
   preloadRoutes,
 } from './lazyRoutes';
 
@@ -420,6 +421,14 @@ export const MobileApp = () => {
               element={
                 <Layout>
                   <CalendarPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/subscriptions"
+              element={
+                <Layout hideNav>
+                  <SubscriptionsPage />
                 </Layout>
               }
             />

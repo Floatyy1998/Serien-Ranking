@@ -219,6 +219,12 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     >
       {displayProviders.map((provider, index) => {
         const logoPath = provider.logo_path || provider.logo;
+        // Catalog speichert vollständige URLs, TMDB-Live nur Pfade. Beides unterstützen.
+        const logoSrc = logoPath
+          ? logoPath.startsWith('http')
+            ? logoPath
+            : `https://image.tmdb.org/t/p/w500${logoPath}`
+          : null;
         const providerName = provider.provider_name || provider.name || 'Unknown';
         const providerId = provider.provider_id || provider.id || index;
 
@@ -229,9 +235,9 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
         const badgeContent = (
           <>
-            {logoPath ? (
+            {logoSrc ? (
               <img
-                src={`https://image.tmdb.org/t/p/w500${logoPath}`}
+                src={logoSrc}
                 alt={providerName}
                 loading="lazy"
                 decoding="async"
@@ -251,7 +257,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
             <div
               style={{
-                display: logoPath ? 'none' : 'flex',
+                display: logoSrc ? 'none' : 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 width: '100%',
