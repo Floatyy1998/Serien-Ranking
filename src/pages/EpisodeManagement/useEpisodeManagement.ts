@@ -11,6 +11,7 @@ import { petService } from '../../services/petService';
 import { WatchActivityService } from '../../services/watchActivityService';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
+import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { showToast, showUndoToast } from '../../lib/toast';
 
 type Episode = Series['seasons'][number]['episodes'][number];
@@ -185,12 +186,15 @@ export const useEpisodeManagement = () => {
       const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
       const db = firebase.database();
 
+      const willAutoAddToWatchlist = newWatched && shouldAutoEnableWatchlist(series);
+
       if (newWatched) {
         const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {
           [`${epPath}/w`]: 1,
           [`${epPath}/c`]: newWatchCount,
           [`${epPath}/l`]: nowUnix,
+          ...autoWatchlistUpdates(user.uid, series),
           [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         };
         if (!episode.firstWatchedAt) {
@@ -274,6 +278,11 @@ export const useEpisodeManagement = () => {
               series.genre?.genres,
               [...new Set(series.provider?.provider?.map((p) => p.name))]
             );
+            if (willAutoAddToWatchlist) {
+              const { logWatchlistAdded } =
+                await import('../../features/badges/minimalActivityLogger');
+              await logWatchlistAdded(user.uid, series.title, series.id);
+            }
           } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
             const { updateEpisodeCounters } =
               await import('../../features/badges/minimalActivityLogger');
@@ -380,12 +389,15 @@ export const useEpisodeManagement = () => {
 
     const season = series.seasons[seasonIndex];
     const allWatched = season.episodes?.every((ep) => ep.watched);
+    const willAutoAddToWatchlist = mode !== 'unwatch' && shouldAutoEnableWatchlist(series);
 
     try {
       const nowUnix = Math.floor(Date.now() / 1000);
       const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
       const db = firebase.database();
-      const updates: Record<string, unknown> = {};
+      const updates: Record<string, unknown> = {
+        ...(willAutoAddToWatchlist ? autoWatchlistUpdates(user.uid, series) : {}),
+      };
 
       (season.episodes ?? []).forEach((ep) => {
         if (!ep.id) return;
@@ -475,6 +487,11 @@ export const useEpisodeManagement = () => {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }
       });
+
+      if (willAutoAddToWatchlist) {
+        const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
+        await logWatchlistAdded(user.uid, series.title, series.id);
+      }
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
       showToast('Fehler beim Speichern', 3000, 'error');

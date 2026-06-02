@@ -234,12 +234,20 @@
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-left: 3px solid transparent;
+  border-left: 4px solid transparent;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition:
     background 0.2s ease,
     transform 0.2s ease;
+}
+
+/* Brand-Strip-Overlay nur auf Desktop nötig (dort hat .cal-ep `border: none`
+   und `overflow: hidden`, sodass die Inline-borderLeftColor nichts bringt).
+   Auf Mobile reicht die existierende border-left, der Overlay wäre redundant
+   und würde bei abgerundeten Ecken seltsam aussehen. */
+.cal-ep-brand-strip {
+  display: none;
 }
 
 .cal-ep:hover {
@@ -571,6 +579,20 @@
     transition:
       transform 0.2s,
       box-shadow 0.2s;
+  }
+
+  /* Brand-Strip ist auf Desktop nötig (overflow: hidden + border:none) */
+  .cal-ep-brand-strip {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    z-index: 4;
+    pointer-events: none;
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
   }
 
   .cal-ep:hover {
