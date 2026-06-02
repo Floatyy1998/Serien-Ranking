@@ -14,8 +14,14 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode, SeriesSeason } from './types';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { trackSeriesAdded, trackSeriesDeleted } from '../../firebase/analytics';
+import {
+  trackEpisodeUnwatched,
+  trackEpisodeWatched,
+  trackSeriesAdded,
+  trackSeriesDeleted,
+} from '../../firebase/analytics';
 import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
+import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { showToast, showUndoToast } from '../../lib/toast';
 
 interface DialogState {
@@ -347,6 +353,119 @@ export function useSeriesActions(
     [series, userId]
   );
 
+  const handleEpisodeQuickToggle = useCallback(
+    async (seasonIndex: number, episodeIndex: number) => {
+      if (!series || !userId) return;
+      const season = series.seasons?.[seasonIndex];
+      const episode = season?.episodes?.[episodeIndex];
+      if (!season || !episode) return;
+      const epId = episode.id;
+      if (!epId) {
+        showToast('Episode-ID fehlt', 2000, 'error');
+        return;
+      }
+
+      const db = firebase.database();
+      const epPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
+      const prevWatched = !!episode.watched;
+      const prevWatchCount = episode.watchCount || 0;
+      const prevFirstWatchedAt = episode.firstWatchedAt;
+      const prevLastWatchedAt = episode.lastWatchedAt;
+      const seasonNumber = (season.seasonNumber ?? 0) + 1;
+      const epNumber = episodeIndex + 1;
+      const willAutoAddToWatchlist = !prevWatched && shouldAutoEnableWatchlist(series);
+
+      try {
+        if (prevWatched) {
+          await db.ref().update({
+            [epPath]: null,
+            ...(willAutoAddToWatchlist ? autoWatchlistUpdates(userId, series) : {}),
+            [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          });
+        } else {
+          const nowUnix = Math.floor(Date.now() / 1000);
+          const updates: Record<string, unknown> = {
+            [`${epPath}/w`]: 1,
+            [`${epPath}/c`]: 1,
+            [`${epPath}/l`]: nowUnix,
+            ...autoWatchlistUpdates(userId, series),
+            [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          };
+          if (!prevFirstWatchedAt) {
+            updates[`${epPath}/f`] = nowUnix;
+          }
+          await db.ref().update(updates);
+        }
+
+        const newWatched = !prevWatched;
+        const label = `S${seasonNumber}E${epNumber}`;
+        const actionLabel = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
+
+        showUndoToast(`${series.title} ${label} ${actionLabel}`, {
+          onUndo: async () => {
+            try {
+              const undoUpdates: Record<string, unknown> = {
+                [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+              };
+              if (!prevWatched && prevWatchCount === 0) {
+                undoUpdates[epPath] = null;
+              } else {
+                undoUpdates[`${epPath}/w`] = prevWatched ? 1 : 0;
+                undoUpdates[`${epPath}/c`] = prevWatchCount;
+                undoUpdates[`${epPath}/f`] = prevFirstWatchedAt
+                  ? Math.floor(new Date(prevFirstWatchedAt).getTime() / 1000)
+                  : 0;
+                undoUpdates[`${epPath}/l`] = prevLastWatchedAt
+                  ? Math.floor(new Date(prevLastWatchedAt).getTime() / 1000)
+                  : 0;
+              }
+              await db.ref().update(undoUpdates);
+            } catch {
+              showToast('Undo fehlgeschlagen', 2000, 'error');
+            }
+          },
+          onCommit: async () => {
+            if (newWatched) {
+              trackEpisodeWatched(series.title, seasonNumber, epNumber, {
+                tmdbId: series.id,
+                genres: series.genre?.genres,
+                runtime:
+                  episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: false,
+                source: 'series_detail_quick_toggle',
+              });
+              await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
+              const { updateEpisodeCounters } =
+                await import('../../features/badges/minimalActivityLogger');
+              await updateEpisodeCounters(userId, false, episode.air_date);
+              WatchActivityService.logEpisodeWatch(
+                userId,
+                series.id,
+                series.title || series.name || 'Unbekannte Serie',
+                seasonNumber,
+                epNumber,
+                episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                false,
+                series.genre?.genres,
+                series.provider?.provider?.map((p) => p.name)
+              );
+              if (willAutoAddToWatchlist) {
+                const { logWatchlistAdded } =
+                  await import('../../features/badges/minimalActivityLogger');
+                await logWatchlistAdded(userId, series.title, series.id);
+              }
+            } else {
+              trackEpisodeUnwatched(series.title, seasonNumber, epNumber);
+            }
+          },
+        });
+      } catch {
+        setDialog({ open: true, message: 'Fehler beim Speichern.', type: 'error' });
+      }
+    },
+    [series, userId]
+  );
+
   const handleStartRewatch = useCallback(
     async (continueExisting = false) => {
       if (!series || !userId) return;
@@ -408,6 +527,7 @@ export function useSeriesActions(
     handleHideToggle,
     handleEpisodeRewatch,
     handleEpisodeUnwatch,
+    handleEpisodeQuickToggle,
     handleStartRewatch,
     handleStopRewatch,
   };

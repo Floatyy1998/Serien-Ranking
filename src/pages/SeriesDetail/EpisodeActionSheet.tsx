@@ -64,12 +64,12 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             onClick={() => onRewatch(episode)}
             style={{
               padding: '14px',
-              background: `linear-gradient(135deg, ${warningColor}, ${warningColor})`,
-              border: 'none',
+              background: `${warningColor}26`,
+              border: `1px solid ${warningColor}66`,
               borderRadius: '12px',
-              color: currentTheme.text.secondary,
+              color: warningColor,
               fontSize: '15px',
-              fontWeight: '600',
+              fontWeight: 600,
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',

@@ -66,6 +66,7 @@ export const SeriesDetailPage = memo(() => {
     handleHideToggle,
     handleEpisodeRewatch,
     handleEpisodeUnwatch,
+    handleEpisodeQuickToggle,
     handleStartRewatch,
     handleStopRewatch,
   } = useSeriesActions(series, user?.uid, tmdbSeries ?? undefined);
@@ -394,6 +395,7 @@ export const SeriesDetailPage = memo(() => {
                 currentTheme={currentTheme}
                 handleStopRewatch={handleStopRewatch}
                 handleStartRewatch={handleStartRewatch}
+                handleEpisodeQuickToggle={handleEpisodeQuickToggle}
                 navigate={navigate}
               />
             </div>
