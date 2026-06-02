@@ -2,6 +2,7 @@ import Check from '@mui/icons-material/Check';
 import GridView from '@mui/icons-material/GridView';
 import List from '@mui/icons-material/List';
 import Repeat from '@mui/icons-material/Repeat';
+import { Tooltip } from '@mui/material';
 import { motion, type PanInfo } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import type { useNavigate } from 'react-router-dom';
@@ -32,6 +33,7 @@ interface SeasonsSectionProps {
   currentTheme: DynamicTheme;
   handleStopRewatch: () => void;
   handleStartRewatch: (continueExisting?: boolean) => void;
+  handleEpisodeQuickToggle: (seasonIndex: number, episodeIndex: number) => Promise<void>;
   navigate: ReturnType<typeof useNavigate>;
 }
 
@@ -45,6 +47,7 @@ export function SeasonsSection({
   currentTheme,
   handleStopRewatch,
   handleStartRewatch,
+  handleEpisodeQuickToggle,
   navigate,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
@@ -308,24 +311,67 @@ export function SeasonsSection({
                         : undefined
                     }
                   >
-                    {/* Number / check indicator */}
-                    <div
-                      className="episode-list-number"
-                      style={{
-                        background: episode.watched
-                          ? isRewatched
-                            ? `${currentTheme.accent}18`
-                            : `${currentTheme.primary}18`
-                          : 'rgba(255,255,255,0.06)',
-                        color: episode.watched
-                          ? isRewatched
-                            ? currentTheme.accent
-                            : currentTheme.primary
-                          : currentTheme.text.muted,
-                      }}
+                    {/* Number / check toggle */}
+                    <Tooltip
+                      title={
+                        isRewatched
+                          ? 'Optionen anzeigen'
+                          : episode.watched
+                            ? 'Als nicht gesehen markieren'
+                            : 'Als gesehen markieren'
+                      }
+                      arrow
+                      enterDelay={400}
+                      enterTouchDelay={0}
+                      leaveTouchDelay={1500}
                     >
-                      {episode.watched ? <Check style={{ fontSize: '15px' }} /> : episodeIndex + 1}
-                    </div>
+                      <motion.button
+                        type="button"
+                        whileTap={{ scale: 0.85 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isRewatched) {
+                            setShowRewatchDialog({
+                              show: true,
+                              type: 'episode',
+                              item: episode,
+                              seasonNumber: selectedSeason.seasonNumber + 1,
+                              episodeNumber: episodeIndex + 1,
+                            });
+                            return;
+                          }
+                          void handleEpisodeQuickToggle(safeSeasonIndex, episodeIndex);
+                        }}
+                        aria-label={
+                          episode.watched
+                            ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
+                            : `Episode ${episodeIndex + 1} als gesehen markieren`
+                        }
+                        className="episode-list-number"
+                        style={{
+                          background: episode.watched
+                            ? isRewatched
+                              ? `${currentTheme.accent}18`
+                              : `${currentTheme.primary}18`
+                            : 'rgba(255,255,255,0.06)',
+                          color: episode.watched
+                            ? isRewatched
+                              ? currentTheme.accent
+                              : currentTheme.primary
+                            : currentTheme.text.muted,
+                          border: episode.watched
+                            ? 'none'
+                            : `1px dashed ${currentTheme.text.muted}55`,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {episode.watched ? (
+                          <Check style={{ fontSize: '15px' }} />
+                        ) : (
+                          episodeIndex + 1
+                        )}
+                      </motion.button>
+                    </Tooltip>
 
                     {/* Episode info */}
                     <div className="episode-list-info">
@@ -374,76 +420,88 @@ export function SeasonsSection({
                 const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
                 const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
                 return (
-                  <motion.div
+                  <Tooltip
                     key={episode.id}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      if (episode.watched) {
-                        setShowRewatchDialog({
-                          show: true,
-                          type: 'episode',
-                          item: episode,
-                          seasonNumber: selectedSeason.seasonNumber + 1,
-                          episodeNumber: episodeIndex + 1,
-                        });
-                      } else {
-                        navigate(
-                          `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                        );
-                      }
-                    }}
-                    className="episode-cell"
-                    style={{
-                      background: episode.watched
-                        ? isRewatched
-                          ? `${warningColor}30`
-                          : `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
-                        : 'rgba(255,255,255,0.1)',
-                      border: episode.watched
-                        ? isRewatched
-                          ? `2px solid ${warningColor}`
-                          : 'none'
-                        : '1px solid rgba(255,255,255,0.2)',
-                    }}
+                    title={
+                      isRewatched
+                        ? `Episode ${episodeIndex + 1} – Optionen anzeigen`
+                        : episode.watched
+                          ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
+                          : `Episode ${episodeIndex + 1} als gesehen markieren`
+                    }
+                    arrow
+                    enterDelay={400}
+                    enterTouchDelay={0}
+                    leaveTouchDelay={1500}
                   >
-                    {episodeIndex + 1}
-                    {isRewatched && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          top: '-5px',
-                          right: '-6px',
-                          background: warningColor,
-                          borderRadius: '6px',
-                          padding: '0 3px',
-                          height: '12px',
-                          fontSize: '8px',
-                          fontWeight: 700,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: currentTheme.background.default,
-                          lineHeight: 1,
-                        }}
-                      >
-                        ×{episode.watchCount}
-                      </span>
-                    )}
-                    {discussionCount > 0 && (
-                      <span
-                        style={{
-                          position: 'absolute',
-                          bottom: '-2px',
-                          left: '-2px',
-                          background: currentTheme.primary,
-                          borderRadius: '50%',
-                          width: '6px',
-                          height: '6px',
-                        }}
-                      />
-                    )}
-                  </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        if (isRewatched) {
+                          setShowRewatchDialog({
+                            show: true,
+                            type: 'episode',
+                            item: episode,
+                            seasonNumber: selectedSeason.seasonNumber + 1,
+                            episodeNumber: episodeIndex + 1,
+                          });
+                          return;
+                        }
+                        void handleEpisodeQuickToggle(safeSeasonIndex, episodeIndex);
+                      }}
+                      className="episode-cell"
+                      style={{
+                        background: episode.watched
+                          ? isRewatched
+                            ? `${warningColor}30`
+                            : `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
+                          : 'rgba(255,255,255,0.1)',
+                        border: episode.watched
+                          ? isRewatched
+                            ? `2px solid ${warningColor}`
+                            : 'none'
+                          : '1px solid rgba(255,255,255,0.2)',
+                      }}
+                    >
+                      {episodeIndex + 1}
+                      {isRewatched && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-5px',
+                            right: '-6px',
+                            background: warningColor,
+                            borderRadius: '6px',
+                            padding: '0 3px',
+                            height: '12px',
+                            fontSize: '8px',
+                            fontWeight: 700,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: currentTheme.background.default,
+                            lineHeight: 1,
+                          }}
+                        >
+                          ×{episode.watchCount}
+                        </span>
+                      )}
+                      {discussionCount > 0 && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            bottom: '-2px',
+                            left: '-2px',
+                            background: currentTheme.primary,
+                            borderRadius: '50%',
+                            width: '6px',
+                            height: '6px',
+                          }}
+                        />
+                      )}
+                    </motion.div>
+                  </Tooltip>
                 );
               })}
             </div>

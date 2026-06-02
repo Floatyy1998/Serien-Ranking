@@ -1,14 +1,16 @@
-import { PlayCircle } from '@mui/icons-material';
+import { Bookmark, PlayCircle } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
+import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 
@@ -88,8 +90,72 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const accentColor = currentTheme.primary;
   const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
+  const { seriesList } = useSeriesList();
 
-  if (items.length === 0) return null;
+  const unwatchlistedWithUnwatched = useMemo(() => {
+    let count = 0;
+    for (const s of seriesList) {
+      if (s.watchlist) continue;
+      const hasUnwatchedAired = s.seasons?.some((season) =>
+        season.episodes?.some((ep) => !ep?.watched && hasEpisodeAired(ep))
+      );
+      if (hasUnwatchedAired) count++;
+    }
+    return count;
+  }, [seriesList]);
+
+  if (items.length === 0) {
+    if (unwatchlistedWithUnwatched === 0) return null;
+    return (
+      <section style={{ marginBottom: '32px' }}>
+        <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title="Weiterschauen" />
+        <div style={{ padding: '0 20px' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/watchlist')}
+            style={{
+              width: '100%',
+              padding: '20px 16px',
+              background: `${accentColor}10`,
+              border: `1px dashed ${accentColor}55`,
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              textAlign: 'left',
+              color: currentTheme.text.primary,
+              fontFamily: 'inherit',
+            }}
+          >
+            <Bookmark style={{ color: accentColor, fontSize: '28px', flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: isMobile ? '14px' : '15px',
+                  fontWeight: 600,
+                  marginBottom: '2px',
+                }}
+              >
+                Noch nichts zum Weiterschauen
+              </div>
+              <div
+                style={{
+                  fontSize: isMobile ? '12px' : '13px',
+                  color: currentTheme.text.muted,
+                  lineHeight: 1.4,
+                }}
+              >
+                Tippe in einer Serie auf das Lesezeichen-Symbol, damit sie hier erscheint.{' '}
+                {unwatchlistedWithUnwatched}{' '}
+                {unwatchlistedWithUnwatched === 1 ? 'Serie wartet' : 'Serien warten'} noch.
+              </div>
+            </div>
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section style={{ marginBottom: '32px' }}>

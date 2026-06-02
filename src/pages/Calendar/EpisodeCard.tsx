@@ -284,17 +284,11 @@ export const SingleEpisodeCard = memo(
       ep.providers
     );
 
-    // Border-Left auf Mobile zeigt weiterhin den Sonderzustand (Premiere/Pause/Watched).
-    // Der Strip-Overlay daneben zeigt NUR die Provider-Brand — beide Informationen
-    // ergänzen sich statt zu kollidieren.
-    const borderColor = ep.premiereType
-      ? currentTheme.status.warning
-      : ep.breakType
-        ? breakColor(ep.breakType)
-        : ep.watched
-          ? currentTheme.status.success
-          : (brandColor ?? currentTheme.primary);
+    // Auf Mobile übernimmt die border-left direkt die Brand-Color des Providers.
+    // Status (Premiere/Pause/Watched) wird über separate Badges + Overlays
+    // kommuniziert — beide Informationen ergänzen sich statt zu kollidieren.
     const stripColor: string | null = brandColor;
+    const borderColor = stripColor ?? currentTheme.primary;
 
     const handleClick = () =>
       navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
@@ -313,21 +307,7 @@ export const SingleEpisodeCard = memo(
         onClick={handleClick}
       >
         {stripColor && (
-          <span
-            aria-hidden
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 4,
-              background: stripColor,
-              zIndex: 4,
-              pointerEvents: 'none',
-              borderTopLeftRadius: 'var(--radius-md)',
-              borderBottomLeftRadius: 'var(--radius-md)',
-            }}
-          />
+          <span aria-hidden className="cal-ep-brand-strip" style={{ background: stripColor }} />
         )}
         {/* Desktop: poster-overlay card */}
         <PosterWrap
@@ -469,16 +449,8 @@ export const EpisodeGroupCard = memo(
       firstEp.providers
     );
 
-    const isSpecialState = groupPremiereType || groupBreakType || allWatched;
-    void isSpecialState;
-    const borderColor = groupPremiereType
-      ? currentTheme.status.warning
-      : groupBreakType
-        ? breakColor(groupBreakType)
-        : allWatched
-          ? currentTheme.status.success
-          : (brandColor ?? currentTheme.primary);
     const stripColor: string | null = brandColor;
+    const borderColor = stripColor ?? currentTheme.primary;
 
     const episodeRange = `S${String(firstEp.seasonNumber).padStart(2, '0')} E${String(firstEp.episodeNumber).padStart(2, '0')}–E${String(lastEp.episodeNumber).padStart(2, '0')}`;
     const countLabel = `${group.episodes.length} Folgen · ${watchedInGroup} gesehen`;
@@ -494,21 +466,7 @@ export const EpisodeGroupCard = memo(
         }}
       >
         {stripColor && (
-          <span
-            aria-hidden
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 4,
-              background: stripColor,
-              zIndex: 4,
-              pointerEvents: 'none',
-              borderTopLeftRadius: 'var(--radius-md)',
-              borderBottomLeftRadius: 'var(--radius-md)',
-            }}
-          />
+          <span aria-hidden className="cal-ep-brand-strip" style={{ background: stripColor }} />
         )}
         {/* Group header */}
         <div className="cal-ep cal-ep-group-header" onClick={onToggle}>
