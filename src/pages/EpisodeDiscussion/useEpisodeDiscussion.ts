@@ -61,6 +61,8 @@ export interface EpisodeDetails {
   seriesTitle: string;
   formattedAirDate: string | null;
   formattedFirstWatchedAt: string | null;
+  formattedLastWatchedAt: string | null;
+  watchCount: number;
 }
 
 export const useEpisodeDiscussion = () => {
@@ -416,6 +418,20 @@ export const useEpisodeDiscussion = () => {
       })
     : null;
 
+  const lastWatchedAtRaw = localEpisode?.watched
+    ? (localEpisode as typeof localEpisode & { lastWatchedAt?: string }).lastWatchedAt
+    : undefined;
+  const watchCount =
+    (localEpisode as typeof localEpisode & { watchCount?: number })?.watchCount || 0;
+  const formattedLastWatchedAt =
+    lastWatchedAtRaw && watchCount > 1 && lastWatchedAtRaw !== firstWatchedAtRaw
+      ? new Date(lastWatchedAtRaw).toLocaleDateString('de-DE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      : null;
+
   // Reset transition overlay when route params change (navigate to next episode)
   useEffect(() => {
     setNextEpisodeTransition(null);
@@ -458,6 +474,8 @@ export const useEpisodeDiscussion = () => {
     seriesTitle,
     formattedAirDate,
     formattedFirstWatchedAt,
+    formattedLastWatchedAt,
+    watchCount,
 
     // Navigation
     navigation: {
