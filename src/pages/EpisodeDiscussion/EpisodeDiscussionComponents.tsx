@@ -4,6 +4,7 @@ import {
   Edit,
   Movie,
   PlayCircle,
+  Replay,
   Star,
   Tv,
   Visibility,
@@ -101,6 +102,8 @@ interface HeroSectionProps {
   episodeRuntime: number | null | undefined;
   formattedAirDate: string | null;
   formattedFirstWatchedAt: string | null;
+  formattedLastWatchedAt: string | null;
+  watchCount: number;
   isWatched: boolean;
   getStillUrl: (path: string | null, size?: string) => string;
   navigate: NavigateFunction;
@@ -121,6 +124,8 @@ export const HeroSection = memo(
     episodeRuntime,
     formattedAirDate,
     formattedFirstWatchedAt,
+    formattedLastWatchedAt,
+    watchCount,
     isWatched,
     getStillUrl,
     navigate,
@@ -251,6 +256,29 @@ export const HeroSection = memo(
                   style={{ color: currentTheme.status.success }}
                 />
                 {formattedFirstWatchedAt}
+                {watchCount > 1 && (
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      padding: '1px 6px',
+                      borderRadius: 6,
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      background: `${currentTheme.accent}26`,
+                      color: currentTheme.accent,
+                    }}
+                  >
+                    ×{watchCount}
+                  </span>
+                )}
+              </span>
+            </Tooltip>
+          )}
+          {isWatched && formattedLastWatchedAt && (
+            <Tooltip title="Zuletzt gesehen" arrow>
+              <span className="ed-meta-item">
+                <Replay className="ed-meta-icon" style={{ color: currentTheme.accent }} />
+                {formattedLastWatchedAt}
               </span>
             </Tooltip>
           )}
