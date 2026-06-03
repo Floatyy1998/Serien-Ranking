@@ -42,6 +42,8 @@ export const EpisodeDiscussionPage = memo(() => {
     seriesTitle,
     formattedAirDate,
     formattedFirstWatchedAt,
+    formattedLastWatchedAt,
+    watchCount,
     navigation,
     handleToggleWatched,
     nextEpisodeTransition,
@@ -182,6 +184,8 @@ export const EpisodeDiscussionPage = memo(() => {
           episodeRuntime={episodeRuntime}
           formattedAirDate={formattedAirDate}
           formattedFirstWatchedAt={formattedFirstWatchedAt}
+          formattedLastWatchedAt={formattedLastWatchedAt}
+          watchCount={watchCount}
           isWatched={isWatched}
           getStillUrl={getStillUrl}
           navigate={navigate}
