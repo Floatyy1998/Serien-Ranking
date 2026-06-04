@@ -30,11 +30,6 @@ import {
   type SnoozeOption,
 } from '../../lib/settings/notificationSettings';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
-import { markCompletedSeriesAsNotified } from '../../lib/validation/completedSeriesDetection';
-import {
-  markInactiveRewatchAsNotified,
-  markInactiveSeriesAsNotified,
-} from '../../lib/validation/inactiveSeriesDetection';
 import type { Series } from '../../types/Series';
 import './CarouselNotification.css';
 
@@ -210,25 +205,11 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   // safeIndex statt setState im Effect.
   const safeIndex = series.length > 0 ? Math.min(currentIndex, series.length - 1) : 0;
 
-  // Beim Mount: notified-Flag setzen, damit RENOTIFY_COOLDOWN greift.
-  const notifiedRef = useRef(false);
-  useEffect(() => {
-    if (!user || series.length === 0 || notifiedRef.current) return;
-    const ids = series.map((s) => s.id);
-    if (variant === 'inactive') {
-      notifiedRef.current = true;
-      markInactiveSeriesAsNotified(ids, user.uid);
-    } else if (variant === 'inactive-rewatch') {
-      notifiedRef.current = true;
-      markInactiveRewatchAsNotified(ids, user.uid);
-    } else if (variant === 'completed') {
-      notifiedRef.current = true;
-      markCompletedSeriesAsNotified(ids, user.uid);
-    }
-    // new-season + unrated brauchen keinen Mount-Marker:
-    // - new-season nutzt das alte session/seasonCount-Pattern
-    // - unrated wird durch 7-Tage-Cooldown geregelt
-  }, [user, variant, series]);
+  // KEIN automatischer Mount-Marker mehr: die Karte soll bleiben, bis der User
+  // aktiv reagiert (X / Snooze / Aktion). Reagiert er nicht, sieht er sie beim
+  // nächsten Reload wieder — fühlt sich vorhersagbarer an als ein versteckter
+  // Cooldown nach reinem Sehen. (markInactiveSeriesAsNotified etc. werden noch
+  // exportiert, falls wir später einen "Mark all as seen"-Button bauen wollen.)
 
   // Snooze-Menu: outside-click schließt
   useEffect(() => {

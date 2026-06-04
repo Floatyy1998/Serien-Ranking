@@ -13,7 +13,7 @@
 .series-notification {
   position: relative;
   width: 100%;
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
   /* Card-BG wird inline gesetzt (Variant-spezifisch) */
 }
@@ -36,7 +36,7 @@
 
 .series-notification-inner {
   position: relative;
-  padding: 16px 18px 14px;
+  padding: 12px 14px 10px;
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
@@ -60,51 +60,54 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 10px;
   z-index: 1;
 }
 
 .series-notification-header-icon {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 10px;
   flex-shrink: 0;
   /* BG wird inline gesetzt */
 }
 
 .series-notification-header-icon svg {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .series-notification-title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 800;
   font-family: var(--font-display);
   line-height: 1.2;
   letter-spacing: -0.01em;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .series-notification-count-pill {
   flex-shrink: 0;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 999px;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   font-family: var(--font-display);
   letter-spacing: 0.02em;
 }
 
 .series-notification-collapse-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -113,7 +116,7 @@
   justify-content: center;
   transition: background-color 0.2s var(--ease-default);
   color: inherit;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .series-notification-collapse-btn:hover {
@@ -122,7 +125,7 @@
 }
 
 .series-notification-collapse-btn svg {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* ─── Series Card (inside) ───────────────────────────────────────────── */
@@ -134,12 +137,12 @@
 .series-notification-series {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 12px;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
   background: rgba(0, 0, 0, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .series-notification-poster-wrapper {
@@ -148,20 +151,20 @@
 }
 
 .series-notification-poster {
-  width: 52px;
-  height: 78px;
+  width: 42px;
+  height: 63px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
   box-shadow:
-    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 3px 10px rgba(0, 0, 0, 0.35),
     0 1px 3px rgba(0, 0, 0, 0.2);
   display: block;
 }
 
 .series-notification-poster-placeholder {
-  width: 52px;
-  height: 78px;
-  border-radius: 8px;
+  width: 42px;
+  height: 63px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
@@ -174,8 +177,8 @@
 }
 
 .series-notification-name {
-  margin: 0 0 4px 0;
-  font-size: 1rem;
+  margin: 0 0 2px 0;
+  font-size: 0.92rem;
   font-weight: 700;
   font-family: var(--font-display);
   letter-spacing: -0.01em;
@@ -186,25 +189,25 @@
 }
 
 .series-notification-detail {
-  margin: 0 0 4px 0;
-  font-size: 0.82rem;
+  margin: 0 0 2px 0;
+  font-size: 0.76rem;
   opacity: 0.78;
   display: flex;
   align-items: center;
-  gap: 6px;
-  line-height: 1.3;
+  gap: 5px;
+  line-height: 1.25;
 }
 
 .series-notification-detail svg {
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
   opacity: 0.7;
 }
 
 .series-notification-timestamp {
-  font-size: 0.7rem;
-  opacity: 0.5;
-  margin-top: 2px;
+  font-size: 0.66rem;
+  opacity: 0.45;
+  margin-top: 1px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -212,7 +215,7 @@
 .series-notification-actions {
   display: flex;
   align-items: stretch;
-  gap: 8px;
+  gap: 6px;
   position: relative;
   z-index: 1;
 }
@@ -221,11 +224,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 11px 14px;
-  border-radius: 12px;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 10px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-family: var(--font-display);
   cursor: pointer;
   transition:
@@ -233,7 +236,7 @@
     background-color 0.2s var(--ease-default),
     box-shadow 0.2s var(--ease-default);
   border: none;
-  min-height: 44px;
+  min-height: 36px;
   white-space: nowrap;
 }
 
@@ -251,7 +254,7 @@
 }
 
 .series-notification-btn svg {
-  font-size: 18px;
+  font-size: 16px;
 }
 
 /* Primary CTA (variant color) */
@@ -288,9 +291,9 @@
 
 /* Icon-only buttons (Snooze, Dismiss) — square */
 .series-notification-btn--icon {
-  width: 44px;
-  min-width: 44px;
-  padding: 11px;
+  width: 36px;
+  min-width: 36px;
+  padding: 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   position: relative;
@@ -413,16 +416,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px;
+  margin-top: 8px;
   position: relative;
   z-index: 1;
 }
 
 .series-notification-nav-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
   border: none;
   background: rgba(255, 255, 255, 0.05);
   color: inherit;
@@ -430,9 +433,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  opacity: 0.7;
+  opacity: 0.6;
   transition:
     opacity 0.15s var(--ease-default),
     background-color 0.15s var(--ease-default);
@@ -444,18 +447,18 @@
 }
 
 .series-notification-nav-btn:disabled {
-  opacity: 0.25;
+  opacity: 0.2;
   cursor: not-allowed;
 }
 
 .series-notification-dots {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   align-items: center;
-  max-width: 240px;
+  max-width: 200px;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 4px 8px;
+  padding: 4px 6px;
 }
 
 .series-notification-dots::-webkit-scrollbar {
@@ -479,46 +482,55 @@
 /* Visueller Dot innen — Touch-Target bleibt 14px aber wirkt kleiner */
 .series-notification-dot::after {
   content: '';
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transition: all 0.2s var(--ease-default);
 }
 
 .series-notification-dot.active::after {
-  width: 18px;
-  border-radius: 4px;
+  width: 14px;
+  border-radius: 3px;
   /* BG wird inline gesetzt */
 }
 
 .series-notification-counter {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   text-align: center;
-  font-size: 0.72rem;
-  opacity: 0.55;
+  font-size: 0.66rem;
+  opacity: 0.45;
   font-variant-numeric: tabular-nums;
 }
 
 /* ─── Tab-Bar (NotificationHub) ─────────────────────────────────────── */
+/* Hub schwebt FIXED über dem Header — drückt keinen Content weg. Wenn der User
+ * sie schließt oder snooz't, ist die Karte weg, der Content darunter bleibt wo
+ * er war (kein Layout-Sprung). */
 .notif-hub {
-  position: sticky;
-  top: 56px;
-  z-index: 50;
-  margin: 12px auto 16px;
-  max-width: 520px;
-  width: calc(100% - 24px);
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  max-width: 440px;
+  width: calc(100% - 20px);
+  pointer-events: none; /* nur die Karte selbst soll Pointer-Events bekommen */
+}
+
+.notif-hub > * {
+  pointer-events: auto;
 }
 
 .notif-hub-tabs {
   display: flex;
-  gap: 6px;
-  padding: 4px;
+  gap: 4px;
+  padding: 3px;
   background: rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-radius: 14px;
-  margin-bottom: 8px;
+  border-radius: 12px;
+  margin-bottom: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -532,14 +544,14 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 10px;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 9px;
   border: none;
   background: transparent;
   color: inherit;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   font-family: var(--font-display);
   letter-spacing: 0.01em;
@@ -696,8 +708,8 @@
   }
 
   .notif-hub {
-    top: 60px;
-    width: calc(100% - 20px);
+    top: 8px;
+    width: calc(100% - 16px);
   }
 
   .notif-hub-tab {

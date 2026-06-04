@@ -17,9 +17,8 @@ export interface CompletedSeriesData {
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WATCH_CHECK_COOLDOWN = 1 * DAY_MS;
-/** Nach Anzeige/Dismiss: Ruhe bis sich der Watch-Status ändert. "Abgeschlossen"
- * ist ein stabiler Zustand — wir nerven nicht jeden Monat damit. 90 Tage ist die
- * Sicherheitsleine, falls der State-Reset bei Unwatch mal nicht greift. */
+/** Cooldown nach explizitem Dismiss. "Abgeschlossen" ist ein stabiler
+ * Zustand — wir nerven nicht jeden Monat damit. */
 const RENOTIFY_COOLDOWN = 90 * DAY_MS;
 
 export const getStoredCompletedData = async (
@@ -113,7 +112,8 @@ export const detectCompletedSeries = async (
     const isSnoozed = typeof snoozedUntil === 'number' && snoozedUntil > currentTime;
 
     if (!stored) {
-      // Erste Erfassung
+      // Erste Erfassung: trotzdem direkt prüfen — sonst gehen Notifications bei
+      // Daten-Reset / Migration für einen Run verloren.
       updatedStoredData[seriesKey] = {
         seriesId: series.id,
         allEpisodesWatched: allEpisodesWatched,
@@ -121,6 +121,9 @@ export const detectCompletedSeries = async (
         lastChecked: currentTime,
         notified: false,
       };
+      if (allEpisodesWatched && seriesEnded && !wasDismissedRecently && !isSnoozed) {
+        completedSeries.push(series);
+      }
       continue;
     }
 
