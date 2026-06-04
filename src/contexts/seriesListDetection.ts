@@ -80,15 +80,17 @@ export async function runSequentialDetections(
   seriesList: Series[],
   userId: string,
   onUpdate: (partial: Partial<DetectionResults>) => void,
-  signal: AbortSignal
+  _signal: AbortSignal
 ): Promise<void> {
+  // _signal früher zum Cancel benutzt — aber Abort vor Step 2 hat dazu geführt,
+  // dass Detection nie fertig wurde, wenn seriesList sich während des Runs änderte
+  // (useEffect cleanup → abort, danach Re-Run blockiert durch detectionRunRef).
+  // Wir lassen die Detection jetzt durchlaufen — setState am Ende ist idempotent.
   if (seriesList.length === 0) return;
 
   // 1. Neue Staffeln (höchste Priorität)
-  if (signal.aborted) return;
   try {
     const newSeasons = await detectNewSeasons(seriesList, userId);
-    if (signal.aborted) return;
     if (newSeasons.length > 0) {
       onUpdate({ seriesWithNewSeasons: newSeasons });
     }
@@ -97,13 +99,11 @@ export async function runSequentialDetections(
   }
 
   // 2. Inaktive Serien + Rewatches
-  if (signal.aborted) return;
   try {
     const [inactive, inactiveRew] = await Promise.all([
       detectInactiveSeries(seriesList, userId),
       detectInactiveRewatches(seriesList, userId),
     ]);
-    if (signal.aborted) return;
     if (inactive.length > 0 || inactiveRew.length > 0) {
       onUpdate({
         ...(inactive.length > 0 ? { inactiveSeries: inactive } : {}),
@@ -115,10 +115,8 @@ export async function runSequentialDetections(
   }
 
   // 3. Abgeschlossene Serien
-  if (signal.aborted) return;
   try {
     const completed = await detectCompletedSeries(seriesList, userId);
-    if (signal.aborted) return;
     if (completed.length > 0) {
       onUpdate({ completedSeries: completed });
     }
@@ -127,10 +125,8 @@ export async function runSequentialDetections(
   }
 
   // 4. Unbewertete Serien
-  if (signal.aborted) return;
   try {
     const unrated = await detectUnratedSeries(seriesList, userId);
-    if (signal.aborted) return;
     if (unrated.length > 0) {
       onUpdate({ unratedSeries: unrated });
     }
@@ -139,10 +135,8 @@ export async function runSequentialDetections(
   }
 
   // 5. Provider-Änderungen (niedrigste Priorität, TMDB API calls)
-  if (signal.aborted) return;
   try {
     const changes = await detectProviderChanges(seriesList, userId);
-    if (signal.aborted) return;
     if (changes.length > 0) {
       onUpdate({ providerChanges: changes });
     }

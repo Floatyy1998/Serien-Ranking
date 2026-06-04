@@ -31,8 +31,8 @@ const RECENT_AIR_GRACE_DAYS = 30;
 /** Wie oft Watch-Status persistent re-gecheckt wird. Kurz, damit Watch-Resets
  * schnell erkannt werden und nicht in einem Wochen-Cooldown stecken bleiben. */
 const WATCH_CHECK_COOLDOWN = 1 * DAY_MS;
-/** Wie lange nach gezeigter / weggeklickter Notification Ruhe ist, bevor sie
- * — falls die Serie immer noch inaktiv ist — wieder erinnert wird. */
+/** Cooldown nach explizitem Dismiss / Snooze / Action. Es gibt aktuell keinen
+ * automatischen Mount-Marker mehr — die Karte verfolgt den User bis er reagiert. */
 const RENOTIFY_COOLDOWN = 30 * DAY_MS;
 
 export const getStoredInactiveData = async (
@@ -161,13 +161,24 @@ export const detectInactiveSeries = async (
     const isSnoozed = typeof snoozedUntil === 'number' && snoozedUntil > currentTime;
 
     if (!stored) {
-      // Erste Erfassung
+      // Erste Erfassung: trotzdem direkt prüfen ob die Serie schon inaktiv ist.
+      // So gehen Notifications bei Daten-Reset/Migration nicht für einen Run verloren,
+      // und User, die eine bereits "alte" Serie zur Watchlist hinzufügen, werden
+      // direkt erinnert.
       updatedStoredData[seriesKey] = {
         seriesId: series.id,
         lastWatchedDate: lastWatchedDate,
         lastChecked: currentTime,
         notified: false,
       };
+      if (
+        lastWatchedDate &&
+        currentTime - lastWatchedDate > thresholdMs &&
+        !wasDismissedRecently &&
+        !isSnoozed
+      ) {
+        inactiveSeries.push(series);
+      }
       continue;
     }
 

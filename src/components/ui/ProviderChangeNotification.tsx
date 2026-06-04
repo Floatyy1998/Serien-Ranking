@@ -15,10 +15,7 @@ import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { showUndoToast } from '../../lib/toast';
 import { snoozeNotifications, type SnoozeOption } from '../../lib/settings/notificationSettings';
-import {
-  markProviderChangesDismissed,
-  markProviderChangesShown,
-} from '../../lib/validation/providerChangeDetection';
+import { markProviderChangesDismissed } from '../../lib/validation/providerChangeDetection';
 import './CarouselNotification.css';
 
 interface ProviderChangeInfo {
@@ -55,16 +52,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
   const color = currentTheme.accent || currentTheme.primary;
   const safeIndex = changes.length > 0 ? Math.min(currentIndex, changes.length - 1) : 0;
 
-  // Beim Mount: shown-Marker setzen
-  const shownRef = useRef(false);
-  useEffect(() => {
-    if (!user || changes.length === 0 || shownRef.current) return;
-    shownRef.current = true;
-    markProviderChangesShown(
-      changes.map((c) => c.series.id),
-      user.uid
-    );
-  }, [user, changes]);
+  // KEIN automatischer shown-Marker: Karte bleibt bis User aktiv reagiert.
 
   useEffect(() => {
     if (!snoozeOpen) return;
