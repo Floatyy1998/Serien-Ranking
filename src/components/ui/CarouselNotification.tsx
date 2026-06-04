@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   NewReleases,
@@ -18,7 +18,15 @@ import {
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
-import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
+import {
+  markMultipleSeasonsAsNotified,
+  markNewSeasonsAsShown,
+} from '../../lib/validation/newSeasonDetection';
+import {
+  markInactiveSeriesAsNotified,
+  markInactiveRewatchAsNotified,
+} from '../../lib/validation/inactiveSeriesDetection';
+import { markCompletedSeriesAsNotified } from '../../lib/validation/completedSeriesDetection';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import firebase from 'firebase/compat/app';
@@ -144,6 +152,31 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
       activeDot?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
   }, [safeIndex, series.length]);
+
+  // Beim Mount: notified-Flag setzen, damit der RENOTIFY_COOLDOWN greift und die
+  // Notification nicht bei jedem App-Open neu springt. Pro Variante eine eigene
+  // Mark-Funktion. Ref-Guard verhindert Doppel-Run (StrictMode).
+  const notifiedRef = useRef(false);
+  useEffect(() => {
+    if (!user || series.length === 0 || notifiedRef.current) return;
+    const ids = series.map((s) => s.id);
+    if (variant === 'inactive') {
+      notifiedRef.current = true;
+      markInactiveSeriesAsNotified(ids, user.uid);
+    } else if (variant === 'inactive-rewatch') {
+      notifiedRef.current = true;
+      markInactiveRewatchAsNotified(ids, user.uid);
+    } else if (variant === 'completed') {
+      notifiedRef.current = true;
+      markCompletedSeriesAsNotified(ids, user.uid);
+    } else if (variant === 'new-season') {
+      notifiedRef.current = true;
+      markNewSeasonsAsShown(
+        series.map((s) => ({ id: s.id, seasonCount: s.seasonCount })),
+        user.uid
+      );
+    }
+  }, [user, variant, series]);
 
   const markAsNotified = async (seriesIds: number[]) => {
     if (!user) return;

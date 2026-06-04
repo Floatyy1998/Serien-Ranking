@@ -1,4 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
@@ -198,14 +200,15 @@ async function fetchRecapForTrigger(trigger: RecapTrigger, uid?: string): Promis
 
 function buildRecaps(
   triggers: RecapTrigger[],
-  user: { uid: string } | null | undefined
+  user: { uid: string } | null | undefined,
+  dismissed: Set<string>
 ): ProactiveRecap[] {
   if (triggers.length === 0 || !user) return [];
 
   return triggers
     .filter((t) => {
       const cacheKey = `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`;
-      return !localStorage.getItem(`proactive-recap-dismissed-${cacheKey}`);
+      return !dismissed.has(cacheKey);
     })
     .map((t) => {
       const cacheKey = `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`;
@@ -230,19 +233,80 @@ export function useProactiveRecaps() {
 
   const triggers = useMemo(() => findRecapTriggers(seriesList), [seriesList]);
 
-  // Derive initial recaps from triggers (recalculated when triggers change)
-  const initialRecaps = useMemo(() => buildRecaps(triggers, user), [triggers, user]);
+  // Dismissed-Keys aus Firebase laden — multi-device-synchron, anders als das
+  // bisherige localStorage. UID-getaggt damit User-Wechsel keinen stale State zeigt.
+  const [dismissedState, setDismissedState] = useState<{ uid: string; keys: Set<string> } | null>(
+    null
+  );
 
-  // Mutable state for loading/dismiss updates on top of derived initial
+  useEffect(() => {
+    if (!user) {
+      setDismissedState(null);
+      return;
+    }
+    const uid = user.uid;
+    let cancelled = false;
+    const ref = firebase.database().ref(`users/${uid}/proactiveRecapDismissed`);
+    ref
+      .once('value')
+      .then((snap) => {
+        if (cancelled) return;
+        const val = (snap.val() as Record<string, number | boolean> | null) || {};
+        setDismissedState({ uid, keys: new Set(Object.keys(val)) });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        // Offline / Permission: leeres Set, damit nichts geblockt wird
+        setDismissedState({ uid, keys: new Set() });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const dismissedKeys = useMemo(
+    () => (user && dismissedState?.uid === user.uid ? dismissedState.keys : new Set<string>()),
+    [user, dismissedState]
+  );
+
+  // Cleanup: Dismiss-Einträge für nicht mehr existierende Trigger entfernen.
+  // Triggers sind tagesabhängig — nach z.B. einem Monat sind alte Einträge irrelevant.
+  useEffect(() => {
+    if (!user || !dismissedState || dismissedState.uid !== user.uid) return;
+    if (dismissedState.keys.size === 0) return;
+    const activeKeys = new Set(
+      triggers.map((t) => `proactive-recap-${t.series.id}-${t.triggerType}-S${t.seasonNumber}`)
+    );
+    const stale: string[] = [];
+    dismissedState.keys.forEach((k) => {
+      if (!activeKeys.has(k)) stale.push(k);
+    });
+    if (stale.length === 0) return;
+    const updates: Record<string, null> = {};
+    stale.forEach((k) => {
+      updates[`users/${user.uid}/proactiveRecapDismissed/${k}`] = null;
+    });
+    firebase
+      .database()
+      .ref()
+      .update(updates)
+      .catch(() => {});
+  }, [user, dismissedState, triggers]);
+
+  const initialRecaps = useMemo(
+    () => buildRecaps(triggers, user, dismissedKeys),
+    [triggers, user, dismissedKeys]
+  );
+
+  // Mutable state for loading updates (recap content fetched lazily)
   const [recapOverrides, setRecapOverrides] = useState<Record<string, Partial<ProactiveRecap>>>({});
-  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set());
 
   const recaps = useMemo(
     () =>
-      initialRecaps
-        .filter((r) => !dismissedKeys.has(r.cacheKey))
-        .map((r) => (recapOverrides[r.cacheKey] ? { ...r, ...recapOverrides[r.cacheKey] } : r)),
-    [initialRecaps, recapOverrides, dismissedKeys]
+      initialRecaps.map((r) =>
+        recapOverrides[r.cacheKey] ? { ...r, ...recapOverrides[r.cacheKey] } : r
+      ),
+    [initialRecaps, recapOverrides]
   );
 
   const fetchRecap = useCallback(
@@ -270,10 +334,25 @@ export function useProactiveRecaps() {
     [triggers, user]
   );
 
-  const dismiss = useCallback((cacheKey: string) => {
-    localStorage.setItem(`proactive-recap-dismissed-${cacheKey}`, 'true');
-    setDismissedKeys((prev) => new Set([...prev, cacheKey]));
-  }, []);
+  const dismiss = useCallback(
+    (cacheKey: string) => {
+      if (!user) return;
+      const uid = user.uid;
+      setDismissedState((prev) => {
+        const current = prev?.uid === uid ? prev.keys : new Set<string>();
+        if (current.has(cacheKey)) return prev;
+        const next = new Set(current);
+        next.add(cacheKey);
+        return { uid, keys: next };
+      });
+      firebase
+        .database()
+        .ref(`users/${uid}/proactiveRecapDismissed/${cacheKey}`)
+        .set(Date.now())
+        .catch(() => {});
+    },
+    [user]
+  );
 
   return { recaps, dismiss, fetchRecap };
 }
