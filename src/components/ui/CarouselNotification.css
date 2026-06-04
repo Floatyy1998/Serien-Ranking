@@ -1,370 +1,712 @@
-.new-season-notification {
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  z-index: var(--z-overlay);
-  max-width: 480px;
-  width: calc(100% - 32px);
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid;
-  box-shadow: var(--shadow-lg);
-  backdrop-filter: var(--blur-md);
-  -webkit-backdrop-filter: var(--blur-md);
+/* ─────────────────────────────────────────────────────────────────────────
+ * Series Notification Card — Premium glassmorphism design
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ * Design-Prinzipien:
+ * - Sticky statt fixed (scrollt mit, blockt nicht permanent)
+ * - Glassmorphism mit Variant-Color-Glow
+ * - Mobile: Poster bleibt sichtbar (50×75)
+ * - Touch-Targets >= 44px (Apple HIG)
+ * - Action-Bar mit Primary / Snooze / Dismiss
+ */
+
+.series-notification {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  /* Card-BG wird inline gesetzt (Variant-spezifisch) */
 }
 
-.close-button {
+/* Glow-Ring um die Karte (variant color) */
+.series-notification::before {
+  content: '';
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color var(--duration-normal) var(--ease-default);
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: var(--notif-glow, transparent);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-.close-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+.series-notification-inner {
+  position: relative;
+  padding: 16px 18px 14px;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
-.notification-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* Hintergrund-Aura im Header */
+.series-notification-aura {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 100%;
+  pointer-events: none;
+  filter: blur(40px);
+  opacity: 0.45;
+  z-index: 0;
 }
 
-.notification-header {
+/* ─── Header ─────────────────────────────────────────────────────────── */
+.series-notification-header {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  z-index: 1;
 }
 
-.notification-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-  font-family: var(--font-display);
-  line-height: 1.2;
-}
-
-.new-icon {
-  font-size: 28px;
-}
-
-.new-icon.pulse {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.series-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: var(--radius-md);
-}
-
-.series-poster {
-  width: 50px;
-  height: 75px;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-md);
-  flex-shrink: 0;
-}
-
-.series-details {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.series-details h4 {
-  margin: 0 0 6px 0;
-  font-size: 1rem;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-
-.season-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  opacity: 0.9;
-  font-size: 0.85rem;
-}
-
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 120px;
-}
-
-.view-button,
-.watchlist-button {
+.series-notification-header-icon {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  border: none;
   border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  white-space: nowrap;
-  font-size: 0.9rem;
+  flex-shrink: 0;
+  /* BG wird inline gesetzt */
 }
 
-.view-button:hover,
-.watchlist-button:not(:disabled):hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.3),
-    0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.watchlist-button {
-  backdrop-filter: blur(10px);
-}
-
-.watchlist-button.added {
-  cursor: default;
-  opacity: 0.9;
-}
-
-.watchlist-button svg {
-  font-size: 18px;
-}
-
-.view-button svg {
+.series-notification-header-icon svg {
   font-size: 20px;
 }
 
-.navigation-dots {
+.series-notification-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  flex: 1;
+  min-width: 0;
+}
+
+.series-notification-count-pill {
+  flex-shrink: 0;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.series-notification-collapse-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-top: 8px;
+  transition: background-color 0.2s var(--ease-default);
+  color: inherit;
+  opacity: 0.6;
 }
 
-.nav-button {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  padding: 0 8px;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.series-notification-collapse-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.nav-button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+.series-notification-collapse-btn svg {
+  font-size: 18px;
 }
 
-.dots {
+/* ─── Series Card (inside) ───────────────────────────────────────────── */
+.series-notification-body {
+  position: relative;
+  z-index: 1;
+}
+
+.series-notification-series {
   display: flex;
-  gap: 8px;
-  max-width: 280px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px 0;
-  /* Verstecke Scrollbar aber erlaube Scrollen */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 12px;
 }
 
-.dots::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+.series-notification-poster-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.series-notification-poster {
+  width: 52px;
+  height: 78px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.2);
+  display: block;
 }
 
-.dot.active {
-  width: 24px;
-  border-radius: 4px;
+.series-notification-poster-placeholder {
+  width: 52px;
+  height: 78px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.counter {
-  text-align: center;
-  margin: 0;
-  font-size: 0.85rem;
+.series-notification-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.series-notification-name {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.series-notification-detail {
+  margin: 0 0 4px 0;
+  font-size: 0.82rem;
+  opacity: 0.78;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.3;
+}
+
+.series-notification-detail svg {
+  font-size: 14px;
+  flex-shrink: 0;
   opacity: 0.7;
 }
 
-/* Mobile adjustments */
+.series-notification-timestamp {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Action-Bar ─────────────────────────────────────────────────────── */
+.series-notification-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.series-notification-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition:
+    transform 0.18s var(--ease-default),
+    background-color 0.2s var(--ease-default),
+    box-shadow 0.2s var(--ease-default);
+  border: none;
+  min-height: 44px;
+  white-space: nowrap;
+}
+
+.series-notification-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.series-notification-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.series-notification-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.series-notification-btn svg {
+  font-size: 18px;
+}
+
+/* Primary CTA (variant color) */
+.series-notification-btn--primary {
+  flex: 1;
+  box-shadow:
+    0 4px 14px -4px rgba(0, 0, 0, 0.5),
+    0 2px 5px -2px rgba(0, 0, 0, 0.3);
+}
+
+.series-notification-btn--primary:hover:not(:disabled) {
+  box-shadow:
+    0 8px 22px -6px rgba(0, 0, 0, 0.55),
+    0 3px 8px -2px rgba(0, 0, 0, 0.35);
+}
+
+/* Secondary action (z.B. Watchlist remove) */
+.series-notification-btn--secondary {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.series-notification-btn--secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.series-notification-btn--done {
+  background: rgba(76, 175, 80, 0.15);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+}
+
+/* Icon-only buttons (Snooze, Dismiss) — square */
+.series-notification-btn--icon {
+  width: 44px;
+  min-width: 44px;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.series-notification-btn--icon:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Snooze Menu (dropdown) ────────────────────────────────────────── */
+.snooze-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  background: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 160px;
+  z-index: 100;
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.5),
+    0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
+
+.snooze-menu-header {
+  padding: 8px 12px 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+.snooze-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 0.15s var(--ease-default);
+}
+
+.snooze-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.snooze-menu-item-emoji {
+  margin-right: 8px;
+  font-size: 1rem;
+}
+
+/* ─── Inline Rating Picker (variant='unrated') ──────────────────────── */
+.inline-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 12px;
+}
+
+.inline-rating-stars {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+
+.inline-rating-star {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  transition:
+    transform 0.15s var(--ease-default),
+    color 0.15s var(--ease-default);
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.inline-rating-star:hover {
+  transform: scale(1.15);
+}
+
+.inline-rating-star.filled {
+  color: var(--theme-warning, #ff9800);
+}
+
+.inline-rating-star svg {
+  font-size: 24px;
+}
+
+.inline-rating-label {
+  text-align: center;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  min-height: 1em;
+}
+
+/* ─── Carousel dots ─────────────────────────────────────────────────── */
+.series-notification-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.series-notification-nav-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  opacity: 0.7;
+  transition:
+    opacity 0.15s var(--ease-default),
+    background-color 0.15s var(--ease-default);
+}
+
+.series-notification-nav-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.series-notification-nav-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.series-notification-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  max-width: 240px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 8px;
+}
+
+.series-notification-dots::-webkit-scrollbar {
+  display: none;
+}
+
+.series-notification-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Visueller Dot innen — Touch-Target bleibt 14px aber wirkt kleiner */
+.series-notification-dot::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.2s var(--ease-default);
+}
+
+.series-notification-dot.active::after {
+  width: 18px;
+  border-radius: 4px;
+  /* BG wird inline gesetzt */
+}
+
+.series-notification-counter {
+  margin: 8px 0 0;
+  text-align: center;
+  font-size: 0.72rem;
+  opacity: 0.55;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Tab-Bar (NotificationHub) ─────────────────────────────────────── */
+.notif-hub {
+  position: sticky;
+  top: 56px;
+  z-index: 50;
+  margin: 12px auto 16px;
+  max-width: 520px;
+  width: calc(100% - 24px);
+}
+
+.notif-hub-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.notif-hub-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.notif-hub-tab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: all 0.2s var(--ease-default);
+  opacity: 0.55;
+  position: relative;
+}
+
+.notif-hub-tab:hover {
+  opacity: 0.85;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.notif-hub-tab.active {
+  opacity: 1;
+  /* BG wird inline gesetzt (Variant-Color) */
+}
+
+.notif-hub-tab svg {
+  font-size: 16px;
+}
+
+.notif-hub-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  margin-left: 2px;
+}
+
+.notif-hub-tab.active .notif-hub-tab-count {
+  background: rgba(0, 0, 0, 0.25);
+  color: inherit;
+}
+
+/* ─── Mini-Mode (collapsed banner) ─────────────────────────────────── */
+.notif-hub-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: all 0.2s var(--ease-default);
+  min-height: 44px;
+}
+
+.notif-hub-mini:hover {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.notif-hub-mini-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.notif-hub-mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.notif-hub-mini-text {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.notif-hub-mini-arrow {
+  opacity: 0.5;
+  font-size: 20px;
+}
+
+/* ─── Confetti / Sparkle particles ──────────────────────────────────── */
+.notif-particle {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
+
+.notif-sparkle {
+  position: absolute;
+  pointer-events: none;
+  color: #ffd54f;
+  filter: drop-shadow(0 0 4px currentColor);
+  z-index: 2;
+}
+
+/* ─── Mobile adjustments ────────────────────────────────────────────── */
 @media (max-width: 500px) {
-  .new-season-notification {
-    top: 65px;
-    left: 12px;
-    right: 12px;
-    width: auto;
-    max-width: none;
-    margin: 0;
-    padding: 14px;
+  .series-notification {
+    border-radius: 18px;
   }
 
-  .notification-header {
-    gap: 8px;
-    margin-bottom: 12px;
+  .series-notification-inner {
+    padding: 14px 14px 12px;
   }
 
-  .notification-header h3 {
-    font-size: 1rem;
-  }
-
-  .new-icon {
-    font-size: 24px;
-  }
-
-  /* Komplett neue Mobile-Struktur */
-  .series-info {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    padding: 0;
-    background: none;
-  }
-
-  /* Obere Reihe: Poster + Infos nebeneinander */
-  .series-poster {
-    display: none; /* Verstecke Poster auf Mobile für mehr Platz */
-  }
-
-  .series-details {
-    width: 100%;
-    margin: 0;
-  }
-
-  .series-details h4 {
-    font-size: 1.1rem;
-    margin: 0 0 6px 0;
-    font-weight: 600;
-    color: inherit;
-  }
-
-  .season-info {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+  .series-notification-title {
     font-size: 0.9rem;
-    opacity: 0.9;
-    margin-bottom: 12px;
   }
 
-  .season-info svg {
-    font-size: 16px;
+  .series-notification-series {
+    gap: 12px;
+    padding: 10px;
   }
 
-  /* Buttons untereinander für bessere Touch-Targets */
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 100%;
+  .series-notification-poster {
+    width: 48px;
+    height: 72px;
   }
 
-  .view-button,
-  .watchlist-button {
-    width: 100%;
-    padding: 12px;
-    font-size: 0.95rem;
-    border-radius: 12px;
-    justify-content: center;
-    gap: 8px;
+  .series-notification-poster-placeholder {
+    width: 48px;
+    height: 72px;
   }
 
-  .watchlist-button span,
-  .view-button span {
-    display: inline;
+  .series-notification-name {
     font-size: 0.95rem;
   }
 
-  .watchlist-button svg,
-  .view-button svg {
-    font-size: 20px;
+  .series-notification-detail {
+    font-size: 0.78rem;
   }
 
-  .view-button,
-  .watchlist-button {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 10px;
+  .series-notification-actions {
+    gap: 6px;
+  }
+
+  .series-notification-btn {
+    padding: 10px 10px;
     font-size: 0.8rem;
-    gap: 4px;
   }
 
-  .watchlist-button span,
-  .view-button span {
-    display: inline; /* Zeige Text auf Mobile */
-    font-size: 0.75rem;
+  .series-notification-btn--primary,
+  .series-notification-btn--secondary {
+    flex: 1;
+    min-width: 0;
   }
 
-  .watchlist-button svg,
-  .view-button svg {
-    font-size: 16px;
+  .notif-hub {
+    top: 60px;
+    width: calc(100% - 20px);
   }
 
-  .navigation-dots {
-    margin-top: 6px;
-    gap: 8px;
+  .notif-hub-tab {
+    padding: 7px 11px;
+    font-size: 0.72rem;
   }
 
-  .nav-button {
-    font-size: 20px;
-    padding: 0 4px;
-  }
-
-  .dot {
-    width: 6px;
-    height: 6px;
-  }
-
-  .dot.active {
-    width: 18px;
-  }
-
-  .counter {
-    font-size: 0.75rem;
-    margin-top: 4px;
+  .snooze-menu {
+    right: -6px;
+    min-width: 150px;
   }
 }

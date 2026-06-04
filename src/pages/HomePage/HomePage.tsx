@@ -6,9 +6,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
-import { CarouselNotification } from '../../components/ui/CarouselNotification';
-import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
-import { UnsubscribedNewSeasonNotification } from '../../components/ui/UnsubscribedNewSeasonNotification';
+import { SeriesNotificationHub } from './SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -30,7 +28,6 @@ import {
   SecondaryActionsSection,
 } from './HomeActionSections';
 import { NotificationSheet } from './NotificationSheet';
-import { ProactiveRecapCard } from './ProactiveRecapCard';
 import { PosterNavSheet } from './PosterNavSheet';
 import { StatsGrid } from './StatsGrid';
 import { TasteMatchCard } from './TasteMatchCard';
@@ -123,7 +120,6 @@ export const HomePage: React.FC = () => {
     quickRatingSeasonNumber,
     closeQuickRating,
     saveQuickRating,
-    showQuickRating,
   } = useEpisodeSwipeHandlers();
 
   // Rewatch
@@ -417,55 +413,24 @@ export const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* Notification queue: only one at a time, by priority */}
-      {proactiveRecaps.recaps.length > 0 ? (
-        <ProactiveRecapCard
-          recaps={proactiveRecaps.recaps}
-          onDismiss={proactiveRecaps.dismiss}
-          onFetchRecap={proactiveRecaps.fetchRecap}
-        />
-      ) : unsubscribedNewSeasons.length > 0 ? (
-        <UnsubscribedNewSeasonNotification
-          entries={unsubscribedNewSeasons}
-          onDismiss={dismissUnsubscribedNewSeasons}
-        />
-      ) : providerChanges && providerChanges.length > 0 ? (
-        <ProviderChangeNotification changes={providerChanges} onDismiss={clearProviderChanges} />
-      ) : seriesWithNewSeasons && seriesWithNewSeasons.length > 0 ? (
-        <CarouselNotification
-          variant="new-season"
-          series={seriesWithNewSeasons}
-          onDismiss={clearNewSeasons}
-        />
-      ) : inactiveSeries && inactiveSeries.length > 0 ? (
-        <CarouselNotification
-          variant="inactive"
-          series={inactiveSeries}
-          onDismiss={clearInactiveSeries}
-        />
-      ) : inactiveRewatches && inactiveRewatches.length > 0 ? (
-        <CarouselNotification
-          variant="inactive-rewatch"
-          series={inactiveRewatches}
-          onDismiss={clearInactiveRewatches}
-        />
-      ) : completedSeries && completedSeries.length > 0 ? (
-        <CarouselNotification
-          variant="completed"
-          series={completedSeries}
-          onDismiss={clearCompletedSeries}
-        />
-      ) : unratedSeries && unratedSeries.length > 0 ? (
-        <CarouselNotification
-          variant="unrated"
-          series={unratedSeries}
-          onDismiss={clearUnratedSeries}
-          onQuickRate={(s, onRated) => {
-            onRatedCallbackRef.current = onRated;
-            showQuickRating(s, 0);
-          }}
-        />
-      ) : null}
+      {/* Unified Series-Notification Hub — Tab-Bar + Mini-Mode + alle Kategorien */}
+      <SeriesNotificationHub
+        proactiveRecaps={proactiveRecaps}
+        unsubscribedNewSeasons={unsubscribedNewSeasons}
+        onDismissUnsubscribed={dismissUnsubscribedNewSeasons}
+        providerChanges={providerChanges}
+        onDismissProvider={clearProviderChanges}
+        seriesWithNewSeasons={seriesWithNewSeasons}
+        onDismissNewSeasons={clearNewSeasons}
+        inactiveSeries={inactiveSeries}
+        onDismissInactive={clearInactiveSeries}
+        inactiveRewatches={inactiveRewatches}
+        onDismissInactiveRewatch={clearInactiveRewatches}
+        completedSeries={completedSeries}
+        onDismissCompleted={clearCompletedSeries}
+        unratedSeries={unratedSeries}
+        onDismissUnrated={clearUnratedSeries}
+      />
 
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}
