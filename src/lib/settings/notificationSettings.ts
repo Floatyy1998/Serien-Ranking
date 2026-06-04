@@ -74,3 +74,90 @@ export const setProviderNotificationsEnabled = async (
     .set(enabled);
   invalidate(userId);
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Snooze — "Erinnere mich später" (kürzer als Dismiss)
+// Eine zentrale Tabelle, damit alle Notification-Typen denselben Mechanismus
+// nutzen. Pfad: users/{uid}/notificationSnooze/{category}/{seriesId} = epoch ms
+// (= snoozeUntil). Detection-Pipelines lesen den Wert beim Lauf.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type NotificationCategory =
+  | 'inactive'
+  | 'inactive-rewatch'
+  | 'completed'
+  | 'unrated'
+  | 'new-season'
+  | 'provider';
+
+export const SNOOZE_OPTIONS = [1, 7, 30] as const;
+export type SnoozeOption = (typeof SNOOZE_OPTIONS)[number];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export const snoozeLabel = (days: SnoozeOption): string => {
+  if (days === 1) return '1 Tag';
+  if (days === 7) return '1 Woche';
+  return '1 Monat';
+};
+
+export const snoozeNotifications = async (
+  category: NotificationCategory,
+  seriesIds: number[],
+  userId: string,
+  days: SnoozeOption
+): Promise<void> => {
+  if (seriesIds.length === 0) return;
+  const until = Date.now() + days * DAY_MS;
+  const updates: Record<string, number> = {};
+  for (const id of seriesIds) {
+    updates[`users/${userId}/notificationSnooze/${category}/${id}`] = until;
+  }
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[Snooze] Failed to snooze ${category}: ${message}`);
+  }
+};
+
+export const getSnoozedUntil = async (
+  category: NotificationCategory,
+  userId: string
+): Promise<Record<string, number>> => {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${userId}/notificationSnooze/${category}`)
+      .once('value');
+    return (snapshot.val() as Record<string, number> | null) || {};
+  } catch {
+    return {};
+  }
+};
+
+/**
+ * Cleanup: entferne abgelaufene Snooze-Einträge und solche für Serien außerhalb
+ * der `validIds`-Menge. Wird optional von den Detections gerufen, damit die
+ * Tabelle nicht wuchert.
+ */
+export const cleanupSnoozes = async (
+  category: NotificationCategory,
+  userId: string,
+  validIds: Set<string>
+): Promise<void> => {
+  const current = await getSnoozedUntil(category, userId);
+  const now = Date.now();
+  const updates: Record<string, null> = {};
+  for (const [id, until] of Object.entries(current)) {
+    if (until < now || !validIds.has(id)) {
+      updates[`users/${userId}/notificationSnooze/${category}/${id}`] = null;
+    }
+  }
+  if (Object.keys(updates).length === 0) return;
+  try {
+    await firebase.database().ref().update(updates);
+  } catch {
+    // best-effort cleanup
+  }
+};

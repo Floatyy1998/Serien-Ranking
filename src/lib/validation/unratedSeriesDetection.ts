@@ -3,6 +3,7 @@ import type { Series } from '../../types/Series';
 import { normalizeSeasons, normalizeEpisodes } from '../episode/seriesMetrics';
 import { calculateOverallRating } from '../rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -83,8 +84,10 @@ function hasCurrentlyAiringSeason(series: Series): boolean {
  */
 export async function detectUnratedSeries(seriesList: Series[], userId: string): Promise<Series[]> {
   const now = Date.now();
-  const dismissedRef = firebase.database().ref(`users/${userId}/unratedSeriesNotifications`);
-  const dismissedSnap = await dismissedRef.once('value');
+  const [dismissedSnap, snoozed] = await Promise.all([
+    firebase.database().ref(`users/${userId}/unratedSeriesNotifications`).once('value'),
+    getSnoozedUntil('unrated', userId),
+  ]);
   const dismissed =
     (dismissedSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
 
@@ -104,6 +107,10 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
       const dismissedAt = dismissEntry.timestamp || 0;
       if (now - dismissedAt < SEVEN_DAYS_MS) continue;
     }
+
+    // Skip if user snoozed
+    const snoozedUntil = snoozed[seriesKey];
+    if (typeof snoozedUntil === 'number' && snoozedUntil > now) continue;
 
     const lastCompletedSeason = getLastCompletedAiredSeason(series);
     if (!lastCompletedSeason) continue;
@@ -142,6 +149,7 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
       console.error(`[UnratedSeriesDetection] Failed to cleanup notifications: ${message}`);
     }
   }
+  await cleanupSnoozes('unrated', userId, currentIds);
 
   return unrated;
 }

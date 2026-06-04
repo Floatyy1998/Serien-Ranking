@@ -1,7 +1,11 @@
 import firebase from 'firebase/compat/app';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import type { Series } from '../../types/Series';
-import { getProviderNotificationsEnabled } from '../settings/notificationSettings';
+import {
+  getProviderNotificationsEnabled,
+  getSnoozedUntil,
+  cleanupSnoozes,
+} from '../settings/notificationSettings';
 
 export interface ProviderChangeInfo {
   series: Series;
@@ -138,9 +142,10 @@ export const detectProviderChanges = async (
 
   const watchlistSeries = seriesList.filter((s) => s.watchlist && s.id);
 
-  const [knownProviders, states] = await Promise.all([
+  const [knownProviders, states, snoozed] = await Promise.all([
     getKnownProviders(userId),
     getNotificationStates(userId),
+    getSnoozedUntil('provider', userId),
   ]);
 
   const changes: ProviderChangeInfo[] = [];
@@ -185,6 +190,11 @@ export const detectProviderChanges = async (
         if (dismissedAt !== null && nowMs - dismissedAt < DISMISSED_COOLDOWN) {
           // Aktiv weggeklickt: akzeptiere neuen Stand, ruh.
           updatedKnown[key] = { providers: currentProviders, lastChecked: now };
+          return null;
+        }
+        const snoozedUntil = snoozed[key];
+        if (typeof snoozedUntil === 'number' && snoozedUntil > nowMs) {
+          // User hat snoozed — knownProviders NICHT updaten, damit Diff nach Ablauf bleibt
           return null;
         }
         if (state?.shownAt && nowMs - state.shownAt < SHOWN_COOLDOWN) {
@@ -232,6 +242,7 @@ export const detectProviderChanges = async (
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to store providers:', error);
   }
+  await cleanupSnoozes('provider', userId, new Set(watchlistSeries.map((s) => s.id.toString())));
 
   return changes;
 };

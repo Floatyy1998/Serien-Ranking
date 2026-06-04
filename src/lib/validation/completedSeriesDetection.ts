@@ -2,6 +2,7 @@ import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
 import { hasActiveRewatch } from './rewatch.utils';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
 export interface CompletedSeriesData {
   seriesId: number;
@@ -79,7 +80,10 @@ export const detectCompletedSeries = async (
   seriesList: Series[],
   userId: string
 ): Promise<Series[]> => {
-  const storedData = await getStoredCompletedData(userId);
+  const [storedData, snoozed] = await Promise.all([
+    getStoredCompletedData(userId),
+    getSnoozedUntil('completed', userId),
+  ]);
   const currentTime = Date.now();
   const completedSeries: Series[] = [];
   const updatedStoredData = { ...storedData };
@@ -105,6 +109,8 @@ export const detectCompletedSeries = async (
     const dismissedData = dismissedNotifications[series.id];
     const wasDismissedRecently =
       dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
+    const snoozedUntil = snoozed[seriesKey];
+    const isSnoozed = typeof snoozedUntil === 'number' && snoozedUntil > currentTime;
 
     if (!stored) {
       // Erste Erfassung
@@ -130,7 +136,7 @@ export const detectCompletedSeries = async (
         !newNotified ||
         (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
 
-      if (notifiedCooldownPassed && !wasDismissedRecently) {
+      if (notifiedCooldownPassed && !wasDismissedRecently && !isSnoozed) {
         isCompleted = true;
       }
     }
@@ -180,6 +186,7 @@ export const detectCompletedSeries = async (
 
   // Aktualisierte Daten speichern
   await storeCompletedData(userId, updatedStoredData);
+  await cleanupSnoozes('completed', userId, currentWatchlistIds);
 
   return completedSeries;
 };
