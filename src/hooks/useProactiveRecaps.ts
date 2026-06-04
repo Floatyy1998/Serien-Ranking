@@ -240,10 +240,7 @@ export function useProactiveRecaps() {
   );
 
   useEffect(() => {
-    if (!user) {
-      setDismissedState(null);
-      return;
-    }
+    if (!user) return; // beim Logout greift der derived useMemo (UID-Mismatch → leeres Set)
     const uid = user.uid;
     let cancelled = false;
     const ref = firebase.database().ref(`users/${uid}/proactiveRecapDismissed`);
