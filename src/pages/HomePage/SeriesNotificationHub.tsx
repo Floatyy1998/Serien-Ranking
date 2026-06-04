@@ -3,22 +3,20 @@
  *
  * Ersetzt die alte Prio-Queue auf der HomePage (eine Karte zur Zeit, andere versteckt).
  * Stattdessen Tab-Bar: User sieht alle aktiven Kategorien gleichzeitig, kann wechseln.
- *
- * Mini-Mode: wenn User minimiert hat (Session-State), nur kompakter Banner mit Dots
- * + Expand-Arrow. Beim nächsten App-Open wieder Vollanzeige.
+ * Karte ist `position: fixed` (siehe CSS) — schwebt über dem Header, schiebt nichts
+ * im Page-Flow weg. Schließen via X-Button.
  */
 
 import {
   AccessTime,
   AutoStories,
   CheckCircle,
-  ExpandMore,
   NewReleases,
   StarOutline,
   SwapHoriz,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
@@ -100,8 +98,6 @@ interface SeriesNotificationHubProps {
   onDismissUnrated: () => void;
 }
 
-const MINIMIZED_KEY = 'series-notif-hub-minimized';
-
 export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   proactiveRecaps,
   unsubscribedNewSeasons,
@@ -150,23 +146,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     [categoryCounts]
   );
 
-  // Minimized-State (Session, kein Firebase): User kann den Hub einklappen
-  const [minimized, setMinimized] = useState<boolean>(() => {
-    try {
-      return sessionStorage.getItem(MINIMIZED_KEY) === '1';
-    } catch {
-      return false;
-    }
-  });
-
-  useEffect(() => {
-    try {
-      sessionStorage.setItem(MINIMIZED_KEY, minimized ? '1' : '0');
-    } catch {
-      // ignore
-    }
-  }, [minimized]);
-
   // Aktiver Tab — User-Pick wird gespeichert. Wenn die gewählte Kategorie
   // verschwindet (z.B. weil dismissed), fällt der derived `currentKey` auf die
   // erste verfügbare zurück — kein setState-im-Effect-Reset nötig.
@@ -178,45 +157,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     activeKey && activeCategories.some((c) => c.key === activeKey)
       ? activeKey
       : activeCategories[0].key;
-
-  // Mini-Mode: kompakter Banner mit Dots
-  if (minimized) {
-    const totalCount = activeCategories.reduce((sum, c) => sum + (categoryCounts[c.key] || 0), 0);
-    return (
-      <div className="notif-hub">
-        <motion.button
-          className="notif-hub-mini"
-          onClick={() => setMinimized(false)}
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          whileHover={{ scale: 1.005 }}
-          whileTap={{ scale: 0.99 }}
-          style={{
-            color: currentTheme.text.primary,
-            width: '100%',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-          aria-label={`${totalCount} Benachrichtigungen anzeigen`}
-        >
-          <div className="notif-hub-mini-dots">
-            {activeCategories.slice(0, 5).map((c) => (
-              <span
-                key={c.key}
-                className="notif-hub-mini-dot"
-                style={{ background: c.color(currentTheme) }}
-              />
-            ))}
-          </div>
-          <span className="notif-hub-mini-text">
-            {totalCount} {totalCount === 1 ? 'Hinweis' : 'Hinweise'}
-            {activeCategories.length > 1 ? ` in ${activeCategories.length} Kategorien` : ''}
-          </span>
-          <ExpandMore className="notif-hub-mini-arrow" />
-        </motion.button>
-      </div>
-    );
-  }
 
   // Render der aktiven Kategorie
   const renderActive = () => {
@@ -234,16 +174,11 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
           <UnsubscribedNewSeasonNotification
             entries={unsubscribedNewSeasons}
             onDismiss={onDismissUnsubscribed}
-            onCollapse={() => setMinimized(true)}
           />
         );
       case 'provider':
         return (
-          <ProviderChangeNotification
-            changes={providerChanges}
-            onDismiss={onDismissProvider}
-            onCollapse={() => setMinimized(true)}
-          />
+          <ProviderChangeNotification changes={providerChanges} onDismiss={onDismissProvider} />
         );
       case 'new-season':
         return (
@@ -251,7 +186,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="new-season"
             series={seriesWithNewSeasons}
             onDismiss={onDismissNewSeasons}
-            onCollapse={() => setMinimized(true)}
           />
         );
       case 'inactive':
@@ -260,7 +194,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="inactive"
             series={inactiveSeries}
             onDismiss={onDismissInactive}
-            onCollapse={() => setMinimized(true)}
           />
         );
       case 'inactive-rewatch':
@@ -269,7 +202,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="inactive-rewatch"
             series={inactiveRewatches}
             onDismiss={onDismissInactiveRewatch}
-            onCollapse={() => setMinimized(true)}
           />
         );
       case 'completed':
@@ -278,7 +210,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="completed"
             series={completedSeries}
             onDismiss={onDismissCompleted}
-            onCollapse={() => setMinimized(true)}
           />
         );
       case 'unrated':
@@ -287,7 +218,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="unrated"
             series={unratedSeries}
             onDismiss={onDismissUnrated}
-            onCollapse={() => setMinimized(true)}
           />
         );
       default:
