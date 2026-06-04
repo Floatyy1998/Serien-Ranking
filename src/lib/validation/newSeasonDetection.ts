@@ -1,10 +1,21 @@
 import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
 
-// Einfache Map: seriesId → bekannte Staffelanzahl
+// Einfache Map: seriesId → bekannte Staffelanzahl (vom User bestätigter Stand)
 type SeasonCounts = Record<string, number>;
 
-const NOTIFIED_KEY = 'newSeasonNotified';
+interface ShownEntry {
+  /** Welche `seasonCount` der User zuletzt nur passiv gesehen hat. */
+  shownCount: number;
+  /** Wann die Notification dem User zuletzt gezeigt wurde. */
+  shownAt: number;
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** Nach passiver Anzeige: kurz Ruhe, damit die Notification nicht bei jedem Reload
+ * sofort wieder springt — kommt nach Cooldown wieder, falls Staffelanzahl unverändert
+ * und der User immer noch nicht reagiert hat. */
+const SHOWN_COOLDOWN = 3 * DAY_MS;
 
 const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   try {
@@ -27,27 +38,26 @@ const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<vo
   }
 };
 
-// Notified-Tracking in sessionStorage (nur für aktuelle Session relevant)
-const getNotifiedIds = (): Set<string> => {
+const getShownEntries = async (userId: string): Promise<Record<string, ShownEntry>> => {
   try {
-    const stored = sessionStorage.getItem(NOTIFIED_KEY);
-    return stored ? new Set(JSON.parse(stored) as string[]) : new Set();
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${userId}/newSeasonNotifications`)
+      .once('value');
+    return (snapshot.val() as Record<string, ShownEntry> | null) || {};
   } catch {
-    return new Set();
+    return {};
   }
 };
 
-const addNotifiedIds = (ids: string[]): void => {
-  const notified = getNotifiedIds();
-  ids.forEach((id) => notified.add(id));
-  sessionStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notified]));
-};
-
 export const detectNewSeasons = async (seriesList: Series[], userId: string): Promise<Series[]> => {
-  const storedCounts = await getStoredSeasonCounts(userId);
-  const notifiedIds = getNotifiedIds();
+  const [storedCounts, shownEntries] = await Promise.all([
+    getStoredSeasonCounts(userId),
+    getShownEntries(userId),
+  ]);
   const seriesWithNewSeasons: Series[] = [];
   const updatedCounts: SeasonCounts = {};
+  const now = Date.now();
 
   for (const series of seriesList) {
     if (!series || !series.id || typeof series.seasonCount !== 'number') continue;
@@ -56,44 +66,114 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
     const storedCount = storedCounts[key];
     updatedCounts[key] = storedCount ?? series.seasonCount;
 
-    if (storedCount !== undefined && series.seasonCount > storedCount && !notifiedIds.has(key)) {
-      seriesWithNewSeasons.push(series);
+    if (storedCount === undefined || series.seasonCount <= storedCount) continue;
+
+    // Es gibt einen Diff — prüfen ob die Notification erst kürzlich gezeigt wurde
+    // und der Staffel-Stand identisch ist (= passive Anzeige, kein Re-Trigger durch
+    // neue Staffel). Wenn ja: skip, sonst zeigen.
+    const shown = shownEntries[key];
+    if (shown && shown.shownCount === series.seasonCount && now - shown.shownAt < SHOWN_COOLDOWN) {
+      continue;
+    }
+
+    seriesWithNewSeasons.push(series);
+  }
+
+  // Cleanup: stale Einträge entfernen (Serien nicht mehr in Liste)
+  const currentIds = new Set(seriesList.filter((s) => s?.id).map((s) => s.id.toString()));
+  const cleanupUpdates: Record<string, null> = {};
+  for (const key of Object.keys(shownEntries)) {
+    if (!currentIds.has(key)) {
+      cleanupUpdates[`users/${userId}/newSeasonNotifications/${key}`] = null;
+    }
+  }
+  for (const key of Object.keys(storedCounts)) {
+    if (!currentIds.has(key)) {
+      delete updatedCounts[key];
+    }
+  }
+  if (Object.keys(cleanupUpdates).length > 0) {
+    try {
+      await firebase.database().ref().update(cleanupUpdates);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[NewSeasonDetection] Failed to cleanup notifications: ${message}`);
     }
   }
 
-  // Speichere nur wenn sich was geändert hat (neue Serien hinzugekommen)
-  const hasNewEntries = Object.keys(updatedCounts).some((k) => !(k in storedCounts));
-  if (hasNewEntries) {
+  // Speichere nur wenn sich was geändert hat (neue Serien hinzugekommen, alte raus)
+  const counts = Object.keys(storedCounts);
+  const updated = Object.keys(updatedCounts);
+  const hasEntryChange =
+    counts.length !== updated.length || updated.some((k) => !(k in storedCounts));
+  if (hasEntryChange) {
     await storeSeasonCounts(userId, updatedCounts);
   }
 
   return seriesWithNewSeasons;
 };
 
-// Nach Benachrichtigung: seasonCount auf aktuellen Wert setzen
+/**
+ * Wird vom UI nach Anzeige der NewSeason-Notification gerufen. Setzt nur den
+ * passiven shownAt-Marker — `seasonCounts` bleibt unverändert, damit der Diff
+ * nach SHOWN_COOLDOWN wieder entsteht, falls der User die Info weiter ignoriert.
+ */
+export const markNewSeasonsAsShown = async (
+  seriesList: Pick<Series, 'id' | 'seasonCount'>[],
+  userId: string
+): Promise<void> => {
+  if (seriesList.length === 0) return;
+  const updates: Record<string, unknown> = {};
+  const now = Date.now();
+  for (const s of seriesList) {
+    if (!s.id || typeof s.seasonCount !== 'number') continue;
+    updates[`users/${userId}/newSeasonNotifications/${s.id}`] = {
+      shownCount: s.seasonCount,
+      shownAt: now,
+    };
+  }
+  if (Object.keys(updates).length === 0) return;
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[NewSeasonDetection] Failed to mark shown: ${message}`);
+  }
+};
+
+/**
+ * Nach expliziter User-Aktion (Dismiss / "Watchlist" / Navigate): seasonCount
+ * auf den aktuellen Wert hochsetzen, damit der Diff verschwindet und gleichzeitig
+ * den passiven shownAt-Eintrag aufräumen.
+ */
 export const markMultipleSeasonsAsNotified = async (
   seriesIds: number[],
   userId: string,
   seriesList?: Series[]
 ): Promise<void> => {
+  if (seriesIds.length === 0) return;
   const storedCounts = await getStoredSeasonCounts(userId);
-  const keys = seriesIds.map((id) => id.toString());
+  const updates: Record<string, unknown> = {};
+  let countsChanged = false;
 
-  // SessionStorage updaten
-  addNotifiedIds(keys);
-
-  // Firebase updaten: Staffelanzahl auf aktuellen Wert setzen
-  let hasChanges = false;
   for (const id of seriesIds) {
     const key = id.toString();
     const series = seriesList?.find((s) => s.id === id);
     if (series && series.seasonCount > (storedCounts[key] ?? 0)) {
       storedCounts[key] = series.seasonCount;
-      hasChanges = true;
+      countsChanged = true;
     }
+    updates[`users/${userId}/newSeasonNotifications/${id}`] = null;
   }
 
-  if (hasChanges) {
-    await storeSeasonCounts(userId, storedCounts);
+  if (countsChanged) {
+    updates[`users/${userId}/meta/seasonCounts`] = storedCounts;
+  }
+
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[NewSeasonDetection] Failed to mark notified: ${message}`);
   }
 };

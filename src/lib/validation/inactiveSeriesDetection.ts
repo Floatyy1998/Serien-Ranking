@@ -7,16 +7,29 @@ import {
   normalizeEpisodes,
   getSeriesLastWatchedAt,
 } from '../episode/seriesMetrics';
+import { getInactiveThresholdDays } from '../settings/notificationSettings';
 
 export interface InactiveSeriesData {
   seriesId: number;
   lastWatchedDate: number | null;
   lastChecked: number;
   notified?: boolean;
+  /** Wann die Notification dem User zuletzt gezeigt wurde. Zusammen mit dem
+   * RENOTIFY_COOLDOWN entscheidet das, ob nach Ablauf wieder erinnert wird. */
+  notifiedAt?: number;
 }
 
-const ONE_MONTH_MS = 30 * 24 * 60 * 60 * 1000; // 30 Tage in Millisekunden
-const CHECK_COOLDOWN = 7 * 24 * 60 * 60 * 1000; // Alle 7 Tage prüfen
+const DAY_MS = 24 * 60 * 60 * 1000;
+/** Grace-Periode für noch nicht geschaute, aber kürzlich ausgestrahlte Episoden.
+ * Bewusst hartcodiert: das ist eine "User hat noch X Tage Zeit"-Regel, nicht
+ * der konfigurierbare Inaktivitäts-Schwellwert. */
+const RECENT_AIR_GRACE_DAYS = 30;
+/** Wie oft Watch-Status persistent re-gecheckt wird. Kurz, damit Watch-Resets
+ * schnell erkannt werden und nicht in einem Wochen-Cooldown stecken bleiben. */
+const WATCH_CHECK_COOLDOWN = 1 * DAY_MS;
+/** Wie lange nach gezeigter / weggeklickter Notification Ruhe ist, bevor sie
+ * — falls die Serie immer noch inaktiv ist — wieder erinnert wird. */
+const RENOTIFY_COOLDOWN = 30 * DAY_MS;
 
 export const getStoredInactiveData = async (
   userId: string
@@ -77,6 +90,7 @@ const shouldSkipForInactivity = (series: Series): boolean => {
   const now = Date.now();
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
+  const graceMs = RECENT_AIR_GRACE_DAYS * DAY_MS;
 
   for (const season of normalizeSeasons(series.seasons)) {
     for (const episode of normalizeEpisodes(season.episodes)) {
@@ -86,10 +100,10 @@ const shouldSkipForInactivity = (series: Series): boolean => {
       // Zukünftige oder heutige Episode → überspringe
       if (airDate >= todayStart) return true;
 
-      // Bereits ausgestrahlt aber innerhalb der letzten 30 Tage und nicht geschaut
+      // Bereits ausgestrahlt aber innerhalb der Grace-Periode und nicht geschaut
       // → User hat noch Zeit, die Folge zu schauen
       const daysSinceAired = now - airDate.getTime();
-      if (daysSinceAired < ONE_MONTH_MS && !episode.watched) {
+      if (daysSinceAired < graceMs && !episode.watched) {
         return true;
       }
     }
@@ -102,7 +116,15 @@ export const detectInactiveSeries = async (
   seriesList: Series[],
   userId: string
 ): Promise<Series[]> => {
-  const storedData = await getStoredInactiveData(userId);
+  const [storedData, thresholdDays] = await Promise.all([
+    getStoredInactiveData(userId),
+    getInactiveThresholdDays(userId),
+  ]);
+
+  // thresholdDays === 0 bedeutet: Feature deaktiviert
+  if (thresholdDays <= 0) return [];
+
+  const thresholdMs = thresholdDays * DAY_MS;
   const currentTime = Date.now();
   const inactiveSeries: Series[] = [];
   const updatedStoredData = { ...storedData };
@@ -126,10 +148,10 @@ export const detectInactiveSeries = async (
     const stored = storedData[seriesKey];
     const lastWatchedDate = getLastWatchedDate(series);
 
-    // Prüfe ob Benachrichtigung für diese Serie bereits abgelehnt wurde
+    // Cooldown nach explizitem Dismiss: nicht erneut zeigen bis RENOTIFY_COOLDOWN um ist.
     const dismissedData = dismissedNotifications[series.id];
     const wasDismissedRecently =
-      dismissedData?.dismissed && currentTime - dismissedData.timestamp < CHECK_COOLDOWN;
+      dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
 
     if (!stored) {
       // Erste Erfassung
@@ -139,41 +161,48 @@ export const detectInactiveSeries = async (
         lastChecked: currentTime,
         notified: false,
       };
-    } else {
-      const timeSinceLastCheck = currentTime - stored.lastChecked;
-      const shouldCheckAgain = timeSinceLastCheck >= CHECK_COOLDOWN;
+      continue;
+    }
 
-      // Prüfen ob Serie inaktiv ist (länger als einen Monat nicht geschaut)
-      if (lastWatchedDate) {
-        const timeSinceLastWatch = currentTime - lastWatchedDate;
+    const watchChanged = lastWatchedDate !== stored.lastWatchedDate;
+    // Wenn der User in der Zwischenzeit geschaut hat: notified-Flag resetten,
+    // damit beim erneuten Inaktivwerden wieder erinnert wird.
+    const newNotified = watchChanged ? false : (stored.notified ?? false);
+    const newNotifiedAt = watchChanged ? undefined : stored.notifiedAt;
 
-        if (timeSinceLastWatch > ONE_MONTH_MS && !stored.notified && !wasDismissedRecently) {
-          // Serie wurde länger als einen Monat nicht geschaut
-          inactiveSeries.push(series);
+    let isInactive = false;
+    if (lastWatchedDate) {
+      const timeSinceLastWatch = currentTime - lastWatchedDate;
+      if (timeSinceLastWatch > thresholdMs) {
+        // Re-Notify nach Cooldown: auch wenn die Serie schon mal "notified" war,
+        // erinnern wir nach RENOTIFY_COOLDOWN erneut — solange noch nichts geschaut
+        // und der User die letzte Notification nicht explizit weggeklickt hat.
+        const notifiedCooldownPassed =
+          !newNotified ||
+          (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
 
-          updatedStoredData[seriesKey] = {
-            ...stored,
-            lastWatchedDate: lastWatchedDate,
-            lastChecked: currentTime,
-            // notified bleibt false bis User interagiert
-          };
-        } else if (lastWatchedDate !== stored.lastWatchedDate || shouldCheckAgain) {
-          // Datum aktualisiert oder regelmäßiger Check
-          updatedStoredData[seriesKey] = {
-            ...stored,
-            lastWatchedDate: lastWatchedDate,
-            lastChecked: shouldCheckAgain ? currentTime : stored.lastChecked,
-            // Reset notified wenn neue Episode geschaut wurde
-            notified: lastWatchedDate !== stored.lastWatchedDate ? false : stored.notified,
-          };
+        if (notifiedCooldownPassed && !wasDismissedRecently) {
+          isInactive = true;
         }
-      } else if (shouldCheckAgain) {
-        // Keine Watch-History, aber lastChecked aktualisieren
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          lastChecked: currentTime,
-        };
       }
+    }
+
+    if (isInactive) {
+      inactiveSeries.push(series);
+    }
+
+    const shouldRefreshCheck = currentTime - stored.lastChecked >= WATCH_CHECK_COOLDOWN;
+    updatedStoredData[seriesKey] = {
+      ...stored,
+      lastWatchedDate: lastWatchedDate,
+      lastChecked: shouldRefreshCheck ? currentTime : stored.lastChecked,
+      notified: newNotified,
+      ...(newNotifiedAt !== undefined ? { notifiedAt: newNotifiedAt } : {}),
+    };
+    // Wenn notifiedAt durch Watch-Reset weg ist, sicherstellen dass das Feld nicht
+    // versehentlich vom Spread-stored mitgenommen wird.
+    if (newNotifiedAt === undefined) {
+      delete updatedStoredData[seriesKey].notifiedAt;
     }
   }
 
@@ -181,9 +210,24 @@ export const detectInactiveSeries = async (
   const currentWatchlistIds = new Set(
     seriesList.filter((s) => s && s.id && s.watchlist).map((s) => s.id.toString())
   );
+  const notificationCleanup: Record<string, null> = {};
   for (const key of Object.keys(updatedStoredData)) {
     if (!currentWatchlistIds.has(key)) {
       delete updatedStoredData[key];
+      notificationCleanup[`users/${userId}/inactiveSeriesNotifications/${key}`] = null;
+    }
+  }
+  for (const key of Object.keys(dismissedNotifications)) {
+    if (!currentWatchlistIds.has(key)) {
+      notificationCleanup[`users/${userId}/inactiveSeriesNotifications/${key}`] = null;
+    }
+  }
+  if (Object.keys(notificationCleanup).length > 0) {
+    try {
+      await firebase.database().ref().update(notificationCleanup);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[InactiveSeriesDetection] Failed to cleanup notifications: ${message}`);
     }
   }
 
@@ -193,61 +237,171 @@ export const detectInactiveSeries = async (
   return inactiveSeries;
 };
 
+interface InactiveRewatchData {
+  seriesId: number;
+  lastActivity: number;
+  notified?: boolean;
+  notifiedAt?: number;
+}
+
+const getStoredRewatchData = async (
+  userId: string
+): Promise<Record<string, InactiveRewatchData>> => {
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref(`users/${userId}/inactiveRewatchData`)
+      .once('value');
+    return (snapshot.val() as Record<string, InactiveRewatchData> | null) || {};
+  } catch {
+    return {};
+  }
+};
+
 /**
- * Erkennt Serien mit aktivem Rewatch, die seit 30 Tagen nicht mehr rewatcht wurden.
+ * Erkennt Serien mit aktivem Rewatch, die seit dem konfigurierten Schwellwert nicht
+ * mehr rewatcht wurden. Analoge Logik wie `detectInactiveSeries`:
+ * - notifiedAt blockiert Re-Anzeige bis RENOTIFY_COOLDOWN abgelaufen
+ * - lastActivity-Änderung (= User hat geschaut) resettet das notified-Flag
  */
 export const detectInactiveRewatches = async (
   seriesList: Series[],
   userId: string
 ): Promise<Series[]> => {
+  const thresholdDays = await getInactiveThresholdDays(userId);
+  if (thresholdDays <= 0) return [];
+  const thresholdMs = thresholdDays * DAY_MS;
   const currentTime = Date.now();
   const result: Series[] = [];
 
-  const notificationsRef = firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`);
-  const notificationsSnapshot = await notificationsRef.once('value');
+  const [storedData, notificationsSnap] = await Promise.all([
+    getStoredRewatchData(userId),
+    firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`).once('value'),
+  ]);
   const dismissedNotifications =
-    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
-    {};
+    (notificationsSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
+
+  const updatedStoredData: Record<string, InactiveRewatchData> = { ...storedData };
 
   for (const series of seriesList) {
     if (!series || !series.id || !series.watchlist) continue;
     if (!hasActiveRewatch(series)) continue;
 
-    const dismissedData = dismissedNotifications[series.id];
-    const wasDismissedRecently =
-      dismissedData?.dismissed && currentTime - dismissedData.timestamp < CHECK_COOLDOWN;
-    if (wasDismissedRecently) continue;
+    const seriesKey = series.id.toString();
 
-    // Use the later of: last watched episode date OR rewatch start date
+    // Letzte Aktivität: spätestes Watch-Datum oder Rewatch-Start
     const lastWatchedDate = getLastWatchedDate(series);
     const rewatchStartedAt = series.rewatch?.startedAt
       ? new Date(series.rewatch.startedAt).getTime()
       : null;
-
-    // Take the most recent activity (either a watched episode or the rewatch start)
     const lastActivity = Math.max(lastWatchedDate || 0, rewatchStartedAt || 0);
 
-    if (lastActivity > 0 && currentTime - lastActivity > ONE_MONTH_MS) {
-      result.push(series);
+    const stored = storedData[seriesKey];
+    const activityChanged = stored && stored.lastActivity !== lastActivity;
+    const newNotified = activityChanged ? false : (stored?.notified ?? false);
+    const newNotifiedAt = activityChanged ? undefined : stored?.notifiedAt;
+
+    const dismissedData = dismissedNotifications[series.id];
+    const wasDismissedRecently =
+      dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
+
+    if (lastActivity > 0 && currentTime - lastActivity > thresholdMs) {
+      const notifiedCooldownPassed =
+        !newNotified ||
+        (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
+
+      if (notifiedCooldownPassed && !wasDismissedRecently) {
+        result.push(series);
+      }
     }
+
+    updatedStoredData[seriesKey] = {
+      seriesId: series.id,
+      lastActivity,
+      notified: newNotified,
+      ...(newNotifiedAt !== undefined ? { notifiedAt: newNotifiedAt } : {}),
+    };
+    if (newNotifiedAt === undefined) {
+      delete updatedStoredData[seriesKey].notifiedAt;
+    }
+  }
+
+  // Cleanup: Einträge für Serien ohne aktiven Rewatch / nicht mehr Watchlist
+  const currentRewatchIds = new Set(
+    seriesList
+      .filter((s) => s && s.id && s.watchlist && hasActiveRewatch(s))
+      .map((s) => s.id.toString())
+  );
+
+  const cleanupUpdates: Record<string, unknown> = {};
+  for (const key of Object.keys(updatedStoredData)) {
+    if (!currentRewatchIds.has(key)) {
+      delete updatedStoredData[key];
+      cleanupUpdates[`users/${userId}/inactiveRewatchNotifications/${key}`] = null;
+    }
+  }
+  for (const key of Object.keys(dismissedNotifications)) {
+    if (!currentRewatchIds.has(key)) {
+      cleanupUpdates[`users/${userId}/inactiveRewatchNotifications/${key}`] = null;
+    }
+  }
+
+  try {
+    await firebase.database().ref(`users/${userId}/inactiveRewatchData`).set(updatedStoredData);
+    if (Object.keys(cleanupUpdates).length > 0) {
+      await firebase.database().ref().update(cleanupUpdates);
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[InactiveRewatchDetection] Failed to persist: ${message}`);
   }
 
   return result;
 };
 
-export const markInactiveSeriesAsNotified = async (
-  seriesId: number,
+/**
+ * Wird vom UI nach Anzeige der Rewatch-Inactive-Notification aufgerufen.
+ */
+export const markInactiveRewatchAsNotified = async (
+  seriesIds: number[],
   userId: string
 ): Promise<void> => {
-  const storedData = await getStoredInactiveData(userId);
-  const seriesKey = seriesId.toString();
+  if (seriesIds.length === 0) return;
+  const updates: Record<string, unknown> = {};
+  const now = Date.now();
+  for (const id of seriesIds) {
+    updates[`users/${userId}/inactiveRewatchData/${id}/notified`] = true;
+    updates[`users/${userId}/inactiveRewatchData/${id}/notifiedAt`] = now;
+  }
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[InactiveRewatchDetection] Failed to mark notified: ${message}`);
+  }
+};
 
-  if (storedData[seriesKey]) {
-    storedData[seriesKey] = {
-      ...storedData[seriesKey],
-      notified: true,
-      lastChecked: Date.now(),
-    };
-    await storeInactiveData(userId, storedData);
+/**
+ * Wird vom UI nach Anzeige der Inactive-Notification aufgerufen. Setzt das
+ * `notified`-Flag plus `notifiedAt`-Timestamp, damit die Detection den
+ * RENOTIFY_COOLDOWN korrekt berechnen kann.
+ */
+export const markInactiveSeriesAsNotified = async (
+  seriesIds: number[],
+  userId: string
+): Promise<void> => {
+  if (seriesIds.length === 0) return;
+  const updates: Record<string, unknown> = {};
+  const now = Date.now();
+  for (const id of seriesIds) {
+    updates[`users/${userId}/inactiveSeriesData/${id}/notified`] = true;
+    updates[`users/${userId}/inactiveSeriesData/${id}/notifiedAt`] = now;
+    updates[`users/${userId}/inactiveSeriesData/${id}/lastChecked`] = now;
+  }
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[InactiveSeriesDetection] Failed to mark notified: ${message}`);
   }
 };

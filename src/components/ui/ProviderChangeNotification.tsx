@@ -1,11 +1,14 @@
 import { ChevronRight, SwapHoriz, Add } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import {
+  markProviderChangesShown,
+  markProviderChangesDismissed,
+} from '../../lib/validation/providerChangeDetection';
 import { CarouselShell } from './CarouselShell';
 
 interface ProviderChangeInfo {
@@ -17,6 +20,7 @@ interface ProviderChangeInfo {
   };
   addedProviders: string[];
   removedProviders: string[];
+  currentProviders: string[];
 }
 
 interface ProviderChangeNotificationProps {
@@ -34,22 +38,32 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
 
   const color = currentTheme.accent || currentTheme.primary;
 
-  const markAsDismissed = async (seriesIds: number[]) => {
+  // Beim Mount: alle aktuell sichtbaren Changes als "gesehen" markieren, damit der
+  // SHOWN_COOLDOWN greift und sie beim nächsten Reload nicht sofort wieder springen.
+  // Ref-Guard verhindert Doppel-Run bei React-StrictMode.
+  const shownRef = useRef(false);
+  useEffect(() => {
+    if (!user || changes.length === 0 || shownRef.current) return;
+    shownRef.current = true;
+    markProviderChangesShown(
+      changes.map((c) => c.series.id),
+      user.uid
+    );
+  }, [user, changes]);
+
+  const dismiss = async (selected: ProviderChangeInfo[]) => {
     if (!user) return;
-    const updates: Record<string, { dismissed: boolean; timestamp: number }> = {};
-    seriesIds.forEach((id) => {
-      // Jitter ±2 Tage, damit Sammel-Dismiss nicht alle gleichzeitig wieder auflebt
-      const jitter = (Math.random() - 0.5) * 4 * 24 * 60 * 60 * 1000;
-      updates[`users/${user.uid}/providerChangeNotifications/${id}`] = {
-        dismissed: true,
-        timestamp: Date.now() + jitter,
-      };
-    });
-    await firebase.database().ref().update(updates);
+    await markProviderChangesDismissed(
+      selected.map((c) => ({
+        seriesId: c.series.id,
+        currentProviders: c.currentProviders,
+      })),
+      user.uid
+    );
   };
 
   const handleNavigate = (change: ProviderChangeInfo) => {
-    markAsDismissed([change.series.id]);
+    dismiss([change]);
     navigate(`/series/${change.series.id}`);
     onDismiss();
   };
@@ -74,7 +88,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
       itemCount={changes.length}
       color={color}
       onDismissAll={async () => {
-        await markAsDismissed(changes.map((c) => c.series.id));
+        await dismiss(changes);
         onDismiss();
       }}
       counterSuffix="Provider-Änderungen"

@@ -9,9 +9,17 @@ export interface CompletedSeriesData {
   seriesStatus: string | null;
   lastChecked: number;
   notified?: boolean;
+  /** Wann die Notification dem User zuletzt gezeigt wurde — verhindert via
+   * RENOTIFY_COOLDOWN wiederholte Anzeige derselben "abgeschlossen"-Meldung. */
+  notifiedAt?: number;
 }
 
-const CHECK_COOLDOWN = 7 * 24 * 60 * 60 * 1000; // Alle 7 Tage prüfen
+const DAY_MS = 24 * 60 * 60 * 1000;
+const WATCH_CHECK_COOLDOWN = 1 * DAY_MS;
+/** Nach Anzeige/Dismiss: Ruhe bis sich der Watch-Status ändert. "Abgeschlossen"
+ * ist ein stabiler Zustand — wir nerven nicht jeden Monat damit. 90 Tage ist die
+ * Sicherheitsleine, falls der State-Reset bei Unwatch mal nicht greift. */
+const RENOTIFY_COOLDOWN = 90 * DAY_MS;
 
 export const getStoredCompletedData = async (
   userId: string
@@ -96,7 +104,7 @@ export const detectCompletedSeries = async (
     // Prüfe ob Benachrichtigung für diese Serie bereits abgelehnt wurde
     const dismissedData = dismissedNotifications[series.id];
     const wasDismissedRecently =
-      dismissedData?.dismissed && currentTime - dismissedData.timestamp < CHECK_COOLDOWN;
+      dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
 
     if (!stored) {
       // Erste Erfassung
@@ -107,37 +115,45 @@ export const detectCompletedSeries = async (
         lastChecked: currentTime,
         notified: false,
       };
-    } else {
-      const timeSinceLastCheck = currentTime - stored.lastChecked;
-      const shouldCheckAgain = timeSinceLastCheck >= CHECK_COOLDOWN;
+      continue;
+    }
 
-      // Prüfen ob Serie komplett geschaut ist und beendet
-      if (allEpisodesWatched && seriesEnded && !stored.notified && !wasDismissedRecently) {
-        // Serie ist komplett geschaut und beendet
-        completedSeries.push(series);
+    // Wenn die Serie zwischenzeitlich "nicht mehr komplett" war (z.B. neue Episode
+    // ausgestrahlt aber nicht geschaut, oder User hat Episode entwatcht): Reset.
+    const completenessChanged = allEpisodesWatched !== stored.allEpisodesWatched;
+    const newNotified = completenessChanged ? false : (stored.notified ?? false);
+    const newNotifiedAt = completenessChanged ? undefined : stored.notifiedAt;
 
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          allEpisodesWatched: allEpisodesWatched,
-          seriesStatus: series.status || null,
-          lastChecked: currentTime,
-          // notified bleibt false bis User interagiert
-        };
-      } else if (shouldCheckAgain) {
-        // Regelmäßiger Check
-        updatedStoredData[seriesKey] = {
-          ...stored,
-          allEpisodesWatched: allEpisodesWatched,
-          seriesStatus: series.status || null,
-          lastChecked: currentTime,
-          // Reset notified wenn Serie nicht mehr komplett ist
-          notified: allEpisodesWatched === stored.allEpisodesWatched ? stored.notified : false,
-        };
+    let isCompleted = false;
+    if (allEpisodesWatched && seriesEnded) {
+      const notifiedCooldownPassed =
+        !newNotified ||
+        (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
+
+      if (notifiedCooldownPassed && !wasDismissedRecently) {
+        isCompleted = true;
       }
+    }
+
+    if (isCompleted) {
+      completedSeries.push(series);
+    }
+
+    const shouldRefreshCheck = currentTime - stored.lastChecked >= WATCH_CHECK_COOLDOWN;
+    updatedStoredData[seriesKey] = {
+      ...stored,
+      allEpisodesWatched: allEpisodesWatched,
+      seriesStatus: series.status || null,
+      lastChecked: shouldRefreshCheck ? currentTime : stored.lastChecked,
+      notified: newNotified,
+      ...(newNotifiedAt !== undefined ? { notifiedAt: newNotifiedAt } : {}),
+    };
+    if (newNotifiedAt === undefined) {
+      delete updatedStoredData[seriesKey].notifiedAt;
     }
   }
 
-  // Aufräumen: Entferne Daten für Serien die nicht mehr in der Watchlist sind
+  // Cleanup: stale Einträge entfernen (Data + Notifications)
   const currentWatchlistIds = new Set(
     seriesList.filter((s) => s && s.id && s.watchlist).map((s) => s.id.toString())
   );
@@ -147,25 +163,48 @@ export const detectCompletedSeries = async (
     }
   }
 
+  const notificationCleanup: Record<string, null> = {};
+  for (const key of Object.keys(dismissedNotifications)) {
+    if (!currentWatchlistIds.has(key)) {
+      notificationCleanup[`users/${userId}/completedSeriesNotifications/${key}`] = null;
+    }
+  }
+  if (Object.keys(notificationCleanup).length > 0) {
+    try {
+      await firebase.database().ref().update(notificationCleanup);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[CompletedSeriesDetection] Failed to cleanup notifications: ${message}`);
+    }
+  }
+
   // Aktualisierte Daten speichern
   await storeCompletedData(userId, updatedStoredData);
 
   return completedSeries;
 };
 
+/**
+ * Wird vom UI nach Anzeige der Completed-Notification aufgerufen. Setzt
+ * `notified: true` plus `notifiedAt`, damit die Detection beim nächsten Lauf
+ * den RENOTIFY_COOLDOWN respektiert.
+ */
 export const markCompletedSeriesAsNotified = async (
-  seriesId: number,
+  seriesIds: number[],
   userId: string
 ): Promise<void> => {
-  const storedData = await getStoredCompletedData(userId);
-  const seriesKey = seriesId.toString();
-
-  if (storedData[seriesKey]) {
-    storedData[seriesKey] = {
-      ...storedData[seriesKey],
-      notified: true,
-      lastChecked: Date.now(),
-    };
-    await storeCompletedData(userId, storedData);
+  if (seriesIds.length === 0) return;
+  const updates: Record<string, unknown> = {};
+  const now = Date.now();
+  for (const id of seriesIds) {
+    updates[`users/${userId}/completedSeriesData/${id}/notified`] = true;
+    updates[`users/${userId}/completedSeriesData/${id}/notifiedAt`] = now;
+    updates[`users/${userId}/completedSeriesData/${id}/lastChecked`] = now;
+  }
+  try {
+    await firebase.database().ref().update(updates);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[CompletedSeriesDetection] Failed to mark notified: ${message}`);
   }
 };
