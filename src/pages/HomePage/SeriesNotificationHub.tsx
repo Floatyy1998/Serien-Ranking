@@ -167,15 +167,10 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     }
   }, [minimized]);
 
-  // Aktiver Tab — default: erste verfügbare Kategorie
+  // Aktiver Tab — User-Pick wird gespeichert. Wenn die gewählte Kategorie
+  // verschwindet (z.B. weil dismissed), fällt der derived `currentKey` auf die
+  // erste verfügbare zurück — kein setState-im-Effect-Reset nötig.
   const [activeKey, setActiveKey] = useState<CategoryKey | null>(null);
-
-  useEffect(() => {
-    // Wenn aktive Kategorie verschwindet (z.B. dismissed), wechsle auf erste
-    if (!activeKey || (categoryCounts[activeKey] || 0) === 0) {
-      setActiveKey(activeCategories[0]?.key ?? null);
-    }
-  }, [activeKey, activeCategories, categoryCounts]);
 
   if (activeCategories.length === 0) return null;
 

@@ -135,6 +135,45 @@ interface CarouselNotificationProps {
   onCollapse?: () => void;
 }
 
+// Eigene Sub-Component damit der Rating-State automatisch beim Index-Wechsel
+// resetted (via key={safeIndex} → re-mount), statt setState im useEffect.
+const InlineRatingPicker: React.FC<{
+  onSubmit: (rating: number) => void;
+  saving: boolean;
+}> = ({ onSubmit, saving }) => {
+  const [value, setValue] = useState(0);
+  const [hover, setHover] = useState(0);
+  const display = hover || value;
+  return (
+    <div className="inline-rating">
+      <div className="inline-rating-stars">
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+          const filled = display >= n;
+          return (
+            <button
+              key={n}
+              className={`inline-rating-star ${filled ? 'filled' : ''}`}
+              onMouseEnter={() => setHover(n)}
+              onMouseLeave={() => setHover(0)}
+              onClick={() => {
+                setValue(n);
+                onSubmit(n);
+              }}
+              disabled={saving}
+              aria-label={`${n} von 10`}
+            >
+              {filled ? <Star /> : <StarOutline />}
+            </button>
+          );
+        })}
+      </div>
+      <div className="inline-rating-label">
+        {display ? `${display} / 10` : 'Tippe einen Stern zum Bewerten'}
+      </div>
+    </div>
+  );
+};
+
 const formatRelative = (ts: number): string => {
   const diff = Date.now() - ts;
   const days = Math.floor(diff / (24 * 60 * 60 * 1000));
@@ -159,10 +198,10 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
   const [actionedIds, setActionedIds] = useState<Set<number>>(new Set());
   const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [savingRating, setSavingRating] = useState(false);
-  const [ratingValue, setRatingValue] = useState<number>(0);
-  const [hoverRating, setHoverRating] = useState<number>(0);
   const dotsContainerRef = useRef<HTMLDivElement>(null);
   const snoozeMenuRef = useRef<HTMLDivElement>(null);
+  // Lazy-init: einmal pro Mount — Date.now() wäre sonst impure im Render-Body.
+  const [detectedTimestamp] = useState(() => Date.now() - 1000);
 
   const config = variantConfigs[variant];
   const color = config.themeColor(currentTheme);
@@ -190,12 +229,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
     // - new-season nutzt das alte session/seasonCount-Pattern
     // - unrated wird durch 7-Tage-Cooldown geregelt
   }, [user, variant, series]);
-
-  // Bei Index-Wechsel: Rating-Picker zurücksetzen
-  useEffect(() => {
-    setRatingValue(0);
-    setHoverRating(0);
-  }, [safeIndex]);
 
   // Snooze-Menu: outside-click schließt
   useEffect(() => {
@@ -354,24 +387,22 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
       console.error('Error saving rating:', error);
     } finally {
       setSavingRating(false);
-      setRatingValue(0);
-      setHoverRating(0);
     }
   };
 
-  // Confetti für 'completed' beim ersten Render
+  // Confetti für 'completed' beim ersten Render — lazy init (Math.random ist impure)
   const showConfetti = variant === 'completed';
-  const confettiParticles = useMemo(() => {
-    if (!showConfetti) return [];
-    return Array.from({ length: 14 }).map((_, i) => ({
+  const [confettiParticles] = useState(() =>
+    Array.from({ length: 14 }).map((_, i) => ({
       id: i,
       x: Math.random() * 200 - 100,
-      y: Math.random() * -80 - 20,
       rotate: Math.random() * 360,
       color: ['#4caf50', '#81c784', '#ffd54f', '#ffffff'][i % 4],
       delay: Math.random() * 0.3,
-    }));
-  }, [showConfetti]);
+      // Random-End-Y einmalig fixieren, damit das animate-prop pure bleibt
+      endY: 220 + Math.random() * 60,
+    }))
+  );
 
   // Sparkles für 'new-season'
   const showSparkles = variant === 'new-season';
@@ -396,11 +427,6 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         : actionedIds.has(currentSeries.id) || !currentSeries.watchlist;
 
   const { HeaderIcon, DetailIcon, ActionIcon } = config;
-
-  // Timestamp: "heute erkannt" — wir haben aktuell keinen persistenten
-  // Detection-Timestamp pro Serie, also nehmen wir "frisch erkannt" als Default.
-  // Wenn später ein Feld im Series-Type ergänzt wird, hier auslesen.
-  const detectedTimestamp = Date.now() - 1000;
 
   const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%)`;
   const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
@@ -439,7 +465,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
                 animate={{
                   x: p.x,
-                  y: 220 + Math.random() * 60,
+                  y: p.endY,
                   opacity: 0,
                   rotate: p.rotate,
                 }}
@@ -587,36 +613,13 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 </div>
               </div>
 
-              {/* Inline-Rating für unrated */}
+              {/* Inline-Rating für unrated — eigener State, key={safeIndex} resetted bei Wechsel */}
               {variant === 'unrated' && !isActioned && (
-                <div className="inline-rating">
-                  <div className="inline-rating-stars">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
-                      const filled = (hoverRating || ratingValue) >= n;
-                      return (
-                        <button
-                          key={n}
-                          className={`inline-rating-star ${filled ? 'filled' : ''}`}
-                          onMouseEnter={() => setHoverRating(n)}
-                          onMouseLeave={() => setHoverRating(0)}
-                          onClick={() => {
-                            setRatingValue(n);
-                            handleSubmitRating(n);
-                          }}
-                          disabled={savingRating}
-                          aria-label={`${n} von 10`}
-                        >
-                          {filled ? <Star /> : <StarOutline />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="inline-rating-label">
-                    {hoverRating || ratingValue
-                      ? `${hoverRating || ratingValue} / 10`
-                      : 'Tippe einen Stern zum Bewerten'}
-                  </div>
-                </div>
+                <InlineRatingPicker
+                  key={safeIndex}
+                  onSubmit={handleSubmitRating}
+                  saving={savingRating}
+                />
               )}
             </motion.div>
           </AnimatePresence>
