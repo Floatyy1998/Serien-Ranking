@@ -7,7 +7,11 @@ import {
   normalizeEpisodes,
   getSeriesLastWatchedAt,
 } from '../episode/seriesMetrics';
-import { getInactiveThresholdDays } from '../settings/notificationSettings';
+import {
+  getInactiveThresholdDays,
+  getSnoozedUntil,
+  cleanupSnoozes,
+} from '../settings/notificationSettings';
 
 export interface InactiveSeriesData {
   seriesId: number;
@@ -116,9 +120,10 @@ export const detectInactiveSeries = async (
   seriesList: Series[],
   userId: string
 ): Promise<Series[]> => {
-  const [storedData, thresholdDays] = await Promise.all([
+  const [storedData, thresholdDays, snoozed] = await Promise.all([
     getStoredInactiveData(userId),
     getInactiveThresholdDays(userId),
+    getSnoozedUntil('inactive', userId),
   ]);
 
   // thresholdDays === 0 bedeutet: Feature deaktiviert
@@ -152,6 +157,8 @@ export const detectInactiveSeries = async (
     const dismissedData = dismissedNotifications[series.id];
     const wasDismissedRecently =
       dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
+    const snoozedUntil = snoozed[seriesKey];
+    const isSnoozed = typeof snoozedUntil === 'number' && snoozedUntil > currentTime;
 
     if (!stored) {
       // Erste Erfassung
@@ -181,7 +188,7 @@ export const detectInactiveSeries = async (
           !newNotified ||
           (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
 
-        if (notifiedCooldownPassed && !wasDismissedRecently) {
+        if (notifiedCooldownPassed && !wasDismissedRecently && !isSnoozed) {
           isInactive = true;
         }
       }
@@ -233,6 +240,7 @@ export const detectInactiveSeries = async (
 
   // Aktualisierte Daten speichern
   await storeInactiveData(userId, updatedStoredData);
+  await cleanupSnoozes('inactive', userId, currentWatchlistIds);
 
   return inactiveSeries;
 };
@@ -274,9 +282,10 @@ export const detectInactiveRewatches = async (
   const currentTime = Date.now();
   const result: Series[] = [];
 
-  const [storedData, notificationsSnap] = await Promise.all([
+  const [storedData, notificationsSnap, snoozed] = await Promise.all([
     getStoredRewatchData(userId),
     firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`).once('value'),
+    getSnoozedUntil('inactive-rewatch', userId),
   ]);
   const dismissedNotifications =
     (notificationsSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
@@ -304,13 +313,15 @@ export const detectInactiveRewatches = async (
     const dismissedData = dismissedNotifications[series.id];
     const wasDismissedRecently =
       dismissedData?.dismissed && currentTime - dismissedData.timestamp < RENOTIFY_COOLDOWN;
+    const snoozedUntil = snoozed[seriesKey];
+    const isSnoozed = typeof snoozedUntil === 'number' && snoozedUntil > currentTime;
 
     if (lastActivity > 0 && currentTime - lastActivity > thresholdMs) {
       const notifiedCooldownPassed =
         !newNotified ||
         (typeof newNotifiedAt === 'number' && currentTime - newNotifiedAt >= RENOTIFY_COOLDOWN);
 
-      if (notifiedCooldownPassed && !wasDismissedRecently) {
+      if (notifiedCooldownPassed && !wasDismissedRecently && !isSnoozed) {
         result.push(series);
       }
     }
@@ -355,6 +366,7 @@ export const detectInactiveRewatches = async (
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[InactiveRewatchDetection] Failed to persist: ${message}`);
   }
+  await cleanupSnoozes('inactive-rewatch', userId, currentRewatchIds);
 
   return result;
 };

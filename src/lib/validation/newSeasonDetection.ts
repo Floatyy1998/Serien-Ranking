@@ -1,5 +1,6 @@
 import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
+import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
 // Einfache Map: seriesId → bekannte Staffelanzahl (vom User bestätigter Stand)
 type SeasonCounts = Record<string, number>;
@@ -51,9 +52,10 @@ const getShownEntries = async (userId: string): Promise<Record<string, ShownEntr
 };
 
 export const detectNewSeasons = async (seriesList: Series[], userId: string): Promise<Series[]> => {
-  const [storedCounts, shownEntries] = await Promise.all([
+  const [storedCounts, shownEntries, snoozed] = await Promise.all([
     getStoredSeasonCounts(userId),
     getShownEntries(userId),
+    getSnoozedUntil('new-season', userId),
   ]);
   const seriesWithNewSeasons: Series[] = [];
   const updatedCounts: SeasonCounts = {};
@@ -67,6 +69,10 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
     updatedCounts[key] = storedCount ?? series.seasonCount;
 
     if (storedCount === undefined || series.seasonCount <= storedCount) continue;
+
+    // Snooze respektieren
+    const snoozedUntil = snoozed[key];
+    if (typeof snoozedUntil === 'number' && snoozedUntil > now) continue;
 
     // Es gibt einen Diff — prüfen ob die Notification erst kürzlich gezeigt wurde
     // und der Staffel-Stand identisch ist (= passive Anzeige, kein Re-Trigger durch
@@ -109,6 +115,7 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
   if (hasEntryChange) {
     await storeSeasonCounts(userId, updatedCounts);
   }
+  await cleanupSnoozes('new-season', userId, currentIds);
 
   return seriesWithNewSeasons;
 };
