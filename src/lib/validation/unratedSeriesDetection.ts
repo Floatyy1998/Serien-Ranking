@@ -85,7 +85,8 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
   const now = Date.now();
   const dismissedRef = firebase.database().ref(`users/${userId}/unratedSeriesNotifications`);
   const dismissedSnap = await dismissedRef.once('value');
-  const dismissed = dismissedSnap.val() || {};
+  const dismissed =
+    (dismissedSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
 
   const unrated: Series[] = [];
 
@@ -95,7 +96,8 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
     // Skip if a season is currently airing
     if (hasCurrentlyAiringSeason(series)) continue;
 
-    // Skip dismissed (with 30-day cooldown)
+    // Skip dismissed (with 7-day cooldown — kurz gewählt, damit der User die Serie
+    // bewertet solange er noch weiß, wie er sie fand)
     const seriesKey = String(series.id);
     const dismissEntry = dismissed[seriesKey];
     if (dismissEntry?.dismissed) {
@@ -121,6 +123,23 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
     const daysSinceCompletion = now - completionDate;
     if (daysSinceCompletion >= SEVEN_DAYS_MS) {
       unrated.push(series);
+    }
+  }
+
+  // Cleanup: Dismiss-Einträge für Serien entfernen, die nicht mehr in der Liste sind
+  const currentIds = new Set(seriesList.map((s) => String(s.id)));
+  const cleanup: Record<string, null> = {};
+  for (const key of Object.keys(dismissed)) {
+    if (!currentIds.has(key)) {
+      cleanup[`users/${userId}/unratedSeriesNotifications/${key}`] = null;
+    }
+  }
+  if (Object.keys(cleanup).length > 0) {
+    try {
+      await firebase.database().ref().update(cleanup);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error(`[UnratedSeriesDetection] Failed to cleanup notifications: ${message}`);
     }
   }
 

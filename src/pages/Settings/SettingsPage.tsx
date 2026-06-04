@@ -14,6 +14,7 @@ import { ProfileSection } from './ProfileSection';
 import { PublicProfileSection } from './PublicProfileSection';
 import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
+import { NotificationsSection } from './NotificationsSection';
 import './SettingsPage.css';
 
 export const SettingsPage = () => {
@@ -101,6 +102,8 @@ export const SettingsPage = () => {
           onCopyLink={copyPublicLink}
           onRegenerateId={regeneratePublicId}
         />
+
+        <NotificationsSection />
 
         <LegalSection
           onNavigatePrivacy={() => navigate('/privacy')}
