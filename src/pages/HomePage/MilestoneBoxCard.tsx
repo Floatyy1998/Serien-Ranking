@@ -6,10 +6,12 @@ import Inventory2 from '@mui/icons-material/Inventory2';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
-import { getNextBoxThreshold, getProgressToNextBox } from '../../services/pet/mysteryBoxService';
+import {
+  BOX_EVERY_N_EPISODES,
+  getNextBoxThreshold,
+  getProgressToNextBox,
+} from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
-
-const BOX_EVERY_N_EPISODES = 50;
 
 export const MilestoneBoxCard: React.FC = () => {
   const { currentTheme } = useTheme();
