@@ -252,7 +252,8 @@ textarea:focus-visible {
 }
 
 /* Inline-styled inputs (e.g. search) that set their own outline: none — skip global outline */
-input[style*='outline']:focus-visible {
+input[style*='outline']:focus-visible,
+textarea[style*='outline']:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
