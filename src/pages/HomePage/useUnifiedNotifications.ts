@@ -4,12 +4,33 @@ import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { useRecommendations } from '../../hooks/useRecommendations';
+import type { RecommendationMediaType } from '../../types/Recommendation';
 
 const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 
+export interface RecommendationCardData {
+  recId: string;
+  mediaId: number;
+  mediaType: RecommendationMediaType;
+  mediaTitle: string;
+  mediaPoster?: string;
+  mediaBackdrop?: string;
+  senderName: string;
+  senderPhotoURL?: string;
+  message?: string;
+}
+
 export interface UnifiedNotification {
   id: string;
-  kind: 'activity' | 'request' | 'discussion' | 'announcement' | 'bug_ticket' | 'pet';
+  kind:
+    | 'activity'
+    | 'request'
+    | 'discussion'
+    | 'announcement'
+    | 'bug_ticket'
+    | 'pet'
+    | 'recommendation';
   title: string;
   message: string;
   timestamp: number;
@@ -27,12 +48,14 @@ export interface UnifiedNotification {
     | 'announcement'
     | 'bug'
     | 'feature'
-    | 'pet';
+    | 'pet'
+    | 'recommendation';
   requestId?: string;
   notificationId?: string;
   fromUsername?: string;
   action?: 'case_opening';
   dropData?: { dropId: string; accessoryId: string; rarity: string };
+  recommendationData?: RecommendationCardData;
 }
 
 export interface Announcement {
@@ -44,6 +67,14 @@ export interface Announcement {
 }
 
 export const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: 'announcement_recommendations-2026-06',
+    title: 'Neu: Empfehlungen an Freunde',
+    message:
+      'Auf jeder Detailseite ist jetzt ein „Empfehlen"-Button. Schick Serien & Filme an deine Freunde – sie sehen die Empfehlung als Karte im Bell-Hub mit „Anschauen" oder „Nope". Freunde, die das Item schon haben, sind ausgegraut.',
+    timestamp: new Date('2026-06-06T14:00:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
   {
     id: 'announcement_streaming-abos-2026-06',
     title: 'Neu: Streaming-Abos',
@@ -101,6 +132,8 @@ export interface UseUnifiedNotificationsReturn {
   markAsRead: (id: string) => void;
   acceptFriendRequest: (requestId: string) => void;
   declineFriendRequest: (requestId: string) => void;
+  acceptRecommendation: (recId: string) => void;
+  declineRecommendation: (recId: string) => void;
 }
 
 export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
@@ -122,6 +155,12 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAsRead,
     markAllAsRead,
   } = useNotifications();
+  const {
+    recommendations,
+    pendingCount: pendingRecommendationsCount,
+    accept: acceptRecommendation,
+    decline: declineRecommendation,
+  } = useRecommendations();
 
   // Source of truth: Firebase. localStorage wurde von PWAs geleert
   // (iOS WebKit 7-Tage-Regel, Android unter Storage-Pressure), wodurch der
@@ -309,6 +348,32 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       items.push(item);
     }
 
+    // Recommendations (only pending — accepted/declined disappear from feed)
+    for (const rec of recommendations) {
+      if (rec.status !== 'pending') continue;
+      items.push({
+        id: `rec_${rec.id}`,
+        kind: 'recommendation',
+        title: rec.senderName,
+        message: `empfiehlt dir "${rec.mediaTitle}"`,
+        timestamp: rec.timestamp,
+        read: false,
+        navigateTo: rec.mediaType === 'movie' ? `/movie/${rec.mediaId}` : `/series/${rec.mediaId}`,
+        icon: 'recommendation',
+        recommendationData: {
+          recId: rec.id,
+          mediaId: rec.mediaId,
+          mediaType: rec.mediaType,
+          mediaTitle: rec.mediaTitle,
+          mediaPoster: rec.mediaPoster,
+          mediaBackdrop: rec.mediaBackdrop,
+          senderName: rec.senderName,
+          senderPhotoURL: rec.senderPhotoURL,
+          message: rec.message,
+        },
+      });
+    }
+
     // Sort by timestamp descending, limit to 30
     items.sort((a, b) => b.timestamp - a.timestamp);
     return items.slice(0, 30);
@@ -316,6 +381,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     friendActivities,
     friendRequests,
     notifications,
+    recommendations,
     unreadActivitiesCount,
     unreadRequestsCount,
     lastReadAnnouncementsTime,
@@ -325,6 +391,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const totalUnreadBadge =
     unreadActivitiesCount +
     notificationUnreadCount +
+    pendingRecommendationsCount +
     (lastReadAnnouncementsTime !== null
       ? ANNOUNCEMENTS.filter((a) => a.timestamp > lastReadAnnouncementsTime).length
       : 0);
@@ -344,6 +411,19 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       .catch(() => {});
   }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, user]);
 
+  const handleAcceptRecommendation = useCallback(
+    (recId: string) => {
+      void acceptRecommendation(recId);
+    },
+    [acceptRecommendation]
+  );
+  const handleDeclineRecommendation = useCallback(
+    (recId: string) => {
+      void declineRecommendation(recId);
+    },
+    [declineRecommendation]
+  );
+
   return {
     unifiedNotifications,
     totalUnreadBadge,
@@ -352,6 +432,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAsRead,
     acceptFriendRequest,
     declineFriendRequest,
+    acceptRecommendation: handleAcceptRecommendation,
+    declineRecommendation: handleDeclineRecommendation,
   };
 }
 

@@ -107,6 +107,11 @@ export const MovieDetailPage = memo(() => {
         isAdding={isAdding}
         loading={loading}
         movieId={movie.id}
+        movieTitle={movie.title}
+        moviePoster={
+          movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined
+        }
+        movieBackdrop={tmdbBackdrop || movie.backdrop || undefined}
         onNavigateRate={() => navigate(`/rating/movie/${movie.id}`)}
         onAddMovie={handleAddMovie}
         onDeleteClick={() => setShowDeleteConfirm(true)}

@@ -3,6 +3,7 @@ import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
 
 interface MovieActionButtonsProps {
@@ -12,6 +13,9 @@ interface MovieActionButtonsProps {
   isAdding: boolean;
   loading: boolean;
   movieId: number;
+  movieTitle: string;
+  moviePoster?: string;
+  movieBackdrop?: string;
   onNavigateRate: () => void;
   onAddMovie: () => void;
   onDeleteClick: () => void;
@@ -24,6 +28,10 @@ export const MovieActionButtons = memo(
     isReadOnlyTmdbMovie,
     isAdding,
     loading,
+    movieId,
+    movieTitle,
+    moviePoster,
+    movieBackdrop,
     onNavigateRate,
     onAddMovie,
     onDeleteClick,
@@ -75,6 +83,25 @@ export const MovieActionButtons = memo(
           />
           Bewerten
         </motion.button>
+
+        <RecommendButton
+          className="action-btn"
+          iconSize={isMobile ? 18 : 20}
+          style={{
+            padding: isMobile ? '10px' : '12px',
+            border: `1px solid ${currentTheme.primary}33`,
+            borderRadius: isMobile ? '10px' : '12px',
+            fontSize: isMobile ? '13px' : '16px',
+            background: `${currentTheme.primary}10`,
+          }}
+          media={{
+            id: movieId,
+            type: 'movie',
+            title: movieTitle,
+            posterPath: moviePoster,
+            backdropPath: movieBackdrop,
+          }}
+        />
 
         <Tooltip title="Film löschen" arrow>
           <motion.button
