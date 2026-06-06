@@ -5,12 +5,15 @@ import {
   CalendarMonth,
   EuroSymbol,
   FilterAlt,
+  LibraryAddCheck,
   LocalFireDepartment,
   Navigation,
   NewReleases,
+  NotificationsActive,
   Palette,
   PauseCircle,
   PlaylistAddCheck,
+  Recommend,
   Replay,
   Search,
   SmartDisplay,
@@ -57,6 +60,33 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'Juni 2026 – Empfehlungen an Freunde',
+      date: '2026-06-06',
+      features: [
+        {
+          icon: <Recommend />,
+          color: '#22d3ee',
+          title: 'Serien & Filme empfehlen',
+          description:
+            'Auf jeder Serien- und Film-Detailseite gibt es jetzt einen „Empfehlen"-Button. Wähle deine Freunde aus, schreib optional eine Nachricht dazu, fertig – wie bei Spotify, nur für Serien.',
+        },
+        {
+          icon: <NotificationsActive />,
+          color: '#a855f7',
+          title: 'Empfehlung im Bell-Hub',
+          description:
+            'Empfänger sehen die Empfehlung als eigene Karte in den Benachrichtigungen: Poster, Sender-Avatar, deine Nachricht als Speech-Bubble. Mit einem Klick auf „Anschauen" geht es direkt zur Detailseite, oder „Nope" wenn nix für dich.',
+        },
+        {
+          icon: <LibraryAddCheck />,
+          color: '#22c55e',
+          title: 'Smart Friend-Filter',
+          description:
+            'Du kannst nur Freunden etwas empfehlen, die die Serie oder den Film noch nicht in ihrer Sammlung haben. Wer es schon kennt, wird ausgegraut mit „Hat das schon" – spart Zeit und macht Empfehlungen wertvoller.',
+        },
+      ],
+    },
     {
       version: 'Juni 2026 – Streaming-Abos',
       date: '2026-06-01',

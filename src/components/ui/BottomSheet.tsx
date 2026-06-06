@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import type { PanInfo } from 'framer-motion';
 import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -41,7 +42,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   };
 
-  return (
+  const overlay = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -128,4 +129,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') return null;
+  return createPortal(overlay, document.body);
 };
