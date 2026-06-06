@@ -72,7 +72,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: 'Neu: Empfehlungen an Freunde',
     message:
       'Auf jeder Detailseite ist jetzt ein „Empfehlen"-Button. Schick Serien & Filme an deine Freunde – sie sehen die Empfehlung als Karte im Bell-Hub mit „Anschauen" oder „Nope". Freunde, die das Item schon haben, sind ausgegraut.',
-    timestamp: new Date('2026-06-06T14:00:00+02:00').getTime(),
+    timestamp: new Date('2026-06-06T06:00:00+02:00').getTime(),
     navigateTo: '/patch-notes',
   },
   {
@@ -402,12 +402,15 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAllAsRead();
     if (!user) return;
     const uid = user.uid;
-    const now = Date.now();
-    setStoredReadTime({ uid, ts: now });
+    // Use max(now, latest announcement timestamp) so future-dated
+    // announcements are also dismissed when user hits "Mark all read".
+    const latestAnnTs = ANNOUNCEMENTS.reduce((max, a) => Math.max(max, a.timestamp), 0);
+    const newReadTime = Math.max(Date.now(), latestAnnTs);
+    setStoredReadTime({ uid, ts: newReadTime });
     firebase
       .database()
       .ref(`users/${uid}/readTimes/announcements`)
-      .set(now)
+      .set(newReadTime)
       .catch(() => {});
   }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, user]);
 
