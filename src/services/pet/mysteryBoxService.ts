@@ -5,11 +5,11 @@ import { ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
 import { getUserPets } from './petCore';
 
 // ============================================================
-// Mystery Box — alle 50 Episoden eine Box
+// Mystery Box — alle 20 Episoden eine Box
 // ============================================================
 
 /** Interval: alle X Episoden gibt es eine Mystery Box */
-const BOX_EVERY_N_EPISODES = 50;
+export const BOX_EVERY_N_EPISODES = 20;
 
 export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background';
 

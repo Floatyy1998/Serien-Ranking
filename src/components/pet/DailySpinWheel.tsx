@@ -27,9 +27,9 @@ const SEGMENT_COUNT = 9;
 const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
 
 const SEGMENT_COLORS = [
-  '#3a3a3a', // Niete
+  '#E040FB', // 3x XP 5 Ep (Epic Booster)
   '#FFD93D', // 2x XP 2 Ep
-  '#4a4a4a', // Niete
+  '#FFD700', // 3x XP 10 Ep (Legendary Booster)
   '#FF9800', // 2x XP 5 Ep
   '#2196F3', // Accessoire
   '#4CAF50', // 2x XP 10 Ep
@@ -40,9 +40,9 @@ const SEGMENT_COLORS = [
 
 /** MUI icon per segment */
 const SEGMENT_ICONS = [
-  <Close style={{ fontSize: 28, color: 'rgba(255,255,255,0.4)' }} />,
+  <Diamond style={{ fontSize: 28, color: 'white' }} />,
   <Bolt style={{ fontSize: 28, color: '#1a1a2e' }} />,
-  <Close style={{ fontSize: 28, color: 'rgba(255,255,255,0.4)' }} />,
+  <EmojiEvents style={{ fontSize: 28, color: '#1a1a2e' }} />,
   <Whatshot style={{ fontSize: 28, color: '#1a1a2e' }} />,
   <CardGiftcard style={{ fontSize: 28, color: 'white' }} />,
   <LocalFireDepartment style={{ fontSize: 28, color: '#1a1a2e' }} />,
