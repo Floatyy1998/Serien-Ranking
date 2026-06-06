@@ -205,7 +205,7 @@ export const MilestoneBoxCard: React.FC = () => {
                   />
                 </div>
                 <span style={{ fontSize: 10, color: currentTheme.text.muted }}>
-                  {totalEpisodes % 50}/{50}
+                  {totalEpisodes % BOX_EVERY_N_EPISODES}/{BOX_EVERY_N_EPISODES}
                 </span>
               </div>
             )}
