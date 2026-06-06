@@ -11,6 +11,13 @@ import { getUserPets } from './petCore';
 /** Interval: alle X Episoden gibt es eine Mystery Box */
 export const BOX_EVERY_N_EPISODES = 20;
 
+/**
+ * Schema-Version des mysteryBox-Eintrags.
+ * v1: Box alle 50 Episoden — lastOpenedBoxNumber zählte 50er-Boxen
+ * v2: Box alle 20 Episoden — Migration setzt Baseline auf aktuellen 20er-Stand
+ */
+export const BOX_SCHEMA_VERSION = 2;
+
 export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background';
 
 export interface MysteryBoxReward {
@@ -27,8 +34,10 @@ export interface MysteryBoxReward {
 export interface MysteryBoxData {
   /** Wie viele Boxen der User schon geöffnet hat */
   boxesOpened: number;
-  /** Letzte geöffnete Box-Nummer (z.B. 3 = 150 Episoden) */
+  /** Letzte geöffnete Box-Nummer (z.B. 3 = 60 Episoden bei v2) */
   lastOpenedBoxNumber: number;
+  /** Schema-Version — fehlt bei v1-Eintraegen, triggert Migration */
+  schemaVersion?: number;
 }
 
 /** Milestone-exclusive accessories (cannot drop from episodes or spin) */
@@ -71,24 +80,36 @@ export async function getAvailableBoxCount(userId: string, totalEpisodes: number
 }
 
 /**
- * Stellt sicher, dass der mysteryBox-Eintrag existiert.
- * Beim allerersten Mal wird lastOpenedBoxNumber auf den aktuellen Stand gesetzt,
- * damit nicht hunderte Boxen rückwirkend verfügbar sind.
+ * Stellt sicher, dass der mysteryBox-Eintrag existiert und der aktuellen
+ * Schema-Version entspricht. Triggert v1→v2-Migration (50er→20er Intervall),
+ * indem die Baseline auf den jetzigen 20er-Stand zurueckgesetzt wird —
+ * damit nicht hunderte rueckwirkende Boxen aufploppen.
  */
-async function ensureInitialized(userId: string, totalEpisodes: number): Promise<MysteryBoxData> {
+export async function ensureInitialized(
+  userId: string,
+  totalEpisodes: number
+): Promise<MysteryBoxData> {
   const ref = firebase.database().ref(`users/${userId}/mysteryBox`);
   const snap = await ref.once('value');
   const data = snap.val();
 
-  if (data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber > 0) {
+  const hasExisting =
+    data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber > 0;
+  const schemaVersion = (data?.schemaVersion as number | undefined) ?? 1;
+
+  if (hasExisting && schemaVersion >= BOX_SCHEMA_VERSION) {
     return data;
   }
 
-  // Erster Besuch: aktuellen Stand als Baseline setzen
+  // Migration v1 -> v2 ODER Erstbesuch: Baseline auf aktuellen Stand setzen.
+  // Bei Migration verlieren User die ungeoeffneten Boxen aus dem alten Schema —
+  // anders koennen wir den Schwall an 651 nachtraeglich entstandenen Boxen
+  // nicht verhindern, da die Umrechnung nicht reversibel ist.
   const baseline = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
   const initData: MysteryBoxData = {
-    boxesOpened: 0,
+    boxesOpened: (data?.boxesOpened as number | undefined) ?? 0,
     lastOpenedBoxNumber: baseline,
+    schemaVersion: BOX_SCHEMA_VERSION,
   };
   await ref.set(initData);
   return initData;
@@ -134,6 +155,7 @@ export async function openMysteryBox(
     .set({
       boxesOpened: (data?.boxesOpened || 0) + 1,
       lastOpenedBoxNumber: boxNumber,
+      schemaVersion: BOX_SCHEMA_VERSION,
     });
 
   // Reward anwenden
