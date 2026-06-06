@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { mergeProviders } from '../../lib/providerMerge';
 import { showToast } from '../../lib/toast';
@@ -168,6 +169,18 @@ export const HeroSection = memo<HeroSectionProps>(
             )}
           </motion.button>
         </Tooltip>
+
+        <RecommendButton
+          className="hero-actions__btn"
+          iconSize={iconSize}
+          media={{
+            id: seriesId,
+            type: 'series',
+            title: series.title,
+            posterPath,
+            backdropPath: tmdbBackdrop || series.backdrop || undefined,
+          }}
+        />
 
         <Tooltip title={series.hidden ? 'Einblenden' : 'Ausblenden'} arrow>
           <motion.button

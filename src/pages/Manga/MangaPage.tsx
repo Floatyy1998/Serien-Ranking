@@ -366,6 +366,8 @@ export const MangaPage = () => {
         onDismissAnnouncement={notifs.dismissAnnouncement}
         onAcceptRequest={notifs.acceptFriendRequest}
         onDeclineRequest={notifs.declineFriendRequest}
+        onAcceptRecommendation={notifs.acceptRecommendation}
+        onDeclineRecommendation={notifs.declineRecommendation}
         onOpenCaseOpening={setCaseOpeningDrop}
       />
 
