@@ -83,13 +83,15 @@ export function toLocalDateString(d: Date): string {
 /** Build the 9 segments for the spin wheel — rarities are fixed per segment */
 export function buildSpinSegments(_streakDays: number): SpinReward[] {
   const segments: SpinReward[] = [
-    // 0: Niete
+    // 0: 3x XP 5 Episoden (Epic Booster)
     {
-      type: 'nothing',
-      label: 'Niete',
-      icon: '❌',
-      color: '#444444',
-      rarity: 'common',
+      type: 'xp_boost',
+      label: '3x XP — 5 Episoden',
+      icon: '💎',
+      color: '#E040FB',
+      rarity: 'epic',
+      xpMultiplier: 3,
+      xpEpisodeCount: 5,
     },
     // 1: 2x XP 2 Episoden
     {
@@ -101,13 +103,15 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
       xpMultiplier: 2,
       xpEpisodeCount: 2,
     },
-    // 2: Niete
+    // 2: 3x XP 10 Episoden (Legendary Booster)
     {
-      type: 'nothing',
-      label: 'Niete',
-      icon: '💨',
-      color: '#555555',
-      rarity: 'common',
+      type: 'xp_boost',
+      label: '3x XP — 10 Episoden',
+      icon: '👑',
+      color: '#FFD700',
+      rarity: 'legendary',
+      xpMultiplier: 3,
+      xpEpisodeCount: 10,
     },
     // 3: 2x XP 5 Episoden
     {
@@ -171,17 +175,18 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
 // ============================================================
 
 /** Weights per segment index, scaled by streak tier.
- *  Segments: Niete, 2xXP2Ep, Niete, 2xXP5Ep, Acc, 2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
- *  Higher streak = less Nieten, more rare/epic/legendary chances */
+ *  Segments: EpicBoost(3x5), 2xXP2Ep, LegendaryBoost(3x10), 2xXP5Ep, Acc,
+ *            2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
+ *  Higher streak = bessere Boosts, mehr Epic/Legendary */
 const STREAK_WEIGHTS: number[][] = [
-  // Tier 0 (0–6 Tage):   Niete 30%, XP 40%, Acc 30%
-  [20, 20, 10, 12, 15, 8, 7, 5, 3],
-  // Tier 1 (7–13 Tage):  Niete 25%, XP 40%, Acc 35%
-  [17, 20, 8, 12, 17, 8, 8, 6, 4],
-  // Tier 2 (14–29 Tage): Niete 20%, XP 40%, Acc 40%
-  [13, 20, 7, 12, 18, 8, 10, 8, 4],
-  // Tier 3 (30+ Tage):   Niete 15%, XP 40%, Acc 45%
-  [10, 20, 5, 12, 20, 8, 12, 8, 5],
+  // Tier 0 (0–6 Tage):    Booster 41% (E8/L5), XP 38%, Acc 45% — Legendary Acc 6%
+  [8, 12, 5, 16, 15, 14, 14, 10, 6],
+  // Tier 1 (7–13 Tage):   Booster 45% (E9/L6), Legendary Acc 7%
+  [9, 10, 6, 16, 13, 14, 14, 11, 7],
+  // Tier 2 (14–29 Tage):  Booster 47% (E10/L7), Legendary Acc 8%
+  [10, 8, 7, 15, 12, 14, 14, 12, 8],
+  // Tier 3 (30+ Tage):    Booster 47% (E11/L9), Legendary Acc 9%
+  [11, 6, 9, 14, 11, 13, 14, 13, 9],
 ];
 
 function weightedRandomIndex(weights: number[]): number {
