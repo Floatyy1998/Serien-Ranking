@@ -8,6 +8,8 @@ import { useAuth } from '../../AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import {
   BOX_EVERY_N_EPISODES,
+  BOX_SCHEMA_VERSION,
+  ensureInitialized,
   getNextBoxThreshold,
   getProgressToNextBox,
 } from '../../services/pet/mysteryBoxService';
@@ -27,16 +29,10 @@ export const MilestoneBoxCard: React.FC = () => {
   const nextThreshold = getNextBoxThreshold(totalEpisodes);
   const progress = getProgressToNextBox(totalEpisodes);
 
-  // Aktuellster totalEpisodes-Wert fuer den Bootstrap-Write, ohne dass
-  // der Listener bei jeder Episodenaenderung neu subscribed werden muss.
-  const totalEpisodesRef = useRef(totalEpisodes);
-  useEffect(() => {
-    totalEpisodesRef.current = totalEpisodes;
-  }, [totalEpisodes]);
-
-  // Live subscription auf den Box-Counter. Bootstrap (Baseline anlegen
-  // fuer neue User) passiert inline beim ersten Snapshot, damit kein
-  // separater ref.once auf denselben Pfad noetig ist.
+  // Live subscription auf den Box-Counter. Solange schemaVersion < 2 ist
+  // (alter 50er-Stand), unterdruecken wir den State-Update — der separate
+  // Bootstrap-Effect schreibt erst die neue Baseline, danach feuert der
+  // Listener mit korrekten Werten.
   useEffect(() => {
     if (!user?.uid) return;
     const ref = firebase.database().ref(`users/${user.uid}/mysteryBox`);
@@ -44,24 +40,29 @@ export const MilestoneBoxCard: React.FC = () => {
       const data = snap.val() as {
         lastOpenedBoxNumber?: number;
         boxesOpened?: number;
+        schemaVersion?: number;
       } | null;
       const last = typeof data?.lastOpenedBoxNumber === 'number' ? data.lastOpenedBoxNumber : null;
+      const schemaVersion = data?.schemaVersion ?? 1;
 
-      // Erstbesuch (data === null) ODER Baseline noch nicht gesetzt
-      // (lastOpenedBoxNumber === 0): aktuellen Episoden-Stand als
-      // Baseline schreiben, damit nicht rueckwirkend Boxen aufploppen.
-      if (data === null || last === 0) {
-        const baseline = Math.floor(totalEpisodesRef.current / BOX_EVERY_N_EPISODES);
-        if (baseline > 0 && baseline !== last) {
-          void ref.set({ boxesOpened: data?.boxesOpened ?? 0, lastOpenedBoxNumber: baseline });
-          return; // Listener feuert gleich nochmal mit den geschriebenen Daten
-        }
-      }
+      // Migration steht aus: nicht setzen, sonst flasht kurz die alte
+      // Box-Zahl (z.B. 651) auf, bevor ensureInitialized die Baseline neu setzt.
+      if (last !== null && last > 0 && schemaVersion < BOX_SCHEMA_VERSION) return;
+
       setLastOpenedBoxNumber(last);
     };
     ref.on('value', handler);
     return () => ref.off('value', handler);
   }, [user?.uid]);
+
+  // Bootstrap / Migration einmalig triggern, sobald totalEpisodes geladen ist.
+  // ensureInitialized prueft Schema-Version und setzt ggf. die Baseline.
+  const bootstrapDoneRef = useRef(false);
+  useEffect(() => {
+    if (!user?.uid || totalEpisodes === 0 || bootstrapDoneRef.current) return;
+    bootstrapDoneRef.current = true;
+    void ensureInitialized(user.uid, totalEpisodes);
+  }, [user?.uid, totalEpisodes]);
 
   const handleClose = () => {
     setShowBox(false);
