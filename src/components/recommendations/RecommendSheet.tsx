@@ -722,16 +722,12 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
                     borderRadius: 18,
                     background: `${currentTheme.background.surface}cc`,
                     border: messageFocused
-                      ? `1px solid ${currentTheme.primary}88`
+                      ? `1px solid ${currentTheme.primary}55`
                       : `1px solid ${currentTheme.border.default}`,
                     padding: '14px 16px 10px',
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
-                    boxShadow: messageFocused
-                      ? `0 0 0 4px ${currentTheme.primary}22, 0 6px 18px -8px ${currentTheme.primary}55`
-                      : 'none',
-                    transition:
-                      'border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
+                    transition: 'border-color 0.2s ease, background 0.2s ease',
                   }}
                 >
                   <textarea
@@ -788,53 +784,35 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
             }}
           >
             <motion.button
-              whileTap={selected.size > 0 && !sending ? { scale: 0.97 } : undefined}
-              whileHover={selected.size > 0 && !sending && !isMobile ? { scale: 1.01 } : undefined}
+              whileTap={selected.size > 0 && !sending ? { scale: 0.98 } : undefined}
               onClick={handleSend}
               disabled={selected.size === 0 || sending}
               style={{
                 position: 'relative',
                 width: '100%',
-                padding: isMobile ? '17px' : '19px',
-                borderRadius: 18,
-                border: 'none',
-                cursor: selected.size === 0 || sending ? 'not-allowed' : 'pointer',
-                background:
+                padding: isMobile ? '16px' : '18px',
+                borderRadius: 14,
+                border:
                   selected.size === 0
-                    ? `${currentTheme.background.surface}aa`
-                    : `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
-                color: selected.size === 0 ? currentTheme.text.muted : currentTheme.text.secondary,
+                    ? `1px solid ${currentTheme.border.default}`
+                    : `1px solid ${currentTheme.primary}`,
+                cursor: selected.size === 0 || sending ? 'not-allowed' : 'pointer',
+                background: selected.size === 0 ? 'transparent' : currentTheme.primary,
+                color:
+                  selected.size === 0 ? currentTheme.text.muted : currentTheme.background.default,
                 fontSize: isMobile ? 15 : 16,
-                fontWeight: 900,
+                fontWeight: 800,
                 fontFamily: 'var(--font-display)',
-                letterSpacing: '-0.01em',
+                letterSpacing: '-0.005em',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 12,
-                boxShadow:
-                  selected.size === 0
-                    ? 'none'
-                    : `0 16px 36px -12px ${currentTheme.primary}cc, 0 6px 14px -4px ${currentTheme.accent}66, inset 0 1px 0 rgba(255,255,255,0.18)`,
-                transition: 'background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease',
+                gap: 10,
+                boxShadow: 'none',
+                transition: 'background 0.18s ease, color 0.18s ease',
                 overflow: 'hidden',
               }}
             >
-              {/* Shimmer sweep on hover (desktop) */}
-              {selected.size > 0 && !sending && !isMobile && (
-                <div
-                  aria-hidden
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background:
-                      'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 50%, transparent 100%)',
-                    transform: 'translateX(-100%)',
-                    animation: 'recommend-shimmer 2.4s linear infinite',
-                    pointerEvents: 'none',
-                  }}
-                />
-              )}
               <motion.span
                 animate={
                   sending
@@ -864,9 +842,6 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
                       : `An ${selected.size} Freunde senden`}
               </span>
             </motion.button>
-            <style>
-              {`@keyframes recommend-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }`}
-            </style>
           </div>
         )}
       </div>
