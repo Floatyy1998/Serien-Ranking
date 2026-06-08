@@ -372,43 +372,113 @@
 
 .inline-rating-stars {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   justify-content: center;
 }
 
-.inline-rating-star {
-  width: 28px;
-  height: 28px;
+/* Visual-only stars (proportional fill driven by slider) */
+.inline-rating-star-visual {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  display: inline-block;
+}
+
+.inline-rating-star-bg {
+  position: absolute;
+  inset: 0;
+  font-size: 22px !important;
+  color: rgba(255, 255, 255, 0.18);
+}
+
+.inline-rating-star-fg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  pointer-events: none;
+  /* width set inline based on fill % */
+}
+
+.inline-rating-star-fg svg {
+  font-size: 22px !important;
+  flex-shrink: 0;
+}
+
+/* Slider (0.1 step) */
+.inline-rating-range {
+  width: 100%;
+  height: 6px;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  /* gradient set inline */
+}
+
+.inline-rating-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.inline-rating-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.4);
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.inline-rating-range:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.inline-rating-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 6px;
-  transition:
-    transform 0.15s var(--ease-default),
-    color 0.15s var(--ease-default);
-  color: rgba(255, 255, 255, 0.25);
-}
-
-.inline-rating-star:hover {
-  transform: scale(1.15);
-}
-
-.inline-rating-star.filled {
-  color: var(--theme-warning, #ff9800);
-}
-
-.inline-rating-star svg {
-  font-size: 24px;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .inline-rating-label {
-  text-align: center;
-  font-size: 0.78rem;
-  opacity: 0.7;
+  font-size: 0.82rem;
+  opacity: 0.85;
   min-height: 1em;
+}
+
+.inline-rating-submit {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: 0.01em;
+  transition:
+    transform 0.12s var(--ease-default),
+    opacity 0.15s var(--ease-default);
+}
+
+.inline-rating-submit:not(:disabled):active {
+  transform: scale(0.96);
+}
+
+.inline-rating-submit:disabled {
+  opacity: 0.55;
 }
 
 /* ─── Carousel dots ─────────────────────────────────────────────────── */

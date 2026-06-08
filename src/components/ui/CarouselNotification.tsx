@@ -135,35 +135,71 @@ interface CarouselNotificationProps {
 const InlineRatingPicker: React.FC<{
   onSubmit: (rating: number) => void;
   saving: boolean;
-}> = ({ onSubmit, saving }) => {
+  themeColor: string;
+}> = ({ onSubmit, saving, themeColor }) => {
   const [value, setValue] = useState(0);
-  const [hover, setHover] = useState(0);
-  const display = hover || value;
+  // Stars filled proportionally — value 7.3 → 7 full + partial 8th
   return (
     <div className="inline-rating">
-      <div className="inline-rating-stars">
+      <div className="inline-rating-stars" aria-hidden>
         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
-          const filled = display >= n;
+          const fillPct = Math.max(0, Math.min(1, value - (n - 1)));
           return (
-            <button
-              key={n}
-              className={`inline-rating-star ${filled ? 'filled' : ''}`}
-              onMouseEnter={() => setHover(n)}
-              onMouseLeave={() => setHover(0)}
-              onClick={() => {
-                setValue(n);
-                onSubmit(n);
-              }}
-              disabled={saving}
-              aria-label={`${n} von 10`}
-            >
-              {filled ? <Star /> : <StarOutline />}
-            </button>
+            <span key={n} className="inline-rating-star-visual">
+              <StarOutline className="inline-rating-star-bg" />
+              <span
+                className="inline-rating-star-fg"
+                style={{
+                  width: `${fillPct * 100}%`,
+                  color: themeColor,
+                }}
+              >
+                <Star />
+              </span>
+            </span>
           );
         })}
       </div>
-      <div className="inline-rating-label">
-        {display ? `${display} / 10` : 'Tippe einen Stern zum Bewerten'}
+      <input
+        type="range"
+        min="0"
+        max="10"
+        step="0.1"
+        value={value}
+        onChange={(e) => setValue(parseFloat(e.target.value))}
+        disabled={saving}
+        className="inline-rating-range"
+        aria-label="Bewertung"
+        style={{
+          background: `linear-gradient(to right, ${themeColor} 0%, ${themeColor} ${value * 10}%, rgba(255,255,255,0.1) ${value * 10}%, rgba(255,255,255,0.1) 100%)`,
+        }}
+      />
+      <div className="inline-rating-row">
+        <div className="inline-rating-label">
+          {value > 0 ? (
+            <>
+              <span style={{ color: themeColor, fontWeight: 800, fontSize: '1.05em' }}>
+                {value.toFixed(1)}
+              </span>{' '}
+              / 10
+            </>
+          ) : (
+            'Zieh den Regler zum Bewerten'
+          )}
+        </div>
+        <button
+          type="button"
+          className="inline-rating-submit"
+          onClick={() => value > 0 && onSubmit(value)}
+          disabled={saving || value <= 0}
+          style={{
+            background: value > 0 ? themeColor : 'rgba(255,255,255,0.08)',
+            color: value > 0 ? '#0a0a0a' : 'rgba(255,255,255,0.4)',
+            cursor: saving || value <= 0 ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {saving ? '…' : 'Speichern'}
+        </button>
       </div>
     </div>
   );
@@ -600,6 +636,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   key={safeIndex}
                   onSubmit={handleSubmitRating}
                   saving={savingRating}
+                  themeColor={color}
                 />
               )}
             </motion.div>
