@@ -1,17 +1,16 @@
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 
-export function CountdownBanner({
-  countdown,
-  totalCount,
-  navigate,
-}: {
+interface CountdownBannerProps {
   countdown: { title: string; posterUrl?: string; daysUntil: number; seasonNumber: number };
   totalCount: number;
   navigate: (path: string) => void;
-}) {
+}
+
+function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBannerProps) {
   const { currentTheme: _ct } = useTheme();
   const { isDesktop } = useDeviceType();
   const countdownColor = _ct.accent;
@@ -185,3 +184,8 @@ export function CountdownBanner({
     </motion.div>
   );
 }
+
+// Memo: props are scalar/stable, parent re-renders often on unrelated
+// notification updates, so skipping when props didn't change pays off.
+export const CountdownBanner = memo(CountdownBannerImpl);
+CountdownBanner.displayName = 'CountdownBanner';

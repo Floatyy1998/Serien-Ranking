@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { memo, useCallback, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../../firebase/analytics';
+import { hapticSelect } from '../../lib/haptics';
 
 const DATA_SOURCES = [
   { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
@@ -29,7 +30,7 @@ export const LegalSection = memo(
       const newValue = !analyticsEnabled;
       setAnalyticsEnabled(newValue);
       setAnalyticsConsent(newValue);
-      if (navigator.vibrate) navigator.vibrate(50);
+      hapticSelect();
     }, [analyticsEnabled]);
 
     return (

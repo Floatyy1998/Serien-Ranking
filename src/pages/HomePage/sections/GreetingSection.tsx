@@ -37,13 +37,38 @@ export const GreetingSection = React.memo(function GreetingSection({
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 
-  // Update greeting only when hour changes
+  // Update greeting only when hour changes — paused while tab is hidden
+  // (a midnight transition will be picked up by the visibility-change check).
   useEffect(() => {
-    const timer = setInterval(() => {
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const check = () => {
       const hour = new Date().getHours();
       setCurrentHour((prev) => (prev !== hour ? hour : prev));
-    }, 60000);
-    return () => clearInterval(timer);
+    };
+    const start = () => {
+      if (timer) return;
+      timer = setInterval(check, 60000);
+    };
+    const stop = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        check();
+        start();
+      } else {
+        stop();
+      }
+    };
+    if (document.visibilityState === 'visible') start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      stop();
+    };
   }, []);
 
   // Close tooltip when clicking elsewhere

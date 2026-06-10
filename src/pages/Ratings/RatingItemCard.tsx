@@ -182,10 +182,20 @@ interface RatingItemCardProps {
 // ─── Component ──────────────────────────────────────────────────────────
 
 export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => (
-  <div className="ratings-grid-item" data-id={item.id} data-movie={item.isMovie || undefined}>
+  // data-poster is read by the grid's click handler so the Detail page poster
+  // is already in the browser cache by the time React mounts the route.
+  <div
+    className="ratings-grid-item"
+    data-id={item.id}
+    data-movie={item.isMovie || undefined}
+    data-poster={item.posterUrl || undefined}
+  >
     {/* Card container — no overflow:hidden (iOS Safari fix) */}
     <div className="ratings-card">
-      {/* Poster image */}
+      {/* Poster image — shared element for the View Transitions API.
+          The `view-transition-name` must be unique per element, so we key it
+          by media type + id. Browsers without VT support ignore the style.
+          See global.css → @view-transition. */}
       <img
         src={item.posterUrl || PLACEHOLDER_SVG}
         alt={item.title}
@@ -193,7 +203,10 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
         decoding="async"
         className="ratings-card-poster"
         onError={handleImgError}
-        style={{ background: theme.background.surface }}
+        style={{
+          background: theme.background.surface,
+          viewTransitionName: `poster-${item.isMovie ? 'movie' : 'series'}-${item.id}`,
+        }}
       />
 
       {/* Full overlay */}

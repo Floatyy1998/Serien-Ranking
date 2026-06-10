@@ -8,7 +8,11 @@ import {
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
+import {
+  HorizontalScrollContainer,
+  SectionHeader,
+  SkeletonPosterRow,
+} from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 
@@ -32,6 +36,8 @@ interface MediaCarouselSectionProps {
   /** Only for seasonal */
   badgeGradient?: string;
   iconColor?: string;
+  /** Show skeleton placeholder while TMDB request is in flight. */
+  loading?: boolean;
 }
 
 export const MediaCarouselSection = React.memo(function MediaCarouselSection({
@@ -41,11 +47,33 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   onSeeAll,
   badgeGradient,
   iconColor,
+  loading,
 }: MediaCarouselSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
   const cardWidth = isMobile ? '155px' : '240px';
+
+  if (loading && items.length === 0) {
+    const sectionIcon =
+      variant === 'seasonal' ? (
+        <AutoAwesome />
+      ) : variant === 'trending' ? (
+        <LocalFireDepartment />
+      ) : (
+        <Star />
+      );
+    return (
+      <section style={{ marginBottom: '32px' }}>
+        <SectionHeader
+          icon={sectionIcon}
+          iconColor={iconColor || currentTheme.accent}
+          title={title}
+        />
+        <SkeletonPosterRow posterWidth={isMobile ? 155 : 240} count={6} />
+      </section>
+    );
+  }
 
   if (items.length === 0) return null;
 

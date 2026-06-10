@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { QuickFilter, ScrollToTopButton } from '../../components/ui';
+import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';
 import { RatingItemCard } from './RatingItemCard';
 import { RatingsEmptyState } from './RatingsEmptyState';
 import { RatingsHeader } from './RatingsHeader';
@@ -50,9 +50,10 @@ export const RatingsPage: React.FC = () => {
         style={{
           background: getMobilePageBackground(),
           color: currentTheme.text.primary,
+          paddingTop: 80,
         }}
       >
-        <div>Loading...</div>
+        <SkeletonRatingsGrid count={12} />
       </div>
     );
   }

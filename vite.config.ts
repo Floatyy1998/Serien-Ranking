@@ -1,16 +1,16 @@
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
+import path from 'path';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
+import viteCompression from 'vite-plugin-compression';
 import { VitePWA } from 'vite-plugin-pwa';
 import { criticalCSSPlugin } from './vite-plugin-critical-css';
-// import viteCompression from 'vite-plugin-compression';
-// import { visualizer } from 'rollup-plugin-visualizer';
-import path from 'path';
 
 dotenv.config();
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   base: '/',
   plugins: [
     react(),
@@ -36,6 +36,9 @@ export default defineConfig({
         // Deploy sind ok: skipWaiting + clientsClaim + controllerchange-
         // Reload (serviceWorkerManager.ts) holen den neuen Stand.
         globPatterns: ['**/*.{js,css,svg,png,jpg,jpeg,webp,html}'],
+        // stats.html ist der Bundle-Visualizer-Report — nicht ausliefern,
+        // ist mehrere MB gross und nur fuer lokales Debugging gedacht.
+        globIgnores: ['**/stats.html'],
         navigateFallback: 'index.html',
         skipWaiting: true, // Auto-update: neuer Worker übernimmt sofort
         clientsClaim: true, // Take control of all pages once activated
@@ -63,12 +66,27 @@ export default defineConfig({
         ],
       },
     }),
-    // Compression - temporarily disabled
-    // viteCompression({ algorithm: 'gzip', ext: '.gz', threshold: 1024 }),
-    // viteCompression({ algorithm: 'brotliCompress', ext: '.br', threshold: 1024 }),
-    // visualizer({ open: false, gzipSize: true, brotliSize: true }),
+    viteCompression({ algorithm: 'gzip', ext: '.gz', threshold: 1024, deleteOriginFile: false }),
+    viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+      deleteOriginFile: false,
+    }),
+    visualizer({ open: false, gzipSize: true, brotliSize: true, filename: 'dist/stats.html' }),
   ],
   define: {
+    // In Production-Builds: console.log/debug/info zu No-Op replacen, dann
+    // strippt der Tree-Shaker die Aufrufe komplett raus. console.warn und
+    // console.error bleiben — die wollen wir bei echten Problemen sehen.
+    // Im Dev-Server bleibt alles erhalten, sonst waere Debugging unmoeglich.
+    ...(command === 'build'
+      ? {
+          'console.log': '(()=>{})',
+          'console.debug': '(()=>{})',
+          'console.info': '(()=>{})',
+        }
+      : {}),
     // Firebase Umgebungsvariablen - korrigierte Namen
     'process.env.VITE_FIREBASE_API_KEY': JSON.stringify(process.env.VITE_FIREBASE_API_KEY),
     'process.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(process.env.VITE_FIREBASE_AUTH_DOMAIN),
@@ -109,6 +127,10 @@ export default defineConfig({
     sourcemap: false,
     reportCompressedSize: false,
     rolldownOptions: {
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+      },
       output: {
         manualChunks(id) {
           // Firebase wird vom AuthProvider ueberall eager benoetigt -> eigenes chunk
@@ -121,13 +143,36 @@ export default defineConfig({
           ) {
             return 'react';
           }
-          // MUI ist auf mehreren Seiten gleichzeitig genutzt - in einem chunk
-          // halten vermeidet Duplication in mehreren Lazy-Chunks
+          // MUI-Icons als eigenes Chunk: dann landen nicht alle Icons in jeder Lazy-Page
+          if (id.includes('node_modules/@mui/icons-material')) return 'mui-icons';
+          // Rest von MUI in einem Chunk halten - vermeidet Duplication
           if (id.includes('node_modules/@mui/')) return 'mui';
-          // recharts, framer-motion etc werden automatisch an die Lazy-Pages
-          // gebunden die sie brauchen - kein eager laden mehr
+          // recharts: ~250kB minified, wird von AdminDashboard, Stats und
+          // WatchJourney geteilt. Eigenes Chunk -> einmal laden, dann cached
+          // beim Wechsel zwischen den Pages, statt 3x dupliziert zu werden.
+          if (id.includes('node_modules/recharts') || id.includes('node_modules/d3-')) {
+            return 'recharts';
+          }
+          // framer-motion: ~50kB, wird quasi ueberall genutzt (Sheets, Cards,
+          // Notifications). Eigenes Chunk verhindert Duplication in jedem
+          // Lazy-Page-Chunk und gibt einen besseren Cache-Hit.
+          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/motion')) {
+            return 'framer-motion';
+          }
         },
       },
     },
   },
-});
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@mui/material',
+      'firebase/app',
+      'firebase/auth',
+      'firebase/database',
+    ],
+    exclude: ['@vite/client', '@vite/env'],
+  },
+}));

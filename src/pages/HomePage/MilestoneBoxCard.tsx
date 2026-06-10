@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import Inventory2 from '@mui/icons-material/Inventory2';
+import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
+import { hapticCelebrate } from '../../lib/haptics';
 import {
   BOX_EVERY_N_EPISODES,
   BOX_SCHEMA_VERSION,
@@ -21,6 +23,7 @@ export const MilestoneBoxCard: React.FC = () => {
   const stats = useWebWorkerStatsOptimized();
   const [lastOpenedBoxNumber, setLastOpenedBoxNumber] = useState<number | null>(null);
   const [showBox, setShowBox] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
 
   // Unique watched Episoden (nicht totalViews) damit die Anzeige mit dem
   // "Eps. gesamt" Counter synchron laeuft und User-Erwartung matcht:
@@ -80,7 +83,15 @@ export const MilestoneBoxCard: React.FC = () => {
     <>
       <div style={{ margin: '0 20px', width: 'calc(100% - 40px)' }}>
         <motion.div
-          onClick={hasBox ? () => setShowBox(true) : undefined}
+          onClick={
+            hasBox
+              ? () => {
+                  hapticCelebrate();
+                  setCelebrate(true);
+                  setShowBox(true);
+                }
+              : undefined
+          }
           whileTap={hasBox ? { scale: 0.98 } : undefined}
           style={{
             padding: '12px 14px',
@@ -216,6 +227,11 @@ export const MilestoneBoxCard: React.FC = () => {
       <AnimatePresence>
         {showBox && <MysteryBoxOverlay totalEpisodes={totalEpisodes} onClose={handleClose} />}
       </AnimatePresence>
+      <CelebrationBurst
+        trigger={celebrate}
+        onDone={() => setCelebrate(false)}
+        colors={[currentTheme.primary, currentTheme.accent]}
+      />
     </>
   );
 };

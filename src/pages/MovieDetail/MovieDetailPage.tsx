@@ -127,12 +127,14 @@ export const MovieDetailPage = memo(() => {
 
       {/* Content based on active tab */}
       {activeTab === 'cast' ? (
-        <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
+        <div role="tabpanel" id="md-tabpanel-cast" aria-labelledby="md-tab-cast">
+          <CastCrew tmdbId={movie.id} mediaType="movie" seriesData={movie} />
+        </div>
       ) : (
-        <>
+        <div role="tabpanel" id="md-tabpanel-info" aria-labelledby="md-tab-info">
           <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
           <RecommendationsSection id={movie.id} mediaType="movie" />
-        </>
+        </div>
       )}
 
       {/* Discussions Section */}
@@ -200,8 +202,18 @@ interface MovieTabBarProps {
 }
 
 const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: MovieTabBarProps) => (
-  <div className={`md-tabs ${isMobile ? 'md-tabs--mobile' : ''}`}>
+  <div
+    role="tablist"
+    aria-label="Film-Bereiche"
+    className={`md-tabs ${isMobile ? 'md-tabs--mobile' : ''}`}
+  >
     <button
+      type="button"
+      role="tab"
+      id="md-tab-info"
+      aria-selected={activeTab === 'info'}
+      aria-controls="md-tabpanel-info"
+      tabIndex={activeTab === 'info' ? 0 : -1}
       onClick={() => onTabChange('info')}
       className={`md-tab-btn ${isMobile ? 'md-tab-btn--mobile' : ''} ${activeTab === 'info' ? 'md-tab-btn--active' : ''}`}
       style={{
@@ -212,11 +224,17 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
         color: activeTab === 'info' ? currentTheme.text.secondary : currentTheme.text.muted,
       }}
     >
-      <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />
+      <Info aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
       Info
     </button>
 
     <button
+      type="button"
+      role="tab"
+      id="md-tab-cast"
+      aria-selected={activeTab === 'cast'}
+      aria-controls="md-tabpanel-cast"
+      tabIndex={activeTab === 'cast' ? 0 : -1}
       onClick={() => onTabChange('cast')}
       className={`md-tab-btn ${isMobile ? 'md-tab-btn--mobile' : ''} ${activeTab === 'cast' ? 'md-tab-btn--active' : ''}`}
       style={{
@@ -227,7 +245,7 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
         color: activeTab === 'cast' ? currentTheme.text.secondary : currentTheme.text.muted,
       }}
     >
-      <People style={{ fontSize: isMobile ? '16px' : '18px' }} />
+      <People aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
       Besetzung
     </button>
   </div>

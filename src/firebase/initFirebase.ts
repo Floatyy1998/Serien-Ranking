@@ -17,11 +17,6 @@ export const initFirebase = () => {
 
   // Überprüfe kritische Konfigurationswerte
   if (!config.apiKey || !config.authDomain || !config.projectId) {
-    // console.error('Firebase: Kritische Konfigurationswerte fehlen!', {
-    //   apiKey: !!config.apiKey,
-    //   authDomain: !!config.authDomain,
-    //   projectId: !!config.projectId,
-    // });
     throw new Error('Firebase-Konfiguration unvollständig. Überprüfen Sie die .env-Datei.');
   }
 

@@ -9,6 +9,7 @@ import {
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { hapticSelect, hapticSuccess } from '../../lib/haptics';
 import '../../pages/Rating/RatingPage.css';
 import { BottomSheet } from './BottomSheet';
 
@@ -57,11 +58,12 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
 
   const handleChange = (value: number) => {
     setRating(value);
-    if (navigator.vibrate) navigator.vibrate(10);
+    hapticSelect();
   };
 
   const handleSave = () => {
     if (rating > 0) {
+      hapticSuccess();
       onRate(rating);
       setRating(0);
     }

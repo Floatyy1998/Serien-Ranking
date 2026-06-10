@@ -515,40 +515,64 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     recheckForNewSeasons();
   }, [recheckForNewSeasons]);
 
-  return (
-    <SeriesListContext.Provider
-      value={{
-        seriesList,
-        allSeriesList: allSeries,
-        hiddenSeriesList,
-        loading,
-        seriesWithNewSeasons,
-        inactiveSeries,
-        inactiveRewatches,
-        completedSeries,
-        unratedSeries,
-        providerChanges,
-        clearNewSeasons,
-        clearInactiveSeries,
-        clearInactiveRewatches,
-        clearCompletedSeries,
-        clearUnratedSeries,
-        clearProviderChanges,
-        recheckForNewSeasons,
-        refetchSeries,
-        refetchAfterAdd,
-        toggleHideSeries,
-        isOffline,
-        isStale,
-        ...(process.env.NODE_ENV === 'development'
-          ? {
-              simulateNewSeason,
-              forceDetection,
-            }
-          : {}),
-      }}
-    >
-      {children}
-    </SeriesListContext.Provider>
+  // The context value MUST be memoized: any consumer that subscribes via
+  // useContext re-renders whenever this object's identity changes, even if all
+  // fields stayed the same. The previous inline object literal made every
+  // SeriesList consumer (HomePage, BottomNav, …) re-render on every provider
+  // render, even on unrelated state changes.
+  const contextValue = useMemo(
+    () => ({
+      seriesList,
+      allSeriesList: allSeries,
+      hiddenSeriesList,
+      loading,
+      seriesWithNewSeasons,
+      inactiveSeries,
+      inactiveRewatches,
+      completedSeries,
+      unratedSeries,
+      providerChanges,
+      clearNewSeasons,
+      clearInactiveSeries,
+      clearInactiveRewatches,
+      clearCompletedSeries,
+      clearUnratedSeries,
+      clearProviderChanges,
+      recheckForNewSeasons,
+      refetchSeries,
+      refetchAfterAdd,
+      toggleHideSeries,
+      isOffline,
+      isStale,
+      ...(process.env.NODE_ENV === 'development' ? { simulateNewSeason, forceDetection } : {}),
+    }),
+    [
+      seriesList,
+      allSeries,
+      hiddenSeriesList,
+      loading,
+      seriesWithNewSeasons,
+      inactiveSeries,
+      inactiveRewatches,
+      completedSeries,
+      unratedSeries,
+      providerChanges,
+      clearNewSeasons,
+      clearInactiveSeries,
+      clearInactiveRewatches,
+      clearCompletedSeries,
+      clearUnratedSeries,
+      clearProviderChanges,
+      recheckForNewSeasons,
+      refetchSeries,
+      refetchAfterAdd,
+      toggleHideSeries,
+      isOffline,
+      isStale,
+      simulateNewSeason,
+      forceDetection,
+    ]
   );
+
+  return <SeriesListContext.Provider value={contextValue}>{children}</SeriesListContext.Provider>;
 };

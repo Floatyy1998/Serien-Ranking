@@ -1,6 +1,6 @@
 import type { Variants } from 'framer-motion';
 
-// --- Shared spring presets (aligned with designTokens.ts) ---
+// --- Shared spring presets ---
 const springDefault = { type: 'spring', stiffness: 280, damping: 24 } as const;
 const springCinematic = { type: 'spring', stiffness: 150, damping: 18 } as const;
 

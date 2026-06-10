@@ -8,6 +8,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
+import { hapticTap } from '../../lib/haptics';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 
@@ -111,9 +112,7 @@ export const BottomNavigation = () => {
   };
 
   const handleNavigation = (path: string) => {
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    hapticTap();
     if (isActive(path)) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {

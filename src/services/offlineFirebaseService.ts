@@ -147,9 +147,7 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         serviceWorkerManager.cacheFirebaseData(path, data);
       }
-    } catch {
-      // console.error('Cache Speicherung fehlgeschlagen:', error);
-    }
+    } catch {}
   }
 
   public async getCachedData(path: string): Promise<unknown | null> {
@@ -181,7 +179,6 @@ class OfflineFirebaseService {
         request.onerror = () => reject(request.error);
       });
     } catch {
-      // console.error('Cache Abruf fehlgeschlagen:', error);
       return null;
     }
   }
@@ -222,9 +219,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {
-      // console.error('Cache Löschung fehlgeschlagen:', error);
-    }
+    } catch {}
   }
 
   public async queueOperation(
@@ -320,9 +315,7 @@ class OfflineFirebaseService {
       this.offlineQueue = items.filter((item) => {
         return Date.now() - item.timestamp < this.config.maxOfflineTime;
       });
-    } catch {
-      // console.error('Offline Queue Wiederherstellung fehlgeschlagen:', error);
-    }
+    } catch {}
   }
 
   private handleSyncComplete(_results: unknown): void {
@@ -340,9 +333,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {
-      // console.error(`IndexedDB Speicherung fehlgeschlagen (${storeName}):`, error);
-    }
+    } catch {}
   }
 
   private async removeFromIndexedDB(storeName: string, key: string): Promise<void> {
@@ -356,9 +347,7 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {
-      // console.error(`IndexedDB Löschung fehlgeschlagen (${storeName}):`, error);
-    }
+    } catch {}
   }
 
   public async clearAllCaches(): Promise<void> {
@@ -377,9 +366,7 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         await serviceWorkerManager.clearCache();
       }
-    } catch {
-      // console.error('Cache-Löschung fehlgeschlagen:', error);
-    }
+    } catch {}
   }
 
   public async getCacheStatistics(): Promise<{
@@ -412,9 +399,7 @@ class OfflineFirebaseService {
         const swStats = await serviceWorkerManager.getCacheStatistics();
         stats.serviceWorkerSize = swStats.totalSize;
       }
-    } catch {
-      // console.error('Statistik-Abruf fehlgeschlagen:', error);
-    }
+    } catch {}
 
     return stats;
   }

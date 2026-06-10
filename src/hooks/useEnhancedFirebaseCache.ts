@@ -72,8 +72,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
       // Hier könnte ein Memory-Cache implementiert werden
       return null;
     } catch {
-      // console.error('❌ Cache loading failed:', error);
-      return null;
+      return null; // cache miss is silent — caller falls back to network
     }
   }, [path, enableOfflineSupport]);
   /**
@@ -96,7 +95,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
           }
         }
       } catch {
-        // console.error('❌ Cache saving failed:', error);
+        // ignore — cache write failures are non-fatal; data is still in memory state
       }
     },
     [path, ttl, enableOfflineSupport, cacheInServiceWorker]
@@ -155,7 +154,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
           setLoading(false);
         },
         (error) => {
-          // console.warn(`⚠️ Realtime listener error for ${path}:`, error);
           // Bei Netzwerkfehlern auf Cache zurückfallen
           const errorMessage = error?.message || error?.toString() || '';
           const isNetworkError =
@@ -182,7 +180,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
       );
       listenerRef.current = () => ref.off('value', listener);
     } catch (error) {
-      // console.error('❌ Realtime listener setup failed:', error);
       setError(error instanceof Error ? error.message : 'Realtime setup failed');
       setLoading(false);
     }
@@ -545,7 +542,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
         }
       }
     } catch (error) {
-      // console.error('❌ Refetch failed:', error);
       // Fallback auf Cache bei Netzwerkfehler
       const cachedData = await loadFromCache();
       if (cachedData) {
@@ -567,7 +563,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         await offlineFirebaseService.removeCachedData(path);
       }
     } catch {
-      // console.error('❌ Cache clearing failed:', error);
+      // ignore — cache eviction failures are non-fatal
     }
   }, [path, enableOfflineSupport]);
   /**
@@ -640,8 +636,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
                 setLastUpdated(Date.now());
               }
             } catch {
-              // console.warn(`⚠️ Firebase fetch failed, using cache: ${firebaseError}`);
-              // Cache-Daten bleiben bestehen
+              // Firebase fetch failed — cached data stays in place
             }
             setLoading(false);
           }
@@ -654,7 +649,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
           }
         }
       } catch (error) {
-        // console.error(`❌ Initial load failed for ${path}:`, error);
         // Letzter Versuch: Cache laden
         const fallbackCache = await loadFromCache();
         if (fallbackCache) {

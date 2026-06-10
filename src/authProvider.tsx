@@ -62,10 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     const parsedUser = JSON.parse(savedUser);
                     setUser(parsedUser);
                   } catch {
-                    // console.error(
-                    //   'Fehler beim Laden des gespeicherten Users:',
-                    //   error
-                    // );
+                    // ignore — corrupted cached user is non-fatal, auth will re-resolve
                   }
                 }
               }
@@ -138,9 +135,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               if (!localTheme) {
                 // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
-                // console.log(
-                //   'No local theme found, checking for cloud theme as fallback...'
-                // );
                 const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
                 try {
                   const themeSnapshot = await themeRef.once('value');
@@ -169,18 +163,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
                     // Dies ist kein "lokales Theme", sondern nur ein temporärer Cache
                     localStorage.setItem('customTheme', JSON.stringify(cloudTheme));
-                    // console.log('Cloud-Theme temporär im localStorage gespeichert für BackgroundMedia');
 
                     window.dispatchEvent(new CustomEvent('themeChanged'));
                   }
                 } catch {
-                  // console.error('Error loading cloud theme:', error);
+                  // ignore — cloud theme is a fallback, defaults apply otherwise
                 }
-              } else {
-                // console.log(
-                //   'Local theme exists, keeping it (has priority over cloud theme - cloud updates are ignored)'
-                // );
               }
+              // else: local theme exists, keep it — cloud updates are ignored
 
               const userRef = firebase.database().ref(`users/${user.uid}`);
               const snapshot = await userRef.once('value');
@@ -237,15 +227,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
           });
         } catch {
-          // console.error('Fehler bei Firebase-Initialisierung:', error);
-          setAuthStateResolved(true); // Auch bei Fehler Auth-State als resolved setzen
-          window.setAppReady?.('emailVerification', true); // No verification needed when auth fails
+          // Auch bei Fehler Auth-State als resolved setzen, sonst haengt der Splash.
+          setAuthStateResolved(true);
+          window.setAppReady?.('emailVerification', true);
         }
       })
-      .catch((_error) => {
-        // console.error('Fehler beim Laden des Firebase-Moduls:', error);
+      .catch(() => {
+        // Firebase-Modul konnte nicht geladen werden — App im "logged out"-State starten.
         setAuthStateResolved(true);
-        window.setAppReady?.('emailVerification', true); // No verification when Firebase fails to load
+        window.setAppReady?.('emailVerification', true);
       });
 
     return () => {
