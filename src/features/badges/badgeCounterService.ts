@@ -17,7 +17,9 @@ class BadgeCounterService {
         .database()
         .ref(`users/${userId}/badgeCounters/quickwatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -27,7 +29,9 @@ class BadgeCounterService {
     try {
       const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/rewatchEpisodes`);
       await counterRef.transaction((current) => (current || 0) + 1);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -71,7 +75,9 @@ class BadgeCounterService {
 
       // Aktualisiere beide Werte
       await Promise.all([lastActivityRef.set(today), streakRef.set(currentStreak)]);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -85,7 +91,9 @@ class BadgeCounterService {
       // Auch typ-spezifische Counter
       const typeCounterRef = firebase.database().ref(`users/${userId}/badgeCounters/${type}Added`);
       await typeCounterRef.transaction((current) => (current || 0) + 1);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -141,7 +149,9 @@ class BadgeCounterService {
           }
         });
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -163,7 +173,9 @@ class BadgeCounterService {
           await bingeRef.remove(); // Abgelaufene Session entfernen
         }
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -180,7 +192,9 @@ class BadgeCounterService {
         const newValue = (current || 0) + 1;
         return newValue;
       });
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -194,7 +208,9 @@ class BadgeCounterService {
         .ref(`users/${userId}/badgeCounters/marathonWeeks/${weekKey}`);
 
       await marathonRef.transaction((current) => (current || 0) + episodeCount);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -276,7 +292,9 @@ class BadgeCounterService {
     try {
       const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`);
       await counterRef.transaction((current) => (current || 0) + amount);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -312,7 +330,9 @@ class BadgeCounterService {
   async resetCounter(userId: string, counterName: string): Promise<void> {
     try {
       await firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`).set(0);
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -321,7 +341,9 @@ class BadgeCounterService {
   async clearAllCounters(userId: string): Promise<void> {
     try {
       await firebase.database().ref(`users/${userId}/badgeCounters`).remove();
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   /**
@@ -341,7 +363,9 @@ class BadgeCounterService {
         // Neue Woche mit 0 Episoden erstellen
         await marathonWeeksRef.child(currentWeekKey).set(0);
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 }
 

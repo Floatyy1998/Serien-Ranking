@@ -599,7 +599,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
     if (!path) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(null);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       setLoading(false);
       return;
     }

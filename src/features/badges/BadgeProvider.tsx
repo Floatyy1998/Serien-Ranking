@@ -90,7 +90,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
       if (currentBadgeIndex < newBadges.length) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowNotification(true);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+
         setCelebrate(true);
         hapticCelebrate();
       }

@@ -1,5 +1,5 @@
 import { motion, useReducedMotion } from 'framer-motion';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 interface CelebrationBurstProps {
@@ -46,25 +46,15 @@ export function CelebrationBurst({
   onDone,
 }: CelebrationBurstProps) {
   const reduceMotion = useReducedMotion();
-  const [active, setActive] = useState(false);
+  // Particles live in state because they need fresh Math.random() each burst.
+  // Generating them in useMemo would violate react-hooks/purity in React 19,
+  // and a ref would force imperative re-renders. Effect-driven works cleanly.
+  const [particles, setParticles] = useState<Particle[]>([]);
 
   useEffect(() => {
     if (!trigger) return;
-    setActive(true);
-    const timer = setTimeout(() => {
-      setActive(false);
-      onDone?.();
-    }, duration);
-    return () => clearTimeout(timer);
-  }, [trigger, duration, onDone]);
-
-  const palette = useMemo(
-    () => (colors ? [...DEFAULT_COLORS, ...colors] : DEFAULT_COLORS),
-    [colors]
-  );
-
-  const particles = useMemo<Particle[]>(() => {
-    return Array.from({ length: count }, (_, i) => {
+    const palette = colors ? [...DEFAULT_COLORS, ...colors] : DEFAULT_COLORS;
+    const next: Particle[] = Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * Math.PI * 2 + Math.random() * 0.4;
       const distance = 140 + Math.random() * 220;
       const size = 6 + Math.random() * 8;
@@ -80,9 +70,15 @@ export function CelebrationBurst({
         durationMs: duration * (0.7 + Math.random() * 0.3),
       };
     });
-  }, [count, duration, palette]);
+    setParticles(next);
+    const timer = setTimeout(() => {
+      setParticles([]);
+      onDone?.();
+    }, duration);
+    return () => clearTimeout(timer);
+  }, [trigger, count, colors, duration, onDone]);
 
-  if (reduceMotion || !active) return null;
+  if (reduceMotion || particles.length === 0) return null;
 
   const node = (
     <div

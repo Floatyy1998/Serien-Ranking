@@ -41,7 +41,12 @@ export function usePersistedState<T>(
 ): [T, React.Dispatch<React.SetStateAction<T>>] {
   const serializer = options?.serializer ?? pickSerializer(initialValue);
   const serializerRef = useRef(serializer);
-  serializerRef.current = serializer;
+  // Sync the serializer ref via effect — assigning to .current during render
+  // would violate the React-19 purity rule. The setItem effect already reads
+  // serializerRef in a deferred phase, so the timing works out.
+  useEffect(() => {
+    serializerRef.current = serializer;
+  }, [serializer]);
 
   const [value, setValue] = useState<T>(() => {
     try {
