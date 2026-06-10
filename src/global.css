@@ -105,6 +105,30 @@
   --text-glow-subtle: 0 0 10px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
+/* ===========================================================================
+ * Glassmorphism utility classes — single source of truth for glass cards.
+ * Use these instead of repeating `background + backdrop-filter + border` triples
+ * inline in component styles. Pair with --radius-* and --shadow-* as needed.
+ * =========================================================================== */
+.glass-card-light {
+  background: var(--glass-light);
+  backdrop-filter: var(--blur-md) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-md) saturate(1.4);
+  border: 1px solid var(--glass-border-light);
+}
+.glass-card-medium {
+  background: var(--glass-medium);
+  backdrop-filter: var(--blur-lg) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  border: 1px solid var(--glass-border-medium);
+}
+.glass-card-heavy {
+  background: var(--glass-heavy);
+  backdrop-filter: var(--blur-xl) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-xl) saturate(1.4);
+  border: 1px solid var(--glass-border-medium);
+}
+
 /* Hide all scrollbars globally - with !important for highest priority */
 *,
 *::before,
@@ -544,12 +568,12 @@ button:active:not(:disabled),
     0 0 40px -10px color-mix(in srgb, var(--theme-primary) 15%, transparent);
 }
 
-/* Frosted surface - Premium Glassmorphism */
+/* Frosted surface - Premium Glassmorphism (token-driven, gradient flavor). */
 .frosted-surface {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: var(--blur-lg) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  border: 1px solid var(--glass-border-light);
 }
 
 /* Inner light - subtiler Lichtschein am oberen Rand */

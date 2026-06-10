@@ -26,9 +26,11 @@ export const isPlaceholderUrl = (url: string | undefined | null): boolean => {
   return url.startsWith('data:image/svg+xml');
 };
 
+export type TmdbImageSize = 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original';
+
 export const getImageUrl = (
   posterObj: PosterInput,
-  size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original' = 'w342',
+  size: TmdbImageSize = 'w342',
   fallback?: string
 ): string => {
   // Priorisierung: expliziter Caller-Fallback (auch '' erlaubt um Bild zu
@@ -43,4 +45,23 @@ export const getImageUrl = (
     return path;
   }
   return `${TMDB_BASE}/${size}${path}`;
+};
+
+/**
+ * Build a TMDB `srcset` for responsive loading. Returns an empty string for
+ * placeholder URLs / external URLs that we cannot resize. Pair with a single
+ * default `src` from `getImageUrl(..., 'w342')` and an appropriate `sizes`
+ * attribute, e.g. `(max-width: 640px) 30vw, 200px`.
+ */
+export const getPosterSrcSet = (posterObj: PosterInput): string => {
+  if (!posterObj) return '';
+  const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
+  if (!path) return '';
+  if (path.startsWith('http')) return ''; // external / already-final URLs cannot be resized
+  return [
+    `${TMDB_BASE}/w185${path} 185w`,
+    `${TMDB_BASE}/w342${path} 342w`,
+    `${TMDB_BASE}/w500${path} 500w`,
+    `${TMDB_BASE}/w780${path} 780w`,
+  ].join(', ');
 };

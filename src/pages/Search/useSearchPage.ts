@@ -9,6 +9,7 @@ import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { preloadImage } from '../../lib/preloadImage';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
@@ -328,6 +329,12 @@ export const useSearchPage = (): UseSearchPageResult => {
       const container = document.querySelector('.mobile-content') as HTMLElement;
       if (container && container.scrollTop > 0) {
         sessionStorage.setItem('search-scroll', String(container.scrollTop));
+      }
+
+      // Warm the larger poster in parallel with the lazy Detail-route chunk.
+      // TMDB poster_path is a relative path → build a w500 absolute URL.
+      if (item.poster_path) {
+        preloadImage(`https://image.tmdb.org/t/p/w500${item.poster_path}`);
       }
 
       if (item.type === 'series') {

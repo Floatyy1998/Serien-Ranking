@@ -15,6 +15,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { preloadImage } from '../../lib/preloadImage';
 import {
   getRating,
   getSeriesProgress,
@@ -221,6 +222,10 @@ export const useRatingsData = (): UseRatingsDataResult => {
       const id = gridItem.dataset.id;
       const isMovie = gridItem.dataset.movie !== undefined;
       if (!id) return;
+
+      // Warm the poster in parallel with the lazy route chunk fetch — both
+      // race; whoever finishes first doesn't get punished by the other.
+      preloadImage(gridItem.dataset.poster);
 
       saveScrollPosition();
       navigate(isMovie ? `/movie/${id}` : `/series/${id}`);

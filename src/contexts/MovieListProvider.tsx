@@ -27,6 +27,10 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     {
       ttl: 24 * 60 * 60 * 1000,
       useRealtimeListener: true,
+      // Delta-Sync: bei Rating-Updates oder Watch-Status-Aenderungen nur das
+      // betroffene Movie ueber den Wire schicken statt die komplette Map. Bei
+      // Usern mit 500+ Filmen spart das spuerbar Bandbreite und CPU.
+      useDeltaSync: true,
       enableOfflineSupport: true,
       syncOnReconnect: true,
     }
@@ -151,17 +155,12 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     return merged;
   }, [userMovieRefs, catalogData]);
 
-  return (
-    <MovieListContext.Provider
-      value={{
-        movieList,
-        loading,
-        refetchMovies: refetchRefs,
-        isOffline,
-        isStale,
-      }}
-    >
-      {children}
-    </MovieListContext.Provider>
+  // Memoize the context value so consumers (Ratings, HomePage, BottomNav, …)
+  // only re-render when the actual data changes, not on every provider render.
+  const contextValue = useMemo(
+    () => ({ movieList, loading, refetchMovies: refetchRefs, isOffline, isStale }),
+    [movieList, loading, refetchRefs, isOffline, isStale]
   );
+
+  return <MovieListContext.Provider value={contextValue}>{children}</MovieListContext.Provider>;
 };

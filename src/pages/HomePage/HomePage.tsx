@@ -2,7 +2,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
@@ -153,9 +153,17 @@ export const HomePage: React.FC = () => {
 
   // Data hooks
   const stats = useWebWorkerStatsOptimized();
-  const { trending } = useTMDBTrending();
+  const { trending, loading: trendingLoading } = useTMDBTrending();
   const seasonal = useSeasonalRecommendations();
   const topRated = useTopRated();
+
+  // React 19: defer the heavy below-the-fold lists so they don't block the
+  // above-the-fold paint. When trending/topRated arrive, the render is
+  // interruptible — user interactions (scroll, tap) stay snappy even if the
+  // posters lists are mid-render.
+  const deferredTrending = useDeferredValue(trending);
+  const deferredTopRated = useDeferredValue(topRated);
+  const deferredSeasonalItems = useDeferredValue(seasonal.items);
 
   // Total series with unwatched
   const totalSeriesWithUnwatched = useMemo(() => {
@@ -358,10 +366,11 @@ export const HomePage: React.FC = () => {
           <MediaCarouselSection
             key="seasonal"
             variant="seasonal"
-            items={seasonal.items}
+            items={deferredSeasonalItems}
             title={seasonal.title}
             badgeGradient={seasonal.badgeGradient}
             iconColor={seasonal.iconColor}
+            loading={seasonal.loading}
           />
         );
 
@@ -370,8 +379,9 @@ export const HomePage: React.FC = () => {
           <MediaCarouselSection
             key="trending"
             variant="trending"
-            items={trending}
+            items={deferredTrending}
             title="Trending diese Woche"
+            loading={trendingLoading}
           />
         );
 
@@ -380,7 +390,7 @@ export const HomePage: React.FC = () => {
           <MediaCarouselSection
             key="top-rated"
             variant="top-rated"
-            items={topRated}
+            items={deferredTopRated}
             title="Bestbewertet"
             onSeeAll={() => navigate('/ratings')}
           />

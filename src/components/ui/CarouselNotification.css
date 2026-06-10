@@ -762,6 +762,14 @@
     font-size: 0.78rem;
   }
 
+  /* Mobile: Schliessen/Minimieren-Buttons auf 36px ziehen damit der
+   * Touch-Target naeher an die 44px HIG-Guideline kommt und der Close-X
+   * leichter zu treffen ist. Visuelle Groesse vom Icon bleibt. */
+  .series-notification-collapse-btn {
+    width: 36px;
+    height: 36px;
+  }
+
   .series-notification-actions {
     gap: 6px;
   }
@@ -777,8 +785,12 @@
     min-width: 0;
   }
 
+  /* Auf Mobile ohne safe-area-inset-top war der Header (mit dem
+   * Schliessen-X) unter der iOS-Notch / Android-Statusbar — Klick ging an
+   * die Systemleiste. Wir behalten den 8px-Abstand zur Karte, addieren aber
+   * die Safe-Area dazu, damit der Close-Button immer tappbar ist. */
   .notif-hub {
-    top: 8px;
+    top: calc(8px + env(safe-area-inset-top, 0px));
     width: calc(100% - 16px);
   }
 

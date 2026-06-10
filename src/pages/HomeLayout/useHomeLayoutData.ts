@@ -7,6 +7,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
+import { hapticSelect, hapticWarning } from '../../lib/haptics';
 
 // --- Constants ---
 
@@ -252,7 +253,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       const newHidden = hidden.includes(id) ? hidden.filter((s) => s !== id) : [...hidden, id];
       setHidden(newHidden);
       saveConfig({ ...currentConfig(), [configKey]: newHidden });
-      if (navigator.vibrate) navigator.vibrate(50);
+      hapticSelect();
     };
   };
 
@@ -328,7 +329,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       secondaryActionsOrder: DEFAULT_SECONDARY_ACTIONS_ORDER,
       hiddenSecondaryActions: [],
     });
-    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    hapticWarning();
   };
 
   // --- Expandable config lookup ---

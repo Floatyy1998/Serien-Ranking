@@ -3,6 +3,7 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { hapticSelect } from '../../lib/haptics';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -95,9 +96,7 @@ export const useRatingData = (): UseRatingDataResult => {
 
   const handleRatingChange = (value: number) => {
     setOverallRating(value);
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
+    hapticSelect();
   };
 
   const handleGenreRatingChange = (genre: string, value: number) => {

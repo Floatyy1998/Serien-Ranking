@@ -51,16 +51,18 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
+/* Composes design-token glassmorphism (background + blur + border) with the
+ * page-specific layout + slight tint shift toward the dark surface tone. */
 .hero-section__glass-card {
   flex: 1;
   min-width: 0;
   background: rgba(10, 14, 26, 0.55);
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: var(--blur-lg) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
   border-radius: 20px;
   padding: 24px 28px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border-medium);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
 }

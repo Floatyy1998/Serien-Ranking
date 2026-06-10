@@ -308,17 +308,20 @@ export const HeroSection = memo<HeroSectionProps>(
               : undefined
           }
         >
-          {/* Poster */}
+          {/* Poster — shared view-transition target. Matches the listing
+              card's `poster-series-${id}` in RatingItemCard so chromium-based
+              browsers animate the morph automatically. */}
           {posterUrl && (
             <img
               src={posterUrl}
               alt={series.title}
               className="hero-section__poster"
-              style={
-                isMobile
+              style={{
+                viewTransitionName: `poster-series-${series.id}`,
+                ...(isMobile
                   ? { width: 150, height: 220, borderRadius: 14, marginBottom: 20 }
-                  : undefined
-              }
+                  : {}),
+              }}
             />
           )}
 

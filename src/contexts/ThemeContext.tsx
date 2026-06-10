@@ -193,7 +193,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
             .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
             .set(config);
         } catch {
-          // console.error('Fehler beim Speichern des Themes in Firebase:', error);
+          // ignore — theme is persisted in localStorage too, cloud sync is best-effort
         }
       }
     },
@@ -216,7 +216,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
           .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
           .remove();
       } catch {
-        // console.error('Fehler beim Löschen des Themes aus Firebase:', error);
+        // ignore — local reset is what the user actually sees, cloud cleanup is best-effort
       }
     }
   }, [user?.uid, updateCSSVariables]);

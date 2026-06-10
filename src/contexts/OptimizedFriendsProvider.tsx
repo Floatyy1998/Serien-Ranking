@@ -269,15 +269,40 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
     // 2. Periodischer Poll alle 5 Min statt N child_added-Listener.
     //    Spart N persistente Verbindungen (N = Anzahl Freunde).
-    const interval = setInterval(
-      () => {
+    //    Pausiert wenn der Tab im Hintergrund liegt — der Friend-Activity-
+    //    Feed muss nicht laufend frisch sein wenn niemand hinschaut.
+    //    Beim Re-Visit feuern wir einmal sofort, damit der Feed nicht
+    //    veraltet wirkt.
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(
+        () => {
+          loadFriendActivitiesRef.current?.();
+        },
+        5 * 60 * 1000
+      );
+    };
+    const stop = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
         loadFriendActivitiesRef.current?.();
-      },
-      5 * 60 * 1000
-    );
+        start();
+      } else {
+        stop();
+      }
+    };
+    if (document.visibilityState === 'visible') start();
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
-      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisibility);
+      stop();
     };
   }, [user, friends, readTimesLoaded]);
 
@@ -412,27 +437,51 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     loadFriendActivities();
   }, [refetchFriends, loadFriendActivities]);
 
+  // Memoize so the 14+ HomePage hook reads don't all re-render on every
+  // friends-provider render cycle. Each field is a stable ref by itself
+  // (useState/useCallback/useMemo upstream); without this wrapper the inline
+  // object literal would still force fresh identity per render.
+  const contextValue = useMemo(
+    () => ({
+      friends,
+      friendRequests,
+      sentRequests,
+      friendActivities,
+      loading,
+      unreadRequestsCount,
+      unreadActivitiesCount,
+      markRequestsAsRead,
+      markActivitiesAsRead,
+      sendFriendRequest,
+      acceptFriendRequest,
+      declineFriendRequest,
+      cancelFriendRequest,
+      removeFriend,
+      updateUserActivity,
+      refreshFriends,
+    }),
+    [
+      friends,
+      friendRequests,
+      sentRequests,
+      friendActivities,
+      loading,
+      unreadRequestsCount,
+      unreadActivitiesCount,
+      markRequestsAsRead,
+      markActivitiesAsRead,
+      sendFriendRequest,
+      acceptFriendRequest,
+      declineFriendRequest,
+      cancelFriendRequest,
+      removeFriend,
+      updateUserActivity,
+      refreshFriends,
+    ]
+  );
+
   return (
-    <OptimizedFriendsContext.Provider
-      value={{
-        friends,
-        friendRequests,
-        sentRequests,
-        friendActivities,
-        loading,
-        unreadRequestsCount,
-        unreadActivitiesCount,
-        markRequestsAsRead,
-        markActivitiesAsRead,
-        sendFriendRequest,
-        acceptFriendRequest,
-        declineFriendRequest,
-        cancelFriendRequest,
-        removeFriend,
-        updateUserActivity,
-        refreshFriends,
-      }}
-    >
+    <OptimizedFriendsContext.Provider value={contextValue}>
       {children}
     </OptimizedFriendsContext.Provider>
   );

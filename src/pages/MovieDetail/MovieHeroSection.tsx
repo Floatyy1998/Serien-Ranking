@@ -170,17 +170,19 @@ export const MovieHeroSection = memo(
                 : undefined
             }
           >
-            {/* Poster */}
+            {/* Poster — shared view-transition target (matches the listing
+                card key). Browsers without VT support ignore the style. */}
             {posterUrl && (
               <img
                 src={posterUrl}
                 alt={movie.title}
                 className="md-hero__poster"
-                style={
-                  isMobile
+                style={{
+                  viewTransitionName: `poster-movie-${movie.id}`,
+                  ...(isMobile
                     ? { width: 150, height: 220, borderRadius: 14, marginBottom: 20 }
-                    : undefined
-                }
+                    : {}),
+                }}
               />
             )}
 

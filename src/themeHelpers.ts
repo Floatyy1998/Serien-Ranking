@@ -40,9 +40,8 @@ export const loadSavedTheme = async (userId?: string) => {
   if (savedTheme) {
     try {
       theme = JSON.parse(savedTheme);
-      // console.log('Lokales Theme geladen (hat Vorrang):', theme);
     } catch {
-      // console.error('Fehler beim Laden des lokalen Themes:', error);
+      // corrupted JSON — fall through to cloud / defaults
     }
   }
 
@@ -53,14 +52,12 @@ export const loadSavedTheme = async (userId?: string) => {
       const snapshot = await themeRef.once('value');
       theme = snapshot.val();
       if (theme) {
-        // console.log('Cloud-Theme als Fallback geladen:', theme);
         // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
         // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)
         localStorage.setItem('customTheme', JSON.stringify(theme));
-        // console.log('Cloud-Theme im localStorage gespeichert für BackgroundMedia');
       }
     } catch {
-      // console.error('Fehler beim Laden des Cloud-Themes:', error);
+      // ignore — defaults will apply
     }
   }
 
