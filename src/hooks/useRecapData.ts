@@ -202,7 +202,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
   // den abgeleiteten "show recap"-Zustand cachen — derived useMemo wuerde
   // hier sehr viel duplizieren (fetchEpisodeOverviews-Cache braucht den
   // setLoading-Trigger). Pragmatisch: disabled.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+
   useEffect(() => {
     if (!series || dismissed) {
       setShouldShowRecap(false);
