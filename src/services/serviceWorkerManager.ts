@@ -39,12 +39,7 @@ class ServiceWorkerManager {
    * 🔧 Service Worker Initialisierung
    */
   private async init(): Promise<void> {
-    if (!this.isSupported) {
-      // // console.warn(
-      //   '⚠️ Service Worker wird von diesem Browser nicht unterstützt'
-      // );
-      return;
-    }
+    if (!this.isSupported) return;
 
     try {
       await this.register();
@@ -61,10 +56,7 @@ class ServiceWorkerManager {
         document.addEventListener('visibilitychange', this.visibilityHandler);
       }
     } catch {
-      // // console.error(
-      //   '❌ Service Worker Manager Initialisierung fehlgeschlagen:',
-      //   error
-      // );
+      // ignore — service worker registration failures are non-fatal
     }
   }
 
@@ -137,10 +129,8 @@ class ServiceWorkerManager {
   private handleWorkerMessage(data: Record<string, unknown>): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
-        // // console.log('📦 Cache aktualisiert:', data.version);
         break;
       case 'SW_UPDATED':
-        // // console.log('🆕 Service Worker aktualisiert:', data.version);
         this.notifyUpdateComplete();
         break;
       case 'OFFLINE_READY':
@@ -183,7 +173,7 @@ class ServiceWorkerManager {
         });
       }
     } catch {
-      // // console.error('❌ Service Worker Update fehlgeschlagen:', error);
+      // ignore — fallback path is automatic re-check on next visibility-change
     }
   }
 
@@ -259,7 +249,7 @@ class ServiceWorkerManager {
         ).sync.register(tag);
       }
     } catch {
-      // // console.error('❌ Background Sync Registration fehlgeschlagen:', error);
+      // ignore — Background Sync API isn't critical, retries happen on next page visit
     }
   }
 
@@ -277,7 +267,7 @@ class ServiceWorkerManager {
       await this.storeInIndexedDB('pendingUpdates', pendingUpdate);
       await this.registerBackgroundSync('firebase-sync');
     } catch {
-      // // console.error('❌ Failed to queue Firebase update:', error);
+      // ignore — IndexedDB queue failure leaves the update to be retried next session
     }
   }
 

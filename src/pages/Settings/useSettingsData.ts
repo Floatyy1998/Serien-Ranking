@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { trackLogout } from '../../firebase/analytics';
+import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -194,7 +195,7 @@ export const useSettingsData = () => {
         setIsPublicProfile(enabled);
         setPublicProfileId(enabled ? newPublicProfileId : '');
 
-        if (navigator.vibrate) navigator.vibrate(50);
+        hapticSelect();
       } catch {
         // Silent fail
       } finally {
@@ -209,7 +210,7 @@ export const useSettingsData = () => {
 
     const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
     navigator.clipboard.writeText(publicUrl).then(() => {
-      if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+      hapticSuccess();
       showSnackbar('Link kopiert!');
     });
   }, [publicProfileId, showSnackbar]);
@@ -234,7 +235,7 @@ export const useSettingsData = () => {
 
       setPublicProfileId(newPublicProfileId);
 
-      if (navigator.vibrate) navigator.vibrate(100);
+      hapticWarning();
     } catch {
       // Silent fail
     } finally {

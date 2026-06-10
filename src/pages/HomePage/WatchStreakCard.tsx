@@ -1,10 +1,12 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Whatshot, Shield } from '@mui/icons-material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
+import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { getStreakStatus, getShieldCooldown } from './watchStreakHelpers';
@@ -23,6 +25,7 @@ export const WatchStreakCard: React.FC = () => {
   const [shieldLoading, setShieldLoading] = useState(false);
   const [shieldJustUsed, setShieldJustUsed] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [celebrateRecord, setCelebrateRecord] = useState(false);
 
   // Load streak data
   useEffect(() => {
@@ -104,6 +107,7 @@ export const WatchStreakCard: React.FC = () => {
       if (result.success) {
         setShowConfirm(false);
         setShieldJustUsed(true);
+        hapticSuccess();
         setTimeout(() => setShieldJustUsed(false), 5000);
       } else {
         alert(result.error || 'Fehler beim Aktivieren des Shields');
@@ -112,6 +116,27 @@ export const WatchStreakCard: React.FC = () => {
       setShieldLoading(false);
     }
   }, [user?.uid, pet?.id]);
+
+  // Confetti edge-trigger: fire only when currentStreak actually grew within
+  // this session. The first effect-run after mount just snapshots the current
+  // value into the ref so we don't celebrate users every time they revisit the
+  // page while sitting at a record.
+  const prevStreakRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!streak) return;
+    const status = getStreakStatus(streak.lastWatchDate);
+    const display = status === 'lost' ? 0 : streak.currentStreak;
+    if (prevStreakRef.current === null) {
+      prevStreakRef.current = display;
+      return;
+    }
+    const prev = prevStreakRef.current;
+    prevStreakRef.current = display;
+    if (display > prev && display > 0 && display >= streak.longestStreak) {
+      setCelebrateRecord(true);
+      hapticCelebrate();
+    }
+  }, [streak]);
 
   if (!streak) return null;
 
@@ -381,6 +406,12 @@ export const WatchStreakCard: React.FC = () => {
         shieldLoading={shieldLoading}
         onClose={() => setShowConfirm(false)}
         onActivate={handleShieldActivate}
+      />
+
+      <CelebrationBurst
+        trigger={celebrateRecord}
+        onDone={() => setCelebrateRecord(false)}
+        colors={[flameColor, currentTheme.accent]}
       />
     </>
   );

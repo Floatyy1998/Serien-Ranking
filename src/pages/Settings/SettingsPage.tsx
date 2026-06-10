@@ -7,6 +7,7 @@ import { Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-mate
 import { Switch } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import type { ThemeContextType } from '../../contexts/ThemeContextDef';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
@@ -194,8 +195,7 @@ export const SettingsPage = () => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AutoStartToggle = ({ currentTheme }: { currentTheme: any }) => {
+const AutoStartToggle = ({ currentTheme }: { currentTheme: ThemeContextType['currentTheme'] }) => {
   const [autoStart, setAutoStart] = useState(false);
 
   useEffect(() => {

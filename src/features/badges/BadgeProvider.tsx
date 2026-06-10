@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { CelebrationBurst } from '../../components/ui';
+import { hapticCelebrate } from '../../lib/haptics';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from './BadgeNotification';
 import { BadgeContext } from './BadgeContextDef';
@@ -21,6 +23,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
   const [newBadges, setNewBadges] = useState<EarnedBadge[]>([]);
   const [currentBadgeIndex, setCurrentBadgeIndex] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
 
   // Registriere Badge-Callback beim minimalActivityLogger
   useEffect(() => {
@@ -87,6 +90,9 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
       if (currentBadgeIndex < newBadges.length) {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowNotification(true);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCelebrate(true);
+        hapticCelebrate();
       }
     }
   }, [newBadges, currentBadgeIndex, showNotification]);
@@ -119,10 +125,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         const { badgeCounterService } = await import('./badgeCounterService');
         await badgeCounterService.ensureCurrentMarathonWeek(user.uid);
       } catch {
-        // console.warn(
-        //   'Marathon-Wochen-Überprüfung beim Dialog-Öffnen fehlgeschlagen:',
-        //   error
-        // );
+        // ignore — marathon week tracker is best-effort
       }
     }
 
@@ -132,10 +135,7 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         const badgeSystem = getOfflineBadgeSystem(user.uid);
         badgeSystem.invalidateCache();
       } catch {
-        // console.warn(
-        //   'Cache-Invalidation beim Dialog-Öffnen fehlgeschlagen:',
-        //   error
-        // );
+        // ignore — stale cache is acceptable, next fetch will refresh
       }
     }
 
@@ -169,6 +169,8 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
         onClose={handleCloseNotification}
         onViewAllBadges={showBadgeOverview}
       />
+
+      <CelebrationBurst trigger={celebrate} onDone={() => setCelebrate(false)} />
     </BadgeContext.Provider>
   );
 };

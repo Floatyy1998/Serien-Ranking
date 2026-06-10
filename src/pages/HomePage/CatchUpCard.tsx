@@ -7,12 +7,15 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import Schedule from '@mui/icons-material/Schedule';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { IconContainer, NavCard } from '../../components/ui';
 
-export const CatchUpCard: React.FC = () => {
+// Memo: parent re-renders frequently on notification + friend updates, but
+// this card only depends on seriesList + currentTheme via context. memo skips
+// the work when neither hook returned a new identity.
+export const CatchUpCard: React.FC = memo(() => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { seriesList } = useSeriesList();
@@ -127,4 +130,6 @@ export const CatchUpCard: React.FC = () => {
       />
     </NavCard>
   );
-};
+});
+
+CatchUpCard.displayName = 'CatchUpCard';

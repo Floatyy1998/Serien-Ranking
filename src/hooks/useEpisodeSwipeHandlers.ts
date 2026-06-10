@@ -6,6 +6,7 @@ import { trackEpisodeWatched } from '../firebase/analytics';
 import { petService } from '../services/petService';
 import { WatchActivityService } from '../services/watchActivityService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
+import { hapticSuccess } from '../lib/haptics';
 import { showToast, showUndoToast } from '../lib/toast';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
@@ -278,6 +279,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
       setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
       setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
       scheduleEpisodeHide(episodeKey, setCompletingEpisodes, setHiddenEpisodes);
+      hapticSuccess();
 
       if (!user) return;
 

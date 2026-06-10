@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
-import { getImageUrl } from '../utils/imageUrl';
-import { hasEpisodeAired, getEpisodeAirDateStr } from '../utils/episodeDate';
-import { detectEpisodeChip, type EpisodeChipType } from '../utils/episodeChips';
+import { HOME_CAROUSEL_MAX_ITEMS } from '../lib/episode/constants';
 import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
+import { detectEpisodeChip, type EpisodeChipType } from '../utils/episodeChips';
+import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
+import { getImageUrl } from '../utils/imageUrl';
 
 export const useContinueWatching = () => {
   const { seriesList } = useSeriesList();
@@ -91,7 +92,7 @@ export const useContinueWatching = () => {
       return dateB - dateA;
     });
 
-    return items.slice(0, 10);
+    return items.slice(0, HOME_CAROUSEL_MAX_ITEMS);
   }, [seriesList]);
 
   return continueWatching;

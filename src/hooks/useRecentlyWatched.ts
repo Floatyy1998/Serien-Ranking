@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
+import { HOME_CAROUSEL_MAX_ITEMS, SEVEN_DAYS_MS } from '../lib/episode/constants';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -10,9 +11,6 @@ export interface RecentlyWatchedItem {
   poster: string;
   rating: number;
 }
-
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-const MAX_ITEMS = 10;
 
 export const useRecentlyWatched = (): RecentlyWatchedItem[] => {
   const { seriesList } = useSeriesList();
@@ -50,6 +48,6 @@ export const useRecentlyWatched = (): RecentlyWatchedItem[] => {
       }
     }
 
-    return items.slice(0, MAX_ITEMS);
+    return items.slice(0, HOME_CAROUSEL_MAX_ITEMS);
   }, [seriesList, sevenDaysAgo]);
 };

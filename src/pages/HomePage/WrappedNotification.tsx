@@ -4,6 +4,7 @@
  */
 
 import { motion } from 'framer-motion';
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -41,7 +42,10 @@ const FloatingIcon: React.FC<{
   </motion.div>
 );
 
-export const WrappedNotification: React.FC = () => {
+// Memo: parent re-renders constantly on unrelated state, but the banner
+// only depends on useWrappedConfig + theme via context — skip when those
+// returned the same identity.
+const WrappedNotificationImpl: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { enabled, year, loading } = useWrappedConfig();
@@ -185,5 +189,8 @@ export const WrappedNotification: React.FC = () => {
     </motion.button>
   );
 };
+
+export const WrappedNotification = memo(WrappedNotificationImpl);
+WrappedNotification.displayName = 'WrappedNotification';
 
 export default WrappedNotification;

@@ -51,6 +51,9 @@ export const MovieActionButtons = memo(
                 : `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.primary}CC 100%)`,
               border: `1px solid ${currentTheme.primary}80`,
               color: currentTheme.text.secondary,
+              boxShadow: isAdding
+                ? 'none'
+                : `var(--glow-primary), 0 4px 16px -4px ${currentTheme.primary}55`,
             }}
           >
             {isAdding ? 'Wird hinzugefugt...' : 'Film hinzufugen'}

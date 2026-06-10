@@ -6,6 +6,7 @@ import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { hapticTap } from '../../lib/haptics';
 
 interface ResetSectionProps {
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
@@ -16,7 +17,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleReset = () => {
-    if (navigator.vibrate) navigator.vibrate(20);
+    hapticTap();
     onReset();
     setShowConfirm(false);
   };

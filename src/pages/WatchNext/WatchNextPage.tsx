@@ -8,16 +8,17 @@ import PlayCircle from '@mui/icons-material/PlayCircle';
 import Repeat from '@mui/icons-material/Repeat';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
+import { usePersistedState } from '../../hooks/usePersistedState';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
-import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
@@ -39,21 +40,23 @@ export const WatchNextPage = () => {
   // UI State
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
-  const [debouncedFilter, setDebouncedFilter] = useState('');
+  // React 19: useDeferredValue ersetzt den vorigen setTimeout-Debounce. Tippt
+  // der User schnell, bleibt die Eingabe fluessig (priorisiert) und das schwere
+  // Re-Filter laeuft mit niedrigerer Prioritaet in einer interruptiblen Render-
+  // Phase ab. Kein Drift-Risiko durch ein zweites State-Field mehr.
+  const debouncedFilter = useDeferredValue(filterInput);
   const [showRewatches, setShowRewatches] = useState(searchParams.get('rewatches') === 'open');
   const [editModeActive, setEditModeActive] = useState(false);
-  const [customOrderActive, setCustomOrderActive] = useState(
-    localStorage.getItem('watchNextCustomOrderActive') === 'true'
+  const [customOrderActive, setCustomOrderActive] = usePersistedState(
+    'watchNextCustomOrderActive',
+    false
   );
-  const [sortOption, setSortOption] = useState(
-    localStorage.getItem('watchNextSortOption') || 'name-asc'
+  const [sortOption, setSortOption] = usePersistedState('watchNextSortOption', 'name-asc');
+  const [providerFilter, setProviderFilter] = usePersistedState<string | null>(
+    'watchNextProvider',
+    null
   );
-  const [providerFilter, setProviderFilter] = useState<string | null>(
-    localStorage.getItem('watchNextProvider') || null
-  );
-  const [onlyMySubs, setOnlyMySubs] = useState<boolean>(
-    localStorage.getItem('watchNextOnlyMySubs') === 'true'
-  );
+  const [onlyMySubs, setOnlyMySubs] = usePersistedState('watchNextOnlyMySubs', false);
   const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
   // Swipe hook
@@ -87,14 +90,6 @@ export const WatchNextPage = () => {
       .map(([name, logo]) => ({ name, logo }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [seriesList]);
-
-  // Debounce filter input — avoids re-filtering on every keystroke
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      startTransition(() => setDebouncedFilter(filterInput));
-    }, 250);
-    return () => clearTimeout(timer);
-  }, [filterInput]);
 
   // First call to get initial episodes (needed by drag/drop hook)
   const nextEpisodes = useWatchNextEpisodes(
@@ -135,25 +130,10 @@ export const WatchNextPage = () => {
 
   useScrollRestore('watchNext-scroll', '.episodes-scroll-container', { restoreOnPop: true });
 
-  // Save preferences to localStorage (initial sync)
-  useEffect(() => {
-    if (searchParams.get('rewatches') !== 'open') {
-      localStorage.setItem('watchNextHideRewatches', 'true');
-    }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Persist preferences — consolidated to one effect
+  // Persist hideRewatches — derived from showRewatches; the rest is handled by usePersistedState.
   useEffect(() => {
     localStorage.setItem('watchNextHideRewatches', (!showRewatches).toString());
-    localStorage.setItem('watchNextCustomOrderActive', customOrderActive.toString());
-    localStorage.setItem('watchNextSortOption', sortOption);
-    if (providerFilter) {
-      localStorage.setItem('watchNextProvider', providerFilter);
-    } else {
-      localStorage.removeItem('watchNextProvider');
-    }
-    localStorage.setItem('watchNextOnlyMySubs', String(onlyMySubs));
-  }, [showRewatches, customOrderActive, sortOption, providerFilter, onlyMySubs]);
+  }, [showRewatches]);
 
   // Count active rewatches
   const activeRewatchCount = useMemo(() => {

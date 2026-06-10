@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
+import { hapticTap } from '../../lib/haptics';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
 import { ResetSection } from './ResetSection';
@@ -106,7 +107,7 @@ export const ThemePage = () => {
 
   const applyPresetTheme = useCallback(
     (preset: PresetTheme) => {
-      if (navigator.vibrate) navigator.vibrate(10);
+      hapticTap();
       updateTheme({
         primaryColor: preset.primaryColor,
         backgroundColor: preset.backgroundColor,

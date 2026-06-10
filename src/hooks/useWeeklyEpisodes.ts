@@ -1,18 +1,15 @@
 import { useMemo } from 'react';
-import { SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
+import { PRIORITY_PROVIDER_IDS, SEASON_BREAK_GAP_DAYS } from '../lib/episode/constants';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
+import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
-import { getEpisodeAirDateStr, getEpisodeAirDate } from '../utils/episodeDate';
-
-/** Priority providers: Crunchyroll (283) first, ADN (415) second */
-const PROVIDER_PRIORITY: Record<number, number> = { 283: 0, 415: 1 };
 
 function prioritizeProviders(providers: WeeklyEpisodeProvider[]): WeeklyEpisodeProvider[] {
   if (providers.length <= 1) return providers;
   return [...providers].sort((a, b) => {
-    const pa = PROVIDER_PRIORITY[a.id] ?? 99;
-    const pb = PROVIDER_PRIORITY[b.id] ?? 99;
+    const pa = PRIORITY_PROVIDER_IDS[a.id] ?? 99;
+    const pb = PRIORITY_PROVIDER_IDS[b.id] ?? 99;
     return pa - pb;
   });
 }

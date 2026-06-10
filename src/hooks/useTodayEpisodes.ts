@@ -26,13 +26,39 @@ export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
   const [todayKey, setTodayKey] = useState(getTodayKey);
 
-  // Check for date change every minute
+  // Check for date change every minute — but pause when the tab is hidden
+  // so background tabs don't burn CPU/wakeups. When the tab becomes visible
+  // again we do one immediate check (in case midnight passed while hidden).
   useEffect(() => {
-    const interval = setInterval(() => {
+    let interval: ReturnType<typeof setInterval> | null = null;
+    const check = () => {
       const now = getTodayKey();
       setTodayKey((prev) => (prev !== now ? now : prev));
-    }, 60_000);
-    return () => clearInterval(interval);
+    };
+    const start = () => {
+      if (interval) return;
+      interval = setInterval(check, 60_000);
+    };
+    const stop = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        check();
+        start();
+      } else {
+        stop();
+      }
+    };
+    if (document.visibilityState === 'visible') start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      stop();
+    };
   }, []);
 
   const todayEpisodes = useMemo(() => {

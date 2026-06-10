@@ -189,20 +189,29 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
     [user]
   );
 
-  return (
-    <MangaListContext.Provider
-      value={{
-        mangaList,
-        allMangaList,
-        hiddenMangaList,
-        loading,
-        refetchManga: refetch,
-        toggleHideManga,
-        isOffline,
-        isStale,
-      }}
-    >
-      {children}
-    </MangaListContext.Provider>
+  // Memoize so consumers re-render only when the underlying data shifts.
+  const contextValue = useMemo(
+    () => ({
+      mangaList,
+      allMangaList,
+      hiddenMangaList,
+      loading,
+      refetchManga: refetch,
+      toggleHideManga,
+      isOffline,
+      isStale,
+    }),
+    [
+      mangaList,
+      allMangaList,
+      hiddenMangaList,
+      loading,
+      refetch,
+      toggleHideManga,
+      isOffline,
+      isStale,
+    ]
   );
+
+  return <MangaListContext.Provider value={contextValue}>{children}</MangaListContext.Provider>;
 };
