@@ -85,7 +85,9 @@ const logFriendActivity = async (
         await activitiesRef.update(updates);
       }
     }
-  } catch {}
+  } catch {
+    /* ignore — non-critical write/read */
+  }
 };
 
 /**
@@ -133,8 +135,8 @@ const triggerBadgeCallback = async (userId: string, newBadges: EarnedBadge[]): P
   const callback = badgeCallbacks.get(userId);
   if (callback) {
     callback(filteredBadges);
-  } else {
   }
+  // else: no callback registered yet — the badge will be picked up on next mount
 };
 
 // =============================================================================

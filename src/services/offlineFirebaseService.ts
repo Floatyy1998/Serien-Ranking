@@ -147,7 +147,9 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         serviceWorkerManager.cacheFirebaseData(path, data);
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   public async getCachedData(path: string): Promise<unknown | null> {
@@ -219,7 +221,9 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   public async queueOperation(
@@ -315,7 +319,9 @@ class OfflineFirebaseService {
       this.offlineQueue = items.filter((item) => {
         return Date.now() - item.timestamp < this.config.maxOfflineTime;
       });
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   private handleSyncComplete(_results: unknown): void {
@@ -333,7 +339,9 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   private async removeFromIndexedDB(storeName: string, key: string): Promise<void> {
@@ -347,7 +355,9 @@ class OfflineFirebaseService {
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   public async clearAllCaches(): Promise<void> {
@@ -366,7 +376,9 @@ class OfflineFirebaseService {
       if (this.config.enableServiceWorker) {
         await serviceWorkerManager.clearCache();
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
   }
 
   public async getCacheStatistics(): Promise<{
@@ -399,7 +411,9 @@ class OfflineFirebaseService {
         const swStats = await serviceWorkerManager.getCacheStatistics();
         stats.serviceWorkerSize = swStats.totalSize;
       }
-    } catch {}
+    } catch {
+      /* ignore — non-critical write/read */
+    }
 
     return stats;
   }

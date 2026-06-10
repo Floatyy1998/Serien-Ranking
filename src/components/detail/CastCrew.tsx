@@ -205,7 +205,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAnimeCharacters();
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     fetchCredits();
   }, [tmdbId, mediaType, isAnime, fetchAnimeCharacters, fetchCredits]);
 

@@ -284,7 +284,7 @@ export const useEpisodeDiscussion = () => {
       } else {
         // Date.now() im async callback nach await — Lint kann den
         // Render-Path nicht von Event-Handler-Path unterscheiden.
-        // eslint-disable-next-line react-hooks/purity
+
         const nowUnix = Math.floor(Date.now() / 1000);
         await db.ref().update({
           [`${epPath}/w`]: 1,
