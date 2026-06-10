@@ -127,10 +127,11 @@ export default defineConfig(({ command }) => ({
     sourcemap: false,
     reportCompressedSize: false,
     rolldownOptions: {
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-      },
+      // ACHTUNG: kein `treeshake: { moduleSideEffects: false }` hier — das hat
+      // den `import 'firebase/compat/auth'` Side-Effect weggetreeshaked und
+      // damit `firebase.auth()` undefined gemacht ("y.auth is not a function").
+      // Firebase Compat registriert die Sub-Module ausschliesslich ueber
+      // Side-Effect-Imports. Default-Treeshaking ist hier sicher.
       output: {
         manualChunks(id) {
           // Firebase wird vom AuthProvider ueberall eager benoetigt -> eigenes chunk
