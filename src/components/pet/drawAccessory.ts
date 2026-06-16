@@ -15,7 +15,10 @@ interface PetAnchors {
   neckHalfWidth: number;
 }
 
-function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: number): PetAnchors {
+function getAnchors(
+  petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda',
+  level: number
+): PetAnchors {
   const cx = 16;
   switch (petType) {
     case 'cat': {
@@ -155,6 +158,59 @@ function getAnchors(petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox', level: n
         neckY: 17,
         neckHalfWidth: 3,
       };
+    case 'rabbit':
+      // Lv50+ = Mondhase-Form
+      if (level >= 50) {
+        return {
+          headTopY: 12,
+          headCenterX: cx,
+          headHalfWidth: 4.5,
+          eyeY: 14.5,
+          eyeLeftX: -3,
+          eyeRightX: 1.5,
+          eyeWidth: 1.5,
+          neckY: 19,
+          neckHalfWidth: 4,
+        };
+      }
+      return {
+        headTopY: 12,
+        headCenterX: cx,
+        headHalfWidth: 4,
+        eyeY: 15,
+        eyeLeftX: -2.5,
+        eyeRightX: 1.3,
+        eyeWidth: 1.2,
+        neckY: 19,
+        neckHalfWidth: 3.5,
+      };
+    case 'panda':
+      // Lv50+ = Kung-Fu-Wächter-Form (Kopf r=6.7 bei centerY-3.5=12.5)
+      if (level >= 50) {
+        return {
+          headTopY: 6,
+          headCenterX: cx,
+          headHalfWidth: 6,
+          eyeY: 12.8,
+          eyeLeftX: -3.6,
+          eyeRightX: 1.9,
+          eyeWidth: 1.8,
+          neckY: 18,
+          neckHalfWidth: 5,
+        };
+      }
+      // Normal: Kopf r=6.5 bei centerY-3=13 → Top y=6.5, Augen y=13.3 (cx±2.6)
+      return {
+        headTopY: 7,
+        headCenterX: cx,
+        headHalfWidth: 5.5,
+        eyeY: 13.3,
+        eyeLeftX: -3.5,
+        eyeRightX: 1.7,
+        eyeWidth: 1.8,
+        neckY: 19,
+        neckHalfWidth: 4,
+      };
   }
 }
 
@@ -163,7 +219,7 @@ export const drawAccessory = (
   accessory: PetAccessory,
   ps: number,
   offset: number,
-  petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' = 'cat',
+  petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' = 'cat',
   level: number = 1
 ): void => {
   const a = getAnchors(petType, level);

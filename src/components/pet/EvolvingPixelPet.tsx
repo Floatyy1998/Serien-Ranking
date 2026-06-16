@@ -9,6 +9,8 @@ import { drawDog } from './drawDog';
 import { drawDragon, drawDragonWingsOverlay } from './drawDragon';
 import { drawBird } from './drawBird';
 import { drawFox } from './drawFox';
+import { drawRabbit } from './drawRabbit';
+import { drawPanda } from './drawPanda';
 
 interface EvolvingPixelPetProps {
   pet: Pet;
@@ -173,6 +175,34 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         );
       } else if (pet.type === 'fox') {
         drawFox(
+          ctx,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
+          equippedSlot
+        );
+      } else if (pet.type === 'rabbit') {
+        drawRabbit(
+          ctx,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
+          equippedSlot
+        );
+      } else if (pet.type === 'panda') {
+        drawPanda(
           ctx,
           pet.level,
           pixelSize,
