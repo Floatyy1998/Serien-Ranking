@@ -2,7 +2,7 @@ export interface Pet {
   id: string;
   userId: string;
   name: string;
-  type: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox';
+  type: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda';
   color: string;
   level: number;
   experience: number;
@@ -70,6 +70,8 @@ export const PET_TYPES = {
   bird: '\uD83D\uDC26',
   dragon: '\uD83D\uDC32',
   fox: '\uD83E\uDD8A',
+  rabbit: '\uD83D\uDC30',
+  panda: '\uD83D\uDC3C',
 };
 
 export const PET_TYPE_NAMES = {
@@ -78,6 +80,8 @@ export const PET_TYPE_NAMES = {
   bird: 'Vogel',
   dragon: 'Drache',
   fox: 'Fuchs',
+  rabbit: 'Hase',
+  panda: 'Panda',
 };
 
 // ============================================================
