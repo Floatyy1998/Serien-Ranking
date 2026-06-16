@@ -93,8 +93,6 @@ export function usePetsData() {
       const updatedPets = Object.values(val) as Pet[];
       if (updatedPets.length === 0) return;
       setPets((prev) => {
-        // nur updaten wenn sich wirklich etwas geaendert hat — primitiver
-        // Tiefvergleich auf den fuer Backgrounds relevanten Feldern
         const relevantFields = (arr: Pet[]) =>
           JSON.stringify(
             arr.map((p) => ({
@@ -102,12 +100,16 @@ export function usePetsData() {
               ub: p.unlockedBackgrounds || [],
               eb: p.equippedBackground || null,
               acc: p.accessories || [],
+              xp: p.experience,
+              lv: p.level,
+              ep: p.episodesWatched,
+              ts: p.totalSeriesWatched || 0,
+              hu: p.hunger,
+              ha: p.happiness,
+              al: p.isAlive,
             }))
           );
         if (relevantFields(prev) === relevantFields(updatedPets)) return prev;
-        // Merge: bestehende Felder (hunger/happiness/lastUpdate) behalten,
-        // nur die vom Listener gelieferten Werte ueberschreiben damit kein
-        // Race mit lokalen State-Updates entsteht.
         return prev.map((p) => {
           const fresh = updatedPets.find((u) => u.id === p.id);
           if (!fresh) return p;
@@ -116,6 +118,14 @@ export function usePetsData() {
             unlockedBackgrounds: fresh.unlockedBackgrounds,
             equippedBackground: fresh.equippedBackground,
             accessories: fresh.accessories,
+            experience: fresh.experience,
+            level: fresh.level,
+            episodesWatched: fresh.episodesWatched,
+            totalSeriesWatched: fresh.totalSeriesWatched,
+            hunger: fresh.hunger,
+            happiness: fresh.happiness,
+            isAlive: fresh.isAlive,
+            lastUpdated: fresh.lastUpdated,
           };
         });
       });
