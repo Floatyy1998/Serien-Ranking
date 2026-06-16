@@ -15,6 +15,20 @@ interface PetAnchors {
   neckHalfWidth: number;
 }
 
+// Sicherer Default falls petType nicht bekannt (z.B. veralteter JS-Cache,
+// alte/korrupte Pet-Daten in Firebase mit unbekanntem Typ).
+const DEFAULT_ANCHORS: PetAnchors = {
+  headTopY: 11,
+  headCenterX: 16,
+  headHalfWidth: 3.5,
+  eyeY: 14,
+  eyeLeftX: -3,
+  eyeRightX: 1,
+  eyeWidth: 2,
+  neckY: 18,
+  neckHalfWidth: 4,
+};
+
 function getAnchors(
   petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda',
   level: number
@@ -211,6 +225,8 @@ function getAnchors(
         neckY: 19,
         neckHalfWidth: 4,
       };
+    default:
+      return DEFAULT_ANCHORS;
   }
 }
 
