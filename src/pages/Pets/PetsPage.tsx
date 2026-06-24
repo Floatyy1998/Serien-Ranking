@@ -119,7 +119,7 @@ export const PetsPage: React.FC = () => {
         onConfirm={releasePet}
       />
 
-      {/* Customization: Colors & Accessories */}
+      {/* Customization: Colors, Accessories, Backgrounds */}
       <PetCustomization
         pet={pet}
         activeColorBorder={activeColorBorder}
