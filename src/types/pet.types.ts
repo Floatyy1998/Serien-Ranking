@@ -2342,6 +2342,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Blauer Himmel mit Wolken',
     rarity: 'common',
     background: bgUrl(SVG_CLEAR_SKY),
+    animationClass: 'pet-bg-anim-clouds-drift',
     glowColor: 'rgba(111, 184, 224, 0.35)',
   },
   flowerMeadow: {
@@ -2350,6 +2351,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Gruene Wiese voller Blueten',
     rarity: 'common',
     background: bgUrl(SVG_FLOWER_MEADOW),
+    animationClass: 'pet-bg-anim-petals pet-bg-anim-breathe pet-bg-anim-clouds-drift',
     glowColor: 'rgba(124, 197, 118, 0.4)',
   },
   sunnyBeach: {
@@ -2358,6 +2360,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Meer, Sand und Sonnenschein',
     rarity: 'common',
     background: bgUrl(SVG_SUNNY_BEACH),
+    animationClass: 'pet-bg-anim-waves pet-bg-anim-pulse-warm',
     glowColor: 'rgba(255, 220, 115, 0.45)',
   },
   rollingHills: {
@@ -2366,6 +2369,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Weites Huegelland',
     rarity: 'common',
     background: bgUrl(SVG_ROLLING_HILLS),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(168, 217, 104, 0.4)',
   },
   summerPark: {
@@ -2374,6 +2378,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Grosser Baum im Stadtpark',
     rarity: 'common',
     background: bgUrl(SVG_SUMMER_PARK),
+    animationClass: 'pet-bg-anim-breathe pet-bg-anim-clouds-drift',
     glowColor: 'rgba(100, 180, 76, 0.4)',
   },
   riverside: {
@@ -2382,6 +2387,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Sanfter Fluss zwischen Wiesen',
     rarity: 'common',
     background: bgUrl(SVG_RIVERSIDE),
+    animationClass: 'pet-bg-anim-waves pet-bg-anim-breathe',
     glowColor: 'rgba(106, 176, 206, 0.4)',
   },
   puffyClouds: {
@@ -2390,6 +2396,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Dicke Sommerwolken am Himmel',
     rarity: 'common',
     background: bgUrl(SVG_PUFFY_CLOUDS),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(74, 168, 220, 0.4)',
   },
   springBlossoms: {
@@ -2398,6 +2405,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Bluehende Zweige am Himmel',
     rarity: 'common',
     background: bgUrl(SVG_SPRING_BLOSSOMS),
+    animationClass: 'pet-bg-anim-petals pet-bg-anim-breathe',
     glowColor: 'rgba(255, 196, 214, 0.4)',
   },
   bambooGrove: {
@@ -2406,6 +2414,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Dichter Bambuswald',
     rarity: 'common',
     background: bgUrl(SVG_BAMBOO_GROVE),
+    animationClass: 'pet-bg-anim-breathe pet-bg-anim-clouds-drift',
     glowColor: 'rgba(106, 154, 74, 0.4)',
   },
   dandelionField: {
@@ -2414,6 +2423,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Wiese voller Pusteblumen',
     rarity: 'common',
     background: bgUrl(SVG_DANDELION_FIELD),
+    animationClass: 'pet-bg-anim-breathe pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 232, 88, 0.4)',
   },
   countryRoad: {
@@ -2422,6 +2432,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Geschlungene Strasse durchs Land',
     rarity: 'common',
     background: bgUrl(SVG_COUNTRY_ROAD),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(144, 200, 232, 0.4)',
   },
   picnicLawn: {
@@ -2430,6 +2441,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Rote Decke auf gruener Wiese',
     rarity: 'common',
     background: bgUrl(SVG_PICNIC_LAWN),
+    animationClass: 'pet-bg-anim-breathe pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 107, 107, 0.4)',
   },
 
@@ -2440,6 +2452,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Goldenes Getreidefeld',
     rarity: 'uncommon',
     background: bgUrl(SVG_AUTUMN_FIELD),
+    animationClass: 'pet-bg-anim-leaves pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(232, 184, 74, 0.45)',
   },
   sunset: {
@@ -2448,7 +2461,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Warmer Abendhimmel ueberm Meer',
     rarity: 'uncommon',
     background: bgUrl(SVG_SUNSET),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-waves',
     glowColor: 'rgba(255, 180, 71, 0.55)',
   },
   mountainLake: {
@@ -2457,6 +2470,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Stiller See vor Bergketten',
     rarity: 'uncommon',
     background: bgUrl(SVG_MOUNTAIN_LAKE),
+    animationClass: 'pet-bg-anim-waves pet-bg-anim-breathe',
     glowColor: 'rgba(148, 197, 232, 0.4)',
   },
   cherryTrees: {
@@ -2465,6 +2479,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Sakura-Baeume im Fruehling',
     rarity: 'uncommon',
     background: bgUrl(SVG_CHERRY_TREES),
+    animationClass: 'pet-bg-anim-petals pet-bg-anim-breathe',
     glowColor: 'rgba(255, 158, 196, 0.45)',
   },
   lavenderField: {
@@ -2473,6 +2488,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Endloses Lavendelfeld bei Sonnenuntergang',
     rarity: 'uncommon',
     background: bgUrl(SVG_LAVENDER_FIELD),
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(192, 136, 224, 0.5)',
   },
   lakeDock: {
@@ -2481,7 +2497,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Holzsteg am stillen Abendsee',
     rarity: 'uncommon',
     background: bgUrl(SVG_LAKE_DOCK),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-waves',
     glowColor: 'rgba(255, 180, 120, 0.5)',
   },
   pumpkinPatch: {
@@ -2490,6 +2506,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Herbstliches Kuerbisfeld',
     rarity: 'uncommon',
     background: bgUrl(SVG_PUMPKIN_PATCH),
+    animationClass: 'pet-bg-anim-leaves pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(232, 118, 42, 0.5)',
   },
   morningMist: {
@@ -2498,6 +2515,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Nebelige Daemmerung am Fluss',
     rarity: 'uncommon',
     background: bgUrl(SVG_MORNING_MIST),
+    animationClass: 'pet-bg-anim-steam pet-bg-anim-breathe',
     glowColor: 'rgba(255, 232, 168, 0.45)',
   },
   vineyard: {
@@ -2506,6 +2524,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Weinreben im Abendlicht',
     rarity: 'uncommon',
     background: bgUrl(SVG_VINEYARD),
+    animationClass: 'pet-bg-anim-leaves pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 220, 128, 0.45)',
   },
   appleOrchard: {
@@ -2514,6 +2533,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Apfelbaeume voller Fruechte',
     rarity: 'uncommon',
     background: bgUrl(SVG_APPLE_ORCHARD),
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(232, 48, 42, 0.45)',
   },
   windmill: {
@@ -2522,6 +2542,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Alte Windmuehle auf gruenem Feld',
     rarity: 'uncommon',
     background: bgUrl(SVG_WINDMILL),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(240, 216, 160, 0.45)',
   },
   oldBridge: {
@@ -2530,7 +2551,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Bogenbruecke im Abendlicht',
     rarity: 'uncommon',
     background: bgUrl(SVG_OLD_BRIDGE),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-waves',
     glowColor: 'rgba(255, 208, 160, 0.45)',
   },
   hotAirBalloon: {
@@ -2539,6 +2560,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Ballonfahrt ueber gruene Felder',
     rarity: 'uncommon',
     background: bgUrl(SVG_HOT_AIR_BALLOON),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(255, 180, 120, 0.5)',
   },
 
@@ -2549,6 +2571,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Goldene Duenen im Abendlicht',
     rarity: 'rare',
     background: bgUrl(SVG_DESERT_DUNES),
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(249, 176, 97, 0.5)',
   },
   tropicalIsland: {
@@ -2557,6 +2580,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Palme am tuerkisen Meer',
     rarity: 'rare',
     background: bgUrl(SVG_TROPICAL_ISLAND),
+    animationClass: 'pet-bg-anim-waves pet-bg-anim-pulse-warm',
     glowColor: 'rgba(78, 200, 212, 0.5)',
   },
   foggyValley: {
@@ -2565,6 +2589,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Nebelige Bergketten',
     rarity: 'rare',
     background: bgUrl(SVG_FOGGY_VALLEY),
+    animationClass: 'pet-bg-anim-steam pet-bg-anim-breathe',
     glowColor: 'rgba(200, 212, 219, 0.5)',
   },
   cityNight: {
@@ -2573,6 +2598,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Skyline unter Sternenhimmel',
     rarity: 'rare',
     background: bgUrl(SVG_CITY_NIGHT),
+    animationClass: 'pet-bg-anim-twinkle pet-bg-anim-breathe',
     glowColor: 'rgba(255, 216, 122, 0.45)',
   },
   pineForest: {
@@ -2581,6 +2607,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Verschneiter Tannenwald',
     rarity: 'rare',
     background: bgUrl(SVG_PINE_FOREST),
+    animationClass: 'pet-bg-anim-snow pet-bg-anim-breathe',
     glowColor: 'rgba(240, 244, 247, 0.4)',
   },
   snowyVillage: {
@@ -2589,6 +2616,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Verschneite Haeuser mit warmen Lichtern',
     rarity: 'rare',
     background: bgUrl(SVG_SNOWY_VILLAGE),
+    animationClass: 'pet-bg-anim-snow pet-bg-anim-breathe',
     glowColor: 'rgba(255, 216, 122, 0.45)',
   },
   waterfall: {
@@ -2597,6 +2625,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Rauschender Wasserfall im Wald',
     rarity: 'rare',
     background: bgUrl(SVG_WATERFALL),
+    animationClass: 'pet-bg-anim-waterfall pet-bg-anim-breathe',
     glowColor: 'rgba(188, 232, 245, 0.5)',
   },
   canyon: {
@@ -2605,6 +2634,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Roter Canyon im Abendlicht',
     rarity: 'rare',
     background: bgUrl(SVG_CANYON),
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(249, 165, 88, 0.5)',
   },
   goldenWheat: {
@@ -2613,7 +2643,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Weizenfeld zur goldenen Stunde',
     rarity: 'rare',
     background: bgUrl(SVG_GOLDEN_WHEAT),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 196, 120, 0.55)',
   },
   zenGarden: {
@@ -2622,6 +2652,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Japanischer Garten mit Sakura',
     rarity: 'rare',
     background: bgUrl(SVG_ZEN_GARDEN),
+    animationClass: 'pet-bg-anim-petals pet-bg-anim-breathe',
     glowColor: 'rgba(255, 158, 196, 0.45)',
   },
   lighthouseCliff: {
@@ -2630,7 +2661,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Leuchtturm auf steiler Klippe',
     rarity: 'rare',
     background: bgUrl(SVG_LIGHTHOUSE),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-lighthouse pet-bg-anim-waves',
     glowColor: 'rgba(255, 245, 160, 0.55)',
   },
   fireflyForest: {
@@ -2639,7 +2670,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Wald voller tanzender Lichter',
     rarity: 'rare',
     background: bgUrl(SVG_FIREFLY_FOREST),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-firefly pet-bg-anim-breathe',
     glowColor: 'rgba(232, 255, 160, 0.55)',
   },
   redwoodForest: {
@@ -2648,6 +2679,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Riesige Redwoods im Goldlicht',
     rarity: 'rare',
     background: bgUrl(SVG_REDWOOD_FOREST),
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(232, 200, 120, 0.5)',
   },
   templeRuins: {
@@ -2656,6 +2688,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Antike Saeulen im Dschungel',
     rarity: 'rare',
     background: bgUrl(SVG_TEMPLE_RUINS),
+    animationClass: 'pet-bg-anim-firefly pet-bg-anim-breathe',
     glowColor: 'rgba(255, 224, 136, 0.5)',
   },
   hotSprings: {
@@ -2664,6 +2697,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Dampfende Onsen im Schnee',
     rarity: 'rare',
     background: bgUrl(SVG_HOT_SPRINGS),
+    animationClass: 'pet-bg-anim-steam pet-bg-anim-snow',
     glowColor: 'rgba(128, 200, 216, 0.5)',
   },
   rainyWindow: {
@@ -2672,6 +2706,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Regentropfen am Fensterglas',
     rarity: 'rare',
     background: bgUrl(SVG_RAINY_WINDOW),
+    animationClass: 'pet-bg-anim-rain',
     glowColor: 'rgba(200, 216, 232, 0.4)',
   },
 
@@ -2682,6 +2717,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Schneebedeckte Berggipfel',
     rarity: 'epic',
     background: bgUrl(SVG_ALPINE_SNOW),
+    animationClass: 'pet-bg-anim-snow pet-bg-anim-clouds-drift',
     glowColor: 'rgba(197, 216, 232, 0.55)',
   },
   lavaValley: {
@@ -2690,7 +2726,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Ausbrechender Vulkan ueber Lavafluss',
     rarity: 'epic',
     background: bgUrl(SVG_LAVA_VALLEY),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-steam',
     glowColor: 'rgba(255, 106, 42, 0.6)',
   },
   mysticForest: {
@@ -2699,7 +2735,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Leuchtende Gluehwuermchen im Dunkel',
     rarity: 'epic',
     background: bgUrl(SVG_MYSTIC_FOREST),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-firefly pet-bg-anim-breathe',
     glowColor: 'rgba(168, 255, 224, 0.55)',
   },
   underwaterReef: {
@@ -2708,6 +2744,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Unterwasserwelt mit Lichtstrahlen',
     rarity: 'epic',
     background: bgUrl(SVG_UNDERWATER_REEF),
+    animationClass: 'pet-bg-anim-bubbles pet-bg-anim-breathe',
     glowColor: 'rgba(34, 168, 194, 0.55)',
   },
   northernLights: {
@@ -2716,7 +2753,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Nordlichter ueber verschneiten Bergen',
     rarity: 'epic',
     background: bgUrl(SVG_NORTHERN_LIGHTS),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-aurora',
     glowColor: 'rgba(100, 255, 200, 0.6)',
   },
   savannah: {
@@ -2725,7 +2762,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Akazie vor orangenem Horizont',
     rarity: 'epic',
     background: bgUrl(SVG_SAVANNAH),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(255, 160, 64, 0.55)',
   },
   crystalCave: {
@@ -2734,7 +2771,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Leuchtende Kristalle im Untergrund',
     rarity: 'epic',
     background: bgUrl(SVG_CRYSTAL_CAVE),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(176, 136, 232, 0.6)',
   },
   stormSea: {
@@ -2743,6 +2780,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Gewitter ueber aufgewuehltem Meer',
     rarity: 'epic',
     background: bgUrl(SVG_STORM_SEA),
+    animationClass: 'pet-bg-anim-rain pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 245, 160, 0.5)',
   },
   glacialBay: {
@@ -2751,6 +2789,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Eisberge treiben in stiller Bucht',
     rarity: 'epic',
     background: bgUrl(SVG_GLACIAL_BAY),
+    animationClass: 'pet-bg-anim-snow pet-bg-anim-breathe',
     glowColor: 'rgba(232, 244, 250, 0.55)',
   },
   balloonFiesta: {
@@ -2759,7 +2798,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Heissluftballone bei Sonnenaufgang',
     rarity: 'epic',
     background: bgUrl(SVG_BALLOON_FIESTA),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-clouds-drift',
     glowColor: 'rgba(255, 120, 72, 0.55)',
   },
   chineseMountains: {
@@ -2768,6 +2807,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Chinesische Berggipfel im Nebel',
     rarity: 'epic',
     background: bgUrl(SVG_CHINESE_MOUNTAINS),
+    animationClass: 'pet-bg-anim-clouds-drift pet-bg-anim-breathe',
     glowColor: 'rgba(200, 212, 222, 0.5)',
   },
 
@@ -2778,7 +2818,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Farbenpraechtiger Weltraumnebel',
     rarity: 'legendary',
     background: bgUrl(SVG_COSMIC_SPACE),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(196, 74, 122, 0.6)',
   },
   milkyWay: {
@@ -2787,7 +2827,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Milchstrasse ueber dem Horizont',
     rarity: 'legendary',
     background: bgUrl(SVG_MILKY_WAY),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(140, 90, 175, 0.55)',
   },
   galaxyCore: {
@@ -2796,7 +2836,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Leuchtendes Zentrum einer Spiralgalaxie',
     rarity: 'legendary',
     background: bgUrl(SVG_GALAXY_CORE),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(255, 224, 136, 0.6)',
   },
   saturnView: {
@@ -2805,6 +2845,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Saturn mit seinen majestaetischen Ringen',
     rarity: 'legendary',
     background: bgUrl(SVG_SATURN_VIEW),
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(232, 176, 104, 0.6)',
   },
   earthFromMoon: {
@@ -2813,6 +2854,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Erde ueber der Mondoberflaeche',
     rarity: 'legendary',
     background: bgUrl(SVG_EARTH_FROM_MOON),
+    animationClass: 'pet-bg-anim-twinkle pet-bg-anim-breathe',
     glowColor: 'rgba(106, 184, 232, 0.6)',
   },
   blackHoleDisk: {
@@ -2821,7 +2863,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Akkretionsscheibe um den Ereignishorizont',
     rarity: 'legendary',
     background: bgUrl(SVG_BLACK_HOLE_DISK),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-twinkle',
     glowColor: 'rgba(255, 138, 42, 0.7)',
   },
   supernova: {
@@ -2830,7 +2872,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Explodierender Stern im All',
     rarity: 'legendary',
     background: bgUrl(SVG_SUPERNOVA),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-pulse-warm pet-bg-anim-twinkle',
     glowColor: 'rgba(255, 216, 120, 0.7)',
   },
   deepSeaAbyss: {
@@ -2839,7 +2881,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
     description: 'Anglerfisch im schwarzen Abgrund',
     rarity: 'legendary',
     background: bgUrl(SVG_DEEP_SEA_ABYSS),
-    animationClass: 'pet-bg-anim-breathe',
+    animationClass: 'pet-bg-anim-firefly pet-bg-anim-breathe',
     glowColor: 'rgba(100, 200, 224, 0.6)',
   },
 };
