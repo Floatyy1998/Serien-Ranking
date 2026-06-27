@@ -72,7 +72,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: 'Neu: Anime-Filler, Aktivitäts-Ticker & mehr',
     message:
       'Anime-Filler/Recap auf Detail-Seite und in der Episoden-Liste, Freunde-Aktivitäten als sanfter Ticker auf der Homepage, Streaming-Reminder mit Pausieren-Button, Pet-Reaktionen auf Streaks, sanfte Seitenwechsel – alles in den Patch Notes.',
-    timestamp: new Date('2026-06-27T22:00:00+02:00').getTime(),
+    timestamp: new Date('2026-06-27T08:00:00+02:00').getTime(),
     navigateTo: '/patch-notes',
   },
   {
