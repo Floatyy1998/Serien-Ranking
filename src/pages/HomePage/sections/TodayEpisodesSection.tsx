@@ -8,6 +8,7 @@ import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 
@@ -107,14 +108,16 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                       fallbackLogo,
                       fallbackName
                     );
-                    return resolved ? (
-                      <img
+                    if (!resolved) return undefined;
+                    return (
+                      <ProviderLogoLink
                         src={resolved.src}
-                        alt={resolved.name}
+                        name={resolved.name}
+                        searchTitle={episode.seriesTitle}
                         style={{
                           position: 'absolute',
-                          bottom: -3,
-                          right: -3,
+                          bottom: -2,
+                          right: -2,
                           width: 26,
                           height: 26,
                           borderRadius: 6,
@@ -123,7 +126,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                           border: '1.5px solid rgba(15,20,35,1)',
                         }}
                       />
-                    ) : undefined;
+                    );
                   })()}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}

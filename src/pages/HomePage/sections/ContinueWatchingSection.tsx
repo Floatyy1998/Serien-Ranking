@@ -10,6 +10,7 @@ import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
@@ -201,14 +202,16 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                       item.provider?.provider?.[0]?.logo,
                       item.provider?.provider?.[0]?.name
                     );
-                    return resolved ? (
-                      <img
+                    if (!resolved) return undefined;
+                    return (
+                      <ProviderLogoLink
                         src={resolved.src}
-                        alt={resolved.name}
+                        name={resolved.name}
+                        searchTitle={item.title}
                         style={{
                           position: 'absolute',
-                          bottom: -3,
-                          right: -3,
+                          bottom: -2,
+                          right: -2,
                           width: 26,
                           height: 26,
                           borderRadius: 6,
@@ -217,7 +220,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                           border: '1.5px solid rgba(15,20,35,1)',
                         }}
                       />
-                    ) : undefined;
+                    );
                   })()}
                   isCompleting={completingEpisodes.has(episodeKey)}
                   isSwiping={swipingEpisodes.has(episodeKey)}

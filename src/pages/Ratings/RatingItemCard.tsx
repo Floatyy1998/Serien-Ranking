@@ -10,6 +10,11 @@ import { Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import {
+  getProviderSearchUrl,
+  handleProviderLinkClick,
+  providerNeedsClipboardCopy,
+} from '../../lib/providerLinks';
 import type { PreparedItem } from './useRatingsData';
 
 // ─── Constants ──────────────────────────────────────────────────────────
@@ -34,17 +39,19 @@ function ProviderBadgeArea({
   providers,
   bgColor,
   textColor,
+  searchTitle,
 }: {
   providers: PreparedItem['providers'];
   bgColor: string;
   textColor: string;
+  searchTitle: string;
 }) {
   const [showPopup, setShowPopup] = useState(false);
   const badgeRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
 
-  const toggle = useCallback((e: React.MouseEvent) => {
+  const openPopup = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setShowPopup((v) => {
@@ -90,25 +97,51 @@ function ProviderBadgeArea({
   const visible = providers.slice(0, MAX_DESKTOP);
   const overflow = providers.length - MAX_DESKTOP;
 
-  return (
-    <div className="ratings-provider-badges">
-      {/* First provider always visible */}
-      <div
-        ref={badgeRef}
-        className="ratings-provider-badge"
-        style={{
-          background: bgColor,
-          cursor: providers.length > 1 ? 'pointer' : 'default',
-          position: 'relative',
-        }}
-        onClick={providers.length > 1 ? toggle : undefined}
+  // Renders a single provider badge as a deep link when a search URL is known,
+  // otherwise as a plain div (no broken anchor). The mobile +N counter overlay
+  // is rendered as an absolute-positioned span that intercepts its own click
+  // to open the popup instead of navigating to the link.
+  const renderBadge = (p: PreparedItem['providers'][number], extraClass = '') => {
+    const url = getProviderSearchUrl(p.name, searchTitle);
+    const className = `ratings-provider-badge${extraClass ? ` ${extraClass}` : ''}`;
+    const style: React.CSSProperties = { background: bgColor };
+    const content = <img src={p.logo} alt={p.name} />;
+    const tooltip = providerNeedsClipboardCopy(p.name)
+      ? `${p.name}: Titel kopieren + Suche öffnen`
+      : `${p.name} öffnen`;
+    if (!url) {
+      return (
+        <div className={className} style={style} title={p.name}>
+          {content}
+        </div>
+      );
+    }
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        style={{ ...style, textDecoration: 'none' }}
+        onClick={(e) => handleProviderLinkClick(e, p.name, searchTitle, url)}
+        title={tooltip}
       >
-        <img src={visible[0].logo} alt={visible[0].name} />
-        {/* Mobile-only counter on first badge */}
+        {content}
+      </a>
+    );
+  };
+
+  return (
+    <div className="ratings-provider-badges" ref={badgeRef}>
+      {/* First provider — direct link, with optional +N popup trigger overlay */}
+      <div style={{ position: 'relative' }}>
+        {renderBadge(visible[0])}
+        {/* Mobile-only +N overlay opens the popup with the full list. */}
         {providers.length > 1 && (
           <span
             className="ratings-provider-count ratings-provider-count--mobile"
-            style={{ color: textColor }}
+            style={{ color: textColor, cursor: 'pointer' }}
+            onClick={openPopup}
           >
             +{providers.length - 1}
           </span>
@@ -117,16 +150,12 @@ function ProviderBadgeArea({
 
       {/* Extra provider logos (desktop only, hidden on mobile) */}
       {visible.slice(1).map((p) => (
-        <div
-          key={p.name}
-          className="ratings-provider-badge ratings-provider-badge--desktop"
-          style={{ background: bgColor }}
-        >
-          <img src={p.logo} alt={p.name} />
-        </div>
+        <React.Fragment key={p.name}>
+          {renderBadge(p, 'ratings-provider-badge--desktop')}
+        </React.Fragment>
       ))}
 
-      {/* Desktop overflow counter */}
+      {/* Desktop overflow counter — opens popup with the full list */}
       {overflow > 0 && (
         <div
           className="ratings-provider-badge ratings-provider-badge--desktop"
@@ -137,13 +166,13 @@ function ProviderBadgeArea({
             color: textColor,
             cursor: 'pointer',
           }}
-          onClick={toggle}
+          onClick={openPopup}
         >
           +{overflow}
         </div>
       )}
 
-      {/* Portal popup so it's not clipped */}
+      {/* Portal popup so it's not clipped by parent overflow rules */}
       {showPopup &&
         createPortal(
           <div
@@ -156,15 +185,36 @@ function ProviderBadgeArea({
             }}
             onClick={(e) => {
               e.stopPropagation();
-              e.preventDefault();
             }}
           >
-            {providers.map((p) => (
-              <div key={p.name} className="ratings-provider-popup-item">
-                <img src={p.logo} alt={p.name} />
-                <span style={{ color: textColor }}>{p.name}</span>
-              </div>
-            ))}
+            {providers.map((p) => {
+              const url = getProviderSearchUrl(p.name, searchTitle);
+              if (!url) {
+                return (
+                  <div key={p.name} className="ratings-provider-popup-item">
+                    <img src={p.logo} alt={p.name} />
+                    <span style={{ color: textColor }}>{p.name}</span>
+                  </div>
+                );
+              }
+              return (
+                <a
+                  key={p.name}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ratings-provider-popup-item"
+                  style={{ textDecoration: 'none' }}
+                  onClick={(e) => {
+                    handleProviderLinkClick(e, p.name, searchTitle, url);
+                    setShowPopup(false);
+                  }}
+                >
+                  <img src={p.logo} alt={p.name} />
+                  <span style={{ color: textColor }}>{p.name}</span>
+                </a>
+              );
+            })}
           </div>,
           document.body
         )}
@@ -220,6 +270,7 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
                 providers={item.providers}
                 bgColor={`${theme.background.default}dd`}
                 textColor={theme.text.muted}
+                searchTitle={item.title}
               />
             )}
           </div>

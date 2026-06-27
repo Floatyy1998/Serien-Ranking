@@ -20,6 +20,7 @@ import { usePersistedState } from '../../hooks/usePersistedState';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { ProviderLogoLink } from '../../components/detail/ProviderLogoLink';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
 import { SwipeableEpisodeRow } from '../../components/ui';
@@ -496,16 +497,17 @@ export const WatchNextPage = () => {
                           }
                           posterOverlay={
                             episode.providerLogo ? (
-                              <img
+                              <ProviderLogoLink
                                 src={`https://image.tmdb.org/t/p/w92${episode.providerLogo}`}
-                                alt={episode.providerName || ''}
+                                name={episode.providerName || ''}
+                                searchTitle={episode.seriesTitle}
                                 style={{
                                   position: 'absolute',
-                                  bottom: -3,
-                                  right: -3,
+                                  bottom: -2,
+                                  right: -2,
                                   width: 26,
                                   height: 26,
-                                  borderRadius: 7,
+                                  borderRadius: 6,
                                   objectFit: 'cover',
                                   boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
                                   border: '1.5px solid rgba(15,20,35,1)',
