@@ -1,14 +1,21 @@
 import { NewReleases } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
+import { FillerChip } from '../../../components/ui/FillerChip';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
+import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
+import {
+  buildFillerLookup,
+  fillerLookupKey,
+  readFillerCacheSync,
+} from '../../../services/animeFillerService';
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
 
@@ -62,6 +69,21 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   const accentColor = currentTheme.status?.warning || '#f59e0b';
   const { isMobile } = useDeviceType();
   const { getSeriesOverride } = useActiveSubscriptions();
+  const { seriesList } = useSeriesList();
+
+  // Filler/recap lookup for the displayed episodes – cache-only, no network.
+  const fillerByEpisode = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof buildFillerLookup>>();
+    const seriesById = new Map(seriesList.map((s) => [String(s.id), s]));
+    for (const ep of episodes) {
+      const series = seriesById.get(String(ep.seriesId));
+      if (!series) continue;
+      const cached = readFillerCacheSync(ep.seriesId);
+      if (!cached) continue;
+      map.set(String(ep.seriesId), buildFillerLookup(series.seasons, cached.episodes));
+    }
+    return map;
+  }, [episodes, seriesList]);
 
   if (episodes.length === 0) return null;
 
@@ -90,6 +112,9 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
             .slice(0, 5)
             .map((episode) => {
               const episodeKey = `${episode.seriesId}-${episode.seasonNumber}-${episode.episodeNumber}`;
+              const fillerInfo = fillerByEpisode
+                .get(String(episode.seriesId))
+                ?.get(fillerLookupKey(episode.seasonNumber, episode.episodeNumber));
 
               return (
                 <SwipeableEpisodeRow
@@ -193,6 +218,15 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                             }}
                           >
                             {chipLabel(episode.chipType)}
+                          </span>
+                        )}
+                        {fillerInfo && (
+                          <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
+                            <FillerChip
+                              filler={fillerInfo.filler}
+                              recap={fillerInfo.recap}
+                              variant="label"
+                            />
                           </span>
                         )}
                       </p>
