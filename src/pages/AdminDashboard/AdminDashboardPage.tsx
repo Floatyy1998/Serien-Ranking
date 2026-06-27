@@ -8,6 +8,7 @@ import {
   Assessment,
   BugReport,
   FiberNew,
+  FilterAlt,
   ConfirmationNumber,
   Extension,
   Groups,
@@ -38,6 +39,7 @@ import { MessagesTab } from './tabs/MessagesTab';
 import { TicketsTab } from './tabs/TicketsTab';
 import { ConfigTab } from './tabs/ConfigTab';
 import { NewEpisodesTab } from './tabs/NewEpisodesTab';
+import { AnimeFillerTab } from './tabs/AnimeFillerTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
@@ -53,6 +55,7 @@ const TABS = [
   { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
   { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
+  { id: 'anime-filler', label: 'Anime Filler', icon: <FilterAlt style={{ fontSize: 16 }} /> },
   { id: 'performance', label: 'Perf', icon: <Timer style={{ fontSize: 16 }} /> },
   { id: 'backend', label: 'Backend', icon: <BugReport style={{ fontSize: 16 }} /> },
   { id: 'config', label: 'Config', icon: <Settings style={{ fontSize: 16 }} /> },
@@ -161,6 +164,7 @@ export function AdminDashboardPage() {
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}
+              {activeTab === 'anime-filler' && <AnimeFillerTab />}
               {activeTab === 'performance' && <PerformanceTab theme={currentTheme} />}
               {activeTab === 'backend' && <BackendErrorsTab data={data} theme={currentTheme} />}
               {activeTab === 'config' && <ConfigTab theme={currentTheme} />}
