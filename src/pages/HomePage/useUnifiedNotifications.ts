@@ -72,7 +72,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: 'Neu: Anime-Filler, Aktivitäts-Ticker & mehr',
     message:
       'Anime-Filler/Recap auf Detail-Seite und in der Episoden-Liste, Freunde-Aktivitäten als sanfter Ticker auf der Homepage, Streaming-Reminder mit Pausieren-Button, Pet-Reaktionen auf Streaks, sanfte Seitenwechsel – alles in den Patch Notes.',
-    timestamp: new Date('2026-06-27T14:00:00+02:00').getTime(),
+    timestamp: new Date('2026-06-27T22:00:00+02:00').getTime(),
     navigateTo: '/patch-notes',
   },
   {
@@ -410,10 +410,13 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAllAsRead();
     if (!user) return;
     const uid = user.uid;
-    // Use max(now, latest announcement timestamp) so future-dated
-    // announcements are also dismissed when user hits "Mark all read".
-    const latestAnnTs = ANNOUNCEMENTS.reduce((max, a) => Math.max(max, a.timestamp), 0);
-    const newReadTime = Math.max(Date.now(), latestAnnTs);
+    // Mark only what is actually visible right now as read. The previous
+    // max(now, latestAnnTs) trick pre-dismissed future-dated announcements
+    // and – critically – also poisoned the read state for any announcement
+    // that gets shipped later with a past timestamp (deploy-time < bell-open).
+    // Plain `Date.now()` keeps the bell honest: future-dated entries stay
+    // unread until they actually surface.
+    const newReadTime = Date.now();
     setStoredReadTime({ uid, ts: newReadTime });
     firebase
       .database()
@@ -421,6 +424,27 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       .set(newReadTime)
       .catch(() => {});
   }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, user]);
+
+  // DevTools escape hatch – lets you reset the announcement read state if
+  // you ever need to re-surface a notification (e.g. after a missed deploy).
+  //   notificationsDebug.resetAnnouncements()
+  //   notificationsDebug.setReadTime(ts)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !user) return;
+    (window as unknown as Record<string, unknown>).notificationsDebug = {
+      resetAnnouncements: () => {
+        firebase
+          .database()
+          .ref(`users/${user.uid}/readTimes/announcements`)
+          .set(0)
+          .then(() => location.reload());
+      },
+      setReadTime: (ts: number) => {
+        firebase.database().ref(`users/${user.uid}/readTimes/announcements`).set(ts);
+      },
+      currentReadTime: () => storedReadTime?.ts ?? null,
+    };
+  }, [user, storedReadTime]);
 
   const handleAcceptRecommendation = useCallback(
     (recId: string) => {

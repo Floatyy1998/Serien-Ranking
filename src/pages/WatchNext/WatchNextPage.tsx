@@ -24,7 +24,13 @@ import { ProviderLogoLink } from '../../components/detail/ProviderLogoLink';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
 import { SwipeableEpisodeRow } from '../../components/ui';
+import { FillerChip } from '../../components/ui/FillerChip';
 import { EpisodeDiscussionButton } from '../../components/Discussion';
+import {
+  buildFillerLookup,
+  fillerLookupKey,
+  readFillerCacheSync,
+} from '../../services/animeFillerService';
 import { chipLabel, chipColor } from '../../utils/episodeChips';
 import { SortBar } from './SortBar';
 import { ProviderFilter } from './ProviderFilter';
@@ -103,6 +109,22 @@ export const WatchNextPage = () => {
     providerFilter,
     onlyMySubs ? activeProviders : null
   );
+
+  // Filler/recap lookup for the displayed next-up episodes – cache-only.
+  // Watchlist is the canonical "what's next" list, so the chip belongs here
+  // exactly like on the Continue Watching block.
+  const fillerByEpisode = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    const seriesById = new Map(seriesList.map((s) => [s.id, s]));
+    for (const ep of nextEpisodes) {
+      const series = seriesById.get(ep.seriesId);
+      if (!series) continue;
+      const cached = readFillerCacheSync(ep.seriesId);
+      if (!cached) continue;
+      map.set(ep.seriesId, buildFillerLookup(series.seasons, cached.episodes));
+    }
+    return map;
+  }, [nextEpisodes, seriesList]);
 
   const {
     draggedIndex,
@@ -426,6 +448,12 @@ export const WatchNextPage = () => {
                     // Show separator between rewatches and normal episodes
                     const prevEpisode = index > 0 ? arr[index - 1] : null;
                     const showSeparator = prevEpisode?.isRewatch && !episode.isRewatch;
+                    // seasonNumber is 0-based here; lookup expects 1-based.
+                    const fillerInfo = fillerByEpisode
+                      .get(episode.seriesId)
+                      ?.get(
+                        fillerLookupKey((episode.seasonNumber ?? 0) + 1, episode.episodeNumber)
+                      );
                     return (
                       <div key={episodeKey} style={{ position: 'relative' }}>
                         {showSwipeHint && index === 0 && (
@@ -577,6 +605,15 @@ export const WatchNextPage = () => {
                                     }}
                                   >
                                     {chipLabel(episode.chipType)}
+                                  </span>
+                                )}
+                                {fillerInfo && (
+                                  <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
+                                    <FillerChip
+                                      filler={fillerInfo.filler}
+                                      recap={fillerInfo.recap}
+                                      variant="label"
+                                    />
                                   </span>
                                 )}
                               </p>
