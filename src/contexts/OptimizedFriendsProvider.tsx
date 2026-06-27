@@ -400,37 +400,55 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     }
   }, [user]);
 
-  const sendFriendRequest = async (username: string): Promise<boolean> => {
-    if (!user) return false;
-    return sendFriendRequestOp(user, username);
-  };
+  const sendFriendRequest = useCallback(
+    async (username: string): Promise<boolean> => {
+      if (!user) return false;
+      return sendFriendRequestOp(user, username);
+    },
+    [user]
+  );
 
-  const acceptFriendRequest = async (requestId: string): Promise<void> => {
-    if (!user) return;
-    await acceptFriendRequestOp(user, requestId, setFriendRequests, refetchFriends);
-  };
+  const acceptFriendRequest = useCallback(
+    async (requestId: string): Promise<void> => {
+      if (!user) return;
+      await acceptFriendRequestOp(user, requestId, setFriendRequests, refetchFriends);
+    },
+    [user, refetchFriends]
+  );
 
-  const declineFriendRequest = async (requestId: string): Promise<void> => {
-    if (!user) return;
-    await declineFriendRequestOp(requestId, setFriendRequests);
-  };
+  const declineFriendRequest = useCallback(
+    async (requestId: string): Promise<void> => {
+      if (!user) return;
+      await declineFriendRequestOp(requestId, setFriendRequests);
+    },
+    [user]
+  );
 
-  const cancelFriendRequest = async (requestId: string): Promise<void> => {
-    if (!user) return;
-    await cancelFriendRequestOp(requestId, setSentRequests);
-  };
+  const cancelFriendRequest = useCallback(
+    async (requestId: string): Promise<void> => {
+      if (!user) return;
+      await cancelFriendRequestOp(requestId, setSentRequests);
+    },
+    [user]
+  );
 
-  const removeFriend = async (friendId: string): Promise<void> => {
-    if (!user) return;
-    await removeFriendOp(user.uid, friendId, refetchFriends);
-  };
+  const removeFriend = useCallback(
+    async (friendId: string): Promise<void> => {
+      if (!user) return;
+      await removeFriendOp(user.uid, friendId, refetchFriends);
+    },
+    [user, refetchFriends]
+  );
 
-  const updateUserActivity = async (
-    activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
-  ): Promise<void> => {
-    if (!user) return;
-    await updateUserActivityOp(user, activity);
-  };
+  const updateUserActivity = useCallback(
+    async (
+      activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
+    ): Promise<void> => {
+      if (!user) return;
+      await updateUserActivityOp(user, activity);
+    },
+    [user]
+  );
 
   const refreshFriends = useCallback(() => {
     refetchFriends();

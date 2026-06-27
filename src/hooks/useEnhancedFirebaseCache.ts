@@ -583,7 +583,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
     };
     // Initiale Offline-Status setzen — External-Sync mit dem Network-Status
     // des Browsers, legitimer Setup-Effect.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+
     setIsOffline(!navigator.onLine);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -597,7 +597,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
    */
   useEffect(() => {
     if (!path) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setData(null);
 
       setLoading(false);

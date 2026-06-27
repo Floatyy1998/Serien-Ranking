@@ -88,7 +88,6 @@ export const BadgeProvider = ({ children }: BadgeProviderProps) => {
   useEffect(() => {
     if (newBadges.length > 0 && !showNotification) {
       if (currentBadgeIndex < newBadges.length) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setShowNotification(true);
 
         setCelebrate(true);

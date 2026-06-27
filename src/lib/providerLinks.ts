@@ -41,8 +41,7 @@ export function handleProviderLinkClick(
     return;
   }
   event.preventDefault();
-  const open = () =>
-    window.open(url, '_blank', 'noopener,noreferrer');
+  const open = () => window.open(url, '_blank', 'noopener,noreferrer');
   if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
     // Fire-and-forget: auch wenn die Clipboard-API failed, soll die Suchseite
     // trotzdem aufgehen. Promise-then statt await, weil der Handler synchron
