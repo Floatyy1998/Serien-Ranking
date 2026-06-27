@@ -5,6 +5,11 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import type { WeeklyEpisode, WeeklyEpisodeProvider } from '../../hooks/useWeeklyEpisodes';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
+import {
+  getProviderSearchUrl,
+  handleProviderLinkClick,
+  providerNeedsClipboardCopy,
+} from '../../lib/providerLinks';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
 import { getProviderBrand } from '../Subscriptions/providerBrands';
 import type { SeriesGroup } from './useCalendarData';
@@ -102,18 +107,45 @@ function breakColor(type: NonNullable<WeeklyEpisode['breakType']>): string {
 // ── Provider badge (single logo) ─────────────────────────────────
 
 const ProviderBadge = memo(
-  ({ provider, className }: { provider: WeeklyEpisodeProvider; className: string }) => {
+  ({
+    provider,
+    className,
+    searchTitle,
+  }: {
+    provider: WeeklyEpisodeProvider;
+    className: string;
+    searchTitle: string;
+  }) => {
     const raw = provider.logo;
     const src = raw?.startsWith('http') ? raw : `https://image.tmdb.org/t/p/w92${raw}`;
-    return (
+    const normalized = normalizeProviderName(provider.name);
+    const url = normalized ? getProviderSearchUrl(normalized, searchTitle) : null;
+    const tooltip =
+      normalized && providerNeedsClipboardCopy(normalized)
+        ? `${provider.name}: Titel kopieren + Suche öffnen`
+        : `${provider.name} öffnen`;
+    const img = (
       <img
         src={src}
         alt={provider.name}
-        title={provider.name}
+        title={url ? tooltip : provider.name}
         loading="lazy"
         decoding="async"
         className={className}
       />
+    );
+    if (!url) return img;
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={tooltip}
+        onClick={(e) => handleProviderLinkClick(e, normalized ?? '', searchTitle, url)}
+        style={{ display: 'contents' }}
+      >
+        {img}
+      </a>
     );
   }
 );
@@ -189,6 +221,7 @@ interface PosterWrapProps {
   watched: boolean;
   onMark?: () => void;
   provider?: WeeklyEpisodeProvider;
+  searchTitle: string;
   children: React.ReactNode; // poster-info content
 }
 
@@ -200,6 +233,7 @@ const PosterWrap = memo(
     watched,
     onMark,
     provider,
+    searchTitle,
     children,
   }: PosterWrapProps) => {
     const { currentTheme } = useTheme();
@@ -247,7 +281,13 @@ const PosterWrap = memo(
 
         <div className={`cal-ep-poster-info${provider ? ' has-provider' : ''}`}>
           {children}
-          {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge" />}
+          {provider && (
+            <ProviderBadge
+              provider={provider}
+              className="cal-ep-provider-badge"
+              searchTitle={searchTitle}
+            />
+          )}
         </div>
       </div>
     );
@@ -258,10 +298,24 @@ PosterWrap.displayName = 'PosterWrap';
 // ── Mobile poster with provider overlay ──────────────────────────
 
 const MobilePoster = memo(
-  ({ src, provider }: { src: string; provider?: WeeklyEpisodeProvider }) => (
+  ({
+    src,
+    provider,
+    searchTitle,
+  }: {
+    src: string;
+    provider?: WeeklyEpisodeProvider;
+    searchTitle: string;
+  }) => (
     <div className="cal-ep-poster-mobile-wrap">
       <img src={src} alt="" decoding="async" className="cal-ep-poster cal-ep-poster-mobile" />
-      {provider && <ProviderBadge provider={provider} className="cal-ep-provider-badge-mobile" />}
+      {provider && (
+        <ProviderBadge
+          provider={provider}
+          className="cal-ep-provider-badge-mobile"
+          searchTitle={searchTitle}
+        />
+      )}
     </div>
   )
 );
@@ -317,6 +371,7 @@ export const SingleEpisodeCard = memo(
           watched={ep.watched}
           onMark={!ep.watched ? handleMark : undefined}
           provider={provider}
+          searchTitle={ep.seriesTitle}
         >
           <span className="cal-ep-title">{ep.seriesTitle}</span>
           <span
@@ -363,7 +418,7 @@ export const SingleEpisodeCard = memo(
         </PosterWrap>
 
         {/* Mobile: poster + info */}
-        <MobilePoster src={ep.poster} provider={provider} />
+        <MobilePoster src={ep.poster} provider={provider} searchTitle={ep.seriesTitle} />
         <div className="cal-ep-info cal-ep-info-mobile">
           <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
             {ep.seriesTitle}
@@ -477,6 +532,7 @@ export const EpisodeGroupCard = memo(
             breakType={groupBreakType}
             watched={allWatched}
             provider={provider}
+            searchTitle={group.seriesTitle}
           >
             <span className="cal-ep-title">{group.seriesTitle}</span>
             <span
@@ -506,7 +562,7 @@ export const EpisodeGroupCard = memo(
           </PosterWrap>
 
           {/* Mobile: poster + info */}
-          <MobilePoster src={firstEp.poster} provider={provider} />
+          <MobilePoster src={firstEp.poster} provider={provider} searchTitle={group.seriesTitle} />
           <div className="cal-ep-info cal-ep-info-mobile">
             <span className="cal-ep-title" style={{ color: currentTheme.text.primary }}>
               {group.seriesTitle}

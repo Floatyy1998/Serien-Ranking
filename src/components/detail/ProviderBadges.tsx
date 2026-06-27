@@ -1,6 +1,11 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import {
+  getProviderSearchUrl,
+  handleProviderLinkClick,
+  providerNeedsClipboardCopy,
+} from '../../lib/providerLinks';
 
 interface Provider {
   provider_id?: number;
@@ -31,92 +36,13 @@ interface ProviderBadgesProps {
   mediaType?: 'tv' | 'movie';
 }
 
-// Deep Link Mapping für deutsche Streaming-Anbieter
-// Provider IDs von TMDB: https://developer.themoviedb.org/reference/watch-provider-tv-list
-const PROVIDER_LINKS: Record<
-  number,
-  {
-    web: (title: string, tmdbId?: number) => string;
-    name: string;
-  }
-> = {
-  // Netflix (ID: 8)
-  8: {
-    web: (title) => `https://www.netflix.com/search?q=${encodeURIComponent(title)}`,
-    name: 'Netflix',
-  },
-  // Amazon Prime Video (ID: 9, 119)
-  9: {
-    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Amazon Prime Video',
-  },
-  119: {
-    web: (title) => `https://www.amazon.de/s?k=${encodeURIComponent(title)}&i=instant-video`,
-    name: 'Amazon Prime Video',
-  },
-  // Disney+ (ID: 337)
-  337: {
-    web: (title) => `https://www.disneyplus.com/de-de/search?q=${encodeURIComponent(title)}`,
-    name: 'Disney Plus',
-  },
-  // Apple TV+ (ID: 350)
-  350: {
-    web: (title) => `https://tv.apple.com/de/search?term=${encodeURIComponent(title)}`,
-    name: 'Apple TV Plus',
-  },
-  // Paramount+ (ID: 531)
-  531: {
-    web: (title) => `https://www.paramountplus.com/de/search/?q=${encodeURIComponent(title)}`,
-    name: 'Paramount Plus',
-  },
-  // WOW / Sky (ID: 30)
-  30: {
-    web: (title) => `https://www.wowtv.de/suche?search=${encodeURIComponent(title)}`,
-    name: 'WOW',
-  },
-  // Crunchyroll (ID: 283)
-  283: {
-    web: (title) => `https://www.crunchyroll.com/de/search?q=${encodeURIComponent(title)}`,
-    name: 'Crunchyroll',
-  },
-  // RTL+ (ID: 298)
-  298: {
-    web: (title) => `https://plus.rtl.de/suche?term=${encodeURIComponent(title)}`,
-    name: 'RTL+',
-  },
-  // Joyn / Joyn Plus (ID: 421, 304)
-  421: {
-    web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
-    name: 'Joyn Plus',
-  },
-  304: {
-    web: (title) => `https://www.joyn.de/search?q=${encodeURIComponent(title)}`,
-    name: 'Joyn',
-  },
-  // MagentaTV (ID: 178)
-  178: {
-    web: (title) => `https://web.magentatv.de/search?q=${encodeURIComponent(title)}`,
-    name: 'MagentaTV',
-  },
-  // ADN - Animation Digital Network (ID: 415)
-  415: {
-    web: (title) => `https://animationdigitalnetwork.de/search/${encodeURIComponent(title)}`,
-    name: 'Animation Digital Network',
-  },
-  // HBO Max / Max (ID: 1899)
-  1899: {
-    web: (title) => `https://play.hbomax.com/search/result?q=${encodeURIComponent(title)}`,
-    name: 'HBO Max',
-  },
-};
-
 export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   providers,
   size = 'small',
   maxDisplay = 3,
   showNames = false,
   searchTitle,
-  tmdbId,
+  tmdbId: _tmdbId, // Reserved for future TMDB-ID-based deep links
   mediaType: _mediaType, // Reserved for future JustWatch integration
 }) => {
   const { currentTheme } = useTheme();
@@ -222,10 +148,10 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         const providerName = provider.provider_name || provider.name || 'Unknown';
         const providerId = provider.provider_id || provider.id || index;
 
-        // Deep Link ermitteln
-        const providerConfig = PROVIDER_LINKS[providerId as number];
-        const deepLink =
-          searchTitle && providerConfig ? providerConfig.web(searchTitle, tmdbId) : null;
+        // Deep Link über normalisierten Namen — nutzt dieselbe Tabelle wie
+        // alle anderen Provider-Anzeigen (Carousel, Rating-Cards).
+        const normalizedName = normalizeProviderName(providerName);
+        const deepLink = searchTitle ? getProviderSearchUrl(normalizedName, searchTitle) : null;
 
         const badgeContent = (
           <>
@@ -285,12 +211,18 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
         // Wenn Deep Link vorhanden, als klickbares Element rendern
         if (deepLink) {
+          const tooltipText = providerNeedsClipboardCopy(normalizedName)
+            ? `${providerName}: Titel kopieren + Suche öffnen`
+            : `${providerName} öffnen`;
           return (
-            <Tooltip key={providerId} title={`${providerName} öffnen`} arrow>
+            <Tooltip key={providerId} title={tooltipText} arrow>
               <a
                 href={deepLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) =>
+                  handleProviderLinkClick(e, normalizedName, searchTitle ?? '', deepLink)
+                }
                 style={{
                   ...badgeStyle,
                   textDecoration: 'none',

@@ -368,7 +368,6 @@ export const HomePage: React.FC = () => {
             variant="seasonal"
             items={deferredSeasonalItems}
             title={seasonal.title}
-            badgeGradient={seasonal.badgeGradient}
             iconColor={seasonal.iconColor}
             loading={seasonal.loading}
           />
