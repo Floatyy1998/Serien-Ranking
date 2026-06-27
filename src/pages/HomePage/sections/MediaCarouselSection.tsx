@@ -7,7 +7,6 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   HorizontalScrollContainer,
   SectionHeader,
@@ -15,6 +14,7 @@ import {
 } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
@@ -219,7 +219,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
   iconColor,
   loading,
 }: MediaCarouselSectionProps) {
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
   const cardWidth = isMobile ? '155px' : '240px';

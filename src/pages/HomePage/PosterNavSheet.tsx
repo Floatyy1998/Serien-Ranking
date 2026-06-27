@@ -1,9 +1,9 @@
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import Tv from '@mui/icons-material/Tv';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 
 interface PosterNavState {
   open: boolean;
@@ -18,7 +18,7 @@ interface PosterNavSheetProps {
 }
 
 export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClose }) => {
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
 
   return (

@@ -1,3 +1,4 @@
+import History from '@mui/icons-material/History';
 import Info from '@mui/icons-material/Info';
 import List from '@mui/icons-material/List';
 import People from '@mui/icons-material/People';
@@ -8,8 +9,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { AnimeFillerBanner } from './AnimeFillerBanner';
 import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { useRecapData } from '../../hooks/useRecapData';
@@ -78,13 +81,10 @@ export const SeriesDetailPage = memo(() => {
   const characterGuide = useCharacterDescriptions(localSeries ?? undefined);
   const [showRecap, setShowRecap] = useState(false);
 
-  // Auto-show recap when data is ready
-  useEffect(() => {
-    if (recap.shouldShowRecap && !recap.loading && recap.recapEpisodes.length > 0) {
-      const timer = setTimeout(() => setShowRecap(true), 800);
-      return () => clearTimeout(timer);
-    }
-  }, [recap.shouldShowRecap, recap.loading, recap.recapEpisodes.length]);
+  // Anime filler/recap data – read from backend (Firebase admin/animeFiller).
+  // The frontend never queries AniList/Jikan; reload goes through the backend
+  // endpoint. Shared by the inline banner and the per-episode chips.
+  const animeFiller = useAnimeFillerData(series?.tmdb_id || series?.id, series?.seasons);
 
   // Auto-select most relevant season tab, or restore from session
   useEffect(() => {
@@ -351,6 +351,56 @@ export const SeriesDetailPage = memo(() => {
         <CastCrew tmdbId={series.tmdb_id || series.id} mediaType="tv" seriesData={series} />
       ) : (
         <>
+          {/* Recap Trigger – only when user tracks the series and has watched episodes */}
+          {!isReadOnlyTmdbSeries && recap.recapEpisodes.length > 0 && (
+            <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 16px' }}>
+              <motion.button
+                onClick={() => setShowRecap(true)}
+                whileTap={{ scale: 0.98 }}
+                whileHover={{ y: -1 }}
+                disabled={recap.loading}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: isMobile ? '10px 14px' : '12px 18px',
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${currentTheme.primary} 12%, transparent), color-mix(in srgb, ${currentTheme.accent} 8%, transparent))`,
+                  border: `1px solid color-mix(in srgb, ${currentTheme.primary} 28%, transparent)`,
+                  borderRadius: '12px',
+                  color: currentTheme.text.primary,
+                  fontSize: isMobile ? '13px' : '14px',
+                  fontWeight: 600,
+                  cursor: recap.loading ? 'wait' : 'pointer',
+                  textAlign: 'left',
+                  opacity: recap.loading ? 0.7 : 1,
+                  transition: 'background var(--duration-fast) var(--ease-default)',
+                }}
+              >
+                <History
+                  style={{ fontSize: isMobile ? '18px' : '20px', color: currentTheme.primary }}
+                />
+                <span style={{ flex: 1 }}>
+                  Recap der letzten {recap.recapEpisodes.length} Folge
+                  {recap.recapEpisodes.length === 1 ? '' : 'n'}
+                  {recap.daysSinceLastWatch > 0 && (
+                    <span
+                      style={{
+                        color: currentTheme.text.secondary,
+                        fontWeight: 400,
+                        marginLeft: 6,
+                      }}
+                    >
+                      · zuletzt vor {recap.daysSinceLastWatch} Tag
+                      {recap.daysSinceLastWatch === 1 ? '' : 'en'}
+                    </span>
+                  )}
+                </span>
+                <span style={{ color: currentTheme.primary, fontSize: '18px' }}>→</span>
+              </motion.button>
+            </div>
+          )}
+
           {/* Description */}
           {(series.beschreibung || series.overview || tmdbOverview) && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
@@ -382,6 +432,15 @@ export const SeriesDetailPage = memo(() => {
             </div>
           )}
 
+          {/* Anime Filler / Recap Info – only renders for Japanese animation */}
+          <AnimeFillerBanner
+            enabled={animeFiller.enabled}
+            loading={animeFiller.loading}
+            data={animeFiller.data}
+            isMobile={isMobile}
+            onReload={animeFiller.reload}
+          />
+
           {/* Seasons Overview */}
           {series.seasons && series.seasons.length > 0 && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
@@ -397,6 +456,7 @@ export const SeriesDetailPage = memo(() => {
                 handleStartRewatch={handleStartRewatch}
                 handleEpisodeQuickToggle={handleEpisodeQuickToggle}
                 navigate={navigate}
+                fillerByKey={animeFiller.fillerByKey}
               />
             </div>
           )}

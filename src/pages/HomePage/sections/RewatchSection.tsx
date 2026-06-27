@@ -1,12 +1,12 @@
 import { Repeat } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import type { Series } from '../../../types/Series';
@@ -58,7 +58,7 @@ export const RewatchSection = React.memo(function RewatchSection({
   onComplete,
   onPosterClick,
 }: RewatchSectionProps) {
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.accent;
   const { getSeriesOverride } = useActiveSubscriptions();
