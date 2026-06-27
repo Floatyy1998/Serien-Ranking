@@ -1,14 +1,21 @@
 import { Repeat } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
+import { FillerChip } from '../../../components/ui/FillerChip';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
+import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
+import {
+  buildFillerLookup,
+  fillerLookupKey,
+  readFillerCacheSync,
+} from '../../../services/animeFillerService';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
@@ -63,6 +70,21 @@ export const RewatchSection = React.memo(function RewatchSection({
   const accentColor = currentTheme.accent;
   const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
+  const { seriesList } = useSeriesList();
+
+  // Filler/recap lookup – cache-only, no network.
+  const fillerByEpisode = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    const seriesById = new Map(seriesList.map((s) => [s.id, s]));
+    for (const ep of episodes) {
+      const series = seriesById.get(ep.id);
+      if (!series) continue;
+      const cached = readFillerCacheSync(ep.id);
+      if (!cached) continue;
+      map.set(ep.id, buildFillerLookup(series.seasons, cached.episodes));
+    }
+    return map;
+  }, [episodes, seriesList]);
 
   if (episodes.length === 0) return null;
 
@@ -94,6 +116,9 @@ export const RewatchSection = React.memo(function RewatchSection({
             .slice(0, 4)
             .map((item) => {
               const key = `rewatch-${item.id}-${item.seasonNumber}-${item.episodeNumber}`;
+              const fillerInfo = fillerByEpisode
+                .get(item.id)
+                ?.get(fillerLookupKey(item.seasonNumber, item.episodeNumber));
 
               return (
                 <SwipeableEpisodeRow
@@ -169,6 +194,15 @@ export const RewatchSection = React.memo(function RewatchSection({
                         }}
                       >
                         S{item.seasonNumber} E{item.episodeNumber} • {item.episodeName}
+                        {fillerInfo && (
+                          <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
+                            <FillerChip
+                              filler={fillerInfo.filler}
+                              recap={fillerInfo.recap}
+                              variant="label"
+                            />
+                          </span>
+                        )}
                       </p>
                       <p
                         style={{
