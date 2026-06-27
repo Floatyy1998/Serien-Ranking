@@ -39,9 +39,7 @@ export const ProviderLogoLink = React.memo(function ProviderLogoLink({
   const normalized = normalizeProviderName(name);
   const url = normalized ? getProviderSearchUrl(normalized, searchTitle) : null;
   const needsClipboard = normalized ? providerNeedsClipboardCopy(normalized) : false;
-  const titleAttr = needsClipboard
-    ? `${name}: Titel kopieren + Suche öffnen`
-    : `${name} öffnen`;
+  const titleAttr = needsClipboard ? `${name}: Titel kopieren + Suche öffnen` : `${name} öffnen`;
   const img = (
     <img src={src} alt={name} loading="lazy" decoding="async" style={style} title={titleAttr} />
   );

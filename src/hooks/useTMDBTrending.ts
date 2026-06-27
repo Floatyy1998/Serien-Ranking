@@ -141,8 +141,8 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
         const baseSeries: TrendingItem[] = (tvData.results ?? []).map((item: TMDBTrendingItem) =>
           mapTMDBItem(item, 'series')
         );
-        const baseMovies: TrendingItem[] = (movieData.results ?? []).map(
-          (item: TMDBTrendingItem) => mapTMDBItem(item, 'movie')
+        const baseMovies: TrendingItem[] = (movieData.results ?? []).map((item: TMDBTrendingItem) =>
+          mapTMDBItem(item, 'movie')
         );
 
         const [seriesWithProviders, moviesWithProviders] = await Promise.all([

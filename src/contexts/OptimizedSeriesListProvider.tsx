@@ -138,7 +138,6 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   // genau das, wofuer useEffect da ist. Die set-state-in-effect-Rule kann
   // den async-Pfad nicht erkennen, deshalb hier bewusst disabled.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void refetchCatalog();
   }, [refetchCatalog]);
 
@@ -155,7 +154,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     const missingInCatalog = Object.keys(userSeriesRefs).some((id) => !catalogMeta[id]);
     if (missingInCatalog) {
       lastRefetchKeysRef.current = currentKeys;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+
       void refetchCatalog(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -41,14 +41,13 @@ export const MangaDetailPage = () => {
   // pure useMemo since editChapter is also driven by local stepper clicks.
   const mangaChapter = manga?.currentChapter;
   const mangaNotes = manga?.notes;
-  /* eslint-disable react-hooks/set-state-in-effect */
+
   useEffect(() => {
     if (mangaChapter !== undefined) setEditChapter(mangaChapter);
   }, [mangaChapter]);
   useEffect(() => {
     setNotesValue(mangaNotes || '');
   }, [mangaNotes]);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
   const updateField = useCallback(
     async (field: string, value: unknown) => {
