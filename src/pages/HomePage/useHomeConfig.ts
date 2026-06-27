@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Default orders
 export const DEFAULT_SECTION_ORDER = [
-  'main-actions',
+  'activity-marquee',
   'quick-actions',
   'secondary-actions',
   'countdown',
@@ -25,9 +25,9 @@ export const DEFAULT_FOR_YOU_ORDER = [
   'taste-match',
   'watch-journey',
   'catch-up',
+  'streaming-reminder',
   'hidden-series',
 ];
-export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
 export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
@@ -36,8 +36,6 @@ export interface HomeConfig {
   hiddenSections: string[];
   forYouOrder: string[];
   hiddenForYou: string[];
-  mainActionsOrder: string[];
-  hiddenMainActions: string[];
   quickActionsOrder: string[];
   hiddenQuickActions: string[];
   secondaryActionsOrder: string[];
@@ -53,11 +51,25 @@ function readCachedConfig(): Partial<HomeConfig> | null {
     const cached = JSON.parse(localStorage.getItem('homeConfig_cache') || 'null');
     if (!cached) return null;
 
-    // Merge missing default items into cached lists so new features appear automatically
+    // Merge missing default items into cached lists so new features appear
+    // at their intended position (not just appended at the end).
     const merge = (cached: string[] | undefined, defaults: string[]) => {
       if (!cached) return undefined;
-      const missing = defaults.filter((id) => !cached.includes(id));
-      return missing.length > 0 ? [...cached, ...missing] : cached;
+      const out = [...cached];
+      for (let i = 0; i < defaults.length; i += 1) {
+        const id = defaults[i];
+        if (out.includes(id)) continue;
+        let insertAt = out.length;
+        for (let j = i + 1; j < defaults.length; j += 1) {
+          const idx = out.indexOf(defaults[j]);
+          if (idx !== -1) {
+            insertAt = idx;
+            break;
+          }
+        }
+        out.splice(insertAt, 0, id);
+      }
+      return out;
     };
 
     cached.forYouOrder = merge(cached.forYouOrder, DEFAULT_FOR_YOU_ORDER);
@@ -82,12 +94,6 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     cachedConfig?.forYouOrder || DEFAULT_FOR_YOU_ORDER
   );
   const [hiddenForYou, setHiddenForYou] = useState<string[]>(cachedConfig?.hiddenForYou || []);
-  const [mainActionsOrder, setMainActionsOrder] = useState<string[]>(
-    cachedConfig?.mainActionsOrder || DEFAULT_MAIN_ACTIONS_ORDER
-  );
-  const [hiddenMainActions, setHiddenMainActions] = useState<string[]>(
-    cachedConfig?.hiddenMainActions || []
-  );
   const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(
     cachedConfig?.quickActionsOrder || DEFAULT_QUICK_ACTIONS_ORDER
   );
@@ -113,8 +119,21 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
       if (data?.[key]) {
         const valid = (data[key] as string[]).filter((id) => validLabels.has(id));
         if (addMissing) {
-          for (const id of defaults) {
-            if (!valid.includes(id)) valid.push(id);
+          // Insert each missing default before the next default that's
+          // already present, so new sections land at their intended slot
+          // rather than at the bottom of every existing user's layout.
+          for (let i = 0; i < defaults.length; i += 1) {
+            const id = defaults[i];
+            if (valid.includes(id)) continue;
+            let insertAt = valid.length;
+            for (let j = i + 1; j < defaults.length; j += 1) {
+              const idx = valid.indexOf(defaults[j]);
+              if (idx !== -1) {
+                insertAt = idx;
+                break;
+              }
+            }
+            valid.splice(insertAt, 0, id);
           }
         }
         setter(valid);
@@ -135,20 +154,6 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
       DEFAULT_FOR_YOU_ORDER,
       new Set(DEFAULT_FOR_YOU_ORDER),
       setHiddenForYou,
-      false
-    );
-    applyList(
-      'mainActionsOrder',
-      DEFAULT_MAIN_ACTIONS_ORDER,
-      new Set(DEFAULT_MAIN_ACTIONS_ORDER),
-      setMainActionsOrder,
-      true
-    );
-    applyList(
-      'hiddenMainActions',
-      DEFAULT_MAIN_ACTIONS_ORDER,
-      new Set(DEFAULT_MAIN_ACTIONS_ORDER),
-      setHiddenMainActions,
       false
     );
     applyList(
@@ -256,8 +261,6 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     hiddenSections,
     forYouOrder,
     hiddenForYou,
-    mainActionsOrder,
-    hiddenMainActions,
     quickActionsOrder,
     hiddenQuickActions,
     secondaryActionsOrder,

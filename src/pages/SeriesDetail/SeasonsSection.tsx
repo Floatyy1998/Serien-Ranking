@@ -6,11 +6,13 @@ import { Tooltip } from '@mui/material';
 import { motion, type PanInfo } from 'framer-motion';
 import { useCallback, useState } from 'react';
 import type { useNavigate } from 'react-router-dom';
+import { FillerChip } from '../../components/ui/FillerChip';
 import {
   getImplicitRewatchRound,
   hasActiveRewatch,
   hasAnySeasonFullyWatched,
 } from '../../lib/validation/rewatch.utils';
+import { fillerLookupKey, type FillerEpisode } from '../../services/animeFillerService';
 import type { DynamicTheme } from '../../theme/dynamicTheme';
 import type { Series } from '../../types/Series';
 import { RewatchBanner } from './RewatchBanner';
@@ -35,6 +37,7 @@ interface SeasonsSectionProps {
   handleStartRewatch: (continueExisting?: boolean) => void;
   handleEpisodeQuickToggle: (seasonIndex: number, episodeIndex: number) => Promise<void>;
   navigate: ReturnType<typeof useNavigate>;
+  fillerByKey?: Map<string, FillerEpisode>;
 }
 
 export function SeasonsSection({
@@ -49,6 +52,7 @@ export function SeasonsSection({
   handleStartRewatch,
   handleEpisodeQuickToggle,
   navigate,
+  fillerByKey,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
   const safeSeasonIndex = Math.min(
@@ -283,6 +287,9 @@ export function SeasonsSection({
               {selectedSeason.episodes?.map((episode, episodeIndex) => {
                 const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
                 const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
+                const fillerInfo = fillerByKey?.get(
+                  fillerLookupKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
+                );
                 return (
                   <div
                     key={episode.id}
@@ -379,6 +386,11 @@ export function SeasonsSection({
                       {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
                     </div>
 
+                    {/* Filler / Recap marker */}
+                    {fillerInfo && (
+                      <FillerChip filler={fillerInfo.filler} recap={fillerInfo.recap} />
+                    )}
+
                     {/* Rewatch badge */}
                     {isRewatched && (
                       <span
@@ -419,15 +431,28 @@ export function SeasonsSection({
               {selectedSeason.episodes?.map((episode, episodeIndex) => {
                 const discussionCount = episodeDiscussionCounts[episodeIndex + 1] || 0;
                 const isRewatched = episode.watched && (episode.watchCount || 1) > 1;
+                const fillerInfo = fillerByKey?.get(
+                  fillerLookupKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
+                );
+                const fillerLabel = fillerInfo?.filler
+                  ? ' · Filler'
+                  : fillerInfo?.recap
+                    ? ' · Recap'
+                    : '';
+                const fillerDotColor = fillerInfo?.filler
+                  ? currentTheme.status.warning
+                  : fillerInfo?.recap
+                    ? currentTheme.primary
+                    : null;
                 return (
                   <Tooltip
                     key={episode.id}
                     title={
-                      isRewatched
+                      (isRewatched
                         ? `Episode ${episodeIndex + 1} – Optionen anzeigen`
                         : episode.watched
                           ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
-                          : `Episode ${episodeIndex + 1} als gesehen markieren`
+                          : `Episode ${episodeIndex + 1} als gesehen markieren`) + fillerLabel
                     }
                     arrow
                     enterDelay={400}
@@ -497,6 +522,21 @@ export function SeasonsSection({
                             borderRadius: '50%',
                             width: '6px',
                             height: '6px',
+                          }}
+                        />
+                      )}
+                      {fillerDotColor && (
+                        <span
+                          aria-hidden
+                          style={{
+                            position: 'absolute',
+                            top: '-3px',
+                            left: '-3px',
+                            background: fillerDotColor,
+                            borderRadius: '50%',
+                            width: '8px',
+                            height: '8px',
+                            boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
                           }}
                         />
                       )}

@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { usePetReactions } from '../../hooks/usePetReactions';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
@@ -45,6 +46,7 @@ export const PetWidget: React.FC = () => {
   });
   const [showHungerToast, setShowHungerToast] = useState(false);
   const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
+  const reaction = usePetReactions(user?.uid);
 
   const loadPosition = useCallback(async () => {
     if (!user) return;
@@ -275,6 +277,41 @@ export const PetWidget: React.FC = () => {
               }}
             >
               <EvolvingPixelPet pet={pet} size={70} animated={pet.isAlive} />
+
+              <AnimatePresence>
+                {pet.isAlive && reaction && (
+                  <motion.div
+                    key={reaction.id}
+                    initial={{ opacity: 0, y: 6, scale: 0.8 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.85 }}
+                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                    style={{
+                      position: 'absolute',
+                      top: -32,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      padding: '4px 10px',
+                      background: `linear-gradient(135deg, ${currentTheme.background.card}f5, ${currentTheme.background.surface}f5)`,
+                      border: `1px solid ${currentTheme.primary}55`,
+                      borderRadius: 12,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: currentTheme.text.primary,
+                      whiteSpace: 'nowrap',
+                      boxShadow: `0 4px 14px rgba(0,0,0,0.45), 0 0 16px ${currentTheme.primary}30`,
+                      pointerEvents: 'none',
+                      zIndex: 2,
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>{reaction.emoji}</span>
+                    <span>{reaction.message}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {pet.isAlive && (
                 <Tooltip title={`Hunger: ${pet.hunger}%`} arrow>

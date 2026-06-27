@@ -1,19 +1,31 @@
 import { Bookmark, PlayCircle } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
+import { FillerChip } from '../../../components/ui/FillerChip';
+import { NowPlayingIndicator } from '../../../components/ui/NowPlayingIndicator';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
+import {
+  buildFillerLookup,
+  fillerLookupKey,
+  readFillerCacheSync,
+} from '../../../services/animeFillerService';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
+
+// "Currently bingeing" window – 3 days. Covers casual binges that stretch
+// across a weekend or weekday-evening sessions, while still letting the
+// indicator fade out on long-paused shows.
+const ACTIVE_WATCH_WINDOW_MS = 72 * 60 * 60 * 1000;
 
 function formatLastWatched(lastWatchedAt: string): string | null {
   if (!lastWatchedAt) return null;
@@ -86,12 +98,27 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   onComplete,
   onPosterClick,
 }: ContinueWatchingSectionProps) {
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.primary;
   const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
   const { seriesList } = useSeriesList();
+
+  // Per-item filler lookup – pulled exclusively from the synchronous
+  // localStorage cache so we never trigger fetches for the whole list.
+  // Pure cache read – no per-render Firebase calls, no AniList/Jikan. If the
+  // backend has already populated this series (and the user has visited the
+  // detail page so the result landed in localStorage), the chip surfaces here.
+  const fillerByItem = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    for (const it of items) {
+      const cached = readFillerCacheSync(it.id);
+      if (!cached) continue;
+      map.set(it.id, buildFillerLookup(it.seasons, cached.episodes));
+    }
+    return map;
+  }, [items]);
 
   const unwatchlistedWithUnwatched = useMemo(() => {
     let count = 0;
@@ -188,6 +215,11 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
               const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
               const pace = calculateWatchingPace(item.seasons, item.episodeRuntime);
               const paceText = formatPaceLine(pace, true);
+              const nextFiller = fillerByItem
+                .get(item.id)
+                ?.get(
+                  fillerLookupKey(item.nextEpisode.seasonNumber, item.nextEpisode.episodeNumber)
+                );
 
               return (
                 <SwipeableEpisodeRow
@@ -202,24 +234,37 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                       item.provider?.provider?.[0]?.logo,
                       item.provider?.provider?.[0]?.name
                     );
-                    if (!resolved) return undefined;
+                    const isActivelyWatching = (() => {
+                      if (!item.lastWatchedAt) return false;
+                      const then = new Date(item.lastWatchedAt).getTime();
+                      if (isNaN(then)) return false;
+                      return Date.now() - then < ACTIVE_WATCH_WINDOW_MS;
+                    })();
+                    if (!resolved && !isActivelyWatching) return undefined;
                     return (
-                      <ProviderLogoLink
-                        src={resolved.src}
-                        name={resolved.name}
-                        searchTitle={item.title}
-                        style={{
-                          position: 'absolute',
-                          bottom: -2,
-                          right: -2,
-                          width: 26,
-                          height: 26,
-                          borderRadius: 6,
-                          objectFit: 'cover',
-                          boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                          border: '1.5px solid rgba(15,20,35,1)',
-                        }}
-                      />
+                      <>
+                        {isActivelyWatching && (
+                          <NowPlayingIndicator color={accentColor} position="top-left" />
+                        )}
+                        {resolved && (
+                          <ProviderLogoLink
+                            src={resolved.src}
+                            name={resolved.name}
+                            searchTitle={item.title}
+                            style={{
+                              position: 'absolute',
+                              bottom: -2,
+                              right: -2,
+                              width: 26,
+                              height: 26,
+                              borderRadius: 6,
+                              objectFit: 'cover',
+                              boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                              border: '1.5px solid rgba(15,20,35,1)',
+                            }}
+                          />
+                        )}
+                      </>
                     );
                   })()}
                   isCompleting={completingEpisodes.has(episodeKey)}
@@ -281,6 +326,15 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                             }}
                           >
                             {chipLabel(item.chipType)}
+                          </span>
+                        )}
+                        {nextFiller && (
+                          <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
+                            <FillerChip
+                              filler={nextFiller.filler}
+                              recap={nextFiller.recap}
+                              variant="label"
+                            />
                           </span>
                         )}
                       </p>

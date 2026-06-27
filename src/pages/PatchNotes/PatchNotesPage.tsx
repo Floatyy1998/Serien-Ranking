@@ -3,8 +3,11 @@ import {
   AutoAwesome,
   AutoFixHigh,
   CalendarMonth,
+  Equalizer,
   EuroSymbol,
   FilterAlt,
+  Forum,
+  History,
   LibraryAddCheck,
   LocalFireDepartment,
   Navigation,
@@ -12,6 +15,7 @@ import {
   NotificationsActive,
   Palette,
   PauseCircle,
+  Pets,
   PlaylistAddCheck,
   Recommend,
   Replay,
@@ -21,6 +25,7 @@ import {
   Subscriptions,
   SwapHoriz,
   Today,
+  TransferWithinAStation,
   TrendingUp,
   Tune,
   ViewQuilt,
@@ -60,6 +65,70 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'Juni 2026 – Anime, Aktivität & Polish',
+      date: '2026-06-27',
+      features: [
+        {
+          icon: <FilterAlt />,
+          color: '#f59e0b',
+          title: 'Anime-Filler & Recap im Detail',
+          description:
+            'Für japanische Animes erscheint auf der Detail-Seite jetzt ein Banner mit Filler- und Recap-Folgen (Quelle: Jikan/MyAnimeList). In der Episodenliste markieren kleine F/R-Chips jede betroffene Folge, auf der Episode-Discussion-Seite siehst du die Markierung direkt neben dem S/E-Badge. Daten kommen aus dem Backend – kein API-Hänger im Frontend, ein täglicher Job hält alles frisch.',
+        },
+        {
+          icon: <Forum />,
+          color: '#22d3ee',
+          title: 'Freunde-Aktivitäten als Ticker',
+          description:
+            'Eine sanfte Lauf-Schrift unter dem Greeting zeigt was deine Freunde gerade tun („Lisa hat Folge 5 von Breaking Bad gesehen · Tim hat Dune 2 mit 9.0 bewertet …"). Pixelgenaue Geschwindigkeit, hover hält die Marquee an genau der Position an. Ein- und ausblendbar im Sektionen-Layout.',
+          link: { label: 'Layout anpassen', path: '/home-layout' },
+        },
+        {
+          icon: <PauseCircle />,
+          color: '#ef4444',
+          title: 'Streaming-Reminder direkt auf der Homepage',
+          description:
+            'Ungenutzte Abos schlummern jetzt nicht mehr versteckt im Subscriptions-Tab. Eine eigene Card im „Für dich"-Bereich listet die schlafendsten Anbieter inline mit Pausieren-Button samt Undo-Toast. Geld sparen ohne Seitenwechsel.',
+        },
+        {
+          icon: <Equalizer />,
+          color: '#22c55e',
+          title: 'Now-Playing-Indikator auf Postern',
+          description:
+            'In der Weiterschauen-Liste pulsiert ein dezenter 3-Bar-Equalizer auf Serien, die du in den letzten 3 Tagen aktiv weiterschaust. Sofort erkennbar woran du gerade dran bist, ohne den Provider-Sticker zu überlagern.',
+        },
+        {
+          icon: <Pets />,
+          color: '#a855f7',
+          title: 'Pet reagiert auf deine Streak',
+          description:
+            'Wenn dein Watch-Streak steigt oder ein Meilenstein erreicht ist (3, 7, 14, 21, 30, 50, 100 Tage …), erscheint eine kleine Sprechblase über deinem Pet mit Emoji und Glückwunsch. Verbindet Streak-Tracking und Pet-System ohne extra Klick.',
+        },
+        {
+          icon: <History />,
+          color: '#00fed7',
+          title: 'Recap-Button statt Auto-Popup',
+          description:
+            'Die Detail-Seite öffnet das Recap-Sheet nicht mehr automatisch – stattdessen liegt ein klar sichtbarer „Recap der letzten N Folgen"-Button im Info-Tab, sobald du Episoden gesehen hast. Du entscheidest wann es dich interessiert.',
+        },
+        {
+          icon: <TransferWithinAStation />,
+          color: '#8b5cf6',
+          title: 'Sanfte Seitenwechsel (View Transitions)',
+          description:
+            'Wechsel von Homepage zu Detail-Seite, von einer Detail-Seite zur nächsten, oder vom Carousel – alles jetzt mit einem dezenten Crossfade statt hartem Sprung. Nutzt die native View-Transitions-API des Browsers, respektiert „prefers-reduced-motion".',
+        },
+        {
+          icon: <ViewQuilt />,
+          color: '#06b6d4',
+          title: 'Layout aufgeräumt',
+          description:
+            'Die „Hauptaktionen"-Sektion mit den großen Weiterschauen/Entdecken-Buttons ist entfernt – beide bleiben bequem im Schnellzugriff und in der Bottom-Nav erreichbar. Neue Sektionen tauchen ab sofort an ihrer vorgesehenen Position auf, nicht mehr automatisch am Ende deiner Liste.',
+          link: { label: 'Sektionen sortieren', path: '/home-layout' },
+        },
+      ],
+    },
     {
       version: 'Juni 2026 – Empfehlungen an Freunde',
       date: '2026-06-06',

@@ -2,6 +2,8 @@ import { Check, SkipNext } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
+import { fillerLookupKey } from '../../services/animeFillerService';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import {
   CrewSection,
@@ -26,6 +28,7 @@ export const EpisodeDiscussionPage = memo(() => {
     navigate,
     loading,
     isNotFound,
+    series,
     seriesInfo,
     hasUser,
     hasSeries,
@@ -50,6 +53,16 @@ export const EpisodeDiscussionPage = memo(() => {
     getStillUrl,
     getProfileUrl,
   } = useEpisodeDiscussion();
+
+  // Anime filler/recap data – backend-driven, no direct AniList/Jikan calls.
+  const animeFiller = useAnimeFillerData(series?.tmdb_id || series?.id, series?.seasons);
+  const currentFiller =
+    seasonNumber && episodeNumber
+      ? animeFiller.fillerByKey.get(fillerLookupKey(Number(seasonNumber), Number(episodeNumber)))
+      : undefined;
+  const fillerInfo = currentFiller
+    ? { filler: currentFiller.filler, recap: currentFiller.recap }
+    : null;
 
   const handleSwipeNav = useCallback(
     (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -187,6 +200,7 @@ export const EpisodeDiscussionPage = memo(() => {
           formattedLastWatchedAt={formattedLastWatchedAt}
           watchCount={watchCount}
           isWatched={isWatched}
+          fillerInfo={fillerInfo}
           getStillUrl={getStillUrl}
           navigate={navigate}
         />
