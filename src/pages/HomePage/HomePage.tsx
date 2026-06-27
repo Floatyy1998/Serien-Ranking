@@ -2,7 +2,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { SectionHeader } from '../../components/ui';
@@ -22,11 +22,7 @@ import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimiz
 import { CatchUpCard } from './CatchUpCard';
 import { CountdownBanner } from './CountdownBanner';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
-import {
-  MainActionsSection,
-  QuickActionsSection,
-  SecondaryActionsSection,
-} from './HomeActionSections';
+import { QuickActionsSection, SecondaryActionsSection } from './HomeActionSections';
 import { NotificationSheet } from './NotificationSheet';
 import { PosterNavSheet } from './PosterNavSheet';
 import { StatsGrid } from './StatsGrid';
@@ -35,6 +31,8 @@ import { TasteProfileCard } from './TasteProfileCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { WatchStreakCard } from './WatchStreakCard';
 import { DailySpinCard } from './DailySpinCard';
+import { StreamingReminderCard } from './StreamingReminderCard';
+import { ActivityMarquee } from './ActivityMarquee';
 import { MilestoneBoxCard } from './MilestoneBoxCard';
 import { WrappedNotification } from './WrappedNotification';
 import { useHomeConfig } from './useHomeConfig';
@@ -45,8 +43,6 @@ import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
-import { normalizeSeasons, normalizeEpisodes } from '../../lib/episode/seriesMetrics';
-import { hasEpisodeAired } from '../../utils/episodeDate';
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -86,7 +82,6 @@ export const HomePage: React.FC = () => {
     clearUnratedSeries,
     providerChanges,
     clearProviderChanges,
-    seriesList,
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const { countdowns } = useSeriesCountdowns();
@@ -165,27 +160,6 @@ export const HomePage: React.FC = () => {
   const deferredTopRated = useDeferredValue(topRated);
   const deferredSeasonalItems = useDeferredValue(seasonal.items);
 
-  // Total series with unwatched
-  const totalSeriesWithUnwatched = useMemo(() => {
-    let count = 0;
-    for (const series of seriesList) {
-      if (!series.watchlist || !series.seasons) continue;
-      let hasUnwatched = false;
-      for (const season of normalizeSeasons(series.seasons)) {
-        if (!season?.episodes) continue;
-        for (const episode of normalizeEpisodes(season.episodes)) {
-          if (!episode?.watched && hasEpisodeAired(episode)) {
-            hasUnwatched = true;
-            break;
-          }
-        }
-        if (hasUnwatched) break;
-      }
-      if (hasUnwatched) count++;
-    }
-    return count;
-  }, [seriesList]);
-
   const [adminMessage, setAdminMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -244,15 +218,8 @@ export const HomePage: React.FC = () => {
   // renderSection for all configurable sections
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
-      case 'main-actions':
-        return (
-          <MainActionsSection
-            key="main-actions"
-            config={config}
-            totalSeriesWithUnwatched={totalSeriesWithUnwatched}
-            navigate={navigate}
-          />
-        );
+      case 'activity-marquee':
+        return <ActivityMarquee key="activity-marquee" />;
 
       case 'quick-actions':
         return <QuickActionsSection key="quick-actions" config={config} navigate={navigate} />;
@@ -282,6 +249,7 @@ export const HomePage: React.FC = () => {
           'taste-match': <TasteMatchCard key="taste-match" />,
           'watch-journey': <WatchJourneyCard key="watch-journey" />,
           'catch-up': <CatchUpCard key="catch-up" />,
+          'streaming-reminder': <StreamingReminderCard key="streaming-reminder" />,
           'hidden-series': <HiddenSeriesCard key="hidden-series" />,
         };
         const visible = config.forYouOrder.filter((id) => !config.hiddenForYou.includes(id));

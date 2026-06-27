@@ -12,7 +12,7 @@ import { hapticSelect, hapticWarning } from '../../lib/haptics';
 // --- Constants ---
 
 export const DEFAULT_SECTION_ORDER = [
-  'main-actions',
+  'activity-marquee',
   'quick-actions',
   'secondary-actions',
   'countdown',
@@ -35,14 +35,12 @@ export const DEFAULT_FOR_YOU_ORDER = [
   'hidden-series',
 ];
 
-export const DEFAULT_MAIN_ACTIONS_ORDER = ['watchlist', 'discover'];
-
 export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'friends'];
 
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
 export const SECTION_LABELS: Record<string, string> = {
-  'main-actions': 'Hauptaktionen',
+  'activity-marquee': 'Freunde-Aktivitäten',
   'quick-actions': 'Schnellzugriff',
   'secondary-actions': 'Extras',
   countdown: 'Countdown',
@@ -65,11 +63,6 @@ export const FOR_YOU_LABELS: Record<string, string> = {
   'hidden-series': 'Nicht weitergeschaut',
 };
 
-export const MAIN_ACTIONS_LABELS: Record<string, string> = {
-  watchlist: 'Weiterschauen',
-  discover: 'Entdecken',
-};
-
 export const QUICK_ACTIONS_LABELS: Record<string, string> = {
   ratings: 'Ratings',
   discover: 'Entdecken',
@@ -90,8 +83,6 @@ export interface HomeConfig {
   hiddenSections: string[];
   forYouOrder: string[];
   hiddenForYou: string[];
-  mainActionsOrder: string[];
-  hiddenMainActions: string[];
   quickActionsOrder: string[];
   hiddenQuickActions: string[];
   secondaryActionsOrder: string[];
@@ -122,8 +113,23 @@ export interface UseHomeLayoutDataResult {
 /** Merge saved order with defaults, ensuring no items are lost */
 function mergeOrder(saved: string[], defaults: string[], labels: Record<string, string>): string[] {
   const valid = saved.filter((id: string) => labels[id]);
-  for (const id of defaults) {
-    if (!valid.includes(id)) valid.push(id);
+  // For each missing default, insert it before the next existing default,
+  // not at the very end. That way new sections show up where the product
+  // intended them to live, rather than getting buried below user-customized
+  // order for everyone with a saved layout.
+  for (let i = 0; i < defaults.length; i += 1) {
+    const id = defaults[i];
+    if (valid.includes(id)) continue;
+    let insertAt = valid.length;
+    for (let j = i + 1; j < defaults.length; j += 1) {
+      const next = defaults[j];
+      const idx = valid.indexOf(next);
+      if (idx !== -1) {
+        insertAt = idx;
+        break;
+      }
+    }
+    valid.splice(insertAt, 0, id);
   }
   return valid;
 }
@@ -142,8 +148,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   const [hiddenSections, setHiddenSections] = useState<string[]>([]);
   const [forYouOrder, setForYouOrder] = useState<string[]>(DEFAULT_FOR_YOU_ORDER);
   const [hiddenForYou, setHiddenForYou] = useState<string[]>([]);
-  const [mainActionsOrder, setMainActionsOrder] = useState<string[]>(DEFAULT_MAIN_ACTIONS_ORDER);
-  const [hiddenMainActions, setHiddenMainActions] = useState<string[]>([]);
   const [quickActionsOrder, setQuickActionsOrder] = useState<string[]>(DEFAULT_QUICK_ACTIONS_ORDER);
   const [hiddenQuickActions, setHiddenQuickActions] = useState<string[]>([]);
   const [secondaryActionsOrder, setSecondaryActionsOrder] = useState<string[]>(
@@ -152,7 +156,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   const [hiddenSecondaryActions, setHiddenSecondaryActions] = useState<string[]>([]);
 
   const [forYouExpanded, setForYouExpanded] = useState(false);
-  const [mainActionsExpanded, setMainActionsExpanded] = useState(false);
   const [quickActionsExpanded, setQuickActionsExpanded] = useState(false);
   const [secondaryActionsExpanded, setSecondaryActionsExpanded] = useState(false);
 
@@ -177,8 +180,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       hiddenSections,
       forYouOrder,
       hiddenForYou,
-      mainActionsOrder,
-      hiddenMainActions,
       quickActionsOrder,
       hiddenQuickActions,
       secondaryActionsOrder,
@@ -189,8 +190,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       hiddenSections,
       forYouOrder,
       hiddenForYou,
-      mainActionsOrder,
-      hiddenMainActions,
       quickActionsOrder,
       hiddenQuickActions,
       secondaryActionsOrder,
@@ -215,12 +214,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
         if (data?.forYouOrder)
           setForYouOrder(mergeOrder(data.forYouOrder, DEFAULT_FOR_YOU_ORDER, FOR_YOU_LABELS));
         if (data?.hiddenForYou) setHiddenForYou(filterValid(data.hiddenForYou, FOR_YOU_LABELS));
-        if (data?.mainActionsOrder)
-          setMainActionsOrder(
-            mergeOrder(data.mainActionsOrder, DEFAULT_MAIN_ACTIONS_ORDER, MAIN_ACTIONS_LABELS)
-          );
-        if (data?.hiddenMainActions)
-          setHiddenMainActions(filterValid(data.hiddenMainActions, MAIN_ACTIONS_LABELS));
         if (data?.quickActionsOrder)
           setQuickActionsOrder(
             mergeOrder(data.quickActionsOrder, DEFAULT_QUICK_ACTIONS_ORDER, QUICK_ACTIONS_LABELS)
@@ -274,16 +267,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   };
   const handleForYouToggle = makeToggle(hiddenForYou, setHiddenForYou, 'hiddenForYou');
 
-  const handleMainActionsReorder = (newOrder: string[]) => {
-    setMainActionsOrder(newOrder);
-    saveConfig({ ...currentConfig(), mainActionsOrder: newOrder });
-  };
-  const handleMainActionsToggle = makeToggle(
-    hiddenMainActions,
-    setHiddenMainActions,
-    'hiddenMainActions'
-  );
-
   const handleQuickActionsReorder = (newOrder: string[]) => {
     setQuickActionsOrder(newOrder);
     saveConfig({ ...currentConfig(), quickActionsOrder: newOrder });
@@ -311,8 +294,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
     setHiddenSections([]);
     setForYouOrder(DEFAULT_FOR_YOU_ORDER);
     setHiddenForYou([]);
-    setMainActionsOrder(DEFAULT_MAIN_ACTIONS_ORDER);
-    setHiddenMainActions([]);
     setQuickActionsOrder(DEFAULT_QUICK_ACTIONS_ORDER);
     setHiddenQuickActions([]);
     setSecondaryActionsOrder(DEFAULT_SECONDARY_ACTIONS_ORDER);
@@ -322,8 +303,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       hiddenSections: [],
       forYouOrder: DEFAULT_FOR_YOU_ORDER,
       hiddenForYou: [],
-      mainActionsOrder: DEFAULT_MAIN_ACTIONS_ORDER,
-      hiddenMainActions: [],
       quickActionsOrder: DEFAULT_QUICK_ACTIONS_ORDER,
       hiddenQuickActions: [],
       secondaryActionsOrder: DEFAULT_SECONDARY_ACTIONS_ORDER,
@@ -345,16 +324,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
           hiddenItems: hiddenForYou,
           onToggle: handleForYouToggle,
           labels: FOR_YOU_LABELS,
-        };
-      case 'main-actions':
-        return {
-          expanded: mainActionsExpanded,
-          setExpanded: setMainActionsExpanded,
-          order: mainActionsOrder,
-          onReorder: handleMainActionsReorder,
-          hiddenItems: hiddenMainActions,
-          onToggle: handleMainActionsToggle,
-          labels: MAIN_ACTIONS_LABELS,
         };
       case 'quick-actions':
         return {

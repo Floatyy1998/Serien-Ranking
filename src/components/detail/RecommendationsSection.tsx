@@ -11,10 +11,10 @@ import {
   useTransform,
 } from 'framer-motion';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
+import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 import { handleImgError } from '../../pages/Discover/discoverItemHelpers';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -29,7 +29,7 @@ interface RecommendationsSectionProps {
 
 export const RecommendationsSection = memo(({ id, mediaType }: RecommendationsSectionProps) => {
   const { isMobile } = useDeviceType();
-  const navigate = useNavigate();
+  const navigate = useTransitionNavigate();
   const { items, loading, addingId, addToList } = useDetailRecommendations(id, mediaType);
 
   if (!loading && items.length === 0) return null;

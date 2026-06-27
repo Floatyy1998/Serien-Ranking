@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, LoadingSpinner } from '../../components/ui';
+import { FillerChip } from '../../components/ui/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
@@ -105,6 +106,7 @@ interface HeroSectionProps {
   formattedLastWatchedAt: string | null;
   watchCount: number;
   isWatched: boolean;
+  fillerInfo?: { filler: boolean; recap: boolean } | null;
   getStillUrl: (path: string | null, size?: string) => string;
   navigate: NavigateFunction;
 }
@@ -127,6 +129,7 @@ export const HeroSection = memo(
     formattedLastWatchedAt,
     watchCount,
     isWatched,
+    fillerInfo,
     getStillUrl,
     navigate,
   }: HeroSectionProps) => (
@@ -218,6 +221,15 @@ export const HeroSection = memo(
               <Check className="ed-watched-badge-icon" />
               Gesehen
             </span>
+          )}
+
+          {fillerInfo && (
+            <FillerChip
+              filler={fillerInfo.filler}
+              recap={fillerInfo.recap}
+              variant="label"
+              size="md"
+            />
           )}
         </motion.div>
 
