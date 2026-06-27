@@ -202,7 +202,6 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   // obwohl genau das der useEffect-Zweck ist (mit externem System syncen).
   useEffect(() => {
     if (isAnime && mediaType === 'tv') {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchAnimeCharacters();
     }
 

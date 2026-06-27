@@ -120,12 +120,13 @@ export default [
       'react-hooks/refs': 'error',
       // Async External-Sync (HTTP-Fetch, Firebase-Listener, Storage-IO) ruft
       // intern setState — die Rule kann den Promise-Pfad nicht traceln und
-      // flagt es als falsch positiv. Auf warn statt error; echte Anti-Patterns
-      // (initial-load aus localStorage, mirror-state) wurden separat gefixt.
-      'react-hooks/set-state-in-effect': 'warn',
+      // flagt es als falsch positiv. Echte Anti-Patterns (initial-load aus
+      // localStorage, mirror-state) wurden separat gefixt; restliche Treffer
+      // sind Noise → off.
+      'react-hooks/set-state-in-effect': 'off',
       // Compiler-Diagnostic: zeigt Stellen, wo der React Compiler manuelles
-      // useMemo/useCallback nicht erhalten kann. Informativ, kein Bug.
-      'react-hooks/preserve-manual-memoization': 'warn',
+      // useMemo/useCallback nicht erhalten kann. Informativ, kein Bug → off.
+      'react-hooks/preserve-manual-memoization': 'off',
 
       // React Refresh
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],

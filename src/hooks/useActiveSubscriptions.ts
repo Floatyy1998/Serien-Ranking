@@ -26,8 +26,10 @@ const cache = new Map<string, SubsSnapshot>();
 const pending = new Map<string, Promise<SubsSnapshot>>();
 
 async function loadSubs(uid: string): Promise<SubsSnapshot> {
-  if (cache.has(uid)) return cache.get(uid)!;
-  if (pending.has(uid)) return pending.get(uid)!;
+  const cached = cache.get(uid);
+  if (cached) return cached;
+  const inFlight = pending.get(uid);
+  if (inFlight) return inFlight;
   const p = firebase
     .database()
     .ref(`users/${uid}/subscriptions`)

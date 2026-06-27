@@ -284,7 +284,6 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   // ruft async setState — legitimer External-Sync, den die Rule nicht
   // durch den async-Pfad tracen kann.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadTheme();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
