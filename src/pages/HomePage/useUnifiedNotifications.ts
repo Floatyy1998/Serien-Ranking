@@ -68,6 +68,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_anime-activity-polish-2026-06',
+    title: 'Neu: Anime-Filler, Aktivitäts-Ticker & mehr',
+    message:
+      'Anime-Filler/Recap auf Detail-Seite und in der Episoden-Liste, Freunde-Aktivitäten als sanfter Ticker auf der Homepage, Streaming-Reminder mit Pausieren-Button, Pet-Reaktionen auf Streaks, sanfte Seitenwechsel – alles in den Patch Notes.',
+    timestamp: new Date('2026-06-27T14:00:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_recommendations-2026-06',
     title: 'Neu: Empfehlungen an Freunde',
     message:
