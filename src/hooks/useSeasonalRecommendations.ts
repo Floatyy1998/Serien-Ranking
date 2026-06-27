@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
+import { isSupportedProvider } from '../config/menuItems';
+import { getProviderLogoUrl } from '../lib/providerMerge';
+import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -8,8 +11,20 @@ interface SeasonConfig {
   title: string;
   iconColor: string;
   badgeGradient: string;
-  genres?: string;
+  tvGenres?: string;
+  movieGenres?: string;
   keywords?: string;
+}
+
+export interface SeasonalProvider {
+  name: string;
+  logo: string;
+}
+
+interface RawWatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
 }
 
 export interface SeasonalItem {
@@ -22,6 +37,7 @@ export interface SeasonalItem {
   releaseDate?: string;
   genres: string;
   year?: string;
+  providers?: SeasonalProvider[];
 }
 
 interface TMDBDiscoverItem {
@@ -48,7 +64,8 @@ function getSeasonConfig(): SeasonConfig {
       title: 'Valentinstag',
       iconColor: '#e91e63',
       badgeGradient: 'linear-gradient(135deg, #e91e63, #f06292)',
-      genres: '10749',
+      tvGenres: '35',
+      movieGenres: '10749',
     };
   }
   switch (month) {
@@ -58,7 +75,8 @@ function getSeasonConfig(): SeasonConfig {
         title: 'Winter-Abende',
         iconColor: '#90caf9',
         badgeGradient: 'linear-gradient(135deg, #42a5f5, #90caf9)',
-        genres: '18,878',
+        tvGenres: '18|10765',
+        movieGenres: '18|878',
       };
     case 2:
     case 3:
@@ -67,30 +85,37 @@ function getSeasonConfig(): SeasonConfig {
         title: 'Frühlingsgefühle',
         iconColor: '#66bb6a',
         badgeGradient: 'linear-gradient(135deg, #66bb6a, #aed581)',
-        genres: '10749,35',
+        tvGenres: '35',
+        movieGenres: '10749|35',
       };
     case 5:
     case 6:
     case 7:
+      // Classic summer blockbuster trio: Action, Adventure, Sci-Fi.
+      // TV: Action&Adventure (10759) + Sci-Fi&Fantasy (10765) — same blockbuster feel
+      // for series (Mandalorian, Stranger Things, House of the Dragon, …).
       return {
         title: 'Sommer-Blockbuster',
         iconColor: '#ffa726',
         badgeGradient: 'linear-gradient(135deg, #ff9800, #ffcc02)',
-        genres: '28,12',
+        tvGenres: '10759|10765',
+        movieGenres: '28|12|878',
       };
     case 8:
       return {
         title: 'Herbst-Krimis',
         iconColor: '#8d6e63',
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
-        genres: '9648,53',
+        tvGenres: '9648|80',
+        movieGenres: '9648|53',
       };
     case 9:
       return {
         title: 'Halloween & Grusel',
         iconColor: '#ff6f00',
         badgeGradient: 'linear-gradient(135deg, #ff6f00, #f4511e)',
-        genres: '27',
+        tvGenres: '9648',
+        movieGenres: '27',
         keywords: '3335',
       };
     case 10:
@@ -98,7 +123,8 @@ function getSeasonConfig(): SeasonConfig {
         title: 'Herbst-Krimis',
         iconColor: '#8d6e63',
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
-        genres: '9648,53',
+        tvGenres: '9648|80',
+        movieGenres: '9648|53',
       };
     case 11:
       return {
@@ -112,7 +138,8 @@ function getSeasonConfig(): SeasonConfig {
         title: 'Empfehlungen',
         iconColor: '#7c4dff',
         badgeGradient: 'linear-gradient(135deg, #7c4dff, #b388ff)',
-        genres: '18',
+        tvGenres: '18',
+        movieGenres: '18',
       };
   }
 }
@@ -136,7 +163,40 @@ function mapDiscoverItem(item: TMDBDiscoverItem, type: 'series' | 'movie'): Seas
   };
 }
 
-const CACHE_KEY = 'seasonal_recommendations_v6';
+const CACHE_KEY = 'seasonal_recommendations_v9';
+
+async function fetchSeasonalProviders(
+  type: 'series' | 'movie',
+  id: number,
+  apiKey: string
+): Promise<SeasonalProvider[]> {
+  try {
+    const path = type === 'series' ? 'tv' : 'movie';
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${path}/${id}/watch/providers?api_key=${apiKey}`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const flatrate = data?.results?.DE?.flatrate;
+    if (!Array.isArray(flatrate)) return [];
+
+    const seen = new Set<string>();
+    const out: SeasonalProvider[] = [];
+    for (const raw of flatrate as RawWatchProvider[]) {
+      const normalized = normalizeProviderName(raw.provider_name);
+      if (!normalized || !isSupportedProvider(normalized) || seen.has(normalized)) continue;
+      seen.add(normalized);
+      const logo =
+        getProviderLogoUrl(normalized) ??
+        (raw.logo_path ? `https://image.tmdb.org/t/p/w92${raw.logo_path}` : '');
+      if (!logo) continue;
+      out.push({ name: normalized, logo });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
 
 interface UseSeasonalRecommendationsResult {
   items: SeasonalItem[];
@@ -181,28 +241,61 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
       try {
         const apiKey = import.meta.env.VITE_API_TMDB;
         const baseUrl = `api_key=${apiKey}&language=de-DE&region=DE&sort_by=popularity.desc`;
-        const genreParam = config.genres ? `&with_genres=${config.genres}` : '';
+        const tvGenreParam = config.tvGenres ? `&with_genres=${config.tvGenres}` : '';
+        const movieGenreParam = config.movieGenres ? `&with_genres=${config.movieGenres}` : '';
         const keywordParam = config.keywords ? `&with_keywords=${config.keywords}` : '';
 
-        const [tvResponse, movieResponse] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/discover/tv?${baseUrl}&vote_count.gte=100${genreParam}${keywordParam}`
+        const discoverUrl = (kind: 'tv' | 'movie', page: number) => {
+          const genreParam = kind === 'tv' ? tvGenreParam : movieGenreParam;
+          // TV uses vote_count.gte=50 — TV has fewer-vote shows than movies, so keeping
+          // 100 made some genres (Sommer-Action&Adventure) nearly empty.
+          const voteFilter = kind === 'tv' ? '&vote_count.gte=50' : '&vote_count.gte=100';
+          return `https://api.themoviedb.org/3/discover/${kind}?${baseUrl}${voteFilter}${genreParam}${keywordParam}&page=${page}`;
+        };
+
+        const [tv1, tv2, movie1, movie2] = await Promise.all([
+          fetch(discoverUrl('tv', 1)),
+          fetch(discoverUrl('tv', 2)),
+          fetch(discoverUrl('movie', 1)),
+          fetch(discoverUrl('movie', 2)),
+        ]);
+
+        const [tv1Data, tv2Data, movie1Data, movie2Data] = await Promise.all([
+          tv1.json(),
+          tv2.json(),
+          movie1.json(),
+          movie2.json(),
+        ]);
+        if (cancelled) return;
+
+        const tvResults: TMDBDiscoverItem[] = [
+          ...(tv1Data.results ?? []),
+          ...(tv2Data.results ?? []),
+        ];
+        const movieResults: TMDBDiscoverItem[] = [
+          ...(movie1Data.results ?? []),
+          ...(movie2Data.results ?? []),
+        ];
+
+        const baseSeries = tvResults.map((item) => mapDiscoverItem(item, 'series'));
+        const baseMovies = movieResults.map((item) => mapDiscoverItem(item, 'movie'));
+
+        const [series, movies] = await Promise.all([
+          Promise.all(
+            baseSeries.map(async (item) => ({
+              ...item,
+              providers: await fetchSeasonalProviders('series', item.id, apiKey),
+            }))
           ),
-          fetch(
-            `https://api.themoviedb.org/3/discover/movie?${baseUrl}&vote_count.gte=100${genreParam}${keywordParam}`
+          Promise.all(
+            baseMovies.map(async (item) => ({
+              ...item,
+              providers: await fetchSeasonalProviders('movie', item.id, apiKey),
+            }))
           ),
         ]);
 
-        const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
         if (cancelled) return;
-
-        const series: SeasonalItem[] = (tvData.results ?? []).map((item: TMDBDiscoverItem) =>
-          mapDiscoverItem(item, 'series')
-        );
-        const movies: SeasonalItem[] = (movieData.results ?? []).map((item: TMDBDiscoverItem) =>
-          mapDiscoverItem(item, 'movie')
-        );
-
         setRawSeries(series);
         setRawMovies(movies);
         sessionStorage.setItem(CACHE_KEY, JSON.stringify({ title: config.title, series, movies }));
@@ -219,7 +312,7 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
     return () => {
       cancelled = true;
     };
-  }, [config.title, config.genres, config.keywords]);
+  }, [config.title, config.tvGenres, config.movieGenres, config.keywords]);
 
   const items = useMemo(() => {
     const seriesIds = new Set(allSeriesList.map((s) => s.id));

@@ -1,6 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
+import { isSupportedProvider } from '../config/menuItems';
+import { getProviderLogoUrl } from '../lib/providerMerge';
+import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -18,6 +21,17 @@ interface TMDBTrendingItem {
   genre_ids?: number[];
 }
 
+export interface TrendingProvider {
+  name: string;
+  logo: string;
+}
+
+interface RawWatchProvider {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+}
+
 export interface TrendingItem {
   type: 'series' | 'movie';
   id: number;
@@ -28,12 +42,46 @@ export interface TrendingItem {
   releaseDate?: string;
   genres: string;
   year?: string;
+  providers?: TrendingProvider[];
 }
 
 interface UseTMDBTrendingResult {
   trending: TrendingItem[];
   loading: boolean;
   error: Error | null;
+}
+
+async function fetchProviders(
+  type: 'series' | 'movie',
+  id: number,
+  apiKey: string
+): Promise<TrendingProvider[]> {
+  try {
+    const path = type === 'series' ? 'tv' : 'movie';
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${path}/${id}/watch/providers?api_key=${apiKey}`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const flatrate = data?.results?.DE?.flatrate;
+    if (!Array.isArray(flatrate)) return [];
+
+    const seen = new Set<string>();
+    const out: TrendingProvider[] = [];
+    for (const raw of flatrate as RawWatchProvider[]) {
+      const normalized = normalizeProviderName(raw.provider_name);
+      if (!normalized || !isSupportedProvider(normalized) || seen.has(normalized)) continue;
+      seen.add(normalized);
+      const logo =
+        getProviderLogoUrl(normalized) ??
+        (raw.logo_path ? `https://image.tmdb.org/t/p/w92${raw.logo_path}` : '');
+      if (!logo) continue;
+      out.push({ name: normalized, logo });
+    }
+    return out;
+  } catch {
+    return [];
+  }
 }
 
 function mapTMDBItem(item: TMDBTrendingItem, type: 'series' | 'movie'): TrendingItem {
@@ -89,12 +137,32 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
         }
         const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
         if (cancelled) return;
-        setRawSeries(
-          (tvData.results ?? []).map((item: TMDBTrendingItem) => mapTMDBItem(item, 'series'))
+
+        const baseSeries: TrendingItem[] = (tvData.results ?? []).map((item: TMDBTrendingItem) =>
+          mapTMDBItem(item, 'series')
         );
-        setRawMovies(
-          (movieData.results ?? []).map((item: TMDBTrendingItem) => mapTMDBItem(item, 'movie'))
+        const baseMovies: TrendingItem[] = (movieData.results ?? []).map(
+          (item: TMDBTrendingItem) => mapTMDBItem(item, 'movie')
         );
+
+        const [seriesWithProviders, moviesWithProviders] = await Promise.all([
+          Promise.all(
+            baseSeries.map(async (item) => ({
+              ...item,
+              providers: await fetchProviders('series', item.id, apiKey),
+            }))
+          ),
+          Promise.all(
+            baseMovies.map(async (item) => ({
+              ...item,
+              providers: await fetchProviders('movie', item.id, apiKey),
+            }))
+          ),
+        ]);
+
+        if (cancelled) return;
+        setRawSeries(seriesWithProviders);
+        setRawMovies(moviesWithProviders);
       } catch (err) {
         if (cancelled) return;
         setError(err instanceof Error ? err : new Error(String(err)));

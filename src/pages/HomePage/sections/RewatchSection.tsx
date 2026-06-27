@@ -8,6 +8,7 @@ import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
@@ -107,14 +108,16 @@ export const RewatchSection = React.memo(function RewatchSection({
                       item.provider?.provider?.[0]?.logo,
                       item.provider?.provider?.[0]?.name
                     );
-                    return resolved ? (
-                      <img
+                    if (!resolved) return undefined;
+                    return (
+                      <ProviderLogoLink
                         src={resolved.src}
-                        alt={resolved.name}
+                        name={resolved.name}
+                        searchTitle={item.title}
                         style={{
                           position: 'absolute',
-                          bottom: -3,
-                          right: -3,
+                          bottom: -2,
+                          right: -2,
                           width: 26,
                           height: 26,
                           borderRadius: 6,
@@ -123,7 +126,7 @@ export const RewatchSection = React.memo(function RewatchSection({
                           border: '1.5px solid rgba(15,20,35,1)',
                         }}
                       />
-                    ) : undefined;
+                    );
                   })()}
                   isCompleting={completingRewatches.has(key)}
                   isSwiping={swipingRewatches.has(key)}
