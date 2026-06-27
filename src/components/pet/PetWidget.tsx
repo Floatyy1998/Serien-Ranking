@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { usePetReactions } from '../../hooks/usePetReactions';
+import type { pickReaction } from '../../hooks/usePetReactions';
+import { usePetReactions, triggerPetReaction } from '../../hooks/usePetReactions';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
@@ -47,6 +48,53 @@ export const PetWidget: React.FC = () => {
   const [showHungerToast, setShowHungerToast] = useState(false);
   const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
   const reaction = usePetReactions(user?.uid);
+
+  // DevTools escape hatch – lets you trigger any pet bubble from the
+  // console while you're tuning the wording / animation. Examples:
+  //   petReactionsDebug.cheer()
+  //   petReactionsDebug.binge()
+  //   petReactionsDebug.streak(7)       // pretend +1 to streak 7
+  //   petReactionsDebug.milestone(30)
+  //   petReactionsDebug.all()           // cycles every tone, ~5 s apart
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const fire = (tone: Parameters<typeof pickReaction>[0], n?: number) => {
+      triggerPetReaction({ tone, vars: n !== undefined ? { n } : {} });
+    };
+    (window as unknown as Record<string, unknown>).petReactionsDebug = {
+      cheer: () => fire('cheer'),
+      streak: (n = 7) => fire('streak', n),
+      milestone: (n = 30) => fire('milestone', n),
+      love: () => fire('love'),
+      idle: () => fire('idle'),
+      morning: () => fire('morning'),
+      evening: () => fire('evening'),
+      late: () => fire('late'),
+      binge: () => fire('binge'),
+      rewatch: () => fire('rewatch'),
+      movie: () => fire('movie'),
+      rated: () => fire('rated'),
+      all: () => {
+        const tones: Parameters<typeof pickReaction>[0][] = [
+          'cheer',
+          'streak',
+          'milestone',
+          'love',
+          'idle',
+          'morning',
+          'evening',
+          'late',
+          'binge',
+          'rewatch',
+          'movie',
+          'rated',
+        ];
+        tones.forEach((t, i) => {
+          setTimeout(() => fire(t, 7), i * 5000);
+        });
+      },
+    };
+  }, []);
 
   const loadPosition = useCallback(async () => {
     if (!user) return;
@@ -279,38 +327,95 @@ export const PetWidget: React.FC = () => {
               <EvolvingPixelPet pet={pet} size={70} animated={pet.isAlive} />
 
               <AnimatePresence>
-                {pet.isAlive && reaction && (
-                  <motion.div
-                    key={reaction.id}
-                    initial={{ opacity: 0, y: 6, scale: 0.8 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.85 }}
-                    transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                    style={{
-                      position: 'absolute',
-                      top: -32,
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                      padding: '4px 10px',
-                      background: `linear-gradient(135deg, ${currentTheme.background.card}f5, ${currentTheme.background.surface}f5)`,
-                      border: `1px solid ${currentTheme.primary}55`,
-                      borderRadius: 12,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                      whiteSpace: 'nowrap',
-                      boxShadow: `0 4px 14px rgba(0,0,0,0.45), 0 0 16px ${currentTheme.primary}30`,
-                      pointerEvents: 'none',
-                      zIndex: 2,
-                    }}
-                  >
-                    <span style={{ fontSize: 13 }}>{reaction.emoji}</span>
-                    <span>{reaction.message}</span>
-                  </motion.div>
-                )}
+                {pet.isAlive &&
+                  reaction &&
+                  (() => {
+                    // Anchor the bubble to the side of the pet that has more
+                    // screen real estate, so it never gets clipped by the
+                    // viewport edge. Pet edge "bottom-right" → bubble grows
+                    // up and to the LEFT; pet "top-left" → bubble grows down
+                    // and to the right. The tail always points at the pet.
+                    const isTop = edgePosition.edge.startsWith('top');
+                    const isLeft = edgePosition.edge.endsWith('left');
+                    const bubbleVert = isTop
+                      ? { top: 'calc(100% + 14px)' as const }
+                      : { bottom: 'calc(100% + 14px)' as const };
+                    // Hug the same horizontal edge as the pet so the bubble
+                    // grows into the screen.
+                    const bubbleHorz = isLeft ? { left: 0 as const } : { right: 0 as const };
+                    // Tail sits at the bubble corner closest to the pet.
+                    const tailVert = isTop ? { bottom: '100%' as const } : { top: '100%' as const };
+                    const tailHorz = isLeft ? { left: 22 as const } : { right: 22 as const };
+                    const tailColor = `${currentTheme.background.surface}fa`;
+                    const tailBorderColor = `${currentTheme.primary}66`;
+                    return (
+                      <motion.div
+                        key={reaction.id}
+                        initial={{ opacity: 0, y: isTop ? -8 : 8, scale: 0.85 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: isTop ? -6 : 6, scale: 0.85 }}
+                        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                        style={{
+                          position: 'absolute',
+                          ...bubbleVert,
+                          ...bubbleHorz,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '10px 16px',
+                          background: `linear-gradient(135deg, ${currentTheme.background.card}fa, ${currentTheme.background.surface}fa)`,
+                          border: `1.5px solid ${tailBorderColor}`,
+                          borderRadius: 18,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          lineHeight: 1.25,
+                          color: currentTheme.text.primary,
+                          whiteSpace: 'nowrap',
+                          boxShadow: `0 8px 24px rgba(0,0,0,0.55), 0 0 22px ${currentTheme.primary}33`,
+                          pointerEvents: 'none',
+                          zIndex: 2,
+                          backdropFilter: 'blur(8px)',
+                          WebkitBackdropFilter: 'blur(8px)',
+                        }}
+                      >
+                        <span style={{ fontSize: 18, lineHeight: 1 }}>{reaction.emoji}</span>
+                        <span style={{ letterSpacing: '-0.01em' }}>{reaction.message}</span>
+                        {/* Two-triangle tail – outline + fill, pointing at
+                          the pet (down if bubble above, up if below). */}
+                        <span
+                          aria-hidden
+                          style={{
+                            position: 'absolute',
+                            ...tailVert,
+                            ...tailHorz,
+                            width: 0,
+                            height: 0,
+                            borderLeft: '9px solid transparent',
+                            borderRight: '9px solid transparent',
+                            ...(isTop
+                              ? { borderBottom: `9px solid ${tailBorderColor}` }
+                              : { borderTop: `9px solid ${tailBorderColor}` }),
+                          }}
+                        />
+                        <span
+                          aria-hidden
+                          style={{
+                            position: 'absolute',
+                            ...tailVert,
+                            ...tailHorz,
+                            transform: `translateY(${isTop ? '1.5px' : '-1.5px'})`,
+                            width: 0,
+                            height: 0,
+                            borderLeft: '8px solid transparent',
+                            borderRight: '8px solid transparent',
+                            ...(isTop
+                              ? { borderBottom: `8px solid ${tailColor}` }
+                              : { borderTop: `8px solid ${tailColor}` }),
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  })()}
               </AnimatePresence>
 
               {pet.isAlive && (

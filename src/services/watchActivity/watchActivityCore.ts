@@ -10,6 +10,7 @@ import { updateLeaderboardStats } from '../leaderboardService';
 import { createBaseEventData, createEpisodeEventData, getEventsPath, saveEvent } from './shared';
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';
 import { updateWatchStreak } from './watchStreakTracking';
+import { triggerPetReaction } from '../../hooks/usePetReactions';
 
 // ============================================================================
 // PUBLIC API - EPISODE WATCH
@@ -77,6 +78,14 @@ export async function logEpisodeWatch(
     episodesWatched: 1,
     watchtimeMinutes: runtime,
   }).catch(() => {});
+
+  // Pet reaction – binge takes priority over rewatch over plain cheer.
+  // Skipped for bulk-marking (catch-up) so the bubble doesn't spam.
+  if (!isBulkMarking) {
+    if (isBingeSession) triggerPetReaction({ tone: 'binge' });
+    else if (isRewatch) triggerPetReaction({ tone: 'rewatch' });
+    else triggerPetReaction({ tone: 'cheer' });
+  }
 }
 
 // ============================================================================
@@ -133,6 +142,9 @@ export async function logMovieWatch(
       moviesWatched: 1,
       watchtimeMinutes: runtime || 120,
     }).catch(() => {});
+
+    // Pet reaction – movie tone if no rating, rated tone if user also rated.
+    triggerPetReaction({ tone: rating !== undefined ? 'rated' : 'movie' });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[WatchActivity] Failed to log movie watch: ${message}`);
