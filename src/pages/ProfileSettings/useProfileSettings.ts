@@ -169,13 +169,15 @@ export const useProfileSettings = (): ProfileSettingsState => {
         return;
       }
 
+      const effectiveDisplayName = displayName || username;
       await firebase
         .database()
         .ref(`users/${user.uid}`)
         .update({
           username: username,
           usernameLower: username.toLowerCase(),
-          displayName: displayName || username,
+          displayName: effectiveDisplayName,
+          displayNameLower: effectiveDisplayName.toLowerCase(),
           photoURL: photoURL || null,
           isPublic: isPublic,
           lastActive: firebase.database.ServerValue.TIMESTAMP,

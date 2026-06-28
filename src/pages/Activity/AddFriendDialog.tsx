@@ -54,22 +54,36 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
     const searchTimer = setTimeout(async () => {
       setSearching(true);
       try {
-        // Server-side Prefix-Query auf dem case-insensitiven "usernameLower"
-        // Field. Verhindert dass User mit gross-/kleingeschriebenen Slugs
-        // (z.B. "Spixi") bei lowercase-Eingabe ungefunden bleiben. Alle
-        // Bestands-User wurden backfilled; neue Writes (Profile-Edit) muessen
-        // usernameLower mitschreiben damit das Index gepflegt bleibt.
+        // Zwei parallele Prefix-Queries: einmal auf den lowercase-Slug
+        // (usernameLower) und einmal auf den lowercase-Anzeigenamen
+        // (displayNameLower). Damit findet "flo" sowohl den Slug "Flo" als
+        // auch den User dessen Slug "Spixi" ist, aber displayName "Flo"
+        // lautet. Beide Backfill-Felder werden vom Backend gepflegt, neue
+        // Writes (Register / Profile-Edit) schreiben sie selbst.
         const query = searchQuery.toLowerCase();
-        const snapshot = await firebase
-          .database()
-          .ref('users')
-          .orderByChild('usernameLower')
-          .startAt(query)
-          .endAt(query + '\uf8ff')
-          .limitToFirst(20)
-          .once('value');
-
-        const users = snapshot.val() as Record<string, Record<string, unknown>> | null;
+        const endKey = query + '\uf8ff';
+        const ref = firebase.database().ref('users');
+        const [byUsername, byDisplayName] = await Promise.all([
+          ref
+            .orderByChild('usernameLower')
+            .startAt(query)
+            .endAt(endKey)
+            .limitToFirst(20)
+            .once('value'),
+          ref
+            .orderByChild('displayNameLower')
+            .startAt(query)
+            .endAt(endKey)
+            .limitToFirst(20)
+            .once('value'),
+        ]);
+        const merged: Record<string, Record<string, unknown>> = {};
+        for (const snap of [byUsername, byDisplayName]) {
+          const v = snap.val() as Record<string, Record<string, unknown>> | null;
+          if (!v) continue;
+          for (const [uid, data] of Object.entries(v)) merged[uid] = data;
+        }
+        const users = Object.keys(merged).length > 0 ? merged : null;
         if (!users) {
           setSearchResults([]);
           return;
@@ -125,11 +139,13 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
           (result) => result !== null
         ) as UserSearchResult[];
 
-        // Sort: friends last, exact matches first
+        // Sort: friends last, exact matches on either field first.
         validResults.sort((a, b) => {
           if (a.isAlreadyFriend !== b.isAlreadyFriend) return a.isAlreadyFriend ? 1 : -1;
-          const aExact = a.username.toLowerCase() === query;
-          const bExact = b.username.toLowerCase() === query;
+          const aExact =
+            a.username.toLowerCase() === query || a.displayName.toLowerCase() === query;
+          const bExact =
+            b.username.toLowerCase() === query || b.displayName.toLowerCase() === query;
           if (aExact !== bExact) return aExact ? -1 : 1;
           return a.username.localeCompare(b.username);
         });
