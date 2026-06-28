@@ -24,9 +24,22 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 400px;
+  height: 460px;
   pointer-events: none;
   z-index: 0;
+  transform-origin: 50% 0;
+  animation: activityAura 18s ease-in-out infinite alternate;
+}
+
+@keyframes activityAura {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(0, -14px, 0) scale(1.1);
+    opacity: 1;
+  }
 }
 
 /* ── Header ────────────────────────────────────────────────── */
@@ -66,64 +79,92 @@
   flex-shrink: 0;
 }
 
-/* ── Tabs ──────────────────────────────────────────────────── */
-.activity-tabs {
+/* ── Nav: expanding pill tabs ──────────────────────────────── */
+.activity-nav {
   display: flex;
-  margin: 0 20px 20px;
-  gap: 8px;
+  margin: 0 20px 18px;
+  gap: 9px;
   position: relative;
   z-index: var(--z-base);
 }
 
-.activity-tab {
-  flex: 1;
+.activity-nav__tab {
+  flex: 0 1 52px;
+  min-width: 52px;
+  height: 52px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 12px 8px;
+  padding: 0 15px;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
-  transition: box-shadow 0.2s ease;
+  transition:
+    flex-grow 0.42s var(--ease-spring),
+    background 0.3s ease,
+    color 0.25s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.activity-tab:active {
-  transform: scale(0.95);
+.activity-nav__tab.is-active {
+  flex-grow: 1;
 }
 
-.activity-tab__label {
-  font-size: 12px;
-  font-weight: 600;
+.activity-nav__tab:active {
+  transform: scale(0.96);
 }
 
-.activity-tab__icon-wrap {
+.activity-nav__icon {
   position: relative;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-/* ── Tab Badges ────────────────────────────────────────────── */
-.activity-tab__badge-dot {
+.activity-nav__label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  margin-left: 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition:
+    max-width 0.42s var(--ease-spring),
+    opacity 0.3s ease,
+    margin-left 0.42s var(--ease-spring);
+}
+
+.activity-nav__tab.is-active .activity-nav__label {
+  max-width: 140px;
+  opacity: 1;
+  margin-left: 9px;
+}
+
+/* ── Nav badges ────────────────────────────────────────────── */
+.activity-nav__dot {
   position: absolute;
-  top: -4px;
-  right: -6px;
-  width: 8px;
-  height: 8px;
+  top: -3px;
+  right: -5px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
 }
 
-.activity-tab__badge-count {
+.activity-nav__count {
   position: absolute;
-  top: -6px;
-  right: -10px;
-  min-width: 16px;
-  height: 16px;
+  top: -7px;
+  right: -9px;
+  min-width: 17px;
+  height: 17px;
   padding: 0 4px;
-  border-radius: 8px;
+  border-radius: 9px;
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -131,7 +172,7 @@
 
 /* ── Discussion Banner ─────────────────────────────────────── */
 .activity-banner {
-  margin: 0 20px 16px;
+  margin: 0 20px;
   padding: 14px 18px;
   border-radius: var(--radius-lg);
   cursor: pointer;
@@ -169,39 +210,384 @@
   z-index: var(--z-base);
 }
 
-/* ── Legacy (from tabs) ────────────────────────────────────── */
-.activity-group-item {
-  content-visibility: auto;
-  contain-intrinsic-block-size: auto 80px;
-  animation: fadeInUp 0.3s var(--ease-default) both;
-}
-
+/* ── Feed rows & interactive bits ──────────────────────────── */
 .activity-entry {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: fadeInUp 0.25s var(--ease-default) both;
+  transition:
+    transform 0.15s var(--ease-default),
+    border-color 0.2s ease;
 }
 
 .activity-entry:active {
-  transform: scale(0.98);
-  transition: transform 0.15s var(--ease-default);
+  transform: scale(0.985);
+}
+
+.activity-friend-row {
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.2s ease;
 }
 
 .activity-filter-btn {
   border: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  animation: fadeInUp 0.2s var(--ease-default) both;
+  transition: color 0.2s ease;
 }
 
-.activity-filter-btn:active {
-  transform: scale(0.95);
+@media (hover: hover) {
+  .activity-entry:hover,
+  .activity-friend-row:hover {
+    border-color: var(--theme-primary, #00fed7);
+  }
+
+  .activity-spotlight:hover .activity-spotlight__poster {
+    transform: translateY(-3px) scale(1.03);
+  }
+
+  .activity-pulse-item:hover .activity-pulse-ring {
+    transform: scale(1.06);
+  }
 }
 
-.activity-accordion-btn {
+/* ── Active friends rail ───────────────────────────────────── */
+.activity-pulse-row {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 2px 2px 14px;
+  margin: 0 -2px 6px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.activity-pulse-row::-webkit-scrollbar {
+  display: none;
+}
+
+.activity-pulse-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 62px;
   -webkit-tap-highlight-color: transparent;
 }
 
-.activity-accordion-btn:active {
-  opacity: 0.8;
+.activity-pulse-ring {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5px;
+  transition: transform 0.2s var(--ease-spring);
+}
+
+.activity-pulse-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-pulse-name {
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 62px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Spotlight hero ────────────────────────────────────────── */
+.activity-spotlight {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 18px;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.activity-spotlight__backdrop {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 22%;
+  transform: scale(1.3);
+  filter: blur(28px) saturate(1.35);
+  opacity: 0.5;
+  z-index: 0;
+}
+
+.activity-spotlight__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.activity-spotlight__body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  min-height: 136px;
+}
+
+.activity-spotlight__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.activity-spotlight__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  margin-bottom: 11px;
+}
+
+.activity-spotlight__live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  animation: spotlightPulse 2s ease-out infinite;
+}
+
+.activity-spotlight__who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 13px;
+  margin-bottom: 9px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.activity-spotlight__avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.activity-spotlight__title {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  margin: 0 0 13px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.activity-spotlight__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.activity-spotlight__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.activity-spotlight__chip svg {
+  flex-shrink: 0;
+}
+
+.activity-spotlight__chip--rating {
+  font-size: 13px;
+}
+
+.activity-spotlight__poster {
+  width: 90px;
+  height: 135px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.25s var(--ease-spring);
+}
+
+.activity-spotlight__poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes spotlightPulse {
+  0% {
+    box-shadow: 0 0 0 0 currentColor;
+    opacity: 1;
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+    opacity: 0.8;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+    opacity: 1;
+  }
+}
+
+/* ── Live stats ────────────────────────────────────────────── */
+.activity-stats {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.activity-stat {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.activity-stat__icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.activity-stat__value {
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.activity-stat__label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── Segmented filter ──────────────────────────────────────── */
+.activity-segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  border-radius: 999px;
+}
+
+.activity-segmented__btn {
+  flex: 1;
+  position: relative;
+  padding: 9px 0;
+  background: transparent;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 1;
+}
+
+.activity-segmented__pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  z-index: 0;
+}
+
+/* ── Date section header & timeline rail ───────────────────── */
+.activity-date-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding-left: 2px;
+}
+
+.activity-date-head__label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.activity-date-head__line {
+  flex: 1;
+  height: 1px;
+}
+
+.activity-date-head__count {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.activity-rail {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-rail::before {
+  content: '';
+  position: absolute;
+  left: 35px;
+  top: 20px;
+  bottom: 20px;
+  width: 2px;
+  background: var(--rail-color);
+  border-radius: 2px;
+  z-index: 0;
+}
+
+.activity-rail > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Reduced motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .activity-bg,
+  .activity-spotlight__live-dot {
+    animation: none;
+  }
 }

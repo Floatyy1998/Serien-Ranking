@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -159,7 +160,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
               border: 'none',
               borderRadius: '14px',
-              color: currentTheme.text.secondary,
+              color: getOptimalTextColor(currentTheme.primary),
               fontSize: '14px',
               fontWeight: 700,
               cursor: 'pointer',

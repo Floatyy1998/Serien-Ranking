@@ -51,7 +51,7 @@ function getContrastRatio(color1: string, color2: string): number {
  * Bestimmt die optimale Textfarbe für einen gegebenen Hintergrund
  * Berücksichtigt WCAG AA Standards (Kontrast >= 4.5:1)
  */
-function getOptimalTextColor(backgroundColor: string): string {
+export function getOptimalTextColor(backgroundColor: string): string {
   const whiteContrast = getContrastRatio(backgroundColor, '#ffffff');
   const blackContrast = getContrastRatio(backgroundColor, '#000000');
 

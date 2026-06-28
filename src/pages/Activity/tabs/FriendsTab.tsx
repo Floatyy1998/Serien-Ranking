@@ -1,11 +1,17 @@
 /**
- * FriendsTab - Friends list with profile pictures and remove functionality
+ * FriendsTab - Searchable friends list with avatars, online state and removal.
  */
 
-import { Person, PersonRemove } from '@mui/icons-material';
+import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import PersonRemoveRounded from '@mui/icons-material/PersonRemoveRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
+import SearchRounded from '@mui/icons-material/SearchRounded';
 import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { EmptyState } from '../../../components/ui';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 
@@ -26,99 +32,131 @@ export const FriendsTab = ({
 }: FriendsTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const [query, setQuery] = useState('');
+
+  const resolved = useMemo(
+    () =>
+      friends.map((friend) => {
+        const profile = friendProfiles[friend.uid] || friend;
+        return {
+          friend,
+          displayName: profile.displayName || profile.username || 'Unbekannt',
+          username: profile.username || '',
+          photoURL: profile.photoURL,
+          isOnline: friend.isOnline,
+        };
+      }),
+    [friends, friendProfiles]
+  );
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return resolved;
+    return resolved.filter(
+      (r) => r.displayName.toLowerCase().includes(q) || r.username.toLowerCase().includes(q)
+    );
+  }, [resolved, query]);
+
+  if (friends.length === 0) {
+    return (
+      <motion.div
+        key="friends"
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -16 }}
+      >
+        <EmptyState
+          icon={<GroupRounded style={{ fontSize: 'inherit' }} />}
+          title="Noch keine Freunde"
+          description="Füge Freunde hinzu, um ihre Aktivitäten, Bewertungen und Watchlists zu verfolgen."
+          action={{ label: 'Freund hinzufügen', onClick: onAddFriend }}
+        />
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
       key="friends"
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
+      exit={{ opacity: 0, x: -16 }}
     >
-      {friends.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
+      {/* Search */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          padding: '11px 14px',
+          marginBottom: '16px',
+          borderRadius: '14px',
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        <SearchRounded style={{ fontSize: '20px', color: currentTheme.text.muted }} />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={`${friends.length} ${friends.length === 1 ? 'Freund' : 'Freunde'} durchsuchen`}
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            color: currentTheme.text.secondary,
+            fontSize: '15px',
+          }}
+        />
+      </div>
+
+      {filtered.length === 0 ? (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '40px 20px',
+            color: currentTheme.text.muted,
+            fontSize: '15px',
+          }}
         >
-          <div
-            style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 20px',
-              borderRadius: '50%',
-              background: `${currentTheme.text.muted}10`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Person style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-          </div>
-          <h2
-            style={{
-              margin: '0 0 8px',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-            }}
-          >
-            Noch keine Freunde
-          </h2>
-          <p style={{ margin: '0 0 20px', color: currentTheme.text.muted, fontSize: '15px' }}>
-            Füge Freunde hinzu um ihre Aktivitäten zu sehen
-          </p>
-          <motion.button
-            whileTap={{ scale: 0.95 }}
-            onClick={onAddFriend}
-            style={{
-              padding: '12px 24px',
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              border: 'none',
-              borderRadius: '12px',
-              color: currentTheme.text.secondary,
-              fontSize: '15px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: `0 4px 15px ${currentTheme.primary}40`,
-            }}
-          >
-            Freund hinzufügen
-          </motion.button>
-        </motion.div>
+          Keine Treffer für „{query}“
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {friends.map((friend, index) => {
-            const currentProfile = friendProfiles[friend.uid] || friend;
-            return (
-              <motion.div
-                key={friend.uid}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => {
-                  saveScrollPosition();
-                  navigate(`/friend/${friend.uid}`);
-                }}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '14px',
-                  padding: '14px',
-                  background: currentTheme.background.surface,
-                  border: `1px solid ${currentTheme.border.default}`,
-                  borderRadius: '14px',
-                  color: currentTheme.text.primary,
-                  cursor: 'pointer',
-                }}
-              >
+          {filtered.map(({ friend, displayName, username, photoURL, isOnline }, index) => (
+            <motion.div
+              key={friend.uid}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(index * 0.04, 0.3) }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                saveScrollPosition();
+                navigate(`/friend/${friend.uid}`);
+              }}
+              className="activity-friend-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                padding: '13px 14px',
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+                borderRadius: '16px',
+                color: currentTheme.text.primary,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ position: 'relative', flexShrink: 0 }}>
                 <div
                   style={{
                     width: '50px',
                     height: '50px',
                     borderRadius: '50%',
-                    ...(currentProfile.photoURL
+                    ...(photoURL
                       ? {
-                          backgroundImage: `url("${currentProfile.photoURL}")`,
+                          backgroundImage: `url("${photoURL}")`,
                           backgroundPosition: 'center',
                           backgroundSize: 'cover',
                         }
@@ -128,63 +166,78 @@ export const FriendsTab = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexShrink: 0,
                   }}
                 >
-                  {!currentProfile.photoURL && (
-                    <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+                  {!photoURL && (
+                    <PersonRounded
+                      style={{ fontSize: '26px', color: currentTheme.text.secondary }}
+                    />
                   )}
                 </div>
-
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <h3
+                {isOnline && (
+                  <span
                     style={{
-                      fontSize: '15px',
-                      fontWeight: 600,
-                      margin: '0 0 4px 0',
+                      position: 'absolute',
+                      right: '1px',
+                      bottom: '1px',
+                      width: '13px',
+                      height: '13px',
+                      borderRadius: '50%',
+                      background: currentTheme.status.success,
+                      border: `2.5px solid ${currentTheme.background.surface}`,
                     }}
-                  >
-                    {currentProfile.displayName || currentProfile.username}
-                  </h3>
-                  <p
-                    style={{
-                      fontSize: '14px',
-                      color: currentTheme.text.muted,
-                      margin: 0,
-                    }}
-                  >
-                    @{currentProfile.username}
-                  </p>
-                </div>
+                  />
+                )}
+              </div>
 
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRemoveFriend({
-                      uid: friend.uid,
-                      name: currentProfile.displayName || currentProfile.username || 'Unbekannt',
-                    });
-                  }}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3
                   style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '10px',
-                    background: `${currentTheme.status.error}10`,
-                    border: 'none',
-                    color: currentTheme.text.muted,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
+                    fontSize: '15px',
+                    fontWeight: 700,
+                    margin: '0 0 3px 0',
+                    color: currentTheme.text.secondary,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}
                 >
-                  <PersonRemove style={{ fontSize: '18px' }} />
-                </motion.button>
-              </motion.div>
-            );
-          })}
+                  {displayName}
+                </h3>
+                <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
+                  {username ? `@${username}` : isOnline ? 'Online' : 'Freund'}
+                </p>
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemoveFriend({ uid: friend.uid, name: displayName });
+                }}
+                aria-label={`${displayName} entfernen`}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '11px',
+                  background: `${currentTheme.status.error}12`,
+                  border: 'none',
+                  color: currentTheme.status.error,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <PersonRemoveRounded style={{ fontSize: '18px' }} />
+              </motion.button>
+
+              <ChevronRightRounded
+                style={{ fontSize: '20px', color: currentTheme.text.muted, flexShrink: 0 }}
+              />
+            </motion.div>
+          ))}
         </div>
       )}
     </motion.div>

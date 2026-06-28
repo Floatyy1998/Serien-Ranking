@@ -4,10 +4,11 @@
  */
 
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline';
-import Group from '@mui/icons-material/Group';
-import MailOutline from '@mui/icons-material/MailOutline';
-import PersonAdd from '@mui/icons-material/PersonAdd';
-import Timeline from '@mui/icons-material/Timeline';
+import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
+import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
+import MarkEmailUnreadRounded from '@mui/icons-material/MarkEmailUnreadRounded';
+import PersonAddRounded from '@mui/icons-material/PersonAddRounded';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -17,6 +18,7 @@ import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
 import { ActivityFeedTab } from './tabs/ActivityFeedTab';
@@ -47,6 +49,9 @@ export const ActivityPage = () => {
   } = useOptimizedFriends();
 
   const { notifications, markAsRead } = useNotifications();
+
+  // Readable text/icon color for anything sitting on the bright primary gradient.
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
 
   const discussionNotifications = useMemo(
     () =>
@@ -105,20 +110,24 @@ export const ActivityPage = () => {
   const tabs = [
     {
       id: 'activity' as const,
-      icon: <Timeline style={{ fontSize: '20px' }} />,
+      icon: <AutoAwesomeRounded style={{ fontSize: '21px' }} />,
       label: 'Feed',
       badge: unreadActivitiesCount > 0 && activeTab !== 'activity',
     },
-    { id: 'friends' as const, icon: <Group style={{ fontSize: '20px' }} />, label: 'Freunde' },
+    {
+      id: 'friends' as const,
+      icon: <GroupRounded style={{ fontSize: '21px' }} />,
+      label: 'Freunde',
+    },
     {
       id: 'requests' as const,
-      icon: <MailOutline style={{ fontSize: '20px' }} />,
+      icon: <MarkEmailUnreadRounded style={{ fontSize: '21px' }} />,
       label: 'Anfragen',
       badgeCount: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
     },
     {
       id: 'discussions' as const,
-      icon: <ChatBubbleOutline style={{ fontSize: '20px' }} />,
+      icon: <ChatRoundedIcon style={{ fontSize: '21px' }} />,
       label: 'Chat',
       badgeCount: unreadDiscussionsCount > 0 ? unreadDiscussionsCount : undefined,
     },
@@ -142,6 +151,7 @@ export const ActivityPage = () => {
       {/* Header */}
       <PageHeader
         title="Aktivität"
+        subtitle="Was deine Freunde gerade schauen"
         gradientFrom={currentTheme.text.primary}
         gradientTo={currentTheme.primary}
         actions={
@@ -153,100 +163,120 @@ export const ActivityPage = () => {
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                 boxShadow: currentTheme.shadow.card,
+                color: onPrimary,
               }}
             >
-              <PersonAdd style={{ fontSize: '22px' }} />
+              <PersonAddRounded style={{ fontSize: '22px' }} />
             </motion.button>
           </Tooltip>
         }
       />
 
-      {/* Tabs */}
+      {/* Nav — expanding pill tabs */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="activity-tabs"
+        className="activity-nav"
+        role="tablist"
       >
-        {tabs.map((tab) => (
-          <motion.button
-            key={tab.id}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setActiveTab(tab.id)}
-            className="activity-tab"
-            style={{
-              background: isActive(tab.id)
-                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                : currentTheme.background.surface,
-              border: isActive(tab.id) ? 'none' : `1px solid ${currentTheme.border.default}`,
-              color: isActive(tab.id) ? currentTheme.text.secondary : currentTheme.text.muted,
-              boxShadow: isActive(tab.id) ? `0 4px 15px ${currentTheme.primary}40` : 'none',
-            }}
+        {tabs.map((tab) => {
+          const active = isActive(tab.id);
+          return (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected={active}
+              aria-label={tab.label}
+              onClick={() => setActiveTab(tab.id)}
+              className={`activity-nav__tab${active ? ' is-active' : ''}`}
+              style={{
+                background: active
+                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  : currentTheme.background.surface,
+                border: `1px solid ${active ? 'transparent' : currentTheme.border.default}`,
+                color: active ? onPrimary : currentTheme.text.muted,
+                boxShadow: active ? `0 6px 20px ${currentTheme.primary}45` : 'none',
+              }}
+            >
+              <span className="activity-nav__icon">
+                {tab.icon}
+                {tab.badge && (
+                  <span
+                    className="activity-nav__dot"
+                    style={{
+                      background: currentTheme.status.error,
+                      boxShadow: `0 0 0 2px ${active ? currentTheme.primary : currentTheme.background.default}`,
+                    }}
+                  />
+                )}
+                {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
+                  <span
+                    className="activity-nav__count"
+                    style={{
+                      background: currentTheme.status.error,
+                      color: '#fff',
+                      boxShadow: `0 0 0 2px ${active ? currentTheme.primary : currentTheme.background.default}`,
+                    }}
+                  >
+                    {tab.badgeCount > 9 ? '9+' : tab.badgeCount}
+                  </span>
+                )}
+              </span>
+              <span className="activity-nav__label">{tab.label}</span>
+            </button>
+          );
+        })}
+      </motion.div>
+
+      {/* Discussion Feed Banner (only on feed/chat tabs) */}
+      <AnimatePresence initial={false}>
+        {(activeTab === 'activity' || activeTab === 'discussions') && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+            transition={{ duration: 0.2 }}
+            style={{ overflow: 'hidden' }}
           >
-            <div className="activity-tab__icon-wrap">
-              {tab.icon}
-              {tab.badge && (
-                <span
-                  className="activity-tab__badge-dot"
-                  style={{
-                    background: isActive(tab.id)
-                      ? currentTheme.text.secondary
-                      : currentTheme.status.error,
-                  }}
-                />
-              )}
-              {tab.badgeCount !== undefined && tab.badgeCount > 0 && (
-                <span
-                  className="activity-tab__badge-count"
-                  style={{
-                    background: isActive(tab.id)
-                      ? currentTheme.text.secondary
-                      : currentTheme.status.error,
-                    color: isActive(tab.id) ? currentTheme.primary : currentTheme.text.secondary,
-                  }}
+            <div
+              onClick={() => navigate('/discussions')}
+              className="activity-banner"
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.primary}1f, ${currentTheme.accent}1f)`,
+                border: `1px solid ${currentTheme.primary}33`,
+              }}
+            >
+              <IconContainer
+                color={currentTheme.primary}
+                secondaryColor={currentTheme.accent}
+                size={42}
+              >
+                <ChatBubbleOutline style={{ fontSize: '22px', color: '#fff' }} />
+              </IconContainer>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  className="activity-banner__text-title"
+                  style={{ color: currentTheme.text.secondary }}
                 >
-                  {tab.badgeCount}
-                </span>
-              )}
+                  Diskussions-Feed
+                </div>
+                <div
+                  className="activity-banner__text-sub"
+                  style={{ color: currentTheme.text.muted }}
+                >
+                  Alle Diskussionen an einem Ort
+                </div>
+              </div>
+
+              <div className="activity-banner__arrow" style={{ color: currentTheme.text.muted }}>
+                ›
+              </div>
             </div>
-            <span className="activity-tab__label">{tab.label}</span>
-          </motion.button>
-        ))}
-      </motion.div>
-
-      {/* Discussion Feed Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        onClick={() => navigate('/discussions')}
-        className="activity-banner"
-        style={{
-          background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
-          border: `1px solid ${currentTheme.primary}30`,
-        }}
-      >
-        <IconContainer
-          color={currentTheme.primary}
-          secondaryColor="${currentTheme.accent}"
-          size={42}
-        >
-          <ChatBubbleOutline style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
-        </IconContainer>
-
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="activity-banner__text-title" style={{ color: currentTheme.text.primary }}>
-            Diskussions-Feed
-          </div>
-          <div className="activity-banner__text-sub" style={{ color: currentTheme.text.muted }}>
-            Alle Diskussionen an einem Ort
-          </div>
-        </div>
-
-        <div className="activity-banner__arrow" style={{ color: currentTheme.text.muted }}>
-          ›
-        </div>
-      </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tab Content */}
       <div className="activity-content">
