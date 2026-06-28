@@ -7,9 +7,17 @@ export async function sendFriendRequestOp(
   user: { uid: string; displayName: string | null; email: string | null },
   username: string
 ): Promise<boolean> {
+  // Match on lowercased slug so "Spixi" can be reached as "spixi". Falls
+  // back to the original case-sensitive lookup so legacy users without
+  // usernameLower (until backfill propagates) remain reachable.
   const usersRef = firebase.database().ref('users');
-  const snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
-  const userData = snapshot.val();
+  const lower = username.toLowerCase();
+  let snapshot = await usersRef.orderByChild('usernameLower').equalTo(lower).once('value');
+  let userData = snapshot.val();
+  if (!userData) {
+    snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
+    userData = snapshot.val();
+  }
 
   if (!userData) return false;
 

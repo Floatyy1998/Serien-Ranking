@@ -125,8 +125,12 @@ export const useProfileSettings = (): ProfileSettingsState => {
     if (!user) return false;
 
     try {
+      // Vergleich auf usernameLower → "Spixi" und "spixi" sollen kollidieren.
       const usersRef = firebase.database().ref('users');
-      const snapshot = await usersRef.orderByChild('username').equalTo(uname).once('value');
+      const snapshot = await usersRef
+        .orderByChild('usernameLower')
+        .equalTo(uname.toLowerCase())
+        .once('value');
 
       const data = snapshot.val();
       if (!data) return true;
@@ -170,6 +174,7 @@ export const useProfileSettings = (): ProfileSettingsState => {
         .ref(`users/${user.uid}`)
         .update({
           username: username,
+          usernameLower: username.toLowerCase(),
           displayName: displayName || username,
           photoURL: photoURL || null,
           isPublic: isPublic,

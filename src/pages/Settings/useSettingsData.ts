@@ -126,7 +126,10 @@ export const useSettingsData = () => {
 
     try {
       setSaving(true);
-      await firebase.database().ref(`users/${user.uid}/username`).set(username);
+      await firebase
+        .database()
+        .ref(`users/${user.uid}`)
+        .update({ username, usernameLower: username.toLowerCase() });
       setUsernameEditable(false);
       showSnackbar('Benutzername gespeichert!');
     } catch {
