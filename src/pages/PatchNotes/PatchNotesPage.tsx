@@ -3,11 +3,13 @@ import {
   AutoAwesome,
   AutoFixHigh,
   CalendarMonth,
+  CalendarToday,
   Equalizer,
   EuroSymbol,
   FilterAlt,
   Forum,
   History,
+  HourglassEmpty,
   LibraryAddCheck,
   LocalFireDepartment,
   Navigation,
@@ -15,6 +17,7 @@ import {
   NotificationsActive,
   Palette,
   PauseCircle,
+  PeopleAlt,
   Pets,
   PlaylistAddCheck,
   Recommend,
@@ -29,6 +32,7 @@ import {
   TrendingUp,
   Tune,
   ViewQuilt,
+  Visibility,
   WarningAmber,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -65,6 +69,47 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'Juni 2026 – Mehr über deine Freunde',
+      date: '2026-06-28',
+      features: [
+        {
+          icon: <PeopleAlt />,
+          color: '#22d3ee',
+          title: 'Freunde-Stand auf der Seriendetail-Seite',
+          description:
+            'Pro Serie zeigt eine eigene Sektion welche Freunde auch dabei sind, bei welcher Folge sie aktuell stehen (S/E), und wie viele Folgen sie voraus oder hinter dir sind. Sortiert nach Fortschritt, klappbar – der Zustand wird gespeichert. Klick auf einen Eintrag öffnet das Freund-Profil.',
+        },
+        {
+          icon: <Visibility />,
+          color: '#9b8cff',
+          title: 'Was schaut [Freund] gerade?',
+          description:
+            'Auf jedem Friend-Profil erscheint die heißeste Serie der letzten 14 Tage mit Status („Binge-Modus", „Aktiv dabei", „Schaut entspannt", „Pausiert" oder „Rewatch"), aktueller Folge und Spoiler-Diff zu deinem Stand. Rewatch wird erkannt und blendet den Spoiler-Hinweis automatisch aus.',
+        },
+        {
+          icon: <HourglassEmpty />,
+          color: '#ffb15c',
+          title: 'Worauf wartet [Freund]?',
+          description:
+            'Ebenfalls auf dem Friend-Profil: die nächsten anstehenden Folgen aus der Watchlist deines Freundes, sortiert nach Air-Date. Wenn ihr beide eine Serie wartet, gibt es ein „Ihr beide"-Badge – idealer Co-Watch-Hinweis.',
+        },
+        {
+          icon: <Pets />,
+          color: '#a855f7',
+          title: 'Pet-Sneakpeek + Snack schicken',
+          description:
+            'Du siehst Level, Hunger und Glück des Pets von deinem Freund – und kannst einmal pro Tag pro Freund einen Snack schicken. Sein Pet bekommt −10 Hunger und +5 Glück, sobald die App das nächste Mal geöffnet wird. In der Glocke landet zusätzlich eine Notification „X schickt Snack".',
+        },
+        {
+          icon: <CalendarToday />,
+          color: '#06b6d4',
+          title: 'Air-Date + Erstes-Mal-Gesehen pro Folge',
+          description:
+            'In der Episodenliste steht jetzt rechts neben jeder Folge das Erstausstrahlungs-Datum und – falls geschaut – wann du sie zum ersten Mal gesehen hast. Auf dem Handy klappt die Info unter die Folge.',
+        },
+      ],
+    },
     {
       version: 'Juni 2026 – Anime, Aktivität & Polish',
       date: '2026-06-27',

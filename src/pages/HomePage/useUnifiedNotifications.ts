@@ -68,6 +68,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_friend-insights-2026-06-28',
+    title: 'Neu: Mehr über deine Freunde',
+    message:
+      'Freunde-Stand auf jeder Seriendetail-Seite, „Was schaut Lisa gerade", „Worauf wartet sie", Pet-Sneakpeek mit Snack-Geschenk und Air-Date + Watched-Date pro Folge. Alles in den Patch Notes.',
+    timestamp: new Date('2026-06-28T20:10:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_anime-activity-polish-2026-06',
     title: 'Neu: Anime-Filler, Aktivitäts-Ticker & mehr',
     message:

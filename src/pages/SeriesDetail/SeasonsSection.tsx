@@ -40,6 +40,36 @@ interface SeasonsSectionProps {
   fillerByKey?: Map<string, FillerEpisode>;
 }
 
+function formatDate(input: string | undefined | null): string | null {
+  if (!input) return null;
+  const d = new Date(input);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function EpisodeDateMeta({
+  airDate,
+  firstWatchedAt,
+  mutedColor,
+  accentColor,
+}: {
+  airDate?: string;
+  firstWatchedAt?: string;
+  mutedColor: string;
+  accentColor: string;
+}) {
+  const air = formatDate(airDate);
+  const seen = formatDate(firstWatchedAt);
+  if (!air && !seen) return null;
+  return (
+    <div className="episode-list-meta">
+      {air && <span style={{ color: mutedColor }}>Erstausstrahlung {air}</span>}
+      {air && seen && <span style={{ color: mutedColor, opacity: 0.4 }}>·</span>}
+      {seen && <span style={{ color: accentColor }}>Gesehen {seen}</span>}
+    </div>
+  );
+}
+
 export function SeasonsSection({
   series,
   selectedSeasonIndex,
@@ -385,6 +415,15 @@ export function SeasonsSection({
                       <div className="episode-list-title">Episode {episodeIndex + 1}</div>
                       {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
                     </div>
+
+                    {/* Date meta — right-aligned on desktop, hidden on mobile (shown
+                        as wrapped below row on small screens via CSS media query) */}
+                    <EpisodeDateMeta
+                      airDate={episode.air_date}
+                      firstWatchedAt={episode.firstWatchedAt}
+                      mutedColor={currentTheme.text.muted}
+                      accentColor={currentTheme.accent}
+                    />
 
                     {/* Filler / Recap marker */}
                     {fillerInfo && (

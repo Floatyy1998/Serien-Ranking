@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContextDef';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
+import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import './styles/App.css';
 
@@ -159,6 +160,7 @@ export const MobileApp = () => {
   }, [totalUnread, tickerMessages]);
 
   useAdminHealthAlert();
+  usePetGiftReceiver();
 
   // Preload lazy route chunks + cleanup old tickets in the background
   useEffect(() => {

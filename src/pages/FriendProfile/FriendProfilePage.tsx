@@ -1,6 +1,13 @@
-import { CompareArrows, Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
+import {
+  CompareArrows,
+  ExpandLess,
+  ExpandMore,
+  Movie as MovieIcon,
+  Star,
+  Tv as TvIcon,
+} from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import {
   EmptyState,
@@ -19,6 +26,12 @@ import {
   calculateProgress,
   useFriendProfileData,
 } from './useFriendProfileData';
+import { useFriendCurrentlyWatching } from './useFriendCurrentlyWatching';
+import { useFriendAnticipation } from './useFriendAnticipation';
+import { useFriendPet } from './useFriendPet';
+import { FriendCurrentlyWatchingCard } from './FriendCurrentlyWatchingCard';
+import { FriendAnticipationSection } from './FriendAnticipationSection';
+import { FriendPetCard } from './FriendPetCard';
 import './FriendProfilePage.css';
 
 export const FriendProfilePage = memo(() => {
@@ -26,6 +39,7 @@ export const FriendProfilePage = memo(() => {
 
   const {
     loading,
+    friendId,
     friendName,
     activeTab,
     setActiveTab,
@@ -39,6 +53,29 @@ export const FriendProfilePage = memo(() => {
     handleItemClick,
     navigateToTasteMatch,
   } = useFriendProfileData();
+
+  const currentlyWatching = useFriendCurrentlyWatching(friendId);
+  const anticipation = useFriendAnticipation(friendId);
+  const friendPet = useFriendPet(friendId);
+
+  const [insightsOpen, setInsightsOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('friendInsightsCollapsed') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const toggleInsights = () => {
+    setInsightsOpen((open) => {
+      const next = !open;
+      try {
+        localStorage.setItem('friendInsightsCollapsed', next ? '0' : '1');
+      } catch {
+        // ignore quota / privacy mode
+      }
+      return next;
+    });
+  };
 
   if (loading) {
     return (
@@ -79,6 +116,85 @@ export const FriendProfilePage = memo(() => {
             </motion.button>
           }
         />
+
+        {/* Friend Insights — Currently Watching, Pet, Anticipation */}
+        {friendId && (
+          <div className="fp-insights">
+            <button
+              className="fp-insights-toggle"
+              onClick={toggleInsights}
+              style={{ color: currentTheme.text.muted }}
+            >
+              <span>{insightsOpen ? 'Insights ausblenden' : 'Insights einblenden'}</span>
+              {insightsOpen ? (
+                <ExpandLess style={{ fontSize: 18 }} />
+              ) : (
+                <ExpandMore style={{ fontSize: 18 }} />
+              )}
+            </button>
+            <AnimatePresence initial={false}>
+              {insightsOpen && (
+                <motion.div
+                  key="insights-body"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div className="fp-insights-content">
+            <div className="fp-insights-row">
+              {currentlyWatching.data ? (
+                <FriendCurrentlyWatchingCard
+                  friendName={friendName}
+                  data={currentlyWatching.data}
+                />
+              ) : (
+                <div className="fp-insights-placeholder">
+                  <div className="fp-insights-placeholder-title">Nichts Aktuelles</div>
+                  <div className="fp-insights-placeholder-text">
+                    {currentlyWatching.loading
+                      ? 'Lade Aktivität …'
+                      : `${friendName} hat in den letzten 14 Tagen nichts geschaut.`}
+                  </div>
+                </div>
+              )}
+              {friendPet.pet ? (
+                <FriendPetCard friendUid={friendId} pet={friendPet.pet} />
+              ) : (
+                <div className="fp-insights-placeholder">
+                  <div className="fp-insights-placeholder-title">Kein Pet</div>
+                  <div className="fp-insights-placeholder-text">
+                    {friendPet.loading
+                      ? 'Lade Pet …'
+                      : `${friendName} hat noch kein aktives Pet.`}
+                  </div>
+                </div>
+              )}
+            </div>
+            {anticipation.items.length > 0 ? (
+              <FriendAnticipationSection
+                friendName={friendName}
+                items={anticipation.items}
+              />
+            ) : (
+              !anticipation.loading && (
+                <div className="fp-insights-placeholder fp-insights-placeholder--wide">
+                  <div className="fp-insights-placeholder-title">
+                    Keine kommenden Folgen
+                  </div>
+                  <div className="fp-insights-placeholder-text">
+                    Auf {friendName}s Liste sind keine Folgen mit Termin in Sicht.
+                  </div>
+                </div>
+              )
+            )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
 
         {/* Quick Filter */}
         <QuickFilter
