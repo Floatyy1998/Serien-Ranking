@@ -1,14 +1,24 @@
 /**
- * ActivityFeedTab - Activity feed with filter pills and grouped activities
+ * ActivityFeedTab - The friends activity hub.
+ * Spotlight hero · active-friends rail · live stats · date-grouped timeline.
  */
 
-import { ExpandMore, Person, Timeline } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useCallback, useState } from 'react';
+import BoltRounded from '@mui/icons-material/BoltRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
+import WhatshotRounded from '@mui/icons-material/WhatshotRounded';
+import TimelineRounded from '@mui/icons-material/TimelineRounded';
+import { motion } from 'framer-motion';
+import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { EmptyState } from '../../../components/ui';
+import { ActiveFriendsRow } from '../ActiveFriendsRow';
 import { ActivityEntryCard } from '../ActivityEntryCard';
+import { ActivitySpotlight } from '../ActivitySpotlight';
+import { CountUp } from '../CountUp';
+import { getDateGroup, isMovieActivity } from '../activityMeta';
 import { useActivityGrouping } from '../useActivityGrouping';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';
 import type { Friend, FriendActivity } from '../../../types/Friend';
 
@@ -19,6 +29,14 @@ interface ActivityFeedTabProps {
   saveScrollPosition: () => void;
 }
 
+const FILTERS: { key: ActivityFilterType; label: string }[] = [
+  { key: 'all', label: 'Alle' },
+  { key: 'series', label: 'Serien' },
+  { key: 'movies', label: 'Filme' },
+];
+
+const DATE_ORDER = ['Heute', 'Gestern', 'Diese Woche', 'Älter'];
+
 export const ActivityFeedTab = ({
   friendActivities,
   friends,
@@ -27,10 +45,10 @@ export const ActivityFeedTab = ({
 }: ActivityFeedTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set());
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
 
   const {
-    groupedActivities,
+    filteredActivities,
     getItemDetails,
     formatTimeAgo,
     filterType,
@@ -38,249 +56,260 @@ export const ActivityFeedTab = ({
     getPosterUrl,
   } = useActivityGrouping(friendActivities);
 
-  const toggleUserExpanded = useCallback((userId: string) => {
-    setExpandedUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
-      return newSet;
-    });
-  }, []);
+  // Fallback display names taken straight from the activity payload.
+  const fallbackNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const a of friendActivities) {
+      if (a.userName && !map[a.userId]) map[a.userId] = a.userName;
+    }
+    return map;
+  }, [friendActivities]);
+
+  const resolveUser = useCallback(
+    (userId: string) => {
+      const friendObj = friends.find((f) => f.uid === userId);
+      const profile = friendObj ? friendProfiles[friendObj.uid] || friendObj : undefined;
+      return {
+        name: profile?.displayName || profile?.username || fallbackNames[userId] || 'Unbekannt',
+        photoURL: profile?.photoURL,
+      };
+    },
+    [friends, friendProfiles, fallbackNames]
+  );
+
+  const openFriend = useCallback(
+    (userId: string) => {
+      saveScrollPosition();
+      navigate(`/friend/${userId}`);
+    },
+    [navigate, saveScrollPosition]
+  );
+
+  const openItem = useCallback(
+    (activity: FriendActivity) => {
+      const tmdbId = activity.tmdbId || activity.itemId;
+      if (!tmdbId) return;
+      saveScrollPosition();
+      navigate(isMovieActivity(activity) ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
+    },
+    [navigate, saveScrollPosition]
+  );
+
+  const titleOf = useCallback(
+    (activity: FriendActivity) =>
+      activity.itemTitle || getItemDetails(activity)?.title || 'Unbekannt',
+    [getItemDetails]
+  );
+
+  // ── Overview stats (from the full, unfiltered feed) ──────────────
+  const stats = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- "today" bucket needs the current time
+    const startOfToday = new Date(Date.now());
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayMs = startOfToday.getTime();
+    const activeFriends = new Set(friendActivities.map((a) => a.userId)).size;
+    const today = friendActivities.filter((a) => a.timestamp >= todayMs).length;
+    return { total: friendActivities.length, activeFriends, today };
+  }, [friendActivities]);
+
+  // Spotlight = freshest item in the current filter; timeline = the rest.
+  const featured = filteredActivities[0];
+  const rest = useMemo(() => filteredActivities.slice(1), [filteredActivities]);
+
+  const sections = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- relative date buckets need the current time
+    const now = Date.now();
+    const map = new Map<string, FriendActivity[]>();
+    for (const activity of rest) {
+      const group = getDateGroup(activity.timestamp, now);
+      const bucket = map.get(group);
+      if (bucket) bucket.push(activity);
+      else map.set(group, [activity]);
+    }
+    return DATE_ORDER.filter((g) => map.has(g)).map((g) => [g, map.get(g) ?? []] as const);
+  }, [rest]);
+
+  const statTiles = [
+    {
+      key: 'total',
+      icon: <BoltRounded style={{ fontSize: 17 }} />,
+      value: stats.total,
+      decimals: 0 as const,
+      label: 'Aktivitäten',
+      color: currentTheme.primary,
+    },
+    {
+      key: 'active',
+      icon: <GroupRounded style={{ fontSize: 17 }} />,
+      value: stats.activeFriends,
+      decimals: 0 as const,
+      label: 'aktiv',
+      color: currentTheme.accent,
+    },
+    {
+      key: 'today',
+      icon: <WhatshotRounded style={{ fontSize: 17 }} />,
+      value: stats.today,
+      decimals: 0 as const,
+      label: 'Heute',
+      color: currentTheme.status.warning,
+    },
+  ];
 
   return (
     <motion.div
       key="activity"
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
+      exit={{ opacity: 0, x: -16 }}
     >
-      {/* Filter Pills */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        {(
-          [
-            { key: 'all', label: 'Alle' },
-            { key: 'series', label: 'Serien' },
-            { key: 'movies', label: 'Filme' },
-          ] as const
-        ).map((filter) => (
-          <button
-            key={filter.key}
-            className="activity-filter-btn"
-            onClick={() => {
-              setFilterType(filter.key as ActivityFilterType);
-            }}
-            style={{
-              padding: '10px 18px',
-              background:
-                filterType === filter.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-                  : currentTheme.background.surface,
-              border:
-                filterType === filter.key ? 'none' : `1px solid ${currentTheme.border.default}`,
-              borderRadius: '20px',
-              color:
-                filterType === filter.key ? currentTheme.text.secondary : currentTheme.text.muted,
-              fontSize: '15px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow:
-                filterType === filter.key ? `0 4px 12px ${currentTheme.primary}40` : 'none',
-            }}
-          >
-            {filter.label}
-          </button>
-        ))}
+      {/* Active friends rail */}
+      <ActiveFriendsRow
+        activities={friendActivities}
+        resolveUser={resolveUser}
+        theme={currentTheme}
+        onSelect={openFriend}
+      />
+
+      {/* Spotlight hero */}
+      {featured && (
+        <ActivitySpotlight
+          activity={featured}
+          posterUrl={getPosterUrl(featured)}
+          itemTitle={titleOf(featured)}
+          userName={resolveUser(featured.userId).name}
+          userPhotoURL={resolveUser(featured.userId).photoURL}
+          timeLabel={formatTimeAgo(featured.timestamp)}
+          theme={currentTheme}
+          onClick={() => openItem(featured)}
+          onAvatarClick={() => openFriend(featured.userId)}
+        />
+      )}
+
+      {/* Live stats */}
+      {friendActivities.length > 0 && (
+        <div className="activity-stats">
+          {statTiles.map((tile) => (
+            <div
+              key={tile.key}
+              className="activity-stat"
+              style={{
+                background: currentTheme.background.surface,
+                border: `1px solid ${currentTheme.border.default}`,
+              }}
+            >
+              <span
+                className="activity-stat__icon"
+                style={{ background: `${tile.color}1f`, color: tile.color }}
+              >
+                {tile.icon}
+              </span>
+              <span className="activity-stat__value" style={{ color: currentTheme.text.secondary }}>
+                <CountUp value={tile.value} decimals={tile.decimals} />
+              </span>
+              <span className="activity-stat__label" style={{ color: currentTheme.text.muted }}>
+                {tile.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Segmented media filter */}
+      <div
+        className="activity-segmented"
+        style={{
+          background: currentTheme.background.surface,
+          border: `1px solid ${currentTheme.border.default}`,
+        }}
+      >
+        {FILTERS.map((filter) => {
+          const active = filterType === filter.key;
+          return (
+            <button
+              key={filter.key}
+              onClick={() => setFilterType(filter.key)}
+              className="activity-filter-btn activity-segmented__btn"
+              style={{ color: active ? onPrimary : currentTheme.text.muted }}
+            >
+              {active && (
+                <motion.span
+                  layoutId="activity-filter-pill"
+                  transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  className="activity-segmented__pill"
+                  style={{
+                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                    boxShadow: `0 4px 14px ${currentTheme.primary}44`,
+                  }}
+                />
+              )}
+              <span style={{ position: 'relative', zIndex: 1 }}>{filter.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Activities List */}
-      {groupedActivities.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div
-            style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 20px',
-              borderRadius: '50%',
-              background: `${currentTheme.text.muted}10`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Timeline style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-          </div>
-          <h2
-            style={{
-              margin: '0 0 8px',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-            }}
-          >
-            Noch keine Aktivitäten
-          </h2>
-          <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '15px' }}>
-            {filterType !== 'all'
-              ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten`
-              : 'Deine Freunde haben noch nichts geteilt'}
-          </p>
-        </motion.div>
+      {/* Timeline */}
+      {filteredActivities.length === 0 ? (
+        <EmptyState
+          icon={<TimelineRounded style={{ fontSize: 'inherit' }} />}
+          title="Noch keine Aktivitäten"
+          description={
+            filterType !== 'all'
+              ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten deiner Freunde.`
+              : 'Sobald deine Freunde etwas bewerten oder hinzufügen, erscheint es hier.'
+          }
+        />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {groupedActivities.map(([userId, activities]) => {
-            const friendObj = friends.find((f) => f.uid === userId);
-            const userProfile = friendObj ? friendProfiles[friendObj.uid] || friendObj : null;
-            const isExpanded = expandedUsers.has(userId);
-            const latestActivity = activities[0];
-
-            return (
-              <div
-                key={userId}
-                className="activity-group-item"
-                style={{
-                  background: currentTheme.background.surface,
-                  borderRadius: '16px',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Accordion Header */}
-                <button
-                  className="activity-accordion-btn"
-                  onClick={() => toggleUserExpanded(userId)}
-                  style={{
-                    width: '100%',
-                    padding: '16px',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                  }}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          {sections.map(([group, activities]) => (
+            <div key={group}>
+              <div className="activity-date-head">
+                <span
+                  className="activity-date-head__label"
+                  style={{ color: currentTheme.text.muted }}
                 >
-                  <div
-                    style={{
-                      width: '48px',
-                      height: '48px',
-                      borderRadius: '50%',
-                      ...(userProfile?.photoURL
-                        ? {
-                            backgroundImage: `url("${userProfile.photoURL}")`,
-                            backgroundPosition: 'center',
-                            backgroundSize: 'cover',
-                          }
-                        : {
-                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                          }),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {!userProfile?.photoURL && (
-                      <Person style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-                    )}
-                  </div>
-
-                  <div style={{ flex: 1, textAlign: 'left' }}>
-                    <div
-                      style={{
-                        fontSize: '16px',
-                        fontWeight: 600,
-                        color: currentTheme.text.primary,
-                        marginBottom: '4px',
-                      }}
-                    >
-                      {userProfile?.displayName || latestActivity.userName || 'Unbekannt'}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '14px',
-                        color: currentTheme.text.secondary,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                      }}
-                    >
-                      <span>
-                        {activities.length} {activities.length === 1 ? 'Aktivität' : 'Aktivitäten'}
-                      </span>
-                      <span>·</span>
-                      <span>{formatTimeAgo(latestActivity.timestamp)}</span>
-                    </div>
-                  </div>
-
-                  <motion.div
-                    animate={{ rotate: isExpanded ? 180 : 0 }}
-                    transition={{ duration: 0.2 }}
-                    style={{ color: currentTheme.text.secondary }}
-                  >
-                    <ExpandMore />
-                  </motion.div>
-                </button>
-
-                {/* Accordion Content */}
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      style={{
-                        borderTop: `1px solid ${currentTheme.border.default}`,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <div
-                        style={{
-                          padding: '12px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '8px',
-                        }}
-                      >
-                        {activities.map((activity) => {
-                          const item = getItemDetails(activity);
-                          const isMovie =
-                            activity.type === 'movie_added' ||
-                            activity.type === 'movie_rated' ||
-                            activity.type === 'rating_updated_movie' ||
-                            activity.itemType === 'movie';
-                          const tmdbId = activity.tmdbId || activity.itemId;
-                          const posterUrl = getPosterUrl(activity);
-
-                          return (
-                            <ActivityEntryCard
-                              key={activity.id}
-                              activity={activity}
-                              posterUrl={posterUrl}
-                              itemTitle={activity.itemTitle || item?.title || 'Unbekannt'}
-                              theme={currentTheme}
-                              onClick={() => {
-                                if (tmdbId) {
-                                  saveScrollPosition();
-                                  navigate(isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`);
-                                }
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  {group}
+                </span>
+                <span
+                  className="activity-date-head__line"
+                  style={{
+                    background: `linear-gradient(90deg, ${currentTheme.border.default}, transparent)`,
+                  }}
+                />
+                <span
+                  className="activity-date-head__count"
+                  style={{ color: currentTheme.text.muted }}
+                >
+                  {activities.length}
+                </span>
               </div>
-            );
-          })}
+
+              <div
+                className="activity-rail"
+                style={{ ['--rail-color' as string]: `${currentTheme.primary}33` }}
+              >
+                {activities.map((activity, idx) => {
+                  const user = resolveUser(activity.userId);
+                  return (
+                    <ActivityEntryCard
+                      key={activity.id}
+                      activity={activity}
+                      index={idx}
+                      posterUrl={getPosterUrl(activity)}
+                      itemTitle={titleOf(activity)}
+                      userName={user.name}
+                      userPhotoURL={user.photoURL}
+                      timeLabel={formatTimeAgo(activity.timestamp)}
+                      theme={currentTheme}
+                      onClick={() => openItem(activity)}
+                      onAvatarClick={() => openFriend(activity.userId)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </motion.div>

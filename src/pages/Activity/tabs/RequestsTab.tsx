@@ -1,13 +1,16 @@
 /**
- * RequestsTab - Incoming and sent friend requests
+ * RequestsTab - Incoming and sent friend requests.
  */
 
-import Cancel from '@mui/icons-material/Cancel';
-import CheckCircle from '@mui/icons-material/CheckCircle';
-import Person from '@mui/icons-material/Person';
-import PersonAdd from '@mui/icons-material/PersonAdd';
+import CheckRounded from '@mui/icons-material/CheckRounded';
+import CloseRounded from '@mui/icons-material/CloseRounded';
+import MarkEmailReadRounded from '@mui/icons-material/MarkEmailReadRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import { motion } from 'framer-motion';
+import type { ReactNode } from 'react';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
@@ -21,6 +24,21 @@ interface RequestsTabProps {
   cancelFriendRequest: (id: string) => void;
 }
 
+const SectionLabel = ({ children, color }: { children: ReactNode; color: string }) => (
+  <h2
+    style={{
+      fontSize: '12px',
+      fontWeight: 800,
+      color,
+      margin: '0 0 12px',
+      textTransform: 'uppercase',
+      letterSpacing: '0.06em',
+    }}
+  >
+    {children}
+  </h2>
+);
+
 export const RequestsTab = ({
   friendRequests,
   sentRequests,
@@ -32,54 +50,66 @@ export const RequestsTab = ({
   const { currentTheme } = useTheme();
   const { formatTimeAgo } = useActivityGrouping([]);
 
+  const isEmpty = friendRequests.length === 0 && sentRequests.length === 0;
+
+  if (isEmpty) {
+    return (
+      <motion.div
+        key="requests"
+        initial={{ opacity: 0, x: 16 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -16 }}
+      >
+        <EmptyState
+          icon={<MarkEmailReadRounded style={{ fontSize: 'inherit' }} />}
+          title="Keine offenen Anfragen"
+          description="Hier siehst du eingehende und gesendete Freundschaftsanfragen."
+        />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       key="requests"
-      initial={{ opacity: 0, x: 20 }}
+      initial={{ opacity: 0, x: 16 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
+      exit={{ opacity: 0, x: -16 }}
     >
       {friendRequests.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
-          <h2
-            style={{
-              fontSize: '15px',
-              fontWeight: 700,
-              color: currentTheme.text.muted,
-              marginBottom: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Eingehende Anfragen
-          </h2>
+          <SectionLabel color={currentTheme.text.secondary}>
+            Eingehend · {friendRequests.length}
+          </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {friendRequests.map((request, index) => {
-              const requestProfile = requestProfiles[request.fromUserId] || {};
+              const profile = requestProfiles[request.fromUserId] || {};
+              const name = profile.displayName || request.fromUsername || 'Unbekannt';
               return (
                 <motion.div
                   key={request.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  transition={{ delay: Math.min(index * 0.05, 0.3) }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '14px',
-                    background: currentTheme.background.surface,
-                    border: `1px solid ${currentTheme.border.default}`,
-                    borderRadius: '14px',
+                    padding: '13px 14px',
+                    background: `linear-gradient(135deg, ${currentTheme.primary}12, ${currentTheme.background.surface})`,
+                    border: `1px solid ${currentTheme.primary}33`,
+                    borderRadius: '16px',
                   }}
                 >
                   <div
                     style={{
-                      width: '44px',
-                      height: '44px',
+                      width: '46px',
+                      height: '46px',
                       borderRadius: '50%',
-                      ...(requestProfile.photoURL
+                      flexShrink: 0,
+                      ...(profile.photoURL
                         ? {
-                            backgroundImage: `url("${requestProfile.photoURL}")`,
+                            backgroundImage: `url("${profile.photoURL}")`,
                             backgroundPosition: 'center',
                             backgroundSize: 'cover',
                           }
@@ -91,61 +121,72 @@ export const RequestsTab = ({
                       justifyContent: 'center',
                     }}
                   >
-                    {!requestProfile.photoURL && (
-                      <Person style={{ fontSize: '22px', color: currentTheme.text.secondary }} />
+                    {!profile.photoURL && (
+                      <PersonRounded
+                        style={{ fontSize: '24px', color: currentTheme.text.secondary }}
+                      />
                     )}
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                     <h3
                       style={{
                         fontSize: '15px',
-                        fontWeight: 600,
-                        margin: 0,
-                        color: currentTheme.text.primary,
+                        fontWeight: 700,
+                        margin: '0 0 2px',
+                        color: currentTheme.text.secondary,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                       }}
                     >
-                      {requestProfile.displayName || request.fromUsername}
+                      {name}
                     </h3>
-                    <p
-                      style={{
-                        fontSize: '13px',
-                        color: currentTheme.text.muted,
-                        margin: 0,
-                      }}
-                    >
+                    <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
+                      möchte dein Freund sein ·{' '}
                       {formatTimeAgo(request.timestamp || request.sentAt || 0)}
                     </p>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => acceptFriendRequest(request.id)}
+                      aria-label="Annehmen"
                       style={{
-                        padding: '10px',
+                        width: '40px',
+                        height: '40px',
                         background: `linear-gradient(135deg, ${currentTheme.status.success}, #22c55e)`,
                         border: 'none',
-                        borderRadius: '10px',
-                        color: currentTheme.text.secondary,
+                        borderRadius: '12px',
+                        color: '#fff',
                         cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: `0 4px 12px ${currentTheme.status.success}44`,
                       }}
                     >
-                      <CheckCircle style={{ fontSize: '20px' }} />
+                      <CheckRounded style={{ fontSize: '22px' }} />
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => declineFriendRequest(request.id)}
+                      aria-label="Ablehnen"
                       style={{
-                        padding: '10px',
-                        background: `linear-gradient(135deg, ${currentTheme.status.error}, #ef4444)`,
+                        width: '40px',
+                        height: '40px',
+                        background: `${currentTheme.status.error}14`,
                         border: 'none',
-                        borderRadius: '10px',
-                        color: currentTheme.text.secondary,
+                        borderRadius: '12px',
+                        color: currentTheme.status.error,
                         cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                       }}
                     >
-                      <Cancel style={{ fontSize: '20px' }} />
+                      <CloseRounded style={{ fontSize: '22px' }} />
                     </motion.button>
                   </div>
                 </motion.div>
@@ -157,18 +198,9 @@ export const RequestsTab = ({
 
       {sentRequests.length > 0 && (
         <div>
-          <h2
-            style={{
-              fontSize: '15px',
-              fontWeight: 700,
-              color: currentTheme.text.muted,
-              marginBottom: '12px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-            }}
-          >
-            Gesendete Anfragen
-          </h2>
+          <SectionLabel color={currentTheme.text.muted}>
+            Gesendet · {sentRequests.length}
+          </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {sentRequests.map((request) => (
               <div
@@ -177,32 +209,36 @@ export const RequestsTab = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '14px',
+                  padding: '13px 14px',
                   background: currentTheme.background.surface,
                   border: `1px solid ${currentTheme.border.default}`,
-                  borderRadius: '14px',
+                  borderRadius: '16px',
                 }}
               >
                 <div
                   style={{
-                    width: '44px',
-                    height: '44px',
+                    width: '46px',
+                    height: '46px',
                     borderRadius: '50%',
-                    background: `${currentTheme.text.muted}20`,
+                    background: `${currentTheme.text.muted}1a`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  <Person style={{ fontSize: '22px', color: currentTheme.text.muted }} />
+                  <PersonRounded style={{ fontSize: '24px', color: currentTheme.text.muted }} />
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <h3
                     style={{
                       fontSize: '15px',
-                      fontWeight: 600,
-                      margin: 0,
-                      color: currentTheme.text.primary,
+                      fontWeight: 700,
+                      margin: '0 0 2px',
+                      color: currentTheme.text.secondary,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}
                   >
                     {request.toUsername}
@@ -212,62 +248,39 @@ export const RequestsTab = ({
                       fontSize: '13px',
                       color: currentTheme.text.muted,
                       margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
                     }}
                   >
+                    <ScheduleRounded style={{ fontSize: '14px' }} />
                     Ausstehend
                   </p>
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => cancelFriendRequest(request.id)}
+                  aria-label="Anfrage zurückziehen"
                   style={{
-                    padding: '10px',
+                    width: '40px',
+                    height: '40px',
                     background: currentTheme.background.default,
                     border: `1px solid ${currentTheme.border.default}`,
-                    borderRadius: '10px',
-                    color: currentTheme.text.secondary,
+                    borderRadius: '12px',
+                    color: currentTheme.text.muted,
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
-                  <Cancel style={{ fontSize: '20px' }} />
+                  <CloseRounded style={{ fontSize: '20px' }} />
                 </motion.button>
               </div>
             ))}
           </div>
         </div>
-      )}
-
-      {friendRequests.length === 0 && sentRequests.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div
-            style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 20px',
-              borderRadius: '50%',
-              background: `${currentTheme.text.muted}10`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <PersonAdd style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-          </div>
-          <h2
-            style={{
-              margin: '0 0 8px',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-            }}
-          >
-            Keine offenen Anfragen
-          </h2>
-        </motion.div>
       )}
     </motion.div>
   );

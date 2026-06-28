@@ -3,9 +3,11 @@
  */
 
 import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
+import ForumRounded from '@mui/icons-material/ForumRounded';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
 
 interface DiscussionNotification {
@@ -61,36 +63,11 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
       exit={{ opacity: 0, x: -20 }}
     >
       {notifications.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          style={{ textAlign: 'center', padding: '60px 20px' }}
-        >
-          <div
-            style={{
-              width: '80px',
-              height: '80px',
-              margin: '0 auto 20px',
-              borderRadius: '50%',
-              background: `${currentTheme.text.muted}10`,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <ChatBubbleOutline style={{ fontSize: '40px', color: currentTheme.text.muted }} />
-          </div>
-          <h2
-            style={{
-              margin: '0 0 8px',
-              fontSize: '18px',
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-            }}
-          >
-            Keine Benachrichtigungen
-          </h2>
-        </motion.div>
+        <EmptyState
+          icon={<ForumRounded style={{ fontSize: 'inherit' }} />}
+          title="Keine Benachrichtigungen"
+          description="Antworten, Likes und Spoiler-Meldungen aus deinen Diskussionen erscheinen hier."
+        />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {notifications.map((notification, index) => (

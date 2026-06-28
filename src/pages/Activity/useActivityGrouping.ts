@@ -80,7 +80,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     });
   };
 
-  const groupedActivities = useMemo(() => {
+  const filteredActivities = useMemo(() => {
     let filtered = [...friendActivities];
 
     if (filterType === 'movies') {
@@ -89,6 +89,9 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
           activity.type === 'movie_added' ||
           activity.type === 'movie_rated' ||
           activity.type === 'rating_updated_movie' ||
+          activity.type === 'movie_added_to_watchlist' ||
+          activity.type === 'movie_removed_from_watchlist' ||
+          activity.type === 'movie_deleted' ||
           activity.itemType === 'movie'
       );
     } else if (filterType === 'series') {
@@ -98,6 +101,10 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
           activity.type === 'series_rated' ||
           activity.type === 'rating_updated' ||
           activity.type === 'series_added_to_watchlist' ||
+          activity.type === 'series_removed_from_watchlist' ||
+          activity.type === 'series_deleted' ||
+          activity.type === 'episode_watched' ||
+          activity.type === 'episodes_watched' ||
           activity.itemType === 'series' ||
           (!activity.itemType &&
             activity.type !== 'movie_added' &&
@@ -105,6 +112,12 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
             activity.type !== 'rating_updated_movie')
       );
     }
+
+    return filtered.sort((a, b) => b.timestamp - a.timestamp);
+  }, [friendActivities, filterType]);
+
+  const groupedActivities = useMemo(() => {
+    const filtered = filteredActivities;
 
     const groups = new Map<string, FriendActivity[]>();
 
@@ -127,7 +140,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     });
 
     return sortedGroups;
-  }, [friendActivities, filterType]);
+  }, [filteredActivities]);
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
@@ -208,6 +221,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
 
   return {
     groupedActivities,
+    filteredActivities,
     getItemDetails,
     formatTimeAgo,
     filterType,
