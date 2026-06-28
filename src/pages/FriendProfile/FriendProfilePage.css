@@ -516,7 +516,9 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   align-items: center;
-  transition: transform 0.15s var(--ease-default), box-shadow 0.15s var(--ease-default);
+  transition:
+    transform 0.15s var(--ease-default),
+    box-shadow 0.15s var(--ease-default);
 }
 
 .fp-anticipation-item:hover {
