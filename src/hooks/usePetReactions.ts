@@ -208,6 +208,29 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
     return () => window.removeEventListener('pet-reaction', handler as EventListener);
   }, []);
 
+  // Pet-trigger path: writers other than this tab (e.g. the Chrome extension
+  // when it marks an episode as watched on Netflix/Crunchyroll/…) drop a
+  // {tone, at} object here. We react whenever the timestamp is fresh
+  // (within 60s) so a tab opened later doesn't replay a stale trigger.
+  useEffect(() => {
+    if (!uid) return;
+    const ref = firebase.database().ref(`users/${uid}/petTrigger`);
+    let lastSeenAt = 0;
+    const onValue = (snap: firebase.database.DataSnapshot) => {
+      const data = snap.val() as { tone?: PetReactionTone; at?: number } | null;
+      if (!data?.at || !data.tone) return;
+      if (data.at <= lastSeenAt) return;
+      lastSeenAt = data.at;
+      // Ignore triggers older than a minute – they're from a previous session.
+      if (Date.now() - data.at > 60_000) return;
+      show(pickReaction(data.tone));
+    };
+    ref.on('value', onValue);
+    return () => {
+      ref.off('value', onValue);
+    };
+  }, [uid]);
+
   // Subscribe to streak data and react to upward changes.
   useEffect(() => {
     if (!uid) return;
