@@ -59,7 +59,11 @@ export const ActivitySpotlight = ({
       transition={{ type: 'spring', stiffness: 220, damping: 26 }}
       whileTap={{ scale: 0.985 }}
       onClick={onClick}
-      style={{ background: theme.background.surface }}
+      style={{
+        background: theme.background.surface,
+        border: `1px solid ${theme.primary}3a`,
+        boxShadow: `0 12px 32px -14px rgba(0,0,0,0.7), inset 0 1px 0 ${theme.primary}1f`,
+      }}
     >
       {/* Ambient poster backdrop */}
       {hasPoster && (
@@ -74,7 +78,7 @@ export const ActivitySpotlight = ({
         aria-hidden
         className="activity-spotlight__scrim"
         style={{
-          background: `linear-gradient(105deg, ${theme.background.surface}f5 0%, ${theme.background.surface}e0 42%, ${theme.background.surface}66 100%), radial-gradient(120% 140% at 92% 10%, ${accent}33, transparent 60%)`,
+          background: `linear-gradient(105deg, ${theme.background.surface}f7 0%, ${theme.background.surface}ea 45%, ${theme.background.surface}9c 100%), radial-gradient(120% 140% at 92% 10%, ${accent}30, transparent 62%)`,
         }}
       />
 
