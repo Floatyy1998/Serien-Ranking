@@ -17,7 +17,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 
-const CACHE_PREFIX = 'animeFiller_v3:';
+const CACHE_PREFIX = 'animeFiller_v4:';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 // Negatives expire fast – the backend may catch up on the next cron pass
 // or via a fresh /add trigger.
@@ -106,6 +106,10 @@ export function readFillerCacheSync(seriesId: number | string): AnimeFillerData 
 interface CacheRecord {
   data: AnimeFillerData | null;
   fetchedAt: number;
+  /** Server's `admin/animeFiller/{tmdbId}/updatedAt` at the moment we wrote
+   *  this cache entry. Used by getAnimeFillerData() to revalidate cheaply
+   *  without a full re-read. */
+  backendUpdatedAt?: number;
 }
 
 function readCache(key: string): CacheRecord | null {
@@ -133,6 +137,7 @@ function writeCache(key: string, record: CacheRecord): void {
 export function clearAnimeFillerCacheForSeries(seriesId: number | string): void {
   try {
     localStorage.removeItem(CACHE_PREFIX + String(seriesId));
+    localStorage.removeItem('animeFiller_v3:' + String(seriesId));
     // Legacy keys (v1 / v2) – clean those too so a forced reload starts fresh.
     localStorage.removeItem('animeFiller_v2:' + String(seriesId));
     localStorage.removeItem('animeFiller_v1:' + String(seriesId));
@@ -151,6 +156,7 @@ export function clearAnimeFillerCache(): number {
       if (
         k &&
         (k.startsWith(CACHE_PREFIX) ||
+          k.startsWith('animeFiller_v3:') ||
           k.startsWith('animeFiller_v2:') ||
           k.startsWith('animeFiller_v1:'))
       ) {
@@ -203,14 +209,35 @@ function readBackendItem(item: BackendFillerItem): { n: number; t: string } {
 }
 
 /**
+ * Tiny single-field read used to revalidate the cache. Returns the server's
+ * current `updatedAt` for this record (≈50 bytes payload).
+ */
+async function fetchBackendUpdatedAt(seriesId: number | string): Promise<number | null> {
+  try {
+    const snap = await firebase
+      .database()
+      .ref(`admin/animeFiller/${seriesId}/updatedAt`)
+      .once('value');
+    const v = snap.val();
+    return typeof v === 'number' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The only network read this module performs. Backend keeps the upstream
  * AniList/Jikan API calls on the server – frontend never touches them.
  */
-async function fetchBackendFillerData(seriesId: number | string): Promise<AnimeFillerData | null> {
+async function fetchBackendFillerData(
+  seriesId: number | string
+): Promise<{ data: AnimeFillerData | null; backendUpdatedAt: number | null }> {
   try {
     const snap = await firebase.database().ref(`admin/animeFiller/${seriesId}`).once('value');
     const v = snap.val() as BackendFillerRecord | null;
-    if (!v || v.status !== 'ok' || !v.malId) return null;
+    if (!v || v.status !== 'ok' || !v.malId) {
+      return { data: null, backendUpdatedAt: v?.updatedAt ?? null };
+    }
     const episodes: FillerEpisode[] = [];
     for (const item of v.filler ?? []) {
       const { n, t } = readBackendItem(item);
@@ -227,36 +254,68 @@ async function fetchBackendFillerData(seriesId: number | string): Promise<AnimeF
       recapCount: v.recapCount,
     });
     return {
-      malId: v.malId,
-      totalEpisodes: v.totalEpisodes ?? null,
-      fillerCount: v.fillerCount ?? episodes.filter((e) => e.filler).length,
-      recapCount: v.recapCount ?? episodes.filter((e) => e.recap).length,
-      episodes,
-      fetchedAt: v.updatedAt ?? Date.now(),
+      data: {
+        malId: v.malId,
+        totalEpisodes: v.totalEpisodes ?? null,
+        fillerCount: v.fillerCount ?? episodes.filter((e) => e.filler).length,
+        recapCount: v.recapCount ?? episodes.filter((e) => e.recap).length,
+        episodes,
+        fetchedAt: v.updatedAt ?? Date.now(),
+      },
+      backendUpdatedAt: v.updatedAt ?? null,
     };
   } catch (err) {
     console.warn('[animeFiller] backend lookup failed', { seriesId, err });
-    return null;
+    return { data: null, backendUpdatedAt: null };
   }
 }
 
+/** A grace window after a fresh cache write where we trust localStorage
+ *  without bothering the network. Avoids hammering Firebase when the user
+ *  navigates back and forth between detail pages within a short time. */
+const REVALIDATE_GRACE_MS = 60 * 1000;
+
 /**
  * Get filler/recap data for a series. Reads localStorage first, then
- * Firebase. Never hits AniList/Jikan directly.
+ * cheaply revalidates against the server's `updatedAt` so cron updates
+ * propagate within the same session — no version bump required.
  */
 export async function getAnimeFillerData(
   seriesId: number | string
 ): Promise<AnimeFillerData | null> {
   const key = String(seriesId);
   const cached = readCache(key);
+
   if (cached) {
-    debug('cache hit', { seriesId, hasData: !!cached.data });
-    return cached.data;
+    if (Date.now() - cached.fetchedAt < REVALIDATE_GRACE_MS) {
+      debug('cache hit (grace)', { seriesId, hasData: !!cached.data });
+      return cached.data;
+    }
+    const serverUpdatedAt = await fetchBackendUpdatedAt(seriesId);
+    if (
+      serverUpdatedAt !== null &&
+      cached.backendUpdatedAt !== undefined &&
+      serverUpdatedAt === cached.backendUpdatedAt
+    ) {
+      // Server hasn't moved since our last write — extend the cache lifetime.
+      writeCache(key, { ...cached, fetchedAt: Date.now() });
+      debug('cache hit (revalidated)', { seriesId, serverUpdatedAt });
+      return cached.data;
+    }
+    debug('cache stale, refetching', {
+      seriesId,
+      cached: cached.backendUpdatedAt,
+      server: serverUpdatedAt,
+    });
   }
 
-  const backend = await fetchBackendFillerData(seriesId);
-  writeCache(key, { data: backend, fetchedAt: backend?.fetchedAt ?? Date.now() });
-  return backend;
+  const { data, backendUpdatedAt } = await fetchBackendFillerData(seriesId);
+  writeCache(key, {
+    data,
+    fetchedAt: Date.now(),
+    backendUpdatedAt: backendUpdatedAt ?? undefined,
+  });
+  return data;
 }
 
 /**
@@ -289,7 +348,13 @@ export async function refreshAnimeFillerViaBackend(
   }
   // Backend may take a moment to commit the write – tiny delay before re-read.
   await new Promise((r) => setTimeout(r, 300));
-  return getAnimeFillerData(seriesId);
+  const { data, backendUpdatedAt } = await fetchBackendFillerData(seriesId);
+  writeCache(String(seriesId), {
+    data,
+    fetchedAt: Date.now(),
+    backendUpdatedAt: backendUpdatedAt ?? undefined,
+  });
+  return data;
 }
 
 // ── DevTools escape hatch ────────────────────────────────────────────────
