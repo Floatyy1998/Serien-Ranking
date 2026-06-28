@@ -21,9 +21,11 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
+import { FriendsProgressStrip } from './FriendsProgressStrip';
 import { HeroSection } from './HeroSection';
 import { SeasonsSection } from './SeasonsSection';
 import { SeriesDetailDialogs } from './SeriesDetailDialogs';
+import { useFriendsSeriesProgress } from './useFriendsSeriesProgress';
 import { useSeriesActions } from './useSeriesActions';
 import { useSeriesData } from './useSeriesData';
 import './SeriesDetailPage.css';
@@ -192,6 +194,12 @@ export const SeriesDetailPage = memo(() => {
     return { pace, text: formatPaceLine(pace) };
   }, [series]);
 
+  const friendsProgress = useFriendsSeriesProgress(
+    series?.id,
+    progressStats.total,
+    series?.seasons
+  );
+
   // Loading / Not Found states
   if (!series && !loading) {
     return (
@@ -282,6 +290,16 @@ export const SeriesDetailPage = memo(() => {
           <VisibilityOff style={{ fontSize: '16px' }} />
           Du schaust diese Serie nicht mehr
         </div>
+      )}
+
+      {/* Friends Progress Strip — only when user actually tracks this series */}
+      {!isReadOnlyTmdbSeries && friendsProgress.entries.length > 0 && (
+        <FriendsProgressStrip
+          entries={friendsProgress.entries}
+          userPercentage={progressStats.percentage}
+          userWatched={progressStats.watched}
+          isMobile={isMobile}
+        />
       )}
 
       {/* Info/Cast Tab Switcher */}
