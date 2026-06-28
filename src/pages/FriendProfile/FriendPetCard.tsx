@@ -4,11 +4,7 @@ import { useAuth } from '../../AuthContext';
 import { EvolvingPixelPet } from '../../components/pet';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { petMoodService } from '../../services/pet/petMoodService';
-import {
-  canSendGiftTo,
-  formatCooldownRemaining,
-  sendPetGift,
-} from '../../services/pet/petGifts';
+import { canSendGiftTo, formatCooldownRemaining, sendPetGift } from '../../services/pet/petGifts';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 
@@ -53,7 +49,9 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
     setSending(true);
     try {
       const fromName =
-        (user.displayName as string | undefined) || (user.email as string | undefined) || 'Ein Freund';
+        (user.displayName as string | undefined) ||
+        (user.email as string | undefined) ||
+        'Ein Freund';
       await sendPetGift({
         fromUid: user.uid,
         fromName,

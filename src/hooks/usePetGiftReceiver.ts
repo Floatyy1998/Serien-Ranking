@@ -46,9 +46,11 @@ export function usePetGiftReceiver(): void {
 
           const petRef = firebase.database().ref(`users/${uid}/pets/${activePetId}`);
           const petSnap = await petRef.once('value');
-          const pet = petSnap.val() as
-            | { hunger?: number; happiness?: number; isAlive?: boolean }
-            | null;
+          const pet = petSnap.val() as {
+            hunger?: number;
+            happiness?: number;
+            isAlive?: boolean;
+          } | null;
           if (!pet) continue;
           if (pet.isAlive === false) {
             await firebase
@@ -68,10 +70,7 @@ export function usePetGiftReceiver(): void {
 
           await Promise.all([
             petRef.update({ hunger: newHunger, happiness: newHappiness }),
-            firebase
-              .database()
-              .ref(`users/${uid}/notifications/${notifId}/applied`)
-              .set(true),
+            firebase.database().ref(`users/${uid}/notifications/${notifId}/applied`).set(true),
           ]);
         } catch (err) {
           console.error('[usePetGiftReceiver] apply failed', err);
