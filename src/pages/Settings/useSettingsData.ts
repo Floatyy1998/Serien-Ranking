@@ -149,7 +149,10 @@ export const useSettingsData = () => {
     try {
       setSaving(true);
       await user.updateProfile({ displayName: displayName });
-      await firebase.database().ref(`users/${user.uid}/displayName`).set(displayName);
+      await firebase
+        .database()
+        .ref(`users/${user.uid}`)
+        .update({ displayName, displayNameLower: displayName.toLowerCase() });
       await user.reload();
       setDisplayNameEditable(false);
       showSnackbar('Anzeigename gespeichert!');
