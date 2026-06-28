@@ -63,10 +63,7 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
         aria-expanded={open}
       >
         <span className="friends-progress-title">Freunde</span>
-        <span
-          className="friends-progress-count-inline"
-          style={{ color: currentTheme.text.muted }}
-        >
+        <span className="friends-progress-count-inline" style={{ color: currentTheme.text.muted }}>
           {entries.length}
         </span>
         {open ? (
@@ -88,93 +85,89 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
           >
             <div className="friends-progress-list">
               {entries.map((entry, idx) => {
-          const pctDiff = entry.percentage - userPercentage;
-          const epDiff = entry.watched - userWatched;
-          const tint = entry.completed
-            ? currentTheme.accent
-            : pctDiff > 0
-              ? currentTheme.status?.warning || '#ffb15c'
-              : pctDiff === 0
-                ? currentTheme.secondary
-                : currentTheme.primary;
+                const pctDiff = entry.percentage - userPercentage;
+                const epDiff = entry.watched - userWatched;
+                const tint = entry.completed
+                  ? currentTheme.accent
+                  : pctDiff > 0
+                    ? currentTheme.status?.warning || '#ffb15c'
+                    : pctDiff === 0
+                      ? currentTheme.secondary
+                      : currentTheme.primary;
 
-          const position =
-            entry.latestSeason != null && entry.latestEpisode != null
-              ? `S${entry.latestSeason}E${entry.latestEpisode}`
-              : null;
+                const position =
+                  entry.latestSeason != null && entry.latestEpisode != null
+                    ? `S${entry.latestSeason}E${entry.latestEpisode}`
+                    : null;
 
-          const diffLabel =
-            epDiff === 0
-              ? entry.completed
-                ? 'Beide durch'
-                : 'Gleichauf'
-              : epDiff > 0
-                ? `${epDiff} ${epDiff === 1 ? 'Folge' : 'Folgen'} voraus`
-                : `${Math.abs(epDiff)} ${Math.abs(epDiff) === 1 ? 'Folge' : 'Folgen'} hinter`;
+                const diffLabel =
+                  epDiff === 0
+                    ? entry.completed
+                      ? 'Beide durch'
+                      : 'Gleichauf'
+                    : epDiff > 0
+                      ? `${epDiff} ${epDiff === 1 ? 'Folge' : 'Folgen'} voraus`
+                      : `${Math.abs(epDiff)} ${Math.abs(epDiff) === 1 ? 'Folge' : 'Folgen'} hinter`;
 
-          return (
-            <motion.button
-              key={entry.uid}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.03, duration: 0.25 }}
-              whileTap={{ scale: 0.985 }}
-              onClick={() => navigate(`/friend/${entry.uid}`)}
-              className="friend-progress-card"
-            >
-              {entry.photoURL ? (
-                <img
-                  src={entry.photoURL}
-                  alt=""
-                  className="friend-progress-avatar"
-                />
-              ) : (
-                <div
-                  className="friend-progress-avatar friend-progress-avatar--initials"
-                  style={{ background: currentTheme.primary }}
-                >
-                  {initials(entry.displayName)}
-                </div>
-              )}
+                return (
+                  <motion.button
+                    key={entry.uid}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.03, duration: 0.25 }}
+                    whileTap={{ scale: 0.985 }}
+                    onClick={() => navigate(`/friend/${entry.uid}`)}
+                    className="friend-progress-card"
+                  >
+                    {entry.photoURL ? (
+                      <img src={entry.photoURL} alt="" className="friend-progress-avatar" />
+                    ) : (
+                      <div
+                        className="friend-progress-avatar friend-progress-avatar--initials"
+                        style={{ background: currentTheme.primary }}
+                      >
+                        {initials(entry.displayName)}
+                      </div>
+                    )}
 
-              <div className="friend-progress-info">
-                <div
-                  className="friend-progress-name"
-                  style={{ color: currentTheme.text.primary }}
-                >
-                  {entry.displayName}
-                </div>
-                <div
-                  className="friend-progress-status"
-                  style={{ color: currentTheme.text.muted }}
-                >
-                  {position && (
-                    <span style={{ color: currentTheme.text.primary, fontWeight: 600 }}>
-                      {position}
-                    </span>
-                  )}
-                  {position && ' · '}
-                  <span style={{ color: tint }}>{diffLabel}</span>
-                </div>
-              </div>
+                    <div className="friend-progress-info">
+                      <div
+                        className="friend-progress-name"
+                        style={{ color: currentTheme.text.primary }}
+                      >
+                        {entry.displayName}
+                      </div>
+                      <div
+                        className="friend-progress-status"
+                        style={{ color: currentTheme.text.muted }}
+                      >
+                        {position && (
+                          <span style={{ color: currentTheme.text.primary, fontWeight: 600 }}>
+                            {position}
+                          </span>
+                        )}
+                        {position && ' · '}
+                        <span style={{ color: tint }}>{diffLabel}</span>
+                      </div>
+                    </div>
 
-              <div
-                className="friend-progress-pct"
-                style={{ color: currentTheme.text.primary }}
-              >
-                {entry.percentage}
-                <span className="friend-progress-pct-unit">%</span>
-              </div>
+                    <div
+                      className="friend-progress-pct"
+                      style={{ color: currentTheme.text.primary }}
+                    >
+                      {entry.percentage}
+                      <span className="friend-progress-pct-unit">%</span>
+                    </div>
 
-              <div className="friend-progress-bar-rail">
-                <div
-                  className="friend-progress-bar-fill"
-                  style={{ width: `${entry.percentage}%`, background: tint }}
-                />
-              </div>
-            </motion.button>
-          );
-        })}
+                    <div className="friend-progress-bar-rail">
+                      <div
+                        className="friend-progress-bar-fill"
+                        style={{ width: `${entry.percentage}%`, background: tint }}
+                      />
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
           </motion.div>
         )}

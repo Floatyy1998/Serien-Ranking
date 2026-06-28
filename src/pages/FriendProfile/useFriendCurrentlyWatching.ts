@@ -120,11 +120,16 @@ function findUserLastWatched(
   return { season: lastSeason, episode: lastEpisode };
 }
 
-export function useFriendCurrentlyWatching(
-  friendUid: string | undefined
-): { loading: boolean; data: FriendCurrentlyWatching | null } {
+export function useFriendCurrentlyWatching(friendUid: string | undefined): {
+  loading: boolean;
+  data: FriendCurrentlyWatching | null;
+} {
   const [events, setEvents] = useState<RawEpisodeEvent[] | null>(null);
   const [catalog, setCatalog] = useState<Record<string, CatalogSeries> | null>(null);
+  // `nowMs` is captured when events land, then frozen — keeping the relative
+  // "X hours ago" stable across re-renders. Pure-function lint enforces that
+  // Date.now() not be called during render.
+  const [nowMs, setNowMs] = useState<number>(0);
   const { seriesList } = useSeriesList();
 
   useEffect(() => {
@@ -150,10 +155,14 @@ export function useFriendCurrentlyWatching(
         if (cancelled) return;
         const raw = (snap.val() ?? {}) as Record<string, unknown>;
         const expanded = Object.values(raw).map((ev) => readEventUniversal(ev));
+        setNowMs(Date.now());
         setEvents(expanded as RawEpisodeEvent[]);
       } catch (err) {
         console.error('[useFriendCurrentlyWatching] events fetch failed', err);
-        if (!cancelled) setEvents([]);
+        if (!cancelled) {
+          setNowMs(Date.now());
+          setEvents([]);
+        }
       }
     })();
 
@@ -247,7 +256,7 @@ export function useFriendCurrentlyWatching(
     const title = catalogEntry?.title || bestEntry.title || 'Unbekannte Serie';
     const poster = catalogEntry?.poster || '';
 
-    const hoursSinceLatest = (Date.now() - bestEntry.latestTs) / (1000 * 60 * 60);
+    const hoursSinceLatest = (nowMs - bestEntry.latestTs) / (1000 * 60 * 60);
     const daysCovered = Math.max(
       1,
       Math.round((bestEntry.latestTs - bestEntry.earliestTs) / (1000 * 60 * 60 * 24)) + 1
@@ -279,7 +288,7 @@ export function useFriendCurrentlyWatching(
       mood: computeMood(bestEntry.count, hoursSinceLatest, isRewatchSession),
       spoilerDiff,
     };
-  }, [events, catalog, seriesList]);
+  }, [events, catalog, seriesList, nowMs]);
 
   return { loading: events === null || catalog === null, data };
 }

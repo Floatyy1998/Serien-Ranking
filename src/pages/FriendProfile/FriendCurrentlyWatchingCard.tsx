@@ -50,11 +50,7 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
         border: `1px solid ${mood.tint}40`,
       }}
     >
-      <img
-        src={getImageUrl(data.poster, 'w342')}
-        alt={data.title}
-        className="fp-watching-poster"
-      />
+      <img src={getImageUrl(data.poster, 'w342')} alt={data.title} className="fp-watching-poster" />
 
       <div className="fp-watching-body">
         <div className="fp-watching-mood" style={{ color: mood.tint }}>
@@ -65,13 +61,13 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
         <div className="fp-watching-title">{data.title}</div>
 
         <div className="fp-watching-meta">
-          {friendName} schaut S{data.latestSeason}E{data.latestEpisode} · {formatRelative(data.latestWatchedAt)}
+          {friendName} schaut S{data.latestSeason}E{data.latestEpisode} ·{' '}
+          {formatRelative(data.latestWatchedAt)}
         </div>
 
         <div className="fp-watching-stats">
           <span>
-            <strong>{data.episodeCount}</strong>{' '}
-            {data.episodeCount === 1 ? 'Folge' : 'Folgen'}
+            <strong>{data.episodeCount}</strong> {data.episodeCount === 1 ? 'Folge' : 'Folgen'}
           </span>
           <span>·</span>
           <span>{data.daysCovered === 1 ? 'heute' : `in ${data.daysCovered} Tagen`}</span>

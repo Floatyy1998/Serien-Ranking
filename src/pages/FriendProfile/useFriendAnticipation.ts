@@ -99,6 +99,10 @@ export function useFriendAnticipation(friendUid: string | undefined): {
     string,
     Record<string, CatalogSeason>
   > | null>(null);
+  // Stable "now" — captured when the watchlist resolves. Pure-function lint
+  // forbids Date.now() inside useMemo; this keeps countdowns stable across
+  // re-renders.
+  const [nowMs, setNowMs] = useState<number>(0);
   const { seriesList } = useSeriesList();
 
   useEffect(() => {
@@ -117,18 +121,10 @@ export function useFriendAnticipation(friendUid: string | undefined): {
           allIds.push(id);
           if (entry?.watchlist === true) watchlistFlagged.push(id);
         }
-        const sample = Object.entries(data).slice(0, 3).map(([id, entry]) => ({
-          id,
-          keys: entry ? Object.keys(entry) : null,
-          watchlist: entry?.watchlist,
-        }));
-        console.log(
-          `[FriendAnticipation] friend=${friendUid} total=${allIds.length} watchlist=${watchlistFlagged.length}`,
-          sample
-        );
-        // Fallback: if watchlist flag is never set we still want a sensible scope.
-        // Pick all series the friend has tracked — upcoming-episode filter (≤90d)
-        // narrows that down anyway.
+        // Fallback: if watchlist flag is never set we still want a sensible
+        // scope. Pick all series the friend has tracked — the air-date filter
+        // narrows that down naturally.
+        setNowMs(Date.now());
         setWatchlistIds(watchlistFlagged.length > 0 ? watchlistFlagged : allIds);
       } catch (err) {
         console.error('[useFriendAnticipation] watchlist fetch failed', err);
@@ -187,22 +183,13 @@ export function useFriendAnticipation(friendUid: string | undefined): {
 
   const items = useMemo<FriendAnticipationItem[]>(() => {
     if (!watchlistIds || !seriesCatalog || !seasonsByTmdb) return [];
-    const now = Date.now();
     const collected: FriendAnticipationItem[] = [];
-    let seasonsMissing = 0;
-    let noUpcoming = 0;
 
     for (const id of watchlistIds) {
       const seasons = seasonsByTmdb[String(id)] ?? null;
-      if (!seasons) {
-        seasonsMissing += 1;
-        continue;
-      }
-      const next = findNextUpcoming(seasons, now);
-      if (!next) {
-        noUpcoming += 1;
-        continue;
-      }
+      if (!seasons) continue;
+      const next = findNextUpcoming(seasons, nowMs);
+      if (!next) continue;
       const catalog = seriesCatalog[String(id)];
       if (!catalog) continue;
       collected.push({
@@ -210,7 +197,7 @@ export function useFriendAnticipation(friendUid: string | undefined): {
         title: catalog.title,
         poster: catalog.poster || '',
         airDate: next.airDate,
-        daysUntil: Math.ceil((Date.parse(next.airDate) - now) / (1000 * 60 * 60 * 24)),
+        daysUntil: Math.ceil((Date.parse(next.airDate) - nowMs) / (1000 * 60 * 60 * 24)),
         seasonNumber: next.seasonNumber,
         episodeNumber: next.episodeNumber,
         episodeTitle: next.title,
@@ -218,17 +205,14 @@ export function useFriendAnticipation(friendUid: string | undefined): {
       });
     }
 
-    console.log(
-      `[FriendAnticipation] scanned=${watchlistIds.length} seasonsMissing=${seasonsMissing} noUpcoming=${noUpcoming} matched=${collected.length}`,
-      collected.slice(0, 3).map((c) => ({ id: c.seriesId, title: c.title, days: c.daysUntil }))
-    );
-
     collected.sort((a, b) => Date.parse(a.airDate) - Date.parse(b.airDate));
     return collected.slice(0, MAX_RESULTS);
-  }, [watchlistIds, seriesCatalog, seasonsByTmdb, ownWatchlistIds]);
+  }, [watchlistIds, seriesCatalog, seasonsByTmdb, ownWatchlistIds, nowMs]);
 
   const loading =
-    watchlistIds === null || seriesCatalog === null || (watchlistIds.length > 0 && seasonsByTmdb === null);
+    watchlistIds === null ||
+    seriesCatalog === null ||
+    (watchlistIds.length > 0 && seasonsByTmdb === null);
 
   return { loading, items };
 }

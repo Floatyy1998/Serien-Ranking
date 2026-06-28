@@ -143,52 +143,52 @@ export const FriendProfilePage = memo(() => {
                   style={{ overflow: 'hidden' }}
                 >
                   <div className="fp-insights-content">
-            <div className="fp-insights-row">
-              {currentlyWatching.data ? (
-                <FriendCurrentlyWatchingCard
-                  friendName={friendName}
-                  data={currentlyWatching.data}
-                />
-              ) : (
-                <div className="fp-insights-placeholder">
-                  <div className="fp-insights-placeholder-title">Nichts Aktuelles</div>
-                  <div className="fp-insights-placeholder-text">
-                    {currentlyWatching.loading
-                      ? 'Lade Aktivität …'
-                      : `${friendName} hat in den letzten 14 Tagen nichts geschaut.`}
-                  </div>
-                </div>
-              )}
-              {friendPet.pet ? (
-                <FriendPetCard friendUid={friendId} pet={friendPet.pet} />
-              ) : (
-                <div className="fp-insights-placeholder">
-                  <div className="fp-insights-placeholder-title">Kein Pet</div>
-                  <div className="fp-insights-placeholder-text">
-                    {friendPet.loading
-                      ? 'Lade Pet …'
-                      : `${friendName} hat noch kein aktives Pet.`}
-                  </div>
-                </div>
-              )}
-            </div>
-            {anticipation.items.length > 0 ? (
-              <FriendAnticipationSection
-                friendName={friendName}
-                items={anticipation.items}
-              />
-            ) : (
-              !anticipation.loading && (
-                <div className="fp-insights-placeholder fp-insights-placeholder--wide">
-                  <div className="fp-insights-placeholder-title">
-                    Keine kommenden Folgen
-                  </div>
-                  <div className="fp-insights-placeholder-text">
-                    Auf {friendName}s Liste sind keine Folgen mit Termin in Sicht.
-                  </div>
-                </div>
-              )
-            )}
+                    <div className="fp-insights-row">
+                      {currentlyWatching.data ? (
+                        <FriendCurrentlyWatchingCard
+                          friendName={friendName}
+                          data={currentlyWatching.data}
+                        />
+                      ) : (
+                        <div className="fp-insights-placeholder">
+                          <div className="fp-insights-placeholder-title">Nichts Aktuelles</div>
+                          <div className="fp-insights-placeholder-text">
+                            {currentlyWatching.loading
+                              ? 'Lade Aktivität …'
+                              : `${friendName} hat in den letzten 14 Tagen nichts geschaut.`}
+                          </div>
+                        </div>
+                      )}
+                      {friendPet.pet ? (
+                        <FriendPetCard friendUid={friendId} pet={friendPet.pet} />
+                      ) : (
+                        <div className="fp-insights-placeholder">
+                          <div className="fp-insights-placeholder-title">Kein Pet</div>
+                          <div className="fp-insights-placeholder-text">
+                            {friendPet.loading
+                              ? 'Lade Pet …'
+                              : `${friendName} hat noch kein aktives Pet.`}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {anticipation.items.length > 0 ? (
+                      <FriendAnticipationSection
+                        friendName={friendName}
+                        items={anticipation.items}
+                      />
+                    ) : (
+                      !anticipation.loading && (
+                        <div className="fp-insights-placeholder fp-insights-placeholder--wide">
+                          <div className="fp-insights-placeholder-title">
+                            Keine kommenden Folgen
+                          </div>
+                          <div className="fp-insights-placeholder-text">
+                            Auf {friendName}s Liste sind keine Folgen mit Termin in Sicht.
+                          </div>
+                        </div>
+                      )
+                    )}
                   </div>
                 </motion.div>
               )}

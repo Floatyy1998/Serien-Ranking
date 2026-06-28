@@ -58,18 +58,12 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
 
             <div className="fp-anticipation-body">
               <div className="fp-anticipation-title">{item.title}</div>
-              <div
-                className="fp-anticipation-episode"
-                style={{ color: currentTheme.text.muted }}
-              >
+              <div className="fp-anticipation-episode" style={{ color: currentTheme.text.muted }}>
                 S{item.seasonNumber}E{item.episodeNumber}
                 {item.episodeTitle ? ` · ${item.episodeTitle}` : ''}
               </div>
               <div className="fp-anticipation-meta">
-                <span
-                  className="fp-anticipation-countdown"
-                  style={{ color: currentTheme.accent }}
-                >
+                <span className="fp-anticipation-countdown" style={{ color: currentTheme.accent }}>
                   {formatCountdown(item.daysUntil, item.airDate)}
                 </span>
                 {item.bothWaiting && (
