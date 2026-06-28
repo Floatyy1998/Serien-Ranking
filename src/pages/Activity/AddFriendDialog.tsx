@@ -54,13 +54,16 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
     const searchTimer = setTimeout(async () => {
       setSearching(true);
       try {
-        // Server-side Prefix-Query auf indexierten "username" Field.
-        // Lädt nur die maximal 20 matching User statt alle ~7MB.
+        // Server-side Prefix-Query auf dem case-insensitiven "usernameLower"
+        // Field. Verhindert dass User mit gross-/kleingeschriebenen Slugs
+        // (z.B. "Spixi") bei lowercase-Eingabe ungefunden bleiben. Alle
+        // Bestands-User wurden backfilled; neue Writes (Profile-Edit) muessen
+        // usernameLower mitschreiben damit das Index gepflegt bleibt.
         const query = searchQuery.toLowerCase();
         const snapshot = await firebase
           .database()
           .ref('users')
-          .orderByChild('username')
+          .orderByChild('usernameLower')
           .startAt(query)
           .endAt(query + '\uf8ff')
           .limitToFirst(20)

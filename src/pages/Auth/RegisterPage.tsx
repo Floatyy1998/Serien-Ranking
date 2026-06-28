@@ -78,6 +78,7 @@ export const RegisterPage = () => {
           uid: userCredential.user.uid,
           email: userCredential.user.email,
           username: username,
+          usernameLower: username.toLowerCase(),
           displayName: username,
           createdAt: firebase.database.ServerValue.TIMESTAMP,
           lastActive: firebase.database.ServerValue.TIMESTAMP,

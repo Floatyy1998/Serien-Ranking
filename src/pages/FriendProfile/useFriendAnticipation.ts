@@ -70,7 +70,12 @@ function findNextUpcoming(
   for (const rawSeason of Object.values(seasons) as unknown as RawSeason[]) {
     if (!rawSeason?.episodes) continue;
     const seasonNumber = rawSeason.seasonNumber ?? rawSeason.season_number ?? 0;
-    for (const ep of rawSeason.episodes) {
+    // Backend may store episodes either as an array or as a keyed object
+    // (e.g. Firebase). Normalize to an array so for…of never throws.
+    const episodes = Array.isArray(rawSeason.episodes)
+      ? rawSeason.episodes
+      : (Object.values(rawSeason.episodes) as RawEpisode[]);
+    for (const ep of episodes) {
       const dateStr = ep.air_date || ep.airDate || ep.airstamp || null;
       const ts = parseAirDate(dateStr);
       if (ts === null) continue;
