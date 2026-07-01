@@ -3,6 +3,8 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Gavel } from '@mui/icons-material';
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+
 interface ImpressumData {
   title: string;
   sections: {
@@ -38,7 +40,8 @@ export const ImpressumPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/legal/impressum.json')
+    // Legal content lives on the backend (kept out of the public frontend repo).
+    fetch(`${BACKEND_URL}/legal/impressum.json`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => {
