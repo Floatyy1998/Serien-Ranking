@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
+import { backendFetch } from '../lib/backendApi';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
@@ -210,7 +211,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
       // Hole Episode-Beschreibungen als Kontext für die KI
       const episodeContext = await fetchEpisodeContext(series.id, userProgress);
 
-      const res = await fetch(`${BACKEND_URL}/ai/characters`, {
+      const res = await backendFetch('/ai/characters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -296,7 +297,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
       setQuestionAnswer(null);
 
       try {
-        const res = await fetch(`${BACKEND_URL}/ai/character-question`, {
+        const res = await backendFetch('/ai/character-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

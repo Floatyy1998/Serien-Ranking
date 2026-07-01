@@ -5,6 +5,7 @@ import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
+import { backendFetch } from '../lib/backendApi';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
@@ -176,7 +177,7 @@ async function fetchRecapForTrigger(trigger: RecapTrigger, uid?: string): Promis
   if (episodes.length === 0) return null;
 
   try {
-    const res = await fetch(`${BACKEND_URL}/ai/recap`, {
+    const res = await backendFetch('/ai/recap', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

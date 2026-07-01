@@ -10,6 +10,7 @@ import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
+import { backendFetch } from '../../lib/backendApi';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -219,7 +220,7 @@ export const useMovieData = () => {
 
     setIsAdding(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/addMovie`, {
+      const response = await backendFetch('/addMovie', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },

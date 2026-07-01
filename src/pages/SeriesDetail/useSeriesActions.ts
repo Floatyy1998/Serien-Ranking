@@ -20,6 +20,7 @@ import {
   trackSeriesAdded,
   trackSeriesDeleted,
 } from '../../firebase/analytics';
+import { backendFetch } from '../../lib/backendApi';
 import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { showToast, showUndoToast } from '../../lib/toast';
@@ -65,7 +66,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     setIsAdding(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_API_URL}/add`, {
+      const response = await backendFetch('/add', {
         method: 'POST',
         mode: 'cors',
         headers: { 'Content-Type': 'application/json' },

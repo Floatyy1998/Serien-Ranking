@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
+import { backendFetch } from '../lib/backendApi';
 
 type TtsState = 'idle' | 'loading' | 'speaking';
-
-const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 // Session-wide audio cache: text hash → blob URL
 const audioCache = new Map<string, string>();
@@ -69,7 +68,7 @@ export function useTextToSpeech() {
       abortRef.current = controller;
 
       try {
-        const res = await fetch(`${BACKEND_URL}/ai/tts`, {
+        const res = await backendFetch('/ai/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: clean, uid: user?.uid }),

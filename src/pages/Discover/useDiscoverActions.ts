@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { backendFetch } from '../../lib/backendApi';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverActionsResult {
@@ -64,13 +65,8 @@ export const useDiscoverActions = (
       const itemKey = `${item.type}-${item.id}`;
       setAddingItem(itemKey);
 
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
-
       try {
-        const response = await fetch(endpoint, {
+        const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

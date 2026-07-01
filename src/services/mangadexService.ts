@@ -5,7 +5,7 @@
  * No API key needed. Requests go through backend proxy to avoid CORS.
  */
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
+import { backendFetch } from '../lib/backendApi';
 
 // Simple in-memory cache
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();
@@ -44,7 +44,7 @@ export async function getMangaDexInfo(title: string): Promise<MangaDexInfo> {
 
   try {
     // Search via backend proxy
-    const searchRes = await fetch(`${BACKEND_URL}/mangaupdates/search`, {
+    const searchRes = await backendFetch('/mangaupdates/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title }),
@@ -80,7 +80,7 @@ export async function getMangaDexChapterDates(title: string): Promise<MangaDexCh
 
   try {
     // Get releases via backend proxy
-    const res = await fetch(`${BACKEND_URL}/mangaupdates/releases`, {
+    const res = await backendFetch('/mangaupdates/releases', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title }),
