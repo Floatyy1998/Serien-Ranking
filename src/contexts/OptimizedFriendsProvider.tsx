@@ -206,7 +206,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
             .ref(`users/${friend.uid}/activities`)
             .orderByChild('timestamp')
             .startAt(sevenDaysAgo)
-            .limitToLast(20);
+            .limitToLast(30);
 
           const snapshot = await activitiesRef.once('value');
           const data = snapshot.val();

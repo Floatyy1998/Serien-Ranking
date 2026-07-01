@@ -61,13 +61,13 @@ const logFriendActivity = async (
       timestamp: firebase.database.ServerValue.TIMESTAMP,
     });
 
-    // Limit to max 20 activities
+    // Limit to max 30 activities
     const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
     const activities = snapshot.val();
 
     if (activities) {
       const activityKeys = Object.keys(activities);
-      if (activityKeys.length > 20) {
+      if (activityKeys.length > 30) {
         // Sort by timestamp and remove oldest entries
         const sortedKeys = activityKeys.sort((a, b) => {
           const timestampA = activities[a].timestamp || 0;
@@ -75,8 +75,8 @@ const logFriendActivity = async (
           return timestampA - timestampB;
         });
 
-        // Remove excess activities (keep only newest 20)
-        const toRemove = sortedKeys.slice(0, activityKeys.length - 20);
+        // Remove excess activities (keep only newest 30)
+        const toRemove = sortedKeys.slice(0, activityKeys.length - 30);
         const updates: { [key: string]: null } = {};
         toRemove.forEach((key) => {
           updates[key] = null;
@@ -378,13 +378,13 @@ export const logEpisodeWatchedActivity = async (
       timestamp: firebase.database.ServerValue.TIMESTAMP,
     });
 
-    // Cap bei 20 (wie logFriendActivity).
+    // Cap bei 30 (wie logFriendActivity).
     const fresh = await activitiesRef.orderByChild('timestamp').once('value');
     const all = (fresh.val() as Record<string, { timestamp?: number }> | null) || {};
     const keys = Object.keys(all);
-    if (keys.length > 20) {
+    if (keys.length > 30) {
       const sorted = keys.sort((a, b) => (all[a].timestamp || 0) - (all[b].timestamp || 0));
-      const toRemove = sorted.slice(0, keys.length - 20);
+      const toRemove = sorted.slice(0, keys.length - 30);
       const updates: { [key: string]: null } = {};
       toRemove.forEach((key) => {
         updates[key] = null;
