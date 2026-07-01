@@ -3,11 +3,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import {
   EmptyState,
-  LoadingSpinner,
   PageLayout,
   ProfileItemCard,
   QuickFilter,
   ScrollToTopButton,
+  Skeleton,
+  SkeletonPosterRow,
   TabSwitcher,
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
@@ -34,7 +35,23 @@ const LoadingState = memo<{ theme: ReturnType<typeof usePublicProfileData>['curr
         }}
       />
       <div className="pp-loading__content">
-        <LoadingSpinner size={60} text="Lade Profil..." />
+        <div
+          role="status"
+          aria-label="Lade Profil"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 14,
+            width: '100%',
+          }}
+        >
+          <Skeleton width={96} height={96} shape="circle" />
+          <Skeleton width={160} height={20} shape="text" />
+          <Skeleton width={220} height={14} shape="text" />
+          <div style={{ height: 12 }} />
+          <SkeletonPosterRow count={4} posterWidth={110} />
+        </div>
       </div>
     </div>
   )

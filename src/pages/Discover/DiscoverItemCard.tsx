@@ -279,6 +279,23 @@ export const ItemCard = memo(
             ? new Date(item.release_date || item.first_air_date || '').getFullYear()
             : 'TBA'}
         </p>
+
+        {item.basedOn && (
+          <p
+            title={`Weil du „${item.basedOn}" magst`}
+            style={{
+              fontSize: '11px',
+              color: currentTheme.primary,
+              margin: '4px 0 0 0',
+              fontWeight: 600,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Weil du „{item.basedOn}" magst
+          </p>
+        )}
       </div>
     );
   }

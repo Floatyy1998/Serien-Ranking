@@ -1,67 +1,31 @@
-import { Check } from '@mui/icons-material';
-import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useEffect, useRef, type FC, type ReactNode } from 'react';
+import { showToast } from '../../lib/toast';
 
 interface SnackbarProps {
   open: boolean;
   message: string;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   variant?: 'success' | 'error' | 'info';
 }
 
-export const Snackbar: React.FC<SnackbarProps> = ({ open, message, icon, variant = 'success' }) => {
-  const { currentTheme } = useTheme();
+/**
+ * Dünner Adapter auf das zentrale DOM-Toast-System (`lib/toast`).
+ *
+ * Früher war dies eine eigene, parallele Toast-Implementierung (anderer Look,
+ * andere Position, kein aria-live). Um EIN konsistentes Feedback-System zu haben,
+ * delegiert die Komponente jetzt bei jeder open-Flanke an `showToast` und rendert
+ * selbst nichts mehr. Bestehende `<Snackbar open message variant />`-Aufrufer
+ * bleiben unverändert, bekommen aber automatisch Stacking + Barrierefreiheit.
+ */
+export const Snackbar: FC<SnackbarProps> = ({ open, message, variant = 'success' }) => {
+  const prevOpen = useRef(false);
 
-  const colorMap = {
-    success: currentTheme.status.success,
-    error: currentTheme.status.error,
-    info: currentTheme.primary,
-  };
-  const color = colorMap[variant];
+  useEffect(() => {
+    if (open && !prevOpen.current && message) {
+      showToast(message, 2500, variant);
+    }
+    prevOpen.current = open;
+  }, [open, message, variant]);
 
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-          style={{
-            position: 'fixed',
-            bottom: '100px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: `linear-gradient(135deg, ${color}, ${color}dd)`,
-            color: 'white',
-            padding: '14px 24px',
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: `0 12px 40px -8px ${color}50, var(--shadow-md)`,
-            zIndex: 'var(--z-toast)' as string,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            maxWidth: 'calc(100% - 40px)',
-          }}
-        >
-          <div
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            {icon || <Check style={{ fontSize: '18px' }} />}
-          </div>
-          <span style={{ fontSize: '15px', fontWeight: 600 }}>{message}</span>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+  return null;
 };

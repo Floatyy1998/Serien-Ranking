@@ -1,8 +1,9 @@
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { showToast } from '../../lib/toast';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { pickReaction } from '../../hooks/usePetReactions';
 import { usePetReactions, triggerPetReaction } from '../../hooks/usePetReactions';
@@ -47,7 +48,30 @@ export const PetWidget: React.FC = () => {
   });
   const [showHungerToast, setShowHungerToast] = useState(false);
   const [hungerToastLevel, setHungerToastLevel] = useState<'warning' | 'critical'>('warning');
+  // Vorheriger Lebend-Status, um den Übergang lebend→tot exakt einmal zu melden.
+  const prevAliveRef = useRef<boolean | null>(null);
   const reaction = usePetReactions(user?.uid);
+
+  // Meldet den Tod eines Pets prominent (statt still im Hintergrund). Feuert nur
+  // beim frischen Übergang lebend→tot, nicht bei einem bereits toten Pet beim
+  // App-Start – sonst würde ein alter Tod bei jedem Öffnen nerven.
+  const notifyIfDied = useCallback((updatedPet: Pet) => {
+    const wasAlive = prevAliveRef.current;
+    prevAliveRef.current = updatedPet.isAlive;
+    if (wasAlive === true && !updatedPet.isAlive) {
+      const causeText =
+        updatedPet.deathCause === 'hunger'
+          ? 'ist verhungert'
+          : updatedPet.deathCause === 'sadness'
+            ? 'ist vor Kummer gestorben'
+            : 'wurde zu lange vernachlässigt';
+      showToast(
+        `${updatedPet.name || 'Dein Haustier'} ${causeText} 😢 – tippe es an, um es wiederzubeleben`,
+        8000,
+        'error'
+      );
+    }
+  }, []);
 
   // DevTools escape hatch – lets you trigger any pet bubble from the
   // console while you're tuning the wording / animation. Examples:
@@ -157,6 +181,7 @@ export const PetWidget: React.FC = () => {
             const updatedPet = await petService.getUserPet(user.uid, activePetId);
             if (updatedPet) {
               setPet(updatedPet);
+              notifyIfDied(updatedPet);
               checkHungerToast(updatedPet);
             }
           }
@@ -214,7 +239,10 @@ export const PetWidget: React.FC = () => {
         const userPet = await petService.getUserPet(user.uid, petId);
         if (userPet) {
           const updatedPet = await petService.updatePetStatus(user.uid, petId);
-          setPet(updatedPet || userPet);
+          const resolvedPet = updatedPet || userPet;
+          setPet(resolvedPet);
+          // Baseline für die Tod-Erkennung setzen (feuert nicht beim ersten Mal).
+          notifyIfDied(resolvedPet);
         }
       }
     } catch (error) {
@@ -222,7 +250,7 @@ export const PetWidget: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, notifyIfDied]);
 
   // Async External-Sync (Firebase). Promise-Pfad ist fuer die Rule unsichtbar.
   useEffect(() => {

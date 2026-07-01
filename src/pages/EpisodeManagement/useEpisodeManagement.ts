@@ -13,6 +13,7 @@ import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { showToast, showUndoToast } from '../../lib/toast';
+import { hapticSuccess } from '../../lib/haptics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 
@@ -201,6 +202,7 @@ export const useEpisodeManagement = () => {
           updates[`${epPath}/f`] = nowUnix;
         }
         await db.ref().update(updates);
+        hapticSuccess();
       } else {
         // Komplett loeschen statt Nullen schreiben
         await db.ref().update({

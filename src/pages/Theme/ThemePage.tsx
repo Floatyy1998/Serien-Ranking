@@ -2,10 +2,11 @@
  * ThemePage - Theme Customization (composition only)
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getContrastRatio } from '../../theme/colorUtils';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
@@ -75,13 +76,13 @@ const presetThemes: PresetTheme[] = [
 const colorCategories: ColorCategory[] = [
   {
     key: 'primaryColor',
-    name: 'Primary',
+    name: 'Primär',
     icon: <ColorLens />,
     description: 'Hauptfarbe für Buttons',
   },
   {
     key: 'backgroundColor',
-    name: 'Background',
+    name: 'Hintergrund',
     icon: <Brightness6 />,
     description: 'Hintergrundfarbe',
   },
@@ -91,12 +92,27 @@ const colorCategories: ColorCategory[] = [
     icon: <FormatColorText />,
     description: 'Textfarbe',
   },
-  { key: 'surfaceColor', name: 'Surface', icon: <Wallpaper />, description: 'Kartenfarben' },
-  { key: 'accentColor', name: 'Accent', icon: <Palette />, description: 'Akzentfarbe' },
+  { key: 'surfaceColor', name: 'Oberfläche', icon: <Wallpaper />, description: 'Kartenfarben' },
+  { key: 'accentColor', name: 'Akzent', icon: <Palette />, description: 'Akzentfarbe' },
 ];
+
+const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
 
 export const ThemePage = () => {
   const { userConfig, updateTheme, resetTheme, currentTheme } = useTheme();
+
+  // Kontrast-Schutz: warnt, wenn die gewählte Text/Hintergrund-Kombination unter
+  // WCAG-AA (4.5:1) fällt, damit man sich nicht versehentlich „unsichtbar" macht.
+  const contrastWarning = useMemo(() => {
+    const textColor = (userConfig.textColor as string) || '';
+    const bgColor = (userConfig.backgroundColor as string) || '';
+    if (!isHexColor(textColor) || !isHexColor(bgColor)) return null;
+    const ratio = getContrastRatio(textColor, bgColor);
+    if (ratio >= 4.5) return null;
+    return ratio < 3
+      ? 'Sehr geringer Kontrast zwischen Text und Hintergrund – Text ist kaum lesbar.'
+      : 'Geringer Kontrast zwischen Text und Hintergrund (unter WCAG-AA 4.5:1).';
+  }, [userConfig.textColor, userConfig.backgroundColor]);
 
   const handleColorChange = useCallback(
     (key: string, value: string) => {
@@ -179,6 +195,24 @@ export const ThemePage = () => {
           <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
             Farben anpassen
           </h2>
+          {contrastWarning && (
+            <div
+              role="alert"
+              style={{
+                margin: '0 0 12px',
+                padding: '10px 14px',
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 600,
+                lineHeight: 1.4,
+                background: `${currentTheme.status.warning}1f`,
+                color: currentTheme.status.warning,
+                border: `1px solid ${currentTheme.status.warning}55`,
+              }}
+            >
+              ⚠️ {contrastWarning}
+            </div>
+          )}
           <div className="theme-color-list">
             {colorCategories.map((category) => (
               <ColorEditor

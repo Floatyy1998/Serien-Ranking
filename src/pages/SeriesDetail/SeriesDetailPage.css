@@ -329,13 +329,16 @@
 /* Episode Grid - compact grid mode */
 .episode-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(32px, 1fr));
+  /* min. 40px Breite; Zellen strecken sich via 1fr auf verfügbaren Platz. */
+  grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
   gap: 6px;
 }
 
 .episode-cell {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+  /* Trefferfläche min. 44px hoch (Touch-Target), Zahl bleibt visuell kompakt. */
+  min-width: 40px;
+  min-height: 44px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;

@@ -142,6 +142,7 @@ export const MovieDetailPage = memo(() => {
         <DiscussionThread
           itemId={movie.id}
           itemType="movie"
+          isWatched={isWatched}
           feedMetadata={{
             itemTitle: movie.title || 'Unbekannter Film',
             posterPath:

@@ -197,6 +197,8 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           item.nextEpisode.episodeId
         );
 
+        hapticSuccess();
+
         showUndoToast(`${item.title} ${label} als gesehen markiert`, {
           onUndo: async () => {
             setHiddenContinueEpisodes((prev) => {

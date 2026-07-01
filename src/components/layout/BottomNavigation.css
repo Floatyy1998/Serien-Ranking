@@ -1,7 +1,9 @@
 /* === Floating Dock Navigation – Liquid Glass === */
 .mobile-bottom-navigation {
   position: fixed;
-  bottom: 12px;
+  /* iOS Home-Indicator: Safe-Area berücksichtigen, damit die Dock nicht hinter
+     der System-Gesten-Leiste sitzt und Touch-Targets überlagert werden. */
+  bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 90%;
@@ -44,8 +46,11 @@
   border: none;
   color: rgba(255, 255, 255, 0.55);
   padding: 4px 0;
+  /* WCAG/Apple-HIG: min. 44–48px Trefferfläche für die primäre Navigation. */
+  min-height: 48px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 3px;
   cursor: pointer;
@@ -105,7 +110,7 @@
 
 /* --- Nav Label --- */
 .nav-label {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   font-family: var(--font-body);
   letter-spacing: 0.1px;

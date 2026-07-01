@@ -155,6 +155,7 @@ export interface UseUnifiedNotificationsReturn {
 export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
     unreadActivitiesCount,
+    lastReadActivitiesTime,
     friendActivities,
     friendRequests,
     unreadRequestsCount,
@@ -257,6 +258,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
 
     // Friend activities
     for (const act of friendActivities) {
+      // „Gesehen"-Aktivitäten gehören in den Feed, NICHT in den Bell-Hub.
+      if (act.type === 'episode_watched' || act.type === 'episodes_watched') continue;
       const isMovie =
         act.type === 'movie_added' ||
         act.type === 'movie_rated' ||
@@ -277,7 +280,9 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         title: act.userName || 'Freund',
         message: `hat "${act.itemTitle || 'Unbekannt'}" ${isRating ? 'bewertet' : isWatchlist ? 'auf die Watchlist gesetzt' : 'hinzugef\u00fcgt'}${isRating && act.rating ? ` (${act.rating}/10)` : ''}`,
         timestamp: act.timestamp,
-        read: unreadActivitiesCount === 0 || false,
+        // Pro-Eintrag-Read-State statt „alle-oder-keiner": ein Eintrag gilt als
+        // gelesen, wenn er älter ist als der letzte Lese-Zeitpunkt.
+        read: lastReadActivitiesTime > 0 && act.timestamp <= lastReadActivitiesTime,
         navigateTo: tmdbId ? (isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`) : undefined,
         icon: isRating ? 'star' : isWatchlist ? 'watchlist' : isMovie ? 'movie' : 'tv',
       });
@@ -398,7 +403,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     friendRequests,
     notifications,
     recommendations,
-    unreadActivitiesCount,
+    lastReadActivitiesTime,
     unreadRequestsCount,
     lastReadAnnouncementsTime,
     isAdmin,

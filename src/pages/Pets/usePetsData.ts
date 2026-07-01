@@ -25,6 +25,7 @@ export function usePetsData() {
   const [selectedType, setSelectedType] = useState<Pet['type']>('cat');
   const [activeColorBorder, setActiveColorBorder] = useState<string | null>(null);
   const [showReleaseConfirm, setShowReleaseConfirm] = useState(false);
+  const [showReviveConfirm, setShowReviveConfirm] = useState(false);
 
   const pet = pets[selectedPetIndex] ?? null;
 
@@ -178,6 +179,8 @@ export function usePetsData() {
       if (revivedPet) setPets((prev) => prev.map((p) => (p.id === revivedPet.id ? revivedPet : p)));
     } catch (error) {
       console.error('Error reviving pet:', error);
+    } finally {
+      setShowReviveConfirm(false);
     }
   };
 
@@ -294,6 +297,8 @@ export function usePetsData() {
   const closeCreateModal = () => setShowCreateModal(false);
   const openReleaseConfirm = () => setShowReleaseConfirm(true);
   const closeReleaseConfirm = () => setShowReleaseConfirm(false);
+  const openReviveConfirm = () => setShowReviveConfirm(true);
+  const closeReviveConfirm = () => setShowReviveConfirm(false);
 
   return {
     // State
@@ -307,6 +312,7 @@ export function usePetsData() {
     selectedType,
     activeColorBorder,
     showReleaseConfirm,
+    showReviveConfirm,
 
     // Derived
     currentMood,
@@ -335,5 +341,7 @@ export function usePetsData() {
     closeCreateModal,
     openReleaseConfirm,
     closeReleaseConfirm,
+    openReviveConfirm,
+    closeReviveConfirm,
   };
 }

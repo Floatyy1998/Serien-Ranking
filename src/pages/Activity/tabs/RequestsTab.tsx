@@ -8,9 +8,10 @@ import MarkEmailReadRounded from '@mui/icons-material/MarkEmailReadRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import { motion } from 'framer-motion';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { EmptyState } from '../../../components/ui';
+import { showUndoToast } from '../../../lib/toast';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
@@ -50,7 +51,27 @@ export const RequestsTab = ({
   const { currentTheme } = useTheme();
   const { formatTimeAgo } = useActivityGrouping([]);
 
-  const isEmpty = friendRequests.length === 0 && sentRequests.length === 0;
+  // Anfragen, die gerade in einem Undo-Fenster stecken: sofort ausblenden, die
+  // eigentliche (nicht umkehrbare) Löschung erfolgt erst beim Commit.
+  const [pendingRemoval, setPendingRemoval] = useState<Set<string>>(new Set());
+
+  const removeWithUndo = (id: string, label: string, commit: (id: string) => void) => {
+    setPendingRemoval((prev) => new Set(prev).add(id));
+    showUndoToast(label, {
+      onUndo: () =>
+        setPendingRemoval((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        }),
+      onCommit: () => commit(id),
+    });
+  };
+
+  const visibleIncoming = friendRequests.filter((r) => !pendingRemoval.has(r.id));
+  const visibleSent = sentRequests.filter((r) => !pendingRemoval.has(r.id));
+
+  const isEmpty = visibleIncoming.length === 0 && visibleSent.length === 0;
 
   if (isEmpty) {
     return (
@@ -76,13 +97,13 @@ export const RequestsTab = ({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -16 }}
     >
-      {friendRequests.length > 0 && (
+      {visibleIncoming.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <SectionLabel color={currentTheme.text.secondary}>
-            Eingehend · {friendRequests.length}
+            Eingehend · {visibleIncoming.length}
           </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {friendRequests.map((request, index) => {
+            {visibleIncoming.map((request, index) => {
               const profile = requestProfiles[request.fromUserId] || {};
               const name = profile.displayName || request.fromUsername || 'Unbekannt';
               return (
@@ -171,7 +192,9 @@ export const RequestsTab = ({
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => declineFriendRequest(request.id)}
+                      onClick={() =>
+                        removeWithUndo(request.id, 'Anfrage abgelehnt', declineFriendRequest)
+                      }
                       aria-label="Ablehnen"
                       style={{
                         width: '40px',
@@ -196,13 +219,13 @@ export const RequestsTab = ({
         </div>
       )}
 
-      {sentRequests.length > 0 && (
+      {visibleSent.length > 0 && (
         <div>
           <SectionLabel color={currentTheme.text.muted}>
-            Gesendet · {sentRequests.length}
+            Gesendet · {visibleSent.length}
           </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {sentRequests.map((request) => (
+            {visibleSent.map((request) => (
               <div
                 key={request.id}
                 style={{
@@ -259,7 +282,9 @@ export const RequestsTab = ({
                 </div>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => cancelFriendRequest(request.id)}
+                  onClick={() =>
+                    removeWithUndo(request.id, 'Anfrage zurückgezogen', cancelFriendRequest)
+                  }
                   aria-label="Anfrage zurückziehen"
                   style={{
                     width: '40px',

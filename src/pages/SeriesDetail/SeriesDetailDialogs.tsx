@@ -1,6 +1,7 @@
 import Check from '@mui/icons-material/Check';
 import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
+import { calculateSeriesMetrics } from '../../lib/episode/seriesMetrics';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 
 import type { DynamicTheme } from '../../theme/dynamicTheme';
@@ -72,6 +73,8 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
         <DiscussionThread
           itemId={series.id}
           itemType="series"
+          // Spoiler-Wall nur, wenn die Serie noch gar nicht begonnen wurde.
+          isWatched={calculateSeriesMetrics(series).progress > 0}
           feedMetadata={{
             itemTitle: series.title || series.name || 'Unbekannte Serie',
             posterPath:

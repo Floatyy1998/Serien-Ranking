@@ -22,11 +22,13 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const { user } = useAuth() || {};
   const [showNewForm, setShowNewForm] = useState(false);
 
-  // Spoiler protection for unwatched episodes
+  // Spoiler-Schutz für noch nicht gesehene Inhalte (Episode, Serie & Film).
   const spoilerKey =
     itemType === 'episode' && seasonNumber !== undefined && episodeNumber !== undefined
       ? `spoiler_revealed_${itemId}_s${seasonNumber}_e${episodeNumber}`
-      : null;
+      : itemType === 'series' || itemType === 'movie'
+        ? `spoiler_revealed_${itemType}_${itemId}`
+        : null;
 
   const [spoilerRevealed, setSpoilerRevealed] = useState(() => {
     if (spoilerKey) {
@@ -42,8 +44,10 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     }
   };
 
-  // Show spoiler protection if episode is not watched and user hasn't revealed
-  const showSpoilerProtection = itemType === 'episode' && isWatched === false && !spoilerRevealed;
+  // Wall nur zeigen, wenn der Aufrufer explizit "nicht gesehen" meldet.
+  const showSpoilerProtection = !!spoilerKey && isWatched === false && !spoilerRevealed;
+  const spoilerSubject =
+    itemType === 'movie' ? 'diesen Film' : itemType === 'series' ? 'diese Serie' : 'diese Episode';
 
   const {
     discussions,
@@ -134,7 +138,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               lineHeight: 1.6,
             }}
           >
-            Du hast diese Episode noch nicht gesehen.
+            Du hast {spoilerSubject} noch nicht gesehen.
           </p>
           <p
             style={{

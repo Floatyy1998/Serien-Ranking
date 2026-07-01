@@ -79,6 +79,17 @@ export async function logEpisodeWatch(
     watchtimeMinutes: runtime,
   }).catch(() => {});
 
+  // Freunde-Feed „gesehen"-Aktivität – NUR Erstwatch, kein Bulk-Marking (Catch-up
+  // soll den Feed nicht zuspammen), kein Rewatch. Erscheint bewusst NICHT im
+  // Notification-Hub/Badge (dort ausgeschlossen). Best-effort, dynamisch geladen.
+  if (!isBulkMarking && !isRewatch) {
+    import('../../features/badges/minimalActivityLogger')
+      .then((m) =>
+        m.logEpisodeWatchedActivity(userId, seriesTitle, seriesId, seasonNumber, episodeNumber)
+      )
+      .catch(() => {});
+  }
+
   // Pet reaction – binge takes priority over rewatch over plain cheer.
   // Skipped for bulk-marking (catch-up) so the bubble doesn't spam.
   if (!isBulkMarking) {

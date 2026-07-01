@@ -9,7 +9,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { LoadingSpinner, PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
+import { SkeletonListRow, PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { useRecentlyWatched, TIME_RANGES } from './useRecentlyWatched';
 import {
   DateGroupHeader,
@@ -86,8 +86,13 @@ export const RecentlyWatchedPage = memo(() => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                style={{ padding: '0 16px' }}
+                role="status"
+                aria-label="Lade Verlauf"
               >
-                <LoadingSpinner color={currentTheme.status.success} text="Lade Verlauf..." />
+                {Array.from({ length: 6 }, (_, i) => (
+                  <SkeletonListRow key={i} avatarShape="card" />
+                ))}
               </motion.div>
             ) : totalEpisodes === 0 ? (
               <EmptyState searchQuery={searchQuery} daysToShow={daysToShow} />

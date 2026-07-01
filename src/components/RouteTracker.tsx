@@ -44,7 +44,6 @@ function getPageName(pathname: string): string {
   if (pathname.startsWith('/friend/')) return 'friend_profile';
   if (pathname.startsWith('/taste-match/')) return 'taste_match';
   if (pathname.startsWith('/public/')) return 'public_profile';
-  if (pathname.startsWith('/profile-settings')) return 'profile_settings';
   return pathname.replace(/\//g, '_').replace(/^_/, '') || 'home';
 }
 

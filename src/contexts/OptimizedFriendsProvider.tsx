@@ -181,7 +181,11 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
         ) {
           setFriendActivities(cached.activities);
           const unreadActivities = cached.activities.filter(
-            (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
+            (activity) =>
+              activity.timestamp > lastReadActivitiesTimeRef.current &&
+              // „Gesehen"-Aktivitäten zählen NICHT in den Bell-Badge.
+              activity.type !== 'episode_watched' &&
+              activity.type !== 'episodes_watched'
           );
           setUnreadActivitiesCount(unreadActivities.length);
           return;
@@ -232,7 +236,11 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       setFriendActivities(recentActivities);
 
       const unreadActivities = recentActivities.filter(
-        (activity) => activity.timestamp > lastReadActivitiesTimeRef.current
+        (activity) =>
+          activity.timestamp > lastReadActivitiesTimeRef.current &&
+          // „Gesehen"-Aktivitäten zählen NICHT in den Bell-Badge.
+          activity.type !== 'episode_watched' &&
+          activity.type !== 'episodes_watched'
       );
       setUnreadActivitiesCount(unreadActivities.length);
 
@@ -468,6 +476,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       loading,
       unreadRequestsCount,
       unreadActivitiesCount,
+      lastReadActivitiesTime,
       markRequestsAsRead,
       markActivitiesAsRead,
       sendFriendRequest,
@@ -486,6 +495,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       loading,
       unreadRequestsCount,
       unreadActivitiesCount,
+      lastReadActivitiesTime,
       markRequestsAsRead,
       markActivitiesAsRead,
       sendFriendRequest,

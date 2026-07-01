@@ -1,4 +1,4 @@
-import { Delete, Edit, Favorite, FavoriteBorder, Flag, Warning } from '@mui/icons-material';
+import { Delete, Edit, Favorite, FavoriteBorder, Flag, Reply, Warning } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
@@ -17,7 +17,8 @@ const ReplyItemInner: React.FC<{
   onToggleLike: () => void;
   isOwner: boolean;
   currentUserId?: string;
-}> = ({ reply, onDelete, onEdit, onToggleLike, isOwner, currentUserId }) => {
+  onReplyTo?: (username: string) => void;
+}> = ({ reply, onDelete, onEdit, onToggleLike, isOwner, currentUserId, onReplyTo }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? reply.likes.includes(currentUserId) : false;
@@ -281,6 +282,30 @@ const ReplyItemInner: React.FC<{
                 {reply.likes.length > 0 && reply.likes.length}
               </button>
             </Tooltip>
+
+            {/* Antworten – belegt das Eingabefeld mit @Name vor (leichter Bezug
+                statt echter Verschachtelung). */}
+            {currentUserId && onReplyTo && (
+              <Tooltip title={`@${reply.username} antworten`} arrow>
+                <button
+                  onClick={() => onReplyTo(reply.username)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'transparent',
+                    border: 'none',
+                    padding: '6px 10px',
+                    borderRadius: '16px',
+                    cursor: 'pointer',
+                    color: currentTheme.text.muted,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
+                  <Reply style={{ fontSize: '16px' }} />
+                </button>
+              </Tooltip>
+            )}
 
             {/* Flag as Spoiler (non-owners only, if not already spoiler) */}
             {!isOwner && !reply.isSpoiler && currentUserId && !showSpoilerConfirm && (

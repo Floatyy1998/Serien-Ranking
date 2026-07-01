@@ -9,6 +9,7 @@ import { trackEpisodeWatched } from '../../firebase/analytics';
 import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { showToast, showUndoToast } from '../../lib/toast';
+import { hapticSuccess } from '../../lib/haptics';
 
 interface UseWatchNextSwipeOptions {
   user: { uid: string } | null;
@@ -115,6 +116,8 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
         updates[`${epPath}/f`] = nowUnix;
       }
       await db.ref().update(updates);
+
+      hapticSuccess();
 
       showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
         onUndo: async () => {

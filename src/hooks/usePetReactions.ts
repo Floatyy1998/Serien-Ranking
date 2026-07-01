@@ -6,6 +6,7 @@ export type PetReactionTone =
   | 'cheer'
   | 'streak'
   | 'milestone'
+  | 'levelup'
   | 'love'
   | 'idle'
   | 'morning'
@@ -56,6 +57,13 @@ const SPEECH_POOL: Record<PetReactionTone, SpeechLine[]> = {
     { emoji: '🌟', message: '{n} Tage – krass!' },
     { emoji: '👑', message: '{n} Tage Streak – Held' },
     { emoji: '🎊', message: 'Boom, {n} Tage!' },
+  ],
+  levelup: [
+    { emoji: '🎉', message: 'Level {n}! 🆙' },
+    { emoji: '⬆️', message: 'Aufgestiegen – Level {n}!' },
+    { emoji: '🏅', message: 'Level {n} erreicht!' },
+    { emoji: '✨', message: 'Level {n}, stark!' },
+    { emoji: '🚀', message: 'Level {n} – weiter so!' },
   ],
   love: [
     { emoji: '💕', message: 'Hab dich lieb!' },

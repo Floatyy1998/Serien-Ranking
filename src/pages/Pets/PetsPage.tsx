@@ -12,6 +12,7 @@ import { PetCreationModal } from './PetCreationModal';
 import { PetCustomization } from './PetCustomization';
 import { XpBoostHeaderButton } from './XpBoostHeaderButton';
 import { PetReleaseConfirm } from './PetReleaseConfirm';
+import { PetReviveConfirm } from './PetReviveConfirm';
 import { PetSelector } from './PetSelector';
 import { usePetsData } from './usePetsData';
 import './PetsPage.css';
@@ -30,6 +31,7 @@ export const PetsPage: React.FC = () => {
     selectedType,
     activeColorBorder,
     showReleaseConfirm,
+    showReviveConfirm,
     currentMood,
     hungerPercentage,
     happinessPercentage,
@@ -51,6 +53,8 @@ export const PetsPage: React.FC = () => {
     openCreateModal,
     openReleaseConfirm,
     closeReleaseConfirm,
+    openReviveConfirm,
+    closeReviveConfirm,
   } = usePetsData();
 
   // Loading State
@@ -109,7 +113,7 @@ export const PetsPage: React.FC = () => {
       />
 
       {/* Action Buttons */}
-      <PetActions pet={pet} onFeed={feedPet} onPlay={playWithPet} onRevive={revivePet} />
+      <PetActions pet={pet} onFeed={feedPet} onPlay={playWithPet} onRevive={openReviveConfirm} />
 
       {/* Release Confirmation Modal */}
       <PetReleaseConfirm
@@ -117,6 +121,14 @@ export const PetsPage: React.FC = () => {
         show={showReleaseConfirm}
         onClose={closeReleaseConfirm}
         onConfirm={releasePet}
+      />
+
+      {/* Revive Confirmation Modal (zeigt die Level-Kosten vorher an) */}
+      <PetReviveConfirm
+        pet={pet}
+        show={showReviveConfirm}
+        onClose={closeReviveConfirm}
+        onConfirm={revivePet}
       />
 
       {/* Customization: Colors, Accessories, Backgrounds */}

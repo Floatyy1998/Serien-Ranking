@@ -161,10 +161,11 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
 // Standard-Theme als Fallback (Cinematic Dark)
 export const defaultThemeConfig: UserThemeConfig = {
-  primaryColor: '#00fed7',
-  backgroundColor: '#06090f',
-  surfaceColor: '#0e1420',
-  accentColor: '#00e6c3',
+  primaryColor: '#00d123',
+  backgroundColor: '#000000',
+  surfaceColor: '#000000',
+  accentColor: '#008a6e',
+  textColor: '#e0e0e0',
   backgroundImage: undefined,
   backgroundImageOpacity: 0.5,
   backgroundImageBlur: 0,

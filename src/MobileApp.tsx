@@ -31,7 +31,6 @@ import {
   WrappedPage,
   ActorUniversePage,
   SettingsPage,
-  ProfileSettingsPage,
   EpisodeManagementPage,
   EpisodeDiscussionPage,
   RatingPage,
@@ -321,14 +320,6 @@ export const MobileApp = () => {
               element={
                 <Layout hideNav>
                   <SettingsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/profile-settings"
-              element={
-                <Layout hideNav>
-                  <ProfileSettingsPage />
                 </Layout>
               }
             />

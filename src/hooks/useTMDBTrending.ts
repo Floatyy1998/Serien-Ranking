@@ -51,6 +51,29 @@ interface UseTMDBTrendingResult {
   error: Error | null;
 }
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+
+// Resolve a raw TMDB "DE flatrate" array to app providers (name + local logo).
+// Pure — used for both the cached backend payload and the direct-TMDB fallback.
+function resolveProviders(flatrate: RawWatchProvider[] | undefined): TrendingProvider[] {
+  if (!Array.isArray(flatrate)) return [];
+  const seen = new Set<string>();
+  const out: TrendingProvider[] = [];
+  for (const raw of flatrate) {
+    const normalized = normalizeProviderName(raw.provider_name);
+    if (!normalized || !isSupportedProvider(normalized) || seen.has(normalized)) continue;
+    seen.add(normalized);
+    const logo =
+      getProviderLogoUrl(normalized) ??
+      (raw.logo_path ? `https://image.tmdb.org/t/p/w92${raw.logo_path}` : '');
+    if (!logo) continue;
+    out.push({ name: normalized, logo });
+  }
+  return out;
+}
+
+// Fallback only: direct per-item TMDB providers call, used when the cached
+// backend /trending endpoint is unavailable.
 async function fetchProviders(
   type: 'series' | 'movie',
   id: number,
@@ -63,22 +86,7 @@ async function fetchProviders(
     );
     if (!res.ok) return [];
     const data = await res.json();
-    const flatrate = data?.results?.DE?.flatrate;
-    if (!Array.isArray(flatrate)) return [];
-
-    const seen = new Set<string>();
-    const out: TrendingProvider[] = [];
-    for (const raw of flatrate as RawWatchProvider[]) {
-      const normalized = normalizeProviderName(raw.provider_name);
-      if (!normalized || !isSupportedProvider(normalized) || seen.has(normalized)) continue;
-      seen.add(normalized);
-      const logo =
-        getProviderLogoUrl(normalized) ??
-        (raw.logo_path ? `https://image.tmdb.org/t/p/w92${raw.logo_path}` : '');
-      if (!logo) continue;
-      out.push({ name: normalized, logo });
-    }
-    return out;
+    return resolveProviders(data?.results?.DE?.flatrate);
   } catch {
     return [];
   }
@@ -118,6 +126,43 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
     const fetchTrending = async () => {
       setError(null);
       try {
+        // Fast path: one cached backend request (trending + providers),
+        // replacing ~40 per-item TMDB /watch/providers round-trips.
+        try {
+          const res = await fetch(`${BACKEND_URL}/trending`);
+          if (res.ok) {
+            const data = await res.json();
+            const tv: (TMDBTrendingItem & { providers?: RawWatchProvider[] })[] = Array.isArray(
+              data?.tv
+            )
+              ? data.tv
+              : [];
+            const movie: (TMDBTrendingItem & { providers?: RawWatchProvider[] })[] = Array.isArray(
+              data?.movie
+            )
+              ? data.movie
+              : [];
+            if (tv.length || movie.length) {
+              if (cancelled) return;
+              setRawSeries(
+                tv.map((item) => ({
+                  ...mapTMDBItem(item, 'series'),
+                  providers: resolveProviders(item.providers),
+                }))
+              );
+              setRawMovies(
+                movie.map((item) => ({
+                  ...mapTMDBItem(item, 'movie'),
+                  providers: resolveProviders(item.providers),
+                }))
+              );
+              return;
+            }
+          }
+        } catch {
+          // backend unavailable → fall through to the direct-TMDB path below
+        }
+
         const apiKey = import.meta.env.VITE_API_TMDB;
         if (!apiKey) {
           throw new Error('VITE_API_TMDB ist nicht konfiguriert');

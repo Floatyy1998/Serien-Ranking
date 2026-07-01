@@ -18,12 +18,25 @@ export async function updateWatchStreak(userId: string): Promise<void> {
     const streakRef = firebase.database().ref(getStreakPath(userId, year));
     const snapshot = await streakRef.once('value');
 
-    const currentStreak: WatchStreak = (snapshot.val() as WatchStreak | null) ?? {
-      currentStreak: 0,
-      longestStreak: 0,
-      lastWatchDate: '',
-      streaks: [],
-    };
+    let currentStreak: WatchStreak | null = snapshot.val() as WatchStreak | null;
+
+    if (!currentStreak) {
+      // Erster Eintrag im (neuen) Jahr: vom Vorjahr übernehmen, damit eine über
+      // Silvester laufende Streak nicht abbricht und der All-Time-Rekord
+      // (longestStreak) erhalten bleibt. Die Fortsetzungs-Logik unten prüft dann
+      // via lastWatchDate === gestern, ob die Streak tatsächlich weiterläuft.
+      const prevSnap = await firebase
+        .database()
+        .ref(getStreakPath(userId, year - 1))
+        .once('value');
+      const prev = prevSnap.val() as WatchStreak | null;
+      currentStreak = {
+        currentStreak: prev?.currentStreak ?? 0,
+        longestStreak: prev?.longestStreak ?? 0,
+        lastWatchDate: prev?.lastWatchDate ?? '',
+        streaks: prev?.streaks ?? [],
+      };
+    }
 
     const lastDate = currentStreak.lastWatchDate;
 

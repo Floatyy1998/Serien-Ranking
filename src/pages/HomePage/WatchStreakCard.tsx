@@ -44,7 +44,29 @@ export const WatchStreakCard: React.FC = () => {
           shieldUsedCount: data.shieldUsedCount,
         });
       } else {
-        setStreak({ currentStreak: 0, longestStreak: 0, lastWatchDate: '' });
+        // Am Jahresanfang ist der Neujahrs-Pfad leer, bis die erste Episode
+        // geschaut wird. Vorjahr als Fallback laden, damit die Streak nicht
+        // fälschlich auf 0 springt (getStreakStatus zeigt sie bei echtem
+        // Abbruch weiterhin als "verloren" an).
+        firebase
+          .database()
+          .ref(`users/${user.uid}/wrapped/${year - 1}/streak`)
+          .once('value')
+          .then((prevSnap) => {
+            const prev = prevSnap.val();
+            setStreak(
+              prev
+                ? {
+                    currentStreak: prev.currentStreak || 0,
+                    longestStreak: prev.longestStreak || 0,
+                    lastWatchDate: prev.lastWatchDate || '',
+                    lastShieldUsedDate: prev.lastShieldUsedDate,
+                    shieldUsedCount: prev.shieldUsedCount,
+                  }
+                : { currentStreak: 0, longestStreak: 0, lastWatchDate: '' }
+            );
+          })
+          .catch(() => setStreak({ currentStreak: 0, longestStreak: 0, lastWatchDate: '' }));
       }
     };
 

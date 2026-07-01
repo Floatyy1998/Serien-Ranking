@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { PageLayout, PageHeader, LoadingSpinner, EmptyState } from '../../components/ui';
+import { PageLayout, PageHeader, SkeletonListRow, EmptyState } from '../../components/ui';
 import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
@@ -233,7 +233,11 @@ export const DiscussionFeedPage = () => {
       {/* Content */}
       <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
         {loading ? (
-          <LoadingSpinner size={40} text="Diskussionen werden geladen..." />
+          <div role="status" aria-label="Diskussionen werden geladen">
+            {Array.from({ length: 5 }, (_, i) => (
+              <SkeletonListRow key={i} avatarShape="card" />
+            ))}
+          </div>
         ) : error ? (
           <div
             style={{

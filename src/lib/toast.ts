@@ -1,22 +1,33 @@
-let activeToast: HTMLElement | null = null;
-let activeDismissTimer: ReturnType<typeof setTimeout> | null = null;
-let pendingCommit: (() => void) | null = null;
+/**
+ * App-Toasts (DOM-basiert, unabhängig von React-Render).
+ *
+ * Toasts werden GESTAPELT statt als Singleton geführt: ein neuer Toast committet
+ * NICHT mehr sofort den vorherigen. So bleibt beim Schnell-Markieren mehrerer
+ * Episoden für jede Aktion ein eigenes Undo-Fenster erhalten.
+ *
+ * Barrierefreiheit: jeder Toast ist ein aria-live-Region (error = assertive),
+ * damit Screenreader Feedback + den zeitkritischen „Rückgängig"-Button ansagen.
+ */
 
-function clearActiveToast(): void {
-  if (activeDismissTimer) {
-    clearTimeout(activeDismissTimer);
-    activeDismissTimer = null;
+// Max. gleichzeitig offene Undo-Toasts. Beim Bulk-Markieren würden sonst
+// beliebig viele stapeln; der älteste wird committet, sobald das Limit greift.
+const MAX_UNDO_TOASTS = 3;
+
+interface UndoEntry {
+  el: HTMLElement;
+  commitNow: () => void;
+}
+
+const undoToasts: UndoEntry[] = [];
+
+function ensureContainer(): HTMLElement {
+  let container = document.getElementById('app-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'app-toast-container';
+    document.body.appendChild(container);
   }
-  // Sofort den pending onCommit des vorherigen Toasts auslösen
-  if (pendingCommit) {
-    const commit = pendingCommit;
-    pendingCommit = null;
-    commit();
-  }
-  if (activeToast) {
-    activeToast.remove();
-    activeToast = null;
-  }
+  return container;
 }
 
 function ensureToastStyles(): void {
@@ -26,25 +37,25 @@ function ensureToastStyles(): void {
   style.textContent = `
     @keyframes toast-enter {
       from {
-        transform: translateX(-50%) translateY(20px) scale(0.92);
+        transform: translateY(20px) scale(0.92);
         opacity: 0;
       }
       to {
-        transform: translateX(-50%) translateY(0) scale(1);
+        transform: translateY(0) scale(1);
         opacity: 1;
       }
     }
     @keyframes toast-exit {
       from {
-        transform: translateX(-50%) translateY(0) scale(1);
+        transform: translateY(0) scale(1);
         opacity: 1;
       }
       to {
-        transform: translateX(-50%) translateY(10px) scale(0.95);
+        transform: translateY(10px) scale(0.95);
         opacity: 0;
       }
     }
-    #app-toast {
+    #app-toast-container {
       position: fixed;
       bottom: 80px;
       left: 50%;
@@ -52,6 +63,13 @@ function ensureToastStyles(): void {
       z-index: 99999;
       width: 90vw;
       max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .app-toast {
+      width: 100%;
       padding: 14px 18px;
       background: linear-gradient(
         135deg,
@@ -78,12 +96,13 @@ function ensureToastStyles(): void {
       align-items: center;
       gap: 14px;
       overflow: hidden;
+      position: relative;
     }
-    #app-toast.toast-interactive {
+    .app-toast.toast-interactive {
       pointer-events: auto;
       cursor: default;
     }
-    #app-toast .toast-icon {
+    .app-toast .toast-icon {
       width: 28px;
       height: 28px;
       border-radius: 9px;
@@ -93,53 +112,59 @@ function ensureToastStyles(): void {
       flex-shrink: 0;
       font-size: 15px;
     }
-    #app-toast .toast-icon--success {
+    .app-toast .toast-icon--success {
       background: linear-gradient(135deg, rgba(34,197,94,0.2), rgba(34,197,94,0.08));
       color: #4ade80;
     }
-    #app-toast .toast-icon--error {
+    .app-toast .toast-icon--error {
       background: linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.08));
       color: #f87171;
     }
-    #app-toast .toast-icon--info {
+    .app-toast .toast-icon--info {
       background: linear-gradient(135deg,
         color-mix(in srgb, var(--theme-primary, #60a5fa) 20%, transparent),
         color-mix(in srgb, var(--theme-primary, #60a5fa) 8%, transparent));
       color: var(--theme-primary, #60a5fa);
     }
-    #app-toast .toast-text {
+    .app-toast .toast-text {
       flex: 1;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    #app-toast .toast-divider {
+    .app-toast .toast-divider {
       width: 1px;
       height: 20px;
       background: rgba(255, 255, 255, 0.12);
       flex-shrink: 0;
     }
-    #app-toast .toast-undo-btn {
+    .app-toast .toast-undo-btn {
       background: none;
       border: none;
       color: var(--theme-primary, #60a5fa);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      padding: 6px 10px;
+      /* min. 44px Trefferfläche für den zeitkritischen Undo-Button */
+      min-height: 44px;
+      padding: 6px 12px;
       border-radius: 8px;
       transition: background 0.15s ease;
       white-space: nowrap;
       flex-shrink: 0;
       letter-spacing: 0.01em;
     }
-    #app-toast .toast-undo-btn:hover {
+    .app-toast .toast-undo-btn:hover {
       background: color-mix(in srgb, var(--theme-primary, #60a5fa) 12%, transparent);
     }
-    #app-toast .toast-undo-btn:active {
+    .app-toast .toast-undo-btn:active {
       background: color-mix(in srgb, var(--theme-primary, #60a5fa) 20%, transparent);
     }
-    #app-toast.toast-out {
+    .app-toast .toast-undo-btn:focus-visible {
+      outline: 2px solid var(--theme-primary, #60a5fa);
+      outline-offset: 2px;
+    }
+    .app-toast.toast-out {
       animation: toast-exit 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
     }
   `;
@@ -148,10 +173,7 @@ function ensureToastStyles(): void {
 
 function dismissToast(toast: HTMLElement): void {
   toast.classList.add('toast-out');
-  setTimeout(() => {
-    toast.remove();
-    if (activeToast === toast) activeToast = null;
-  }, 300);
+  setTimeout(() => toast.remove(), 300);
 }
 
 type ToastVariant = 'success' | 'error' | 'info';
@@ -160,9 +182,9 @@ function createIcon(variant: ToastVariant): HTMLElement {
   const icon = document.createElement('div');
   icon.className = `toast-icon toast-icon--${variant}`;
   const symbols: Record<ToastVariant, string> = {
-    success: '\u2713',
+    success: '✓',
     error: '!',
-    info: '\u2139',
+    info: 'ℹ',
   };
   icon.textContent = symbols[variant];
   return icon;
@@ -173,11 +195,14 @@ export function showToast(
   duration = 1500,
   variant: ToastVariant = 'success'
 ): void {
-  clearActiveToast();
   ensureToastStyles();
+  const container = ensureContainer();
 
   const toast = document.createElement('div');
-  toast.id = 'app-toast';
+  toast.className = 'app-toast';
+  // Fehler assertiv ansagen, sonst höflich.
+  toast.setAttribute('role', variant === 'error' ? 'alert' : 'status');
+  toast.setAttribute('aria-live', variant === 'error' ? 'assertive' : 'polite');
 
   toast.appendChild(createIcon(variant));
 
@@ -186,9 +211,8 @@ export function showToast(
   text.textContent = message;
   toast.appendChild(text);
 
-  document.body.appendChild(toast);
-  activeToast = toast;
-  activeDismissTimer = setTimeout(() => dismissToast(toast), duration);
+  container.appendChild(toast);
+  setTimeout(() => dismissToast(toast), duration);
 }
 
 interface UndoToastOptions {
@@ -208,15 +232,18 @@ export function showUndoToast(
       : undoOrOptions;
   const { onUndo, onCommit, duration = 4000 } = opts;
 
-  clearActiveToast();
   ensureToastStyles();
+  const container = ensureContainer();
 
-  let undone = false;
-  pendingCommit = onCommit || null;
+  // Stack-Limit: ältesten Undo-Toast committen, bevor ein neuer dazukommt.
+  while (undoToasts.length >= MAX_UNDO_TOASTS) {
+    undoToasts[0].commitNow();
+  }
 
   const toast = document.createElement('div');
-  toast.id = 'app-toast';
-  toast.classList.add('toast-interactive');
+  toast.className = 'app-toast toast-interactive';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
 
   toast.appendChild(createIcon('success'));
 
@@ -231,13 +258,8 @@ export function showUndoToast(
 
   const undoBtn = document.createElement('button');
   undoBtn.className = 'toast-undo-btn';
+  undoBtn.type = 'button';
   undoBtn.textContent = 'Rückgängig';
-  undoBtn.addEventListener('click', () => {
-    undone = true;
-    pendingCommit = null; // Undo => kein Commit
-    onUndo();
-    clearActiveToast();
-  });
   toast.appendChild(undoBtn);
 
   // Progress bar — driven by rAF for guaranteed smooth countdown
@@ -254,27 +276,50 @@ export function showUndoToast(
   `;
   toast.appendChild(bar);
 
-  document.body.appendChild(toast);
-  activeToast = toast;
+  container.appendChild(toast);
+
+  // Jeder Toast verwaltet Timer/rAF/Commit selbst — kein globaler Zustand mehr,
+  // dadurch beeinflusst ein Undo/Timeout nur den EIGENEN Toast.
+  let settled = false;
+  let rafId = 0;
+  let dismissTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const entry: UndoEntry = {
+    el: toast,
+    commitNow: () => {
+      if (settled) return;
+      settled = true;
+      cancelAnimationFrame(rafId);
+      if (dismissTimer) clearTimeout(dismissTimer);
+      const idx = undoToasts.indexOf(entry);
+      if (idx !== -1) undoToasts.splice(idx, 1);
+      dismissToast(toast);
+      if (onCommit) onCommit();
+    },
+  };
+  undoToasts.push(entry);
+
+  undoBtn.addEventListener('click', () => {
+    if (settled) return;
+    settled = true;
+    cancelAnimationFrame(rafId);
+    if (dismissTimer) clearTimeout(dismissTimer);
+    const idx = undoToasts.indexOf(entry);
+    if (idx !== -1) undoToasts.splice(idx, 1);
+    dismissToast(toast);
+    onUndo(); // Undo => kein Commit
+  });
 
   const start = performance.now();
-  let rafId = 0;
   const tick = () => {
     const elapsed = performance.now() - start;
     const pct = Math.max(0, 1 - elapsed / duration);
     bar.style.width = `${pct * 100}%`;
-    if (pct > 0 && activeToast === toast) {
+    if (pct > 0 && !settled) {
       rafId = requestAnimationFrame(tick);
     }
   };
   rafId = requestAnimationFrame(tick);
 
-  activeDismissTimer = setTimeout(() => {
-    cancelAnimationFrame(rafId);
-    pendingCommit = null; // Timer abgelaufen => direkt committen
-    dismissToast(toast);
-    if (!undone && onCommit) {
-      onCommit();
-    }
-  }, duration);
+  dismissTimer = setTimeout(() => entry.commitNow(), duration);
 }
