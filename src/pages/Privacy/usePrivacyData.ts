@@ -87,12 +87,15 @@ export interface FirebaseService {
   optOut?: string;
 }
 
+const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
+
 export const usePrivacyData = () => {
   const [data, setData] = useState<PrivacyData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/legal/privacy.json')
+    // Legal content lives on the backend (kept out of the public frontend repo).
+    fetch(`${BACKEND_URL}/legal/privacy.json`)
       .then((res) => res.json())
       .then(setData)
       .catch(() => {
