@@ -30,8 +30,33 @@ export const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const handlePasswordReset = async () => {
+    if (!email) {
+      setInfo('');
+      setError('Bitte gib zuerst deine E-Mail-Adresse ein.');
+      return;
+    }
+    setError('');
+    setInfo('');
+    try {
+      await firebase.auth().sendPasswordResetEmail(email);
+      setInfo('Wir haben dir eine E-Mail zum Zurücksetzen deines Passworts geschickt.');
+    } catch (err: unknown) {
+      const firebaseError = err as { code?: string };
+      if (firebaseError.code === 'auth/invalid-email') {
+        setError('Ungültige E-Mail-Adresse.');
+      } else if (firebaseError.code === 'auth/user-not-found') {
+        // Aus Datenschutzgründen keine Konto-Existenz preisgeben.
+        setInfo('Falls ein Konto existiert, haben wir dir eine E-Mail geschickt.');
+      } else {
+        setError('E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.');
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,6 +171,19 @@ export const LoginPage = () => {
                 }}
               >
                 {error}
+              </Alert>
+            )}
+
+            {info && (
+              <Alert
+                severity="success"
+                sx={{
+                  mb: 3,
+                  background: 'rgba(34, 197, 94, 0.1)',
+                  color: currentTheme.status?.success || '#4ade80',
+                }}
+              >
+                {info}
               </Alert>
             )}
 
@@ -274,6 +312,25 @@ export const LoginPage = () => {
                 {loading ? 'Anmelden...' : 'Anmelden'}
               </Button>
             </form>
+
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
+              <Button
+                variant="text"
+                onClick={handlePasswordReset}
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  fontSize: '0.9rem',
+                  '&:hover': {
+                    color: currentTheme.primary,
+                    background: 'transparent',
+                  },
+                }}
+              >
+                Passwort vergessen?
+              </Button>
+            </Box>
           </Paper>
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>

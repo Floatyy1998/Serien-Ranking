@@ -33,6 +33,14 @@ export const RepliesSection: React.FC<{
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const replyInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleReplyTo = (username: string) => {
+    const mention = `@${username} `;
+    setNewReply((prev) => (prev.startsWith(mention) ? prev : mention + prev));
+    setIsExpanded(true);
+    setTimeout(() => replyInputRef.current?.focus(), 0);
+  };
 
   // Always pass discussionId so createReply works, only load replies when expanded
   const { replies, loading, createReply, editReply, deleteReply, toggleReplyLike } =
@@ -162,6 +170,7 @@ export const RepliesSection: React.FC<{
                     onToggleLike={() => toggleReplyLike(reply.id)}
                     isOwner={reply.userId === user?.uid}
                     currentUserId={user?.uid}
+                    onReplyTo={handleReplyTo}
                   />
                 ))
               )}
@@ -233,6 +242,7 @@ export const RepliesSection: React.FC<{
                       </div>
                     )}
                     <textarea
+                      ref={replyInputRef}
                       placeholder={
                         replyImages.length > 0
                           ? 'Beschreibung (optional)...'

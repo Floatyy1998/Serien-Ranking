@@ -257,7 +257,7 @@ export const ActivityFeedTab = ({
           description={
             filterType !== 'all'
               ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten deiner Freunde.`
-              : 'Sobald deine Freunde etwas bewerten oder hinzufügen, erscheint es hier.'
+              : 'Sobald deine Freunde etwas schauen, bewerten oder hinzufügen, erscheint es hier.'
           }
         />
       ) : (

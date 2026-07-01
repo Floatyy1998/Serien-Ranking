@@ -115,7 +115,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Warning style={{ fontSize: '20px' }} />
             <span style={{ fontWeight: '500' }}>
-              Email nicht verifiziert - Bitte überprüfen Sie Ihr Postfach
+              Email nicht verifiziert – bitte überprüfe dein Postfach
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -198,8 +198,8 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               <p
                 style={{ color: currentTheme.text.muted, marginBottom: '24px', lineHeight: '1.5' }}
               >
-                Um alle Funktionen nutzen zu können, müssen Sie Ihre Email-Adresse verifizieren.
-                Überprüfen Sie Ihr Postfach und klicken Sie auf den Verifizierungslink.
+                Um alle Funktionen nutzen zu können, musst du deine Email-Adresse verifizieren.
+                Überprüfe dein Postfach und klicke auf den Verifizierungslink.
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
                 <Tooltip title="Verifizierungslink erneut senden" arrow>

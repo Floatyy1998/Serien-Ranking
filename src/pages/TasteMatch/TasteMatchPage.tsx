@@ -219,6 +219,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.series}
             delay={0.1}
             bgColor={cardBg}
+            hint={`${result.seriesOverlap.sharedSeries.length} gemeinsame Serien`}
           />
           <StatRing
             icon={<Movie style={{ fontSize: 22 }} />}
@@ -227,6 +228,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.movies}
             delay={0.2}
             bgColor={cardBg}
+            hint={`${result.movieOverlap.sharedMovies.length} gemeinsame Filme`}
           />
           <StatRing
             icon={<Category style={{ fontSize: 22 }} />}
@@ -235,6 +237,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.genres}
             delay={0.3}
             bgColor={cardBg}
+            hint={`${result.genreMatch.sharedGenres.length} gemeinsame Genres`}
           />
           <StatRing
             icon={<Star style={{ fontSize: 22 }} />}
@@ -243,6 +246,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.ratings}
             delay={0.4}
             bgColor={cardBg}
+            hint={`${result.ratingMatch.sameRatingCount}× ähnlich bewertet`}
           />
         </div>
 

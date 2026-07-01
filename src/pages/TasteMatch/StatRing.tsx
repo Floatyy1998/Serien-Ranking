@@ -9,7 +9,9 @@ export const StatRing: React.FC<{
   color: string;
   delay: number;
   bgColor: string;
-}> = ({ icon, label, score, color, delay, bgColor }) => {
+  /** Kurze Erklärung, worauf der Score basiert (Tooltip + Unterzeile). */
+  hint?: string;
+}> = ({ icon, label, score, color, delay, bgColor, hint }) => {
   const size = 78;
   const strokeWidth = 6;
   const radius = (size - strokeWidth) / 2;
@@ -22,6 +24,7 @@ export const StatRing: React.FC<{
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay, type: 'spring', stiffness: 200 }}
       whileHover={{ scale: 1.05 }}
+      title={hint}
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -113,6 +116,19 @@ export const StatRing: React.FC<{
         >
           {label}
         </div>
+        {hint && (
+          <div
+            style={{
+              fontSize: 9,
+              color: `${color}66`,
+              fontWeight: 500,
+              marginTop: 2,
+              lineHeight: 1.2,
+            }}
+          >
+            {hint}
+          </div>
+        )}
       </div>
     </motion.div>
   );

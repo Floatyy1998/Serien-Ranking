@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useAuth } from '../../AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
+
+/** Bewertung des aktuellen Nutzers für ein Listen-Item (0, falls unbewertet). */
+function userRatingOf(item: Series | Movie, uid: string | undefined): number {
+  if (!uid) return 0;
+  const rating = (item as { rating?: Record<string, number> }).rating;
+  const value = rating?.[uid];
+  return typeof value === 'number' && value > 0 ? value : 0;
+}
 
 interface UseDiscoverFetchResult {
   results: DiscoverItem[];
@@ -46,6 +55,8 @@ export const useDiscoverFetch = (
 ): UseDiscoverFetchResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
+  const { user } = useAuth() || {};
+  const uid = user?.uid;
 
   const [results, setResults] = useState<DiscoverItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -142,8 +153,10 @@ export const useDiscoverFetch = (
         }
 
         const currentUsedSources = reset ? new Set<string>() : new Set(usedSourcesRef.current);
+        // Versteckte Serien nicht als Empfehlungs-Quelle nutzen.
         const availableItems = userItems.filter(
-          (item) => !currentUsedSources.has(item.id.toString())
+          (item) =>
+            !currentUsedSources.has(item.id.toString()) && !(item as { hidden?: boolean }).hidden
         );
 
         if (availableItems.length === 0) {
@@ -152,8 +165,15 @@ export const useDiscoverFetch = (
           return;
         }
 
-        const shuffled = [...availableItems].sort(() => 0.5 - Math.random());
-        const selectedItems = shuffled.slice(0, Math.min(3, availableItems.length));
+        // Gewichtete Quell-Auswahl: höher bewertete Titel bevorzugen (statt rein
+        // zufällig), aber innerhalb des Top-Pools mischen, damit es abwechslungsreich
+        // bleibt. Unbewertete Titel landen am Ende des Pools.
+        const rankedItems = [...availableItems].sort(
+          (a, b) => userRatingOf(b, uid) - userRatingOf(a, uid)
+        );
+        const poolSize = Math.min(10, rankedItems.length);
+        const pool = rankedItems.slice(0, poolSize).sort(() => 0.5 - Math.random());
+        const selectedItems = pool.slice(0, Math.min(3, pool.length));
 
         const allRecommendations: DiscoverItem[] = [];
         const existingIds = new Set(recommendationsRef.current.map((r) => r.id));
@@ -190,16 +210,25 @@ export const useDiscoverFetch = (
           currentUsedSources.add(item.id.toString());
         }
 
-        const shuffledRecommendations = allRecommendations
-          .sort(() => 0.5 - Math.random())
+        // Nach Qualität sortieren (TMDB-Wertung, dann Popularität) statt zufällig,
+        // damit die stärksten Vorschläge oben stehen.
+        const rankedRecommendations = allRecommendations
+          .sort((a, b) => {
+            const va = (a as { vote_average?: number }).vote_average ?? 0;
+            const vb = (b as { vote_average?: number }).vote_average ?? 0;
+            if (vb !== va) return vb - va;
+            const pa = (a as { popularity?: number }).popularity ?? 0;
+            const pb = (b as { popularity?: number }).popularity ?? 0;
+            return pb - pa;
+          })
           .slice(0, 20);
 
         setUsedRecommendationSources(currentUsedSources);
 
         if (reset) {
-          setRecommendations(shuffledRecommendations);
+          setRecommendations(rankedRecommendations);
         } else {
-          setRecommendations((prev) => [...prev, ...shuffledRecommendations]);
+          setRecommendations((prev) => [...prev, ...rankedRecommendations]);
         }
 
         const remainingItems = userItems.filter(
@@ -215,7 +244,7 @@ export const useDiscoverFetch = (
         setRecommendationsLoading(false);
       }
     },
-    [activeTab, seriesList, movieList, isInList]
+    [activeTab, seriesList, movieList, isInList, uid]
   );
 
   const fetchFromTMDB = useCallback(

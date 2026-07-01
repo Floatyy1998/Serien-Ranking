@@ -459,10 +459,6 @@ export async function consumeXpBoostEpisode(userId: string): Promise<void> {
   if (!data) return;
 
   const remaining = (data.remainingEpisodes || 0) - 1;
-  console.warn(
-    `🔴 [FRONTEND] consumeXpBoostEpisode: ${data.remainingEpisodes} → ${remaining}`,
-    new Error().stack
-  );
   if (remaining <= 0) {
     await ref.remove();
   } else {

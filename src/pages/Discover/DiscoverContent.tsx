@@ -77,7 +77,8 @@ export const DiscoverContent = memo(
               Keine Empfehlungen verfügbar
             </p>
             <p style={{ fontSize: '14px', color: currentTheme.text.muted }}>
-              {/* seriesList/movieList length check handled by fetch hook */}
+              Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier
+              passende Empfehlungen.
             </p>
           </motion.div>
         );

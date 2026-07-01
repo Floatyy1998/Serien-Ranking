@@ -32,7 +32,7 @@ function getLuminance(rgb: { r: number; g: number; b: number }): number {
 /**
  * Berechnet das Kontrastverhältnis zwischen zwei Farben
  */
-function getContrastRatio(color1: string, color2: string): number {
+export function getContrastRatio(color1: string, color2: string): number {
   const rgb1 = hexToRgb(color1);
   const rgb2 = hexToRgb(color2);
 

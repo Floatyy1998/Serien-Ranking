@@ -87,11 +87,6 @@ export const SettingsPage = lazyWithRetry(() =>
     default: m.SettingsPage,
   }))
 );
-export const ProfileSettingsPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "profile-settings" */ './pages/ProfileSettings').then((m) => ({
-    default: m.ProfileSettingsPage,
-  }))
-);
 export const EpisodeManagementPage = lazyWithRetry(() =>
   import(/* webpackChunkName: "episode-management" */ './pages/EpisodeManagement').then((m) => ({
     default: m.EpisodeManagementPage,

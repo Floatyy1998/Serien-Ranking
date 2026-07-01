@@ -60,6 +60,12 @@ Sieh wochenweise, welche Episoden deiner Serien wann erscheinen – nach allen S
 
 ![TV-Kalender](./Bilder/kalender.jpg)
 
+### Countdown zur nächsten Staffel
+
+Nie wieder einen Staffelstart verpassen: TV-Rank zählt die Tage bis zur nächsten **angekündigten Staffel** deiner Serien – mit großem Hero-Countdown und einer Liste aller kommenden Staffeln.
+
+![Countdown](./Bilder/countdowns.jpg)
+
 ---
 
 ## ⭐ Bewertungen & KI-Empfehlungen

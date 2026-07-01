@@ -301,6 +301,102 @@ export const logWatchlistAdded = async (
 };
 
 /**
+ * 👁️ Episode gesehen – Friend-Feed-Aktivität (NICHT für Notifications/Badge).
+ *
+ * Koalesziert pro Serie innerhalb von 12h: statt einer Zeile pro Folge wird eine
+ * bestehende „gesehen"-Aktivität derselben Serie aktualisiert (Zähler + letzte
+ * Folge), sodass der Feed nicht zugespammt wird und der Egress niedrig bleibt.
+ * Wird bewusst NUR beim Erstwatch (kein Rewatch) und NICHT beim Bulk-Marking
+ * aufgerufen (siehe watchActivityCore.logEpisodeWatch).
+ *
+ * Wichtig: episode_watched/episodes_watched sind im Bell-Hub (useUnifiedNotifications)
+ * und im Badge-Unread-Count (OptimizedFriendsProvider) ausgeschlossen – reiner Feed.
+ */
+const EPISODE_COALESCE_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+export const logEpisodeWatchedActivity = async (
+  userId: string,
+  seriesTitle: string,
+  tmdbId: number,
+  seasonNumber: number,
+  episodeNumber: number,
+  posterPath?: string
+): Promise<void> => {
+  try {
+    const activitiesRef = firebase.database().ref(`users/${userId}/activities`);
+    const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
+    const activities =
+      (snapshot.val() as Record<
+        string,
+        { type?: string; tmdbId?: number; timestamp?: number; watchedCount?: number }
+      > | null) || {};
+    const now = Date.now();
+
+    // Neueste „gesehen"-Aktivität derselben Serie im Zeitfenster finden.
+    let existingKey: string | null = null;
+    let existingCount = 0;
+    let existingTs = 0;
+    for (const [key, val] of Object.entries(activities)) {
+      if (
+        (val.type === 'episode_watched' || val.type === 'episodes_watched') &&
+        val.tmdbId === tmdbId &&
+        typeof val.timestamp === 'number' &&
+        now - val.timestamp < EPISODE_COALESCE_WINDOW_MS
+      ) {
+        if (val.timestamp > existingTs) {
+          existingTs = val.timestamp;
+          existingKey = key;
+          existingCount = val.watchedCount || 1;
+        }
+      }
+    }
+
+    if (existingKey) {
+      const nextCount = existingCount + 1;
+      await activitiesRef.child(existingKey).update({
+        type: nextCount > 1 ? 'episodes_watched' : 'episode_watched',
+        itemTitle: seriesTitle,
+        seasonNumber,
+        episodeNumber,
+        watchedCount: nextCount,
+        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        ...(posterPath && { posterPath }),
+      });
+      return;
+    }
+
+    const newRef = activitiesRef.push();
+    await newRef.set({
+      type: 'episode_watched',
+      itemTitle: seriesTitle,
+      tmdbId,
+      itemType: 'series',
+      seasonNumber,
+      episodeNumber,
+      watchedCount: 1,
+      ...(posterPath && { posterPath }),
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+    });
+
+    // Cap bei 20 (wie logFriendActivity).
+    const fresh = await activitiesRef.orderByChild('timestamp').once('value');
+    const all = (fresh.val() as Record<string, { timestamp?: number }> | null) || {};
+    const keys = Object.keys(all);
+    if (keys.length > 20) {
+      const sorted = keys.sort((a, b) => (all[a].timestamp || 0) - (all[b].timestamp || 0));
+      const toRemove = sorted.slice(0, keys.length - 20);
+      const updates: { [key: string]: null } = {};
+      toRemove.forEach((key) => {
+        updates[key] = null;
+      });
+      await activitiesRef.update(updates);
+    }
+  } catch {
+    /* ignore — non-critical Feed-Write */
+  }
+};
+
+/**
  * Bewertung abgegeben
  */
 export const logRatingAdded = async (

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
-import { PageHeader, LoadingSpinner, EmptyState, PageLayout } from '../../components/ui';
+import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { CountdownHeroCard } from './CountdownHeroCard';
 import { CountdownListItem } from './CountdownListItem';
@@ -25,7 +25,13 @@ export const CountdownPage: React.FC = () => {
       <PageHeader title="Countdown" icon={<CalendarMonth style={{ fontSize: 28 }} />} />
 
       <div className="cd-content">
-        {loading && <LoadingSpinner text="Countdowns werden geladen..." />}
+        {loading && (
+          <div style={{ padding: '0 16px' }} role="status" aria-label="Countdowns werden geladen">
+            {Array.from({ length: 5 }, (_, i) => (
+              <SkeletonListRow key={i} avatarShape="card" />
+            ))}
+          </div>
+        )}
 
         {!loading && countdowns.length === 0 && (
           <EmptyState

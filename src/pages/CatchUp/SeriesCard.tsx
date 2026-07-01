@@ -1,7 +1,10 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getImageUrl } from '../../utils/imageUrl';
+import { getOptimalTextColor } from '../../theme/colorUtils';
+import { markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { GradientRing } from './GradientRing';
 import { formatTimeString, type CatchUpSeries } from './useCatchUpData';
 
@@ -11,11 +14,28 @@ interface SeriesCardProps {
 
 export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
   const navigate = useNavigate();
+  const authContext = useAuth();
+  const user = authContext?.user;
   const { currentTheme } = useTheme();
+  const [marking, setMarking] = useState(false);
 
   const handleClick = useCallback(() => {
     navigate(`/series/${item.series.id}`);
   }, [navigate, item.series.id]);
+
+  const handleMarkNext = useCallback(
+    async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!user || marking) return;
+      setMarking(true);
+      try {
+        await markNextEpisodeWatched(user.uid, item.series);
+      } finally {
+        setMarking(false);
+      }
+    },
+    [user, marking, item.series]
+  );
 
   const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).style.opacity = '0';
@@ -100,6 +120,30 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
             {item.watchedEpisodes} von {item.totalEpisodes}
           </span>
         </div>
+
+        {/* Direkt-Markieren: nächste Folge ohne Umweg über die Detailseite */}
+        <button
+          type="button"
+          onClick={handleMarkNext}
+          disabled={marking}
+          aria-label={`S${item.currentSeason} E${item.currentEpisode} als gesehen markieren`}
+          className="cu-card-mark-next"
+          style={{
+            marginTop: 8,
+            width: '100%',
+            minHeight: 40,
+            borderRadius: 10,
+            border: 'none',
+            cursor: marking ? 'default' : 'pointer',
+            fontSize: 13,
+            fontWeight: 700,
+            opacity: marking ? 0.6 : 1,
+            background: currentTheme.primary,
+            color: getOptimalTextColor(currentTheme.primary),
+          }}
+        >
+          ✓ S{item.currentSeason} E{item.currentEpisode} gesehen
+        </button>
       </div>
 
       {/* Progress Ring */}

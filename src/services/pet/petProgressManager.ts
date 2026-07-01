@@ -10,6 +10,7 @@ import {
 } from './petAccessoryManager';
 import type { AccessoryDrop } from './petAccessoryManager';
 import { getActiveXpBoost, consumeXpBoostEpisode } from './dailySpinService';
+import { triggerPetReaction } from '../../hooks/usePetReactions';
 
 // Update wenn Episode geschaut wurde
 export async function watchedEpisode(userId: string, petId: string): Promise<Pet | null> {
@@ -139,6 +140,9 @@ export async function watchedSeriesWithGenre(
     pet.hunger = 0;
 
     await checkAndUnlockAccessories(pet);
+
+    // Level-Up feiern – der stärkste Belohnungsmoment soll sichtbar sein.
+    triggerPetReaction({ tone: 'levelup', vars: { n: newLevel } });
   }
 
   await checkAchievements(pet);
@@ -177,10 +181,6 @@ export async function watchedSeriesWithGenreAllPets(
   // Boost-Episode einmal pro geschauter Episode verbrauchen (nicht pro Pet)
   const xpBoost = await getActiveXpBoost(userId);
   if (xpBoost) {
-    console.warn(
-      '🔴 [FRONTEND] watchedSeriesWithGenreAllPets → consumeXpBoostEpisode aufgerufen!',
-      { genres, petCount: pets.filter((p) => p.isAlive).length }
-    );
     await consumeXpBoostEpisode(userId);
   }
 

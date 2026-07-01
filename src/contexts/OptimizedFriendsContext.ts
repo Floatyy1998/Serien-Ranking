@@ -9,6 +9,7 @@ export interface OptimizedFriendsContextType {
   loading: boolean;
   unreadRequestsCount: number;
   unreadActivitiesCount: number;
+  lastReadActivitiesTime: number;
   markRequestsAsRead: () => void;
   markActivitiesAsRead: () => void;
   sendFriendRequest: (username: string) => Promise<boolean>;
@@ -30,6 +31,7 @@ export const OptimizedFriendsContext = createContext<OptimizedFriendsContextType
   loading: true,
   unreadRequestsCount: 0,
   unreadActivitiesCount: 0,
+  lastReadActivitiesTime: 0,
   markRequestsAsRead: () => {},
   markActivitiesAsRead: () => {},
   sendFriendRequest: async () => false,

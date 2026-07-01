@@ -14,7 +14,7 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
-import { BackButton, LoadingSpinner } from '../../components/ui';
+import { BackButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 
@@ -40,7 +40,27 @@ export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => 
                      radial-gradient(ellipse at 70% 80%, ${currentTheme.accent}15 0%, transparent 50%)`,
       }}
     />
-    <LoadingSpinner size={50} text="Lade Episodendetails..." />
+    <div
+      role="status"
+      aria-label="Lade Episodendetails"
+      style={{
+        position: 'relative',
+        zIndex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+        padding: '0 20px',
+        width: '100%',
+        maxWidth: 640,
+      }}
+    >
+      <Skeleton width="100%" height={180} shape="card" />
+      <Skeleton width="70%" height={22} shape="text" />
+      <Skeleton width="45%" height={14} shape="text" />
+      <div style={{ height: 10 }} />
+      <Skeleton width="100%" height={64} shape="card" />
+      <Skeleton width="100%" height={64} shape="card" />
+    </div>
   </div>
 ));
 LoadingState.displayName = 'LoadingState';

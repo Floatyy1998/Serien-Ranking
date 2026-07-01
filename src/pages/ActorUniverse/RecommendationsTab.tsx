@@ -1,7 +1,7 @@
 import { AutoAwesome, OpenInNew, Star, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { LoadingSpinner } from '../../components/ui';
+import { SkeletonPosterRow } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
@@ -72,7 +72,7 @@ export const RecommendationsTab = ({
       </div>
 
       {loadingRecommendations ? (
-        <LoadingSpinner size={50} text="Lade Empfehlungen..." />
+        <SkeletonPosterRow count={5} posterWidth={120} />
       ) : recommendations.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}

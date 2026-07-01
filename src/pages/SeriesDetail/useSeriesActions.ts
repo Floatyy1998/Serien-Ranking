@@ -24,6 +24,7 @@ import { backendFetch } from '../../lib/backendApi';
 import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { showToast, showUndoToast } from '../../lib/toast';
+import { hapticSuccess } from '../../lib/haptics';
 
 interface DialogState {
   open: boolean;
@@ -399,6 +400,7 @@ export function useSeriesActions(
         }
 
         const newWatched = !prevWatched;
+        if (newWatched) hapticSuccess();
         const label = `S${seasonNumber}E${epNumber}`;
         const actionLabel = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
 

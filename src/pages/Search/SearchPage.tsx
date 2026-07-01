@@ -9,7 +9,7 @@ import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import {
   Dialog,
-  LoadingSpinner,
+  SkeletonRatingsGrid,
   PageHeader,
   ScrollToTopButton,
   Snackbar,
@@ -171,7 +171,7 @@ export const SearchPage = memo(() => {
               exit={{ opacity: 0 }}
               className="search-loading"
             >
-              <LoadingSpinner text="Suche läuft..." />
+              <SkeletonRatingsGrid count={8} />
             </motion.div>
           ) : searchQuery && searchResults.length > 0 ? (
             <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

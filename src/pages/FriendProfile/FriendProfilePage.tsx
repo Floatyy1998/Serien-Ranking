@@ -11,7 +11,8 @@ import { memo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import {
   EmptyState,
-  LoadingSpinner,
+  Skeleton,
+  SkeletonPosterRow,
   PageHeader,
   PageLayout,
   ProfileItemCard,
@@ -87,7 +88,23 @@ export const FriendProfilePage = memo(() => {
           justifyContent: 'center',
         }}
       >
-        <LoadingSpinner size={50} text="Lade Profil..." />
+        <div
+          role="status"
+          aria-label="Lade Profil"
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 14,
+            width: '100%',
+          }}
+        >
+          <Skeleton width={96} height={96} shape="circle" />
+          <Skeleton width={160} height={20} shape="text" />
+          <Skeleton width={220} height={14} shape="text" />
+          <div style={{ height: 12 }} />
+          <SkeletonPosterRow count={4} posterWidth={110} />
+        </div>
       </PageLayout>
     );
   }

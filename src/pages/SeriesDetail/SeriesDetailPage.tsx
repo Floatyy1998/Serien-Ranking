@@ -19,6 +19,8 @@ import { useRecapData } from '../../hooks/useRecapData';
 import { CharacterGuide } from './CharacterGuide';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { getOptimalTextColor } from '../../theme/colorUtils';
+import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { FriendsProgressStrip } from './FriendsProgressStrip';
@@ -37,6 +39,7 @@ export const SeriesDetailPage = memo(() => {
   const { currentTheme } = useTheme();
   const [selectedSeasonIndex, setSelectedSeasonIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<'info' | 'cast' | 'characters'>('info');
+  const [markingNext, setMarkingNext] = useState(false);
 
   // Responsive state
   const { isMobile } = useDeviceType();
@@ -55,6 +58,22 @@ export const SeriesDetailPage = memo(() => {
     tmdbFirstAirDate,
     tmdbOverview,
   } = useSeriesData(id);
+
+  // Nächste ungesehene, ausgestrahlte Folge für den „Weiterschauen"-CTA im Hero.
+  const nextEpisode = useMemo(
+    () => (series && !isReadOnlyTmdbSeries ? findNextEpisode(series) : null),
+    [series, isReadOnlyTmdbSeries]
+  );
+
+  const handleWatchNext = async () => {
+    if (!user || !series || markingNext) return;
+    setMarkingNext(true);
+    try {
+      await markNextEpisodeWatched(user.uid, series);
+    } finally {
+      setMarkingNext(false);
+    }
+  };
 
   // Actions hook
   const {
@@ -270,6 +289,38 @@ export const SeriesDetailPage = memo(() => {
         onHideToggle={handleHideToggle}
         onDelete={handleDeleteSeries}
       />
+
+      {/* Weiterschauen-CTA: nächste ungesehene Folge mit einem Tap markieren */}
+      {nextEpisode && !series.hidden && (
+        <div style={{ margin: isMobile ? '0 12px 12px' : '0 20px 16px' }}>
+          <button
+            type="button"
+            onClick={handleWatchNext}
+            disabled={markingNext}
+            aria-label={`Nächste Folge S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber} als gesehen markieren`}
+            style={{
+              width: '100%',
+              minHeight: 48,
+              padding: '12px 18px',
+              borderRadius: 14,
+              border: 'none',
+              cursor: markingNext ? 'default' : 'pointer',
+              fontSize: 15,
+              fontWeight: 700,
+              opacity: markingNext ? 0.6 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+              color: getOptimalTextColor(currentTheme.primary),
+            }}
+          >
+            ▶ Weiter: S{nextEpisode.seasonNumber} E{nextEpisode.episodeNumber}
+            {nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : ''} — gesehen
+          </button>
+        </div>
+      )}
 
       {/* Hidden series banner */}
       {series.hidden && !isReadOnlyTmdbSeries && (
