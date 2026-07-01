@@ -4,6 +4,7 @@ import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { backendFetch } from '../../lib/backendApi';
 import { calculateWatchJourney } from '../../services/watchJourneyService';
 import { getWatchStreak } from '../../services/watchActivityService';
 import type { WatchJourneyData } from '../../services/watchJourneyTypes';
@@ -421,7 +422,7 @@ export const useTasteProfileData = () => {
     const heatmapInsights = journeyData ? analyzeHeatmap(journeyData.heatmap) : null;
 
     try {
-      const res = await fetch(`${BACKEND_URL}/ai/taste-profile`, {
+      const res = await backendFetch('/ai/taste-profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

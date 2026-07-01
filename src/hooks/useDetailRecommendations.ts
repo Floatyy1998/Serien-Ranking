@@ -4,6 +4,7 @@ import { useMovieList } from '../contexts/MovieListContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
+import { backendFetch } from '../lib/backendApi';
 import type { DiscoverItem } from '../pages/Discover/discoverItemHelpers';
 
 interface UseDetailRecommendationsResult {
@@ -113,13 +114,9 @@ export const useDetailRecommendations = (
     async (item: DiscoverItem): Promise<boolean> => {
       if (!user) return false;
       setAddingId(item.id);
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
 
       try {
-        const response = await fetch(endpoint, {
+        const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

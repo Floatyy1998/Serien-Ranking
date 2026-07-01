@@ -10,6 +10,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
+import { backendFetch } from '../../lib/backendApi';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
@@ -357,11 +358,6 @@ export const useSearchPage = (): UseSearchPageResult => {
         return;
       }
 
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
-
       const pendingKey = `${item.type}-${item.id}`;
       setPendingAddIds((prev) => {
         const next = new Set(prev);
@@ -370,7 +366,7 @@ export const useSearchPage = (): UseSearchPageResult => {
       });
 
       try {
-        const response = await fetch(endpoint, {
+        const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

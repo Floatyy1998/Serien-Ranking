@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
+import { backendFetch } from '../../../lib/backendApi';
 import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {
@@ -175,12 +176,8 @@ export function useOnboardingSearch() {
     async (item: OnboardingItem): Promise<boolean> => {
       const uid = user?.uid;
       if (!uid) return false;
-      const endpoint =
-        item.type === 'series'
-          ? `${import.meta.env.VITE_BACKEND_API_URL}/add`
-          : `${import.meta.env.VITE_BACKEND_API_URL}/addMovie`;
       try {
-        const response = await fetch(endpoint, {
+        const response = await backendFetch(item.type === 'series' ? '/add' : '/addMovie', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

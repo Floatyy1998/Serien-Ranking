@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
+import { backendFetch } from '../lib/backendApi';
 import type { Series } from '../types/Series';
 import { hasEpisodeAired } from '../utils/episodeDate';
 
@@ -274,7 +275,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
 
     setAiLoading(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/ai/recap`, {
+      const res = await backendFetch('/ai/recap', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -321,7 +322,7 @@ export const useRecapData = (series: Series | undefined): RecapData => {
       setQuestionAnswer(null);
 
       try {
-        const res = await fetch(`${BACKEND_URL}/ai/character-question`, {
+        const res = await backendFetch('/ai/character-question', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

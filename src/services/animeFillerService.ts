@@ -16,6 +16,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { backendFetch } from '../lib/backendApi';
 
 const CACHE_PREFIX = 'animeFiller_v4:';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -331,7 +332,7 @@ export async function refreshAnimeFillerViaBackend(
     return null;
   }
   try {
-    const res = await fetch(`${BACKEND_URL}/refreshAnimeFiller`, {
+    const res = await backendFetch('/refreshAnimeFiller', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: Number(seriesId) }),
