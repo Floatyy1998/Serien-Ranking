@@ -30,8 +30,53 @@ import {
   type SnoozeOption,
 } from '../../lib/settings/notificationSettings';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
+import { getEpisodeAirDate } from '../../utils/episodeDate';
 import type { Series } from '../../types/Series';
 import './CarouselNotification.css';
+
+const NOTIF_DAY_MS = 24 * 60 * 60 * 1000;
+
+const formatSeasonDate = (d: Date): string =>
+  d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+/**
+ * Startdatum der neuesten Staffel (höchste Staffelnummer mit Episoden). Die
+ * NewSeason-Detection triggert schon, sobald TMDB die Staffel *ankündigt* — das
+ * erste Ep kann also noch in der Zukunft liegen.
+ */
+const getNewestSeasonStart = (series: Series): Date | null => {
+  if (!series.seasons?.length) return null;
+  let target: Series['seasons'][number] | null = null;
+  let targetNum = -1;
+  for (const season of series.seasons) {
+    if (!season?.episodes?.length) continue;
+    const num = season.seasonNumber ?? season.season_number ?? 0;
+    if (num > targetNum) {
+      targetNum = num;
+      target = season;
+    }
+  }
+  return target ? getEpisodeAirDate(target.episodes[0]) : null;
+};
+
+/** Detail-Zeile der NewSeason-Karte: Staffelnummer + wann sie startet bzw. läuft. */
+const newSeasonDetailLabel = (series: Series): string => {
+  const base = `Staffel ${series.seasonCount}`;
+  const start = getNewestSeasonStart(series);
+  if (!start) return `${base} · Starttermin noch offen`;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const startDay = new Date(start);
+  startDay.setHours(0, 0, 0, 0);
+  const days = Math.round((startDay.getTime() - today.getTime()) / NOTIF_DAY_MS);
+
+  if (days > 30) return `${base} · ab ${formatSeasonDate(start)}`;
+  if (days > 1) return `${base} · in ${days} Tagen (${formatSeasonDate(start)})`;
+  if (days === 1) return `${base} · morgen (${formatSeasonDate(start)})`;
+  if (days === 0) return `${base} · ab heute`;
+  return `${base} · läuft seit ${formatSeasonDate(start)}`;
+};
 
 type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch' | 'unrated';
 
@@ -57,8 +102,8 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.primary,
     HeaderIcon: NewReleases,
     DetailIcon: Tv,
-    headerText: (n) => `${n > 1 ? n + ' neue Staffeln' : 'Neue Staffel'} verfügbar`,
-    detailText: (s) => `Staffel ${s.seasonCount}`,
+    headerText: (n) => `${n > 1 ? n + ' neue Staffeln' : 'Neue Staffel'} angekündigt`,
+    detailText: (s) => newSeasonDetailLabel(s),
     actionLabel: 'Watchlist',
     actionDoneLabel: 'Hinzugefügt',
     ActionIcon: PlaylistAdd,
