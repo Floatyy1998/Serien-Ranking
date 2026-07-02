@@ -34,9 +34,9 @@ import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
 import { normalizeTitle } from './useAnimeListMatch';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
 
-// v6: Franchise-Titel-Fallback für Arc-Untertitel (v5: premiereDate via
-// TVMaze) — Bump lässt gecachte „kein Treffer"-Einträge neu suchen.
-const CACHE_KEY = 'animeSeasonTmdb:v6';
+// v8: tmdbRating (vote_average) ergänzt (v7: Filme + mediaType) — Bump
+// lässt gecachte Einträge das Rating nachladen.
+const CACHE_KEY = 'animeSeasonTmdb:v8';
 const TMDB_ANIMATION_GENRE_ID = 16;
 
 export interface TmdbProviderInfo {
@@ -48,6 +48,9 @@ export interface TmdbProviderInfo {
 export interface ResolvedTmdbInfo {
   /** null = kein TMDB-Treffer. */
   tmdbId: number | null;
+  /** Ziel-Detailseite: 'movie' bei AniList-Format MOVIE, sonst 'tv'.
+   *  Fehlend (alte Cache-Einträge) = 'tv'. */
+  mediaType?: 'tv' | 'movie';
   /** Deutsches TMDB-overview — null wenn leer oder kein Treffer. */
   overviewDe: string | null;
   /** DE-Flatrate-Provider — null wenn kein Treffer, [] wenn keine bekannt. */
@@ -55,6 +58,8 @@ export interface ResolvedTmdbInfo {
   /** TVMaze-geprüfter Premierentermin („YYYY-MM-DD", lokal) — null/fehlend =
    *  kein valider Treffer, AniList-Datum bleibt. */
   premiereDate?: string | null;
+  /** TMDB-Community-Rating (vote_average, 0–10) — null/0 = keins. */
+  tmdbRating?: number | null;
 }
 
 type ResolveCache = Record<string, ResolvedTmdbInfo>;
@@ -108,6 +113,22 @@ async function searchTv(query: string, year?: number): Promise<TmdbTvResult[]> {
   return json.results ?? [];
 }
 
+/** Anime-FILME laufen über die Movie-Suche — die TV-Suche findet sie nicht
+ *  (bzw. fehl-matcht auf gleichnamige Serien). */
+async function searchMovie(query: string, year?: number): Promise<TmdbTvResult[]> {
+  const apiKey = import.meta.env.VITE_API_TMDB;
+  if (!apiKey) return [];
+  const yearParam = year ? `&primary_release_year=${year}` : '';
+  const response = await fetch(
+    `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(
+      query
+    )}&language=de-DE${yearParam}`
+  );
+  if (!response.ok) return [];
+  const json = (await response.json()) as { results?: TmdbTvResult[] };
+  return json.results ?? [];
+}
+
 /** Bestes TV-Ergebnis: bevorzugt Animation (Genre 16), sonst Top-Treffer. */
 function pickBest(results: TmdbTvResult[]): number | null {
   if (!results.length) return null;
@@ -117,6 +138,7 @@ function pickBest(results: TmdbTvResult[]): number | null {
 
 interface TmdbDetailsResponse {
   overview?: string;
+  vote_average?: number;
   'watch/providers'?: {
     results?: {
       DE?: {
@@ -132,17 +154,20 @@ interface TmdbDetailsResponse {
  *  mappen auf den Standard-Namen, nur SUPPORTED_PROVIDERS bleiben —
  *  dedupliziert nach normalisiertem Namen. */
 async function fetchGermanDetails(
-  tmdbId: number
-): Promise<{ overviewDe: string | null; providers: TmdbProviderInfo[] }> {
+  tmdbId: number,
+  mediaType: 'tv' | 'movie'
+): Promise<{ overviewDe: string | null; providers: TmdbProviderInfo[]; rating: number | null }> {
   const apiKey = import.meta.env.VITE_API_TMDB;
-  if (!apiKey) return { overviewDe: null, providers: [] };
+  if (!apiKey) return { overviewDe: null, providers: [], rating: null };
   const response = await fetch(
-    `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}&language=de-DE&append_to_response=watch%2Fproviders`
+    `https://api.themoviedb.org/3/${mediaType}/${tmdbId}?api_key=${apiKey}&language=de-DE&append_to_response=watch%2Fproviders`
   );
-  if (!response.ok) return { overviewDe: null, providers: [] };
+  if (!response.ok) return { overviewDe: null, providers: [], rating: null };
   const json = (await response.json()) as TmdbDetailsResponse;
 
   const overviewDe = json.overview?.trim() || null;
+  const rating =
+    typeof json.vote_average === 'number' && json.vote_average > 0 ? json.vote_average : null;
   const flatrate = json['watch/providers']?.results?.DE?.flatrate ?? [];
   const providers: TmdbProviderInfo[] = [];
   const seen = new Set<string>();
@@ -155,7 +180,7 @@ async function fetchGermanDetails(
     seen.add(normalized);
     providers.push({ name: normalized, logo });
   }
-  return { overviewDe, providers };
+  return { overviewDe, providers, rating };
 }
 
 // ── TVMaze-Datums-Check ──────────────────────────────────────────────────────
@@ -204,6 +229,8 @@ function titlesRoughlyMatch(showName: string | undefined, candidates: string[]):
  * DERSELBEN Midnight-Quirk-Korrektur wie der Serien-Kalender der App.
  */
 async function fetchTvmazePremiereDate(anime: SeasonAnime): Promise<string | null> {
+  // TVMaze führt nur TV — Filme behalten das AniList-Datum.
+  if (anime.format === 'MOVIE') return null;
   const sd = anime.startDate;
   if (!sd?.year || !sd.month || !sd.day) return null;
   const anilistDate = new Date(sd.year, sd.month - 1, sd.day);
@@ -264,9 +291,13 @@ export async function resolveTmdbInfo(
     anime.title.english && anime.title.romaji && anime.title.english !== anime.title.romaji
       ? anime.title.romaji
       : null;
+  // AniList-Format MOVIE → TMDB-Movie-Suche + /movie-Details + /movie/-Route.
+  const mediaType: 'tv' | 'movie' = anime.format === 'MOVIE' ? 'movie' : 'tv';
+
   if (!primary) {
     const miss: ResolvedTmdbInfo = {
       tmdbId: null,
+      mediaType,
       overviewDe: null,
       providers: null,
       premiereDate: null,
@@ -304,7 +335,10 @@ export async function resolveTmdbInfo(
 
   let tmdbId: number | null = null;
   for (const attempt of attempts) {
-    const results = await searchTv(attempt.query, attempt.year);
+    const results =
+      mediaType === 'movie'
+        ? await searchMovie(attempt.query, attempt.year)
+        : await searchTv(attempt.query, attempt.year);
     tmdbId = pickBest(results);
     if (tmdbId !== null) break;
   }
@@ -313,10 +347,17 @@ export async function resolveTmdbInfo(
 
   let info: ResolvedTmdbInfo;
   if (tmdbId === null) {
-    info = { tmdbId: null, overviewDe: null, providers: null, premiereDate };
+    info = { tmdbId: null, mediaType, overviewDe: null, providers: null, premiereDate };
   } else {
-    const details = await fetchGermanDetails(tmdbId);
-    info = { tmdbId, overviewDe: details.overviewDe, providers: details.providers, premiereDate };
+    const details = await fetchGermanDetails(tmdbId, mediaType);
+    info = {
+      tmdbId,
+      mediaType,
+      overviewDe: details.overviewDe,
+      providers: details.providers,
+      premiereDate,
+      tmdbRating: details.rating,
+    };
   }
   writeCache(anime.id, info);
   return info;

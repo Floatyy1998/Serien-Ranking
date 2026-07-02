@@ -14,6 +14,15 @@
  *   2. „Fortlaufend" — RELEASING aus den letzten zwei Seasons.
  *   3. „Bereits beendet" — klein am Ende.
  *
+ * Serien UND Filme: die AniList-Query liefert alle Formate. Jede Karte trägt
+ * ein Format-Badge („Serie" [inkl. TV/ONA] / „Film" / OVA / Special / …);
+ * im FILTER zählt alles außer MOVIE als Serie. Oben: Segmented-Control
+ * „Alle · Serien · Filme" (TabSwitcher) + „Mit Provider"-Toggle (blendet
+ * Einträge ohne DE-Provider aus, sobald ihre Hydration das meldet) — beides
+ * sticky pro Session. Filme werden über die TMDB-Movie-Suche aufgelöst
+ * (→ /movie/), nicht gegen die Serienliste gematcht und vom TVMaze-
+ * Datums-Check ausgenommen.
+ *
  * Progressive TMDB-Hydration: nach dem Season-Fetch werden unmatched
  * Einträge throttled (max. 5 parallel) via resolveTmdbInfo aufgelöst —
  * deutsches overview + DE-Provider-Logos (normalisiert wie überall in der
@@ -25,7 +34,7 @@
  * Klick → SeriesDetail über die bereits aufgelöste tmdbId.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -34,6 +43,7 @@ import {
   Autorenew,
   CalendarMonth,
   InfoOutlined,
+  SmartDisplay,
   TaskAlt,
 } from '@mui/icons-material';
 import {
@@ -45,16 +55,22 @@ import {
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
+import { useAuth } from '../../AuthContext';
+import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
+import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { backendFetch } from '../../lib/backendApi';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
-import { hapticSelect, hapticTap } from '../../lib/haptics';
+import { hapticSelect, hapticSuccess, hapticTap } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { tapScaleSmall } from '../../lib/motion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
+import { fetchStaticCatalogSeasonsBulk } from '../../lib/staticCatalog';
+import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
 import {
   fetchContinuingAnime,
   fetchSeasonAnime,
@@ -147,6 +163,56 @@ function withCalendarDate(anime: SeasonAnime, match: Series): SeasonAnime {
     year: calendarDate.getFullYear(),
     month: calendarDate.getMonth() + 1,
     day: calendarDate.getDate(),
+  };
+  const sd = anime.startDate;
+  if (sd?.year === corrected.year && sd.month === corrected.month && sd.day === corrected.day) {
+    return anime;
+  }
+  return { ...anime, startDate: corrected };
+}
+
+/** Premierentermin aus dem STATISCHEN Katalog (Bulk-Seasons, alle Serien —
+ *  auch die ohne Listen-Eintrag; der Backend-Cron nimmt Seasonal-Anime mit
+ *  DE-Provider automatisch auf): Episode im ±3-Tage-Fenster ums
+ *  AniList-Datum, gleiche Quelle wie der Serien-Kalender. */
+function catalogBulkPremiereDate(
+  seasons: Record<string, CatalogSeason>,
+  anilistDate: Date
+): Date | null {
+  let best: Date | null = null;
+  let bestDiff = CALENDAR_MATCH_WINDOW_MS + 1;
+  for (const season of Object.values(seasons)) {
+    // Sparse-Object-Quirk: episodes kann bei manchen Katalog-Einträgen als
+    // Objekt statt Array serialisiert sein (vgl. seriesAdapter.ensureArray).
+    const rawEpisodes = season?.episodes;
+    const episodes: CatalogEpisode[] = Array.isArray(rawEpisodes)
+      ? rawEpisodes
+      : rawEpisodes && typeof rawEpisodes === 'object'
+        ? (Object.values(rawEpisodes) as CatalogEpisode[])
+        : [];
+    for (const episode of episodes) {
+      if (!episode) continue; // sparse Arrays: Index 0 kann fehlen
+      const date = getEpisodeAirDate({
+        airstamp: episode.airstamp ?? undefined,
+        airDate: episode.airDate ?? undefined,
+      });
+      if (!date) continue;
+      const diff = Math.abs(date.getTime() - anilistDate.getTime());
+      if (diff <= CALENDAR_MATCH_WINDOW_MS && diff < bestDiff) {
+        best = date;
+        bestDiff = diff;
+      }
+    }
+  }
+  return best;
+}
+
+/** AniList-Eintrag mit einem Date-Objekt überschreiben (Tag-Genauigkeit). */
+function withDate(anime: SeasonAnime, date: Date): SeasonAnime {
+  const corrected = {
+    year: date.getFullYear(),
+    month: date.getMonth() + 1,
+    day: date.getDate(),
   };
   const sd = anime.startDate;
   if (sd?.year === corrected.year && sd.month === corrected.month && sd.day === corrected.day) {
@@ -251,10 +317,27 @@ function seriesProviders(series: Series): TmdbProviderInfo[] {
 
 const SCROLL_KEY = 'animeSeason-scroll';
 const SEASON_STORAGE_KEY = 'animeSeason-selected';
+const FILTER_STORAGE_KEY = 'animeSeason-filter';
+
+/** Format-Auswahl (exklusiv, Segmented-Control): alles außer MOVIE = Serie. */
+type FormatMode = 'all' | 'series' | 'movies';
+
+interface SeasonFilter {
+  mode: FormatMode;
+  /** Nur Einträge mit mindestens einem DE-Provider (nach Hydration). */
+  providerOnly: boolean;
+}
+
+const FORMAT_TABS = [
+  { id: 'all', label: 'Alle' },
+  { id: 'series', label: 'Serien' },
+  { id: 'movies', label: 'Filme' },
+];
 
 export const AnimeSeasonPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
   const { matchAnime } = useAnimeListMatch();
   const reducedMotion = useReducedMotion();
   // „Jetzt" einmalig einfrieren (react-hooks/purity: kein Date.now() im Render).
@@ -295,6 +378,49 @@ export const AnimeSeasonPage: React.FC = () => {
     }
   }, [selected]);
 
+  // Serien/Filme-Auswahl + Provider-Filter — sticky pro Session.
+  const [filter, setFilter] = useState<SeasonFilter>(() => {
+    try {
+      const raw = sessionStorage.getItem(FILTER_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SeasonFilter;
+        if (
+          (parsed?.mode === 'all' || parsed?.mode === 'series' || parsed?.mode === 'movies') &&
+          typeof parsed?.providerOnly === 'boolean'
+        ) {
+          return parsed;
+        }
+      }
+    } catch {
+      /* kaputter Eintrag — Default reicht */
+    }
+    return { mode: 'all', providerOnly: false };
+  });
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(filter));
+    } catch {
+      /* quota — ignorieren */
+    }
+  }, [filter]);
+
+  const handleFormatMode = (id: string) => {
+    if (id === filter.mode) return;
+    hapticSelect();
+    setFilter((prev) => ({ ...prev, mode: id as FormatMode }));
+  };
+
+  const toggleProviderOnly = () => {
+    hapticSelect();
+    setFilter((prev) => ({ ...prev, providerOnly: !prev.providerOnly }));
+  };
+
+  // Die Filterleiste liest `filter` (Farbe togglet SOFORT); die teuren
+  // Memos (Timeline/Grids, ~100 Karten) hängen am deferred Wert — sonst
+  // färbt der Button erst um, wenn der komplette Re-Render durch ist.
+  const deferredFilter = useDeferredValue(filter);
+
   const [items, setItems] = useState<SeasonAnime[]>([]);
   const [continuing, setContinuing] = useState<ContinuingAnime[]>([]);
   const [page, setPage] = useState(1);
@@ -305,12 +431,36 @@ export const AnimeSeasonPage: React.FC = () => {
   const [reloadKey, setReloadKey] = useState(0);
   /** AniList-Id, für die gerade eine KLICK-Auflösung läuft (sperrt Klicks). */
   const [resolvingId, setResolvingId] = useState<number | null>(null);
+  /** AniList-Id, für die gerade ein „Zur Liste"-Add läuft. */
+  const [addingId, setAddingId] = useState<number | null>(null);
   /** Progressiv aufgelöste TMDB-Infos, keyed by AniList-Id. */
   const [resolved, setResolved] = useState<Record<number, ResolvedTmdbInfo>>({});
   /** SessionStorage-Cache einmal synchron eingelesen — bereits aufgelöste
    *  Einträge zeigen deutsche Beschreibung + Provider sofort beim Mount
    *  (kein EN→DE-Flash beim Zurücknavigieren). */
   const [cachedResolved] = useState<Record<string, ResolvedTmdbInfo>>(() => readResolveCacheSync());
+  /** Bulk-Seasons des statischen Katalogs (IDB-gecacht, kein Extra-Egress) —
+   *  Termin-Quelle auch für Anime OHNE Listen-Eintrag: der Backend-Cron
+   *  nimmt Seasonal-Anime mit DE-Provider automatisch in den Katalog auf. */
+  const [catalogSeasons, setCatalogSeasons] = useState<Record<
+    string,
+    Record<string, CatalogSeason>
+  > | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchStaticCatalogSeasonsBulk()
+      .then((data) => {
+        if (!cancelled) setCatalogSeasons(data);
+      })
+      .catch(() => {
+        /* best-effort — ohne Bulk-Daten bleibt TVMaze/AniList */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   /** Ids, für die die Hintergrund-Auflösung bereits angestoßen wurde. */
   const startedRef = useRef<Set<number>>(new Set());
   /** „Fortlaufend"-Sektion — Ziel des Schnell-Scroll-Chips. */
@@ -399,22 +549,33 @@ export const AnimeSeasonPage: React.FC = () => {
   // allEntries und darf nicht bei jeder eintreffenden Auflösung neu starten.
   const { newThisSeason, continuingEntries, finishedEntries, allEntries, totalCount, inListCount } =
     useMemo(() => {
-      const seasonEntries: DecoratedAnime[] = items.map((anime) => ({
+      // Filme NICHT gegen die Serienliste matchen — Basistitel-/Franchise-
+      // Heuristiken würden den Film sonst auf die gleichnamige Serie mappen.
+      const decorate = (anime: SeasonAnime): DecoratedAnime => ({
         anime,
-        match: matchAnime(anime),
-      }));
+        match: anime.format === 'MOVIE' ? undefined : matchAnime(anime),
+      });
 
-      const fresh = seasonEntries.filter((entry) => entry.anime.status !== 'FINISHED');
-      const finished = seasonEntries.filter((entry) => entry.anime.status === 'FINISHED');
-
+      const seasonEntries = items.map(decorate);
       const seasonIds = new Set(items.map((anime) => anime.id));
-      const cont: DecoratedAnime[] = continuing
+      const contAll: DecoratedAnime[] = continuing
         .filter((entry) => !seasonIds.has(entry.anime.id))
         .map((entry) => ({
-          anime: entry.anime,
-          match: matchAnime(entry.anime),
+          ...decorate(entry.anime),
           sinceLabel: seasonLabel(entry.origin),
         }));
+
+      // Format-Auswahl anwenden (alles außer MOVIE zählt als Serie).
+      const passesFilter = (entry: DecoratedAnime) =>
+        deferredFilter.mode === 'all' ||
+        (entry.anime.format === 'MOVIE'
+          ? deferredFilter.mode === 'movies'
+          : deferredFilter.mode === 'series');
+      const filtered = seasonEntries.filter(passesFilter);
+      const cont = contAll.filter(passesFilter);
+
+      const fresh = filtered.filter((entry) => entry.anime.status !== 'FINISHED');
+      const finished = filtered.filter((entry) => entry.anime.status === 'FINISHED');
 
       // Anzeige-/Resolve-Reihenfolge (AniList liefert popularitätssortiert).
       const all = [...fresh, ...cont, ...finished];
@@ -426,19 +587,50 @@ export const AnimeSeasonPage: React.FC = () => {
         totalCount: all.length,
         inListCount: all.filter((entry) => entry.match).length,
       };
-    }, [items, continuing, matchAnime]);
+    }, [items, continuing, matchAnime, deferredFilter.mode]);
 
-  // ── Hero + Timeline (reaktiv — Datums-Priorität: Liste → TVMaze → AniList) ─
-  const { hero, dayGroups } = useMemo(() => {
-    const corrected = newThisSeason.map((entry) => {
+  // ── Hero + Timeline (reaktiv — Datums-Priorität: Liste → TVMaze → AniList,
+  //    plus optionaler „Mit Provider"-Filter über die Hydration) ─────────────
+  const { hero, dayGroups, visibleContinuing, visibleFinished } = useMemo(() => {
+    // Sichtbarkeit: (1) Einträge, deren Auflösung KEINEN TMDB-Treffer ergab,
+    // fliegen komplett raus — nicht öffenbar, nicht addbar. Unaufgelöste
+    // bleiben sichtbar. (2) „Mit Provider": nur Einträge mit mind. einem
+    // BESTÄTIGTEN DE-Provider — unaufgelöste sind hier sofort raus und
+    // POPPEN EIN, sobald die Hydration Provider meldet.
+    const passesProvider = (entry: DecoratedAnime): boolean => {
+      const info = entry.match
+        ? undefined
+        : (resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)]);
+      if (info && info.tmdbId === null) return false;
+      if (!deferredFilter.providerOnly) return true;
+      if (entry.match) return seriesProviders(entry.match).length > 0;
+      return !!info?.providers && info.providers.length > 0;
+    };
+
+    // Datums-Priorität: Liste (eigener Kalender) → statischer Katalog
+    // (Seasonal-Anime mit Provider, gleiche Quelle wie der Kalender) →
+    // TVMaze-Check → AniList (japanischer TV-Termin).
+    const corrected = newThisSeason.filter(passesProvider).map((entry) => {
       let anime = entry.anime;
       if (entry.match) {
-        // Serien aus der Liste: Kalender-Datum (Katalog/TVMaze) schlägt AniList.
         anime = withCalendarDate(anime, entry.match);
       } else {
-        // Rest: TVMaze-geprüfter Termin aus der progressiven Auflösung.
         const info = resolved[anime.id] ?? cachedResolved[String(anime.id)];
-        if (info?.premiereDate) anime = withPremiereDate(anime, info.premiereDate);
+        let catalogApplied = false;
+        const anilistDate = fullStartDate(anime);
+        if (info?.tmdbId && anilistDate && catalogSeasons) {
+          const seasons = catalogSeasons[String(info.tmdbId)];
+          if (seasons) {
+            const date = catalogBulkPremiereDate(seasons, anilistDate);
+            if (date) {
+              anime = withDate(anime, date);
+              catalogApplied = true;
+            }
+          }
+        }
+        if (!catalogApplied && info?.premiereDate) {
+          anime = withPremiereDate(anime, info.premiereDate);
+        }
       }
       return anime === entry.anime ? entry : { ...entry, anime };
     });
@@ -451,8 +643,22 @@ export const AnimeSeasonPage: React.FC = () => {
 
     // EINE Timeline für die ganze Season — beginnt beim Season-Start
     // (vergangene Tage gedimmt), Datum-lose am Ende („Start noch offen").
-    return { hero: heroEntry, dayGroups: buildDayGroups(rest, now) };
-  }, [newThisSeason, resolved, cachedResolved, now]);
+    return {
+      hero: heroEntry,
+      dayGroups: buildDayGroups(rest, now),
+      visibleContinuing: continuingEntries.filter(passesProvider),
+      visibleFinished: finishedEntries.filter(passesProvider),
+    };
+  }, [
+    newThisSeason,
+    continuingEntries,
+    finishedEntries,
+    resolved,
+    cachedResolved,
+    catalogSeasons,
+    now,
+    deferredFilter.providerOnly,
+  ]);
 
   const timelineCount = useMemo(
     () => dayGroups.reduce((sum, group) => sum + group.items.length, 0),
@@ -469,7 +675,17 @@ export const AnimeSeasonPage: React.FC = () => {
   useEffect(() => {
     if (loading) return;
     const started = startedRef.current;
-    const pending = allEntries.filter((entry) => !entry.match && !started.has(entry.anime.id));
+    // Auch Listen-Matches auflösen, denen Katalog-Daten fehlen (vote_average
+    // führt der Katalog gar nicht, beschreibung teils nicht) — Provider
+    // kommen weiter aus der Liste, Rating/deutsche Beschreibung werden
+    // via TMDB nachgeladen.
+    const needsResolve = (entry: DecoratedAnime) =>
+      !entry.match ||
+      !(typeof entry.match.vote_average === 'number' && entry.match.vote_average > 0) ||
+      !entry.match.beschreibung?.trim();
+    const pending = allEntries.filter(
+      (entry) => needsResolve(entry) && !started.has(entry.anime.id)
+    );
     if (!pending.length) return;
     for (const entry of pending) started.add(entry.anime.id);
 
@@ -514,10 +730,14 @@ export const AnimeSeasonPage: React.FC = () => {
       navigate(`/series/${entry.match.id}`);
       return;
     }
+    // Filme → /movie/, Serien → /series/ (mediaType aus der Auflösung).
+    const detailPath = (info: ResolvedTmdbInfo) =>
+      info.mediaType === 'movie' ? `/movie/${info.tmdbId}` : `/series/${info.tmdbId}`;
+
     // Bereits progressiv aufgelöst → kein Doppel-Request.
     const known = resolved[entry.anime.id];
     if (known) {
-      if (known.tmdbId) navigate(`/series/${known.tmdbId}`);
+      if (known.tmdbId) navigate(detailPath(known));
       else showToast('Auf TMDB nicht gefunden', 2000, 'info');
       return;
     }
@@ -528,7 +748,7 @@ export const AnimeSeasonPage: React.FC = () => {
       const info = await resolveTmdbInfo(entry.anime, selected.year);
       setResolved((prev) => ({ ...prev, [entry.anime.id]: info }));
       if (info.tmdbId) {
-        navigate(`/series/${info.tmdbId}`);
+        navigate(detailPath(info));
       } else {
         showToast('Auf TMDB nicht gefunden', 2000, 'info');
       }
@@ -539,22 +759,77 @@ export const AnimeSeasonPage: React.FC = () => {
     }
   };
 
+  /** „+"-Button auf der Karte: direkt in die Liste adden — derselbe Flow wie
+   *  Discover/Search (/add bzw. /addMovie via backendFetch). Die Liste
+   *  aktualisiert sich über den RTDB-Listener, Match + Badge folgen
+   *  automatisch; State wird NICHT manuell gesetzt (Write-Rule). */
+  const addEntry = async (entry: DecoratedAnime) => {
+    if (!user) {
+      showToast('Bitte einloggen, um Inhalte hinzuzufügen', 2500, 'info');
+      return;
+    }
+    if (addingId !== null) return;
+    setAddingId(entry.anime.id);
+    try {
+      // tmdbId sicherstellen (Cache bzw. On-Demand-Auflösung wie beim Öffnen).
+      let info = resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)];
+      if (!info) {
+        info = await resolveTmdbInfo(entry.anime, selected.year);
+        setResolved((prev) => ({ ...prev, [entry.anime.id]: info }));
+      }
+      if (!info.tmdbId) {
+        showToast('Auf TMDB nicht gefunden', 2000, 'info');
+        return;
+      }
+      const isMovie = info.mediaType === 'movie';
+      const response = await backendFetch(isMovie ? '/addMovie' : '/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: import.meta.env.VITE_USER, id: info.tmdbId, uuid: user.uid }),
+      });
+      if (!response.ok) throw new Error(`add failed: ${response.status}`);
+
+      const title = entry.anime.title.english || entry.anime.title.romaji || 'Unbekannter Titel';
+      hapticSuccess();
+      showToast(`„${title}" hinzugefügt`, 2500, 'success');
+      if (isMovie) {
+        trackMovieAdded(String(info.tmdbId), title, 'anime-season');
+        await logMovieAdded(user.uid, title, info.tmdbId);
+      } else {
+        trackSeriesAdded(String(info.tmdbId), title, 'anime-season');
+        await logSeriesAdded(user.uid, title, info.tmdbId);
+      }
+    } catch {
+      showToast('Hinzufügen fehlgeschlagen', 2500, 'error');
+    } finally {
+      setAddingId(null);
+    }
+  };
+
   /** Hydration-Daten (deutsche Beschreibung + Provider-Logos) pro Eintrag. */
   const hydrationFor = (entry: DecoratedAnime) => {
     const info = resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)];
-    const overviewDe = entry.match
-      ? entry.match.beschreibung?.trim() || null
-      : (info?.overviewDe ?? null);
+    // Beschreibung: Liste zuerst, sonst TMDB-Auflösung (auch für Matches —
+    // nicht jede Listen-Serie hat eine Katalog-Beschreibung).
+    const overviewDe = (entry.match?.beschreibung?.trim() || info?.overviewDe) ?? null;
     const tmdbProviders = entry.match
       ? seriesProviders(entry.match)
       : info
         ? (info.providers ?? [])
         : undefined;
-    return { overviewDe, tmdbProviders };
+    // Rating: vote_average aus dem Series-Objekt, falls vorhanden — der
+    // Katalog führt das Feld aber (noch) nicht, deshalb resolvt die
+    // Hydration auch Listen-Serien ohne Rating und liefert es via info nach.
+    const matchRating =
+      entry.match && typeof entry.match.vote_average === 'number' && entry.match.vote_average > 0
+        ? entry.match.vote_average
+        : null;
+    const tmdbRating = matchRating ?? info?.tmdbRating ?? null;
+    return { overviewDe, tmdbProviders, tmdbRating };
   };
 
   const renderCard = (entry: DecoratedAnime) => {
-    const { overviewDe, tmdbProviders } = hydrationFor(entry);
+    const { overviewDe, tmdbProviders, tmdbRating } = hydrationFor(entry);
     return (
       <AnimeSeasonCard
         key={entry.anime.id}
@@ -564,8 +839,11 @@ export const AnimeSeasonPage: React.FC = () => {
         resolving={resolvingId === entry.anime.id}
         overviewDe={overviewDe}
         tmdbProviders={tmdbProviders}
+        tmdbRating={tmdbRating}
         staggerIndex={staggerIndexById.get(entry.anime.id) ?? 0}
         onOpen={() => void openEntry(entry)}
+        adding={addingId === entry.anime.id}
+        onAdd={() => void addEntry(entry)}
       />
     );
   };
@@ -652,8 +930,65 @@ export const AnimeSeasonPage: React.FC = () => {
         tabs={seasonTabs.map((tab) => ({ id: seasonKey(tab), label: seasonLabel(tab) }))}
         activeTab={seasonKey(selected)}
         onTabChange={handleSeasonChange}
-        style={{ maxWidth: '560px', width: 'calc(100% - 40px)', margin: '0 auto 20px' }}
+        style={{ maxWidth: '560px', width: 'calc(100% - 40px)', margin: '0 auto 12px' }}
       />
+
+      {/* Filterleiste: Format-Auswahl als Segmented-Control (App-Signature-
+          Morphing wie der Season-Switcher) + „Mit Provider"-Toggle. */}
+      <div className="as-filterbar">
+        {/* margin: 0 — der TabSwitcher-Default (20px unten) würde die Leiste
+            gegen den Provider-Toggle vertikal verschieben. */}
+        <TabSwitcher
+          tabs={FORMAT_TABS}
+          activeTab={filter.mode}
+          onTabChange={handleFormatMode}
+          style={{ width: '280px', flexShrink: 0, margin: 0 }}
+        />
+        {/* Baugleich zum TabSwitcher (Gehäuse + Active-Pill-Gradient), damit
+            der Toggle zur Leiste gehört und an/aus sofort erkennbar ist. */}
+        <div
+          style={{
+            display: 'flex',
+            background: `${currentTheme.text.muted}08`,
+            borderRadius: '18px',
+            padding: '4px',
+            border: `1px solid ${currentTheme.border.default}`,
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
+          }}
+        >
+          <motion.button
+            type="button"
+            whileTap={tapScaleSmall}
+            aria-pressed={filter.providerOnly}
+            onClick={toggleProviderOnly}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '11px 16px',
+              background: filter.providerOnly
+                ? `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`
+                : 'transparent',
+              border: 'none',
+              borderRadius: '14px',
+              color: filter.providerOnly ? currentTheme.text.secondary : currentTheme.text.muted,
+              fontSize: '13.5px',
+              fontWeight: filter.providerOnly ? 700 : 600,
+              boxShadow: filter.providerOnly
+                ? `0 4px 24px ${currentTheme.primary}35, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
+                : 'none',
+              cursor: 'pointer',
+              // Nur color animieren — Gradient-Hintergründe interpolieren
+              // nicht, eine background-Transition macht den Wechsel schwammig.
+              transition: 'color 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            }}
+          >
+            <SmartDisplay style={{ fontSize: '18px' }} />
+            Mit Provider
+          </motion.button>
+        </div>
+      </div>
 
       <div
         style={{
@@ -702,7 +1037,7 @@ export const AnimeSeasonPage: React.FC = () => {
             {/* ── 0. Hero-Spotlight (volle Breite) ── */}
             {hero &&
               (() => {
-                const { overviewDe, tmdbProviders } = hydrationFor(hero);
+                const { overviewDe, tmdbProviders, tmdbRating } = hydrationFor(hero);
                 return (
                   <AnimeSeasonHero
                     anime={hero.anime}
@@ -711,7 +1046,10 @@ export const AnimeSeasonPage: React.FC = () => {
                     resolving={resolvingId === hero.anime.id}
                     overviewDe={overviewDe}
                     tmdbProviders={tmdbProviders}
+                    tmdbRating={tmdbRating}
                     onOpen={() => void openEntry(hero)}
+                    adding={addingId === hero.anime.id}
+                    onAdd={() => void addEntry(hero)}
                   />
                 );
               })()}
@@ -723,7 +1061,7 @@ export const AnimeSeasonPage: React.FC = () => {
                   <CalendarMonth style={sectionIconStyle} />,
                   `Premieren-Kalender (${timelineCount})`,
                   undefined,
-                  continuingEntries.length > 0 ? (
+                  visibleContinuing.length > 0 ? (
                     <button
                       type="button"
                       className="as-jump"
@@ -813,24 +1151,24 @@ export const AnimeSeasonPage: React.FC = () => {
             )}
 
             {/* ── 2. Fortlaufend ── */}
-            {continuingEntries.length > 0 && (
+            {visibleContinuing.length > 0 && (
               <section ref={continuingRef} className="as-continuing">
                 {renderSectionTitle(
                   <Autorenew style={sectionIconStyle} />,
-                  `Fortlaufend (${continuingEntries.length})`
+                  `Fortlaufend (${visibleContinuing.length})`
                 )}
-                {renderGrid(continuingEntries)}
+                {renderGrid(visibleContinuing)}
               </section>
             )}
 
             {/* ── 3. Bereits beendet ── */}
-            {finishedEntries.length > 0 && (
+            {visibleFinished.length > 0 && (
               <section>
                 {renderSectionTitle(
                   <TaskAlt style={sectionIconStyle} />,
-                  `Bereits beendet (${finishedEntries.length})`
+                  `Bereits beendet (${visibleFinished.length})`
                 )}
-                {renderGrid(finishedEntries)}
+                {renderGrid(visibleFinished)}
               </section>
             )}
 

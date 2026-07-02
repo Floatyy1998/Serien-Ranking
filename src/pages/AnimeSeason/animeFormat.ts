@@ -21,6 +21,14 @@ export function formatLabelDe(format: string | null): string | null {
   return FORMAT_LABELS_DE[format] ?? format;
 }
 
+/** Karten-Badge fürs Format: TV/ONA/unbekannt → „Serie" (ONA = Web-Serie,
+ *  für Nutzer dasselbe), sonst deutsches Label („Film", „OVA", „Special",
+ *  „Kurzserie"). Im FILTER zählt alles außer MOVIE als Serie. */
+export function formatBadgeDe(format: string | null): string {
+  if (!format || format === 'TV' || format === 'ONA') return 'Serie';
+  return FORMAT_LABELS_DE[format] ?? format;
+}
+
 /** Kompakter Countdown: „2d", „4h", „12min". */
 export function shortCountdown(seconds: number): string {
   if (seconds <= 0) return 'jetzt';
@@ -60,14 +68,26 @@ export function stripDescription(html: string | null): string {
     .trim();
 }
 
-/** Meta-Zeile „Studio · 12 Ep. · ★ 76%" — Fortlaufend: „seit Frühling 2026 · …". */
-export function buildMetaLine(anime: SeasonAnime, sinceLabel?: string): string {
+/** Meta-Zeile „Studio · 12 Ep. · ★ 8.2" — Fortlaufend: „seit Frühling 2026 · …".
+ *  Rating: TMDB-vote_average (10er-Skala, wie überall in der App); solange
+ *  die Hydration läuft, AniList-% auf dieselbe Skala umgerechnet (76% → 7.6),
+ *  damit beim Eintreffen des TMDB-Werts nichts umspringt. Filme lassen die
+ *  Episodenzahl weg („1 Ep." trägt nichts). */
+export function buildMetaLine(
+  anime: SeasonAnime,
+  sinceLabel?: string,
+  tmdbRating?: number | null
+): string {
+  const rating =
+    typeof tmdbRating === 'number' && tmdbRating > 0
+      ? tmdbRating
+      : typeof anime.averageScore === 'number' && anime.averageScore > 0
+        ? anime.averageScore / 10
+        : null;
   return [
     sinceLabel ? `seit ${sinceLabel}` : (anime.studios?.nodes?.[0]?.name ?? null),
-    anime.episodes ? `${anime.episodes} Ep.` : null,
-    typeof anime.averageScore === 'number' && anime.averageScore > 0
-      ? `★ ${anime.averageScore}%`
-      : null,
+    anime.episodes && anime.format !== 'MOVIE' ? `${anime.episodes} Ep.` : null,
+    rating ? `★ ${rating.toFixed(1)}` : null,
   ]
     .filter(Boolean)
     .join(' · ');

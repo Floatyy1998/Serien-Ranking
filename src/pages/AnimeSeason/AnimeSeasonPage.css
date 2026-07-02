@@ -7,12 +7,27 @@
    die --theme- und --color-Vars. Abstände: --space-8 Sektionen, --space-6
    Timeline-Tage, --space-4 Grid-gap. */
 
+/* ─── Filterleiste (Format-Segmented + Provider-Toggle) ─────────────────── */
+
+.as-filterbar {
+  display: flex;
+  /* stretch: Provider-Toggle-Gehäuse zieht auf TabSwitcher-Höhe. */
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 20px 20px;
+}
+
 /* ─── Karten-Grid (Querformat-Karten) ───────────────────────────────────── */
 
 .as-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-3);
+  /* start statt stretch: klappt EINE Karte ihre Beschreibung auf, wachsen
+     die Nachbarn der Zeile nicht mit (die Zeile bekommt nur Leerraum). */
+  align-items: start;
 }
 
 /* auto-fill statt 1fr-Streckung: auf Ultrawide bleiben die Tickets kompakt
@@ -190,6 +205,49 @@
   flex-shrink: 0;
 }
 
+/* „+ Zur Liste"-Button (nur wenn NICHT in der Liste) — bewusst kompakt auf
+   Pill-Höhe, damit die Chip-Zeile nicht aufbläht und nichts am Titel klebt.
+   Selektor mit .mobile-app-Präfix: die globale Touch-Target-Regel
+   (.mobile-app button = min 44px) hat sonst höhere Spezifität. */
+.as-card-add,
+.mobile-app button.as-card-add {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  min-height: 26px;
+  padding: 0;
+  margin-left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--glass-medium);
+  border: 1px solid var(--glass-border-medium);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-normal) var(--ease-out);
+}
+
+.as-card-add:hover {
+  background: var(--glass-heavy, rgba(255, 255, 255, 0.11));
+  box-shadow: var(--glow-primary);
+}
+
+/* Hero-Variante: größer, sitzt frei auf dem Backdrop. */
+.as-card-add--hero,
+.mobile-app button.as-card-add--hero {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+}
+
 .as-card-title {
   margin: 2px 0 0;
   font-size: 16px;
@@ -224,6 +282,26 @@
   -webkit-box-orient: vertical;
   /* Höhe reservieren → Hydration (en→de) springt nicht. */
   min-height: calc(3 * 1.5em);
+}
+
+/* Aufgeklappt: volle Beschreibung, Karte wächst mit (Grid-Row streckt). */
+.as-card-desc--open {
+  display: block;
+  -webkit-line-clamp: unset;
+}
+
+/* „mehr lesen" / „weniger anzeigen" unter der Beschreibung */
+.as-card-more {
+  align-self: flex-start;
+  margin: 0;
+  padding: 2px 0;
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .as-card-providers {
@@ -616,6 +694,12 @@
     font-size: 14px;
     -webkit-line-clamp: 3;
   }
+}
+
+/* Aufgeklappt: volle Beschreibung im Hero. */
+.as-hero-desc--open {
+  display: block;
+  -webkit-line-clamp: unset;
 }
 
 /* ─── Live-Countdown (Signature-Moment im Hero) ─────────────────────────── */

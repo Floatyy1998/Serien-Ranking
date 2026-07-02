@@ -22,7 +22,7 @@
 
 import React, { useState } from 'react';
 import { CircularProgress } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
+import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { hapticTap } from '../../lib/haptics';
@@ -35,6 +35,7 @@ import {
   buildMetaLine,
   continuationLabel,
   datePillText,
+  formatBadgeDe,
   isSameDay,
   shortCountdown,
   startDateToDate,
@@ -140,8 +141,14 @@ interface AnimeSeasonCardProps {
   overviewDe: string | null;
   /** TMDB-Provider-Logos (DE-Flatrate bzw. eigene Liste); undefined = unresolved. */
   tmdbProviders: TmdbProviderInfo[] | null | undefined;
+  /** TMDB-vote_average (10er-Skala) — solange fehlend: AniList-Fallback. */
+  tmdbRating?: number | null;
   /** Karten-Tap: SeriesDetail (Match/Resolve übernimmt die Page). */
   onOpen: () => void;
+  /** „+"-Button: direkt zur Liste adden (nur wenn nicht in der Liste). */
+  onAdd?: () => void;
+  /** Add läuft gerade — Spinner im „+"-Button, Klicks gesperrt. */
+  adding?: boolean;
   /** Index für den CSS-Entry-Stagger (wird als --as-i gedeckelt gesetzt). */
   staggerIndex?: number;
 }
@@ -153,25 +160,35 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   sinceLabel,
   overviewDe,
   tmdbProviders,
+  tmdbRating,
   onOpen,
+  onAdd,
+  adding = false,
   staggerIndex = 0,
 }) => {
   const { currentTheme } = useTheme();
   // „Jetzt" einmalig beim Mount einfrieren — react-hooks/purity verbietet
   // Date.now() im Render; Minuten-Drift ist für Datumsvergleiche irrelevant.
   const [now] = useState(() => Date.now());
+  /** Beschreibung aufgeklappt (Tap auf Text/„mehr" — navigiert NICHT). */
+  const [descExpanded, setDescExpanded] = useState(false);
 
   const title = anime.title.english || anime.title.romaji || 'Unbekannter Titel';
   const cover = anime.coverImage?.large || '';
   const tint = anime.coverImage?.color || null;
   const providers = tmdbProviders ?? [];
-  const metaLine = buildMetaLine(anime, sinceLabel);
+  const metaLine = buildMetaLine(anime, sinceLabel, tmdbRating);
   const description = overviewDe || stripDescription(anime.description);
 
   // Fortsetzungs-Chip: „STAFFEL 2"/„PART 2"/„FORTSETZUNG" neutral, „NEU" in
   // Primary. „Fortlaufend"-Einträge tragen die Info schon in der Meta-Zeile.
   const contLabel = sinceLabel ? null : continuationLabel(anime);
   const showNewChip = !sinceLabel && !contLabel;
+
+  // Format-Badge auf JEDER Karte: „Serie" neutral, „Film" in Secondary,
+  // OVA/ONA/Special/Kurzserie neutral mit eigenem Label.
+  const isMovie = anime.format === 'MOVIE';
+  const formatBadge = formatBadgeDe(anime.format);
 
   // ── Datum-Pill ─────────────────────────────────────────────────────────────
   const startDate = startDateToDate(anime.startDate);
@@ -278,6 +295,24 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
               <span className="as-card-pill" style={{ background: pillBg, color: pillColor }}>
                 {pillText}
               </span>
+              <span
+                className="as-card-chip"
+                style={
+                  isMovie
+                    ? {
+                        background: `${currentTheme.secondary}1f`,
+                        border: `1px solid ${currentTheme.secondary}66`,
+                        color: lightenColor(currentTheme.secondary, 0.3),
+                      }
+                    : {
+                        background: 'var(--glass-light)',
+                        border: '1px solid var(--glass-border-medium)',
+                        color: currentTheme.text.muted,
+                      }
+                }
+              >
+                {formatBadge}
+              </span>
               {contLabel && (
                 <span
                   className="as-card-chip"
@@ -303,7 +338,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
                 </span>
               )}
             </span>
-            {inList && (
+            {inList ? (
               <span
                 className="as-card-inlist-badge"
                 style={{ background: `${currentTheme.primary}dd` }}
@@ -313,16 +348,59 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
                   style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
                 />
               </span>
-            )}
+            ) : onAdd ? (
+              <button
+                type="button"
+                className="as-card-add"
+                title="Zur Liste hinzufügen"
+                aria-label={`${title} zur Liste hinzufügen`}
+                aria-busy={adding}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (adding) return;
+                  hapticTap();
+                  onAdd();
+                }}
+                style={{ color: currentTheme.text.secondary }}
+              >
+                {adding ? (
+                  <CircularProgress size={12} style={{ color: currentTheme.accent }} />
+                ) : (
+                  <Add style={{ fontSize: '15px' }} />
+                )}
+              </button>
+            ) : null}
           </div>
           <h3 className="as-card-title">{title}</h3>
           {metaLine && <p className="as-card-meta">{metaLine}</p>}
           {description && (
             /* key wechselt bei Hydration (en → de) → sanfter Fade; min-height
-               in CSS hält die Kartenhöhe stabil (kein Layout-Sprung). */
-            <p className="as-card-desc as-fade" key={overviewDe ? 'desc-de' : 'desc-fallback'}>
-              {description}
-            </p>
+               in CSS hält die Kartenhöhe stabil (kein Layout-Sprung). Tap auf
+               den Text bzw. „mehr" klappt die VOLLE Beschreibung aus (die
+               Karte navigiert dabei nicht — stopPropagation). */
+            <>
+              <p
+                className={
+                  descExpanded ? 'as-card-desc as-card-desc--open as-fade' : 'as-card-desc as-fade'
+                }
+                key={overviewDe ? 'desc-de' : 'desc-fallback'}
+              >
+                {description}
+              </p>
+              {description.length > 160 && (
+                <button
+                  type="button"
+                  className="as-card-more"
+                  style={{ color: lightenColor(currentTheme.primary, 0.2) }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDescExpanded((value) => !value);
+                  }}
+                >
+                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+                </button>
+              )}
+            </>
           )}
           <div className="as-card-providers as-fade" key={providers.length ? 'prov' : 'prov-none'}>
             <ProviderLogos providers={providers} size={20} searchTitle={title} />

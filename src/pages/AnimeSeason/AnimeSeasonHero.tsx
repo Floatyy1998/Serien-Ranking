@@ -20,7 +20,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { CircularProgress } from '@mui/material';
-import { CheckCircle } from '@mui/icons-material';
+import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
@@ -30,6 +30,7 @@ import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import {
   buildMetaLine,
   continuationLabel,
+  formatBadgeDe,
   formatStartLong,
   isSameDay,
   shortCountdown,
@@ -47,7 +48,13 @@ interface AnimeSeasonHeroProps {
   resolving: boolean;
   overviewDe: string | null;
   tmdbProviders: TmdbProviderInfo[] | null | undefined;
+  /** TMDB-vote_average (10er-Skala) — solange fehlend: AniList-Fallback. */
+  tmdbRating?: number | null;
   onOpen: () => void;
+  /** „+"-Button oben rechts: direkt zur Liste adden (wenn nicht in Liste). */
+  onAdd?: () => void;
+  /** Add läuft gerade — Spinner im „+"-Button. */
+  adding?: boolean;
 }
 
 /** Exakter Premieren-Zeitpunkt (ms): airingAt von Ep 1, sonst Mitternacht
@@ -108,20 +115,33 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
   resolving,
   overviewDe,
   tmdbProviders,
+  tmdbRating,
   onOpen,
+  onAdd,
+  adding = false,
 }) => {
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
   // Einmalig eingefroren (react-hooks/purity: kein Date.now() im Render).
   const [now] = useState(() => new Date());
+  /** Beschreibung aufgeklappt (Tap auf Text/„mehr" — navigiert NICHT). */
+  const [descExpanded, setDescExpanded] = useState(false);
 
   const title = anime.title.english || anime.title.romaji || 'Unbekannter Titel';
   const banner = anime.bannerImage || '';
   const cover = anime.coverImage?.large || '';
   const coverColor = anime.coverImage?.color || currentTheme.primary;
   const description = overviewDe || stripDescription(anime.description);
-  // „Staffel 2 · GoHands · 12 Ep. · ★ 76%" — Fortsetzungs-Info zuerst.
-  const metaLine = [continuationLabel(anime), buildMetaLine(anime)].filter(Boolean).join(' · ');
+  // „Film · Staffel 2 · GoHands · ★ 76%" — Format (falls nicht Serie) und
+  // Fortsetzungs-Info zuerst.
+  const formatBadge = formatBadgeDe(anime.format);
+  const metaLine = [
+    formatBadge !== 'Serie' ? formatBadge : null,
+    continuationLabel(anime),
+    buildMetaLine(anime, undefined, tmdbRating),
+  ]
+    .filter(Boolean)
+    .join(' · ');
   const providers = tmdbProviders ?? [];
 
   // Startzeile: zukünftig groß in Accent, laufend in Success. Accent wird
@@ -197,7 +217,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
       <div className="as-hero-grain" aria-hidden />
       <div className="as-card-gloss" aria-hidden />
 
-      {inList && (
+      {inList ? (
         <span
           className="as-card-inlist-badge as-hero-inlist"
           style={{ background: `${currentTheme.primary}dd` }}
@@ -207,7 +227,28 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
             style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
           />
         </span>
-      )}
+      ) : onAdd ? (
+        <button
+          type="button"
+          className="as-card-add as-card-add--hero as-hero-inlist"
+          title="Zur Liste hinzufügen"
+          aria-label={`${title} zur Liste hinzufügen`}
+          aria-busy={adding}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (adding) return;
+            hapticTap();
+            onAdd();
+          }}
+          style={{ color: '#fff' }}
+        >
+          {adding ? (
+            <CircularProgress size={16} style={{ color: currentTheme.accent }} />
+          ) : (
+            <Add style={{ fontSize: '20px' }} />
+          )}
+        </button>
+      ) : null}
 
       <div className="as-hero-content">
         {/* Scharfes 2/3-Poster als stehende Karte vor dem Backdrop */}
@@ -235,9 +276,29 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
           {isFuture && target && <CountdownTiles target={target} />}
           {metaLine && <p className="as-hero-meta">{metaLine}</p>}
           {description && (
-            <p className="as-hero-desc as-fade" key={overviewDe ? 'desc-de' : 'desc-fallback'}>
-              {description}
-            </p>
+            <>
+              <p
+                className={
+                  descExpanded ? 'as-hero-desc as-hero-desc--open as-fade' : 'as-hero-desc as-fade'
+                }
+                key={overviewDe ? 'desc-de' : 'desc-fallback'}
+              >
+                {description}
+              </p>
+              {description.length > 180 && (
+                <button
+                  type="button"
+                  className="as-card-more"
+                  style={{ color: lightenColor(currentTheme.primary, 0.25) }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setDescExpanded((value) => !value);
+                  }}
+                >
+                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+                </button>
+              )}
+            </>
           )}
           {providers.length > 0 && (
             <div className="as-card-providers as-fade" key="prov">

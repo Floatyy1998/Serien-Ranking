@@ -116,6 +116,34 @@ export const PatchNotesPage = () => {
           description:
             'Zurück von einer Detailseite landest du exakt dort, wo du warst – inklusive gewähltem Season-Tab. Dazu: Schnellsprung zu „Fortlaufend" im Timeline-Header und der bekannte Scroll-to-top-Button.',
         },
+        {
+          icon: <FilterAlt />,
+          color: currentTheme.status.warning,
+          title: 'Filter: Serien, Filme & Provider',
+          description:
+            'Oben filterst du per „Alle · Serien · Filme" und blendest mit „Mit Provider" alles aus, was keinen deutschen Streaming-Anbieter hat. Anime-Filme haben ein eigenes Badge und öffnen ihre Film-Detailseite.',
+        },
+        {
+          icon: <PlaylistAddCheck />,
+          color: currentTheme.primary,
+          title: 'Direkt zur Liste hinzufügen',
+          description:
+            'Jede Karte (und der Hero) hat einen „+"-Button – Serie oder Film landet ohne Umweg über die Suche in deiner Liste und zeigt danach sofort Kalender-Termin, Provider und Haken.',
+        },
+        {
+          icon: <Equalizer />,
+          color: currentTheme.secondary,
+          title: 'TMDB-Rating auf den Karten',
+          description:
+            'Statt der AniList-Prozente steht jetzt das TMDB-Rating auf der 10er-Skala („★ 8.4") auf jeder Karte – dieselbe Bewertung wie auf den Detailseiten.',
+        },
+        {
+          icon: <Visibility />,
+          color: currentTheme.accent,
+          title: 'Beschreibung komplett lesen',
+          description:
+            'Mit „mehr lesen" klappst du die volle Beschreibung direkt auf der Karte auf – ohne die Seite zu verlassen.',
+        },
       ],
     },
     {
