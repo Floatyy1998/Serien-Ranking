@@ -39,3 +39,5 @@ release/
 # Legal content (keep out of repository)
 public/legal/
 CLAUDE.md
+database.rules.BACKUP-vor-haertung-2026-07-02.json
+docs/security-rules-migration.md
