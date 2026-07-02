@@ -43,6 +43,7 @@ const LS_META_KEY = LS_PREFIX + 'seriesMeta';
 const LS_MOVIES_KEY = LS_PREFIX + 'moviesMeta';
 const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
 const LS_SEASONS_BULK_KEY = LS_PREFIX + 'seasonsBulk';
+const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
 // haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
@@ -85,6 +86,7 @@ let memoryMeta: Record<string, CatalogSeries> | null = null;
 let memoryMovies: Record<string, CatalogMovie> | null = null;
 const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
+let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
@@ -174,6 +176,7 @@ async function invalidateLocalCaches(): Promise<void> {
     idbRemove(LS_META_KEY),
     idbRemove(LS_MOVIES_KEY),
     idbRemove(LS_SEASONS_BULK_KEY),
+    idbRemove(LS_SEASONAL_ANIME_KEY),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
 }
@@ -405,6 +408,56 @@ export async function fetchStaticCatalogSeasonsBulk(): Promise<Record<
   }
 }
 
+/** Eintrag aus catalog/seasonal-anime.json — vom Backend-Cron täglich für
+ *  die aktuelle + nächste AniList-Season vorgerechnet (anilistId-Key). */
+export interface SeasonalAnimeStaticEntry {
+  tmdbId: number;
+  overviewDe: string | null;
+  rating: number | null;
+  /** Bereits aufs App-Genre-Vokabular gemappt (ohne Animation). */
+  genres: string[];
+  /** DE-Flatrate (TMDB) bzw. AniList-Link-Fallback — Namen unnormalisiert. */
+  providers: { name: string; logo: string | null }[];
+}
+
+/**
+ * Laedt catalog/seasonal-anime.json (anilistId -> vorgerechnete TMDB-Daten).
+ * Erspart der Anime-Season-Seite die komplette Client-Hydration (~500
+ * TMDB/TVMaze-Requests) fuer alle abgedeckten Eintraege. Gleiche Cache-
+ * Strategie wie die uebrigen Catalog-Files (IDB + Versions-Cache-Busting).
+ */
+export async function fetchStaticSeasonalAnime(): Promise<Record<
+  string,
+  SeasonalAnimeStaticEntry
+> | null> {
+  if (memorySeasonalAnime) return memorySeasonalAnime;
+
+  const cached = await idbGetAny<Record<string, SeasonalAnimeStaticEntry>>(LS_SEASONAL_ANIME_KEY);
+  if (cached) {
+    memorySeasonalAnime = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: Record<string, SeasonalAnimeStaticEntry> }>(
+      'seasonal-anime.json',
+      { version }
+    );
+    const entries = data.entries ?? {};
+    memorySeasonalAnime = entries;
+    void idbSetVersioned(LS_SEASONAL_ANIME_KEY, version, entries);
+    return entries;
+  } catch (e) {
+    // 404 = Backend noch nicht aktuell — die Page faellt auf Client-Hydration zurueck.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] seasonal-anime fetch failed', e);
+    }
+    return null;
+  }
+}
+
 /**
  * Prueft ob serverseitig eine neue Catalog-Version vorliegt und invalidiert
  * in diesem Fall Memory + IDB (aber ohne direkt neu zu fetchen).
@@ -513,11 +566,13 @@ export function clearStaticCatalogCache(): void {
   memoryMovies = null;
   memorySeasons.clear();
   memorySeasonsBulk = null;
+  memorySeasonalAnime = null;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
   void idbRemove(LS_VERSION_KEY);
   void idbRemove(LS_SEASONS_BULK_KEY);
+  void idbRemove(LS_SEASONAL_ANIME_KEY);
   void idbRemovePrefix(LS_SEASONS_PREFIX);
 }

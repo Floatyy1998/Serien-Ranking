@@ -76,7 +76,9 @@ import { showToast } from '../../lib/toast';
 import { tapScaleSmall } from '../../lib/motion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
-import { fetchStaticCatalogSeasonsBulk } from '../../lib/staticCatalog';
+import { fetchStaticCatalogSeasonsBulk, fetchStaticSeasonalAnime } from '../../lib/staticCatalog';
+import type { SeasonalAnimeStaticEntry } from '../../lib/staticCatalog';
+import { getProviderLogoUrl } from '../../lib/providerMerge';
 import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
 import {
   fetchContinuingAnime,
@@ -473,6 +475,63 @@ export const AnimeSeasonPage: React.FC = () => {
     };
   }, []);
 
+  /** Server-Export (catalog/seasonal-anime.json): täglich vorgerechnete
+   *  TMDB-Daten pro AniList-Id — erspart die Client-Hydration fast komplett.
+   *  ready gated die Hydration, damit sie nicht losläuft, bevor klar ist,
+   *  was der Server schon abdeckt. */
+  const [serverSeasonal, setServerSeasonal] = useState<Record<
+    string,
+    SeasonalAnimeStaticEntry
+  > | null>(null);
+  const [serverSeasonalReady, setServerSeasonalReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchStaticSeasonalAnime()
+      .then((data) => {
+        if (!cancelled) setServerSeasonal(data);
+      })
+      .catch(() => {
+        /* best-effort — ohne Export volle Client-Hydration */
+      })
+      .finally(() => {
+        if (!cancelled) setServerSeasonalReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /** Server-Export → ResolvedTmdbInfo-Shape (Provider App-normalisiert,
+   *  Logos aus TMDB bzw. lokaler Provider-Map). */
+  const serverResolved = useMemo(() => {
+    const map: Record<number, ResolvedTmdbInfo> = {};
+    if (!serverSeasonal) return map;
+    for (const [anilistId, entry] of Object.entries(serverSeasonal)) {
+      if (!entry?.tmdbId) continue;
+      const seen = new Set<string>();
+      const providers: TmdbProviderInfo[] = [];
+      for (const provider of entry.providers ?? []) {
+        const normalized = normalizeProviderName(provider.name);
+        if (!normalized || seen.has(normalized)) continue;
+        const logo = provider.logo || getProviderLogoUrl(normalized);
+        if (!logo) continue;
+        seen.add(normalized);
+        providers.push({ name: normalized, logo });
+      }
+      map[Number(anilistId)] = {
+        tmdbId: entry.tmdbId,
+        mediaType: 'tv',
+        overviewDe: entry.overviewDe,
+        providers,
+        premiereDate: null,
+        tmdbRating: entry.rating,
+        genres: entry.genres ?? [],
+      };
+    }
+    return map;
+  }, [serverSeasonal]);
+
   /** Ids, für die die Hintergrund-Auflösung bereits angestoßen wurde. */
   const startedRef = useRef<Set<number>>(new Set());
   /** Puffer der Hintergrund-Auflösungen — GEBÜNDELT geflusht: pro Eintrag
@@ -521,7 +580,7 @@ export const AnimeSeasonPage: React.FC = () => {
   // … deshalb EIN Spät-Restore, sobald der Inhalt steht. Auf Nicht-POP-
   // Navigation hat der Hook den Key schon entfernt → no-op.
   useEffect(() => {
-    if (loading || hydration.active || lateRestoreRef.current) return;
+    if (loading || !serverSeasonalReady || hydration.active || lateRestoreRef.current) return;
     lateRestoreRef.current = true;
     const saved = sessionStorage.getItem(SCROLL_KEY);
     if (!saved) return;
@@ -529,7 +588,7 @@ export const AnimeSeasonPage: React.FC = () => {
       const container = document.querySelector('.mobile-content');
       if (container) container.scrollTop = parseInt(saved, 10);
     });
-  }, [loading, hydration.active]);
+  }, [loading, serverSeasonalReady, hydration.active]);
 
   useEffect(() => {
     let cancelled = false;
@@ -643,7 +702,9 @@ export const AnimeSeasonPage: React.FC = () => {
     const passesProvider = (entry: DecoratedAnime): boolean => {
       const info = entry.match
         ? undefined
-        : (resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)]);
+        : (resolved[entry.anime.id] ??
+          cachedResolved[String(entry.anime.id)] ??
+          serverResolved[entry.anime.id]);
       if (info && info.tmdbId === null) return false;
       if (!deferredFilter.providerOnly) return true;
       if (entry.match) return seriesProviders(entry.match).length > 0;
@@ -658,7 +719,8 @@ export const AnimeSeasonPage: React.FC = () => {
       if (entry.match) {
         anime = withCalendarDate(anime, entry.match);
       } else {
-        const info = resolved[anime.id] ?? cachedResolved[String(anime.id)];
+        const info =
+          resolved[anime.id] ?? cachedResolved[String(anime.id)] ?? serverResolved[anime.id];
         let catalogApplied = false;
         const anilistDate = fullStartDate(anime);
         if (info?.tmdbId && anilistDate && catalogSeasons) {
@@ -698,6 +760,7 @@ export const AnimeSeasonPage: React.FC = () => {
     finishedEntries,
     resolved,
     cachedResolved,
+    serverResolved,
     catalogSeasons,
     now,
     deferredFilter.providerOnly,
@@ -724,30 +787,42 @@ export const AnimeSeasonPage: React.FC = () => {
     allEntriesRef.current = allEntries;
   }, [allEntries]);
 
+  /** Vollständiger Info-Lookup: Live-Auflösung → Session-Cache → Server-Export. */
+  const infoFor = React.useCallback(
+    (id: number): ResolvedTmdbInfo | undefined =>
+      resolved[id] ?? cachedResolved[String(id)] ?? serverResolved[id],
+    [resolved, cachedResolved, serverResolved]
+  );
+
   const pendingKey = useMemo(
     () =>
       allEntries
         .filter(
           (entry) =>
-            needsResolveEntry(entry) && cachedResolved[String(entry.anime.id)] === undefined
+            needsResolveEntry(entry) &&
+            cachedResolved[String(entry.anime.id)] === undefined &&
+            serverResolved[entry.anime.id] === undefined
         )
         .map((entry) => entry.anime.id)
         .sort((a, b) => a - b)
         .join(','),
-    [allEntries, cachedResolved]
+    [allEntries, cachedResolved, serverResolved]
   );
 
   // useLayoutEffect: hydration.active MUSS vor dem ersten Paint stehen —
   // mit useEffect blitzte ein Frame unhydratisierter Content vor dem Skeleton.
   useLayoutEffect(() => {
-    if (loading) return;
+    // serverSeasonalReady: erst starten, wenn klar ist, was der Server-Export
+    // abdeckt — sonst würden alle Einträge unnötig client-seitig aufgelöst.
+    if (loading || !serverSeasonalReady) return;
     const started = startedRef.current;
-    // Bereits gecachte Einträge (sessionStorage) überspringen den Worker
-    // komplett — cachedResolved speist hydrationFor direkt.
+    // Bereits gecachte (sessionStorage) oder server-abgedeckte Einträge
+    // überspringen den Worker komplett.
     const pending = allEntriesRef.current.filter(
       (entry) =>
         needsResolveEntry(entry) &&
         cachedResolved[String(entry.anime.id)] === undefined &&
+        serverResolved[entry.anime.id] === undefined &&
         !started.has(entry.anime.id)
     );
     if (!pending.length) {
@@ -812,7 +887,15 @@ export const AnimeSeasonPage: React.FC = () => {
     };
     // allEntries kommt bewusst über die Ref — pendingKey deckt echte
     // Änderungen der aufzulösenden ID-Menge ab (Identitäts-Rauschen nicht).
-  }, [pendingKey, loading, selected.year, queueResolved, cachedResolved]);
+  }, [
+    pendingKey,
+    loading,
+    selected.year,
+    queueResolved,
+    cachedResolved,
+    serverResolved,
+    serverSeasonalReady,
+  ]);
 
   const handleSeasonChange = (id: string) => {
     const next = seasonTabs.find((tab) => seasonKey(tab) === id);
@@ -831,8 +914,8 @@ export const AnimeSeasonPage: React.FC = () => {
     const detailPath = (info: ResolvedTmdbInfo) =>
       info.mediaType === 'movie' ? `/movie/${info.tmdbId}` : `/series/${info.tmdbId}`;
 
-    // Bereits progressiv aufgelöst → kein Doppel-Request.
-    const known = resolved[entry.anime.id];
+    // Bereits aufgelöst (live/Cache/Server-Export) → kein Doppel-Request.
+    const known = infoFor(entry.anime.id);
     if (known) {
       if (known.tmdbId) navigate(detailPath(known));
       else showToast('Auf TMDB nicht gefunden', 2000, 'info');
@@ -872,11 +955,12 @@ export const AnimeSeasonPage: React.FC = () => {
     if (addingId !== null) return;
     setAddingId(entry.anime.id);
     try {
-      // tmdbId sicherstellen (Cache bzw. On-Demand-Auflösung wie beim Öffnen).
-      let info = resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)];
+      // tmdbId sicherstellen (Cache/Server bzw. On-Demand wie beim Öffnen).
+      let info = infoFor(entry.anime.id);
       if (!info) {
-        info = await resolveTmdbInfo(entry.anime, selected.year);
-        setResolved((prev) => ({ ...prev, [entry.anime.id]: info }));
+        const fresh = await resolveTmdbInfo(entry.anime, selected.year);
+        setResolved((prev) => ({ ...prev, [entry.anime.id]: fresh }));
+        info = fresh;
       }
       if (!info.tmdbId) {
         showToast('Auf TMDB nicht gefunden', 2000, 'info');
@@ -909,7 +993,7 @@ export const AnimeSeasonPage: React.FC = () => {
 
   /** Hydration-Daten (deutsche Beschreibung + Provider-Logos) pro Eintrag. */
   const hydrationFor = (entry: DecoratedAnime) => {
-    const info = resolved[entry.anime.id] ?? cachedResolved[String(entry.anime.id)];
+    const info = infoFor(entry.anime.id);
     // Beschreibung: Liste zuerst, sonst TMDB-Auflösung (auch für Matches —
     // nicht jede Listen-Serie hat eine Katalog-Beschreibung).
     const overviewDe = (entry.match?.beschreibung?.trim() || info?.overviewDe) ?? null;
@@ -1105,7 +1189,7 @@ export const AnimeSeasonPage: React.FC = () => {
           zIndex: 1,
         }}
       >
-        {(loading || hydration.active) && (
+        {(loading || !serverSeasonalReady || hydration.active) && (
           <div className="as-skeletons" role="status" aria-label="Anime-Season wird geladen">
             <Skeleton
               width="100%"
@@ -1153,7 +1237,7 @@ export const AnimeSeasonPage: React.FC = () => {
           />
         )}
 
-        {!loading && !hydration.active && !error && totalCount > 0 && (
+        {!loading && serverSeasonalReady && !hydration.active && !error && totalCount > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
             {/* ── 0. Hero-Spotlight (volle Breite) ── */}
             {hero &&
