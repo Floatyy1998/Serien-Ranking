@@ -8,11 +8,11 @@
 /* All tokens are driven by the active app theme. Fallbacks here are only for
    the very first render before <OnboardingPage> injects the user theme. */
 .ob-root {
-  --ob-stage: var(--color-background-default, #06090f);
-  --ob-stage-2: var(--color-background-surface, #0e1420);
-  --ob-paper: var(--theme-primary, #00fed7);
-  --ob-paper-2: var(--theme-accent, #ff6b6b);
-  --ob-ink: #06090f;
+  --ob-stage: var(--color-background-default, #000000);
+  --ob-stage-2: var(--color-background-surface, #0f0f0f);
+  --ob-paper: var(--theme-primary, #00d123);
+  --ob-paper-2: var(--theme-accent, #008a6e);
+  --ob-ink: #000000;
   --ob-text: var(--color-text-primary, #ffffff);
   --ob-text-mute: var(--color-text-muted, rgba(255, 255, 255, 0.55));
   --ob-line: var(--color-border-default, rgba(255, 255, 255, 0.12));
@@ -550,8 +550,8 @@
   border-radius: 8px;
   color: var(--ob-text);
   z-index: 2;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 .ob-card__action {
   position: absolute;
@@ -569,8 +569,8 @@
   cursor: pointer;
   z-index: 2;
   transition: all 0.25s;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 .ob-card--added .ob-card__action {
   background: linear-gradient(135deg, var(--ob-paper), var(--ob-paper-2));
@@ -649,8 +649,8 @@
   position: fixed;
   inset: 0;
   background: rgba(6, 7, 11, 0.72);
-  backdrop-filter: blur(14px) saturate(0.7);
-  -webkit-backdrop-filter: blur(14px) saturate(0.7);
+  backdrop-filter: var(--blur-md) saturate(0.7);
+  -webkit-backdrop-filter: var(--blur-md) saturate(0.7);
   z-index: 9998;
 }
 .ob-sheet {

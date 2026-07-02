@@ -37,8 +37,8 @@
 .series-notification-inner {
   position: relative;
   padding: 12px 14px 10px;
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: var(--blur-md) saturate(1.4);
+  -webkit-backdrop-filter: var(--blur-md) saturate(1.4);
 }
 
 /* Hintergrund-Aura im Header */
@@ -121,7 +121,7 @@
 
 .series-notification-collapse-btn:hover {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-medium);
 }
 
 .series-notification-collapse-btn svg {
@@ -141,7 +141,7 @@
   padding: 8px 10px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border-subtle);
   margin-bottom: 10px;
 }
 
@@ -165,7 +165,7 @@
   width: 42px;
   height: 63px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-medium);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,13 +274,14 @@
 /* Secondary action (z.B. Watchlist remove) */
 .series-notification-btn--secondary {
   flex: 1;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+  background: var(--glass-medium);
+  border: 1px solid var(--glass-border-light);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 
 .series-notification-btn--secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy);
 }
 
 .series-notification-btn--done {
@@ -294,13 +295,13 @@
   width: 36px;
   min-width: 36px;
   padding: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-medium);
+  border: 1px solid var(--glass-border-light);
   position: relative;
 }
 
 .series-notification-btn--icon:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy);
 }
 
 /* ─── Snooze Menu (dropdown) ────────────────────────────────────────── */
@@ -309,9 +310,9 @@
   bottom: calc(100% + 8px);
   right: 0;
   background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--blur-lg) saturate(1.6);
+  -webkit-backdrop-filter: var(--blur-lg) saturate(1.6);
+  border: 1px solid var(--glass-border-light);
   border-radius: 14px;
   padding: 6px;
   display: flex;
@@ -350,7 +351,7 @@
 }
 
 .snooze-menu-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--glass-medium);
 }
 
 .snooze-menu-item-emoji {
@@ -366,7 +367,7 @@
   padding: 12px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border-subtle);
   margin-bottom: 12px;
 }
 
@@ -497,7 +498,7 @@
   height: 24px;
   border-radius: 6px;
   border: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-medium);
   color: inherit;
   cursor: pointer;
   display: flex;
@@ -513,7 +514,7 @@
 
 .series-notification-nav-btn:hover:not(:disabled) {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy);
 }
 
 .series-notification-nav-btn:disabled {
@@ -597,13 +598,13 @@
   gap: 4px;
   padding: 3px;
   background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   border-radius: 12px;
   margin-bottom: 6px;
   overflow-x: auto;
   scrollbar-width: none;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border-subtle);
 }
 
 .notif-hub-tabs::-webkit-scrollbar {
@@ -633,7 +634,7 @@
 
 .notif-hub-tab:hover {
   opacity: 0.85;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
 }
 
 .notif-hub-tab.active {
@@ -673,9 +674,9 @@
   padding: 10px 14px;
   border-radius: 14px;
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border: 1px solid var(--glass-border-subtle);
   cursor: pointer;
   transition: all 0.2s var(--ease-default);
   min-height: 44px;
@@ -683,7 +684,7 @@
 
 .notif-hub-mini:hover {
   background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border-medium);
 }
 
 .notif-hub-mini-dots {

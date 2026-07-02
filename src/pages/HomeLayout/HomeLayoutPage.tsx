@@ -10,6 +10,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { DraggableSectionItem } from './DraggableSectionItem';
 import { useHomeLayoutData } from './useHomeLayoutData';
 import './HomeLayoutPage.css';
+import { tapScaleTight } from '../../lib/motion';
 
 export const HomeLayoutPage = () => {
   const { currentTheme } = useTheme();
@@ -45,7 +46,7 @@ export const HomeLayoutPage = () => {
             </h2>
           </div>
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileTap={tapScaleTight}
             onClick={handleReset}
             className="hl-reset-btn"
             style={{

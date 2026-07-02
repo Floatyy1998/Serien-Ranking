@@ -103,7 +103,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--color-primary, #00fed7);
+  background: var(--color-primary, #00d123);
   pointer-events: none;
   margin: -2px auto 0;
 }
@@ -114,6 +114,18 @@
   font-weight: 500;
   font-family: var(--font-body);
   letter-spacing: 0.1px;
+  /* 6 Items: lange Labels ("Bewertungen") dürfen die gleichmäßige
+     Item-Breite nicht sprengen */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 379px) {
+  .nav-label {
+    font-size: 9px;
+  }
 }
 
 .nav-item.active .nav-label {

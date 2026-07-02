@@ -227,6 +227,10 @@
 /* ── Series accordion (multi-episode) ─────────────────────────────────────── */
 
 .rw-accordion {
+  /* Native virtualization: skip layout/paint of offscreen accordions.
+     108px = collapsed header height; `auto` remembers the real (expanded) size. */
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 108px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-md);

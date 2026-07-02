@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { trackLogout } from '../../firebase/analytics';
+import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
 
 export const useSettingsData = () => {
@@ -104,6 +105,8 @@ export const useSettingsData = () => {
 
         await user.updateProfile({ photoURL: downloadURL });
         await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
+        // Such-Index spiegeln (best-effort, wirft nie)
+        void syncUserSearchIndex(user.uid, { photoURL: downloadURL });
         await user.reload();
 
         setPhotoURL(downloadURL);
@@ -130,6 +133,8 @@ export const useSettingsData = () => {
         .database()
         .ref(`users/${user.uid}`)
         .update({ username, usernameLower: username.toLowerCase() });
+      // Such-Index spiegeln (best-effort, wirft nie)
+      void syncUserSearchIndex(user.uid, { username });
       setUsernameEditable(false);
       showSnackbar('Benutzername gespeichert!');
     } catch {
@@ -153,6 +158,8 @@ export const useSettingsData = () => {
         .database()
         .ref(`users/${user.uid}`)
         .update({ displayName, displayNameLower: displayName.toLowerCase() });
+      // Such-Index spiegeln (best-effort, wirft nie)
+      void syncUserSearchIndex(user.uid, { displayName });
       await user.reload();
       setDisplayNameEditable(false);
       showSnackbar('Anzeigename gespeichert!');

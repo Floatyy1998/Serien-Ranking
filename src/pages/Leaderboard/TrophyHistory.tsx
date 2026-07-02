@@ -143,7 +143,12 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                       }}
                     >
                       {entry.photoURL ? (
-                        <img src={entry.photoURL} alt={entry.displayName} />
+                        <img
+                          src={entry.photoURL}
+                          alt={entry.displayName}
+                          loading="lazy"
+                          decoding="async"
+                        />
                       ) : (
                         <span
                           style={{

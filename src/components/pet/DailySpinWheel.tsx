@@ -17,6 +17,7 @@ import {
 } from '../../services/pet/dailySpinService';
 import type { SpinReward } from '../../services/pet/dailySpinService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
+import { tapScale } from '../../lib/motion';
 
 interface DailySpinWheelProps {
   streakDays: number;
@@ -211,6 +212,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       const revealAudio = new Audio('/sounds/reveal.mp3');
       revealAudio.volume = 0.8;
       revealAudio.playbackRate = 2.0;
+      // bewusst still: Autoplay kann vom Browser blockiert werden
       revealAudio.play().catch(() => {});
       setTimeout(() => revealAudio.pause(), 5000);
     }, 5500);
@@ -521,7 +523,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       {phase === 'ready' && (
         <motion.button
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={handleSpin}
           disabled={!canSpin}
           style={{
@@ -549,7 +551,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={onClose}
           style={{
             background:

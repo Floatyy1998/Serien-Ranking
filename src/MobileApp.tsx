@@ -8,6 +8,7 @@ import { useNotifications } from './contexts/NotificationContextDef';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
 import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import './styles/App.css';
 
 // Main nav tabs: eager imports — these are always needed and must never show a loading spinner
@@ -62,9 +63,12 @@ import {
   MangaReadJourneyPage,
   MangaReadingListPage,
   SubscriptionsPage,
+  AnimeSeasonPage,
   preloadRoutes,
 } from './lazyRoutes';
 
+// Themed Spinner statt rohem "Loading..."-Text — das hier ist der Suspense-
+// Fallback, den Nutzer beim ersten Besuch fast jeder Lazy-Route sehen
 const PageLoader = () => (
   <div
     style={{
@@ -72,10 +76,10 @@ const PageLoader = () => (
       justifyContent: 'center',
       alignItems: 'center',
       height: '100vh',
-      background: 'var(--theme-background, #000)',
+      background: 'var(--theme-background, #000000)',
     }}
   >
-    <div style={{ color: 'var(--theme-primary, #fff)' }}>Loading...</div>
+    <LoadingSpinner />
   </div>
 );
 
@@ -209,7 +213,8 @@ export const MobileApp = () => {
             <Route
               path="/profile"
               element={
-                <Layout hideNav>
+                // Seit dem "Mehr"-Tab ist /profile ein Top-Level-Ziel — Dock bleibt sichtbar
+                <Layout>
                   <ProfilePage />
                 </Layout>
               }
@@ -377,6 +382,14 @@ export const MobileApp = () => {
             <Route path="/watch-journey" element={<WatchJourneyPage />} />
             <Route path="/catch-up" element={<CatchUpPage />} />
             <Route path="/hidden-series" element={<HiddenSeriesPage />} />
+            <Route
+              path="/anime-season"
+              element={
+                <Layout hideNav>
+                  <AnimeSeasonPage />
+                </Layout>
+              }
+            />
             <Route
               path="/leaderboard"
               element={

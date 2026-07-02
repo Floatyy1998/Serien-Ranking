@@ -18,6 +18,7 @@ import type { Series } from '../../types/Series';
 import { RewatchBanner } from './RewatchBanner';
 import { SeasonTabs } from './SeasonTabs';
 import type { useSeriesData } from './useSeriesData';
+import { tapScale } from '../../lib/motion';
 
 interface SeasonsSectionProps {
   series: NonNullable<ReturnType<typeof useSeriesData>['series']>;
@@ -137,7 +138,7 @@ export function SeasonsSection({
           <span style={{ color: currentTheme.text.primary }}>Staffeln</span>
         </h3>
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => navigate(`/episodes/${series.id}`)}
           style={{
             padding: '6px 12px',
@@ -169,7 +170,7 @@ export function SeasonsSection({
       {/* Start Rewatch Button */}
       {hasAnySeasonFullyWatched(series) && !hasActiveRewatch(series) && (
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => handleStartRewatch()}
           style={{
             width: '100%',
@@ -199,7 +200,7 @@ export function SeasonsSection({
         if (implicitRound === 0) return null;
         return (
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => handleStartRewatch(true)}
             style={{
               width: '100%',
@@ -500,7 +501,7 @@ export function SeasonsSection({
                   >
                     <motion.div
                       whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={tapScale}
                       onClick={() => {
                         if (isRewatched) {
                           setShowRewatchDialog({

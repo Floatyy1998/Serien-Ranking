@@ -87,9 +87,9 @@
 
 .fp-provider-badge {
   background: linear-gradient(135deg, rgba(10, 14, 26, 0.75), rgba(20, 20, 40, 0.8));
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-sm);
   padding: 3px;
   width: 34px;
@@ -115,14 +115,14 @@
   top: 6px;
   right: 6px;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border-radius: var(--radius-md);
   padding: 5px 9px;
   display: flex;
   align-items: center;
   gap: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
 }
 
 .fp-rating-text {
@@ -157,9 +157,9 @@
 .fp-empty {
   text-align: center;
   padding: 60px 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   box-shadow: var(--shadow-md);
 }
 
@@ -249,8 +249,8 @@
   gap: 4px;
   padding: 22px 16px;
   border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px dashed var(--glass-border-light);
   text-align: center;
   min-height: 152px;
 }
@@ -385,7 +385,7 @@
   width: 110px;
   height: 110px;
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   flex-shrink: 0;
 }
 
@@ -434,7 +434,7 @@
 
 .fp-pet-stat-track {
   height: 5px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-medium);
   border-radius: 999px;
   overflow: hidden;
 }

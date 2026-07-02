@@ -5,6 +5,7 @@ import { Trophy3D } from '../../components/ui/Trophy3D';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { seededRandom } from '../../utils/seededRandom';
 import type { CelebrationData } from './useLeaderboardData';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 const PLACE_COLORS = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
 const PLACE_GRADIENTS = [
@@ -128,7 +129,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
           >
             <motion.button
               className="lb-celebration-close"
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={onClose}
             >
               <Close sx={{ fontSize: 20 }} />
@@ -212,7 +213,8 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                 padding: '12px 28px',
                 marginBottom: '28px',
                 border: `1px solid ${PLACE_COLORS[celebration.place]}35`,
-                backdropFilter: 'blur(12px)',
+                backdropFilter: 'var(--blur-md)',
+                WebkitBackdropFilter: 'var(--blur-md)',
               }}
             >
               <Timer style={{ fontSize: '20px', color: PLACE_COLORS[celebration.place] }} />
@@ -231,7 +233,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
             >
               <motion.button
                 whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={onClose}
                 style={{
                   display: 'block',

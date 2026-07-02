@@ -77,7 +77,7 @@ export async function logEpisodeWatch(
   updateLeaderboardStats(userId, {
     episodesWatched: 1,
     watchtimeMinutes: runtime,
-  }).catch(() => {});
+  }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
 
   // Freunde-Feed „gesehen"-Aktivität – NUR Erstwatch, kein Bulk-Marking (Catch-up
   // soll den Feed nicht zuspammen), kein Rewatch. Erscheint bewusst NICHT im
@@ -152,7 +152,7 @@ export async function logMovieWatch(
     updateLeaderboardStats(userId, {
       moviesWatched: 1,
       watchtimeMinutes: runtime || 120,
-    }).catch(() => {});
+    }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
 
     // Pet reaction – movie tone if no rating, rated tone if user also rated.
     triggerPetReaction({ tone: rating !== undefined ? 'rated' : 'movie' });

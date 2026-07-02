@@ -6,8 +6,7 @@ import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
 import type { RecommendationMediaType } from '../../types/Recommendation';
-
-const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
+import { ADMIN_UID } from '../../config/admin';
 
 export interface RecommendationCardData {
   recId: string;
@@ -67,6 +66,14 @@ export interface Announcement {
 }
 
 export const ANNOUNCEMENTS: Announcement[] = [
+  {
+    id: 'announcement_anime-season-2026-07',
+    title: 'Neu: Anime-Season-Kalender',
+    message:
+      'Alle Anime der Season auf einen Blick: Premieren-Timeline mit Live-Countdown zur nächsten großen Premiere, „Staffel 2"/„NEU"-Chips, Termine wie in deinem Kalender (TVMaze-geprüft) und Direkteinstieg zu deinen Serien. Alles in den Patch Notes.',
+    timestamp: new Date('2026-07-02T20:00:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
   {
     id: 'announcement_friend-insights-2026-06-28',
     title: 'Neu: Mehr über deine Freunde',
@@ -203,7 +210,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           // First-time hydration: alte Announcements nicht als "neu" auferstehen lassen
           const now = Date.now();
           setStoredReadTime({ uid, ts: now });
-          ref.set(now).catch(() => {});
+          ref.set(now).catch(() => {}); // bewusst still: Hydration-Write ist Best-effort
         }
       })
       .catch(() => {
@@ -232,6 +239,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           .database()
           .ref(`users/${uid}/readTimes/announcements`)
           .set(next)
+          // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
           .catch(() => {});
         return { uid, ts: next };
       });
@@ -435,6 +443,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       .database()
       .ref(`users/${uid}/readTimes/announcements`)
       .set(newReadTime)
+      // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
       .catch(() => {});
   }, [markActivitiesAsRead, markRequestsAsRead, markAllAsRead, user]);
 

@@ -63,7 +63,7 @@ export const PodiumSection = React.memo(function PodiumSection({
             >
               {isFirst && <span className="lb-podium-crown">👑</span>}
               {entry.photoURL ? (
-                <img src={entry.photoURL} alt={entry.displayName} />
+                <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
               ) : (
                 <span
                   style={{

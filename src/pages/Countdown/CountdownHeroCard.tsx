@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
+import { tapScaleSmall } from '../../lib/motion';
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -22,7 +23,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      whileTap={{ scale: 0.98 }}
+      whileTap={tapScaleSmall}
       onClick={onClick}
       className="cd-hero"
       style={{

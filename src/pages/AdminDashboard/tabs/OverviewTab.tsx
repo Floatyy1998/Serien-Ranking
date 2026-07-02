@@ -105,7 +105,8 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
         transition={{ delay: 0.3 }}
         style={{
           background: cardBg,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${borderColor}`,
           borderRadius: 16,
           padding: 20,
@@ -202,7 +203,8 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
           transition={{ delay: 0.4 }}
           style={{
             background: cardBg,
-            backdropFilter: 'blur(28px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             border: `1px solid ${borderColor}`,
             borderRadius: 16,
             padding: 20,
@@ -267,7 +269,8 @@ export const OverviewTab = React.memo<OverviewTabProps>(({ data, theme }) => {
           transition={{ delay: 0.5 }}
           style={{
             background: cardBg,
-            backdropFilter: 'blur(28px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             border: `1px solid ${borderColor}`,
             borderRadius: 16,
             padding: 20,

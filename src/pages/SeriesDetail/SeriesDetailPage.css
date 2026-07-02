@@ -77,7 +77,7 @@
   z-index: 10;
   backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
   color: white;
   font-size: 24px;
   padding: 8px;
@@ -129,8 +129,8 @@
 }
 
 .hero-section__genre-tag {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--glass-medium);
+  border: 1px solid var(--glass-border-medium);
   border-radius: 9999px;
   padding: 4px 12px;
   font-size: 12px;
@@ -140,7 +140,7 @@
 }
 
 .hero-section__genre-tag:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy);
 }
 
 .hero-section__progress-track {
@@ -236,7 +236,7 @@
 
 .hero-actions__btn {
   height: 38px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
   border-radius: 10px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 600;
@@ -246,7 +246,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   padding: 0 12px;
   flex-shrink: 0;
   transition:
@@ -256,7 +256,7 @@
 }
 
 .hero-actions__btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-medium);
   color: #fff;
 }
 
@@ -290,7 +290,7 @@
   padding: 12px;
   margin-bottom: 12px;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -379,7 +379,7 @@
 }
 
 .episode-list-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
@@ -399,12 +399,12 @@
 }
 
 .episode-list-item--unwatched {
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--glass-subtle);
 }
 
 .episode-list-item--unwatched:hover {
   background: var(--theme-surface, rgba(255, 255, 255, 0.03));
-  border-color: rgba(255, 255, 255, 0.06);
+  border-color: var(--glass-border-subtle);
 }
 
 .episode-list-number {
@@ -482,8 +482,8 @@ button.episode-list-number:focus-visible {
 .detail-tab-switcher {
   display: flex;
   gap: 3px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-subtle);
   border-radius: 14px;
   padding: 3px;
 }
@@ -508,7 +508,7 @@ button.episode-list-number:focus-visible {
 
 .detail-tab-btn:hover {
   color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-light);
 }
 
 /* Responsive */
@@ -561,8 +561,8 @@ button.episode-list-number:focus-visible {
 }
 
 .episode-action-btn--discuss {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  border: 1px solid var(--glass-border-medium);
 }
 
 /* Section list container used in ContinueWatching, Rewatch, TodayEpisodes */
@@ -648,7 +648,7 @@ button.episode-list-number:focus-visible {
 }
 
 .friends-progress-title-btn:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
 }
 
 .friends-progress-title {
@@ -688,8 +688,8 @@ button.episode-list-number:focus-visible {
   text-align: left;
   font: inherit;
   color: inherit;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-subtle);
   overflow: hidden;
   transition:
     background 0.18s var(--ease-default),
@@ -698,8 +698,8 @@ button.episode-list-number:focus-visible {
 }
 
 .friend-progress-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-light);
 }
 
 .friend-progress-avatar {

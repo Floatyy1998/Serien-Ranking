@@ -82,7 +82,7 @@ export const Dialog = memo(
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
                 background: currentTheme.background.paper,
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid var(--glass-border-light)',
                 borderRadius: 'var(--radius-xl)',
                 padding: '24px',
                 minWidth: '280px',

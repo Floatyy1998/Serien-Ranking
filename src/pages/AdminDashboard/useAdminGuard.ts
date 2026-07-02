@@ -1,9 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-
-// Hardcoded admin UID
-const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
+import { ADMIN_UID } from '../../config/admin';
 
 export function useAdminGuard() {
   const { user } = useAuth() || {};

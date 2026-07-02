@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
+import { tapScale } from '../../lib/motion';
 
 interface Provider {
   name: string;
@@ -37,7 +38,7 @@ export const ProviderFilter = React.memo(
         </p>
         <HorizontalScrollContainer gap={6} style={{}}>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onSelect(null)}
             className="provider-chip"
             style={{
@@ -52,7 +53,7 @@ export const ProviderFilter = React.memo(
           {providers.map((provider) => (
             <motion.button
               key={provider.name}
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={() => onSelect(selected === provider.name ? null : provider.name)}
               className="provider-chip"
               style={{
@@ -68,6 +69,8 @@ export const ProviderFilter = React.memo(
                   src={`https://image.tmdb.org/t/p/w45${provider.logo}`}
                   alt=""
                   style={{ width: '16px', height: '16px', borderRadius: '3px' }}
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
               {provider.name}

@@ -34,6 +34,7 @@ import { FriendCurrentlyWatchingCard } from './FriendCurrentlyWatchingCard';
 import { FriendAnticipationSection } from './FriendAnticipationSection';
 import { FriendPetCard } from './FriendPetCard';
 import './FriendProfilePage.css';
+import { tapScale } from '../../lib/motion';
 
 export const FriendProfilePage = memo(() => {
   const { currentTheme } = useTheme();
@@ -121,7 +122,7 @@ export const FriendProfilePage = memo(() => {
           subtitle={`\u00D8 ${averageRating.toFixed(1)} | ${itemsWithRatingCount} bewertet`}
           actions={
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={navigateToTasteMatch}
               className="fp-match-btn"
               style={{

@@ -1,4 +1,4 @@
-import { BarChart, CalendarToday, MenuBook, PlayCircle } from '@mui/icons-material';
+import { BarChart, CalendarToday, MenuBook, MoreHoriz, PlayCircle } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
+import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
 import './BottomNavigation.css';
 
@@ -41,6 +42,7 @@ export const BottomNavigation = () => {
     if (location.pathname === '/calendar') return 2;
     if (location.pathname.startsWith('/ratings')) return 3;
     if (location.pathname.startsWith('/manga')) return 4;
+    if (location.pathname === '/profile') return 5;
     return 0;
   };
 
@@ -104,6 +106,14 @@ export const BottomNavigation = () => {
       icon: <MenuBook />,
       label: 'Manga',
     },
+    {
+      // "Mehr" öffnet den Profil-Hub — dort hängen Discover, Stats, Badges,
+      // Pets, Leaderboard, Freunde, Abos, Einstellungen etc.
+      id: 'more',
+      path: '/profile',
+      icon: <MoreHoriz />,
+      label: 'Mehr',
+    },
   ];
 
   const isActive = (path: string) => {
@@ -120,12 +130,12 @@ export const BottomNavigation = () => {
     }
   };
 
+  // /profile ist seit dem "Mehr"-Tab ein Top-Level-Ziel — Dock bleibt sichtbar
   const shouldHide =
     location.pathname.includes('/series/') ||
     location.pathname.includes('/movie/') ||
     location.pathname.includes('/rating/') ||
-    location.pathname.startsWith('/episodes/') ||
-    location.pathname === '/profile';
+    location.pathname.startsWith('/episodes/');
 
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
@@ -197,14 +207,14 @@ export const BottomNavigation = () => {
                       variant={typeof item.badge === 'boolean' ? 'dot' : 'standard'}
                       sx={{
                         '& .MuiBadge-badge': {
-                          fontSize: '9px',
-                          height: '14px',
-                          minWidth: '14px',
+                          fontSize: '10px',
+                          height: '15px',
+                          minWidth: '15px',
                           padding: '0 3px',
                           top: '1px',
                           right: '-1px',
-                          background: 'linear-gradient(135deg, #ff6b6b 0%, #ff4757 100%)',
-                          boxShadow: '0 1px 3px rgba(255, 107, 107, 0.3)',
+                          background: `linear-gradient(135deg, ${colors.status.error} 0%, ${colors.status.errorHover} 100%)`,
+                          boxShadow: `0 1px 3px color-mix(in srgb, ${colors.status.error} 30%, transparent)`,
                         },
                       }}
                     >

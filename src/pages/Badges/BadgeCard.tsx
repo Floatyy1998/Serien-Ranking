@@ -10,6 +10,7 @@ import type { Badge, BadgeProgress } from '../../features/badges/badgeDefinition
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 import { getRarityColor } from './badgeCardHelpers';
+import { tapScaleSmall } from '../../lib/motion';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -57,7 +58,7 @@ export const BadgeCard = React.memo(
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.03 }}
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={tapScaleSmall}
         onClick={() => {}}
         className="badge-card-wrapper"
         style={{

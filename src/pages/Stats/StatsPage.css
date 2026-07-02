@@ -7,10 +7,10 @@
   border-radius: var(--radius-2xl);
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
-  border: 1px solid color-mix(in srgb, var(--color-primary, #00fed7) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary, #00d123) 15%, transparent);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px color-mix(in srgb, var(--color-primary, #00fed7) 8%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent);
   position: relative;
   overflow: hidden;
 }
@@ -24,7 +24,7 @@
   height: 100%;
   background: radial-gradient(
     ellipse,
-    color-mix(in srgb, var(--color-primary, #00fed7) 8%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent) 0%,
     transparent 60%
   );
   animation: breathe 4s ease-in-out infinite;
@@ -322,7 +322,7 @@
   border-radius: 3px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary, #00fed7) 30%, transparent);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary, #00d123) 30%, transparent);
 }
 
 .stats-genre-bar-fill::after {

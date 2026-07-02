@@ -271,6 +271,8 @@ export const GuestStarsSection = memo(
                     src={getProfileUrl(star.profile_path)}
                     alt={star.name}
                     className="ed-guest-star-img"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div

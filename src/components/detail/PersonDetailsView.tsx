@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { getFormattedDate } from '../../lib/date/date.utils';
 import { HorizontalScrollContainer } from '../ui';
 import type { CreditItem, PersonDetailsData } from './CastCrew.types';
+import { tapScale } from '../../lib/motion';
 
 interface PersonDetailsViewProps {
   personDetails: PersonDetailsData;
@@ -129,7 +130,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
           {personDetails.credits.map((credit, index) => (
             <motion.div
               key={`${credit.id}-${index}`}
-              whileTap={{ scale: 0.96 }}
+              whileTap={tapScale}
               onClick={() => handleCreditClick(credit)}
               role="button"
               tabIndex={0}

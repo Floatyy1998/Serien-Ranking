@@ -6,6 +6,7 @@ import { ContentCopy, Link, Public, Refresh } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 interface PublicProfileSectionProps {
   isPublicProfile: boolean;
@@ -109,7 +110,7 @@ export const PublicProfileSection = memo(
             </div>
             <div className="settings-public-link-actions">
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={onCopyLink}
                 disabled={isLoadingProfile}
                 className="settings-action-btn settings-action-btn--primary"
@@ -121,7 +122,7 @@ export const PublicProfileSection = memo(
                 Kopieren
               </motion.button>
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={onRegenerateId}
                 disabled={isLoadingProfile}
                 className="settings-action-btn settings-action-btn--secondary"

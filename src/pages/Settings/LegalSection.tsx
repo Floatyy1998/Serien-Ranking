@@ -8,6 +8,7 @@ import { memo, useCallback, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../../firebase/analytics';
 import { hapticSelect } from '../../lib/haptics';
+import { tapScaleSmall } from '../../lib/motion';
 
 const DATA_SOURCES = [
   { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
@@ -49,7 +50,7 @@ export const LegalSection = memo(
 
         <div className="settings-legal-links">
           <motion.button
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             onClick={onNavigatePrivacy}
             className="settings-legal-btn"
             style={{
@@ -62,7 +63,7 @@ export const LegalSection = memo(
             <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
           </motion.button>
           <motion.button
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             onClick={onNavigateImpressum}
             className="settings-legal-btn"
             style={{

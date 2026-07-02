@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 import { hapticTap } from '../../lib/haptics';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 interface ResetSectionProps {
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
@@ -40,7 +41,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             onClick={() => setShowConfirm(true)}
             className="theme-reset-btn"
             style={{
@@ -64,7 +65,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
             className="theme-confirm-actions"
           >
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={handleReset}
               className="theme-confirm-btn"
               style={{
@@ -75,7 +76,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
               Zurücksetzen
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={() => setShowConfirm(false)}
               className="theme-cancel-btn"
               style={{

@@ -11,6 +11,7 @@ import { StatsBanner } from './StatsBanner';
 import type { TabId } from './useActorUniverseData';
 import { useActorUniverseData } from './useActorUniverseData';
 import './ActorUniversePage.css';
+import { tapScale } from '../../lib/motion';
 
 // Tab configuration
 const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
@@ -112,7 +113,7 @@ export const ActorUniversePage = () => {
                 onClick={() => {
                   setActiveTab(tab.id);
                 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 className="au-tab-btn"
                 style={{
                   background: isActive
@@ -135,7 +136,7 @@ export const ActorUniversePage = () => {
             onClick={() => {
               toggleVoiceActors();
             }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             title={hideVoiceActors ? 'Voice Actors anzeigen' : 'Voice Actors ausblenden'}
             className="au-voice-toggle"
             style={{

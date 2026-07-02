@@ -113,7 +113,7 @@ function ProviderBadgeArea({
         }}
         onClick={providers.length > 1 ? toggle : undefined}
       >
-        <img src={visible[0].logo} alt={visible[0].name} />
+        <img src={visible[0].logo} alt={visible[0].name} loading="lazy" decoding="async" />
         {providers.length > 1 && (
           <span
             className="pic-provider-count pic-provider-count--mobile"
@@ -130,7 +130,7 @@ function ProviderBadgeArea({
           className="pic-provider-badge pic-provider-badge--desktop"
           style={{ background: bgColor }}
         >
-          <img src={p.logo} alt={p.name} />
+          <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />
         </div>
       ))}
 
@@ -167,7 +167,7 @@ function ProviderBadgeArea({
           >
             {providers.map((p) => (
               <div key={p.name} className="pic-provider-popup-item">
-                <img src={p.logo} alt={p.name} />
+                <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />
                 <span style={{ color: textColor }}>{p.name}</span>
               </div>
             ))}

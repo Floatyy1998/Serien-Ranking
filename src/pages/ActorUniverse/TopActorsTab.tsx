@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Actor } from '../../hooks/useActorUniverse';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -46,7 +47,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={tapScaleSmall}
               onClick={() => onSelectActor(actor)}
               style={{
                 display: 'flex',
@@ -169,7 +170,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.02 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onSelectActor(actor)}
             style={{
               minWidth: '85px',

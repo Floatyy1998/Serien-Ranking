@@ -31,10 +31,16 @@ export interface CatalogSeason {
 export interface CatalogEpisode {
   id: number | null;
   name: string;
-  airDate: string | null;
+  /** Kann in aelteren Catalog-Snapshots fehlen (dort nur snake_case `air_date`). */
+  airDate?: string | null;
   airstamp?: string | null;
-  seasonNumber: number;
-  episodeNumber: number;
+  /**
+   * seasonNumber/episodeNumber werden serverseitig nicht mehr in jede Episode
+   * geschrieben (Bulk-File-Slim-Down) — Consumer fallen auf den aeusseren
+   * Season-Key bzw. den Array-Index zurueck (siehe lib/seriesAdapter).
+   */
+  seasonNumber?: number;
+  episodeNumber?: number;
   runtime?: number | null;
 }
 
@@ -56,7 +62,8 @@ export interface CatalogMovie {
 
 export interface UserSeriesRef {
   rating: Record<string, number>;
-  begpirate: string;
+  /** RTDB-Feldname fuer die UI-`begründung`; kann in RTDB fehlen. */
+  begpirate?: string;
   beschreibung?: string;
   hidden?: boolean;
   watchlist?: boolean;
@@ -73,7 +80,8 @@ export interface UserSeriesRef {
 
 export interface UserMovieRef {
   rating: Record<string, number>;
-  begpirate: string;
+  /** RTDB-Feldname fuer die UI-`begründung`; kann in RTDB fehlen. */
+  begpirate?: string;
   beschreibung?: string;
   watchlist?: boolean;
   watched?: boolean;
@@ -97,8 +105,15 @@ export interface EpisodeWatchData {
   lastWatchedAt?: string;
 }
 
+/**
+ * Pre-Compact-Watch-Format ({episodes: {idx: {...}}}). Achtung: Season-Nodes
+ * unter SeriesWatchData koennen auch im aktuellen ID-basierten Format ({eps})
+ * oder im Legacy-Array-Format ({w: [...], c: [...]}) vorliegen — Erkennung via
+ * lib/compactWatch (isEpidSeason/isLegacyArraySeason). `episodes` ist deshalb
+ * optional.
+ */
 export interface SeasonWatchData {
-  episodes: Record<string, EpisodeWatchData>;
+  episodes?: Record<string, EpisodeWatchData>;
 }
 
 export interface SeriesWatchData {

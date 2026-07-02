@@ -27,6 +27,7 @@ import { FriendsTab } from './tabs/FriendsTab';
 import { RequestsTab } from './tabs/RequestsTab';
 import { useActivityFriendProfiles } from './useActivityFriendProfiles';
 import './ActivityPage.css';
+import { tapScaleTight } from '../../lib/motion';
 
 type TabId = 'activity' | 'friends' | 'requests' | 'discussions';
 
@@ -157,7 +158,7 @@ export const ActivityPage = () => {
         actions={
           <Tooltip title="Freund hinzufügen" arrow>
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={() => setShowAddFriend(true)}
               className="activity-add-btn"
               style={{

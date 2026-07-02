@@ -52,7 +52,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 
 .wj-loading-text {
@@ -181,9 +182,9 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-bottom: 1px solid var(--glass-border-subtle);
 }
 
 .wj-header-info {
@@ -259,9 +260,9 @@
   display: flex;
   gap: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border-subtle);
   width: 100%;
   overflow: hidden;
 }

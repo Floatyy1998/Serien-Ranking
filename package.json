@@ -18,21 +18,33 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "preview": "vite preview",
     "copy": "for %D in (F:\\Programme\\SerienFlo\\src F:\\Programme\\SerienDesiree\\src F:\\Programme\\SerienMick\\src) do xcopy F:\\Programme\\Serien\\src %D /E /H /C /I /Y ",
     "deploy_all": "npm run build && cd F:\\Programme\\SerienFlo && npm run build && cd F:\\Programme\\SerienDesiree && npm run build && cd F:\\Programme\\SerienMick && npm run build",
     "copy_and_deploy": "npm run copy && npm run deploy_all",
-    "generate-sitemap": "node generate-sitemap.js"
+    "generate-sitemap": "node generate-sitemap.js",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "src/**/*.{js,jsx,json,css,md}": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^7.3.11",
     "@mui/material": "^7.3.11",
-    "dotenv": "^17.2.3",
     "electron-updater": "^6.8.3",
     "firebase": "^12.8.0",
     "framer-motion": "^12.29.0",
+    "html-to-image": "^1.11.13",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-router-dom": "^7.13.0",
@@ -47,6 +59,7 @@
     "@typescript-eslint/parser": "^8.53.1",
     "@vitejs/plugin-react": "^6.0.1",
     "concurrently": "^9.2.1",
+    "dotenv": "^17.2.3",
     "electron": "^42.2.0",
     "electron-builder": "^26.8.1",
     "eslint": "^10.1.0",
@@ -54,12 +67,15 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.8.1",
     "rcedit": "^5.0.2",
     "rollup-plugin-visualizer": "^7.0.1",
     "typescript": "^6.0.3",
     "vite": "^8.0.1",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.2.0",
+    "vitest": "^4.1.9"
   }
 }

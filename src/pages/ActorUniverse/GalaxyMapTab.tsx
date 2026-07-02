@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import { seededRandom } from '../../utils/seededRandom';
 import { useActorPanZoom } from './useActorPanZoom';
+import { tapScaleTight } from '../../lib/motion';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -84,14 +85,15 @@ export const GalaxyMapTab = ({
           <Tooltip key={idx} title={btn.tooltip} arrow placement="left">
             <motion.button
               onClick={btn.action}
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               style={{
                 width: '44px',
                 height: '44px',
                 borderRadius: '12px',
                 background: `${currentTheme.background.surface}cc`,
                 border: `1px solid ${currentTheme.border.default}`,
-                backdropFilter: 'blur(8px)',
+                backdropFilter: 'var(--blur-sm)',
+                WebkitBackdropFilter: 'var(--blur-sm)',
                 color: currentTheme.text.primary,
                 display: 'flex',
                 alignItems: 'center',
@@ -268,7 +270,8 @@ export const GalaxyMapTab = ({
                       transform: 'translateX(-50%)',
                       marginTop: '8px',
                       background: `${currentTheme.background.default}cc`,
-                      backdropFilter: 'blur(8px)',
+                      backdropFilter: 'var(--blur-sm)',
+                      WebkitBackdropFilter: 'var(--blur-sm)',
                       padding: '8px 14px',
                       borderRadius: '12px',
                       whiteSpace: 'nowrap',
@@ -308,7 +311,8 @@ export const GalaxyMapTab = ({
           padding: '14px 16px',
           fontSize: '13px',
           border: `1px solid ${currentTheme.border.default}`,
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           boxShadow: `0 4px 16px ${currentTheme.background.default}40`,
         }}
       >

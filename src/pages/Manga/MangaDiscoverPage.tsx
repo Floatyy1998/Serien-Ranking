@@ -11,6 +11,7 @@ import { discoverManga, type DiscoverCategory } from '../../services/anilistServ
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
+import { tapScaleTight } from '../../lib/motion';
 
 const CATEGORIES: {
   id: DiscoverCategory;
@@ -120,7 +121,7 @@ export const MangaDiscoverPage = () => {
         });
         setHasNextPage(hn);
       })
-      .catch(() => {})
+      .catch((error) => console.error('Weitere Manga konnten nicht geladen werden:', error))
       .finally(() => setLoadingMore(false));
   }, []);
 
@@ -178,8 +179,8 @@ export const MangaDiscoverPage = () => {
           top: 0,
           zIndex: 'var(--z-sticky)' as string,
           background: `${currentTheme.background.default}e8`,
-          backdropFilter: 'blur(28px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+          backdropFilter: 'var(--blur-lg) saturate(1.4)',
+          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
         }}
       >
         <div
@@ -205,7 +206,7 @@ export const MangaDiscoverPage = () => {
             </GradientText>
             <div style={{ flex: 1 }} />
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={() => navigate('/manga/search')}
               style={{
                 background: 'none',
@@ -272,7 +273,7 @@ export const MangaDiscoverPage = () => {
                   style={{
                     padding: '5px 12px',
                     borderRadius: 8,
-                    border: `1px solid ${active ? currentTheme.primary : 'rgba(255,255,255,0.06)'}`,
+                    border: `1px solid ${active ? currentTheme.primary : 'var(--glass-border-subtle)'}`,
                     background: active ? `${currentTheme.primary}20` : 'transparent',
                     color: active ? currentTheme.primary : currentTheme.text.secondary,
                     fontSize: 11,
@@ -360,7 +361,8 @@ export const MangaDiscoverPage = () => {
                           padding: '3px 7px',
                           borderRadius: 6,
                           background: 'rgba(0,0,0,0.6)',
-                          backdropFilter: 'blur(8px)',
+                          backdropFilter: 'var(--blur-sm)',
+                          WebkitBackdropFilter: 'var(--blur-sm)',
                           color: formatColor,
                           textTransform: 'uppercase',
                           letterSpacing: '0.04em',
@@ -381,7 +383,8 @@ export const MangaDiscoverPage = () => {
                             padding: '3px 6px',
                             borderRadius: 6,
                             background: 'rgba(0,0,0,0.6)',
-                            backdropFilter: 'blur(8px)',
+                            backdropFilter: 'var(--blur-sm)',
+                            WebkitBackdropFilter: 'var(--blur-sm)',
                             color: '#f59e0b',
                           }}
                         >

@@ -5,6 +5,7 @@ import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
+import { syncUserSearchIndex } from './lib/firebase/userSearchIndex';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -143,10 +144,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   if (cloudTheme) {
                     const validHex = (c: string | undefined, fb: string) =>
                       c && /^#?[0-9a-fA-F]{6}$/.test(c) ? c : fb;
-                    const primary = validHex(cloudTheme.primaryColor, '#00fed7');
-                    const accent = validHex(cloudTheme.accentColor, '#ff6b6b');
-                    const bg = validHex(cloudTheme.backgroundColor, '#06090f');
-                    const surface = validHex(cloudTheme.surfaceColor, '#0e1420');
+                    const primary = validHex(cloudTheme.primaryColor, '#00d123');
+                    const accent = validHex(cloudTheme.accentColor, '#008a6e');
+                    const bg = validHex(cloudTheme.backgroundColor, '#000000');
+                    const surface = validHex(cloudTheme.surfaceColor, '#0f0f0f');
 
                     const root = document.documentElement;
                     root.style.setProperty('--theme-primary', primary);
@@ -191,6 +192,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 await userRef.set(userData);
                 setOnboardingComplete(false);
 
+                // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
+                void syncUserSearchIndex(user.uid, userData);
+
                 // 🚀 Cache User-Daten für Offline-Zugriff
                 await offlineFirebaseService.cacheData(
                   `users/${user.uid}`,
@@ -208,6 +212,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 };
 
                 await userRef.update(updateData);
+
+                // Self-Heal: Such-Index aus dem frischen Profil-Stand spiegeln
+                // (best-effort, wirft nie) — hält userSearchIndex für Bestands-
+                // nutzer aktuell, ohne dass ein Admin-Backfill nötig ist.
+                void syncUserSearchIndex(user.uid, {
+                  username: existingData?.username,
+                  displayName: existingData?.displayName,
+                  photoURL: existingData?.photoURL,
+                  bio: existingData?.bio,
+                });
 
                 // 🚀 Cache aktualisierte User-Daten
                 const userData = snapshot.val();

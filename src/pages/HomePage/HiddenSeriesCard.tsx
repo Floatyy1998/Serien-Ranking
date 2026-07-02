@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { VisibilityOff, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { tapScaleSmall } from '../../lib/motion';
 
 export const HiddenSeriesCard: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export const HiddenSeriesCard: React.FC = () => {
 
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
+      whileTap={tapScaleSmall}
       onClick={() => navigate('/hidden-series')}
       aria-label={`Nicht weitergeschaut: ${hiddenSeriesList.length} ${hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'} ausgeblendet`}
       style={{

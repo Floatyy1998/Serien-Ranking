@@ -2,12 +2,15 @@
  * SummarySlide - Abschluss-Slide mit Zusammenfassung
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';
 import { GradientText } from '../ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WrappedStats } from '../../types/Wrapped';
+import { hapticTap } from '../../lib/haptics';
+import { tapScale } from '../../lib/motion';
+import { WrappedShareSheet } from './WrappedShareCard';
 
 interface SummarySlideProps {
   stats: WrappedStats;
@@ -85,6 +88,14 @@ const ShareIcon = () => (
   </svg>
 );
 
+const ImageIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <rect x="3" y="3" width="18" height="18" rx="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <path d="M21 15l-5-5L5 21" />
+  </svg>
+);
+
 const STAT_ICONS: Record<string, React.ReactNode> = {
   Episoden: <TvIcon />,
   Filme: <FilmIcon />,
@@ -104,6 +115,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
   const confettiData = CONFETTI_DATA_SS;
   const { currentTheme } = useTheme();
   const topSerie = stats.topSeries[0];
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   // Confetti shapes - using colored divs instead of emojis
   const confettiColors = [
@@ -215,12 +227,13 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.5 + index * 0.1 }}
             style={{
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(10px)',
+              background: 'var(--glass-heavy)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               borderRadius: '12px',
               padding: '12px 10px',
               textAlign: 'center',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              border: '1px solid var(--glass-border-light)',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
@@ -250,15 +263,16 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
           style={{
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(15px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             borderRadius: '20px',
             padding: '20px',
             zIndex: 1,
             marginBottom: '25px',
             width: '100%',
             maxWidth: '350px',
-            border: '1px solid rgba(255,255,255,0.2)',
+            border: '1px solid var(--glass-border-medium)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -335,35 +349,92 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
         </p>
       </motion.div>
 
-      {/* Share Button */}
-      {onShare && (
+      {/* Share Buttons */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '12px',
+          zIndex: 1,
+        }}
+      >
+        {onShare && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.3 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={tapScale}
+            onClick={onShare}
+            aria-label="Jahresrückblick als Text teilen"
+            style={{
+              padding: '15px 50px',
+              minHeight: '48px',
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+              color: '#1a1a2e',
+              background: 'linear-gradient(135deg, #fff 0%, #f5f5f5 100%)',
+              border: 'none',
+              borderRadius: '30px',
+              cursor: 'pointer',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <span>Teilen</span>
+            <ShareIcon />
+          </motion.button>
+        )}
+
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onShare}
+          transition={{ delay: 1.4 }}
+          whileTap={tapScale}
+          onClick={() => {
+            hapticTap();
+            setShareCardOpen(true);
+          }}
+          aria-label="Jahresrückblick als Bild teilen"
           style={{
-            padding: '15px 50px',
-            fontSize: '1.1rem',
-            fontWeight: 'bold',
-            color: '#1a1a2e',
-            background: 'linear-gradient(135deg, #fff 0%, #f5f5f5 100%)',
-            border: 'none',
+            padding: '13px 40px',
+            minHeight: '48px',
+            fontSize: '1rem',
+            fontWeight: 700,
+            color: 'white',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
+            border: '1px solid var(--glass-border-medium)',
             borderRadius: '30px',
             cursor: 'pointer',
-            boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
-            zIndex: 1,
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
           }}
         >
-          <span>Teilen</span>
-          <ShareIcon />
+          <span>Als Bild teilen</span>
+          <ImageIcon />
         </motion.button>
-      )}
+      </div>
+
+      {/* Share-Card-Sheet — Touch-Events stoppen, damit Gesten im Sheet
+          nicht die Wrapped-Slide-Navigation auslösen (Portal-Events
+          bubblen durch den React-Tree zum Slide-Container). */}
+      <div
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <WrappedShareSheet
+          isOpen={shareCardOpen}
+          onClose={() => setShareCardOpen(false)}
+          stats={stats}
+        />
+      </div>
 
       {/* Thank You Message */}
       <motion.p

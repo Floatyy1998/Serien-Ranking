@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
+import { tapScaleSmall } from '../../../lib/motion';
 
 interface DiscussionNotification {
   id: string;
@@ -76,7 +77,7 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.03 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={tapScaleSmall}
               onClick={() => handleNotificationClick(notification)}
               style={{
                 padding: '16px',

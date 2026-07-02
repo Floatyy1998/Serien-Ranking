@@ -6,6 +6,7 @@ import { ChevronRight, Palette, ViewQuilt } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface AppearanceSectionProps {
   onNavigateTheme: () => void;
@@ -23,7 +24,7 @@ export const AppearanceSection = memo(
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           onClick={onNavigateTheme}
           className="settings-nav-btn"
           style={{
@@ -54,7 +55,7 @@ export const AppearanceSection = memo(
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.18 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           onClick={onNavigateLayout}
           className="settings-nav-btn"
           style={{

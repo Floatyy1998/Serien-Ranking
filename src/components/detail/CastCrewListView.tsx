@@ -2,6 +2,7 @@ import { ChevronRight, OpenInNew, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface CastCrewListViewProps {
   isAnime: boolean;
@@ -261,7 +262,7 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
             (activeTab === 'cast' ? cast : crew).map((member, index) => (
               <motion.div
                 key={`${member.id}-${member.character || member.job}-${index}`}
-                whileTap={{ scale: 0.98 }}
+                whileTap={tapScaleSmall}
                 onClick={() => onPersonClick(member.id)}
                 style={{
                   display: 'flex',

@@ -19,6 +19,7 @@ import { PodiumSection } from './PodiumSection';
 import { RankingList } from './RankingList';
 import { TrophyHistory } from './TrophyHistory';
 import { useLeaderboardData } from './useLeaderboardData';
+import { tapScale } from '../../lib/motion';
 
 const CATEGORIES: {
   id: LeaderboardCategory;
@@ -151,7 +152,7 @@ export const LeaderboardPage = () => {
             Füge Freunde hinzu, um in der Rangliste gegeneinander anzutreten!
           </p>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => navigate('/activity')}
             style={{
               marginTop: 24,
@@ -207,7 +208,7 @@ export const LeaderboardPage = () => {
             return (
               <motion.button
                 key={cat.id}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => setActiveCategory(cat.id)}
                 className={`lb-cat-pill ${isActive ? 'lb-cat-pill--active' : ''}`}
                 style={
@@ -262,7 +263,7 @@ const ModeToggle = React.memo(function ModeToggle({
         return (
           <motion.button
             key={opt.id}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onModeChange(opt.id)}
             className="lb-mode-btn"
             style={{

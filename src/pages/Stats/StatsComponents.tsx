@@ -10,6 +10,7 @@ import React, { memo } from 'react';
 import { GradientText } from '../../components/ui';
 import type { StatsData, FormattedTime } from './useStatsData';
 import { formatTimeDetailed } from './useStatsData';
+import { tapScaleSmall } from '../../lib/motion';
 
 export {
   RatingsSection,
@@ -242,7 +243,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay: 0.5 }}
-    whileTap={{ scale: 0.98 }}
+    whileTap={tapScaleSmall}
     onClick={onNavigate}
     style={{
       background: `linear-gradient(135deg, ${theme.background.default} 0%, ${theme.background.surface} 50%, ${theme.background.surface} 100%)`,

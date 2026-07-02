@@ -17,6 +17,7 @@ import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
 import { NotificationsSection } from './NotificationsSection';
 import './SettingsPage.css';
+import { tapScaleSmall } from '../../lib/motion';
 
 export const SettingsPage = () => {
   const { currentTheme } = useTheme();
@@ -121,7 +122,7 @@ export const SettingsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             className="settings-nav-btn"
             style={{
               background: currentTheme.background.surface,
@@ -152,7 +153,7 @@ export const SettingsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           onClick={handleLogout}
           className="settings-logout-btn"
           style={{

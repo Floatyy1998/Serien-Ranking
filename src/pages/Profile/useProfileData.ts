@@ -5,11 +5,13 @@
 
 import type { SvgIconComponent } from '@mui/icons-material';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { ADMIN_UID } from '../../config/admin';
 import {
   AdminPanelSettings,
   AutoAwesome,
   AutoStories,
   BarChart,
+  CalendarMonth,
   EmojiEvents,
   Explore,
   Forum,
@@ -214,7 +216,7 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const mangaMenuItems: ProfileMenuItem[] = useMemo(
     () => [
-      { label: 'Manga Home', icon: AutoStories, color: '#8b5cf6', path: '/manga' },
+      { label: 'Manga Home', icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
       {
         label: 'Entdecken',
         icon: Explore,
@@ -247,7 +249,12 @@ export const useProfileData = (): UseProfileDataResult => {
               color: currentTheme.status.success,
               path: '/manga/recently-read',
             },
-            { label: 'Journey', icon: Timeline, color: '#a855f7', path: '/manga/journey' },
+            {
+              label: 'Journey',
+              icon: Timeline,
+              color: currentTheme.secondary,
+              path: '/manga/journey',
+            },
           ]
         : []),
     ],
@@ -272,17 +279,33 @@ export const useProfileData = (): UseProfileDataResult => {
         badge: unreadBadgesCount || 0,
       },
       { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
-      { label: 'KI-Empfehlungen', icon: AutoAwesome, color: '#a855f7', path: '/taste-profile' },
+      {
+        label: 'KI-Empfehlungen',
+        icon: AutoAwesome,
+        color: currentTheme.secondary,
+        path: '/taste-profile',
+      },
+      {
+        label: 'Anime-Season',
+        icon: CalendarMonth,
+        color: currentTheme.accent,
+        path: '/anime-season',
+      },
     ],
     [currentTheme, unreadBadgesCount]
   );
 
-  const isAdmin = user?.uid === '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
+  const isAdmin = user?.uid === ADMIN_UID;
 
   const settingsItems: ProfileMenuItem[] = useMemo(
     () => [
       { label: 'Design', icon: Palette, color: currentTheme.primary, path: '/theme' },
-      { label: 'Homepage Layout', icon: ViewQuilt, color: '#a855f7', path: '/home-layout' },
+      {
+        label: 'Homepage Layout',
+        icon: ViewQuilt,
+        color: currentTheme.secondary,
+        path: '/home-layout',
+      },
       {
         label: 'Streaming-Abos',
         icon: Subscriptions,

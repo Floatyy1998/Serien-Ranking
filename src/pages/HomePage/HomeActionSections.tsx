@@ -7,6 +7,7 @@ import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Star from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 interface QuickActionsProps {
   config: {
@@ -205,7 +206,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
         return (
           <motion.button
             key={id}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => {
               navigate(a.path);
             }}

@@ -70,7 +70,13 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
             }}
           >
             {userPhoto ? (
-              <img src={userPhoto} alt="" className="tm-avatar__img" />
+              <img
+                src={userPhoto}
+                alt=""
+                className="tm-avatar__img"
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               userName.charAt(0).toUpperCase()
             )}
@@ -106,7 +112,13 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
             }}
           >
             {friendPhoto ? (
-              <img src={friendPhoto} alt="" className="tm-avatar__img" />
+              <img
+                src={friendPhoto}
+                alt=""
+                className="tm-avatar__img"
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               friendName.charAt(0).toUpperCase()
             )}

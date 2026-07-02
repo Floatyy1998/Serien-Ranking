@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { PET_TYPE_NAMES, PET_TYPES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 interface PetCreationModalProps {
   petName: string;
@@ -85,7 +86,7 @@ export const PetCreationModal = memo(function PetCreationModal({
               {(Object.keys(PET_TYPES) as Pet['type'][]).map((type) => (
                 <motion.button
                   key={type}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={tapScale}
                   onClick={() => onTypeChange(type)}
                   className="pet-create-type-btn"
                   style={{
@@ -110,7 +111,7 @@ export const PetCreationModal = memo(function PetCreationModal({
           </div>
 
           <motion.button
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             onClick={onCreatePet}
             disabled={!petName.trim()}
             className="pet-create-submit"

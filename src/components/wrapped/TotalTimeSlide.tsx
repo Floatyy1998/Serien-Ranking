@@ -164,8 +164,9 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 + index * 0.1 }}
             style={{
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(10px)',
+              background: 'var(--glass-heavy)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               borderRadius: '16px',
               padding: '20px 10px',
               textAlign: 'center',

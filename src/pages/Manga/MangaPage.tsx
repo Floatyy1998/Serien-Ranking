@@ -13,6 +13,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { GradientText, HeaderActions, SectionHeader } from '../../components/ui';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
@@ -34,6 +35,7 @@ import {
   type AppTheme,
 } from './mangaUtils';
 import './MangaPage.css';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 export const MangaPage = () => {
   const { currentTheme } = useTheme();
@@ -158,18 +160,19 @@ export const MangaPage = () => {
       {/* ─── Search Bar ──────────────── */}
       <div style={{ padding: '0 20px', marginBottom: 20 }}>
         <motion.div
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           onClick={() => navigate('/manga/search')}
           style={{
             background: currentTheme.background.surface,
-            border: '1px solid rgba(255,255,255,0.06)',
+            border: '1px solid var(--glass-border-subtle)',
             borderRadius: 16,
             padding: '14px 16px',
             display: 'flex',
             alignItems: 'center',
             gap: 12,
             cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
           }}
         >
           <Search style={{ fontSize: 16, color: currentTheme.text.secondary, opacity: 0.5 }} />
@@ -282,7 +285,7 @@ export const MangaPage = () => {
 
       {/* ─── Collection Grid ─────────────────────────── */}
       {loading ? (
-        <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Laden...</div>
+        <LoadingSpinner text="Sammlung wird geladen …" />
       ) : mangaList.length > 0 ? (
         <section ref={collectionRef} style={{ marginBottom: 32 }}>
           <SectionHeader icon={<AutoStories />} iconColor={currentTheme.accent} title="Sammlung" />
@@ -394,7 +397,7 @@ const QuickTile = ({
   accent: string;
 }) => (
   <motion.button
-    whileTap={{ scale: 0.95 }}
+    whileTap={tapScale}
     onClick={onClick}
     className="manga-quick-tile"
     style={{ color: theme.text.primary }}
@@ -432,6 +435,7 @@ const MangaCard = ({
           src={manga.poster}
           alt={manga.title}
           loading="lazy"
+          decoding="async"
         />
         <div className="manga-collection-overlay">
           {/* Top badges */}

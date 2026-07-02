@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { SkeletonPosterRow } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleSmall } from '../../lib/motion';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -101,7 +102,7 @@ export const RecommendationsTab = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
               whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={tapScaleSmall}
               onClick={() => navigate(`/series/${rec.series.id}`)}
               style={{
                 display: 'flex',

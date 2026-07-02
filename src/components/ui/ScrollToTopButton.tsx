@@ -2,6 +2,7 @@ import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleTight } from '../../lib/motion';
 
 interface ScrollToTopButtonProps {
   /** CSS selector for the scroll container, or 'window' to use window scroll */
@@ -73,7 +74,7 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
-          whileTap={{ scale: 0.9 }}
+          whileTap={tapScaleTight}
           onClick={scrollToTop}
           style={{
             position: 'fixed',
@@ -82,10 +83,11 @@ export const ScrollToTopButton: React.FC<ScrollToTopButtonProps> = ({
             width: '48px',
             height: '48px',
             borderRadius: '50%',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '1px solid var(--glass-border-light)',
             background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             boxShadow: `0 4px 16px ${currentTheme.primary}60, 0 0 20px ${currentTheme.accent || currentTheme.primary}20`,
-            backdropFilter: 'blur(12px)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             color: currentTheme.text.secondary,
             display: 'flex',
             alignItems: 'center',

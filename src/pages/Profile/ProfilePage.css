@@ -25,7 +25,7 @@
   height: 200%;
   background: radial-gradient(
     ellipse at 50% 30%,
-    color-mix(in srgb, var(--color-primary, #00fed7) 12%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary, #00d123) 12%, transparent) 0%,
     transparent 60%
   );
   animation: breathe 6s ease-in-out infinite;
@@ -95,8 +95,8 @@
   margin: 0 20px 24px;
   padding: 20px;
   border-radius: var(--radius-xl);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 
 .profile-stats-time {
@@ -110,7 +110,7 @@
   margin-bottom: 4px;
   background: linear-gradient(
     135deg,
-    var(--color-primary, #00fed7),
+    var(--color-primary, #00d123),
     var(--theme-secondary-gradient, #8b5cf6)
   );
   -webkit-background-clip: text;
@@ -132,7 +132,7 @@
   padding: 14px 12px;
   border-radius: var(--radius-lg);
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border-subtle);
   transition: transform var(--duration-fast) ease;
 }
 

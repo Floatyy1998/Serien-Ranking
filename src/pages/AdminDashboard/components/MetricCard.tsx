@@ -19,8 +19,8 @@ export const MetricCard = React.memo<MetricCardProps>(
       transition={{ delay: delay * 0.1 }}
       style={{
         background: `${theme.background.surface}cc`,
-        backdropFilter: 'blur(28px)',
-        WebkitBackdropFilter: 'blur(28px)',
+        backdropFilter: 'var(--blur-lg)',
+        WebkitBackdropFilter: 'var(--blur-lg)',
         border: `1px solid ${theme.border.default}`,
         borderRadius: 16,
         padding: 20,

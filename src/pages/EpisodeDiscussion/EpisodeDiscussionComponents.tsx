@@ -17,6 +17,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -92,7 +93,7 @@ export const NotFoundState = memo(
           Diese Episode konnte nicht geladen werden.
         </p>
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={onGoBack}
           className="ed-not-found-btn"
           style={{
@@ -189,13 +190,14 @@ export const HeroSection = memo(
       <div className="ed-hero-topbar">
         <BackButton
           style={{
-            backdropFilter: 'blur(20px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--glass-border-light)',
           }}
         />
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => navigate(`/series/${seriesId}`)}
           className="ed-hero-series-btn"
         >
@@ -356,7 +358,7 @@ export const QuickActions = memo(
     >
       {hasSeries && hasUser && (
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={onToggleWatched}
           className="ed-watch-btn"
           style={{
@@ -385,7 +387,7 @@ export const QuickActions = memo(
       )}
 
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={tapScale}
         onClick={() => navigate(`/episodes/${seriesId}`)}
         className="ed-episodes-btn"
         style={{

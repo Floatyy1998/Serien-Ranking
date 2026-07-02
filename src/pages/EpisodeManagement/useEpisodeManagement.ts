@@ -6,12 +6,12 @@ import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
+import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
@@ -185,10 +185,13 @@ export const useEpisodeManagement = () => {
         return;
       }
       const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
-      const db = firebase.database();
 
       const willAutoAddToWatchlist = newWatched && shouldAutoEnableWatchlist(series);
+      const queueLabel = `${series.title} S${season.seasonNumber + 1}E${episodeIndex + 1} Toggle`;
 
+      // Beide Toggle-Richtungen über die persistente Offline-Queue —
+      // sonst würde ein Offline-„Entmarkieren" verloren gehen, während der
+      // gequeute Mark nach Reconnect trotzdem angewendet wird.
       if (newWatched) {
         const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {
@@ -201,14 +204,18 @@ export const useEpisodeManagement = () => {
         if (!episode.firstWatchedAt) {
           updates[`${epPath}/f`] = nowUnix;
         }
-        await db.ref().update(updates);
+        await applyUserUpdate(user.uid, updates, queueLabel);
         hapticSuccess();
       } else {
         // Komplett loeschen statt Nullen schreiben
-        await db.ref().update({
-          [epPath]: null,
-          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-        });
+        await applyUserUpdate(
+          user.uid,
+          {
+            [epPath]: null,
+            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          },
+          queueLabel
+        );
       }
 
       // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel markiert
@@ -265,41 +272,38 @@ export const useEpisodeManagement = () => {
             trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
           }
           if (!episode.watched && newWatched) {
-            const { updateEpisodeCounters } =
-              await import('../../features/badges/minimalActivityLogger');
-            await updateEpisodeCounters(user.uid, false, episode.air_date);
-            await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
-            WatchActivityService.logEpisodeWatch(
-              user.uid,
-              series.id,
-              series.title,
-              season.seasonNumber + 1,
-              episodeIndex + 1,
-              getEpisodeRuntime(series, episode),
-              false,
-              series.genre?.genres,
-              [...new Set(series.provider?.provider?.map((p) => p.name))]
-            );
+            await runEpisodeWatchFanout({
+              userId: user.uid,
+              seriesId: series.id,
+              seriesTitle: series.title,
+              seasonNumber: season.seasonNumber + 1,
+              episodeNumber: episodeIndex + 1,
+              runtimeMinutes: getEpisodeRuntime(series, episode),
+              isRewatch: false,
+              genres: series.genre?.genres,
+              providers: [...new Set(series.provider?.provider?.map((p) => p.name))],
+              episodeAirDate: episode.air_date,
+            });
             if (willAutoAddToWatchlist) {
               const { logWatchlistAdded } =
                 await import('../../features/badges/minimalActivityLogger');
               await logWatchlistAdded(user.uid, series.title, series.id);
             }
           } else if (isWatched && newWatched && newWatchCount > currentWatchCount) {
-            const { updateEpisodeCounters } =
-              await import('../../features/badges/minimalActivityLogger');
-            await updateEpisodeCounters(user.uid, true, episode.air_date);
-            WatchActivityService.logEpisodeWatch(
-              user.uid,
-              series.id,
-              series.title,
-              season.seasonNumber + 1,
-              episodeIndex + 1,
-              getEpisodeRuntime(series, episode),
-              true,
-              series.genre?.genres,
-              [...new Set(series.provider?.provider?.map((p) => p.name))]
-            );
+            // Kein Pet-XP beim Hochzählen des Watchcounts (bestehendes Verhalten beibehalten).
+            await runEpisodeWatchFanout({
+              userId: user.uid,
+              seriesId: series.id,
+              seriesTitle: series.title,
+              seasonNumber: season.seasonNumber + 1,
+              episodeNumber: episodeIndex + 1,
+              runtimeMinutes: getEpisodeRuntime(series, episode),
+              isRewatch: true,
+              genres: series.genre?.genres,
+              providers: [...new Set(series.provider?.provider?.map((p) => p.name))],
+              episodeAirDate: episode.air_date,
+              petXp: false,
+            });
           }
         },
       });
@@ -358,7 +362,13 @@ export const useEpisodeManagement = () => {
       });
 
       updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
-      await firebase.database().ref().update(updates);
+      // Bulk-Mark als EIN Queue-Eintrag (eine Multi-Path-Map) über die
+      // persistente Offline-Queue; Undo bleibt direkt.
+      await applyUserUpdate(
+        user.uid,
+        updates,
+        `${series.title} Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`
+      );
       setSelectedSeason(targetSeasonIndex);
 
       showUndoToast(`Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`, async () => {
@@ -448,7 +458,13 @@ export const useEpisodeManagement = () => {
         }));
 
       updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
-      await db.ref().update(updates);
+      // Staffel-Bulk-Mark als EIN Queue-Eintrag über die persistente
+      // Offline-Queue; Undo bleibt direkt.
+      await applyUserUpdate(
+        user.uid,
+        updates,
+        `${series.title} Staffel ${season.seasonNumber + 1} (${mode})`
+      );
 
       // Quick-Rate: Trigger wenn letzte Staffel komplett markiert
       if (mode !== 'unwatch') {

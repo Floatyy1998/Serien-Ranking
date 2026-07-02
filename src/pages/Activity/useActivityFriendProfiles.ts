@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
+import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
 import type { FirebaseUserProfile } from './types';
 import type { Friend, FriendRequest } from '../../types/Friend';
 
@@ -8,6 +7,20 @@ interface UseActivityFriendProfilesResult {
   friendProfiles: Record<string, FirebaseUserProfile>;
   requestProfiles: Record<string, FirebaseUserProfile>;
 }
+
+/**
+ * Punkt-Reads statt Vollknoten-Read: users/$other ist unter den gehärteten
+ * Rules nicht mehr komplett lesbar — genutzt werden von den Activity-Tabs
+ * ohnehin nur username/displayName/photoURL, die einzeln lesbar bleiben.
+ */
+const loadPublicProfile = async (uid: string): Promise<FirebaseUserProfile | null> => {
+  const fields = await fetchPublicUserFields(uid);
+  const profile: FirebaseUserProfile = {};
+  if (fields.username) profile.username = fields.username;
+  if (fields.displayName) profile.displayName = fields.displayName;
+  if (fields.photoURL) profile.photoURL = fields.photoURL;
+  return Object.keys(profile).length > 0 ? profile : null;
+};
 
 export const useActivityFriendProfiles = (
   friends: Friend[],
@@ -24,10 +37,9 @@ export const useActivityFriendProfiles = (
       await Promise.all(
         friends.map(async (friend) => {
           try {
-            const userRef = firebase.database().ref(`users/${friend.uid}`);
-            const snapshot = await userRef.once('value');
-            if (snapshot.exists()) {
-              newProfiles[friend.uid] = snapshot.val();
+            const profile = await loadPublicProfile(friend.uid);
+            if (profile) {
+              newProfiles[friend.uid] = profile;
             }
           } catch {
             // Silent fail
@@ -45,10 +57,9 @@ export const useActivityFriendProfiles = (
       const profiles: Record<string, FirebaseUserProfile> = {};
       for (const request of friendRequests) {
         try {
-          const userRef = firebase.database().ref(`users/${request.fromUserId}`);
-          const snapshot = await userRef.once('value');
-          if (snapshot.exists()) {
-            profiles[request.fromUserId] = snapshot.val();
+          const profile = await loadPublicProfile(request.fromUserId);
+          if (profile) {
+            profiles[request.fromUserId] = profile;
           }
         } catch {
           // Silent fail

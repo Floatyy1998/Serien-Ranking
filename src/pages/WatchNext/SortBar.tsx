@@ -2,6 +2,7 @@ import { ArrowDownward, ArrowUpward, DragHandle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
+import { tapScale } from '../../lib/motion';
 
 interface SortOption {
   key: string;
@@ -66,7 +67,7 @@ export const SortBar = React.memo(
         {SORT_OPTIONS.map((opt) => (
           <motion.button
             key={opt.key}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => (opt.key === 'custom' ? onToggleCustom() : onSort(opt.key))}
             style={activeStyle(isActive(opt.key))}
           >

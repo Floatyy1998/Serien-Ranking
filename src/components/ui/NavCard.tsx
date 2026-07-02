@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface NavCardProps {
   onClick: () => void;
@@ -24,7 +25,7 @@ export const NavCard: React.FC<NavCardProps> = ({
   const { currentTheme } = useTheme();
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
+      whileTap={tapScaleSmall}
       onClick={onClick}
       aria-label={ariaLabel}
       className={className}

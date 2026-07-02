@@ -309,6 +309,7 @@ export function AdminTicketCard({
                               border: '1px solid rgba(255,255,255,0.08)',
                               transition: 'transform 0.15s',
                             }}
+                            decoding="async"
                           />
                         </a>
                       ))}

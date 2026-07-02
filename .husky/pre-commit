@@ -1,0 +1,6 @@
+# Commit-Gate: Prettier + ESLint auf den gestagten Dateien (mit Auto-Fix),
+# danach die komplette Vitest-Suite. Spiegelt das CI-Gate aus deploy.yml —
+# was hier scheitert, hätte auch den Production-Deploy geblockt.
+set -e
+npx lint-staged
+npm test

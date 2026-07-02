@@ -7,8 +7,7 @@ import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
@@ -23,6 +22,7 @@ import {
 import { backendFetch } from '../../lib/backendApi';
 import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
+import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
@@ -197,9 +197,13 @@ export function useSeriesActions(
         const hadRewatch = !!series.rewatch?.active;
 
         // Atomarer Multi-Path Update — w und f defensiv setzen falls fehlend.
+        // serienVersion-Bump direkt im Update-Map (statt separatem
+        // bumpSeriesVersion), damit er beim Offline-Queueing mitpersistiert
+        // wird und erst beim Replay vom Server aufgelöst wird.
         const updates: Record<string, unknown> = {
           [`${epPath}/c`]: newWatchCount,
           [`${epPath}/l`]: nowUnix,
+          [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
         };
         if (!prevWatched) {
           updates[`${epPath}/w`] = 1;
@@ -211,10 +215,14 @@ export function useSeriesActions(
           updates[rewatchEpsPath] = true;
           updates[rewatchLastWatchedAtPath] = nowIso;
         }
-        await db.ref().update(updates);
-        bumpSeriesVersion(userId);
 
         const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
+
+        await applyUserUpdate(
+          userId,
+          updates,
+          `${series.title || series.name || ''} S${seasonNumber} Rewatch-Mark`
+        );
 
         let rewatchRemoved = false;
         if (hadRewatch) {
@@ -268,21 +276,19 @@ export function useSeriesActions(
             }
           },
           onCommit: async () => {
-            await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
-            const { updateEpisodeCounters } =
-              await import('../../features/badges/minimalActivityLogger');
-            await updateEpisodeCounters(userId, true, episode.air_date);
-            WatchActivityService.logEpisodeWatch(
+            await runEpisodeWatchFanout({
               userId,
-              series.id,
-              series.title || series.name || 'Unbekannte Serie',
+              seriesId: series.id,
+              seriesTitle: series.title || series.name || 'Unbekannte Serie',
               seasonNumber,
-              episodeIndex + 1,
-              episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              true,
-              series.genre?.genres,
-              series.provider?.provider?.map((p) => p.name)
-            );
+              episodeNumber: episodeIndex + 1,
+              runtimeMinutes:
+                episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: true,
+              genres: series.genre?.genres,
+              providers: series.provider?.provider?.map((p) => p.name),
+              episodeAirDate: episode.air_date,
+            });
           },
         });
       } catch {
@@ -376,14 +382,22 @@ export function useSeriesActions(
       const seasonNumber = (season.seasonNumber ?? 0) + 1;
       const epNumber = episodeIndex + 1;
       const willAutoAddToWatchlist = !prevWatched && shouldAutoEnableWatchlist(series);
+      const queueLabel = `${series.title} S${seasonNumber}E${epNumber} Quick-Toggle`;
 
       try {
+        // Beide Toggle-Richtungen laufen über die Offline-Queue: würde nur
+        // das Markieren gequeued, ginge ein Offline-„Entmarkieren" verloren
+        // und der gequeute Mark würde nach Reconnect trotzdem angewendet.
         if (prevWatched) {
-          await db.ref().update({
-            [epPath]: null,
-            ...(willAutoAddToWatchlist ? autoWatchlistUpdates(userId, series) : {}),
-            [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-          });
+          await applyUserUpdate(
+            userId,
+            {
+              [epPath]: null,
+              ...(willAutoAddToWatchlist ? autoWatchlistUpdates(userId, series) : {}),
+              [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+            },
+            queueLabel
+          );
         } else {
           const nowUnix = Math.floor(Date.now() / 1000);
           const updates: Record<string, unknown> = {
@@ -396,7 +410,7 @@ export function useSeriesActions(
           if (!prevFirstWatchedAt) {
             updates[`${epPath}/f`] = nowUnix;
           }
-          await db.ref().update(updates);
+          await applyUserUpdate(userId, updates, queueLabel);
         }
 
         const newWatched = !prevWatched;
@@ -437,21 +451,19 @@ export function useSeriesActions(
                 isRewatch: false,
                 source: 'series_detail_quick_toggle',
               });
-              await petService.watchedSeriesWithGenreAllPets(userId, series.genre?.genres || []);
-              const { updateEpisodeCounters } =
-                await import('../../features/badges/minimalActivityLogger');
-              await updateEpisodeCounters(userId, false, episode.air_date);
-              WatchActivityService.logEpisodeWatch(
+              await runEpisodeWatchFanout({
                 userId,
-                series.id,
-                series.title || series.name || 'Unbekannte Serie',
+                seriesId: series.id,
+                seriesTitle: series.title || series.name || 'Unbekannte Serie',
                 seasonNumber,
-                epNumber,
-                episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-                false,
-                series.genre?.genres,
-                series.provider?.provider?.map((p) => p.name)
-              );
+                episodeNumber: epNumber,
+                runtimeMinutes:
+                  episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: false,
+                genres: series.genre?.genres,
+                providers: series.provider?.provider?.map((p) => p.name),
+                episodeAirDate: episode.air_date,
+              });
               if (willAutoAddToWatchlist) {
                 const { logWatchlistAdded } =
                   await import('../../features/badges/minimalActivityLogger');

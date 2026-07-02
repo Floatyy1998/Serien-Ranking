@@ -10,6 +10,7 @@ import {
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { TabType } from './types';
+import { tapScale } from '../../lib/motion';
 
 interface TabDefinition {
   id: TabType;
@@ -46,7 +47,7 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
             return (
               <motion.button
                 key={tab.id}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => onTabChange(tab.id)}
                 className="wj-tab-btn"
                 style={{

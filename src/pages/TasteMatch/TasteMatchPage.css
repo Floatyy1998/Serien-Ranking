@@ -67,7 +67,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(10px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 
 .tm-loading-text {
@@ -147,9 +148,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-bottom: 1px solid var(--glass-border-subtle);
 }
 
 .tm-header__title {
@@ -159,8 +160,9 @@
 }
 
 .tm-header__share-btn {
-  width: 42px;
-  height: 42px;
+  /* ≥44px Touch-Target */
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-lg);
   border: none;
   display: flex;

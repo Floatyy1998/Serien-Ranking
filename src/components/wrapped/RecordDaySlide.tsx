@@ -154,8 +154,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.9 }}
           style={{
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(10px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             borderRadius: '16px',
             padding: '20px 10px',
             textAlign: 'center',
@@ -185,8 +186,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1 }}
           style={{
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(10px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             borderRadius: '16px',
             padding: '20px 10px',
             textAlign: 'center',
@@ -216,8 +218,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 1.1 }}
           style={{
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(10px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             borderRadius: '16px',
             padding: '20px 10px',
             textAlign: 'center',

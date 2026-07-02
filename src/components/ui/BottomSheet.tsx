@@ -61,7 +61,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             alignItems: 'flex-end',
             justifyContent: 'center',
             zIndex: 999,
-            backdropFilter: 'blur(4px)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
           }}
           onClick={onClose}
         >

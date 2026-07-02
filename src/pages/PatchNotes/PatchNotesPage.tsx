@@ -70,40 +70,89 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: 'Juli 2026 – Anime-Season-Kalender',
+      date: '2026-07-02',
+      features: [
+        {
+          icon: <CalendarMonth />,
+          color: currentTheme.primary,
+          title: 'Neue Seite: Anime-Season-Kalender',
+          description:
+            'Alle Anime der laufenden Season auf einen Blick – als Premieren-Timeline mit einem Datums-Node pro Tag: „HEUTE" pulsiert, vergangene Premieren sind gedimmt, „Start noch offen" sammelt Einträge ohne Termin. Vorherige und nächste Season sind per Tab erreichbar, „Fortlaufend" und „Beendet" hängen unten dran.',
+          link: { label: 'Zum Anime-Season-Kalender', path: '/anime-season' },
+        },
+        {
+          icon: <HourglassEmpty />,
+          color: currentTheme.accent,
+          title: 'Live-Countdown zur nächsten Premiere',
+          description:
+            'Der Hero zeigt die nächste große Premiere der Season mit tickendem Countdown (Tage · Std · Min · Sek), Poster, deutscher Beschreibung und Provider-Logos. Läuft schon alles, übernimmt das Season-Highlight.',
+        },
+        {
+          icon: <NewReleases />,
+          color: currentTheme.secondary,
+          title: '„Staffel 2"-, „Part 2"- und „NEU"-Chips',
+          description:
+            'Jede Karte zeigt sofort, ob ein Anime eine Fortsetzung ist („Staffel 2", „Part 2", „Fortsetzung" – erkannt aus Titel und AniList-Relationen) oder eine komplett neue Serie („NEU").',
+        },
+        {
+          icon: <Today />,
+          color: currentTheme.status.warning,
+          title: 'Termine wie in deinem Kalender',
+          description:
+            'AniList kennt nur den japanischen TV-Termin – der Season-Kalender priorisiert deshalb: Termin aus deinem Serien-Kalender (für Serien in deiner Liste) → TVMaze-geprüfter Termin → AniList. Simulcast-Verschiebungen um einen Tag sind damit Geschichte.',
+        },
+        {
+          icon: <LibraryAddCheck />,
+          color: currentTheme.status.purple,
+          title: 'Deine Serien werden erkannt',
+          description:
+            'Sequel-Seasons („Saga of Tanya the Evil Season 2") und Arc-Titel („Tokyo Revengers: Santen Sensou-hen") matchen jetzt zuverlässig auf die Serie in deiner Liste – mit Badge, deinen Providern und Direkteinstieg in die Detailseite. Deutsche Beschreibungen und Provider-Logos laden für alle anderen automatisch nach.',
+        },
+        {
+          icon: <Navigation />,
+          color: currentTheme.primary,
+          title: 'Komfort beim Stöbern',
+          description:
+            'Zurück von einer Detailseite landest du exakt dort, wo du warst – inklusive gewähltem Season-Tab. Dazu: Schnellsprung zu „Fortlaufend" im Timeline-Header und der bekannte Scroll-to-top-Button.',
+        },
+      ],
+    },
+    {
       version: 'Juni 2026 – Mehr über deine Freunde',
       date: '2026-06-28',
       features: [
         {
           icon: <PeopleAlt />,
-          color: '#22d3ee',
+          color: currentTheme.primary,
           title: 'Freunde-Stand auf der Seriendetail-Seite',
           description:
             'Pro Serie zeigt eine eigene Sektion welche Freunde auch dabei sind, bei welcher Folge sie aktuell stehen (S/E), und wie viele Folgen sie voraus oder hinter dir sind. Sortiert nach Fortschritt, klappbar – der Zustand wird gespeichert. Klick auf einen Eintrag öffnet das Freund-Profil.',
         },
         {
           icon: <Visibility />,
-          color: '#9b8cff',
+          color: currentTheme.secondary,
           title: 'Was schaut [Freund] gerade?',
           description:
             'Auf jedem Friend-Profil erscheint die heißeste Serie der letzten 14 Tage mit Status („Binge-Modus", „Aktiv dabei", „Schaut entspannt", „Pausiert" oder „Rewatch"), aktueller Folge und Spoiler-Diff zu deinem Stand. Rewatch wird erkannt und blendet den Spoiler-Hinweis automatisch aus.',
         },
         {
           icon: <HourglassEmpty />,
-          color: '#ffb15c',
+          color: currentTheme.status.warning,
           title: 'Worauf wartet [Freund]?',
           description:
             'Ebenfalls auf dem Friend-Profil: die nächsten anstehenden Folgen aus der Watchlist deines Freundes, sortiert nach Air-Date. Wenn ihr beide eine Serie wartet, gibt es ein „Ihr beide"-Badge – idealer Co-Watch-Hinweis.',
         },
         {
           icon: <Pets />,
-          color: '#a855f7',
+          color: currentTheme.status.purple,
           title: 'Pet-Sneakpeek + Snack schicken',
           description:
             'Du siehst Level, Hunger und Glück des Pets von deinem Freund – und kannst einmal pro Tag pro Freund einen Snack schicken. Sein Pet bekommt −10 Hunger und +5 Glück, sobald die App das nächste Mal geöffnet wird. In der Glocke landet zusätzlich eine Notification „X schickt Snack".',
         },
         {
           icon: <CalendarToday />,
-          color: '#06b6d4',
+          color: currentTheme.accent,
           title: 'Air-Date + Erstes-Mal-Gesehen pro Folge',
           description:
             'In der Episodenliste steht jetzt rechts neben jeder Folge das Erstausstrahlungs-Datum und – falls geschaut – wann du sie zum ersten Mal gesehen hast. Auf dem Handy klappt die Info unter die Folge.',
@@ -116,14 +165,14 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <FilterAlt />,
-          color: '#f59e0b',
+          color: currentTheme.status.warning,
           title: 'Anime-Filler & Recap im Detail',
           description:
             'Für japanische Animes erscheint auf der Detail-Seite jetzt ein Banner mit Filler- und Recap-Folgen (Quelle: Jikan/MyAnimeList). In der Episodenliste markieren kleine F/R-Chips jede betroffene Folge, auf der Episode-Discussion-Seite siehst du die Markierung direkt neben dem S/E-Badge. Daten kommen aus dem Backend – kein API-Hänger im Frontend, ein täglicher Job hält alles frisch.',
         },
         {
           icon: <Forum />,
-          color: '#22d3ee',
+          color: currentTheme.primary,
           title: 'Freunde-Aktivitäten als Ticker',
           description:
             'Eine sanfte Lauf-Schrift unter dem Greeting zeigt was deine Freunde gerade tun („Lisa hat Folge 5 von Breaking Bad gesehen · Tim hat Dune 2 mit 9.0 bewertet …"). Pixelgenaue Geschwindigkeit, hover hält die Marquee an genau der Position an. Ein- und ausblendbar im Sektionen-Layout.',
@@ -131,42 +180,42 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <PauseCircle />,
-          color: '#ef4444',
+          color: currentTheme.status.error,
           title: 'Streaming-Reminder direkt auf der Homepage',
           description:
             'Ungenutzte Abos schlummern jetzt nicht mehr versteckt im Subscriptions-Tab. Eine eigene Card im „Für dich"-Bereich listet die schlafendsten Anbieter inline mit Pausieren-Button samt Undo-Toast. Geld sparen ohne Seitenwechsel.',
         },
         {
           icon: <Equalizer />,
-          color: '#22c55e',
+          color: currentTheme.status.success,
           title: 'Now-Playing-Indikator auf Postern',
           description:
             'In der Weiterschauen-Liste pulsiert ein dezenter 3-Bar-Equalizer auf Serien, die du in den letzten 3 Tagen aktiv weiterschaust. Sofort erkennbar woran du gerade dran bist, ohne den Provider-Sticker zu überlagern.',
         },
         {
           icon: <Pets />,
-          color: '#a855f7',
+          color: currentTheme.status.purple,
           title: 'Pet reagiert auf deine Streak',
           description:
             'Wenn dein Watch-Streak steigt oder ein Meilenstein erreicht ist (3, 7, 14, 21, 30, 50, 100 Tage …), erscheint eine kleine Sprechblase über deinem Pet mit Emoji und Glückwunsch. Verbindet Streak-Tracking und Pet-System ohne extra Klick.',
         },
         {
           icon: <History />,
-          color: '#00fed7',
+          color: currentTheme.status.success,
           title: 'Recap-Button statt Auto-Popup',
           description:
             'Die Detail-Seite öffnet das Recap-Sheet nicht mehr automatisch – stattdessen liegt ein klar sichtbarer „Recap der letzten N Folgen"-Button im Info-Tab, sobald du Episoden gesehen hast. Du entscheidest wann es dich interessiert.',
         },
         {
           icon: <TransferWithinAStation />,
-          color: '#8b5cf6',
+          color: currentTheme.secondary,
           title: 'Sanfte Seitenwechsel (View Transitions)',
           description:
             'Wechsel von Homepage zu Detail-Seite, von einer Detail-Seite zur nächsten, oder vom Carousel – alles jetzt mit einem dezenten Crossfade statt hartem Sprung. Nutzt die native View-Transitions-API des Browsers, respektiert „prefers-reduced-motion".',
         },
         {
           icon: <ViewQuilt />,
-          color: '#06b6d4',
+          color: currentTheme.accent,
           title: 'Layout aufgeräumt',
           description:
             'Die „Hauptaktionen"-Sektion mit den großen Weiterschauen/Entdecken-Buttons ist entfernt – beide bleiben bequem im Schnellzugriff und in der Bottom-Nav erreichbar. Neue Sektionen tauchen ab sofort an ihrer vorgesehenen Position auf, nicht mehr automatisch am Ende deiner Liste.',
@@ -180,21 +229,21 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <Recommend />,
-          color: '#22d3ee',
+          color: currentTheme.primary,
           title: 'Serien & Filme empfehlen',
           description:
             'Auf jeder Serien- und Film-Detailseite gibt es jetzt einen „Empfehlen"-Button. Wähle deine Freunde aus, schreib optional eine Nachricht dazu, fertig – wie bei Spotify, nur für Serien.',
         },
         {
           icon: <NotificationsActive />,
-          color: '#a855f7',
+          color: currentTheme.status.purple,
           title: 'Empfehlung im Bell-Hub',
           description:
             'Empfänger sehen die Empfehlung als eigene Karte in den Benachrichtigungen: Poster, Sender-Avatar, deine Nachricht als Speech-Bubble. Mit einem Klick auf „Anschauen" geht es direkt zur Detailseite, oder „Nope" wenn nix für dich.',
         },
         {
           icon: <LibraryAddCheck />,
-          color: '#22c55e',
+          color: currentTheme.status.success,
           title: 'Smart Friend-Filter',
           description:
             'Du kannst nur Freunden etwas empfehlen, die die Serie oder den Film noch nicht in ihrer Sammlung haben. Wer es schon kennt, wird ausgegraut mit „Hat das schon" – spart Zeit und macht Empfehlungen wertvoller.',
@@ -207,7 +256,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <Subscriptions />,
-          color: '#00A8E1',
+          color: currentTheme.primary,
           title: 'Neue Sektion: Streaming-Abos',
           description:
             'Pflege deine aktiven Abos (Netflix, Disney+, Crunchyroll …) mit Monatspreis und Schwellenwert für „ungenutzt". Live-Insights zeigen Total/Monat und wie viel du gerade für nichts zahlst.',
@@ -215,7 +264,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <EuroSymbol />,
-          color: '#10b981',
+          color: currentTheme.status.success,
           title: 'Kosten transparent machen',
           description:
             'Pro Anbieter wird gezeigt was du seit Wochen nicht mehr geschaut hast und welche Serien deiner Watchlist nur dort laufen. Markiere ein Abo als „Kündigen wenn ungenutzt" und du bekommst einen klaren Vorschlag.',
@@ -223,7 +272,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <AutoFixHigh />,
-          color: '#a855f7',
+          color: currentTheme.status.purple,
           title: 'Smart-Attribution',
           description:
             'Eine Episode läuft auf mehreren Anbietern? Wir ordnen sie automatisch dem Provider zu, den du am häufigsten exklusiv nutzt. So weiß deine Statistik, wofür du wirklich Wert ziehst.',
@@ -231,7 +280,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <SwapHoriz />,
-          color: '#B026FF',
+          color: currentTheme.secondary,
           title: 'Pro-Serie Override',
           description:
             'Rick and Morty schaust du auf HBO Max, nicht Netflix? Tipp im Subscriptions-Diagnose-Panel auf „verschieben" und alle vergangenen & künftigen Watches wandern korrekt zum gewählten Anbieter – inkl. Logo + Brand-Color überall.',
@@ -239,7 +288,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <WarningAmber />,
-          color: '#f59e0b',
+          color: currentTheme.status.warning,
           title: 'Watchlist-Lücken erkennen',
           description:
             'Auf der Subscriptions-Seite findest du alle Watchlist-Serien, die NUR auf Anbietern laufen, die du gerade nicht abonniert hast. Auf der Homepage erscheint außerdem eine Notification, wenn eine neue Staffel auf einem nicht-abonnierten Provider startet.',
@@ -247,7 +296,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Palette />,
-          color: '#E50914',
+          color: currentTheme.accent,
           title: 'TV-Kalender mit Brand-Color',
           description:
             'Jede Episode-Card im Kalender bekommt links einen Streifen in Provider-Farbe (Netflix-Rot, Disney-Blau, HBO-Lila …). Serien, die nur auf Anbietern laufen die du nicht hast, werden ausgegraut – auf einen Blick erkennbar was läuft.',
@@ -255,7 +304,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <FilterAlt />,
-          color: '#00cec9',
+          color: currentTheme.primary,
           title: '„Nur meine Abos" Filter',
           description:
             'Im Weiterschauen-Tab ein neuer Toggle: zeigt nur Watchlist-Serien, die du auf deinen aktiven Abos schauen kannst. Spart das Hin- und Herklicken zwischen den Streaming-Diensten.',
@@ -263,14 +312,14 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Search />,
-          color: '#a78bfa',
+          color: currentTheme.secondary,
           title: 'Onboarding-Schritt: Abos',
           description:
             'Neue User werden im Onboarding direkt nach ihren Streaming-Abos gefragt – damit Empfehlungen, Filter und Kalender vom ersten Login an passen.',
         },
         {
           icon: <AutoAwesome />,
-          color: '#ec4899',
+          color: currentTheme.status.success,
           title: 'Server-seitiges Catalog-Refresh',
           description:
             'Wenn TMDB neue Streaming-Provider für eine Serie hinzufügt (z. B. Chernobyl kommt zu Disney+), wird das jetzt täglich automatisch ins Catalog gespiegelt – kein 30-Tage-Lag mehr.',
@@ -283,7 +332,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <Today />,
-          color: '#6366f1',
+          color: currentTheme.primary,
           title: 'Kalender: Auto-Scroll zum heutigen Tag',
           description:
             'Auf dem Handy scrollt der Kalender jetzt automatisch zum heutigen Wochentag – kein manuelles Suchen mehr.',
@@ -291,7 +340,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <PauseCircle />,
-          color: '#a78bfa',
+          color: currentTheme.status.warning,
           title: 'Kalender: Staffelpause & Staffelende Chips',
           description:
             'Neue Badges zeigen dir direkt im Kalender ob eine Serie in die Pause geht oder das Staffelfinale kommt. Erkennt auch Pausen wenn kommende Folgen noch kein Datum haben.',
@@ -299,14 +348,14 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <SmartDisplay />,
-          color: '#00cec9',
+          color: currentTheme.secondary,
           title: 'Provider-Badge auf allen Karten',
           description:
             'Kleine Streaming-Logos (Crunchyroll, Netflix, etc.) auf dem Poster – überall: Weiterschauen, Heute Neu, Rewatches und Watchlist.',
         },
         {
           icon: <Tune />,
-          color: '#10b981',
+          color: currentTheme.status.success,
           title: 'Smarter Status-Badge',
           description:
             'Der Status-Badge im Serien-Detail zeigt jetzt den Ausstrahlungsrhythmus: "Läuft · Sonntags neue Folge" oder "Läuft · Alle 2 Wochen" statt nur "Fortlaufend".',
@@ -320,14 +369,14 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Replay />,
-          color: '#f59e0b',
+          color: currentTheme.status.warning,
           title: '"Zuletzt gesehen" in Weiterschauen',
           description:
             'Jede Karte in Weiterschauen zeigt jetzt wann du die Serie zuletzt geschaut hast – hilft beim Priorisieren.',
         },
         {
           icon: <PlaylistAddCheck />,
-          color: '#ec4899',
+          color: currentTheme.status.success,
           title: 'Staffel & Tab merken',
           description:
             'Wenn du in einem Serien-Detail eine Staffel oder Tab (Info/Besetzung/KI-Guide) wählst und zurücknavigierst, landest du wieder an der gleichen Stelle.',
@@ -340,7 +389,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <LocalFireDepartment />,
-          color: '#f97316',
+          color: currentTheme.status.warning,
           title: 'Trending, Saisonal & Bestbewertet Redesign',
           description:
             'Komplett neues Card-Design im Kino-Stil: Trending-Cards mit Rang-Nummer in abgerundeter Ecke, Genre-Anzeige, TMDB-Rating und Erscheinungsjahr – einheitlich für alle drei Sektionen.',
@@ -353,7 +402,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <AutoAwesome />,
-          color: '#a855f7',
+          color: currentTheme.status.purple,
           title: 'KI-Empfehlungen',
           description:
             'Personalisierte Serien- und Film-Empfehlungen basierend auf deinen Bewertungen, Binge-Verhalten, Genre-Vorlieben und Watch-Patterns. Mit Poster, TMDB-Rating und Streaming-Anbietern – klick auf eine Empfehlung um direkt zur Serie zu gelangen.',
@@ -361,14 +410,14 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <AutoAwesome />,
-          color: '#ec4899',
+          color: currentTheme.status.success,
           title: 'Proaktive Recaps verbessert',
           description:
             'Recaps werden nicht mehr automatisch geladen – erst wenn du auf "Recap lesen" klickst. Spart KI-Anfragen und lädt schneller.',
         },
         {
           icon: <Navigation />,
-          color: '#00cec9',
+          color: currentTheme.secondary,
           title: 'Navbar Redesign',
           description:
             'Neue Glassmorphism-Navigation mit Glow-Effekt auf dem aktiven Tab. Bessere Lesbarkeit der inaktiven Icons.',
@@ -381,7 +430,7 @@ export const PatchNotesPage = () => {
       features: [
         {
           icon: <CalendarMonth />,
-          color: '#6366f1',
+          color: currentTheme.primary,
           title: 'TV-Kalender überarbeitet',
           description:
             'Neue Wochenansicht mit Navigation, Desktop-Grid-Layout mit 7-Spalten und automatische Episoden-Gruppierung pro Serie.',
@@ -389,7 +438,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <TrendingUp />,
-          color: '#10b981',
+          color: currentTheme.status.success,
           title: 'Serien-Fortschritt',
           description:
             'Progress-Bars auf jeder Watchlist-Karte zeigen wie weit du bist – mit Staffel-Info und verbleibenden Episoden.',
@@ -405,7 +454,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <FilterAlt />,
-          color: '#ec4899',
+          color: currentTheme.secondary,
           title: 'Provider-Filter',
           description:
             'Filtere deine Watchlist nach Streaming-Anbieter – zeige nur Netflix, Disney+ oder andere.',
@@ -413,7 +462,7 @@ export const PatchNotesPage = () => {
         },
         {
           icon: <Replay />,
-          color: '#06b6d4',
+          color: currentTheme.status.error,
           title: 'Rewatch-Fortschritt',
           description:
             'Rewatches zeigen jetzt ihren eigenen Fortschritt statt den der Original-Serie.',

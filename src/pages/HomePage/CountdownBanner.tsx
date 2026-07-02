@@ -72,6 +72,8 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             flexShrink: 0,
             boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
           }}
+          loading="lazy"
+          decoding="async"
         />
       )}
       <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>

@@ -263,7 +263,8 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
               borderRadius: 14,
               background: `linear-gradient(135deg, ${s.color}12, ${s.color}06)`,
               border: `1px solid ${s.color}25`,
-              backdropFilter: 'blur(20px)',
+              backdropFilter: 'var(--blur-lg)',
+              WebkitBackdropFilter: 'var(--blur-lg)',
             }}
           >
             <div
@@ -357,6 +358,8 @@ export const ActivityTab = React.memo<ActivityTabProps>(({ data, theme }) => {
                       borderRadius: '50%',
                       objectFit: 'cover',
                     }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <div

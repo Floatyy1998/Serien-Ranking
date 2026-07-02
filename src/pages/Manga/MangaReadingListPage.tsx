@@ -27,6 +27,7 @@ import {
   STATUS_COLORS,
 } from './mangaUtils';
 import type { Manga } from '../../types/Manga';
+import { tapScale } from '../../lib/motion';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
 
@@ -179,8 +180,8 @@ export const MangaReadingListPage = () => {
             padding: '20px',
             paddingTop: 'calc(20px + env(safe-area-inset-top))',
             background: `${currentTheme.background.default}90`,
-            backdropFilter: 'blur(24px) saturate(1.4)',
-            WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+            backdropFilter: 'var(--blur-lg) saturate(1.4)',
+            WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
             position: 'relative',
             zIndex: 10,
           }}
@@ -216,7 +217,7 @@ export const MangaReadingListPage = () => {
               </div>
             </div>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={() => setShowFilter(!showFilter)}
               style={{
                 width: 36,

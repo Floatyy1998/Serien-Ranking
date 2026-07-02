@@ -131,8 +131,8 @@
 }
 
 .pet-card-display {
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
   border-radius: 32px;
   padding: 40px;
   box-shadow:
@@ -1158,8 +1158,8 @@
   right: 0;
   bottom: 0;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   display: flex;
   align-items: center;
   justify-content: center;

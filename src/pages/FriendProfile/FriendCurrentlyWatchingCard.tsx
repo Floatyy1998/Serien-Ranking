@@ -50,7 +50,13 @@ export const FriendCurrentlyWatchingCard = memo(function FriendCurrentlyWatching
         border: `1px solid ${mood.tint}40`,
       }}
     >
-      <img src={getImageUrl(data.poster, 'w342')} alt={data.title} className="fp-watching-poster" />
+      <img
+        src={getImageUrl(data.poster, 'w342')}
+        alt={data.title}
+        className="fp-watching-poster"
+        loading="lazy"
+        decoding="async"
+      />
 
       <div className="fp-watching-body">
         <div className="fp-watching-mood" style={{ color: mood.tint }}>

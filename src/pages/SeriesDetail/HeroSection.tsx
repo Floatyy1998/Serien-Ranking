@@ -22,6 +22,7 @@ import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from '../MovieDetail/useMovieData';
 import { RatingsCard } from './RatingsCard';
 import { StatusBadge, NextEpisodeChip } from './StatusBadge';
+import { tapScale } from '../../lib/motion';
 
 interface HeroSectionProps {
   series: Series;
@@ -118,7 +119,7 @@ export const HeroSection = memo<HeroSectionProps>(
     const actionButtons = !isReadOnlyTmdbSeries && (
       <div className="hero-actions">
         <motion.button
-          whileTap={{ scale: 0.96 }}
+          whileTap={tapScale}
           onClick={onNavigateEpisodes}
           className="hero-actions__btn hero-actions__btn--primary"
           style={{
@@ -130,7 +131,7 @@ export const HeroSection = memo<HeroSectionProps>(
         </motion.button>
 
         <motion.button
-          whileTap={{ scale: 0.96 }}
+          whileTap={tapScale}
           onClick={onNavigateRating}
           className="hero-actions__btn"
           style={
@@ -149,7 +150,7 @@ export const HeroSection = memo<HeroSectionProps>(
 
         <Tooltip title={series.watchlist ? 'Von Watchlist entfernen' : 'Watchlist'} arrow>
           <motion.button
-            whileTap={{ scale: 0.96 }}
+            whileTap={tapScale}
             onClick={onWatchlistToggle}
             className="hero-actions__btn"
             style={
@@ -184,7 +185,7 @@ export const HeroSection = memo<HeroSectionProps>(
 
         <Tooltip title={series.hidden ? 'Einblenden' : 'Ausblenden'} arrow>
           <motion.button
-            whileTap={{ scale: 0.96 }}
+            whileTap={tapScale}
             onClick={onHideToggle}
             className="hero-actions__btn"
             style={
@@ -267,7 +268,9 @@ export const HeroSection = memo<HeroSectionProps>(
             left: isMobile ? '10px' : '20px',
           }}
         >
-          <BackButton style={{ backdropFilter: 'blur(10px)' }} />
+          <BackButton
+            style={{ backdropFilter: 'var(--blur-sm)', WebkitBackdropFilter: 'var(--blur-sm)' }}
+          />
         </div>
 
         {/* Add button for TMDB-only series */}

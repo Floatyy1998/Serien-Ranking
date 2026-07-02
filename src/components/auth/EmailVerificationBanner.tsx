@@ -169,7 +169,8 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backdropFilter: 'blur(3px)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
             }}
           >
             <div

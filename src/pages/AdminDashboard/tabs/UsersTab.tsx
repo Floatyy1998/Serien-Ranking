@@ -1,7 +1,11 @@
-import { Circle } from '@mui/icons-material';
+import { Circle, ManageSearch } from '@mui/icons-material';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useState } from 'react';
 import type { useTheme } from '../../../contexts/ThemeContextDef';
+import { buildUserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';
+import type { UserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';
 import { DataTable } from '../components/DataTable';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import { UserDeepDive } from './UserDeepDive';
@@ -35,6 +39,46 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [userEvents, setUserEvents] = useState<RawEvent[]>([]);
   const [loadingUser, setLoadingUser] = useState(false);
+  const [rebuildState, setRebuildState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [rebuildMessage, setRebuildMessage] = useState('');
+
+  // Backfill für den userSearchIndex-Knoten (Freundes-Suche): liest den
+  // users-Root EINMAL (nur die Admin-UID darf das unter den gehärteten Rules)
+  // und schreibt alle Einträge als ein Multi-Path-Update.
+  const handleRebuildSearchIndex = useCallback(async () => {
+    if (rebuildState === 'running') return;
+    setRebuildState('running');
+    setRebuildMessage('Lese alle User…');
+    try {
+      const snap = await firebase.database().ref('users').once('value');
+      const users = (snap.val() as Record<string, Record<string, unknown> | null> | null) || {};
+      const updates: Record<string, UserSearchIndexEntry> = {};
+      let skipped = 0;
+      for (const [uid, userData] of Object.entries(users)) {
+        const entry = buildUserSearchIndexEntry(userData || {});
+        // Defensive: User ohne username UND displayName überspringen
+        if (!entry || (!entry.username && !entry.displayName)) {
+          skipped++;
+          continue;
+        }
+        updates[uid] = entry;
+      }
+      const count = Object.keys(updates).length;
+      setRebuildMessage(`Schreibe ${count} Einträge…`);
+      if (count > 0) {
+        await firebase.database().ref('userSearchIndex').update(updates);
+      }
+      setRebuildState('done');
+      setRebuildMessage(
+        `Suchindex neu aufgebaut: ${count} Einträge geschrieben, ${skipped} ohne Namen übersprungen.`
+      );
+    } catch (error) {
+      setRebuildState('error');
+      setRebuildMessage(
+        `Suchindex-Backfill fehlgeschlagen: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`
+      );
+    }
+  }, [rebuildState]);
 
   const handleRowClick = useCallback(
     async (user: UserItem) => {
@@ -60,6 +104,8 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
                 src={item.photoURL}
                 alt=""
                 style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' as const }}
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div
@@ -162,6 +208,61 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
           theme={theme}
           color="#f093fb"
         />
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginLeft: 'auto',
+            flexWrap: 'wrap',
+          }}
+        >
+          {rebuildMessage && (
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                padding: '4px 10px',
+                borderRadius: 8,
+                background:
+                  rebuildState === 'error'
+                    ? '#ff4d6d20'
+                    : rebuildState === 'done'
+                      ? `${theme.status.success}20`
+                      : `${theme.text.muted}15`,
+                color:
+                  rebuildState === 'error'
+                    ? '#ff4d6d'
+                    : rebuildState === 'done'
+                      ? theme.status.success
+                      : theme.text.secondary,
+              }}
+            >
+              {rebuildMessage}
+            </span>
+          )}
+          <button
+            onClick={handleRebuildSearchIndex}
+            disabled={rebuildState === 'running'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 14px',
+              borderRadius: 10,
+              border: `1px solid ${theme.border.default}`,
+              background: `${theme.background.surface}80`,
+              color: rebuildState === 'running' ? theme.text.muted : theme.primary,
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: rebuildState === 'running' ? 'wait' : 'pointer',
+            }}
+          >
+            <ManageSearch style={{ fontSize: 16 }} />
+            {rebuildState === 'running' ? 'Baue Suchindex…' : 'Suchindex neu aufbauen'}
+          </button>
+        </div>
       </div>
 
       <motion.div
@@ -169,7 +270,8 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
         animate={{ opacity: 1, y: 0 }}
         style={{
           background: `${theme.background.surface}cc`,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${theme.border.default}`,
           borderRadius: 16,
           padding: 16,

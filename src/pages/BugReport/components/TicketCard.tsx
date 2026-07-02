@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
+import { tapScale } from '../../../lib/motion';
 
 const autoResize = (el: HTMLTextAreaElement) => {
   el.style.height = 'auto';
@@ -380,6 +381,7 @@ export function TicketCard({
                             borderRadius: '8px',
                             border: `1px solid rgba(255,255,255,0.08)`,
                           }}
+                          decoding="async"
                         />
                       </a>
                     ))}
@@ -503,7 +505,7 @@ export function TicketCard({
                       />
                       <div style={{ display: 'flex', gap: '8px' }}>
                         <motion.button
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={tapScale}
                           onClick={() => {
                             setReopenMode(false);
                             setCommentText('');
@@ -523,7 +525,7 @@ export function TicketCard({
                           Abbrechen
                         </motion.button>
                         <motion.button
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={tapScale}
                           onClick={async () => {
                             if (!commentText.trim()) return;
                             setSending(true);
@@ -590,7 +592,7 @@ export function TicketCard({
                     }}
                   />
                   <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={tapScale}
                     onClick={handleSendComment}
                     disabled={!commentText.trim() || sending}
                     style={{

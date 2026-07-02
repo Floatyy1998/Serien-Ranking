@@ -120,7 +120,13 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
                     className="friend-progress-card"
                   >
                     {entry.photoURL ? (
-                      <img src={entry.photoURL} alt="" className="friend-progress-avatar" />
+                      <img
+                        src={entry.photoURL}
+                        alt=""
+                        className="friend-progress-avatar"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <div
                         className="friend-progress-avatar friend-progress-avatar--initials"

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { BottomSheet } from '../../components/ui';
 import type { SeriesEpisode } from './types';
+import { tapScale } from '../../lib/motion';
 
 interface EpisodeActionSheetProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onRewatch(episode)}
             style={{
               padding: '14px',
@@ -82,7 +83,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           </motion.button>
 
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onUnwatch(episode)}
             style={{
               padding: '14px',
@@ -108,7 +109,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           </motion.button>
 
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={onNavigateToDiscussion}
             style={{
               padding: '14px',

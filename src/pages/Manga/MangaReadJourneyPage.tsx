@@ -6,6 +6,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
+import { tapScale } from '../../lib/motion';
 
 type TabType = 'activity' | 'genres' | 'insights';
 
@@ -147,7 +148,7 @@ export const MangaReadJourneyPage = () => {
             return (
               <motion.button
                 key={tab.id}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   display: 'flex',
@@ -295,6 +296,8 @@ export const MangaReadJourneyPage = () => {
                         src={m.poster}
                         alt={m.title}
                         style={{ width: 32, height: 44, borderRadius: 6, objectFit: 'cover' }}
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div

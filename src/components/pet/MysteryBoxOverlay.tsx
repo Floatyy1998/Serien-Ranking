@@ -12,6 +12,7 @@ import { openMysteryBox } from '../../services/pet/mysteryBoxService';
 import type { MysteryBoxReward } from '../../services/pet/mysteryBoxService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import type { AccessoryRarity } from '../../types/pet.types';
+import { tapScale } from '../../lib/motion';
 
 function getRewardIcon(reward: MysteryBoxReward) {
   switch (reward.type) {
@@ -57,6 +58,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
             const revealAudio = new Audio('/sounds/reveal.mp3');
             revealAudio.volume = 0.6;
             revealAudio.playbackRate = 2.0;
+            // bewusst still: Autoplay kann vom Browser blockiert werden
             revealAudio.play().catch(() => {});
             setTimeout(() => revealAudio.pause(), 3000);
           } catch {
@@ -284,7 +286,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
         {phase === 'closed' && (
           <motion.button
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={handleOpen}
             style={{
               background: 'linear-gradient(135deg, #9C27B0, #E040FB)',
@@ -309,7 +311,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={onClose}
             style={{
               background: `linear-gradient(135deg, ${rarityColor}, ${rarityColor}cc)`,

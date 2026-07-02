@@ -30,7 +30,7 @@ const ICON_MAP: Record<string, (theme: Theme) => React.ReactNode> = {
   flag: (t) => <Flag style={{ fontSize: '18px', color: t.status.warning }} />,
   announcement: (t) => <NewReleases style={{ fontSize: '18px', color: t.accent }} />,
   bug: (t) => <BugReport style={{ fontSize: '18px', color: t.status.warning }} />,
-  feature: () => <Lightbulb style={{ fontSize: '18px', color: '#8b5cf6' }} />,
+  feature: (t) => <Lightbulb style={{ fontSize: '18px', color: t.secondary }} />,
   pet: () => <Pets style={{ fontSize: '18px', color: '#FF9800' }} />,
   recommendation: (t) => <Recommend style={{ fontSize: '18px', color: t.primary }} />,
 };
@@ -44,7 +44,7 @@ const ICON_BG_MAP: Record<string, (t: Theme) => string> = {
   movie: (t) => `linear-gradient(135deg, ${t.status.error}20, ${t.status.error}08)`,
   announcement: (t) => `linear-gradient(135deg, ${t.accent}20, ${t.accent}08)`,
   bug: (t) => `linear-gradient(135deg, ${t.status.warning}20, ${t.status.warning}08)`,
-  feature: () => `linear-gradient(135deg, #8b5cf620, #8b5cf608)`,
+  feature: (t) => `linear-gradient(135deg, ${t.secondary}20, ${t.secondary}08)`,
   pet: () => `linear-gradient(135deg, #FF980020, #FF980008)`,
   recommendation: (t) => `linear-gradient(135deg, ${t.primary}25, ${t.accent}10)`,
 };

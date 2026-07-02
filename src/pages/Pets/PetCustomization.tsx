@@ -17,6 +17,7 @@ import {
 } from '../../types/pet.types';
 import type { Pet, AccessoryRarity } from '../../types/pet.types';
 import './PetsPage.css';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 interface PetCustomizationProps {
   pet: Pet;
@@ -252,7 +253,7 @@ export const PetCustomization = memo(function PetCustomization({
                       key={`${colorKey}-${activeColorBorder}`}
                       type="button"
                       whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                      whileTap={tapScaleTight}
                       onClick={() => onChangeColor(colorKey)}
                       className="pet-color-btn"
                       style={{
@@ -369,7 +370,7 @@ export const PetCustomization = memo(function PetCustomization({
                       <motion.button
                         type="button"
                         whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileTap={tapScale}
                         onClick={() => onEquipBackground(null)}
                         className={`pet-background-btn pet-background-btn--default${!pet.equippedBackground ? ' pet-background-btn--equipped' : ''}`}
                         title="Standard"
@@ -405,7 +406,7 @@ export const PetCustomization = memo(function PetCustomization({
                             key={bgId}
                             type="button"
                             whileHover={{ scale: 1.05, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileTap={tapScale}
                             onClick={() => onEquipBackground(isEquipped ? null : bgId)}
                             className={`pet-background-btn${def.animationClass ? ` ${def.animationClass}` : ''}${isEquipped ? ' pet-background-btn--equipped' : ''}`}
                             title={`${def.name} (${RARITY_LABELS[rarity]})`}

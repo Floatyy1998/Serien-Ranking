@@ -31,7 +31,7 @@
   transform: translateY(-4px);
   box-shadow:
     0 12px 40px -8px rgba(0, 0, 0, 0.6),
-    0 0 20px color-mix(in srgb, var(--color-primary, #00fed7) 15%, transparent);
+    0 0 20px color-mix(in srgb, var(--color-primary, #00d123) 15%, transparent);
 }
 
 .discover-poster-wrap:active {

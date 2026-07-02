@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';
 import type { XpBoostItem } from '../../services/pet/dailySpinService';
+import { tapScaleTight } from '../../lib/motion';
 
 /** Color based on total boost value (multiplier × episodes) */
 function getBoostColor(multiplier: number, episodes: number): string {
@@ -113,7 +114,7 @@ export const XpBoostHeaderButton: React.FC = () => {
     <div ref={dropdownRef} style={{ position: 'relative' }}>
       {/* Shield Icon Button */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
+        whileTap={tapScaleTight}
         onClick={() => setOpen((v) => !v)}
         style={{
           position: 'relative',
@@ -254,8 +255,8 @@ export const XpBoostHeaderButton: React.FC = () => {
               boxShadow: `0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px ${currentTheme.border.default}`,
               zIndex: 100,
               overflow: 'hidden',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'var(--blur-lg)',
+              WebkitBackdropFilter: 'var(--blur-lg)',
             }}
           >
             {/* Header */}

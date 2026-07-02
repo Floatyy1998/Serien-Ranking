@@ -8,6 +8,7 @@ import { GradientText, HeaderActions, HorizontalScrollContainer } from '../../..
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { getGreeting } from '../../../lib/text/greetings';
 import { LiveClock } from '../LiveClock';
+import { tapScaleSmall } from '../../../lib/motion';
 
 interface GreetingSectionProps {
   displayName: string | undefined;
@@ -205,7 +206,7 @@ export const GreetingSection = React.memo(function GreetingSection({
       {/* Search Bar */}
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
         <motion.div
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           onClick={() => navigate('/search')}
           style={{
             background: `${currentTheme.background.surface}`,
@@ -216,7 +217,8 @@ export const GreetingSection = React.memo(function GreetingSection({
             alignItems: 'center',
             gap: '12px',
             cursor: 'pointer',
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
           }}
         >
           <Search style={{ fontSize: '20px', color: currentTheme.text.muted }} />

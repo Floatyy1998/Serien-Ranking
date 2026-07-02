@@ -1,45 +1,25 @@
-import React from 'react';
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import Edit from '@mui/icons-material/Edit';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import FilterList from '@mui/icons-material/FilterList';
-import PlayCircle from '@mui/icons-material/PlayCircle';
-import Repeat from '@mui/icons-material/Repeat';
-import { Tooltip } from '@mui/material';
-import { AnimatePresence, motion } from 'framer-motion';
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
-import { useDeviceType } from '../../hooks/useDeviceType';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';
 import { usePersistedState } from '../../hooks/usePersistedState';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
-import { GradientText, PageLayout, ScrollToTopButton } from '../../components/ui';
-import { ProviderLogoLink } from '../../components/detail/ProviderLogoLink';
+import { PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
-import { SwipeableEpisodeRow } from '../../components/ui';
-import { FillerChip } from '../../components/ui/FillerChip';
-import { EpisodeDiscussionButton } from '../../components/Discussion';
-import {
-  buildFillerLookup,
-  fillerLookupKey,
-  readFillerCacheSync,
-} from '../../services/animeFillerService';
-import { chipLabel, chipColor } from '../../utils/episodeChips';
-import { SortBar } from './SortBar';
-import { ProviderFilter } from './ProviderFilter';
+import { buildFillerLookup, readFillerCacheSync } from '../../services/animeFillerService';
+import { RewatchToggle } from './components/RewatchToggle';
+import { WatchNextEmptyState } from './components/WatchNextEmptyState';
+import { WatchNextEpisodeList } from './components/WatchNextEpisodeList';
+import { WatchNextHeader } from './components/WatchNextHeader';
 import './WatchNextPage.css';
 
 export const WatchNextPage = () => {
   const { user = null } = useAuth() || {};
   const { seriesList } = useSeriesList();
-  const { currentTheme } = useTheme();
   const [searchParams] = useSearchParams();
 
   const [, startTransition] = useTransition();
@@ -67,19 +47,7 @@ export const WatchNextPage = () => {
   const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
   // Swipe hook
-  const {
-    swipingEpisodes,
-    completingEpisodes,
-    hiddenEpisodes,
-    dragOffsets,
-    swipeDirections,
-    getEpisodeKey,
-    handleSwipeDragStart,
-    handleSwipeDrag,
-    handleSwipeCleanup,
-    handleEpisodeComplete,
-  } = useWatchNextSwipe({ user, seriesList });
-  const navigate = useNavigate();
+  const swipe = useWatchNextSwipe({ user, seriesList });
 
   // Extract unique providers from watchlist series
   const availableProviders = useMemo(() => {
@@ -126,18 +94,8 @@ export const WatchNextPage = () => {
     return map;
   }, [nextEpisodes, seriesList]);
 
-  const {
-    draggedIndex,
-    currentTouchIndex,
-    containerRef,
-    handleDragStart,
-    handleDragOver,
-    handleDrop,
-    handleTouchStart,
-    handleTouchMove,
-    handleTouchEnd,
-    watchlistOrder,
-  } = useEpisodeDragDrop({ nextEpisodes, user, editModeActive });
+  const dragDrop = useEpisodeDragDrop({ nextEpisodes, user, editModeActive });
+  const { containerRef, draggedIndex, watchlistOrder } = dragDrop;
 
   // Re-compute with actual watchlistOrder
   const actualNextEpisodes = useWatchNextEpisodes(
@@ -198,16 +156,6 @@ export const WatchNextPage = () => {
     }
   }, [showSwipeHint, actualNextEpisodes.length]);
 
-  const { isMobile } = useDeviceType();
-
-  const theme = {
-    primary: currentTheme.primary,
-    accent: currentTheme.accent,
-    text: currentTheme.text,
-    status: currentTheme.status,
-    background: currentTheme.background,
-  };
-
   return (
     <PageLayout
       style={{ height: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
@@ -217,155 +165,28 @@ export const WatchNextPage = () => {
         style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
       >
         {/* Header */}
-        <motion.header
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="watch-next-header"
-          style={{ background: `${currentTheme.background.default}90` }}
-        >
-          <div className="watch-next-header__top">
-            <div>
-              <GradientText
-                as="h1"
-                to={currentTheme.status.success}
-                style={{
-                  fontSize: '22px',
-                  fontWeight: 800,
-                  fontFamily: 'var(--font-display)',
-                  margin: 0,
-                }}
-              >
-                Als Nächstes
-              </GradientText>
-              <p
-                style={{
-                  color: currentTheme.text.secondary,
-                  fontSize: '14px',
-                  margin: '4px 0 0 0',
-                }}
-              >
-                {actualNextEpisodes.length} nächste Episoden
-              </p>
-            </div>
-
-            <div className="watch-next-header__actions">
-              {customOrderActive && (
-                <Tooltip title="Reihenfolge bearbeiten" arrow>
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      const newVal = !editModeActive;
-                      setEditModeActive(newVal);
-                    }}
-                    className={`watch-next-header__btn${editModeActive ? ' watch-next-header__btn--active' : ''}`}
-                    style={
-                      {
-                        background: editModeActive
-                          ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                          : `rgba(255,255,255,0.05)`,
-                        color: editModeActive
-                          ? currentTheme.text.secondary
-                          : currentTheme.text.primary,
-                        '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <Edit />
-                  </motion.button>
-                </Tooltip>
-              )}
-
-              <Tooltip title="Filter" arrow>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setShowFilter(!showFilter)}
-                  className={`watch-next-header__btn${showFilter ? ' watch-next-header__btn--active' : ''}`}
-                  style={
-                    {
-                      background: showFilter
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : `rgba(255,255,255,0.05)`,
-                      color: showFilter ? currentTheme.text.secondary : currentTheme.text.primary,
-                      '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
-                    } as React.CSSProperties
-                  }
-                >
-                  <FilterList />
-                </motion.button>
-              </Tooltip>
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <AnimatePresence>
-            {showFilter && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="watch-next-filter"
-              >
-                <input
-                  type="text"
-                  placeholder="Serie suchen..."
-                  value={filterInput}
-                  onChange={(e) => setFilterInput(e.target.value)}
-                  className="watch-next-filter__input"
-                  style={{ color: currentTheme.text.primary }}
-                />
-
-                <SortBar
-                  sortOption={sortOption}
-                  customOrderActive={customOrderActive}
-                  onSort={toggleSort}
-                  onToggleCustom={toggleCustomOrder}
-                  theme={theme}
-                />
-
-                <ProviderFilter
-                  providers={availableProviders}
-                  selected={providerFilter}
-                  onSelect={(p) => startTransition(() => setProviderFilter(p))}
-                  theme={theme}
-                />
-
-                {hasAnySubscription && (
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={() => startTransition(() => setOnlyMySubs((v) => !v))}
-                    style={{
-                      marginTop: 10,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      padding: '7px 12px',
-                      borderRadius: 999,
-                      border: `1px solid ${onlyMySubs ? currentTheme.primary : currentTheme.border.default}`,
-                      background: onlyMySubs
-                        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                        : 'rgba(255,255,255,0.04)',
-                      color: onlyMySubs ? currentTheme.text.secondary : currentTheme.text.primary,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                    }}
-                    aria-pressed={onlyMySubs}
-                  >
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: 3,
-                        background: onlyMySubs ? '#fff' : currentTheme.text.muted,
-                      }}
-                    />
-                    Nur meine Abos
-                  </motion.button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.header>
+        <WatchNextHeader
+          episodeCount={actualNextEpisodes.length}
+          customOrderActive={customOrderActive}
+          editModeActive={editModeActive}
+          onToggleEditMode={() => {
+            const newVal = !editModeActive;
+            setEditModeActive(newVal);
+          }}
+          showFilter={showFilter}
+          onToggleFilter={() => setShowFilter(!showFilter)}
+          filterInput={filterInput}
+          onFilterInputChange={setFilterInput}
+          sortOption={sortOption}
+          onSort={toggleSort}
+          onToggleCustomOrder={toggleCustomOrder}
+          availableProviders={availableProviders}
+          providerFilter={providerFilter}
+          onSelectProvider={(p) => startTransition(() => setProviderFilter(p))}
+          hasAnySubscription={hasAnySubscription}
+          onlyMySubs={onlyMySubs}
+          onToggleOnlyMySubs={() => startTransition(() => setOnlyMySubs((v) => !v))}
+        />
 
         {/* Scrollable Content */}
         <div
@@ -376,300 +197,24 @@ export const WatchNextPage = () => {
         >
           {/* Rewatch Toggle */}
           {activeRewatchCount > 0 && (
-            <motion.div
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowRewatches(!showRewatches)}
-              className="watch-next-rewatch-toggle"
-              style={{
-                background: showRewatches
-                  ? `${currentTheme.accent || '#f59e0b'}20`
-                  : `${currentTheme.accent || '#f59e0b'}10`,
-                border: `1px solid ${currentTheme.accent || '#f59e0b'}${showRewatches ? '50' : '30'}`,
-              }}
-            >
-              <div className="watch-next-rewatch-toggle__content">
-                <div className="watch-next-rewatch-toggle__label">
-                  <Repeat style={{ fontSize: '15px', color: currentTheme.accent || '#f59e0b' }} />
-                  {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
-                </div>
-                {showRewatches ? (
-                  <ExpandLess style={{ fontSize: '18px', color: currentTheme.text.muted }} />
-                ) : (
-                  <ExpandMore style={{ fontSize: '18px', color: currentTheme.text.muted }} />
-                )}
-              </div>
-            </motion.div>
+            <RewatchToggle
+              activeRewatchCount={activeRewatchCount}
+              showRewatches={showRewatches}
+              onToggle={() => setShowRewatches(!showRewatches)}
+            />
           )}
 
           {actualNextEpisodes.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="watch-next-empty"
-            >
-              <div
-                className="watch-next-empty__icon"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.status.success}15)`,
-                }}
-              >
-                <PlayCircle style={{ fontSize: '44px', color: currentTheme.primary }} />
-              </div>
-              <h2
-                style={{
-                  fontSize: '18px',
-                  fontWeight: 700,
-                  color: currentTheme.text.primary,
-                  margin: '0 0 8px 0',
-                }}
-              >
-                Keine neuen Episoden
-              </h2>
-              <p
-                style={{
-                  fontSize: '15px',
-                  color: currentTheme.text.muted,
-                  margin: 0,
-                  lineHeight: 1.5,
-                }}
-              >
-                Schaue eine Serie an um hier
-                <br />
-                die nächsten Episoden zu sehen!
-              </p>
-            </motion.div>
+            <WatchNextEmptyState />
           ) : (
-            <div className="watch-next-episodes">
-              <AnimatePresence mode="popLayout">
-                {actualNextEpisodes
-                  .filter((episode) => !hiddenEpisodes.has(getEpisodeKey(episode)))
-                  .map((episode, index, arr) => {
-                    const episodeKey = getEpisodeKey(episode);
-                    // Show separator between rewatches and normal episodes
-                    const prevEpisode = index > 0 ? arr[index - 1] : null;
-                    const showSeparator = prevEpisode?.isRewatch && !episode.isRewatch;
-                    // seasonNumber is 0-based here; lookup expects 1-based.
-                    const fillerInfo = fillerByEpisode
-                      .get(episode.seriesId)
-                      ?.get(
-                        fillerLookupKey((episode.seasonNumber ?? 0) + 1, episode.episodeNumber)
-                      );
-                    return (
-                      <div key={episodeKey} style={{ position: 'relative' }}>
-                        {showSwipeHint && index === 0 && (
-                          <div className="swipe-hint-overlay">
-                            <span className="swipe-hint-label">
-                              <ChevronLeft style={{ fontSize: '16px' }} />
-                              Swipen
-                            </span>
-                          </div>
-                        )}
-                        {showSeparator && (
-                          <div
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '8px 4px 4px',
-                            }}
-                          >
-                            <div
-                              style={{
-                                flex: 1,
-                                height: '1px',
-                                background: `linear-gradient(90deg, ${currentTheme.status.success}40, transparent)`,
-                              }}
-                            />
-                            <span
-                              style={{
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                color: currentTheme.status.success,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              Weiterschauen
-                            </span>
-                            <div
-                              style={{
-                                flex: 1,
-                                height: '1px',
-                                background: `linear-gradient(90deg, transparent, ${currentTheme.status.success}40)`,
-                              }}
-                            />
-                          </div>
-                        )}
-                        <SwipeableEpisodeRow
-                          itemKey={episodeKey}
-                          poster={episode.poster}
-                          posterAlt={episode.seriesTitle}
-                          accentColor={
-                            episode.isRewatch ? currentTheme.accent : currentTheme.primary
-                          }
-                          isCompleting={completingEpisodes.has(episodeKey)}
-                          isSwiping={swipingEpisodes.has(episodeKey)}
-                          dragOffset={dragOffsets[episodeKey] || 0}
-                          swipeDirection={swipeDirections[episodeKey]}
-                          onSwipeStart={() => handleSwipeDragStart(episodeKey)}
-                          onSwipeDrag={(offset) =>
-                            handleSwipeDrag(episodeKey, { offset: { x: offset, y: 0 } } as never)
-                          }
-                          onSwipeEnd={() => handleSwipeCleanup(episodeKey)}
-                          onComplete={(dir) => handleEpisodeComplete(episode, dir)}
-                          onPosterClick={() =>
-                            navigate(
-                              `/episode/${episode.seriesId}/s/${episode.seasonNumber + 1}/e/${episode.episodeNumber}`
-                            )
-                          }
-                          posterOverlay={
-                            episode.providerLogo ? (
-                              <ProviderLogoLink
-                                src={`https://image.tmdb.org/t/p/w92${episode.providerLogo}`}
-                                name={episode.providerName || ''}
-                                searchTitle={episode.seriesTitle}
-                                style={{
-                                  position: 'absolute',
-                                  bottom: -2,
-                                  right: -2,
-                                  width: 26,
-                                  height: 26,
-                                  borderRadius: 6,
-                                  objectFit: 'cover',
-                                  boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                                  border: '1.5px solid rgba(15,20,35,1)',
-                                }}
-                              />
-                            ) : undefined
-                          }
-                          index={index}
-                          isEditMode={editModeActive}
-                          draggedIndex={draggedIndex}
-                          currentTouchIndex={currentTouchIndex}
-                          onDragStart={handleDragStart}
-                          onDragOver={handleDragOver}
-                          onDrop={handleDrop}
-                          onTouchStart={handleTouchStart}
-                          onTouchMove={handleTouchMove}
-                          onTouchEnd={handleTouchEnd}
-                          content={
-                            <>
-                              <h2
-                                style={{
-                                  fontSize: isMobile ? '13px' : '16px',
-                                  fontWeight: 700,
-                                  margin: '0 0 2px 0',
-                                  letterSpacing: '-0.01em',
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {episode.seriesTitle}
-                              </h2>
-                              <p
-                                style={{
-                                  fontSize: isMobile ? '11px' : '14px',
-                                  fontWeight: 500,
-                                  margin: 0,
-                                  color: episode.chipType
-                                    ? chipColor(episode.chipType)
-                                    : episode.isRewatch
-                                      ? currentTheme.accent
-                                      : currentTheme.status.success,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                S{(episode.seasonNumber ?? 0) + 1} E{episode.episodeNumber}
-                                {episode.isRewatch
-                                  ? ` \u2022 ${episode.currentWatchCount}x \u2192 ${episode.targetWatchCount}x`
-                                  : episode.episodeName
-                                    ? ` \u2022 ${episode.episodeName}`
-                                    : ''}
-                                {episode.chipType && (
-                                  <span
-                                    style={{
-                                      fontSize: '11px',
-                                      fontWeight: 700,
-                                      padding: '1px 5px',
-                                      borderRadius: 4,
-                                      marginLeft: 6,
-                                      background: `${chipColor(episode.chipType)}20`,
-                                      color: chipColor(episode.chipType),
-                                      textTransform: 'uppercase',
-                                      letterSpacing: '0.3px',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {chipLabel(episode.chipType)}
-                                  </span>
-                                )}
-                                {fillerInfo && (
-                                  <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
-                                    <FillerChip
-                                      filler={fillerInfo.filler}
-                                      recap={fillerInfo.recap}
-                                      variant="label"
-                                    />
-                                  </span>
-                                )}
-                              </p>
-                              <p
-                                style={{
-                                  fontSize: isMobile ? '10px' : '13px',
-                                  margin: '2px 0 0 0',
-                                  color: currentTheme.text.muted,
-                                  whiteSpace: 'nowrap',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                }}
-                              >
-                                {episode.remainingEpisodes > 0
-                                  ? `${episode.currentSeasonOf} \u00b7 ${episode.remainingEpisodes} \u00fcbrig${episode.estimatedMinutesLeft >= 60 ? ` \u00b7 ~${Math.round(episode.estimatedMinutesLeft / 60)}h` : episode.estimatedMinutesLeft > 0 ? ` \u00b7 ~${episode.estimatedMinutesLeft}min` : ''}`
-                                  : episode.isRewatch
-                                    ? episode.currentSeasonOf
-                                    : 'Wartet auf neue Folgen'}
-                              </p>
-                              <div
-                                style={{
-                                  marginTop: '6px',
-                                  height: '3px',
-                                  background: 'rgba(255,255,255,0.08)',
-                                  borderRadius: '2px',
-                                  overflow: 'hidden',
-                                  position: 'relative',
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    height: '100%',
-                                    width: `${episode.progress}%`,
-                                    background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                                    transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                  }}
-                                />
-                              </div>
-                            </>
-                          }
-                          action={
-                            <EpisodeDiscussionButton
-                              seriesId={episode.seriesId}
-                              seasonNumber={episode.seasonNumber + 1}
-                              episodeNumber={episode.episodeNumber}
-                            />
-                          }
-                        />
-                      </div>
-                    );
-                  })}
-              </AnimatePresence>
-            </div>
+            <WatchNextEpisodeList
+              episodes={actualNextEpisodes}
+              fillerByEpisode={fillerByEpisode}
+              showSwipeHint={showSwipeHint}
+              editModeActive={editModeActive}
+              swipe={swipe}
+              dragDrop={dragDrop}
+            />
           )}
 
           <div className="watch-next-bottom-pad" />

@@ -3,11 +3,11 @@ import 'firebase/compat/database';
 import { useState } from 'react';
 import type { PanInfo } from 'framer-motion';
 import type { Series } from '../../types/Series';
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
 import { trackEpisodeWatched } from '../../firebase/analytics';
 import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
@@ -107,15 +107,19 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       const prevLast: number = val.l || 0;
       const prevWatched: number = val.w || 0;
 
+      // Primärer Mark-Write über die persistente Offline-Queue. serienVersion-
+      // Bump gehört laut Write-Regel in jede Watch-Update-Map (fehlte hier
+      // bisher; ohne ihn sehen andere Geräte den Mark nicht).
       const updates: Record<string, unknown> = {
         [`${epPath}/w`]: 1,
         [`${epPath}/c`]: prevCount + 1,
         [`${epPath}/l`]: nowUnix,
+        [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
       };
       if (!episode.isRewatch && !prevFirst) {
         updates[`${epPath}/f`] = nowUnix;
       }
-      await db.ref().update(updates);
+      await applyUserUpdate(uid, updates, `${episode.seriesTitle} ${label} (Watch-Next-Swipe)`);
 
       hapticSuccess();
 
@@ -143,11 +147,6 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
         },
         onCommit: async () => {
           // Side-Effects erst nach Ablauf des Undo-Fensters
-          await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
-          const { updateEpisodeCounters } =
-            await import('../../features/badges/minimalActivityLogger');
-          await updateEpisodeCounters(uid, episode.isRewatch || false, episode.airDate);
-
           trackEpisodeWatched(
             series.title || series.name || 'Unbekannte Serie',
             episode.seasonIndex + 1,
@@ -161,17 +160,19 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
             }
           );
 
-          WatchActivityService.logEpisodeWatch(
-            uid,
-            series.id,
-            series.title || series.name || 'Unbekannte Serie',
-            episode.seasonIndex + 1,
-            episode.episodeIndex + 1,
-            episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-            episode.isRewatch || false,
-            series.genre?.genres,
-            series.provider?.provider?.map((p) => p.name)
-          );
+          await runEpisodeWatchFanout({
+            userId: uid,
+            seriesId: series.id,
+            seriesTitle: series.title || series.name || 'Unbekannte Serie',
+            seasonNumber: episode.seasonIndex + 1,
+            episodeNumber: episode.episodeIndex + 1,
+            runtimeMinutes:
+              episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+            isRewatch: episode.isRewatch || false,
+            genres: series.genre?.genres,
+            providers: series.provider?.provider?.map((p) => p.name),
+            episodeAirDate: episode.airDate,
+          });
         },
       });
     } catch (error) {

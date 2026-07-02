@@ -39,7 +39,7 @@ export const useMangaLiveData = ({
     if (!anilistId) return;
     getMangaById(anilistId)
       .then(setAnilistData)
-      .catch(() => {});
+      .catch((error) => console.error('AniList-Daten konnten nicht geladen werden:', error));
   }, [anilistId]);
 
   // RELEASING und HIATUS — letztere koennen trotzdem neue Chapter bekommen
@@ -54,14 +54,14 @@ export const useMangaLiveData = ({
     if (!user || !mangaTitle || !shouldFetchLive) return;
     getMangaDexInfo(mangaTitle)
       .then(setMangadexInfo)
-      .catch(() => {});
+      .catch(() => {}); // bewusst still: MangaDex-Livedaten sind optionale Anreicherung
   }, [user, mangaTitle, shouldFetchLive]);
 
   useEffect(() => {
     if (!mangaTitle || !shouldFetchLive) return;
     getMangaDexChapterDates(mangaTitle)
       .then(setChapterInfo)
-      .catch(() => {});
+      .catch(() => {}); // bewusst still: MangaDex-Livedaten sind optionale Anreicherung
   }, [mangaTitle, shouldFetchLive]);
 
   // latestChapterAvailable + lastReleaseDate in Firebase persistieren. Listen-
@@ -88,6 +88,7 @@ export const useMangaLiveData = ({
         .database()
         .ref(`users/${user.uid}/manga/${anilistId}`)
         .update(updates)
+        // bewusst still: Persistieren ist Best-effort, nächster Besuch versucht es erneut
         .catch(() => {});
     }
   }, [

@@ -143,6 +143,15 @@ export function generateColorPalette(primaryColor: string) {
 }
 
 /**
+ * Gibt die relative Luminanz (WCAG 2.1, 0..1) einer Hex-Farbe zurück.
+ * 0 = schwarz, 1 = weiß. Bei ungültigem Hex wird 0 zurückgegeben.
+ */
+export function getRelativeLuminance(hex: string): number {
+  const rgb = hexToRgb(hex);
+  return rgb ? getLuminance(rgb) : 0;
+}
+
+/**
  * Erstellt automatisch barrierefreie Textfarben
  */
 export function createAccessibleTextColors(backgroundColor: string) {
@@ -169,14 +178,88 @@ export function createAccessibleTextColors(backgroundColor: string) {
 // --- Smarte Theme-Normalisierung ---
 
 /**
+ * Primary-Lesbarkeits-Guard: Stellt sicher, dass die Primärfarbe mindestens
+ * `minRatio` Kontrast (WCAG-Kontrastverhältnis) gegen den Hintergrund hat.
+ * Je nach Hintergrund-Luminanz wird die Primärfarbe schrittweise aufgehellt
+ * (dunkler Hintergrund) oder abgedunkelt (heller Hintergrund), bis der
+ * Mindestkontrast erreicht ist. GradientText und Überschriften rendern die
+ * Primärfarbe roh – dieser Guard schützt sie vor Unlesbarkeit.
+ * Gibt bei bereits ausreichendem Kontrast die Farbe unverändert zurück.
+ */
+export function ensurePrimaryReadability(
+  primaryColor: string,
+  backgroundColor: string,
+  minRatio: number = 3
+): string {
+  try {
+    if (getContrastRatio(primaryColor, backgroundColor) >= minRatio) {
+      return primaryColor;
+    }
+    const bgLuminance = getRelativeLuminance(backgroundColor);
+    // Dunkler Hintergrund → aufhellen, heller Hintergrund → abdunkeln
+    const step = bgLuminance > 0.5 ? -5 : 5;
+    const { h, s, l } = hexToHsl(primaryColor);
+    let newL = l;
+    let adjusted = primaryColor;
+    while (newL > 0 && newL < 100) {
+      newL = Math.min(100, Math.max(0, newL + step));
+      adjusted = hslToHex(h, s, newL);
+      if (getContrastRatio(adjusted, backgroundColor) >= minRatio) {
+        return adjusted;
+      }
+    }
+    // Bestmögliche Annäherung, falls der Zielkontrast nie erreicht wird
+    return adjusted;
+  } catch {
+    return primaryColor;
+  }
+}
+
+/**
+ * Glass-Schutz-Klemme: Alle --glass-*-Tokens des Design-Systems sind
+ * weiß-alpha (rgba(255,255,255,…)). Auf einem hellen Hintergrund kollabiert
+ * diese weiß-alpha-Glassprache – Glass-Flächen, Borders und Frosted-Surfaces
+ * werden unsichtbar bzw. verschmelzen mit dem Hintergrund. Deshalb wird ein
+ * heller Hintergrund (relative Luminanz > 0.5) fürs Rendering auf eine
+ * abgedunkelte Variante geklemmt (Ziel-Luminanz ~0.35), Hue und Sättigung
+ * bleiben erhalten. Gespeicherte Configs bleiben unangetastet.
+ */
+export function clampBackgroundForGlass(
+  backgroundColor: string,
+  maxLuminance: number = 0.35
+): string {
+  try {
+    if (getRelativeLuminance(backgroundColor) <= 0.5) {
+      return backgroundColor;
+    }
+    const { h, s } = hexToHsl(backgroundColor);
+    let { l } = hexToHsl(backgroundColor);
+    let clamped = backgroundColor;
+    while (l > 0) {
+      l = Math.max(0, l - 5);
+      clamped = hslToHex(h, s, l);
+      if (getRelativeLuminance(clamped) <= maxLuminance) {
+        return clamped;
+      }
+    }
+    return clamped;
+  } catch {
+    return backgroundColor;
+  }
+}
+
+/**
  * Normalisiert Farben für optimale Darstellung – wird beim Rendern angewendet,
  * der gespeicherte Config bleibt unverändert.
  *
  * Constraints:
- * 1. Background: max Luminance L=22% (Glow-Effekte brauchen dunklen BG)
- * 2. Primary: min Sättigung 40% (für sichtbare Glow-Effekte)
- * 3. Primary: min Kontrast 3.5:1 gegen Background (Lesbarkeit)
- * 4. Surface: min 3% heller als Background (Tiefenwirkung)
+ * 1. Background: heller Hintergrund (rel. Luminanz > 0.5) wird für die
+ *    weiß-alpha --glass-*-Tokens auf ~0.35 Luminanz geklemmt (Glass-Schutz)
+ * 2. Background: max Luminance L=22% (Glow-Effekte brauchen dunklen BG)
+ * 3. Primary: min Sättigung 40% (für sichtbare Glow-Effekte)
+ * 4. Primary: min Kontrast 3.5:1 gegen Background (Lesbarkeit; GradientText
+ *    und Überschriften nutzen die Primärfarbe roh)
+ * 5. Surface: min 3% heller als Background (Tiefenwirkung)
  */
 export function normalizeThemeColors(config: {
   primaryColor: string;
@@ -186,10 +269,14 @@ export function normalizeThemeColors(config: {
   textColor?: string;
 }): typeof config {
   let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
-  if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#00fed7';
-  if (!backgroundColor || !/^#?[0-9a-fA-F]{6}$/.test(backgroundColor)) backgroundColor = '#06090f';
+  if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#00d123';
+  if (!backgroundColor || !/^#?[0-9a-fA-F]{6}$/.test(backgroundColor)) backgroundColor = '#000000';
 
-  // 1. Background darf maximal L=22% haben (cinematic dark look)
+  // 1. Glass-Schutz: heller Hintergrund kollabiert die weiß-alpha
+  //    --glass-*-Tokens → fürs Rendering auf ~0.35 Luminanz abdunkeln
+  backgroundColor = clampBackgroundForGlass(backgroundColor);
+
+  // 2. Background darf maximal L=22% haben (cinematic dark look)
   try {
     const bgHsl = hexToHsl(backgroundColor);
     if (bgHsl.l > 22) {
@@ -199,7 +286,7 @@ export function normalizeThemeColors(config: {
     /* ignore */
   }
 
-  // 2. Primary braucht min 40% Sättigung für sichtbare Glow-Effekte
+  // 3. Primary braucht min 40% Sättigung für sichtbare Glow-Effekte
   try {
     const pHsl = hexToHsl(primaryColor);
     if (pHsl.s < 40) {
@@ -209,26 +296,9 @@ export function normalizeThemeColors(config: {
     /* ignore */
   }
 
-  // 3. Primary muss min 3.5:1 Kontrast gegen Background haben
-  try {
-    let contrast = getContrastRatio(primaryColor, backgroundColor);
-    if (contrast < 3.5) {
-      const pHsl = hexToHsl(primaryColor);
-      let newL = pHsl.l;
-      while (contrast < 3.5 && newL < 90) {
-        newL = Math.min(90, newL + 5);
-        const adjusted = hslToHex(pHsl.h, pHsl.s, newL);
-        const newContrast = getContrastRatio(adjusted, backgroundColor);
-        if (newContrast >= 3.5) {
-          primaryColor = adjusted;
-          break;
-        }
-        contrast = newContrast;
-      }
-    }
-  } catch {
-    /* ignore */
-  }
+  // 4. Primary-Lesbarkeits-Guard: min 3.5:1 Kontrast gegen Background
+  //    (aufhellen bei dunklem, abdunkeln bei hellem Hintergrund)
+  primaryColor = ensurePrimaryReadability(primaryColor, backgroundColor, 3.5);
 
   return { ...config, primaryColor, backgroundColor, surfaceColor, accentColor };
 }

@@ -7,6 +7,7 @@ import { Close, History, Search, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 export interface SearchSuggestionsProps {
   popularSearches: string[];
@@ -46,7 +47,7 @@ export const SearchSuggestions = memo(
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.25 + index * 0.03 }}
                 whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => onSelectTerm(term)}
                 className="search-popular-tag"
                 style={{
@@ -98,7 +99,7 @@ export const SearchSuggestions = memo(
                   </div>
                   <motion.div
                     whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemoveRecent(term);

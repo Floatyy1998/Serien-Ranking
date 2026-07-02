@@ -1,6 +1,7 @@
 import { ExpandMore } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 interface YearPickerButtonProps {
   selectedYear: number;
@@ -31,7 +32,7 @@ export const WatchJourneyYearPicker: React.FC<YearPickerButtonProps> & {
 
   return (
     <motion.button
-      whileTap={{ scale: 0.95 }}
+      whileTap={tapScale}
       onClick={toggleYearPicker}
       className={`wj-year-btn ${isEmptyVariant ? 'wj-year-btn--empty' : ''}`}
       style={
@@ -89,7 +90,7 @@ const YearPickerDropdown: React.FC<YearPickerDropdownProps> = ({
             {availableYears.map((year) => (
               <motion.button
                 key={year}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => selectYear(year)}
                 className="wj-year-option"
                 style={{

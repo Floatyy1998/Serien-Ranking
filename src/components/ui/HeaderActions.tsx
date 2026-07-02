@@ -23,9 +23,14 @@ export const HeaderActions = React.memo(function HeaderActions({
     <motion.button
       whileTap={{ scale: 0.9 }}
       onClick={onNotificationsOpen}
+      aria-label={
+        totalUnreadBadge > 0
+          ? `Benachrichtigungen öffnen, ${totalUnreadBadge} ungelesen`
+          : 'Benachrichtigungen öffnen'
+      }
       style={{
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         borderRadius: '50%',
         background: `${currentTheme.primary}1A`,
         border: `1px solid ${currentTheme.primary}33`,
@@ -61,9 +66,10 @@ export const HeaderActions = React.memo(function HeaderActions({
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => navigate('/profile')}
+        aria-label="Profil und weitere Bereiche öffnen"
         style={{
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           borderRadius: '50%',
           background: photoURL ? `url(${photoURL}) center/cover` : `${currentTheme.primary}30`,
           border: `2px solid ${currentTheme.primary}`,

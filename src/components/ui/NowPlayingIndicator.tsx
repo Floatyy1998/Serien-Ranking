@@ -24,7 +24,7 @@ const STAGGER_SECONDS = 0.22;
 export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
   ({ color, size = 'sm', position = 'top-left', label = 'Aktuell am Schauen' }) => {
     const prefersReducedMotion = useReducedMotion();
-    const tint = color ?? 'var(--theme-primary, #00fed7)';
+    const tint = color ?? 'var(--theme-primary, #00d123)';
     const dim = size === 'sm' ? 22 : 28;
     const barWidth = size === 'sm' ? 3 : 4;
     const gap = size === 'sm' ? 2 : 3;
@@ -56,8 +56,8 @@ export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
           borderRadius: 6,
           background: `linear-gradient(135deg, color-mix(in srgb, ${tint} 22%, rgba(10,14,22,0.85)), color-mix(in srgb, ${tint} 8%, rgba(10,14,22,0.85)))`,
           boxShadow: `0 2px 8px rgba(0,0,0,0.45), 0 0 12px color-mix(in srgb, ${tint} 40%, transparent)`,
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           border: `1px solid color-mix(in srgb, ${tint} 35%, transparent)`,
           pointerEvents: 'none',
           zIndex: 4,

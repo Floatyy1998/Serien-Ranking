@@ -28,7 +28,7 @@ export const GradientText: React.FC<GradientTextProps> = ({
   const themeContext = useTheme();
   const currentTheme = themeContext?.currentTheme ?? null;
 
-  const fromColor = from || currentTheme?.primary || '#00fed7';
+  const fromColor = from || currentTheme?.primary || '#00d123';
   const toColor = to || currentTheme?.accent || '#8b5cf6';
   const midColor = currentTheme?.accent || '#8b5cf6';
 
@@ -53,7 +53,7 @@ export const GradientText: React.FC<GradientTextProps> = ({
         WebkitTextFillColor: 'transparent',
         backgroundClip: 'text',
         filter:
-          'drop-shadow(0 0 12px color-mix(in srgb, var(--theme-primary, #00fed7) 25%, transparent))',
+          'drop-shadow(0 0 12px color-mix(in srgb, var(--theme-primary, #00d123) 25%, transparent))',
         ...style,
       }}
     >

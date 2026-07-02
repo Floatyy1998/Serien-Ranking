@@ -78,7 +78,8 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         position: 'fixed',
         inset: 0,
         background: 'rgba(10, 14, 26, 0.75)',
-        backdropFilter: 'blur(12px)',
+        backdropFilter: 'var(--blur-md)',
+        WebkitBackdropFilter: 'var(--blur-md)',
         zIndex: 1000,
         display: 'flex',
         alignItems: 'center',
@@ -94,7 +95,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
         style={{
           background: currentTheme.background.card || currentTheme.background.default,
           borderRadius: '20px',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid var(--glass-border-light)',
           padding: '24px',
           width: '100%',
           maxWidth: '360px',
@@ -135,8 +136,8 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             style={{
               width: '100%',
               padding: '10px 12px',
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-medium)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '12px',
               color: currentTheme.text.primary,
               fontSize: '15px',
@@ -172,8 +173,8 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             style={{
               width: '100%',
               padding: '10px 12px',
-              background: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-medium)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '12px',
               color: currentTheme.text.primary,
               fontSize: '15px',
@@ -220,14 +221,15 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             style={{
               flex: 1,
               padding: '12px',
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-medium)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '12px',
               color: currentTheme.text.primary,
               fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
-              backdropFilter: 'blur(8px)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
@@ -247,7 +249,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               background:
                 episodesToMark > 0
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                  : 'rgba(255, 255, 255, 0.05)',
+                  : 'var(--glass-medium)',
               border: 'none',
               borderRadius: '12px',
               color: episodesToMark > 0 ? 'white' : currentTheme.text.muted,

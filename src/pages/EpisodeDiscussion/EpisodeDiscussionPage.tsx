@@ -104,8 +104,8 @@ export const EpisodeDiscussionPage = memo(() => {
               justifyContent: 'center',
               gap: '16px',
               background: `${currentTheme.background.default}f0`,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'var(--blur-lg)',
+              WebkitBackdropFilter: 'var(--blur-lg)',
             }}
           >
             <motion.div

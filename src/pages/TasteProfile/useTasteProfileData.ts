@@ -328,7 +328,7 @@ export const useTasteProfileData = () => {
 
     calculateWatchJourney(user.uid, year)
       .then(setJourneyData)
-      .catch(() => {});
+      .catch((error) => console.error('Watch-Journey konnte nicht geladen werden:', error));
 
     getWatchStreak(user.uid, year)
       .then((streak) => {
@@ -339,7 +339,7 @@ export const useTasteProfileData = () => {
           });
         }
       })
-      .catch(() => {});
+      .catch((error) => console.error('Watch-Streak konnte nicht geladen werden:', error));
   }, [user?.uid]);
 
   // Pre-compute stats from series/movie lists

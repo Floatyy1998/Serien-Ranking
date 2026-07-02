@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 interface Tab {
   id: string;
@@ -49,8 +50,8 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
         borderRadius: '18px',
         padding: '4px',
         border: `1px solid ${currentTheme.border.default}`,
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        backdropFilter: 'var(--blur-md)',
+        WebkitBackdropFilter: 'var(--blur-md)',
         ...style,
       }}
     >
@@ -63,7 +64,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             role="tab"
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => onTabChange(tab.id)}
             style={{
               flex: 1,

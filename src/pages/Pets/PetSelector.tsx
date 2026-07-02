@@ -7,6 +7,7 @@ import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
+import { tapScale } from '../../lib/motion';
 
 interface PetSelectorProps {
   pets: Pet[];
@@ -36,7 +37,7 @@ export const PetSelector = memo(function PetSelector({
       {pets.map((p, idx) => (
         <motion.button
           key={p.id}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => onSelectPet(idx)}
           className="pet-selector-btn"
           style={{
@@ -61,7 +62,7 @@ export const PetSelector = memo(function PetSelector({
       {/* Add new pet */}
       {canAddNewPet ? (
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           whileHover={{ scale: 1.05 }}
           onClick={onOpenCreateModal}
           className="pet-selector-add-btn"

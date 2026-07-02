@@ -14,6 +14,7 @@ import {
   GradientText,
   LoadingSpinner,
 } from '../../components/ui';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface UserSearchResult {
   uid: string;
@@ -58,30 +59,49 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         // (usernameLower) und einmal auf den lowercase-Anzeigenamen
         // (displayNameLower). Damit findet "flo" sowohl den Slug "Flo" als
         // auch den User dessen Slug "Spixi" ist, aber displayName "Flo"
-        // lautet. Beide Backfill-Felder werden vom Backend gepflegt, neue
-        // Writes (Register / Profile-Edit) schreiben sie selbst.
+        // lautet. Gesucht wird im leichten userSearchIndex-Knoten (der
+        // users-Root ist unter den geh\u00e4rteten Rules nicht mehr lesbar);
+        // solange Rules/Backfill noch nicht deployt sind, greift der
+        // Legacy-Fallback auf den users-Root.
         const query = searchQuery.toLowerCase();
         const endKey = query + '\uf8ff';
-        const ref = firebase.database().ref('users');
-        const [byUsername, byDisplayName] = await Promise.all([
-          ref
-            .orderByChild('usernameLower')
-            .startAt(query)
-            .endAt(endKey)
-            .limitToFirst(20)
-            .once('value'),
-          ref
-            .orderByChild('displayNameLower')
-            .startAt(query)
-            .endAt(endKey)
-            .limitToFirst(20)
-            .once('value'),
-        ]);
-        const merged: Record<string, Record<string, unknown>> = {};
-        for (const snap of [byUsername, byDisplayName]) {
-          const v = snap.val() as Record<string, Record<string, unknown>> | null;
-          if (!v) continue;
-          for (const [uid, data] of Object.entries(v)) merged[uid] = data;
+        const runPrefixQueries = async (path: string) => {
+          const ref = firebase.database().ref(path);
+          const [byUsername, byDisplayName] = await Promise.all([
+            ref
+              .orderByChild('usernameLower')
+              .startAt(query)
+              .endAt(endKey)
+              .limitToFirst(20)
+              .once('value'),
+            ref
+              .orderByChild('displayNameLower')
+              .startAt(query)
+              .endAt(endKey)
+              .limitToFirst(20)
+              .once('value'),
+          ]);
+          const result: Record<string, Record<string, unknown>> = {};
+          for (const snap of [byUsername, byDisplayName]) {
+            const v = snap.val() as Record<string, Record<string, unknown>> | null;
+            if (!v) continue;
+            for (const [uid, data] of Object.entries(v)) result[uid] = data;
+          }
+          return result;
+        };
+
+        let merged: Record<string, Record<string, unknown>> = {};
+        try {
+          merged = await runPrefixQueries('userSearchIndex');
+        } catch {
+          // Alte Rules: userSearchIndex existiert/erlaubt noch nichts.
+        }
+        if (Object.keys(merged).length === 0) {
+          try {
+            merged = await runPrefixQueries('users');
+          } catch {
+            // Neue Rules: users-Root nicht mehr lesbar \u2014 Index ist die Quelle.
+          }
         }
         const users = Object.keys(merged).length > 0 ? merged : null;
         if (!users) {
@@ -311,7 +331,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 <motion.button
                   key={result.uid}
                   whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={tapScaleSmall}
                   onClick={() => handleSendRequest(result)}
                   disabled={result.isAlreadyFriend || result.hasPendingRequest || sendingRequest}
                   style={{

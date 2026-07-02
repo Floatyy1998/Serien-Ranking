@@ -199,8 +199,9 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.7, type: 'spring' }}
           style={{
-            background: 'rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(10px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             borderRadius: '20px',
             padding: '10px 25px',
             marginTop: '15px',

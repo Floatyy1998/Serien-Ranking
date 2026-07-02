@@ -25,6 +25,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { trackRegister } from '../../firebase/analytics';
+import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -87,6 +88,13 @@ export const RegisterPage = () => {
           onboardingComplete: false,
         });
 
+        // Such-Index spiegeln (best-effort, wirft nie) — der Login-Self-Heal
+        // im authProvider kann diesen Write racen und ihn verpassen.
+        await syncUserSearchIndex(userCredential.user.uid, {
+          username,
+          displayName: username,
+        });
+
         // Send verification email
         await userCredential.user.sendEmailVerification();
         trackRegister('email');
@@ -112,7 +120,7 @@ export const RegisterPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'var(--theme-bg-default, #06090f)',
+        background: 'var(--theme-bg-default, #000000)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -174,9 +182,10 @@ export const RegisterPage = () => {
           <Paper
             elevation={0}
             sx={{
-              background: 'rgba(255, 255, 255, 0.04)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-light)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '16px',
               p: 4,
               boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',

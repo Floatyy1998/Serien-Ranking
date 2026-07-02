@@ -9,11 +9,11 @@ import CompareArrows from '@mui/icons-material/CompareArrows';
 import Person from '@mui/icons-material/Person';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Close from '@mui/icons-material/Close';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
+import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface FriendProfile {
   photoURL?: string;
@@ -36,13 +36,15 @@ export const TasteMatchCard: React.FC = () => {
       await Promise.all(
         friends.map(async (friend) => {
           try {
-            const snapshot = await firebase.database().ref(`users/${friend.uid}`).once('value');
-            if (snapshot.exists()) {
-              const data = snapshot.val();
+            // Punkt-Reads statt Vollknoten-Read: users/$other ist unter den
+            // gehärteten Rules nicht mehr komplett lesbar — die drei genutzten
+            // Felder bleiben einzeln lesbar.
+            const fields = await fetchPublicUserFields(friend.uid);
+            if (fields.username || fields.displayName || fields.photoURL) {
               profiles[friend.uid] = {
-                photoURL: data.photoURL,
-                displayName: data.displayName,
-                username: data.username,
+                photoURL: fields.photoURL || undefined,
+                displayName: fields.displayName || undefined,
+                username: fields.username || undefined,
               };
             }
           } catch {
@@ -127,6 +129,8 @@ export const TasteMatchCard: React.FC = () => {
                   src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
                   alt={`Profilbild von ${friendProfiles[friend.uid]?.displayName || friend.displayName || 'Freund'}`}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 (friendProfiles[friend.uid]?.displayName || friend.displayName)
@@ -175,7 +179,8 @@ export const TasteMatchCard: React.FC = () => {
               position: 'fixed',
               inset: 0,
               background: 'rgba(10, 14, 26, 0.75)',
-              backdropFilter: 'blur(8px)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               zIndex: 1000,
               display: 'flex',
               alignItems: 'flex-end',
@@ -234,7 +239,7 @@ export const TasteMatchCard: React.FC = () => {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={tapScaleSmall}
                     onClick={() => handleSelectFriend(friend.uid)}
                     style={{
                       display: 'flex',
@@ -260,6 +265,8 @@ export const TasteMatchCard: React.FC = () => {
                           src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
                           alt=""
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <Person style={{ fontSize: 24, color: 'white' }} />

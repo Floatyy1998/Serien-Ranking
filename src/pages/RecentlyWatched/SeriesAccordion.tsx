@@ -4,6 +4,12 @@ import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import { EpisodeDiscussionIndicator } from './RecentlyWatchedComponents';
+import { tapScaleTight } from '../../lib/motion';
+
+// Static inline styles hoisted out of render (no per-render allocation in list items)
+const FLEX_1_STYLE: React.CSSProperties = { flex: 1 };
+const EPISODE_LIST_PADDING_STYLE: React.CSSProperties = { padding: '8px' };
+const SMALL_ICON_STYLE: React.CSSProperties = { fontSize: '16px' };
 
 export const SeriesAccordion = memo<{
   seriesId: number;
@@ -59,7 +65,7 @@ export const SeriesAccordion = memo<{
             className="rw-accordion-poster"
           />
 
-          <div style={{ flex: 1 }}>
+          <div style={FLEX_1_STYLE}>
             <h3 className="rw-accordion-series-name" style={{ color: currentTheme.text.primary }}>
               {firstEpisode.seriesName}
             </h3>
@@ -110,7 +116,7 @@ export const SeriesAccordion = memo<{
                 overflow: 'hidden',
               }}
             >
-              <div style={{ padding: '8px' }}>
+              <div style={EPISODE_LIST_PADDING_STYLE}>
                 {episodes.map((episode, idx) => {
                   const episodeKey = `${episode.seriesId}-${episode.seasonIndex}-${episode.episodeIndex}`;
                   const isCompleting = completingEpisodes.has(episodeKey);
@@ -126,7 +132,7 @@ export const SeriesAccordion = memo<{
                         background: idx % 2 === 0 ? 'transparent' : `${currentTheme.text.muted}05`,
                       }}
                     >
-                      <div style={{ flex: 1 }}>
+                      <div style={FLEX_1_STYLE}>
                         <p
                           onClick={() =>
                             onNavigateToEpisode(
@@ -165,7 +171,7 @@ export const SeriesAccordion = memo<{
                       />
 
                       <motion.button
-                        whileTap={{ scale: 0.9 }}
+                        whileTap={tapScaleTight}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRewatch(episode);
@@ -178,9 +184,9 @@ export const SeriesAccordion = memo<{
                         }}
                       >
                         {isCompleting ? (
-                          <Check style={{ fontSize: '16px' }} />
+                          <Check style={SMALL_ICON_STYLE} />
                         ) : (
-                          <PlayCircle style={{ fontSize: '16px' }} />
+                          <PlayCircle style={SMALL_ICON_STYLE} />
                         )}
                       </motion.button>
                     </motion.div>

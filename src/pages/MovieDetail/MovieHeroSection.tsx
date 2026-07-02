@@ -136,7 +136,12 @@ export const MovieHeroSection = memo(
           <div
             className={`md-hero__header-buttons ${isMobile ? 'md-hero__header-buttons--mobile' : ''}`}
           >
-            <BackButton style={{ backdropFilter: 'blur(10px)' }} />
+            <BackButton
+              style={{
+                backdropFilter: 'var(--blur-sm)',
+                WebkitBackdropFilter: 'var(--blur-sm)',
+              }}
+            />
 
             {isReadOnlyTmdbMovie && (
               <button

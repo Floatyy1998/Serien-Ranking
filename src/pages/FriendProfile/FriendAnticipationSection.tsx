@@ -54,6 +54,8 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
               src={getImageUrl(item.poster, 'w185')}
               alt={item.title}
               className="fp-anticipation-poster"
+              loading="lazy"
+              decoding="async"
             />
 
             <div className="fp-anticipation-body">

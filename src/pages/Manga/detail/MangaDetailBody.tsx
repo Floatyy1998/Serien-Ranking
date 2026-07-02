@@ -15,12 +15,16 @@ import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { inferStatus } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';
 
-const STATUS_OPTIONS: { value: Manga['readStatus']; label: string; color: string }[] = [
+// Status-Optionen als Funktion, damit "Geplant" die Theme-Secondary-Farbe nutzt
+// (Farben werden mit Hex-Alpha-Suffix kombiniert, daher kein var() möglich)
+const getStatusOptions = (
+  secondaryColor: string
+): { value: Manga['readStatus']; label: string; color: string }[] => [
   { value: 'reading', label: 'Lese ich', color: '#3b82f6' },
   { value: 'completed', label: 'Abgeschlossen', color: '#22c55e' },
   { value: 'paused', label: 'Pausiert', color: '#f59e0b' },
   { value: 'dropped', label: 'Abgebrochen', color: '#ef4444' },
-  { value: 'planned', label: 'Geplant', color: '#8b5cf6' },
+  { value: 'planned', label: 'Geplant', color: secondaryColor },
 ];
 
 const PLATFORM_OPTIONS = [
@@ -197,7 +201,7 @@ export const MangaDetailBody = ({
       <Section bg={`${currentTheme.text.primary}08`} delay={0.15}>
         <SectionTitle color={currentTheme.text.primary}>Status</SectionTitle>
         <div className="manga-detail-status-grid">
-          {STATUS_OPTIONS.map((opt) => (
+          {getStatusOptions(currentTheme.secondary).map((opt) => (
             <button
               key={opt.value}
               className={`manga-detail-status-btn ${manga.readStatus === opt.value ? 'manga-detail-status-btn--active' : ''}`}
@@ -392,6 +396,7 @@ export const MangaDetailBody = ({
                     borderRadius: 8,
                   }}
                   loading="lazy"
+                  decoding="async"
                 />
                 <div
                   style={{
@@ -444,6 +449,7 @@ export const MangaDetailBody = ({
                       borderRadius: 8,
                     }}
                     loading="lazy"
+                    decoding="async"
                   />
                   <div
                     style={{

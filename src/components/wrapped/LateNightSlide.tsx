@@ -205,8 +205,9 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.9 }}
           style={{
-            background: 'rgba(255,255,255,0.08)',
-            backdropFilter: 'blur(10px)',
+            background: 'var(--glass-medium)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             borderRadius: '16px',
             padding: '20px',
             textAlign: 'center',
@@ -242,8 +243,9 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 1 }}
             style={{
-              background: 'rgba(255,255,255,0.08)',
-              backdropFilter: 'blur(10px)',
+              background: 'var(--glass-medium)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               borderRadius: '16px',
               padding: '20px',
               textAlign: 'center',

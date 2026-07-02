@@ -6,9 +6,10 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
-import { WatchActivityService } from '../../services/watchActivityService';
 import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
@@ -169,7 +170,9 @@ export const useCalendarData = () => {
         const prevLast: number = val.l || 0;
         const prevWatched: number = val.w || 0;
 
-        // Schreiben
+        // Schreiben — über die persistente Offline-Queue. serienVersion-Bump
+        // gehört laut Write-Regel in jede Watch-Update-Map (fehlte hier
+        // bisher; ohne ihn sehen andere Geräte den Mark nicht).
         const nowUnix = Math.floor(Date.now() / 1000);
         const updates: Record<string, unknown> = {};
         updates[`${epBase}/w`] = 1;
@@ -178,10 +181,11 @@ export const useCalendarData = () => {
         if (!prevFirst) {
           updates[`${epBase}/f`] = nowUnix;
         }
-        await db.ref().update(updates);
+        updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
 
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
+        await applyUserUpdate(user.uid, updates, `${title} ${label} (Kalender)`);
         showUndoToast(`${title} ${label} als gesehen markiert`, {
           onUndo: async () => {
             try {
@@ -214,23 +218,23 @@ export const useCalendarData = () => {
                 }
               );
               const episode = series.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
-              const { updateEpisodeCounters } =
-                await import('../../features/badges/minimalActivityLogger');
-              await updateEpisodeCounters(user.uid, prevCount > 0, episode?.air_date);
-              if (prevCount === 0) {
-                const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
-                WatchActivityService.logEpisodeWatch(
-                  user.uid,
-                  series.id,
-                  series.title || series.name || '',
-                  seasonIndex + 1,
-                  episodeIndex + 1,
-                  series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-                  false,
-                  series.genre?.genres,
-                  providers
-                );
-              }
+              // Kein Pet-XP im Kalender (bestehendes Verhalten beibehalten).
+              // Wrapped-Event nur beim Erstwatch (prevCount === 0) — dann ist
+              // isRewatch ohnehin false, wie zuvor hart kodiert.
+              await runEpisodeWatchFanout({
+                userId: user.uid,
+                seriesId: series.id,
+                seriesTitle: series.title || series.name || '',
+                seasonNumber: seasonIndex + 1,
+                episodeNumber: episodeIndex + 1,
+                runtimeMinutes: series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: prevCount > 0,
+                genres: series.genre?.genres,
+                providers: series.provider?.provider?.map((p: { name: string }) => p.name),
+                episodeAirDate: episode?.air_date,
+                petXp: false,
+                wrappedEvent: prevCount === 0,
+              });
             }
           },
         });

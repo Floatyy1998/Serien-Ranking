@@ -33,7 +33,7 @@ export function useMangaTrending(): MangaCarouselItem[] {
   useEffect(() => {
     discoverManga('trending', 1, 15)
       .then(({ results }) => setItems(results.map(mapToCarouselItem)))
-      .catch(() => {});
+      .catch((error) => console.error('Manga-Trending konnte nicht geladen werden:', error));
   }, []);
 
   return items;
@@ -45,7 +45,7 @@ export function useMangaPopular(): MangaCarouselItem[] {
   useEffect(() => {
     discoverManga('popular', 1, 15)
       .then(({ results }) => setItems(results.map(mapToCarouselItem)))
-      .catch(() => {});
+      .catch((error) => console.error('Beliebte Manga konnten nicht geladen werden:', error));
   }, []);
 
   return items;
@@ -57,7 +57,7 @@ export function useMangaTopRated(): MangaCarouselItem[] {
   useEffect(() => {
     discoverManga('top_rated', 1, 15)
       .then(({ results }) => setItems(results.map(mapToCarouselItem)))
-      .catch(() => {});
+      .catch((error) => console.error('Top-bewertete Manga konnten nicht geladen werden:', error));
   }, []);
 
   return items;

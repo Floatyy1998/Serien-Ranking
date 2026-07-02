@@ -4,6 +4,7 @@ import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
+import { tapScale } from '../../../lib/motion';
 
 interface RecommendationCardProps {
   item: UnifiedNotification;
@@ -128,6 +129,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
                 border: `1px solid ${currentTheme.border.default}`,
                 flexShrink: 0,
               }}
+              decoding="async"
             />
           ) : (
             <div
@@ -192,7 +194,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
 
         <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={(e) => {
               e.stopPropagation();
               onAccept(data.recId);
@@ -218,7 +220,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
             Anschauen
           </motion.button>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={(e) => {
               e.stopPropagation();
               onDecline(data.recId);

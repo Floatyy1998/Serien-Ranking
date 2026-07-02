@@ -47,6 +47,7 @@ export interface Series {
       lastWatchedAt?: string;
       runtime?: number;
       episode_number?: number; // TMDB format
+      season_number?: number; // Vom seriesAdapter gesetzt (äußerer Season-Key als Quelle)
       airDate?: string; // Alternative date format
       firstAired?: string; // Another alternative date format
       airstamp?: string; // ISO 8601 UTC timestamp from TVMaze

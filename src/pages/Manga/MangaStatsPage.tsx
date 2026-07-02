@@ -276,7 +276,7 @@ export const MangaStatsPage = () => {
             {[
               { label: 'Lese ich', value: stats.reading, color: '#3b82f6' },
               { label: 'Abgeschlossen', value: stats.completed, color: '#22c55e' },
-              { label: 'Geplant', value: stats.planned, color: '#8b5cf6' },
+              { label: 'Geplant', value: stats.planned, color: currentTheme.secondary },
               { label: 'Pausiert', value: stats.paused, color: '#f59e0b' },
               { label: 'Abgebrochen', value: stats.dropped, color: '#ef4444' },
             ]

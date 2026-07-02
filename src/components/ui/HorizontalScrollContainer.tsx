@@ -105,7 +105,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '0 14px 14px 0',
-              backdropFilter: 'blur(8px)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
@@ -155,7 +156,8 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: '14px 0 0 14px',
-              backdropFilter: 'blur(8px)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
               transition: 'opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}

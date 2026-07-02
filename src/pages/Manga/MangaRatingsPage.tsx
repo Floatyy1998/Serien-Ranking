@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
 import { getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
 import './MangaPage.css';
+import { tapScale } from '../../lib/motion';
 
 type SortBy = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc' | 'progress-desc';
 type QuickFilterType =
@@ -28,6 +29,53 @@ const SORT_OPTIONS: { value: SortBy; label: string }[] = [
   { value: 'name-desc', label: 'Name Z-A' },
   { value: 'progress-desc', label: 'Fortschritt ↓' },
 ];
+
+// Static inline styles hoisted out of render (no per-render allocation in the grid loop)
+const GRID_ITEM_STYLE: React.CSSProperties = {
+  borderRadius: 12,
+  overflow: 'hidden',
+  cursor: 'pointer',
+  position: 'relative',
+  aspectRatio: '2/3',
+};
+const POSTER_IMG_STYLE: React.CSSProperties = { width: '100%', height: '100%', objectFit: 'cover' };
+const OVERLAY_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  padding: 8,
+  background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+};
+const TITLE_STYLE: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 600,
+  color: '#fff',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+};
+const META_ROW_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  marginTop: 2,
+};
+const STAR_ICON_STYLE: React.CSSProperties = { fontSize: 12, color: '#f59e0b' };
+const RATING_TEXT_STYLE: React.CSSProperties = { fontSize: 11, color: '#f59e0b', fontWeight: 600 };
+const FORMAT_TEXT_STYLE: React.CSSProperties = {
+  fontSize: 9,
+  color: 'rgba(255,255,255,0.5)',
+  marginLeft: 'auto',
+};
+const PROGRESS_TRACK_STYLE: React.CSSProperties = {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  height: 3,
+  background: 'rgba(255,255,255,0.1)',
+};
 
 const QUICK_FILTERS: { id: QuickFilterType; label: string }[] = [
   { id: 'all', label: 'Alle' },
@@ -196,57 +244,29 @@ export const MangaRatingsPage = () => {
             return (
               <motion.div
                 key={manga.anilistId}
+                className="manga-ratings-item"
                 onClick={() => navigate(`/manga/${manga.anilistId}`)}
-                style={{
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  position: 'relative',
-                  aspectRatio: '2/3',
-                }}
-                whileTap={{ scale: 0.96 }}
+                style={GRID_ITEM_STYLE}
+                whileTap={tapScale}
               >
                 <img
                   src={manga.poster}
                   alt={manga.title}
                   loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={POSTER_IMG_STYLE}
+                  decoding="async"
                 />
-                <div
-                  style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: 8,
-                    background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: '#fff',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {manga.title}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                <div style={OVERLAY_STYLE}>
+                  <div style={TITLE_STYLE}>{manga.title}</div>
+                  <div style={META_ROW_STYLE}>
                     {rating > 0 && (
                       <>
-                        <Star style={{ fontSize: 12, color: '#f59e0b' }} />
-                        <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>
-                          {rating}
-                        </span>
+                        <Star style={STAR_ICON_STYLE} />
+                        <span style={RATING_TEXT_STYLE}>{rating}</span>
                       </>
                     )}
                     {manga.format && (
-                      <span
-                        style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', marginLeft: 'auto' }}
-                      >
+                      <span style={FORMAT_TEXT_STYLE}>
                         {getDisplayFormat(manga.countryOfOrigin, manga.format)}
                       </span>
                     )}
@@ -254,16 +274,7 @@ export const MangaRatingsPage = () => {
                 </div>
 
                 {progress > 0 && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: 3,
-                      background: 'rgba(255,255,255,0.1)',
-                    }}
-                  >
+                  <div style={PROGRESS_TRACK_STYLE}>
                     <div
                       style={{
                         height: '100%',

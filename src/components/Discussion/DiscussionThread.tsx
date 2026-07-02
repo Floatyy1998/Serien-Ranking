@@ -8,6 +8,7 @@ import { useDiscussions } from '../../hooks/useDiscussions';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
+import { tapScale } from '../../lib/motion';
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemId,
@@ -153,7 +154,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={handleRevealSpoiler}
               style={{
                 padding: '12px 24px',
@@ -241,7 +242,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
         {user && !showNewForm && (
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => setShowNewForm(true)}
             style={{
               padding: '10px 20px',

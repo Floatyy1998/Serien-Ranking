@@ -114,7 +114,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
         const raw = (snap.val() ?? {}) as Record<string, ProviderSubscription>;
         setHasAnySubscription(Object.keys(raw).length > 0);
       })
-      .catch(() => {});
+      .catch((error) => console.error('Abo-Status konnte nicht geladen werden:', error));
     return () => {
       cancelled = true;
     };

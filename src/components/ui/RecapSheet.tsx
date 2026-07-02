@@ -318,7 +318,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                         background: isLast ? `${accent}06` : surface,
                         border: isLast
                           ? `1px solid ${accent}20`
-                          : `1px solid rgba(255,255,255,0.03)`,
+                          : '1px solid var(--glass-border-subtle)',
                       }}
                     >
                       {/* Thumbnail */}
@@ -342,6 +342,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                               objectFit: 'cover',
                               display: 'block',
                             }}
+                            decoding="async"
                           />
                           <span
                             style={{
@@ -352,7 +353,8 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                               fontWeight: 700,
                               color: '#fff',
                               background: 'rgba(0,0,0,0.6)',
-                              backdropFilter: 'blur(4px)',
+                              backdropFilter: 'var(--blur-sm)',
+                              WebkitBackdropFilter: 'var(--blur-sm)',
                               padding: '3px 8px',
                               borderRadius: '5px',
                             }}
@@ -460,7 +462,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                   flex: 1,
                   padding: '11px 14px',
                   background: currentTheme.background.surface,
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  border: '1px solid var(--glass-border-light)',
                   borderRadius: '10px',
                   color: currentTheme.text.secondary,
                   fontSize: 'clamp(13px, 1.2vw, 15px)',

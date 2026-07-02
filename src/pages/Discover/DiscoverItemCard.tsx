@@ -8,6 +8,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { handleImgError } from './discoverItemHelpers';
+import { tapScale } from '../../lib/motion';
 
 // Premium memoized item card
 export const ItemCard = memo(
@@ -83,14 +84,15 @@ export const ItemCard = memo(
                 right: '10px',
                 padding: '5px 10px',
                 background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
-                backdropFilter: 'blur(10px)',
+                backdropFilter: 'var(--blur-sm)',
+                WebkitBackdropFilter: 'var(--blur-sm)',
                 borderRadius: '10px',
                 fontSize: '13px',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid var(--glass-border-light)',
                 zIndex: 2,
               }}
             >
@@ -119,15 +121,15 @@ export const ItemCard = memo(
                   left: 0,
                   right: 0,
                   height: '65%',
-                  background: 'rgba(10, 14, 26, 0.75)',
-                  backdropFilter: 'blur(20px) saturate(1.4)',
-                  WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+                  background: `${currentTheme.background.default}bf`,
+                  backdropFilter: 'var(--blur-lg) saturate(1.4)',
+                  WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
                   borderRadius: '16px 16px 0 0',
                   padding: '14px 12px',
                   display: 'flex',
                   flexDirection: 'column',
                   zIndex: 3,
-                  borderTop: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderTop: '1px solid var(--glass-border-medium)',
                 }}
               >
                 {/* Close handle */}
@@ -182,7 +184,7 @@ export const ItemCard = memo(
 
                 {/* CTA Button */}
                 <motion.button
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={tapScale}
                   onClick={handleNavigate}
                   style={{
                     marginTop: '10px',
@@ -224,7 +226,7 @@ export const ItemCard = memo(
                   height: '34px',
                   background:
                     addingItem === `${item.type}-${item.id}`
-                      ? 'rgba(255, 255, 255, 0.1)'
+                      ? 'var(--glass-heavy)'
                       : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   borderRadius: '50%',
                   display: 'flex',

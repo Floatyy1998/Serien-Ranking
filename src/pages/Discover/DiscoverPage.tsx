@@ -26,6 +26,7 @@ import {
   TabSwitcher,
 } from '../../components/ui';
 import './DiscoverPage.css';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 export const DiscoverPage = memo(() => {
   const { currentTheme } = useTheme();
@@ -123,8 +124,8 @@ export const DiscoverPage = memo(() => {
           right: 0,
           zIndex: 100,
           background: `${currentTheme.background.default}e8`,
-          backdropFilter: 'blur(28px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+          backdropFilter: 'var(--blur-lg) saturate(1.4)',
+          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
         }}
       >
         <div
@@ -165,7 +166,7 @@ export const DiscoverPage = memo(() => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 {!showSearch && activeCategory !== 'recommendations' && (
                   <motion.button
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={() => setShowFilters(!showFilters)}
                     style={{
                       padding: '10px',
@@ -194,7 +195,7 @@ export const DiscoverPage = memo(() => {
                 )}
 
                 <motion.button
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={tapScaleTight}
                   onClick={() => {
                     const newValue = !showSearch;
                     setShowSearch(newValue);
@@ -241,15 +242,15 @@ export const DiscoverPage = memo(() => {
                     width: '100%',
                     padding: '14px 16px',
                     background:
-                      'linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
-                    border: `1px solid rgba(255, 255, 255, 0.06)`,
+                      'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
+                    border: '1px solid var(--glass-border-subtle)',
                     borderRadius: '14px',
                     color: currentTheme.text.primary,
                     fontSize: '15px',
                     outline: 'none',
                     transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-                    backdropFilter: 'blur(12px)',
-                    WebkitBackdropFilter: 'blur(12px)',
+                    backdropFilter: 'var(--blur-md)',
+                    WebkitBackdropFilter: 'var(--blur-md)',
                   }}
                 />
               </motion.div>
@@ -286,7 +287,7 @@ export const DiscoverPage = memo(() => {
                 return (
                   <motion.button
                     key={cat.id}
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={() => {
                       setActiveCategory(cat.id);
                     }}
@@ -294,10 +295,10 @@ export const DiscoverPage = memo(() => {
                       padding: '10px 4px',
                       background: isActive
                         ? `linear-gradient(135deg, ${cat.color}25, ${cat.color}0a)`
-                        : 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)',
+                        : 'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
                       border: isActive
                         ? `1px solid ${cat.color}40`
-                        : `1px solid rgba(255, 255, 255, 0.05)`,
+                        : '1px solid var(--glass-border-subtle)',
                       borderRadius: '12px',
                       color: isActive ? cat.color : currentTheme.text.secondary,
                       cursor: 'pointer',
@@ -340,7 +341,7 @@ export const DiscoverPage = memo(() => {
                   }}
                 >
                   <motion.button
-                    whileTap={{ scale: 0.95 }}
+                    whileTap={tapScale}
                     onClick={() => {
                       setSelectedGenre(null);
                       setShowFilters(false);
@@ -366,7 +367,7 @@ export const DiscoverPage = memo(() => {
                   {genres.map((genre) => (
                     <motion.button
                       key={genre.id}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={tapScale}
                       onClick={() => {
                         setSelectedGenre(genre.id);
                         setShowFilters(false);

@@ -8,6 +8,7 @@ import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
 
@@ -40,7 +41,7 @@ const FeedCard: React.FC<{
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.03 }}
-      whileTap={{ scale: 0.98 }}
+      whileTap={tapScaleSmall}
       onClick={onClick}
       style={{
         display: 'flex',
@@ -72,6 +73,7 @@ const FeedCard: React.FC<{
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
+            decoding="async"
           />
         </div>
       )}
@@ -204,7 +206,7 @@ export const DiscussionFeedPage = () => {
         {FILTER_TABS.map((tab) => (
           <motion.button
             key={tab.id}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => {
               setFilter(tab.id);
             }}

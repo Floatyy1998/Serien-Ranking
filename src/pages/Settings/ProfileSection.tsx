@@ -6,6 +6,7 @@ import { Check, Edit, Person, PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleTight } from '../../lib/motion';
 
 interface ProfileSectionProps {
   photoURL: string;
@@ -61,6 +62,8 @@ export const ProfileSection = memo(
                 alt={`Profilbild von ${displayName || username || 'Benutzer'}`}
                 className="settings-avatar-image"
                 style={{ borderColor: currentTheme.primary }}
+                loading="lazy"
+                decoding="async"
               />
             ) : (
               <div
@@ -73,7 +76,7 @@ export const ProfileSection = memo(
               </div>
             )}
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
               aria-label="Profilbild hochladen"
@@ -123,7 +126,7 @@ export const ProfileSection = memo(
                     autoFocus
                   />
                   <motion.button
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={onSaveUsername}
                     disabled={saving}
                     className="settings-field-save-btn"
@@ -142,7 +145,7 @@ export const ProfileSection = memo(
             </div>
             {!usernameEditable && (
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={tapScaleTight}
                 onClick={onEditUsername}
                 aria-label="Benutzername ändern"
                 className="settings-field-edit-btn"
@@ -177,7 +180,7 @@ export const ProfileSection = memo(
                     autoFocus
                   />
                   <motion.button
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={onSaveDisplayName}
                     disabled={saving}
                     className="settings-field-save-btn"
@@ -196,7 +199,7 @@ export const ProfileSection = memo(
             </div>
             {!displayNameEditable && (
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={tapScaleTight}
                 onClick={onEditDisplayName}
                 aria-label="Anzeigename ändern"
                 className="settings-field-edit-btn"

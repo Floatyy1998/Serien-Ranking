@@ -33,7 +33,8 @@ export const StatRing: React.FC<{
         padding: '12px 8px',
         borderRadius: '16px',
         background: bgColor,
-        backdropFilter: 'blur(10px)',
+        backdropFilter: 'var(--blur-sm)',
+        WebkitBackdropFilter: 'var(--blur-sm)',
         border: `1px solid ${color}25`,
       }}
     >

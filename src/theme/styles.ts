@@ -27,7 +27,7 @@ export const commonStyles = {
     backgroundColor: 'var(--theme-primary)',
     color: colors.background.default,
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
@@ -41,7 +41,7 @@ export const commonStyles = {
     backgroundColor: 'transparent',
     color: 'var(--theme-primary)',
     border: `1px solid ${colors.border.primary}`,
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
@@ -55,7 +55,7 @@ export const commonStyles = {
     backgroundColor: colors.status.error,
     color: colors.text.secondary,
     border: 'none',
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     padding: '12px 24px',
     fontWeight: '600',
     cursor: 'pointer',
@@ -68,35 +68,35 @@ export const commonStyles = {
   // Card Styles
   card: {
     backgroundColor: colors.background.card,
-    borderRadius: '16px',
+    borderRadius: 'var(--radius-lg)',
     border: `1px solid ${colors.border.light}`,
     padding: '20px',
-    boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+    boxShadow: 'var(--shadow-md)',
   } as React.CSSProperties,
 
   surfaceCard: {
     backgroundColor: colors.background.surface,
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     border: `1px solid ${colors.border.default}`,
     padding: '16px',
-    boxShadow: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
+    boxShadow: 'var(--shadow-sm)',
   } as React.CSSProperties,
 
   glassCard: {
-    background: 'rgba(255, 255, 255, 0.04)',
-    borderRadius: '16px',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
-    backdropFilter: 'blur(12px)',
+    background: 'var(--glass-light)',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--glass-border-light)',
+    backdropFilter: 'var(--blur-md)',
     padding: '20px',
-    boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
+    boxShadow: 'var(--shadow-md)',
   } as React.CSSProperties,
 
   elevatedCard: {
     backgroundColor: colors.background.surfaceElevated,
-    borderRadius: '16px',
+    borderRadius: 'var(--radius-lg)',
     border: '1px solid rgba(255, 255, 255, 0.06)',
     padding: '20px',
-    boxShadow: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
+    boxShadow: 'var(--shadow-lg)',
   } as React.CSSProperties,
 
   // Text Styles
@@ -135,8 +135,9 @@ export const commonStyles = {
 
   dialogContent: {
     backgroundColor: colors.background.dialog,
-    borderRadius: '20px',
+    borderRadius: 'var(--radius-xl)',
     border: '1px solid rgba(255, 255, 255, 0.08)',
+    // Bewusst eigener Dialog-Schatten (liegt zwischen --shadow-lg und --shadow-cinematic)
     boxShadow: '0 16px 48px -12px rgba(0, 0, 0, 0.6), 0 8px 24px -8px rgba(0, 0, 0, 0.4)',
     maxWidth: '600px',
     width: '90%',
@@ -148,7 +149,7 @@ export const commonStyles = {
   input: {
     backgroundColor: colors.background.input,
     border: `1px solid ${colors.border.default}`,
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     padding: '12px 16px',
     color: colors.text.secondary,
     fontSize: '1rem',
@@ -167,7 +168,7 @@ export const commonStyles = {
     backgroundColor: colors.status.error,
     color: colors.text.secondary,
     padding: '12px 20px',
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     border: `1px solid ${colors.status.errorHover}`,
   } as React.CSSProperties,
 
@@ -175,7 +176,7 @@ export const commonStyles = {
     backgroundColor: colors.status.warning,
     color: colors.background.default,
     padding: '12px 20px',
-    borderRadius: '12px',
+    borderRadius: 'var(--radius-md)',
     fontWeight: '500',
   } as React.CSSProperties,
 
@@ -184,7 +185,7 @@ export const commonStyles = {
     backgroundColor: 'var(--theme-primary)',
     color: colors.background.default,
     padding: '4px 12px',
-    borderRadius: '16px',
+    borderRadius: 'var(--radius-lg)',
     fontSize: '0.875rem',
     fontWeight: '600',
   } as React.CSSProperties,
@@ -238,9 +239,9 @@ export const styleHelpers = {
 
   withShadow: (level: 'sm' | 'md' | 'lg' = 'md') => {
     const shadowMap = {
-      sm: '0 2px 8px -2px rgba(0, 0, 0, 0.3), 0 1px 3px -1px rgba(0, 0, 0, 0.2)',
-      md: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-      lg: '0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 4px 12px -4px rgba(0, 0, 0, 0.3)',
+      sm: 'var(--shadow-sm)',
+      md: 'var(--shadow-md)',
+      lg: 'var(--shadow-lg)',
     };
     return { boxShadow: shadowMap[level] };
   },

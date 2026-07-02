@@ -24,7 +24,8 @@ export const BugFab = memo(() => {
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 50,
-        backdropFilter: 'blur(8px)',
+        backdropFilter: 'var(--blur-sm)',
+        WebkitBackdropFilter: 'var(--blur-sm)',
         transition: 'opacity 0.2s',
         overflow: 'hidden',
       }}

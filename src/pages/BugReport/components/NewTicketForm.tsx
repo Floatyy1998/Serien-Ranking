@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
 import type { TicketPriority, TicketType } from '../types';
 import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
+import { tapScale } from '../../../lib/motion';
 
 interface NewTicketFormProps {
   theme: ThemeContextType['currentTheme'];
@@ -310,6 +311,8 @@ export function NewTicketForm({
                     borderRadius: '8px',
                     border: `1px solid rgba(255,255,255,0.08)`,
                   }}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <button
                   onClick={() => setScreenshots((prev) => prev.filter((_, j) => j !== i))}
@@ -336,7 +339,7 @@ export function NewTicketForm({
               </div>
             ))}
             <motion.button
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
               style={{

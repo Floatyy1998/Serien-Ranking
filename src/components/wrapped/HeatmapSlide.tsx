@@ -100,8 +100,9 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         style={{
-          background: 'rgba(255,255,255,0.05)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--glass-medium)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           borderRadius: '20px',
           padding: '20px',
           zIndex: 1,

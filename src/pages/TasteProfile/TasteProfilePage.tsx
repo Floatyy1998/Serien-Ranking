@@ -13,6 +13,7 @@ import { CONFIDENCE_COLORS } from './constants';
 import { useTasteProfileData } from './useTasteProfileData';
 import type { Recommendation } from './useTasteProfileData';
 import './TasteProfilePage.css';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 // ==================== Card ====================
 
@@ -34,7 +35,13 @@ const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index 
     >
       <div className="tp-card__poster-wrap" style={{ background: currentTheme.background.surface }}>
         {rec.posterUrl ? (
-          <img src={rec.posterUrl} alt={rec.title} className="tp-card__poster" />
+          <img
+            src={rec.posterUrl}
+            alt={rec.title}
+            className="tp-card__poster"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="tp-card__poster-placeholder" style={{ color: currentTheme.text.muted }}>
             {isMovie ? <Movie style={{ fontSize: 32 }} /> : <Tv style={{ fontSize: 32 }} />}
@@ -75,6 +82,8 @@ const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index 
                   alt={p.name}
                   title={p.name}
                   className="tp-card__provider-logo"
+                  loading="lazy"
+                  decoding="async"
                 />
               ))}
             </div>
@@ -169,7 +178,7 @@ export const TasteProfilePage: React.FC = () => {
         actions={
           result ? (
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={() => {
                 clearCache();
                 generateProfile();
@@ -209,7 +218,7 @@ export const TasteProfilePage: React.FC = () => {
             className="tp-cta-wrapper"
           >
             <motion.button
-              whileTap={{ scale: 0.96 }}
+              whileTap={tapScale}
               onClick={generateProfile}
               className="tp-cta-btn"
               style={{

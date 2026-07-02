@@ -21,6 +21,7 @@ import {
   getNextTierInfo,
 } from './badgesPageHelpers';
 import './BadgesPage.css';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 export const BadgesPage = () => {
   const { user } = useAuth() || {};
@@ -171,8 +172,8 @@ export const BadgesPage = () => {
           top: 0,
           zIndex: 100,
           background: `${currentTheme.background.default}ee`,
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
         }}
       >
         <PageHeader
@@ -182,7 +183,7 @@ export const BadgesPage = () => {
           sticky={false}
           actions={
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={checkForNewBadges}
               disabled={loading}
               style={{
@@ -276,7 +277,7 @@ export const BadgesPage = () => {
             return (
               <motion.button
                 key={category.key}
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={() => {
                   setTabValue(index);
                 }}

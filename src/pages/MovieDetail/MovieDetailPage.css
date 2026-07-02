@@ -83,9 +83,10 @@
 }
 
 .md-hero__action-btn {
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  /* --blur-* enthält bereits blur(...) — kein doppeltes Wrapping */
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--glass-border-light);
   font-size: 24px;
   cursor: pointer;
   padding: 8px;
@@ -415,10 +416,10 @@
 }
 
 .md-info-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-light);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   padding: 14px;
   transition:

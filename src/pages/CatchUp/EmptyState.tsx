@@ -4,6 +4,7 @@ import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText } from '../../components/ui';
+import { tapScaleSmall } from '../../lib/motion';
 
 export const EmptyState = memo(() => {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ export const EmptyState = memo(() => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={tapScaleSmall}
         onClick={handleDiscover}
         className="cu-empty-btn"
         style={{

@@ -10,6 +10,7 @@ import { searchManga } from '../../services/anilistService';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 const FORMAT_FILTERS = [
   { key: 'all', label: 'Alle' },
@@ -108,8 +109,8 @@ export const MangaSearchPage = () => {
           top: 0,
           zIndex: 100,
           background: `${currentTheme.background.default}e8`,
-          backdropFilter: 'blur(28px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.4)',
+          backdropFilter: 'var(--blur-lg) saturate(1.4)',
+          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
         }}
       >
         <div
@@ -122,7 +123,7 @@ export const MangaSearchPage = () => {
           {/* Back + Search Input */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={() => navigate('/manga')}
               style={{
                 background: 'none',
@@ -224,7 +225,7 @@ export const MangaSearchPage = () => {
               {recentSearches.map((s) => (
                 <motion.button
                   key={s}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={tapScale}
                   onClick={() => setQuery(s)}
                   style={{
                     padding: '8px 14px',
@@ -310,7 +311,8 @@ export const MangaSearchPage = () => {
                         padding: '3px 7px',
                         borderRadius: 6,
                         background: 'rgba(0,0,0,0.6)',
-                        backdropFilter: 'blur(8px)',
+                        backdropFilter: 'var(--blur-sm)',
+                        WebkitBackdropFilter: 'var(--blur-sm)',
                         color: formatColor,
                         textTransform: 'uppercase',
                         letterSpacing: '0.04em',
@@ -331,7 +333,8 @@ export const MangaSearchPage = () => {
                           padding: '3px 6px',
                           borderRadius: 6,
                           background: 'rgba(0,0,0,0.6)',
-                          backdropFilter: 'blur(8px)',
+                          backdropFilter: 'var(--blur-sm)',
+                          WebkitBackdropFilter: 'var(--blur-sm)',
                           color: '#f59e0b',
                         }}
                       >

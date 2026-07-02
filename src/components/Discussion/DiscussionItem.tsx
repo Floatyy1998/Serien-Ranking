@@ -12,6 +12,7 @@ import { RepliesSection } from './RepliesSection';
 import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
+import { tapScale } from '../../lib/motion';
 
 const DiscussionItemInner: React.FC<{
   discussion: Discussion;
@@ -257,7 +258,7 @@ const DiscussionItemInner: React.FC<{
       >
         <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={() => {
               onToggleLike();
             }}

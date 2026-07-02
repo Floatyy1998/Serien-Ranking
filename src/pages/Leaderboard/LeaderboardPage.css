@@ -57,16 +57,16 @@
   gap: 16px;
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
 }
 
 /* ── Mode Toggle (Segmented Control) ── */
 .lb-mode-toggle {
   display: flex;
   gap: 0;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border-subtle);
   overflow: hidden;
   margin: 0 16px 12px;
 }
@@ -105,7 +105,7 @@
   gap: 6px;
   padding: 8px 14px;
   border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -213,14 +213,14 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--glass-border-subtle);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
     border-color 0.2s ease;
 }
 .lb-rank-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border-medium);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 .lb-rank-card:active {
@@ -355,7 +355,7 @@
   position: fixed;
   top: 16px;
   right: 16px;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--glass-heavy);
   border: none;
   border-radius: 50%;
   width: 40px;

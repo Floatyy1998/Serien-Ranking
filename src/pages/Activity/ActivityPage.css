@@ -238,7 +238,7 @@
 @media (hover: hover) {
   .activity-entry:hover,
   .activity-friend-row:hover {
-    border-color: var(--theme-primary, #00fed7);
+    border-color: var(--theme-primary, #00d123);
   }
 
   .activity-spotlight:hover .activity-spotlight__poster {

@@ -5,8 +5,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
 import type { Series } from '../../types/Series';
 
 export interface TMDBEpisodeDetails {
@@ -274,25 +274,36 @@ export const useEpisodeDiscussion = () => {
       if (!epId) return;
 
       const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
-      const db = firebase.database();
+      const queueLabel = `${series.title || series.name || ''} S${seasonNumber}E${episodeNumber} (Episoden-Seite)`;
 
+      // Beide Toggle-Richtungen über die persistente Offline-Queue (sonst
+      // ginge ein Offline-„Entmarkieren" verloren, ein gequeuter Mark würde
+      // nach Reconnect trotzdem angewendet).
       if (isCurrentlyWatched) {
-        await db.ref().update({
-          [epPath]: null,
-          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-        });
+        await applyUserUpdate(
+          user.uid,
+          {
+            [epPath]: null,
+            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          },
+          queueLabel
+        );
       } else {
         // Date.now() im async callback nach await — Lint kann den
         // Render-Path nicht von Event-Handler-Path unterscheiden.
 
         const nowUnix = Math.floor(Date.now() / 1000);
-        await db.ref().update({
-          [`${epPath}/w`]: 1,
-          [`${epPath}/c`]: 1,
-          [`${epPath}/f`]: nowUnix,
-          [`${epPath}/l`]: nowUnix,
-          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-        });
+        await applyUserUpdate(
+          user.uid,
+          {
+            [`${epPath}/w`]: 1,
+            [`${epPath}/c`]: 1,
+            [`${epPath}/f`]: nowUnix,
+            [`${epPath}/l`]: nowUnix,
+            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          },
+          queueLabel
+        );
       }
 
       // Force context refresh damit UI sofort reagiert (Delta-Sync kann bei
@@ -352,23 +363,23 @@ export const useEpisodeDiscussion = () => {
       }
 
       if (!isCurrentlyWatched) {
-        WatchActivityService.logEpisodeWatch(
-          user.uid,
-          series.id,
-          series.title || series.name || 'Unbekannte Serie',
-          Number(seasonNumber),
-          Number(episodeNumber),
-          (localEpisode as typeof localEpisode & { runtime?: number })?.runtime ||
+        // Keine Badge-Counter-Updates hier (bestehendes Verhalten beibehalten).
+        await runEpisodeWatchFanout({
+          userId: user.uid,
+          seriesId: series.id,
+          seriesTitle: series.title || series.name || 'Unbekannte Serie',
+          seasonNumber: Number(seasonNumber),
+          episodeNumber: Number(episodeNumber),
+          runtimeMinutes:
+            (localEpisode as typeof localEpisode & { runtime?: number })?.runtime ||
             tmdbDetails?.runtime ||
             series.episodeRuntime ||
             45,
-          false,
-          series.genre?.genres,
-          series.provider?.provider?.map((p) => p.name)
-        );
-
-        // Pet XP vergeben
-        await petService.watchedSeriesWithGenreAllPets(user.uid, series.genre?.genres || []);
+          isRewatch: false,
+          genres: series.genre?.genres,
+          providers: series.provider?.provider?.map((p) => p.name),
+          badgeCounters: false,
+        });
       }
     } catch (error) {
       console.error('Error toggling watched status:', error);

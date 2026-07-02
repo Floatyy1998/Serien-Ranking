@@ -224,6 +224,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 opacity: staticBackground ? 0.25 : 0.7,
                 transform: 'scale(1.15)',
               }}
+              loading="lazy"
             />
             <div
               style={{
@@ -231,7 +232,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 inset: 0,
                 background:
                   staticBackground ||
-                  'linear-gradient(105deg, rgba(6,9,15,0.3) 0%, rgba(6,9,15,0.75) 40%, rgba(6,9,15,0.93) 70%, rgba(6,9,15,0.97) 100%)',
+                  'linear-gradient(105deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.93) 70%, rgba(0,0,0,0.97) 100%)',
               }}
             />
             <div
@@ -303,6 +304,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                     objectFit: 'cover',
                     display: 'block',
                   }}
+                  loading="lazy"
                 />
                 <div
                   style={{

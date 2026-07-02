@@ -260,12 +260,13 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
               transition={{ delay: 0.7 + index * 0.1 }}
               whileHover={{ scale: 1.05, y: -5 }}
               style={{
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
+                background: 'var(--glass-heavy)',
+                backdropFilter: 'var(--blur-sm)',
+                WebkitBackdropFilter: 'var(--blur-sm)',
                 borderRadius: '16px',
                 padding: '20px 15px',
                 textAlign: 'center',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
+                border: '1px solid var(--glass-border-light)',
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
               }}
             >
@@ -339,7 +340,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
                 animate={{ opacity: 0.4, scale: 1 }}
                 transition={{ delay: 1.1 + index * 0.1 }}
                 style={{
-                  background: 'rgba(255,255,255,0.05)',
+                  background: 'var(--glass-medium)',
                   borderRadius: '12px',
                   padding: '10px 15px',
                   display: 'flex',

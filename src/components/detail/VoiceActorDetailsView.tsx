@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { HorizontalScrollContainer } from '../ui';
 import type { CharacterMediaEdge, VoiceActorDetailsData } from './CastCrew.types';
+import { tapScale } from '../../lib/motion';
 
 interface VoiceActorDetailsViewProps {
   voiceActorDetails: VoiceActorDetailsData;
@@ -182,7 +183,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
               {voiceActorDetails.characterMedia?.edges?.map((edge, index) => (
                 <motion.div
                   key={`${edge.node.id}-${index}`}
-                  whileTap={{ scale: 0.96 }}
+                  whileTap={tapScale}
                   onClick={() => handleMediaClick(edge)}
                   role="button"
                   tabIndex={0}

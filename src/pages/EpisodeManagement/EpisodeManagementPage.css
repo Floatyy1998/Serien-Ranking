@@ -45,14 +45,14 @@
   position: sticky;
   top: 0;
   z-index: var(--z-dropdown);
-  background: var(--color-background-default-alpha-90, rgba(10, 14, 26, 0.75));
+  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
 }
 
 .header-content {
@@ -110,19 +110,19 @@
 .season-tabs {
   display: flex;
   align-items: center;
-  background: rgba(10, 14, 26, 0.75);
+  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
   position: relative;
   z-index: var(--z-base);
 }
 
 .tab-nav-button {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-md);
   color: var(--color-text-muted);
   padding: 10px;
@@ -135,7 +135,7 @@
 }
 
 .tab-nav-button:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-heavy);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -159,8 +159,8 @@
 }
 
 .season-tab {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   padding: 10px 18px;
   color: var(--color-text-primary);
@@ -176,8 +176,8 @@
 }
 
 .season-tab:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-medium);
 }
 
 .season-tab.active {
@@ -207,8 +207,8 @@
 .season-progress {
   padding: 20px;
   margin: 16px 16px 0;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-xl);
   position: relative;
   z-index: var(--z-base);
@@ -292,8 +292,8 @@
 .mark-all-button {
   width: 100%;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   font-size: 15px;
@@ -304,7 +304,7 @@
 }
 
 .mark-all-button:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--glass-medium);
   border-color: var(--color-primary-alpha-30, rgba(102, 126, 234, 0.3));
 }
 
@@ -316,7 +316,7 @@
   width: 100%;
   padding: 10px;
   background: transparent;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border: 1px dashed var(--glass-border-medium);
   border-radius: var(--radius-md);
   color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
   font-size: 14px;
@@ -331,7 +331,7 @@
 }
 
 .catch-up-button:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-color: var(--color-primary-alpha-30, rgba(102, 126, 234, 0.3));
   color: var(--color-text-primary);
 }
@@ -355,13 +355,16 @@
 }
 
 .episode-item {
+  /* Native virtualization: skip layout/paint of offscreen rows (500+ episode seasons) */
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 72px;
   display: flex;
   align-items: center;
   gap: 14px;
   padding: 16px;
   margin-bottom: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out);
@@ -369,8 +372,8 @@
 }
 
 .episode-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-medium);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
@@ -447,13 +450,13 @@
 }
 
 .episode-discussion-btn {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: var(--glass-light) !important;
   border-radius: var(--radius-md) !important;
   transition: all 0.3s ease !important;
 }
 
 .episode-discussion-btn:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: var(--glass-heavy) !important;
 }
 
 .episode-status {
@@ -494,7 +497,7 @@
   height: 36px;
   border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--glass-light);
   transition: all 0.3s var(--ease-default);
 }
 
@@ -509,14 +512,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(10, 14, 26, 0.85);
+  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.85));
   backdrop-filter: var(--blur-lg) saturate(1.4);
   -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
   gap: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--glass-border-light);
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
   z-index: var(--z-dropdown);
 }
@@ -524,8 +527,8 @@
 .action-button {
   flex: 1;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   color: var(--color-text-primary);
   display: flex;
@@ -540,8 +543,8 @@
 }
 
 .action-button:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-medium);
   transform: scale(1.02);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
@@ -561,7 +564,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(10, 14, 26, 0.75);
+  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   display: flex;
@@ -573,7 +576,7 @@
 
 .watch-dialog {
   background: var(--color-background-surface);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-2xl);
   padding: 28px;
   width: 100%;
@@ -682,14 +685,14 @@
 }
 
 .dialog-button.cancel {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   color: var(--color-text-secondary);
 }
 
 .dialog-button.cancel:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-medium);
 }
 
 .dialog-button.cancel:active {
@@ -727,12 +730,12 @@
 .em-season-tabs-wrapper {
   display: flex;
   align-items: center;
-  background: rgba(10, 14, 26, 0.75);
+  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
   position: relative;
   z-index: var(--z-base);
 }

@@ -8,6 +8,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
+import { tapScaleSmall } from '../../lib/motion';
 
 export const DailySpinCard: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -64,7 +65,7 @@ export const DailySpinCard: React.FC = () => {
       <div style={{ margin: '0 20px', width: 'calc(100% - 40px)' }}>
         <motion.div
           onClick={() => setShowWheel(true)}
-          whileTap={{ scale: 0.98 }}
+          whileTap={tapScaleSmall}
           style={{
             padding: '12px 14px',
             borderRadius: '14px',

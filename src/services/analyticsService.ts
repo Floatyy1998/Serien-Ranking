@@ -244,7 +244,7 @@ class AnalyticsService {
       .database()
       .ref(`analytics/global/realtime/activeUsers/${this.userId}/page`)
       .set(page)
-      .catch(() => {});
+      .catch(() => {}); // bewusst still: Analytics-Presence ist unkritisch
   }
 
   private startFlushTimer(): void {

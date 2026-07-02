@@ -8,6 +8,7 @@ import PersonRounded from '@mui/icons-material/PersonRounded';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import type { FriendActivity } from '../../types/Friend';
+import { tapScaleTight } from '../../lib/motion';
 
 interface ResolvedUser {
   name: string;
@@ -63,7 +64,7 @@ export const ActiveFriendsRow = ({
               stiffness: 300,
               damping: 20,
             }}
-            whileTap={{ scale: 0.92 }}
+            whileTap={tapScaleTight}
             className="activity-pulse-item"
             onClick={() => onSelect(userId)}
             aria-label={`Profil von ${user.name}`}

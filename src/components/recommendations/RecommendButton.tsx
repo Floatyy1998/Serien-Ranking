@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { RecommendSheet } from './RecommendSheet';
+import { tapScale } from '../../lib/motion';
 
 interface RecommendButtonProps {
   media: {
@@ -32,7 +33,7 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
     <>
       <Tooltip title="An Freund empfehlen" arrow>
         <motion.button
-          whileTap={{ scale: 0.96 }}
+          whileTap={tapScale}
           onClick={() => setOpen(true)}
           className={className}
           aria-label="An Freund empfehlen"

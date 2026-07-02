@@ -4,7 +4,7 @@
   padding-top: calc(16px + env(safe-area-inset-top));
   backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--glass-border-subtle);
   flex-shrink: 0;
   position: relative;
   z-index: var(--z-dropdown);
@@ -24,7 +24,7 @@
 
 .watch-next-header__btn {
   padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-md);
   cursor: pointer;
   display: flex;
@@ -53,17 +53,17 @@
 .watch-next-filter {
   margin-top: 8px;
   padding: 14px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   overflow: hidden;
 }
 
 .watch-next-filter__input {
   width: 100%;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-md);
   font-size: 15px;
   margin-bottom: 12px;
@@ -74,7 +74,7 @@
 /* Provider chips */
 .provider-chip {
   padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   border-radius: 9999px;
   font-size: 12px;
   font-weight: 600;
@@ -157,9 +157,9 @@
 .watch-next-empty {
   text-align: center;
   padding: 60px 30px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.08);
@@ -178,7 +178,7 @@
   height: 80%;
   background: radial-gradient(
     ellipse,
-    color-mix(in srgb, var(--color-primary, #00fed7) 8%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent) 0%,
     transparent 60%
   );
   pointer-events: none;

@@ -12,6 +12,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { hapticSelect, hapticSuccess } from '../../lib/haptics';
 import '../../pages/Rating/RatingPage.css';
 import { BottomSheet } from './BottomSheet';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 interface QuickRatingSheetProps {
   isOpen: boolean;
@@ -138,7 +139,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
             <motion.div
               key={i}
               onClick={() => handleChange(Math.round((emoji.min + emoji.max) / 2))}
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               style={{
                 opacity: activeEmoji === i ? 1 : 0.25,
                 color: emoji.color,
@@ -204,7 +205,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
             <motion.button
               key={v}
               onClick={() => handleChange(v)}
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               style={{
                 width: '32px',
                 height: '32px',
@@ -228,7 +229,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
         {/* Actions */}
         <div style={{ display: 'flex', gap: '10px' }}>
           <motion.button
-            whileTap={{ scale: 0.96 }}
+            whileTap={tapScale}
             onClick={handleClose}
             style={{
               flex: 1,

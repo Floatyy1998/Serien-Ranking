@@ -3,8 +3,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useAuth } from '../AuthContext';
 import { showToast } from '../lib/toast';
-
-const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
+import { ADMIN_UID } from '../config/admin';
 
 export function useAdminHealthAlert() {
   const { user } = useAuth() || {};

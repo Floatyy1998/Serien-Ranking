@@ -105,7 +105,7 @@ function ProviderBadgeArea({
     const url = getProviderSearchUrl(p.name, searchTitle);
     const className = `ratings-provider-badge${extraClass ? ` ${extraClass}` : ''}`;
     const style: React.CSSProperties = { background: bgColor };
-    const content = <img src={p.logo} alt={p.name} />;
+    const content = <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />;
     const tooltip = providerNeedsClipboardCopy(p.name)
       ? `${p.name}: Titel kopieren + Suche öffnen`
       : `${p.name} öffnen`;
@@ -192,7 +192,7 @@ function ProviderBadgeArea({
               if (!url) {
                 return (
                   <div key={p.name} className="ratings-provider-popup-item">
-                    <img src={p.logo} alt={p.name} />
+                    <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />
                     <span style={{ color: textColor }}>{p.name}</span>
                   </div>
                 );
@@ -210,7 +210,7 @@ function ProviderBadgeArea({
                     setShowPopup(false);
                   }}
                 >
-                  <img src={p.logo} alt={p.name} />
+                  <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />
                   <span style={{ color: textColor }}>{p.name}</span>
                 </a>
               );

@@ -187,6 +187,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                           alt={name}
                           loading="lazy"
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          decoding="async"
                         />
                       ) : (
                         brand.abbr

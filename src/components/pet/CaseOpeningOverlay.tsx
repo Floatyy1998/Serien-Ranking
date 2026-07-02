@@ -7,6 +7,7 @@ import type { AccessoryRarity } from '../../types/pet.types';
 import { ACCESSORIES, RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import { seededRandom } from '../../utils/seededRandom';
 import './CaseOpeningOverlay.css';
+import { tapScale } from '../../lib/motion';
 
 interface CaseOpeningOverlayProps {
   dropData: { dropId: string; accessoryId: string; rarity: string } | null;
@@ -134,6 +135,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
     const revealAudio = new Audio('/sounds/reveal.mp3');
     revealAudio.volume = 0.8;
     revealAudio.playbackRate = 2.0;
+    // bewusst still: Autoplay kann vom Browser blockiert werden
     revealAudio.play().catch(() => {});
     setTimeout(() => {
       revealAudio.pause();
@@ -424,7 +426,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
                   animate={{ opacity: 1 }}
                   transition={{ delay: alreadyClaimed ? 0.1 : 0.65 }}
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={tapScale}
                   onClick={onClose}
                   style={{
                     background: `linear-gradient(135deg, ${rarityColor}, ${rarityColor}cc)`,

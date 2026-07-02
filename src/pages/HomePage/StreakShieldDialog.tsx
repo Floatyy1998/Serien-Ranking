@@ -40,7 +40,8 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
             position: 'fixed',
             inset: 0,
             background: 'rgba(10, 14, 26, 0.75)',
-            backdropFilter: 'blur(8px)',
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -60,8 +61,8 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
               padding: '20px',
               maxWidth: 320,
               width: '100%',
-              boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxShadow: 'var(--shadow-md)',
+              border: '1px solid var(--glass-border-light)',
             }}
           >
             {/* Header */}

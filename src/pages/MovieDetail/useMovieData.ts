@@ -135,7 +135,7 @@ export const useMovieData = () => {
             setTmdbOverview(data.overview);
           }
         })
-        .catch(() => {});
+        .catch(() => {}); // bewusst still: Backdrop/TMDB-Rating sind optionale Anreicherung
 
       // Fetch providers
       fetch(`https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${apiKey}`)
@@ -149,7 +149,7 @@ export const useMovieData = () => {
             );
           }
         })
-        .catch(() => {});
+        .catch(() => {}); // bewusst still: Provider-Anzeige ist optionale Anreicherung
     }
 
     // Full fetch if not found locally
@@ -189,7 +189,9 @@ export const useMovieData = () => {
             setTmdbMovie(movie);
           }
         })
-        .catch(() => {})
+        .catch((error) =>
+          console.error('Film-Details konnten nicht von TMDB geladen werden:', error)
+        )
         .finally(() => setLoading(false));
     }
   }, [localMovie, id, tmdbMovie]);
@@ -210,7 +212,7 @@ export const useMovieData = () => {
             });
           }
         })
-        .catch(() => {});
+        .catch(() => {}); // bewusst still: IMDB-Rating ist optionale Anreicherung
     }
   }, [movie, localMovie]);
 

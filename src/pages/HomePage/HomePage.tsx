@@ -61,7 +61,7 @@ export const HomePage: React.FC = () => {
         .then((snap) => {
           if (snap.val()) setDbDisplayName(snap.val());
         })
-        .catch(() => {});
+        .catch(() => {}); // bewusst still: Begrüßung fällt auf den Auth-Displaynamen zurück
     }
   }, [user]);
 

@@ -59,7 +59,8 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
         animate={{ opacity: 1, y: 0 }}
         style={{
           background: cardBg,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${borderColor}`,
           borderRadius: 16,
           padding: 20,
@@ -158,7 +159,8 @@ export const EventsTab = React.memo<EventsTabProps>(({ data, theme }) => {
           animate={{ opacity: 1, y: 0 }}
           style={{
             background: cardBg,
-            backdropFilter: 'blur(28px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             border: `1px solid ${borderColor}`,
             borderRadius: 16,
             padding: 20,

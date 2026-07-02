@@ -9,8 +9,8 @@ const createDynamicTheme = () => {
   const computedStyle = getComputedStyle(root);
 
   // Fallback-Werte falls CSS-Variablen noch nicht gesetzt sind
-  const primaryColor = computedStyle.getPropertyValue('--theme-primary').trim() || '#00fed7';
-  const backgroundColor = computedStyle.getPropertyValue('--theme-background').trim() || '#06090f';
+  const primaryColor = computedStyle.getPropertyValue('--theme-primary').trim() || '#00d123';
+  const backgroundColor = computedStyle.getPropertyValue('--theme-background').trim() || '#000000';
   const textSecondary =
     computedStyle.getPropertyValue('--theme-text-secondary').trim() || '#ffffff';
 
@@ -110,7 +110,7 @@ const createDynamicTheme = () => {
             backgroundColor: backgroundColor,
             backgroundImage: 'none',
             maxWidth: '50%',
-            boxShadow: `0 25px 50px -12px rgba(0, 254, 215, 0.15)`,
+            boxShadow: `0 25px 50px -12px rgba(0, 209, 35, 0.15)`,
             border: `1px solid ${colors.border.lighter}`,
             '@media (max-width: 600px)': {
               maxWidth: '100%',

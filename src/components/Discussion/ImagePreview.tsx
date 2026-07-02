@@ -33,6 +33,8 @@ export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
             border: `1px solid ${currentTheme.border.default}`,
             background: currentTheme.background.surface,
           }}
+          loading="lazy"
+          decoding="async"
         />
         {onRemove && (
           <button

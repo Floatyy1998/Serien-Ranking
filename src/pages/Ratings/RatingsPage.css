@@ -31,8 +31,8 @@
   position: sticky;
   top: 0;
   z-index: var(--z-dropdown);
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
 }
 
 .ratings-header-inner {
@@ -61,8 +61,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
 }
 
 .ratings-stat-card--average {
@@ -413,7 +413,7 @@
   min-width: 130px;
   width: max-content;
   box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
   z-index: 9999;
   animation: ratings-popup-in 0.15s ease-out;
 }

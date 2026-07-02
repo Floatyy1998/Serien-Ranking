@@ -6,6 +6,47 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
+import { tapScaleTight } from '../../lib/motion';
+
+// Static inline styles hoisted out of render (no per-render allocation)
+const CONTENT_WRAPPER_STYLE: React.CSSProperties = { position: 'relative', zIndex: 1 };
+const EMPTY_STATE_STYLE: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '60px 20px',
+  textAlign: 'center',
+};
+const EMPTY_TITLE_STYLE: React.CSSProperties = {
+  margin: '0 0 8px',
+  fontSize: '20px',
+  fontWeight: 700,
+  fontFamily: 'var(--font-display)',
+};
+const LIST_CONTAINER_STYLE: React.CSSProperties = { padding: '0 20px 120px' };
+const POSTER_WRAPPER_STYLE: React.CSSProperties = {
+  width: '64px',
+  minWidth: '64px',
+  aspectRatio: '2/3',
+  borderRadius: '12px',
+  overflow: 'hidden',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+};
+const POSTER_IMG_STYLE: React.CSSProperties = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+};
+const ITEM_CONTENT_STYLE: React.CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  gap: '6px',
+};
+const UNHIDE_ICON_STYLE: React.CSSProperties = { fontSize: '16px' };
 
 export const HiddenSeriesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,7 +81,7 @@ export const HiddenSeriesPage: React.FC = () => {
         color: currentTheme.text.primary,
       }}
     >
-      <div style={{ position: 'relative', zIndex: 1 }}>
+      <div style={CONTENT_WRAPPER_STYLE}>
         <PageHeader
           title="Pausiert"
           gradientFrom={currentTheme.text.primary}
@@ -72,14 +113,7 @@ export const HiddenSeriesPage: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '60px 20px',
-              textAlign: 'center',
-            }}
+            style={EMPTY_STATE_STYLE}
           >
             <motion.div
               style={{
@@ -95,16 +129,7 @@ export const HiddenSeriesPage: React.FC = () => {
             >
               <Visibility style={{ fontSize: '48px', color: currentTheme.primary }} />
             </motion.div>
-            <h2
-              style={{
-                margin: '0 0 8px',
-                fontSize: '20px',
-                fontWeight: 700,
-                fontFamily: 'var(--font-display)',
-              }}
-            >
-              Alles aktiv
-            </h2>
+            <h2 style={EMPTY_TITLE_STYLE}>Alles aktiv</h2>
             <p
               style={{
                 margin: 0,
@@ -121,7 +146,7 @@ export const HiddenSeriesPage: React.FC = () => {
         )}
 
         {/* Series List */}
-        <div style={{ padding: '0 20px 120px' }}>
+        <div style={LIST_CONTAINER_STYLE}>
           <AnimatePresence mode="popLayout">
             {seriesWithStats.map(({ series, watchedEpisodes, totalEpisodes }, index) => {
               const progress =
@@ -139,6 +164,9 @@ export const HiddenSeriesPage: React.FC = () => {
                     navigate(`/series/${series.id}`);
                   }}
                   style={{
+                    // Native virtualization: skip layout/paint of offscreen rows
+                    contentVisibility: 'auto',
+                    containIntrinsicBlockSize: 'auto 124px',
                     display: 'flex',
                     gap: '14px',
                     padding: '14px',
@@ -155,26 +183,13 @@ export const HiddenSeriesPage: React.FC = () => {
                   }}
                 >
                   {/* Poster */}
-                  <div
-                    style={{
-                      width: '64px',
-                      minWidth: '64px',
-                      aspectRatio: '2/3',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    }}
-                  >
+                  <div style={POSTER_WRAPPER_STYLE}>
                     <img
                       src={getImageUrl(series.poster?.poster, 'w342')}
                       alt={series.title}
                       loading="lazy"
                       decoding="async"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
+                      style={POSTER_IMG_STYLE}
                       onError={(e) => {
                         (e.target as HTMLImageElement).style.opacity = '0';
                       }}
@@ -182,16 +197,7 @@ export const HiddenSeriesPage: React.FC = () => {
                   </div>
 
                   {/* Content */}
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'center',
-                      gap: '6px',
-                    }}
-                  >
+                  <div style={ITEM_CONTENT_STYLE}>
                     <h3
                       style={{
                         margin: 0,
@@ -233,7 +239,7 @@ export const HiddenSeriesPage: React.FC = () => {
 
                   {/* Unhide button */}
                   <motion.button
-                    whileTap={{ scale: 0.9 }}
+                    whileTap={tapScaleTight}
                     onClick={(e) => handleUnhide(series.id, e)}
                     style={{
                       alignSelf: 'center',
@@ -252,7 +258,7 @@ export const HiddenSeriesPage: React.FC = () => {
                       flexShrink: 0,
                     }}
                   >
-                    <Visibility style={{ fontSize: '16px' }} />
+                    <Visibility style={UNHIDE_ICON_STYLE} />
                     Weiter
                   </motion.button>
                 </motion.div>

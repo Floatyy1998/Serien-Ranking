@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;
@@ -65,7 +66,7 @@ export const MovieActionButtons = memo(
     return (
       <div className={`md-actions ${isMobile ? 'md-actions--mobile' : ''}`}>
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={onNavigateRate}
           disabled={loading}
           className={`md-rate-btn ${isMobile ? 'md-rate-btn--mobile' : ''}`}
@@ -108,7 +109,7 @@ export const MovieActionButtons = memo(
 
         <Tooltip title="Film löschen" arrow>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={onDeleteClick}
             className="action-btn"
             style={{

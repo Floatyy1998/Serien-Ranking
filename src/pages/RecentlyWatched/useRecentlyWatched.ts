@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { petService } from '../../services/petService';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { EpisodeDataManager } from './EpisodeDataManager';
 import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
 
@@ -227,7 +227,20 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
       await db.ref(`${epPath}/c`).set(episode.watchCount + 1);
       await db.ref(`${epPath}/l`).set(Math.floor(Date.now() / 1000));
 
-      await petService.watchedSeriesWithGenreAllPets(user.uid, series?.genre?.genres || []);
+      // Nur Pet-XP an dieser Site — keine Badge-Counter und kein Wrapped-Event
+      // (bestehendes Verhalten beibehalten).
+      await runEpisodeWatchFanout({
+        userId: user.uid,
+        seriesId: episode.seriesId,
+        seriesTitle: episode.seriesName,
+        seasonNumber: episode.seasonNumber,
+        episodeNumber: episode.episodeNumber,
+        runtimeMinutes: 0, // ungenutzt, solange wrappedEvent aus ist
+        isRewatch: true,
+        genres: series?.genre?.genres,
+        badgeCounters: false,
+        wrappedEvent: false,
+      });
 
       setCompletingEpisodes((prev) => new Set([...prev, key]));
       setTimeout(() => {

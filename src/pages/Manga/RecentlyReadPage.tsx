@@ -7,6 +7,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Manga } from '../../types/Manga';
 import { getEffectiveChapterCount } from './mangaUtils';
+import { tapScaleSmall } from '../../lib/motion';
 
 const TIME_RANGES = [
   { days: 7, label: '7 Tage' },
@@ -145,7 +146,7 @@ export const RecentlyReadPage = () => {
                       cursor: 'pointer',
                       alignItems: 'center',
                     }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={tapScaleSmall}
                   >
                     <img
                       src={manga.poster}
@@ -158,6 +159,7 @@ export const RecentlyReadPage = () => {
                         flexShrink: 0,
                       }}
                       loading="lazy"
+                      decoding="async"
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div

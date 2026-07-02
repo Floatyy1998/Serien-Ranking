@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText, HorizontalScrollContainer } from '../../components/ui';
 import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import './ActorUniversePage.css';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -109,7 +110,7 @@ export const ActorDetailModal = ({
               {selectedActor.series.map((series) => (
                 <motion.div
                   key={series.id}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={tapScaleSmall}
                   onClick={() => {
                     onClose();
                     navigate(`/series/${series.id}`);
@@ -158,7 +159,7 @@ export const ActorDetailModal = ({
                   {selectedActor.recommendations.map((rec) => (
                     <motion.div
                       key={rec.id}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={tapScale}
                       onClick={() => {
                         onClose();
                         navigate(`/series/${rec.id}`);
@@ -226,7 +227,7 @@ export const ActorDetailModal = ({
                       return (
                         <motion.div
                           key={otherId}
-                          whileTap={{ scale: 0.95 }}
+                          whileTap={tapScale}
                           onClick={() => onSelectActor(other)}
                           className="au-modal-connection-chip"
                           style={{

@@ -37,7 +37,8 @@ export const ActivityFeed = React.memo<ActivityFeedProps>(
         animate={{ opacity: 1, y: 0 }}
         style={{
           background: cardBg,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${borderColor}`,
           borderRadius: 16,
           padding: '8px 0',
@@ -73,7 +74,8 @@ export const ActivityFeed = React.memo<ActivityFeedProps>(
                     position: 'sticky',
                     top: 0,
                     background: cardBg,
-                    backdropFilter: 'blur(28px)',
+                    backdropFilter: 'var(--blur-lg)',
+                    WebkitBackdropFilter: 'var(--blur-lg)',
                     zIndex: 1,
                   }}
                 >
@@ -235,6 +237,8 @@ export const ActivityFeed = React.memo<ActivityFeedProps>(
                                 borderRadius: '50%',
                                 objectFit: 'cover',
                               }}
+                              loading="lazy"
+                              decoding="async"
                             />
                           ) : (
                             <div

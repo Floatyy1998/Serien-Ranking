@@ -1,37 +1,39 @@
 /**
  * 🚀 Enhanced useFirebaseCache Hook with Offline Support
  * Erweitert den ursprünglichen Hook um Service Worker und IndexedDB Integration
+ *
+ * Komponierender Hook — die Einzelteile leben in ./firebaseCache/:
+ * - cacheIO.ts          IndexedDB/SW-Cache lesen/schreiben/leeren
+ * - deltaListener.ts    child_added/changed/removed-Wiring (Delta-Sync)
+ * - deltaMerge.ts       pure Merge-Logik der Delta-Events
+ * - realtimeListener.ts einzelner .on('value')-Listener
+ * - versionCheck.ts     serienVersion-Vergleich (versionPath-Skip)
+ * - guards.ts           Snapshot-/Netzwerkfehler-Guards
+ * - reconnect.ts        Online/Offline-Reconnect-Sync
  */
 import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { offlineFirebaseService } from '../services/offlineFirebaseService';
-interface EnhancedCacheOptions {
-  ttl?: number;
-  useRealtimeListener?: boolean;
-  /** Use child_changed/added/removed instead of onValue for Record-type data.
-   *  Dramatically reduces bandwidth: only changed children are downloaded, not the entire dataset. */
-  useDeltaSync?: boolean;
-  /** When set, child_changed listeners are placed on this sub-key of each child instead of on the child itself.
-   *  E.g. 'seasons' → listens on {path}/{childKey}/seasons → only the changed season is downloaded. */
-  deltaSubKey?: string;
-  /** Firebase path to a version counter (e.g. 'users/{uid}/meta/serienVersion').
-   *  On load: read this single number and compare with cached version.
-   *  Match → skip full load. Mismatch → full load. Handles multi-device correctly. */
-  versionPath?: string;
-  enableOfflineSupport?: boolean;
-  syncOnReconnect?: boolean;
-  cacheInServiceWorker?: boolean;
-}
-interface EnhancedCacheResult<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  isStale: boolean;
-  isOffline: boolean;
-  lastUpdated: number | null;
-  refetch: () => Promise<void>;
-  clearCache: () => Promise<void>;
-}
+import {
+  clearCachedPath,
+  loadFromCache as loadFromCacheIO,
+  saveToCache as saveToCacheIO,
+} from './firebaseCache/cacheIO';
+import { attachDeltaListeners } from './firebaseCache/deltaListener';
+import {
+  isEmptySnapshot,
+  isNetworkErrorMessage,
+  shouldKeepPreviousData,
+} from './firebaseCache/guards';
+import { attachRealtimeListener } from './firebaseCache/realtimeListener';
+import { useReconnectSync } from './firebaseCache/reconnect';
+import type { EnhancedCacheOptions, EnhancedCacheResult } from './firebaseCache/types';
+import {
+  fetchRemoteVersion,
+  fetchVersionPair,
+  normalizeVersion,
+  versionsMatch,
+} from './firebaseCache/versionCheck';
+
 /**
  * Enhanced useFirebaseCache Hook with Offline-First capabilities
  */
@@ -60,44 +62,22 @@ export function useEnhancedFirebaseCache<T = unknown>(
   /**
    * 📦 Daten aus allen verfügbaren Caches laden
    */
-  const loadFromCache = useCallback(async (): Promise<T | null> => {
-    if (!enableOfflineSupport) return null;
-    try {
-      // 1. Versuche IndexedDB Cache
-      const cachedData = await offlineFirebaseService.getCachedData(path);
-      if (cachedData) {
-        return cachedData as T;
-      }
-      // 2. Fallback: Memory Cache (falls implementiert)
-      // Hier könnte ein Memory-Cache implementiert werden
-      return null;
-    } catch {
-      return null; // cache miss is silent — caller falls back to network
-    }
-  }, [path, enableOfflineSupport]);
+  const loadFromCache = useCallback(
+    (): Promise<T | null> => loadFromCacheIO<T>(path, enableOfflineSupport),
+    [path, enableOfflineSupport]
+  );
   /**
    * 💾 Daten in alle Caches speichern
    */
   const versionRef = useRef<number | undefined>(undefined);
   const saveToCache = useCallback(
-    async (newData: T): Promise<void> => {
-      if (!enableOfflineSupport) return;
-      try {
-        // IndexedDB Cache (mit Version falls vorhanden)
-        await offlineFirebaseService.cacheData(path, newData, ttl, versionRef.current);
-        // Service Worker Cache (falls aktiviert)
-        if (cacheInServiceWorker && 'serviceWorker' in navigator) {
-          if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-              type: 'CACHE_FIREBASE_DATA',
-              data: { path, data: newData },
-            });
-          }
-        }
-      } catch {
-        // ignore — cache write failures are non-fatal; data is still in memory state
-      }
-    },
+    (newData: T): Promise<void> =>
+      saveToCacheIO<T>(path, newData, {
+        ttl,
+        version: versionRef.current,
+        enableOfflineSupport,
+        cacheInServiceWorker,
+      }),
     [path, ttl, enableOfflineSupport, cacheInServiceWorker]
   );
   /**
@@ -129,60 +109,16 @@ export function useEnhancedFirebaseCache<T = unknown>(
       }
       listenerRef.current = null;
     }
-    try {
-      const ref = firebase.database().ref(path);
-      const listener = ref.on(
-        'value',
-        async (snapshot) => {
-          if (snapshot.exists()) {
-            const newData = snapshot.val();
-            setData(newData);
-            setLastUpdated(Date.now());
-            setIsStale(false);
-            setError(null);
-            setIsOffline(false); // Successful realtime = online
-            // Cache aktualisieren
-            await saveToCache(newData);
-          } else {
-            // !exists kann transient sein wenn Firebase RTDB bei einem
-            // Netzwerk-Glitch kurz disconnected ist. NICHT auf Cache
-            // zurueckfallen (waere potentiell veraltet — z.B. wenn ein
-            // Feld nachtraeglich auf dem Server geloescht wurde aber im
-            // IDB-Cache noch existiert). State unveraendert lassen — der
-            // naechste echte Snapshot setzt die aktuelle Wahrheit.
-          }
-          setLoading(false);
-        },
-        (error) => {
-          // Bei Netzwerkfehlern auf Cache zurückfallen
-          const errorMessage = error?.message || error?.toString() || '';
-          const isNetworkError =
-            errorMessage.includes('network') ||
-            errorMessage.includes('NETWORK') ||
-            errorMessage.includes('ERR_INTERNET_DISCONNECTED');
-          if (isNetworkError) {
-            setIsOffline(true);
-            loadFromCache().then((cachedData) => {
-              if (cachedData) {
-                setData(cachedData);
-                setIsStale(true);
-                setError('Offline - zeige gecachte Daten');
-              } else {
-                setError('Keine Offline-Daten verfügbar');
-              }
-              setLoading(false);
-            });
-          } else {
-            setError(errorMessage || 'Firebase Fehler');
-            setLoading(false);
-          }
-        }
-      );
-      listenerRef.current = () => ref.off('value', listener);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Realtime setup failed');
-      setLoading(false);
-    }
+    listenerRef.current = attachRealtimeListener<T>(path, {
+      setData,
+      setLastUpdated,
+      setIsStale,
+      setIsOffline,
+      setError,
+      setLoading,
+      saveToCache,
+      loadFromCache,
+    });
   }, [path, useRealtimeListener, saveToCache, loadFromCache]);
   /**
    * 🔄 Delta Sync Listener einrichten (child_changed/added/removed)
@@ -192,229 +128,15 @@ export function useEnhancedFirebaseCache<T = unknown>(
    * Hilfsfunktion: Delta-Listener auf Basis von initialData aufsetzen.
    * Wird sowohl beim initialen Setup als auch nach Full-Load verwendet.
    */
-  const attachDeltaListeners = useCallback(
+  const attachDelta = useCallback(
     (ref: firebase.database.Reference, initialData: T) => {
-      const cleanups: (() => void)[] = [];
-
-      // Deep delta: Listener pro Child auf deren Sub-Key (z.B. seasons).
-      // child_changed: bestehender Season-Knoten wurde geaendert (Episode
-      //   markiert/unmarkiert in einer Season die bereits Watch-Daten hatte)
-      // child_added: neuer Season-Knoten erzeugt (erste Episode in einer
-      //   neuen Staffel markiert — z.B. via Extension)
-      // child_removed: Season-Knoten geloescht (letzte Episode in einer
-      //   Staffel unmarkiert → Firebase loescht leere Knoten)
-      const subKeyName = deltaSubKey ?? '';
-      const knownSubChildren = new Map<string, Set<string>>();
-      const attachSubListener = (childKey: string) => {
-        const subRef = firebase.database().ref(`${path}/${childKey}/${subKeyName}`);
-        // Track bekannte Sub-Children um initiale child_added Events zu skippen
-        const initChild = (initialData as Record<string, Record<string, unknown>>)[childKey];
-        const initSub = initChild?.[subKeyName];
-        const knownKeys = new Set<string>(
-          initSub && typeof initSub === 'object' ? Object.keys(initSub) : []
-        );
-        knownSubChildren.set(childKey, knownKeys);
-
-        const applySubUpdate = (subChildKey: string, value: unknown) => {
-          setData((prev) => {
-            const prevRecord = prev as Record<string, Record<string, unknown>>;
-            const child = prevRecord[childKey];
-            if (!child) return prev;
-            const subCollection = child[subKeyName];
-            let updatedSub: unknown;
-            if (Array.isArray(subCollection)) {
-              updatedSub = [...subCollection];
-              (updatedSub as unknown[])[Number(subChildKey)] = value;
-            } else {
-              updatedSub = {
-                ...(subCollection as Record<string, unknown>),
-                [subChildKey]: value,
-              };
-            }
-            const updated = {
-              ...prevRecord,
-              [childKey]: { ...child, [subKeyName]: updatedSub },
-            } as T;
-            saveToCache(updated);
-            return updated;
-          });
-          setLastUpdated(Date.now());
-        };
-
-        const onSubChanged = subRef.on('child_changed', (snap) => {
-          if (snap.key) applySubUpdate(snap.key, snap.val());
-        });
-        const onSubAdded = subRef.on('child_added', (snap) => {
-          const k = snap.key;
-          if (!k) return;
-          // Initiale Kinder skippen (werden beim Setup gefeuert)
-          const known = knownSubChildren.get(childKey);
-          if (known?.has(k)) {
-            known.delete(k);
-            return;
-          }
-          applySubUpdate(k, snap.val());
-        });
-        const onSubRemoved = subRef.on('child_removed', (snap) => {
-          const k = snap.key;
-          if (!k) return;
-          setData((prev) => {
-            const prevRecord = prev as Record<string, Record<string, unknown>>;
-            const child = prevRecord[childKey];
-            if (!child) return prev;
-            const subCollection = child[subKeyName];
-            if (!subCollection || typeof subCollection !== 'object') return prev;
-            const copy = Array.isArray(subCollection)
-              ? [...subCollection]
-              : { ...(subCollection as Record<string, unknown>) };
-            if (Array.isArray(copy)) {
-              delete (copy as unknown[])[Number(k)];
-            } else {
-              delete (copy as Record<string, unknown>)[k];
-            }
-            const updated = {
-              ...prevRecord,
-              [childKey]: { ...child, [subKeyName]: copy },
-            } as T;
-            saveToCache(updated);
-            return updated;
-          });
-          setLastUpdated(Date.now());
-        });
-        cleanups.push(
-          () => subRef.off('child_changed', onSubChanged),
-          () => subRef.off('child_added', onSubAdded),
-          () => subRef.off('child_removed', onSubRemoved)
-        );
-      };
-
-      // Property-Level Listener: fängt Änderungen, Hinzufügen und Entfernen
-      // von Metadaten-Properties (rating, hidden, watchlist etc.).
-      // Überspringt deltaSubKey (z.B. seasons) — das deckt der Deep-Listener ab.
-      const attachPropListeners = (targetKey: string) => {
-        const initChild = (initialData as Record<string, Record<string, unknown>>)[targetKey];
-        const knownProps = new Set<string>(initChild ? Object.keys(initChild) : []);
-        const propRef = firebase.database().ref(`${path}/${targetKey}`);
-
-        const applyPropUpdate = (propKey: string, value: unknown) => {
-          setData((prev) => {
-            const prevRecord = prev as Record<string, Record<string, unknown>>;
-            const child = prevRecord[targetKey];
-            if (!child) return prev;
-            const updated = {
-              ...prevRecord,
-              [targetKey]: { ...child, [propKey]: value },
-            } as T;
-            saveToCache(updated);
-            return updated;
-          });
-          setLastUpdated(Date.now());
-        };
-
-        const onChanged = propRef.on('child_changed', (snap) => {
-          const propKey = snap.key;
-          if (!propKey || propKey === subKeyName) return;
-          applyPropUpdate(propKey, snap.val());
-        });
-        const onAdded = propRef.on('child_added', (snap) => {
-          const propKey = snap.key;
-          if (!propKey || propKey === subKeyName) return;
-          if (knownProps.has(propKey)) {
-            knownProps.delete(propKey);
-            return;
-          }
-          applyPropUpdate(propKey, snap.val());
-        });
-        const onRemoved = propRef.on('child_removed', (snap) => {
-          const propKey = snap.key;
-          if (!propKey || propKey === subKeyName) return;
-          setData((prev) => {
-            const prevRecord = prev as Record<string, Record<string, unknown>>;
-            const child = prevRecord[targetKey];
-            if (!child) return prev;
-            const copy = { ...child };
-            delete copy[propKey];
-            const updated = { ...prevRecord, [targetKey]: copy } as T;
-            saveToCache(updated);
-            return updated;
-          });
-          setLastUpdated(Date.now());
-        });
-        cleanups.push(
-          () => propRef.off('child_changed', onChanged),
-          () => propRef.off('child_added', onAdded),
-          () => propRef.off('child_removed', onRemoved)
-        );
-      };
-
-      if (deltaSubKey) {
-        for (const childKey of Object.keys(initialData as Record<string, unknown>)) {
-          attachSubListener(childKey);
-          attachPropListeners(childKey);
-        }
-      } else {
-        const onChanged = ref.on('child_changed', (snap) => {
-          const key = snap.key;
-          if (!key) return;
-          setData((prev) => {
-            const updated = {
-              ...(prev as Record<string, unknown>),
-              [key]: snap.val(),
-            } as T;
-            saveToCache(updated);
-            return updated;
-          });
-          setLastUpdated(Date.now());
-        });
-        cleanups.push(() => ref.off('child_changed', onChanged));
-      }
-
-      // child_added: Fängt neue Kinder (z.B. neu hinzugefügte Serien vom Server).
-      // Initiale Kinder werden übersprungen (knownKeys), nur echte Neueinträge laden.
-      const knownKeys = new Set<string>(
-        initialData && typeof initialData === 'object' ? Object.keys(initialData) : []
-      );
-      const onAdded = ref.on('child_added', (snap) => {
-        const key = snap.key;
-        if (!key) return;
-        if (knownKeys.has(key)) {
-          knownKeys.delete(key);
-          return;
-        }
-        setData((prev) => {
-          const updated = {
-            ...(prev as Record<string, unknown>),
-            [key]: snap.val(),
-          } as T;
-          saveToCache(updated);
-          return updated;
-        });
-        setLastUpdated(Date.now());
-        if (deltaSubKey) {
-          attachSubListener(key);
-          attachPropListeners(key);
-        }
+      listenerRef.current = attachDeltaListeners<T>(ref, initialData, {
+        path,
+        deltaSubKey,
+        setData,
+        setLastUpdated,
+        saveToCache,
       });
-      cleanups.push(() => ref.off('child_added', onAdded));
-
-      const onRemoved = ref.on('child_removed', (snap) => {
-        const key = snap.key;
-        if (!key) return;
-        setData((prev) => {
-          if (!prev || typeof prev !== 'object') return prev;
-          const copy = { ...(prev as Record<string, unknown>) };
-          delete copy[key];
-          const updated = copy as T;
-          saveToCache(updated);
-          return updated;
-        });
-        setLastUpdated(Date.now());
-      });
-      cleanups.push(() => ref.off('child_removed', onRemoved));
-
-      listenerRef.current = () => {
-        cleanups.forEach((cleanup) => cleanup());
-      };
     },
     [path, deltaSubKey, saveToCache]
   );
@@ -424,35 +146,25 @@ export function useEnhancedFirebaseCache<T = unknown>(
       try {
         // Version von Firebase lesen und speichern
         if (versionPath) {
-          const vSnap = await firebase.database().ref(versionPath).once('value');
-          versionRef.current = vSnap.val() ?? undefined;
+          versionRef.current = await fetchRemoteVersion(versionPath);
         }
         const snapshot = await ref.once('value');
         const initialData = (snapshot.val() || {}) as T;
         // Bei einem Reconnect-Glitch kann snapshot.val() null sein obwohl
         // der User echte Daten hat → bestehenden State NICHT durch leeres
         // Object ersetzen, sonst wirken alle Episoden ploetzlich "ungesehen".
-        const isEmpty = !snapshot.exists() || Object.keys(initialData as object).length === 0;
-        setData((prev) => {
-          if (isEmpty && prev && Object.keys(prev as object).length > 0) {
-            return prev;
-          }
-          return initialData;
-        });
+        const isEmpty = isEmptySnapshot(snapshot.exists(), initialData as object);
+        setData((prev) => (shouldKeepPreviousData(isEmpty, prev) ? prev : initialData));
         setLastUpdated(Date.now());
         setIsStale(false);
         setError(null);
         setLoading(false);
         if (!isEmpty) await saveToCache(initialData);
-        attachDeltaListeners(ref, initialData);
+        attachDelta(ref, initialData);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : err?.toString?.() || 'Firebase Fehler';
-        const isNetworkError =
-          errorMessage.includes('network') ||
-          errorMessage.includes('NETWORK') ||
-          errorMessage.includes('ERR_INTERNET_DISCONNECTED');
-        if (isNetworkError) {
+        if (isNetworkErrorMessage(errorMessage)) {
           setIsOffline(true);
           const cached = await loadFromCache();
           if (cached) {
@@ -467,7 +179,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         setLoading(false);
       }
     },
-    [versionPath, attachDeltaListeners, saveToCache, loadFromCache]
+    [versionPath, attachDelta, saveToCache, loadFromCache]
   );
 
   const setupDeltaListener = useCallback(
@@ -484,16 +196,12 @@ export function useEnhancedFirebaseCache<T = unknown>(
       // Cache vorhanden + Version-Check konfiguriert → nur eine Zahl lesen
       if (versionPath) {
         try {
-          const [remoteVersionSnap, cachedVersion] = await Promise.all([
-            firebase.database().ref(versionPath).once('value'),
-            offlineFirebaseService.getCacheVersion(path),
-          ]);
-          const remoteVersion: number | null = remoteVersionSnap.val();
-          versionRef.current = remoteVersion ?? undefined;
+          const { remoteVersion, cachedVersion } = await fetchVersionPair(versionPath, path);
+          versionRef.current = normalizeVersion(remoteVersion);
 
-          if (remoteVersion !== null && cachedVersion !== null && remoteVersion === cachedVersion) {
+          if (versionsMatch(remoteVersion, cachedVersion)) {
             // Version stimmt überein → Cache ist aktuell, kein Full-Load nötig
-            attachDeltaListeners(ref, existingCacheData);
+            attachDelta(ref, existingCacheData);
             return;
           }
 
@@ -507,9 +215,9 @@ export function useEnhancedFirebaseCache<T = unknown>(
       }
 
       // Kein versionPath konfiguriert → Cache vertrauen, direkt Listener aufsetzen
-      attachDeltaListeners(ref, existingCacheData);
+      attachDelta(ref, existingCacheData);
     },
-    [path, useDeltaSync, versionPath, attachDeltaListeners, doFullLoadAndAttach]
+    [path, useDeltaSync, versionPath, attachDelta, doFullLoadAndAttach]
   );
   /**
    * 🔄 Daten neu laden (Refetch)
@@ -557,41 +265,14 @@ export function useEnhancedFirebaseCache<T = unknown>(
   /**
    * 🗑️ Cache leeren
    */
-  const clearCache = useCallback(async (): Promise<void> => {
-    try {
-      if (enableOfflineSupport) {
-        await offlineFirebaseService.removeCachedData(path);
-      }
-    } catch {
-      // ignore — cache eviction failures are non-fatal
-    }
-  }, [path, enableOfflineSupport]);
+  const clearCache = useCallback(
+    (): Promise<void> => clearCachedPath(path, enableOfflineSupport),
+    [path, enableOfflineSupport]
+  );
   /**
    * 🎧 Online/Offline Event Handler
    */
-  useEffect(() => {
-    if (!syncOnReconnect) return;
-    const handleOnline = () => {
-      setIsOffline(false);
-      if (isStale || !data) {
-        refetch();
-      }
-    };
-    const handleOffline = () => {
-      setIsOffline(true);
-      setIsStale(true);
-    };
-    // Initiale Offline-Status setzen — External-Sync mit dem Network-Status
-    // des Browsers, legitimer Setup-Effect.
-
-    setIsOffline(!navigator.onLine);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, [syncOnReconnect, isStale, data, refetch]);
+  useReconnectSync<T>({ syncOnReconnect, isStale, data, refetch, setIsOffline, setIsStale });
   /**
    * 🚀 Initial Load Effect
    */

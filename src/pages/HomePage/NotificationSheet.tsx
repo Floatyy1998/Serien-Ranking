@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { NotificationItem } from './notifications/NotificationItem';
 import { RecommendationCard } from './notifications/RecommendationCard';
 import type { UnifiedNotification } from './useUnifiedNotifications';
+import { tapScaleTight } from '../../lib/motion';
 
 interface NotificationSheetProps {
   isOpen: boolean;
@@ -107,7 +108,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
             </div>
             {hasUnread && (
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={tapScaleTight}
                 onClick={onMarkAllRead}
                 style={{
                   width: '40px',

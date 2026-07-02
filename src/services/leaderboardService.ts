@@ -2,6 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import type { GlobalLeaderboardEntry, LeaderboardStats, MonthlyTrophy } from '../types/Leaderboard';
 import { toLocalDateString } from '../lib/date/date.utils';
+import { fetchPublicUserFields } from '../lib/firebase/userDisplayData';
 
 function getCurrentMonthKey(): string {
   const now = new Date();
@@ -231,18 +232,18 @@ export async function seedLeaderboardStats(
         )
           return;
 
-        // Profil laden
-        const userSnap = await firebase.database().ref(`users/${uid}`).once('value');
-        const userData = userSnap.val() as Record<string, unknown> | null;
+        // Profil laden — Punkt-Reads statt Vollknoten-Read (users/$other ist
+        // unter den gehärteten Rules nicht mehr komplett lesbar).
+        const profile = await fetchPublicUserFields(uid);
 
         await firebase
           .database()
           .ref(`leaderboardStats/${uid}`)
           .set({
             ...stats,
-            displayName: toDisplayName(userData?.displayName, userData?.username),
-            photoURL: (userData?.photoURL as string) || null,
-            username: (userData?.username as string) || null,
+            displayName: toDisplayName(profile.displayName, profile.username),
+            photoURL: profile.photoURL || null,
+            username: profile.username || null,
           });
       } catch {
         // Skip user bei Permission-Fehler
@@ -312,14 +313,16 @@ export async function fetchLeaderboardProfiles(
   const results = await Promise.all(
     uids.map(async (uid) => {
       try {
-        const snapshot = await firebase.database().ref(`users/${uid}`).once('value');
-        const data = snapshot.val() as Record<string, unknown> | null;
+        // Punkt-Reads statt Vollknoten-Read (users/$other ist unter den
+        // gehärteten Rules nicht mehr komplett lesbar) — genutzt werden nur
+        // displayName/username/photoURL, die einzeln lesbar bleiben.
+        const fields = await fetchPublicUserFields(uid);
         return {
           uid,
           profile: {
-            displayName: toDisplayName(data?.displayName, data?.username),
-            photoURL: (data?.photoURL as string) || undefined,
-            username: (data?.username as string) || undefined,
+            displayName: toDisplayName(fields.displayName, fields.username),
+            photoURL: fields.photoURL || undefined,
+            username: fields.username || undefined,
           },
         };
       } catch {

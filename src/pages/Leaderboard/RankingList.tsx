@@ -49,7 +49,7 @@ export const RankingList = React.memo(function RankingList({
 
           <div className="lb-rank-avatar" style={{ background: currentTheme.background.card }}>
             {entry.photoURL ? (
-              <img src={entry.photoURL} alt={entry.displayName} />
+              <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
             ) : (
               <span style={{ fontSize: 16, fontWeight: 700, color: currentTheme.text.secondary }}>
                 {entry.displayName.charAt(0).toUpperCase()}

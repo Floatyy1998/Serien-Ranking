@@ -59,8 +59,8 @@ export const CookieConsentBanner = memo(() => {
           <div
             style={{
               background: COLORS.bgGlass,
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'var(--blur-lg)',
+              WebkitBackdropFilter: 'var(--blur-lg)',
               border: `1px solid ${COLORS.border}`,
               borderRadius: 20,
               padding: '20px',

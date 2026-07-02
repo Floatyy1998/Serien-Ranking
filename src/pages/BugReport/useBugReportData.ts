@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
+import { ADMIN_UID } from '../../config/admin';
 
-const ADMIN_UID = '83fRTz3YqgMkjz646AJ1GO6I8Kg1';
 const AUTO_DELETE_DAYS = 5;
 
 export function useBugReportData() {

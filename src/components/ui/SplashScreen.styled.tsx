@@ -1,5 +1,11 @@
 import { Box, keyframes, styled } from '@mui/material';
 
+// Theming: Der Splash ist der allererste Frame der App. global.css (:root) liefert
+// die Grün/Schwarz-Defaults sofort; das User-Theme (themeHelpers/ThemeContext) setzt
+// die --theme-*-Vars erst kurz nach dem App-Mount inline auf <html>. Deshalb hier
+// konsequent var(--theme-*, <Grün/Schwarz-Fallback>) — der Splash färbt sich live um,
+// sobald die User-Vars gesetzt sind. Deko-Zweitfarbe ist --theme-secondary-gradient.
+
 // ============= MODERN ANIMATIONS =============
 
 // Smooth fade in
@@ -55,12 +61,12 @@ const fadeOut = keyframes`
 // Glow pulse animation
 const glowPulse = keyframes`
   0%, 100% {
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3),
-                0 0 40px rgba(236, 72, 153, 0.1);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent),
+                0 0 40px color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 10%, transparent);
   }
   50% {
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.5),
-                0 0 60px rgba(236, 72, 153, 0.2);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent),
+                0 0 60px color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 20%, transparent);
   }
 `;
 
@@ -127,11 +133,11 @@ export const SplashContainer = styled(Box, {
   align-items: center;
   background: linear-gradient(
     135deg,
-    #06090f 0%,
-    #0e1420 25%,
-    #080c14 50%,
-    #0e1420 75%,
-    #06090f 100%
+    var(--theme-background, #000000) 0%,
+    var(--theme-surface, #0f0f0f) 25%,
+    color-mix(in srgb, var(--theme-background, #000000) 50%, var(--theme-surface, #0f0f0f)) 50%,
+    var(--theme-surface, #0f0f0f) 75%,
+    var(--theme-background, #000000) 100%
   );
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
@@ -146,10 +152,26 @@ export const BackgroundMesh = styled(Box)`
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 50%, rgba(236, 72, 153, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 50% 20%, rgba(139, 92, 246, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+    radial-gradient(
+      circle at 20% 50%,
+      color-mix(in srgb, var(--theme-primary, #00d123) 6%, transparent) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 50%,
+      color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 6%, transparent) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 50% 20%,
+      color-mix(in srgb, var(--theme-primary, #00d123) 4%, transparent) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 50% 80%,
+      color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 4%, transparent) 0%,
+      transparent 50%
+    );
   pointer-events: none;
 `;
 
@@ -160,12 +182,16 @@ export const Particle = styled(Box, {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(236, 72, 153, 0.8));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
+    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 80%, transparent)
+  );
   left: ${(props) => props.left};
   border-radius: 50%;
   animation: ${particleFloat} 15s linear infinite;
   animation-delay: ${(props) => props.delay}s;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent);
 `;
 
 // Modern logo container with glow
@@ -191,8 +217,8 @@ export const LogoGlow = styled(Box)`
   height: 100%;
   background: radial-gradient(
     circle,
-    rgba(139, 92, 246, 0.3) 0%,
-    rgba(236, 72, 153, 0.1) 40%,
+    color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent) 0%,
+    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 10%, transparent) 40%,
     transparent 70%
   );
   filter: blur(24px);
@@ -209,10 +235,28 @@ export const LogoSVG = styled('svg')`
     ${logoEntrance} 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
     ${breathe} 3s ease-in-out infinite;
   animation-delay: 0s, 1.2s;
-  filter: drop-shadow(0 10px 40px rgba(139, 92, 246, 0.4));
+  filter: drop-shadow(
+    0 10px 40px color-mix(in srgb, var(--theme-primary, #00d123) 40%, transparent)
+  );
 
   path {
     fill: url(#goldGradient);
+  }
+
+  /* Logo-Verlauf ans Theme koppeln: CSS stop-color überschreibt die gebakten
+     Presentation-Attributes der SVG-Stops (Verlauf wie --gradient-cinematic). */
+  #goldGradient stop:nth-of-type(1) {
+    stop-color: var(--theme-primary, #00d123);
+  }
+  #goldGradient stop:nth-of-type(2) {
+    stop-color: color-mix(
+      in srgb,
+      var(--theme-primary, #00d123) 60%,
+      var(--theme-secondary-gradient, #8b5cf6)
+    );
+  }
+  #goldGradient stop:nth-of-type(3) {
+    stop-color: var(--theme-secondary-gradient, #8b5cf6);
   }
 `;
 
@@ -223,11 +267,13 @@ export const Title = styled('h1')`
   margin: 0 0 15px 0;
   background: linear-gradient(
     135deg,
-    #8b5cf6 0%,
-    #ec4899 25%,
-    #f97316 50%,
-    #ec4899 75%,
-    #8b5cf6 100%
+    var(--theme-primary, #00d123) 0%,
+    color-mix(in srgb, var(--theme-primary, #00d123) 60%, var(--theme-secondary-gradient, #8b5cf6))
+      25%,
+    var(--theme-secondary-gradient, #8b5cf6) 50%,
+    color-mix(in srgb, var(--theme-primary, #00d123) 60%, var(--theme-secondary-gradient, #8b5cf6))
+      75%,
+    var(--theme-primary, #00d123) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -246,7 +292,7 @@ export const Title = styled('h1')`
 // Stylish subtitle
 export const Subtitle = styled('p')`
   font-size: 1rem;
-  color: #888;
+  color: color-mix(in srgb, var(--theme-text-secondary, #ffffff) 55%, transparent);
   text-transform: uppercase;
   letter-spacing: 8px;
   margin: 0 0 80px 0;
@@ -263,7 +309,12 @@ export const Subtitle = styled('p')`
     transform: translateX(-50%);
     width: 60px;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.8), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
+      transparent
+    );
   }
 
   @media (max-width: 768px) {
@@ -277,10 +328,11 @@ export const ProgressWrapper = styled(Box)`
   position: relative;
   width: 350px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  background: var(--glass-subtle);
+  border-radius: var(--radius-xl, 20px);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
 
   @media (max-width: 768px) {
@@ -291,7 +343,7 @@ export const ProgressWrapper = styled(Box)`
 export const ProgressContainer = styled(Box)`
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-medium);
   border-radius: 4px;
   overflow: hidden;
   position: relative;
@@ -305,11 +357,16 @@ export const ProgressBar = styled(Box, {
   left: 0;
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #8b5cf6 0%, #ec4899 50%, #8b5cf6 100%);
+  background: linear-gradient(
+    90deg,
+    var(--theme-primary, #00d123) 0%,
+    var(--theme-secondary-gradient, #8b5cf6) 50%,
+    var(--theme-primary, #00d123) 100%
+  );
   transform: scaleX(${(props) => props.progress});
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 0 25px rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--theme-primary, #00d123) 60%, transparent);
 
   &::after {
     content: '';
@@ -334,7 +391,7 @@ export const LoadingStatus = styled(Box)`
 
 export const LoadingText = styled('p')`
   font-size: 0.75rem;
-  color: #999;
+  color: color-mix(in srgb, var(--theme-text-secondary, #ffffff) 60%, transparent);
   letter-spacing: 1px;
   text-transform: uppercase;
   margin: 0;
@@ -342,7 +399,10 @@ export const LoadingText = styled('p')`
 
 export const LoadingPercentage = styled('p')`
   font-size: 0.85rem;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: var(
+    --gradient-primary,
+    linear-gradient(135deg, #00d123, var(--theme-secondary-gradient, #8b5cf6))
+  );
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -363,7 +423,11 @@ export const CornerAccent = styled(Box, {
   &::after {
     content: '';
     position: absolute;
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), transparent);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
+      transparent
+    );
     opacity: 0.3;
   }
 

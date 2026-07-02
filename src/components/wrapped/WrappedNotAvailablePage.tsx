@@ -10,6 +10,7 @@ import Star from '@mui/icons-material/Star';
 import Theaters from '@mui/icons-material/Theaters';
 import TrendingUp from '@mui/icons-material/TrendingUp';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScaleSmall } from '../../lib/motion';
 
 interface Props {
   year: number;
@@ -112,12 +113,13 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
         style={{
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--glass-heavy)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           borderRadius: '20px',
           padding: '8px 20px',
           marginBottom: '16px',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
+          border: '1px solid var(--glass-border-medium)',
         }}
       >
         <span style={{ color: 'white', fontWeight: 600, fontSize: '15px' }}>Wrapped {year}</span>
@@ -205,7 +207,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileTap={tapScaleSmall}
         onClick={onBack}
         style={{
           background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,

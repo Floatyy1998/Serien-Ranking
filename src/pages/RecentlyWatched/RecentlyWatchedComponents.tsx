@@ -10,8 +10,14 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 export { SeriesAccordion } from './SeriesAccordion';
+
+// Static inline styles hoisted out of render (no per-render allocation in list items)
+const DISCUSSION_ICON_STYLE: React.CSSProperties = { fontSize: '15px' };
+const CARD_BODY_STYLE: React.CSSProperties = { flex: 1, minWidth: 0 };
+const REWATCH_ICON_STYLE: React.CSSProperties = { fontSize: '20px' };
 
 // ── Discussion indicator badge ──────────────────────────────────────────────
 
@@ -47,7 +53,7 @@ export const EpisodeDiscussionIndicator: React.FC<{
         fontWeight: 600,
       }}
     >
-      <ChatBubbleOutline style={{ fontSize: '15px' }} />
+      <ChatBubbleOutline style={DISCUSSION_ICON_STYLE} />
       {count}
     </button>
   );
@@ -147,7 +153,7 @@ export const TimeRangeChips = memo<{
       {timeRanges.map((range) => (
         <motion.button
           key={range.days}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => onTimeRangeChange(range.days)}
           style={{
             padding: '10px 18px',
@@ -296,7 +302,7 @@ export const SingleEpisodeCard = memo<{
           className="rw-episode-poster"
         />
 
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={CARD_BODY_STYLE}>
           <h3
             onClick={() => onNavigateToSeries(episode.seriesId)}
             className="rw-episode-series-name"
@@ -350,7 +356,7 @@ export const SingleEpisodeCard = memo<{
           />
 
           <motion.button
-            whileTap={{ scale: 0.9 }}
+            whileTap={tapScaleTight}
             onClick={() => onRewatch(episode)}
             className="rw-rewatch-btn"
             style={{
@@ -360,9 +366,9 @@ export const SingleEpisodeCard = memo<{
             }}
           >
             {isCompleting ? (
-              <Check style={{ fontSize: '20px' }} />
+              <Check style={REWATCH_ICON_STYLE} />
             ) : (
-              <PlayCircle style={{ fontSize: '20px' }} />
+              <PlayCircle style={REWATCH_ICON_STYLE} />
             )}
           </motion.button>
         </div>

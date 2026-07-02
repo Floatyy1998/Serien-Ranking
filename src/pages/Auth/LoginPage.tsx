@@ -91,7 +91,7 @@ export const LoginPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: 'var(--theme-bg-default, #06090f)',
+        background: 'var(--theme-bg-default, #000000)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -153,9 +153,10 @@ export const LoginPage = () => {
           <Paper
             elevation={0}
             sx={{
-              background: 'rgba(255, 255, 255, 0.04)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-light)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '16px',
               p: 4,
               boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',

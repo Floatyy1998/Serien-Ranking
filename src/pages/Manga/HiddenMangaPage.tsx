@@ -6,6 +6,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getEffectiveChapterCount } from './mangaUtils';
+import { tapScaleTight } from '../../lib/motion';
 
 export const HiddenMangaPage = () => {
   const { currentTheme } = useTheme();
@@ -68,6 +69,7 @@ export const HiddenMangaPage = () => {
                   flexShrink: 0,
                 }}
                 loading="lazy"
+                decoding="async"
               />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div
@@ -109,7 +111,7 @@ export const HiddenMangaPage = () => {
                 )}
               </div>
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={tapScaleTight}
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleHideManga(manga.anilistId, false);

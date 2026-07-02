@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 interface OverallRatingSectionProps {
   overallRating: number;
@@ -89,7 +90,7 @@ export const OverallRatingSection = ({
               key={emoji.value}
               className={`rate-emoji ${activeEmojiIndex === i ? 'active' : ''}`}
               onClick={() => onRatingChange(emoji.value)}
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               style={{
                 opacity: activeEmojiIndex === i ? 1 : 0.3,
                 color: emoji.color,
@@ -132,7 +133,7 @@ export const OverallRatingSection = ({
               key={value}
               className={`rate-quick-btn ${Math.round(overallRating) === value ? 'active' : ''}`}
               onClick={() => onRatingChange(value)}
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
             >
               {value}
             </motion.button>

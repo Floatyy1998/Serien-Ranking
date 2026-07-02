@@ -26,7 +26,8 @@ export const ActivityTooltip: React.FC<ActivityTooltipProps> = ({
           borderRadius: 12,
           padding: '12px 16px',
           boxShadow: '0 4px 16px -4px rgba(0, 0, 0, 0.4), 0 2px 6px -2px rgba(0, 0, 0, 0.3)',
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
         }}
       >
         <p

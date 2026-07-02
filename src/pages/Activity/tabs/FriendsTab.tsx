@@ -14,6 +14,7 @@ import { useTheme } from '../../../contexts/ThemeContextDef';
 import { EmptyState } from '../../../components/ui';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
+import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
 
 interface FriendsTabProps {
   friends: Friend[];
@@ -130,7 +131,7 @@ export const FriendsTab = ({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: Math.min(index * 0.04, 0.3) }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={tapScaleSmall}
               onClick={() => {
                 saveScrollPosition();
                 navigate(`/friend/${friend.uid}`);
@@ -210,7 +211,7 @@ export const FriendsTab = ({
               </div>
 
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={tapScaleTight}
                 onClick={(e) => {
                   e.stopPropagation();
                   onRemoveFriend({ uid: friend.uid, name: displayName });

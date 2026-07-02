@@ -64,7 +64,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
             borderRadius: '16px',
             border: `1px solid ${accent}30`,
             boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)',
-            backdropFilter: 'blur(16px)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee)`,
             overflow: 'hidden',
             maxHeight: 'calc(100dvh - 80px)',
@@ -150,6 +151,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                     flexShrink: 0,
                     cursor: 'pointer',
                   }}
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -232,7 +235,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       fontSize: '0.9rem',
                       background: `${accent}20`,
                       color: accent,
-                      backdropFilter: 'blur(10px)',
+                      backdropFilter: 'var(--blur-sm)',
+                      WebkitBackdropFilter: 'var(--blur-sm)',
                     }}
                   >
                     <span>{expanded ? 'Einklappen' : 'Recap lesen'}</span>

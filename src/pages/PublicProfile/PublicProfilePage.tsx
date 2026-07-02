@@ -20,6 +20,7 @@ import {
   usePublicProfileData,
 } from './usePublicProfileData';
 import './PublicProfilePage.css';
+import { tapScale } from '../../lib/motion';
 
 /* ------------------------------------------------------------------ */
 /*  Loading state                                                      */
@@ -99,7 +100,7 @@ const NotFoundState = memo<{
     </p>
     <motion.button
       className="pp-not-found__btn"
-      whileTap={{ scale: 0.95 }}
+      whileTap={tapScale}
       onClick={onNavigateHome}
       style={{
         background: `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`,

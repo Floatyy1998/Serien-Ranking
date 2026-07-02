@@ -59,12 +59,12 @@
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--glass-medium);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--glass-border-light);
 }
 
 .pp-not-found__title {
@@ -102,9 +102,9 @@
   z-index: var(--z-dropdown);
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
-  backdrop-filter: blur(var(--blur-md));
-  -webkit-backdrop-filter: blur(var(--blur-md));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  border-bottom: 1px solid var(--glass-border-light);
 }
 
 .pp-header__inner {
@@ -168,9 +168,9 @@
 .pp-empty {
   text-align: center;
   padding: 60px 30px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-light);
   border-radius: var(--radius-xl);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border-light);
   box-shadow: var(--shadow-md);
 }
 
@@ -256,8 +256,8 @@
 }
 
 .pp-card__provider-badge {
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
   border-radius: var(--radius-sm);
   padding: 2px;
   width: 28px;
@@ -275,9 +275,9 @@
 }
 
 .pp-card__provider-more {
-  backdrop-filter: blur(var(--blur-sm));
-  -webkit-backdrop-filter: blur(var(--blur-sm));
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-sm);
   width: 28px;
   height: 28px;

@@ -288,6 +288,7 @@ export function useProactiveRecaps() {
       .database()
       .ref()
       .update(updates)
+      // bewusst still: Best-effort-Cleanup, veraltete Dismiss-Keys stören nicht
       .catch(() => {});
   }, [user, dismissedState, triggers]);
 
@@ -347,6 +348,7 @@ export function useProactiveRecaps() {
         .database()
         .ref(`users/${uid}/proactiveRecapDismissed/${cacheKey}`)
         .set(Date.now())
+        // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
         .catch(() => {});
     },
     [user]

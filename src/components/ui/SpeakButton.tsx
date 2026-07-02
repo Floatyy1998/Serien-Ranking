@@ -1,5 +1,6 @@
 import { Stop, VolumeUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { tapScaleTight } from '../../lib/motion';
 
 type TtsState = 'idle' | 'loading' | 'speaking';
 
@@ -19,7 +20,7 @@ export const SpeakButton: React.FC<SpeakButtonProps> = ({ state, onClick, accent
   return (
     <motion.button
       onClick={onClick}
-      whileTap={{ scale: 0.9 }}
+      whileTap={tapScaleTight}
       title={state === 'speaking' ? 'Vorlesen stoppen' : 'Vorlesen'}
       style={{
         width: `${size}px`,

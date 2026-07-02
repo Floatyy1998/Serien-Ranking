@@ -68,7 +68,8 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
         animate={{ scale: 1, opacity: 1 }}
         style={{
           background: cardBg,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${borderColor}`,
           borderRadius: 20,
           padding: '32px 20px',
@@ -120,7 +121,8 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
           transition={{ delay: 0.2 }}
           style={{
             background: cardBg,
-            backdropFilter: 'blur(28px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             border: `1px solid ${borderColor}`,
             borderRadius: 16,
             padding: 20,
@@ -164,6 +166,8 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
                       src={data.userProfiles[u.uid].photoURL}
                       alt=""
                       style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <Person style={{ fontSize: 20, color: theme.text.muted }} />
@@ -189,7 +193,8 @@ export const RealtimeTab = React.memo<RealtimeTabProps>(({ data, theme }) => {
           transition={{ delay: 0.3 }}
           style={{
             background: cardBg,
-            backdropFilter: 'blur(28px)',
+            backdropFilter: 'var(--blur-lg)',
+            WebkitBackdropFilter: 'var(--blur-lg)',
             border: `1px solid ${borderColor}`,
             borderRadius: 16,
             padding: 20,

@@ -117,7 +117,8 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           transition={{ delay: 0.4, type: 'spring', stiffness: 100 }}
           style={{
             background: 'rgba(0, 217, 255, 0.15)',
-            backdropFilter: 'blur(15px)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             borderRadius: '20px',
             padding: '25px',
             width: '100%',
@@ -206,7 +207,8 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           transition={{ delay: 1, type: 'spring', stiffness: 100 }}
           style={{
             background: 'rgba(118, 75, 162, 0.15)',
-            backdropFilter: 'blur(15px)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             borderRadius: '20px',
             padding: '25px',
             width: '100%',

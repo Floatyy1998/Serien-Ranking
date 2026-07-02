@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { memo, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 const NewDiscussionFormInner: React.FC<{
   onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
@@ -141,6 +142,8 @@ const NewDiscussionFormInner: React.FC<{
                     borderRadius: '10px',
                     border: `1px solid ${currentTheme.border.default}`,
                   }}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <button
                   onClick={() => removeImage(img)}
@@ -274,7 +277,7 @@ const NewDiscussionFormInner: React.FC<{
             Abbrechen
           </button>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={handleSubmit}
             disabled={
               !title.trim() ||

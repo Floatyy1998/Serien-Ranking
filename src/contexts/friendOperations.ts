@@ -7,16 +7,36 @@ export async function sendFriendRequestOp(
   user: { uid: string; displayName: string | null; email: string | null },
   username: string
 ): Promise<boolean> {
-  // Match on lowercased slug so "Spixi" can be reached as "spixi". Falls
-  // back to the original case-sensitive lookup so legacy users without
-  // usernameLower (until backfill propagates) remain reachable.
-  const usersRef = firebase.database().ref('users');
+  // Match on lowercased slug so "Spixi" can be reached as "spixi". Der
+  // Lookup läuft über den userSearchIndex-Knoten (der users-Root ist unter
+  // den gehärteten Rules nicht mehr lesbar). Solange Rules/Backfill noch
+  // nicht deployt sind, greift der Legacy-Fallback auf den users-Root
+  // (dort zusätzlich case-sensitiv für Alt-User ohne usernameLower).
   const lower = username.toLowerCase();
-  let snapshot = await usersRef.orderByChild('usernameLower').equalTo(lower).once('value');
-  let userData = snapshot.val();
-  if (!userData) {
-    snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
+  let userData: Record<string, Record<string, unknown>> | null = null;
+  try {
+    const snapshot = await firebase
+      .database()
+      .ref('userSearchIndex')
+      .orderByChild('usernameLower')
+      .equalTo(lower)
+      .once('value');
     userData = snapshot.val();
+  } catch {
+    // Alte Rules: userSearchIndex existiert/erlaubt noch nichts.
+  }
+  if (!userData) {
+    try {
+      const usersRef = firebase.database().ref('users');
+      let snapshot = await usersRef.orderByChild('usernameLower').equalTo(lower).once('value');
+      userData = snapshot.val();
+      if (!userData) {
+        snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
+        userData = snapshot.val();
+      }
+    } catch {
+      // Neue Rules: users-Root nicht mehr lesbar — Index ist die Quelle.
+    }
   }
 
   if (!userData) return false;
@@ -62,9 +82,23 @@ export async function acceptFriendRequestOp(
 
   if (!request) return;
 
-  const fromUserRef = firebase.database().ref(`users/${request.fromUserId}`);
-  const fromUserSnapshot = await fromUserRef.once('value');
-  const fromUserData = fromUserSnapshot.val();
+  // Punkt-Reads statt Vollknoten-Read: users/$other ist unter den gehärteten
+  // Rules nicht mehr komplett lesbar — username/displayName/photoURL bleiben
+  // einzeln lesbar. email ist dann nicht mehr lesbar → best-effort (null).
+  const readVal = async (path: string): Promise<unknown> => {
+    try {
+      const snap = await firebase.database().ref(path).once('value');
+      return snap.val();
+    } catch {
+      return null;
+    }
+  };
+  const [fromUsername, fromDisplayName, fromPhotoURL, fromEmail] = await Promise.all([
+    readVal(`users/${request.fromUserId}/username`),
+    readVal(`users/${request.fromUserId}/displayName`),
+    readVal(`users/${request.fromUserId}/photoURL`),
+    readVal(`users/${request.fromUserId}/email`),
+  ]);
 
   const currentUserRef = firebase.database().ref(`users/${user.uid}`);
   const currentUserSnapshot = await currentUserRef.once('value');
@@ -76,10 +110,10 @@ export async function acceptFriendRequestOp(
     .ref(`users/${user.uid}/friends/${request.fromUserId}`)
     .set({
       uid: request.fromUserId,
-      email: fromUserData?.email,
-      username: fromUserData?.username || 'unknown',
-      displayName: fromUserData?.displayName || fromUserData?.username,
-      photoURL: fromUserData?.photoURL || null,
+      email: fromEmail ?? null,
+      username: fromUsername || 'unknown',
+      displayName: fromDisplayName || fromUsername || null,
+      photoURL: fromPhotoURL || null,
       friendsSince: firebase.database.ServerValue.TIMESTAMP,
     });
 

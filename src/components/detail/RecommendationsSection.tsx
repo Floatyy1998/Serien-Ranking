@@ -19,6 +19,7 @@ import { handleImgError } from '../../pages/Discover/discoverItemHelpers';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
 import { getImageUrl } from '../../utils/imageUrl';
 import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
+import { tapScaleTight } from '../../lib/motion';
 
 interface RecommendationsSectionProps {
   id: string | number | undefined;
@@ -85,10 +86,10 @@ const SectionHeader = memo(
           gap: 12,
           marginBottom: isMobile ? 16 : 22,
           padding: isMobile ? '10px 12px' : '12px 16px',
-          background: 'rgba(255, 255, 255, 0.04)',
-          backdropFilter: 'blur(20px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--glass-light)',
+          backdropFilter: 'var(--blur-lg) saturate(1.4)',
+          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
+          border: '1px solid var(--glass-border-light)',
           borderRadius: 14,
         }}
       >
@@ -370,7 +371,7 @@ const MagneticCard = memo(
                 exit={{ opacity: 0, y: -4, scale: 0.85 }}
                 transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
                 whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.92 }}
+                whileTap={tapScaleTight}
                 style={{
                   position: 'absolute',
                   top: 9,
@@ -384,8 +385,8 @@ const MagneticCard = memo(
                   background: justAdded
                     ? `${currentTheme.status.success}cc`
                     : 'rgba(0, 0, 0, 0.55)',
-                  backdropFilter: 'blur(18px) saturate(1.6)',
-                  WebkitBackdropFilter: 'blur(18px) saturate(1.6)',
+                  backdropFilter: 'var(--blur-md) saturate(1.6)',
+                  WebkitBackdropFilter: 'var(--blur-md) saturate(1.6)',
                   color: '#fff',
                   display: 'flex',
                   alignItems: 'center',

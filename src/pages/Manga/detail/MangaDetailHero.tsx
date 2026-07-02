@@ -80,7 +80,12 @@ export const MangaDetailHero = ({
           pointerEvents: 'auto',
         }}
       >
-        <BackButton style={{ backdropFilter: 'blur(10px)' }} />
+        <BackButton
+          style={{
+            backdropFilter: 'var(--blur-sm)',
+            WebkitBackdropFilter: 'var(--blur-sm)',
+          }}
+        />
       </div>
 
       <div
@@ -124,13 +129,14 @@ export const MangaDetailHero = ({
                   minWidth: 0,
                   display: 'flex',
                   flexDirection: 'column' as const,
+                  // Dunkel getönte Glass-Card (analog .md-hero__glass-card) — Tint bleibt, nur Tokens
                   background: 'rgba(10, 14, 26, 0.55)',
-                  backdropFilter: 'blur(24px) saturate(1.4)',
-                  WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+                  backdropFilter: 'var(--blur-lg) saturate(1.4)',
+                  WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
                   borderRadius: 20,
                   padding: '24px 28px',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                  border: '1px solid var(--glass-border-light)',
+                  boxShadow: 'var(--shadow-lg)',
                 }),
           }}
         >

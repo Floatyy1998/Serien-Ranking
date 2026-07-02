@@ -7,6 +7,7 @@ import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
+import { tapScale } from '../../lib/motion';
 
 interface PetReleaseConfirmProps {
   pet: Pet;
@@ -53,7 +54,7 @@ export const PetReleaseConfirm = memo(function PetReleaseConfirm({
             </p>
             <div className="pet-release-actions">
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={onClose}
                 className="pet-release-btn pet-release-btn--keep"
                 style={{
@@ -65,7 +66,7 @@ export const PetReleaseConfirm = memo(function PetReleaseConfirm({
                 Behalten
               </motion.button>
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={tapScale}
                 onClick={onConfirm}
                 className="pet-release-btn pet-release-btn--confirm"
               >

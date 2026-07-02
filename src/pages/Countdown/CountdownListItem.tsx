@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
+import { tapScaleSmall } from '../../lib/motion';
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -22,7 +23,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
-      whileTap={{ scale: 0.98 }}
+      whileTap={tapScaleSmall}
       onClick={onClick}
       className="cd-item"
       style={{
@@ -37,6 +38,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
           alt={`Poster von ${item.title}`}
           decoding="async"
           className="cd-item-poster"
+          loading="lazy"
         />
       ) : (
         <div

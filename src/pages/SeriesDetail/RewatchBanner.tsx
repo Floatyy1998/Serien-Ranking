@@ -8,6 +8,7 @@ import {
   getRewatchProgress,
   getRewatchRound,
 } from '../../lib/validation/rewatch.utils';
+import { tapScale } from '../../lib/motion';
 
 interface RewatchBannerProps {
   series: Series;
@@ -70,7 +71,7 @@ export function RewatchBanner({
       <ProgressBar value={rewatchPercent} color={warningColor} toColor={warningColor} height={6} />
       {nextEp && (
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           onClick={() => {
             const sIdx = series.seasons.findIndex(
               (s: Series['seasons'][number]) => s.seasonNumber === nextEp.seasonNumber
@@ -104,7 +105,7 @@ export function RewatchBanner({
         </motion.button>
       )}
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={tapScale}
         onClick={handleStopRewatch}
         style={{
           padding: '6px 12px',

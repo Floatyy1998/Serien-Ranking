@@ -4,9 +4,8 @@ import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
+import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { normalizeEpisodes } from '../../lib/episode/seriesMetrics';
-import { petService } from '../../services/petService';
-import { WatchActivityService } from '../../services/watchActivityService';
 import { showToast, showUndoToast } from '../../lib/toast';
 
 export function useRewatchHandler() {
@@ -194,21 +193,18 @@ export function useRewatchHandler() {
           }
         },
         onCommit: async () => {
-          await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
-          WatchActivityService.logEpisodeWatch(
-            user.uid,
-            item.id,
-            item.title,
-            item.seasonNumber,
-            item.episodeNumber,
-            item.episodeRuntime,
-            true,
-            item.genre?.genres,
-            item.provider?.provider?.map((p: { name: string }) => p.name)
-          );
-          const { updateEpisodeCounters } =
-            await import('../../features/badges/minimalActivityLogger');
-          await updateEpisodeCounters(user.uid, true);
+          // Kein airDate (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
+          await runEpisodeWatchFanout({
+            userId: user.uid,
+            seriesId: item.id,
+            seriesTitle: item.title,
+            seasonNumber: item.seasonNumber,
+            episodeNumber: item.episodeNumber,
+            runtimeMinutes: item.episodeRuntime,
+            isRewatch: true,
+            genres: item.genre?.genres,
+            providers: item.provider?.provider?.map((p: { name: string }) => p.name),
+          });
         },
       });
     } catch (error) {

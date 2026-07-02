@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 interface Video {
   id: string;
@@ -119,7 +120,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
     <>
       {/* Button */}
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={tapScale}
         onClick={() => setIsOpen(true)}
         style={
           buttonStyle === 'icon'
@@ -369,7 +370,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                   <motion.div
                     key={video.id}
                     whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileTap={tapScaleSmall}
                     onClick={() => {
                       setSelectedVideo(video);
                     }}

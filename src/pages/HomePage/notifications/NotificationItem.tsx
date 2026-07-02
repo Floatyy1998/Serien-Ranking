@@ -4,6 +4,7 @@ import React from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
+import { tapScaleTight } from '../../../lib/motion';
 
 interface NotificationItemProps {
   item: UnifiedNotification;
@@ -132,7 +133,7 @@ export const NotificationItem = React.memo(function NotificationItem({
         {item.kind === 'request' && item.requestId && (
           <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={(e) => {
                 e.stopPropagation();
                 onAcceptRequest(item.requestId ?? '');
@@ -156,7 +157,7 @@ export const NotificationItem = React.memo(function NotificationItem({
               Annehmen
             </motion.button>
             <motion.button
-              whileTap={{ scale: 0.9 }}
+              whileTap={tapScaleTight}
               onClick={(e) => {
                 e.stopPropagation();
                 onDeclineRequest(item.requestId ?? '');

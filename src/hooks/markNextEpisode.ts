@@ -16,9 +16,9 @@ import type { Series } from '../types/Series';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { buildEpisodeWatchedUpdates, buildEpisodeUnwatchUpdates } from '../lib/compactWatch';
 import { hapticSuccess } from '../lib/haptics';
+import { applyUserUpdate } from '../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
-import { WatchActivityService } from '../services/watchActivityService';
-import { petService } from '../services/petService';
+import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
 import { trackEpisodeWatched } from '../firebase/analytics';
 import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
 
@@ -87,23 +87,24 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
     const previousLastWatchedAt = val.l && val.l > 0 ? new Date(val.l * 1000).toISOString() : null;
 
     const nowIso = new Date().toISOString();
-    await db
-      .ref()
-      .update(
-        buildEpisodeWatchedUpdates(
-          uid,
-          series.id,
-          seasonIndex,
-          episodeId,
-          previousCount + 1,
-          nowIso,
-          !hadFirstWatched
-        )
-      );
+    const label = `S${seasonNumber}E${episodeNumber}`;
+    // Primärer Mark-Write über die persistente Offline-Queue (Undo unten
+    // bleibt bewusst direkt).
+    await applyUserUpdate(
+      uid,
+      buildEpisodeWatchedUpdates(
+        uid,
+        series.id,
+        seasonIndex,
+        episodeId,
+        previousCount + 1,
+        nowIso,
+        !hadFirstWatched
+      ),
+      `${series.title} ${label} (Quick-Mark)`
+    );
 
     hapticSuccess();
-
-    const label = `S${seasonNumber}E${episodeNumber}`;
     const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
 
     showUndoToast(`${series.title} ${label} als gesehen markiert`, {
@@ -135,22 +136,21 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
           isRewatch: previousCount > 0,
           source: 'quick_mark',
         });
-        await petService.watchedSeriesWithGenreAllPets(uid, series.genre?.genres || []);
-        const { updateEpisodeCounters } = await import('../features/badges/minimalActivityLogger');
-        await updateEpisodeCounters(uid, previousCount > 0, airDate);
-        if (previousCount === 0) {
-          WatchActivityService.logEpisodeWatch(
-            uid,
-            series.id,
-            series.title,
-            seasonNumber,
-            episodeNumber,
-            runtime,
-            false,
-            series.genre?.genres,
-            providers
-          );
-        }
+        // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
+        // isRewatch ohnehin false, wie zuvor hart kodiert.
+        await runEpisodeWatchFanout({
+          userId: uid,
+          seriesId: series.id,
+          seriesTitle: series.title,
+          seasonNumber,
+          episodeNumber,
+          runtimeMinutes: runtime,
+          isRewatch: previousCount > 0,
+          genres: series.genre?.genres,
+          providers,
+          episodeAirDate: airDate,
+          wrappedEvent: previousCount === 0,
+        });
       },
     });
 

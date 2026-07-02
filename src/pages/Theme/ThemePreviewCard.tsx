@@ -6,6 +6,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 
 export interface PresetTheme {
   name: string;
@@ -34,7 +35,7 @@ export const ThemePreviewCard = memo(
 
     return (
       <motion.button
-        whileTap={{ scale: 0.95 }}
+        whileTap={tapScale}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: index * 0.03 }}

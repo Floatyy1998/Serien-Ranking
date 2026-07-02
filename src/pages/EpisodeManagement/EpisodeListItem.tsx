@@ -2,12 +2,18 @@ import { ChatBubbleOutline, Check, DateRange, Visibility } from '@mui/icons-mate
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import type { CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import type { Series } from '../../types/Series';
+import { tapScaleSmall } from '../../lib/motion';
 
 type Episode = Series['seasons'][number]['episodes'][number];
+
+// Static inline styles hoisted out of render (no per-render allocation)
+const DISCUSSION_ICON_STYLE: CSSProperties = { fontSize: '18px' };
+const DISCUSSION_COUNT_STYLE: CSSProperties = { fontSize: '13px', fontWeight: 600 };
 
 interface EpisodeListItemProps {
   episode: Episode;
@@ -33,7 +39,7 @@ export const EpisodeListItem = memo(
     return (
       <motion.div
         className={`episode-item ${episode.watched ? 'watched' : ''}`}
-        whileTap={{ scale: 0.98 }}
+        whileTap={tapScaleSmall}
         onClick={onEpisodeClick}
       >
         <div className="episode-number">{index + 1}</div>
@@ -76,10 +82,8 @@ export const EpisodeListItem = memo(
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            <ChatBubbleOutline style={{ fontSize: '18px' }} />
-            {discussionCount > 0 && (
-              <span style={{ fontSize: '13px', fontWeight: 600 }}>{discussionCount}</span>
-            )}
+            <ChatBubbleOutline style={DISCUSSION_ICON_STYLE} />
+            {discussionCount > 0 && <span style={DISCUSSION_COUNT_STYLE}>{discussionCount}</span>}
           </button>
         </Tooltip>
 

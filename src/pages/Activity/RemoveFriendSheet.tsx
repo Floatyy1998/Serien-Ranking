@@ -6,6 +6,7 @@ import { PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { BottomSheet } from '../../components/ui';
+import { tapScale } from '../../lib/motion';
 
 interface RemoveFriendSheetProps {
   friend: { uid: string; name: string } | null;
@@ -62,7 +63,7 @@ export const RemoveFriendSheet = ({
         </p>
         <div style={{ display: 'flex', gap: '12px' }}>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={onClose}
             style={{
               flex: 1,
@@ -79,7 +80,7 @@ export const RemoveFriendSheet = ({
             Abbrechen
           </motion.button>
           <motion.button
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={async () => {
               if (!friend || isRemoving) return;
               await onConfirm(friend.uid);

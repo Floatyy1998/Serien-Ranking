@@ -2,8 +2,10 @@ import type { Series } from '../types/Series';
 import type { Movie } from '../types/Movie';
 import type {
   CatalogSeries,
+  CatalogSeason,
   CatalogMovie,
   CatalogEpisode,
+  EpisodeWatchData,
   UserSeriesRef,
   UserMovieRef,
   SeriesWatchData,
@@ -14,7 +16,6 @@ import {
   readEpisodeById,
   readEpisodeFromLegacyArray,
 } from './compactWatch';
-import type { EpidSeason, LegacyArraySeason } from './compactWatch';
 
 /**
  * Firebase RTDB serialisiert Objects mit numerischen Keys, bei denen Index 0
@@ -30,6 +31,22 @@ function ensureArray<T>(value: unknown): T[] {
   return [];
 }
 
+/** Provider-Eintrag im Catalog-/Legacy-Wrapper-Format ({id, logo, name}). */
+type ProviderEntry = CatalogSeries['providers'][number];
+
+/**
+ * Aeltere Catalog-Snapshots tragen Episodenfelder noch im TMDB-Rohformat
+ * (snake_case). Der Adapter liest sie als Fallback zu den camelCase-Feldern
+ * aus CatalogEpisode.
+ */
+interface LegacyRawEpisodeFields {
+  air_date?: string;
+  season_number?: number;
+  episode_number?: number;
+}
+
+type AdapterCatalogEpisode = CatalogEpisode & LegacyRawEpisodeFields;
+
 /**
  * Merges catalog data + user ref + watch data into the legacy Series interface.
  * This allows existing components to work without changes during migration.
@@ -43,13 +60,15 @@ export function mergeToSeriesView(
   const seasons: Series['seasons'] = [];
 
   if (catalog.seasons) {
-    const seasonsEntries = Array.isArray(catalog.seasons)
-      ? catalog.seasons.map((s, i) => [String(i), s] as const).filter(([, s]) => s != null)
-      : Object.entries(catalog.seasons).filter(([, s]) => s != null);
+    // Static-Catalog-JSON liefert seasons als Array, RTDB-Reste als Objekt
+    // mit numerischen Keys — beides kann null-Loecher enthalten.
+    const seasonsEntries: ReadonlyArray<readonly [string, CatalogSeason | null | undefined]> =
+      Array.isArray(catalog.seasons)
+        ? catalog.seasons.map((s, i) => [String(i), s] as const).filter(([, s]) => s != null)
+        : Object.entries(catalog.seasons).filter(([, s]) => s != null);
     for (const [snKey, catalogSeason] of seasonsEntries) {
       if (!catalogSeason) continue;
-      const episodesRaw = (catalogSeason as { episodes?: unknown }).episodes;
-      const episodesList = ensureArray<CatalogEpisode>(episodesRaw);
+      const episodesList = ensureArray<AdapterCatalogEpisode>(catalogSeason.episodes);
       if (episodesList.length === 0) continue;
       const sn = Number(snKey);
       const seasonWatch = watchData?.seasons?.[snKey];
@@ -62,8 +81,7 @@ export function mergeToSeriesView(
         let firstWatchedAt: string | undefined;
         let lastWatchedAt: string | undefined;
 
-        const epidSeason =
-          seasonWatch && isEpidSeason(seasonWatch) ? (seasonWatch as unknown as EpidSeason) : null;
+        const epidSeason = seasonWatch && isEpidSeason(seasonWatch) ? seasonWatch : null;
         const epidHit = epidSeason && ep.id != null ? epidSeason.eps[String(ep.id)] : undefined;
 
         if (epidHit && epidSeason && ep.id != null) {
@@ -76,32 +94,29 @@ export function mergeToSeriesView(
           // Fallback wenn Season teil-migriert ist (eps existiert, aber diese
           // Episode steht noch im Legacy-Array). Sonst gehen vorher gesehene
           // Episoden bei der ersten ID-basierten Swipe-Markierung verloren.
-          const cw = readEpisodeFromLegacyArray(seasonWatch as LegacyArraySeason, idx);
+          const cw = readEpisodeFromLegacyArray(seasonWatch, idx);
           watched = cw.watched;
           watchCount = cw.watchCount;
           firstWatchedAt = cw.firstWatchedAt;
           lastWatchedAt = cw.lastWatchedAt;
         } else if (seasonWatch) {
-          const sw = seasonWatch as unknown as Record<string, unknown>;
-          const eps = sw?.episodes as Record<string, Record<string, unknown>> | undefined;
-          const watch = eps?.[String(idx)];
-          watched = (watch?.watched as boolean) ?? false;
-          watchCount = (watch?.watchCount as number) ?? 0;
-          firstWatchedAt = watch?.firstWatchedAt as string | undefined;
-          lastWatchedAt = watch?.lastWatchedAt as string | undefined;
+          const watch: EpisodeWatchData | undefined = seasonWatch.episodes?.[String(idx)];
+          watched = watch?.watched ?? false;
+          watchCount = watch?.watchCount ?? 0;
+          firstWatchedAt = watch?.firstWatchedAt;
+          lastWatchedAt = watch?.lastWatchedAt;
         }
 
-        const rawEp = ep as unknown as Record<string, unknown>;
         return {
           id: ep.id ?? 0,
           name: ep.name,
-          air_date: ep.airDate || (rawEp.air_date as string) || '',
-          airstamp: ep.airstamp || (rawEp.airstamp as string) || undefined,
+          air_date: ep.airDate || ep.air_date || '',
+          airstamp: ep.airstamp || undefined,
           // season_number wird serverseitig nicht mehr in jede Episode geschrieben
           // (Bulk-File-Slim-Down). Outer Key `sn` ist die zuverlaessige Quelle.
-          season_number: ep.seasonNumber ?? (rawEp.season_number as number) ?? sn,
-          episode_number: ep.episodeNumber ?? (rawEp.episode_number as number) ?? idx + 1,
-          runtime: ep.runtime ?? (rawEp.runtime as number) ?? undefined,
+          season_number: ep.seasonNumber ?? ep.season_number ?? sn,
+          episode_number: ep.episodeNumber ?? ep.episode_number ?? idx + 1,
+          runtime: ep.runtime ?? undefined,
           watched,
           watchCount,
           ...(firstWatchedAt ? { firstWatchedAt } : {}),
@@ -121,7 +136,7 @@ export function mergeToSeriesView(
     addedAt: userRef.addedAt,
     poster: { poster: catalog.poster },
     genre: { genres: ensureArray<string>(catalog.genres) },
-    provider: { provider: ensureArray(catalog.providers) },
+    provider: { provider: ensureArray<ProviderEntry>(catalog.providers) },
     imdb: { imdb_id: catalog.imdbId ?? '' },
     wo: { wo: catalog.woUrl ?? '' },
     production: { production: catalog.production },
@@ -146,7 +161,7 @@ export function mergeToSeriesView(
     vote_average: 0,
     vote_count: 0,
     release_date: '',
-  } as Series;
+  };
 }
 
 /**
@@ -163,7 +178,7 @@ export function mergeToMovieView(
     title: catalog.title,
     poster: { poster: catalog.poster },
     genre: { genres: ensureArray<string>(catalog.genres) },
-    provider: { provider: ensureArray(catalog.providers) },
+    provider: { provider: ensureArray<ProviderEntry>(catalog.providers) },
     imdb: { imdb_id: catalog.imdbId ?? '' },
     wo: { wo: catalog.woUrl ?? '' },
     runtime: catalog.runtime,
@@ -179,5 +194,5 @@ export function mergeToMovieView(
     watchedAt: userRef.watchedAt,
     ratedAt: userRef.ratedAt,
     watchHistory: userRef.watchHistory,
-  } as Movie;
+  };
 }

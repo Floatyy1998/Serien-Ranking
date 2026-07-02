@@ -17,6 +17,7 @@ import { memo } from 'react';
 import { GradientText } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContextDef';
 import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
+import { tapScaleSmall } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
@@ -221,7 +222,7 @@ export const ProfileFeaturedNav = memo(
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: animationDelay + 0.05 + index * 0.05 }}
-            whileTap={{ scale: 0.98 }}
+            whileTap={tapScaleSmall}
             onClick={() => onNavigate(item.path)}
             className="profile-featured-item"
             style={{
@@ -349,7 +350,7 @@ export const ProfileLogoutButton = memo(
       className="profile-logout-section"
     >
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        whileTap={tapScaleSmall}
         onClick={onLogout}
         className="profile-logout-btn"
         style={{

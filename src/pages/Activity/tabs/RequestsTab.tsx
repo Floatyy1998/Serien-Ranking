@@ -15,6 +15,7 @@ import { showUndoToast } from '../../../lib/toast';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
+import { tapScaleTight } from '../../../lib/motion';
 
 interface RequestsTabProps {
   friendRequests: FriendRequest[];
@@ -171,7 +172,7 @@ export const RequestsTab = ({
 
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
                     <motion.button
-                      whileTap={{ scale: 0.9 }}
+                      whileTap={tapScaleTight}
                       onClick={() => acceptFriendRequest(request.id)}
                       aria-label="Annehmen"
                       style={{
@@ -191,7 +192,7 @@ export const RequestsTab = ({
                       <CheckRounded style={{ fontSize: '22px' }} />
                     </motion.button>
                     <motion.button
-                      whileTap={{ scale: 0.9 }}
+                      whileTap={tapScaleTight}
                       onClick={() =>
                         removeWithUndo(request.id, 'Anfrage abgelehnt', declineFriendRequest)
                       }
@@ -281,7 +282,7 @@ export const RequestsTab = ({
                   </p>
                 </div>
                 <motion.button
-                  whileTap={{ scale: 0.9 }}
+                  whileTap={tapScaleTight}
                   onClick={() =>
                     removeWithUndo(request.id, 'Anfrage zurückgezogen', cancelFriendRequest)
                   }

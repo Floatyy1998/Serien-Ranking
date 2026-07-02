@@ -164,7 +164,9 @@ export function useAdminDashboardData(daysRange = 30) {
         setUserMetas(metas);
         setExtensionSessions(sessions);
       })
-      .catch(() => {});
+      .catch((error) =>
+        console.error('Analytics-Nutzerdaten konnten nicht geladen werden:', error)
+      );
   }, [refreshKey]);
 
   // Load user profiles for display names (einzeln pro UID statt /users komplett)

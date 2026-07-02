@@ -70,7 +70,8 @@ export const ExtensionSessionsList = React.memo<ExtensionSessionsListProps>(
         transition={{ delay: 0.45 }}
         style={{
           background: cardBg,
-          backdropFilter: 'blur(28px)',
+          backdropFilter: 'var(--blur-lg)',
+          WebkitBackdropFilter: 'var(--blur-lg)',
           border: `1px solid ${borderColor}`,
           borderRadius: 16,
           padding: 20,

@@ -248,6 +248,12 @@ export const MangaReadingListPage = lazyWithRetry(() =>
   )
 );
 
+export const AnimeSeasonPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "anime-season" */ './pages/AnimeSeason').then((m) => ({
+    default: m.AnimeSeasonPage,
+  }))
+);
+
 // Preload all lazy route chunks when the browser is idle
 // so that first navigation to any page feels instant
 export function preloadRoutes() {

@@ -8,16 +8,19 @@ import {
   Category,
   CompareArrows,
   Favorite,
+  ImageOutlined,
   Movie,
   Share,
   Star,
   Tv,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader } from '../../components/ui';
+import { hapticTap } from '../../lib/haptics';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from './constants';
+import { TasteMatchShareSheet } from './TasteMatchShareCard';
 import { StatRing } from './StatRing';
 import { ScoreHeader } from './ScoreHeader';
 import { OverviewTab } from './OverviewTab';
@@ -26,6 +29,7 @@ import { MoviesTab } from './MoviesTab';
 import { GenresTab } from './GenresTab';
 import { useTasteMatchData } from './useTasteMatchData';
 import './TasteMatchPage.css';
+import { tapScale, tapScaleTight } from '../../lib/motion';
 
 // ==================== Loading State ====================
 const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
@@ -127,6 +131,7 @@ export const TasteMatchPage: React.FC = () => {
   const bgDefault = currentTheme.background.default;
   const textPrimary = currentTheme.text.primary;
   const primaryColor = currentTheme.primary;
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   const {
     loading,
@@ -185,19 +190,39 @@ export const TasteMatchPage: React.FC = () => {
           gradientFrom={USER_COLOR}
           gradientTo={FRIEND_COLOR}
           actions={
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={handleShare}
-              className="tm-header__share-btn"
-              style={{
-                background: `linear-gradient(135deg, ${primaryColor}20, ${ACCENT_COLORS.match}20)`,
-                border: `1px solid ${primaryColor}30`,
-                color: textPrimary,
-                boxShadow: `0 4px 15px ${primaryColor}20`,
-              }}
-            >
-              <Share style={{ fontSize: 20 }} />
-            </motion.button>
+            <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={() => {
+                  hapticTap();
+                  setShareCardOpen(true);
+                }}
+                className="tm-header__share-btn"
+                aria-label="Taste Match als Bild teilen"
+                style={{
+                  background: `linear-gradient(135deg, ${ACCENT_COLORS.match}20, ${primaryColor}20)`,
+                  border: `1px solid ${ACCENT_COLORS.match}30`,
+                  color: textPrimary,
+                  boxShadow: `0 4px 15px ${ACCENT_COLORS.match}20`,
+                }}
+              >
+                <ImageOutlined style={{ fontSize: 20 }} />
+              </motion.button>
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={handleShare}
+                className="tm-header__share-btn"
+                aria-label="Taste Match als Text teilen"
+                style={{
+                  background: `linear-gradient(135deg, ${primaryColor}20, ${ACCENT_COLORS.match}20)`,
+                  border: `1px solid ${primaryColor}30`,
+                  color: textPrimary,
+                  boxShadow: `0 4px 15px ${primaryColor}20`,
+                }}
+              >
+                <Share style={{ fontSize: 20 }} />
+              </motion.button>
+            </div>
           }
         />
 
@@ -258,7 +283,7 @@ export const TasteMatchPage: React.FC = () => {
               return (
                 <motion.button
                   key={tab.id}
-                  whileTap={{ scale: 0.95 }}
+                  whileTap={tapScale}
                   onClick={() => setActiveTab(tab.id)}
                   className={`tm-tab-btn ${isActive ? 'tm-tab-btn--active' : 'tm-tab-btn--inactive'}`}
                   style={
@@ -295,6 +320,16 @@ export const TasteMatchPage: React.FC = () => {
           </AnimatePresence>
         </div>
       </div>
+
+      <TasteMatchShareSheet
+        isOpen={shareCardOpen}
+        onClose={() => setShareCardOpen(false)}
+        result={result}
+        userName={userName}
+        userPhoto={userPhoto}
+        friendName={friendName}
+        friendPhoto={friendPhoto}
+      />
     </div>
   );
 };

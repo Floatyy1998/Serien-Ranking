@@ -7,6 +7,7 @@ import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 
 import { getDisplayFormat } from '../mangaUtils';
+import { tapScale } from '../../../lib/motion';
 
 function formatRelative(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -53,7 +54,7 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
                 flexShrink: 0,
                 cursor: 'pointer',
               }}
-              whileTap={{ scale: 0.96 }}
+              whileTap={tapScale}
               onClick={() => navigate(`/manga/${manga.anilistId}`)}
             >
               <div
@@ -70,6 +71,7 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
                   alt={manga.title}
                   loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  decoding="async"
                 />
                 {manga.format && (
                   <div

@@ -12,6 +12,7 @@ import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
 import { FORMAT_COLORS, getDisplayFormat, type AppTheme } from '../mangaUtils';
+import { tapScale } from '../../../lib/motion';
 
 interface MangaCarouselSectionProps {
   variant: 'trending' | 'popular' | 'top-rated';
@@ -70,7 +71,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
             return (
               <motion.div
                 key={`${variant}-${item.id}`}
-                whileTap={{ scale: 0.96 }}
+                whileTap={tapScale}
                 onClick={() => navigate(`/manga/${item.id}`)}
                 style={{ cursor: 'pointer', flexShrink: 0, minWidth: cardWidth }}
               >
@@ -96,6 +97,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                       display: 'block',
                       borderRadius: '14px',
                     }}
+                    loading="lazy"
                   />
 
                   {/* Corner cutout with rank number */}
@@ -188,8 +190,8 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                       <div
                         style={{
                           background: 'rgba(0,0,0,0.55)',
-                          backdropFilter: 'blur(12px)',
-                          WebkitBackdropFilter: 'blur(12px)',
+                          backdropFilter: 'var(--blur-md)',
+                          WebkitBackdropFilter: 'var(--blur-md)',
                           borderRadius: '8px',
                           padding: isMobile ? '3px 7px' : '4px 10px',
                           fontSize: isMobile ? '10px' : '12px',
@@ -250,7 +252,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
           return (
             <motion.div
               key={`${variant}-${item.id}`}
-              whileTap={{ scale: 0.96 }}
+              whileTap={tapScale}
               onClick={() => navigate(`/manga/${item.id}`)}
               style={{ flexShrink: 0, cursor: 'pointer', minWidth: cardWidth }}
             >
@@ -276,6 +278,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                     display: 'block',
                     borderRadius: '14px',
                   }}
+                  loading="lazy"
                 />
                 <div
                   style={{
@@ -301,8 +304,8 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                     <div
                       style={{
                         background: 'rgba(0,0,0,0.55)',
-                        backdropFilter: 'blur(12px)',
-                        WebkitBackdropFilter: 'blur(12px)',
+                        backdropFilter: 'var(--blur-md)',
+                        WebkitBackdropFilter: 'var(--blur-md)',
                         borderRadius: '8px',
                         padding: isMobile ? '3px 7px' : '4px 10px',
                         fontSize: isMobile ? '10px' : '12px',

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { tapScale } from '../../lib/motion';
 
 interface EmptyStateProps {
   icon: React.ReactNode;
@@ -152,7 +153,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <Item {...itemProps}>
           <motion.button
             whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={action.onClick}
             style={{
               marginTop: '24px',

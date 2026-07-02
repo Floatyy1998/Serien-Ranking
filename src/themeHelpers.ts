@@ -4,7 +4,7 @@ import firebase from 'firebase/compat/app';
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
 
 export const adjustBrightness = (color: string, percent: number) => {
-  if (!color || !VALID_HEX.test(color)) return '#00fed7';
+  if (!color || !VALID_HEX.test(color)) return '#00d123';
   const num = parseInt(color.replace('#', ''), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
@@ -67,10 +67,10 @@ export const loadSavedTheme = async (userId?: string) => {
   if (theme) {
     const safe = (c: string | undefined, fallback: string) =>
       c && VALID_HEX.test(c) ? c : fallback;
-    const primary = safe(theme.primaryColor, '#00fed7');
-    const accent = safe(theme.accentColor, '#ff6b6b');
-    const bg = safe(theme.backgroundColor, '#06090f');
-    const surface = safe(theme.surfaceColor, '#0e1420');
+    const primary = safe(theme.primaryColor, '#00d123');
+    const accent = safe(theme.accentColor, '#008a6e');
+    const bg = safe(theme.backgroundColor, '#000000');
+    const surface = safe(theme.surfaceColor, '#0f0f0f');
 
     root.style.setProperty('--theme-primary', primary);
     const primaryHover = adjustBrightness(primary, 10);
@@ -87,15 +87,15 @@ export const loadSavedTheme = async (userId?: string) => {
     updateThemeColorMeta(bg);
   } else {
     // Stelle sicher, dass Default-Werte gesetzt sind
-    root.style.setProperty('--theme-primary', '#00fed7');
-    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00fed7', 10));
-    root.style.setProperty('--theme-accent', '#ff6b6b');
-    root.style.setProperty('--theme-background', '#06090f');
-    root.style.setProperty('--theme-surface', '#0e1420');
-    root.style.setProperty('--theme-text-primary', '#00fed7');
+    root.style.setProperty('--theme-primary', '#00d123');
+    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00d123', 10));
+    root.style.setProperty('--theme-accent', '#008a6e');
+    root.style.setProperty('--theme-background', '#000000');
+    root.style.setProperty('--theme-surface', '#0f0f0f');
+    root.style.setProperty('--theme-text-primary', '#00d123');
     root.style.setProperty('--theme-text-secondary', '#ffffff');
 
     // Update theme-color Meta-Tag für PWA Status Bar
-    updateThemeColorMeta('#06090f');
+    updateThemeColorMeta('#000000');
   }
 };

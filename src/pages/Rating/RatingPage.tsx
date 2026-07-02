@@ -7,6 +7,7 @@ import { OverallRatingSection } from './OverallRatingSection';
 import { GenreRatingSection } from './GenreRatingSection';
 import { RatingSnackbar } from './RatingSnackbar';
 import './RatingPage.css';
+import { tapScale } from '../../lib/motion';
 
 export const RatingPage = () => {
   const { currentTheme } = useTheme();
@@ -99,7 +100,7 @@ export const RatingPage = () => {
         <motion.button
           className="rate-action-btn delete"
           onClick={handleDelete}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           disabled={isSaving}
         >
           <Delete />
@@ -109,7 +110,7 @@ export const RatingPage = () => {
         <motion.button
           className="rate-action-btn save"
           onClick={handleSave}
-          whileTap={{ scale: 0.95 }}
+          whileTap={tapScale}
           disabled={isSaving}
         >
           <Save />

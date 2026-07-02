@@ -3,10 +3,10 @@ import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { trackEpisodeWatched } from '../firebase/analytics';
-import { petService } from '../services/petService';
-import { WatchActivityService } from '../services/watchActivityService';
+import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { hapticSuccess } from '../lib/haptics';
+import { applyUserUpdate } from '../lib/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
@@ -64,12 +64,14 @@ interface EpisodeSnapshot {
 /**
  * Markiert eine Episode in Firebase als gesehen (ID-basiertes Format).
  * Gibt einen Snapshot des vorherigen Zustands zurueck, damit Undo moeglich ist.
+ * Der Write laeuft ueber die persistente Offline-Queue (applyUserUpdate).
  */
 async function markEpisodeWatchedInFirebase(
   uid: string,
   seriesId: number | string,
   seasonIndex: number,
-  episodeId: number | string
+  episodeId: number | string,
+  queueLabel?: string
 ): Promise<EpisodeSnapshot> {
   const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
   const db = firebase.database();
@@ -92,7 +94,7 @@ async function markEpisodeWatchedInFirebase(
     nowIso,
     !hadFirstWatched
   );
-  await db.ref().update(updates);
+  await applyUserUpdate(uid, updates, queueLabel);
 
   return { previousCount, hadFirstWatched, previousLastWatchedAt, previousWatched };
 }
@@ -194,7 +196,8 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           user.uid,
           item.id,
           item.nextEpisode.seasonIndex,
-          item.nextEpisode.episodeId
+          item.nextEpisode.episodeId,
+          `${item.title} ${label} (Weiterschauen-Swipe)`
         );
 
         hapticSuccess();
@@ -231,24 +234,21 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
                 source: 'continue_watching_swipe',
               }
             );
-            await petService.watchedSeriesWithGenreAllPets(user.uid, item.genre?.genres || []);
-            const { updateEpisodeCounters } =
-              await import('../features/badges/minimalActivityLogger');
-            await updateEpisodeCounters(user.uid, snap.previousCount > 0, item.airDate);
-            if (snap.previousCount === 0) {
-              const providers = item.provider?.provider?.map((p: { name: string }) => p.name);
-              WatchActivityService.logEpisodeWatch(
-                user.uid,
-                item.id,
-                item.title,
-                item.nextEpisode.seasonIndex + 1,
-                item.nextEpisode.episodeIndex + 1,
-                item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-                false,
-                item.genre?.genres,
-                providers
-              );
-            }
+            // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
+            // isRewatch ohnehin false, wie zuvor hart kodiert.
+            await runEpisodeWatchFanout({
+              userId: user.uid,
+              seriesId: item.id,
+              seriesTitle: item.title,
+              seasonNumber: item.nextEpisode.seasonIndex + 1,
+              episodeNumber: item.nextEpisode.episodeIndex + 1,
+              runtimeMinutes: item.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: snap.previousCount > 0,
+              genres: item.genre?.genres,
+              providers: item.provider?.provider?.map((p: { name: string }) => p.name),
+              episodeAirDate: item.airDate,
+              wrappedEvent: snap.previousCount === 0,
+            });
           },
         });
 
@@ -292,7 +292,8 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           user.uid,
           episode.seriesId,
           episode.seasonIndex,
-          episode.episodeId
+          episode.episodeId,
+          `${episode.seriesTitle} ${label} (Heute-Swipe)`
         );
 
         showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
@@ -322,23 +323,21 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               isRewatch: snap.previousCount > 0,
               source: 'today_episodes_swipe',
             });
-            await petService.watchedSeriesWithGenreAllPets(user.uid, episode.seriesGenre || []);
-            const { updateEpisodeCounters } =
-              await import('../features/badges/minimalActivityLogger');
-            await updateEpisodeCounters(user.uid, snap.previousCount > 0);
-            if (snap.previousCount === 0) {
-              WatchActivityService.logEpisodeWatch(
-                user.uid,
-                Number(episode.seriesId),
-                episode.seriesTitle,
-                episode.seasonNumber,
-                episode.episodeNumber,
-                episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-                false,
-                episode.seriesGenre,
-                episode.seriesProviders
-              );
-            }
+            // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
+            // isRewatch ohnehin false, wie zuvor hart kodiert. Kein airDate
+            // (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
+            await runEpisodeWatchFanout({
+              userId: user.uid,
+              seriesId: Number(episode.seriesId),
+              seriesTitle: episode.seriesTitle,
+              seasonNumber: episode.seasonNumber,
+              episodeNumber: episode.episodeNumber,
+              runtimeMinutes: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: snap.previousCount > 0,
+              genres: episode.seriesGenre,
+              providers: episode.seriesProviders,
+              wrappedEvent: snap.previousCount === 0,
+            });
           },
         });
       } catch (error) {

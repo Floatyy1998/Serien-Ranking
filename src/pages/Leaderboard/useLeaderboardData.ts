@@ -127,6 +127,7 @@ export function useLeaderboardData() {
 
     const loadAndHealTrophies = async () => {
       try {
+        // bewusst still: Archivierung ist Best-effort — das Self-Healing unten fängt Ausfälle ab
         await checkAndArchiveMonth().catch(() => {});
         let loaded = await fetchTrophyHistory();
         if (cancelled) return;

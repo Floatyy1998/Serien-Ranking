@@ -158,6 +158,8 @@ export const UserDeepDive = React.memo<UserDeepDiveProps>(
                     src={userProfiles[selectedUser].photoURL}
                     alt=""
                     style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : null}
                 <div>

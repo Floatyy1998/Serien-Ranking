@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesSeason } from './types';
+import { tapScale } from '../../lib/motion';
 
 interface SeasonTabsProps {
   seasons: SeriesSeason[];
@@ -29,7 +30,7 @@ export const SeasonTabs = memo<SeasonTabsProps>(
           return (
             <motion.button
               key={index}
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={() => {
                 onSelectSeason(index);
               }}

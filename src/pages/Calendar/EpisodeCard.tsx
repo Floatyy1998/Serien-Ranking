@@ -240,7 +240,7 @@ const PosterWrap = memo(
 
     return (
       <div className="cal-ep-poster-wrap">
-        <img src={posterSrc} alt="" decoding="async" className="cal-ep-poster" />
+        <img src={posterSrc} alt="" decoding="async" className="cal-ep-poster" loading="lazy" />
 
         {premiereType && (
           <PremiereOverlay type={premiereType} themePrimary={currentTheme.primary} />
@@ -308,7 +308,13 @@ const MobilePoster = memo(
     searchTitle: string;
   }) => (
     <div className="cal-ep-poster-mobile-wrap">
-      <img src={src} alt="" decoding="async" className="cal-ep-poster cal-ep-poster-mobile" />
+      <img
+        src={src}
+        alt=""
+        decoding="async"
+        className="cal-ep-poster cal-ep-poster-mobile"
+        loading="lazy"
+      />
       {provider && (
         <ProviderBadge
           provider={provider}

@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
+import { tapScale } from '../../lib/motion';
 
 interface PetActionsProps {
   pet: Pet;
@@ -32,7 +33,7 @@ export const PetActions = memo(function PetActions({
           <>
             <motion.button
               key="feed"
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={onFeed}
               className="pet-action-btn pet-action-btn--feed"
             >
@@ -40,7 +41,7 @@ export const PetActions = memo(function PetActions({
             </motion.button>
             <motion.button
               key="play"
-              whileTap={{ scale: 0.95 }}
+              whileTap={tapScale}
               onClick={onPlay}
               className="pet-action-btn pet-action-btn--play"
             >
@@ -52,7 +53,7 @@ export const PetActions = memo(function PetActions({
             key="revive"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            whileTap={{ scale: 0.95 }}
+            whileTap={tapScale}
             onClick={onRevive}
             className="pet-action-btn pet-action-btn--revive"
           >

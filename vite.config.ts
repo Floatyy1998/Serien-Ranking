@@ -14,7 +14,7 @@ export default defineConfig(({ command }) => ({
   base: '/',
   plugins: [
     react(),
-    criticalCSSPlugin(), // Temporarily disabled - causing build hang
+    criticalCSSPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico'],
@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
         name: 'Serien Tracker',
         short_name: 'Serien',
         theme_color: '#8b5cf6',
-        background_color: '#06090f',
+        background_color: '#000000',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

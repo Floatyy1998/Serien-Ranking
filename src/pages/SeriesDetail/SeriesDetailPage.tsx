@@ -31,6 +31,7 @@ import { useFriendsSeriesProgress } from './useFriendsSeriesProgress';
 import { useSeriesActions } from './useSeriesActions';
 import { useSeriesData } from './useSeriesData';
 import './SeriesDetailPage.css';
+import { tapScaleSmall } from '../../lib/motion';
 
 export const SeriesDetailPage = memo(() => {
   const { id } = useParams();
@@ -425,7 +426,7 @@ export const SeriesDetailPage = memo(() => {
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 16px' }}>
               <motion.button
                 onClick={() => setShowRecap(true)}
-                whileTap={{ scale: 0.98 }}
+                whileTap={tapScaleSmall}
                 whileHover={{ y: -1 }}
                 disabled={recap.loading}
                 style={{

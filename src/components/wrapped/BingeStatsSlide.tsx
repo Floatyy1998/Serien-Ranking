@@ -208,13 +208,14 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7 }}
           style={{
-            background: 'rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(15px)',
+            background: 'var(--glass-heavy)',
+            backdropFilter: 'var(--blur-md)',
+            WebkitBackdropFilter: 'var(--blur-md)',
             borderRadius: '24px',
             padding: '25px 30px',
             textAlign: 'center',
             zIndex: 1,
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            border: '1px solid var(--glass-border-light)',
             marginBottom: '20px',
             width: '100%',
             maxWidth: '350px',
@@ -270,8 +271,9 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}
         style={{
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--glass-heavy)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           borderRadius: '16px',
           padding: '15px 30px',
           zIndex: 1,

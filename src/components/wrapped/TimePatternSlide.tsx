@@ -227,8 +227,9 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.8 }}
         style={{
-          background: 'rgba(255,255,255,0.15)',
-          backdropFilter: 'blur(10px)',
+          background: 'var(--glass-heavy)',
+          backdropFilter: 'var(--blur-sm)',
+          WebkitBackdropFilter: 'var(--blur-sm)',
           borderRadius: '20px',
           padding: '12px 30px',
           marginBottom: '40px',
@@ -247,13 +248,14 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
         style={{
-          background: 'rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(15px)',
+          background: 'var(--glass-heavy)',
+          backdropFilter: 'var(--blur-md)',
+          WebkitBackdropFilter: 'var(--blur-md)',
           borderRadius: '24px',
           padding: '25px 40px',
           textAlign: 'center',
           zIndex: 1,
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          border: '1px solid var(--glass-border-light)',
         }}
       >
         <motion.div

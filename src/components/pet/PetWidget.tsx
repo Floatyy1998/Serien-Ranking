@@ -402,8 +402,8 @@ export const PetWidget: React.FC = () => {
                           boxShadow: `0 8px 24px rgba(0,0,0,0.55), 0 0 22px ${currentTheme.primary}33`,
                           pointerEvents: 'none',
                           zIndex: 2,
-                          backdropFilter: 'blur(8px)',
-                          WebkitBackdropFilter: 'blur(8px)',
+                          backdropFilter: 'var(--blur-sm)',
+                          WebkitBackdropFilter: 'var(--blur-sm)',
                         }}
                       >
                         <span style={{ fontSize: 18, lineHeight: 1 }}>{reaction.emoji}</span>

@@ -146,7 +146,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                   padding: '12px',
                   background: isActive
                     ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
-                    : `rgba(255,255,255,0.05)`,
+                    : 'var(--glass-medium)',
                   border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                   borderRadius: '14px',
                   color: currentTheme.text.secondary,
@@ -156,7 +156,8 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  backdropFilter: isActive ? 'none' : 'blur(8px)',
+                  backdropFilter: isActive ? 'none' : 'var(--blur-sm)',
+                  WebkitBackdropFilter: isActive ? 'none' : 'var(--blur-sm)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
@@ -188,8 +189,8 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             style={{
               width: '100%',
               padding: '12px 16px',
-              background: `rgba(255,255,255,0.05)`,
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              background: 'var(--glass-medium)',
+              border: '1px solid var(--glass-border-light)',
               borderRadius: '14px',
               color: currentTheme.text.secondary,
               fontSize: '15px',
@@ -277,14 +278,15 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                   padding: '10px',
                   background: isActive
                     ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
-                    : `rgba(255,255,255,0.05)`,
+                    : 'var(--glass-medium)',
                   border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                   borderRadius: '14px',
                   color: currentTheme.text.secondary,
                   fontSize: '13px',
                   fontWeight: isActive ? 600 : 500,
                   cursor: 'pointer',
-                  backdropFilter: isActive ? 'none' : 'blur(8px)',
+                  backdropFilter: isActive ? 'none' : 'var(--blur-sm)',
+                  WebkitBackdropFilter: isActive ? 'none' : 'var(--blur-sm)',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
@@ -326,14 +328,15 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                     padding: '12px',
                     background: isActive
                       ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
-                      : `rgba(255,255,255,0.05)`,
+                      : 'var(--glass-medium)',
                     border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
                     borderRadius: '14px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    backdropFilter: isActive ? 'none' : 'blur(8px)',
+                    backdropFilter: isActive ? 'none' : 'var(--blur-sm)',
+                    WebkitBackdropFilter: isActive ? 'none' : 'var(--blur-sm)',
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
                     overflow: 'hidden',
@@ -349,6 +352,8 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                         objectFit: 'contain',
                         filter: isActive ? 'brightness(1.2)' : 'none',
                       }}
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <span

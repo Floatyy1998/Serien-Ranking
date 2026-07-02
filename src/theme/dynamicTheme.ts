@@ -32,10 +32,10 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   // Sanitize: ungültige/leere Farbwerte durch Defaults ersetzen
   const safeConfig: UserThemeConfig = {
     ...config,
-    primaryColor: safeHex(config.primaryColor, '#00fed7'),
-    backgroundColor: safeHex(config.backgroundColor, '#06090f'),
-    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#0e1420') : undefined,
-    accentColor: config.accentColor ? safeHex(config.accentColor, '#ff6b6b') : undefined,
+    primaryColor: safeHex(config.primaryColor, '#00d123'),
+    backgroundColor: safeHex(config.backgroundColor, '#000000'),
+    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#0f0f0f') : undefined,
+    accentColor: config.accentColor ? safeHex(config.accentColor, '#008a6e') : undefined,
     textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
   };
 
@@ -159,7 +159,9 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   };
 }
 
-// Standard-Theme als Fallback (Cinematic Dark)
+// Standard-Theme als Fallback.
+// ABSICHTLICH Grün auf Schwarz (Owner-Entscheidung) — NICHT an die Cyan/Navy-
+// Fallbacks aus global.css/:root "angleichen"; die gelten nur als CSS-Fallback.
 export const defaultThemeConfig: UserThemeConfig = {
   primaryColor: '#00d123',
   backgroundColor: '#000000',
@@ -183,8 +185,8 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
   return {
     primaryColor: safeHex(config.primaryColor, defaultThemeConfig.primaryColor),
     backgroundColor: safeHex(config.backgroundColor, defaultThemeConfig.backgroundColor),
-    surfaceColor: safeHex(config.surfaceColor, defaultThemeConfig.surfaceColor || '#0e1420'),
-    accentColor: safeHex(config.accentColor, defaultThemeConfig.accentColor || '#ff6b6b'),
+    surfaceColor: safeHex(config.surfaceColor, defaultThemeConfig.surfaceColor || '#0f0f0f'),
+    accentColor: safeHex(config.accentColor, defaultThemeConfig.accentColor || '#008a6e'),
     textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
     backgroundImage: config.backgroundImage || defaultThemeConfig.backgroundImage,
     backgroundImageOpacity:

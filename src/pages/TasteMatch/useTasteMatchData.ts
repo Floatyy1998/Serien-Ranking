@@ -7,6 +7,7 @@ import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { calculateTasteMatch } from '../../services/tasteMatchService';
 
@@ -57,9 +58,12 @@ export const useTasteMatchData = (): TasteMatchData => {
       try {
         setLoading(true);
 
-        const [currentUserSnapshot, friendSnapshot] = await Promise.all([
+        // Eigener User: Vollknoten-Read bleibt (Owner darf das). Freund:
+        // Punkt-Reads, weil users/$other unter den gehärteten Rules nicht
+        // mehr komplett lesbar ist — displayName/photoURL bleiben es einzeln.
+        const [currentUserSnapshot, friendFields] = await Promise.all([
           firebase.database().ref(`users/${user.uid}`).once('value'),
-          firebase.database().ref(`users/${friendId}`).once('value'),
+          fetchPublicUserFields(friendId),
         ]);
 
         const currentUserData = currentUserSnapshot.val();
@@ -68,9 +72,8 @@ export const useTasteMatchData = (): TasteMatchData => {
         );
         setUserPhoto(currentUserData?.photoURL || user.photoURL || null);
 
-        const friendData = friendSnapshot.val();
-        setFriendName(friendData?.displayName?.split(' ')[0] || 'Friend');
-        setFriendPhoto(friendData?.photoURL || null);
+        setFriendName(friendFields.displayName?.split(' ')[0] || 'Friend');
+        setFriendPhoto(friendFields.photoURL || null);
 
         const matchResult = await calculateTasteMatch(user.uid, friendId);
         setResult(matchResult);
