@@ -715,6 +715,28 @@ export const AnimeSeasonPage: React.FC = () => {
   );
 
   // ── Progressive TMDB-Hydration (deutsches overview + Provider-Logos) ──────
+  // Der Effekt darf NICHT an der Array-Identität von allEntries hängen:
+  // jedes Firebase-Listen-Update erzeugt neue Objekte → Cleanup/Re-Run ließ
+  // das Skeleton wild flackern und startete die Worker neu. Deshalb ein
+  // stabiler Fingerprint der tatsächlich aufzulösenden IDs + Ref-Zugriff.
+  const allEntriesRef = useRef<DecoratedAnime[]>(allEntries);
+  useLayoutEffect(() => {
+    allEntriesRef.current = allEntries;
+  }, [allEntries]);
+
+  const pendingKey = useMemo(
+    () =>
+      allEntries
+        .filter(
+          (entry) =>
+            needsResolveEntry(entry) && cachedResolved[String(entry.anime.id)] === undefined
+        )
+        .map((entry) => entry.anime.id)
+        .sort((a, b) => a - b)
+        .join(','),
+    [allEntries, cachedResolved]
+  );
+
   // useLayoutEffect: hydration.active MUSS vor dem ersten Paint stehen —
   // mit useEffect blitzte ein Frame unhydratisierter Content vor dem Skeleton.
   useLayoutEffect(() => {
@@ -722,13 +744,18 @@ export const AnimeSeasonPage: React.FC = () => {
     const started = startedRef.current;
     // Bereits gecachte Einträge (sessionStorage) überspringen den Worker
     // komplett — cachedResolved speist hydrationFor direkt.
-    const pending = allEntries.filter(
+    const pending = allEntriesRef.current.filter(
       (entry) =>
         needsResolveEntry(entry) &&
         cachedResolved[String(entry.anime.id)] === undefined &&
         !started.has(entry.anime.id)
     );
-    if (!pending.length) return;
+    if (!pending.length) {
+      // Nichts (mehr) aufzulösen — falls ein abgebrochener Vorgänger das
+      // Skeleton anließ, hier beenden.
+      setHydration((h) => (h.active ? { ...h, active: false } : h));
+      return;
+    }
     for (const entry of pending) started.add(entry.anime.id);
 
     let cancelled = false;
@@ -775,12 +802,17 @@ export const AnimeSeasonPage: React.FC = () => {
     return () => {
       cancelled = true;
       clearTimeout(capTimer);
-      setHydration((h) => (h.active ? { ...h, active: false } : h));
+      // BEWUSST kein setHydration(active: false) hier: das Cleanup läuft bei
+      // jedem legitimen Re-Run (Liste lädt nach → ID-Menge ändert sich) und
+      // ließ das Skeleton für einen Frame aus/anblitzen. Der Nachfolger-Lauf
+      // hält den Status nahtlos bzw. beendet ihn, wenn nichts mehr aussteht.
       // Abgebrochene (noch nicht aufgelöste) Einträge wieder freigeben —
       // bereits gecachte lösen beim nächsten Lauf ohne Request auf.
       for (const entry of pending) started.delete(entry.anime.id);
     };
-  }, [allEntries, loading, selected.year, queueResolved, cachedResolved]);
+    // allEntries kommt bewusst über die Ref — pendingKey deckt echte
+    // Änderungen der aufzulösenden ID-Menge ab (Identitäts-Rauschen nicht).
+  }, [pendingKey, loading, selected.year, queueResolved, cachedResolved]);
 
   const handleSeasonChange = (id: string) => {
     const next = seasonTabs.find((tab) => seasonKey(tab) === id);
@@ -894,11 +926,17 @@ export const AnimeSeasonPage: React.FC = () => {
         ? entry.match.vote_average
         : null;
     const tmdbRating = matchRating ?? info?.tmdbRating ?? null;
-    return { overviewDe, tmdbProviders, tmdbRating };
+    // Genres: Listen-Serien aus dem Katalog (ohne 'All'/'Animation'), sonst
+    // aus der Auflösung — beides bereits App-Vokabular.
+    const matchGenres = entry.match?.genre?.genres?.filter(
+      (genre) => typeof genre === 'string' && genre !== 'All' && genre !== 'Animation'
+    );
+    const genres = matchGenres?.length ? matchGenres : (info?.genres ?? []);
+    return { overviewDe, tmdbProviders, tmdbRating, genres };
   };
 
   const renderCard = (entry: DecoratedAnime) => {
-    const { overviewDe, tmdbProviders, tmdbRating } = hydrationFor(entry);
+    const { overviewDe, tmdbProviders, tmdbRating, genres } = hydrationFor(entry);
     return (
       <AnimeSeasonCard
         key={entry.anime.id}
@@ -909,6 +947,7 @@ export const AnimeSeasonPage: React.FC = () => {
         overviewDe={overviewDe}
         tmdbProviders={tmdbProviders}
         tmdbRating={tmdbRating}
+        genres={genres}
         staggerIndex={staggerIndexById.get(entry.anime.id) ?? 0}
         onOpen={() => void openEntry(entry)}
         adding={addingId === entry.anime.id}

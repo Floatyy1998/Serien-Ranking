@@ -26,6 +26,7 @@
  * gecacht — wiederholte Besuche/Klicks lösen keine neuen Requests aus.
  */
 
+import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
@@ -34,9 +35,9 @@ import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
 import { normalizeTitle } from './useAnimeListMatch';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
 
-// v10: AniList-Streaming-Link-Fallback für Provider (v9: pickBest nach
-// Popularität) — Bump lässt Einträge ohne JustWatch-Daten neu auflösen.
-const CACHE_KEY = 'animeSeasonTmdb:v10';
+// v11: App-relevante TMDB-Genres ergänzt (v10: Provider-Fallback) — Bump
+// lässt gecachte Einträge die Genres nachladen.
+const CACHE_KEY = 'animeSeasonTmdb:v11';
 const TMDB_ANIMATION_GENRE_ID = 16;
 
 export interface TmdbProviderInfo {
@@ -60,6 +61,9 @@ export interface ResolvedTmdbInfo {
   premiereDate?: string | null;
   /** TMDB-Community-Rating (vote_average, 0–10) — null/0 = keins. */
   tmdbRating?: number | null;
+  /** TMDB-Genres, gemappt auf das App-Vokabular (genreIdMap*) — ohne
+   *  „Animation" (tragen alle Anime, reine Redundanz). */
+  genres?: string[];
 }
 
 type ResolveCache = Record<string, ResolvedTmdbInfo>;
@@ -158,6 +162,7 @@ function pickBest(results: TmdbTvResult[], query: string): number | null {
 interface TmdbDetailsResponse {
   overview?: string;
   vote_average?: number;
+  genres?: { id: number; name?: string }[];
   'watch/providers'?: {
     results?: {
       DE?: {
@@ -175,18 +180,30 @@ interface TmdbDetailsResponse {
 async function fetchGermanDetails(
   tmdbId: number,
   mediaType: 'tv' | 'movie'
-): Promise<{ overviewDe: string | null; providers: TmdbProviderInfo[]; rating: number | null }> {
+): Promise<{
+  overviewDe: string | null;
+  providers: TmdbProviderInfo[];
+  rating: number | null;
+  genres: string[];
+}> {
   const apiKey = import.meta.env.VITE_API_TMDB;
-  if (!apiKey) return { overviewDe: null, providers: [], rating: null };
+  if (!apiKey) return { overviewDe: null, providers: [], rating: null, genres: [] };
   const response = await fetch(
     `https://api.themoviedb.org/3/${mediaType}/${tmdbId}?api_key=${apiKey}&language=de-DE&append_to_response=watch%2Fproviders`
   );
-  if (!response.ok) return { overviewDe: null, providers: [], rating: null };
+  if (!response.ok) return { overviewDe: null, providers: [], rating: null, genres: [] };
   const json = (await response.json()) as TmdbDetailsResponse;
 
   const overviewDe = json.overview?.trim() || null;
   const rating =
     typeof json.vote_average === 'number' && json.vote_average > 0 ? json.vote_average : null;
+
+  // Genre-IDs auf das App-Vokabular mappen (nur relevante bleiben) —
+  // „Animation" raus, das tragen alle Anime.
+  const idMap = mediaType === 'movie' ? genreIdMap : genreIdMapForSeries;
+  const genres = (json.genres ?? [])
+    .map((genre) => idMap.find((entry) => entry.id === genre.id)?.name)
+    .filter((name): name is string => !!name && name !== 'Animation');
   const flatrate = json['watch/providers']?.results?.DE?.flatrate ?? [];
   const providers: TmdbProviderInfo[] = [];
   const seen = new Set<string>();
@@ -199,7 +216,7 @@ async function fetchGermanDetails(
     seen.add(normalized);
     providers.push({ name: normalized, logo });
   }
-  return { overviewDe, providers, rating };
+  return { overviewDe, providers, rating, genres };
 }
 
 /**
@@ -410,6 +427,7 @@ export async function resolveTmdbInfo(
       providers: details.providers.length ? details.providers : fallbackProviders,
       premiereDate,
       tmdbRating: details.rating,
+      genres: details.genres,
     };
   }
   writeCache(anime.id, info);

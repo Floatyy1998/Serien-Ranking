@@ -143,6 +143,8 @@ interface AnimeSeasonCardProps {
   tmdbProviders: TmdbProviderInfo[] | null | undefined;
   /** TMDB-vote_average (10er-Skala) — solange fehlend: AniList-Fallback. */
   tmdbRating?: number | null;
+  /** App-relevante TMDB-Genres (ohne Animation) — Zeile unter der Meta. */
+  genres?: string[];
   /** Karten-Tap: SeriesDetail (Match/Resolve übernimmt die Page). */
   onOpen: () => void;
   /** „+"-Button: direkt zur Liste adden (nur wenn nicht in der Liste). */
@@ -161,6 +163,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   overviewDe,
   tmdbProviders,
   tmdbRating,
+  genres,
   onOpen,
   onAdd,
   adding = false,
@@ -375,6 +378,11 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
           {/* Meta IMMER rendern (Platzhalter hält die Zeilenhöhe) — sonst sind
               Karten ohne Meta-Zeile niedriger als ihre Zeilen-Nachbarn. */}
           <p className="as-card-meta">{metaLine || ' '}</p>
+          {/* Genre-Zeile (max. 3, App-Vokabular) — immer gerendert, damit die
+              Kartenhöhen einheitlich bleiben. */}
+          <p className="as-card-genres as-fade" key={genres?.length ? 'genres' : 'genres-none'}>
+            {genres?.length ? genres.slice(0, 3).join(' · ') : ' '}
+          </p>
           {description && (
             /* key wechselt bei Hydration (en → de) → sanfter Fade; min-height
                in CSS hält die Kartenhöhe stabil. „mehr lesen" klappt die
