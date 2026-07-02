@@ -34,7 +34,14 @@
  * Klick → SeriesDetail über die bereits aufgelöste tmdbId.
  */
 
-import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useDeferredValue,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useNavigate, useNavigationType } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -123,6 +130,14 @@ function fullStartDate(anime: SeasonAnime): Date | null {
 
 const byPopularity = (a: DecoratedAnime, b: DecoratedAnime) =>
   (b.anime.popularity ?? 0) - (a.anime.popularity ?? 0);
+
+/** Braucht der Eintrag eine TMDB-Auflösung? Listen-Matches nur, wenn ihnen
+ *  Katalog-Daten fehlen (vote_average führt der Katalog nicht, beschreibung
+ *  teils nicht) — Provider kommen für Matches weiter aus der Liste. */
+const needsResolveEntry = (entry: DecoratedAnime) =>
+  !entry.match ||
+  !(typeof entry.match.vote_average === 'number' && entry.match.vote_average > 0) ||
+  !entry.match.beschreibung?.trim();
 
 /** Fenster, in dem eine Katalog-Episode als „dieselbe Premiere" gilt. */
 const CALENDAR_MATCH_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;
@@ -423,10 +438,7 @@ export const AnimeSeasonPage: React.FC = () => {
 
   const [items, setItems] = useState<SeasonAnime[]>([]);
   const [continuing, setContinuing] = useState<ContinuingAnime[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasNextPage, setHasNextPage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   /** AniList-Id, für die gerade eine KLICK-Auflösung läuft (sperrt Klicks). */
@@ -463,6 +475,39 @@ export const AnimeSeasonPage: React.FC = () => {
 
   /** Ids, für die die Hintergrund-Auflösung bereits angestoßen wurde. */
   const startedRef = useRef<Set<number>>(new Set());
+  /** Puffer der Hintergrund-Auflösungen — GEBÜNDELT geflusht: pro Eintrag
+   *  einzeln committet wanderten Karten sichtbar einzeln durch die Timeline
+   *  („Nachrendern"); so gibt es wenige ruhige Wellen statt Dauergeruckel. */
+  const pendingResolvedRef = useRef<Record<number, ResolvedTmdbInfo>>({});
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const queueResolved = React.useCallback((id: number, info: ResolvedTmdbInfo) => {
+    pendingResolvedRef.current[id] = info;
+    if (flushTimerRef.current) return;
+    flushTimerRef.current = setTimeout(() => {
+      flushTimerRef.current = null;
+      const batch = pendingResolvedRef.current;
+      pendingResolvedRef.current = {};
+      setResolved((prev) => ({ ...prev, ...batch }));
+    }, 1200);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    },
+    []
+  );
+
+  /** Hydration-Status: solange aktiv, zeigt die Seite ein Skeleton mit
+   *  Fortschritt — erst wenn ALLE Auflösungen da sind, rendert der Inhalt
+   *  (kein sichtbares Nachrendern/Umsortieren mehr). Mit warmem Session-
+   *  Cache ist pending leer → Seite erscheint sofort. */
+  const [hydration, setHydration] = useState<{ active: boolean; done: number; total: number }>({
+    active: false,
+    done: 0,
+    total: 0,
+  });
   /** „Fortlaufend"-Sektion — Ziel des Schnell-Scroll-Chips. */
   const continuingRef = useRef<HTMLElement | null>(null);
   /** Spät-Restore nur einmal (nicht bei jedem Season-Wechsel). */
@@ -476,7 +521,7 @@ export const AnimeSeasonPage: React.FC = () => {
   // … deshalb EIN Spät-Restore, sobald der Inhalt steht. Auf Nicht-POP-
   // Navigation hat der Hook den Key schon entfernt → no-op.
   useEffect(() => {
-    if (loading || lateRestoreRef.current) return;
+    if (loading || hydration.active || lateRestoreRef.current) return;
     lateRestoreRef.current = true;
     const saved = sessionStorage.getItem(SCROLL_KEY);
     if (!saved) return;
@@ -484,7 +529,7 @@ export const AnimeSeasonPage: React.FC = () => {
       const container = document.querySelector('.mobile-content');
       if (container) container.scrollTop = parseInt(saved, 10);
     });
-  }, [loading]);
+  }, [loading, hydration.active]);
 
   useEffect(() => {
     let cancelled = false;
@@ -492,22 +537,39 @@ export const AnimeSeasonPage: React.FC = () => {
     setError(null);
     setItems([]);
     setContinuing([]);
-    setPage(1);
-    setHasNextPage(false);
 
-    fetchSeasonAnime(selected, 1)
-      .then((result) => {
+    // ALLE relevanten Seiten sofort laden (kein „Mehr laden"-Button mehr —
+    // das Nachrendern beim Klick war störend). Cap bei 3 Seiten/150
+    // Einträgen: AniList sortiert nach Popularität, dahinter kommen nur
+    // noch Recaps/Kurz-ONAs. Fehler ab Seite 2 sind best-effort.
+    (async () => {
+      const MAX_SEASON_PAGES = 3;
+      const collected: SeasonAnime[] = [];
+      const seen = new Set<number>();
+      try {
+        for (let pageNo = 1; pageNo <= MAX_SEASON_PAGES; pageNo++) {
+          const result = await fetchSeasonAnime(selected, pageNo);
+          for (const anime of result.media) {
+            if (!seen.has(anime.id)) {
+              seen.add(anime.id);
+              collected.push(anime);
+            }
+          }
+          if (!result.hasNextPage) break;
+        }
+        if (!cancelled) setItems(collected);
+      } catch (err: unknown) {
         if (cancelled) return;
-        setItems(result.media);
-        setHasNextPage(result.hasNextPage);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'AniList ist gerade nicht erreichbar.');
-      })
-      .finally(() => {
+        if (collected.length) {
+          // Seite 1 war da — zeigen, was wir haben.
+          setItems(collected);
+        } else {
+          setError(err instanceof Error ? err.message : 'AniList ist gerade nicht erreichbar.');
+        }
+      } finally {
         if (!cancelled) setLoading(false);
-      });
+      }
+    })();
 
     // „Fortlaufend" ist best-effort — ein Fehler hier reißt die Seite nicht um.
     fetchContinuingAnime(selected)
@@ -523,25 +585,6 @@ export const AnimeSeasonPage: React.FC = () => {
       cancelled = true;
     };
   }, [selected, reloadKey]);
-
-  const loadMore = async () => {
-    hapticTap();
-    setLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      const result = await fetchSeasonAnime(selected, nextPage);
-      setItems((prev) => {
-        const seen = new Set(prev.map((a) => a.id));
-        return [...prev, ...result.media.filter((a) => !seen.has(a.id))];
-      });
-      setHasNextPage(result.hasNextPage);
-      setPage(nextPage);
-    } catch (err) {
-      console.warn('[animeSeason] Nachladen fehlgeschlagen', err);
-    } finally {
-      setLoadingMore(false);
-    }
-  };
 
   // ── Hero + Sektionen ───────────────────────────────────────────────────────
   // ── Basis-Entries (STABIL — ohne Datums-Korrekturen) ───────────────────────
@@ -672,25 +715,26 @@ export const AnimeSeasonPage: React.FC = () => {
   );
 
   // ── Progressive TMDB-Hydration (deutsches overview + Provider-Logos) ──────
-  useEffect(() => {
+  // useLayoutEffect: hydration.active MUSS vor dem ersten Paint stehen —
+  // mit useEffect blitzte ein Frame unhydratisierter Content vor dem Skeleton.
+  useLayoutEffect(() => {
     if (loading) return;
     const started = startedRef.current;
-    // Auch Listen-Matches auflösen, denen Katalog-Daten fehlen (vote_average
-    // führt der Katalog gar nicht, beschreibung teils nicht) — Provider
-    // kommen weiter aus der Liste, Rating/deutsche Beschreibung werden
-    // via TMDB nachgeladen.
-    const needsResolve = (entry: DecoratedAnime) =>
-      !entry.match ||
-      !(typeof entry.match.vote_average === 'number' && entry.match.vote_average > 0) ||
-      !entry.match.beschreibung?.trim();
+    // Bereits gecachte Einträge (sessionStorage) überspringen den Worker
+    // komplett — cachedResolved speist hydrationFor direkt.
     const pending = allEntries.filter(
-      (entry) => needsResolve(entry) && !started.has(entry.anime.id)
+      (entry) =>
+        needsResolveEntry(entry) &&
+        cachedResolved[String(entry.anime.id)] === undefined &&
+        !started.has(entry.anime.id)
     );
     if (!pending.length) return;
     for (const entry of pending) started.add(entry.anime.id);
 
     let cancelled = false;
     let next = 0;
+    setHydration({ active: true, done: 0, total: pending.length });
+
     const worker = async () => {
       while (!cancelled) {
         const index = next++;
@@ -698,24 +742,45 @@ export const AnimeSeasonPage: React.FC = () => {
         const entry = pending[index];
         try {
           const info = await resolveTmdbInfo(entry.anime, selected.year);
-          if (!cancelled) setResolved((prev) => ({ ...prev, [entry.anime.id]: info }));
+          if (!cancelled) queueResolved(entry.anime.id, info);
         } catch {
           // Netzwerkfehler → wieder freigeben (Klick/nächster Lauf versucht erneut)
           started.delete(entry.anime.id);
+        } finally {
+          if (!cancelled) setHydration((h) => ({ ...h, done: h.done + 1 }));
         }
       }
     };
     void Promise.all(
       Array.from({ length: Math.min(RESOLVE_CONCURRENCY, pending.length) }, () => worker())
-    );
+    ).then(() => {
+      if (cancelled) return;
+      // Rest-Puffer sofort committen, dann die FERTIGE Seite zeigen.
+      if (flushTimerRef.current) {
+        clearTimeout(flushTimerRef.current);
+        flushTimerRef.current = null;
+      }
+      const batch = pendingResolvedRef.current;
+      pendingResolvedRef.current = {};
+      setResolved((prev) => ({ ...prev, ...batch }));
+      setHydration((h) => ({ ...h, active: false }));
+    });
+
+    // Sicherheitsnetz: hängt eine Auflösung (Netzwerk), zeigen wir nach 30 s
+    // trotzdem, was da ist — besser als ein endloses Skeleton.
+    const capTimer = setTimeout(() => {
+      if (!cancelled) setHydration((h) => (h.active ? { ...h, active: false } : h));
+    }, 30000);
 
     return () => {
       cancelled = true;
+      clearTimeout(capTimer);
+      setHydration((h) => (h.active ? { ...h, active: false } : h));
       // Abgebrochene (noch nicht aufgelöste) Einträge wieder freigeben —
       // bereits gecachte lösen beim nächsten Lauf ohne Request auf.
       for (const entry of pending) started.delete(entry.anime.id);
     };
-  }, [allEntries, loading, selected.year]);
+  }, [allEntries, loading, selected.year, queueResolved, cachedResolved]);
 
   const handleSeasonChange = (id: string) => {
     const next = seasonTabs.find((tab) => seasonKey(tab) === id);
@@ -758,6 +823,10 @@ export const AnimeSeasonPage: React.FC = () => {
       setResolvingId(null);
     }
   };
+
+  /** Specials/Musikvideos sind nicht addbar (kein sinnvoller Listen-Eintrag) —
+   *  ohne onAdd rendert die Karte keinen „+"-Button. */
+  const canAdd = (anime: SeasonAnime) => anime.format !== 'SPECIAL' && anime.format !== 'MUSIC';
 
   /** „+"-Button auf der Karte: direkt in die Liste adden — derselbe Flow wie
    *  Discover/Search (/add bzw. /addMovie via backendFetch). Die Liste
@@ -843,7 +912,7 @@ export const AnimeSeasonPage: React.FC = () => {
         staggerIndex={staggerIndexById.get(entry.anime.id) ?? 0}
         onOpen={() => void openEntry(entry)}
         adding={addingId === entry.anime.id}
-        onAdd={() => void addEntry(entry)}
+        onAdd={canAdd(entry.anime) ? () => void addEntry(entry) : undefined}
       />
     );
   };
@@ -997,13 +1066,26 @@ export const AnimeSeasonPage: React.FC = () => {
           zIndex: 1,
         }}
       >
-        {loading && (
-          <div role="status" aria-label="Anime-Season wird geladen">
+        {(loading || hydration.active) && (
+          <div className="as-skeletons" role="status" aria-label="Anime-Season wird geladen">
             <Skeleton
               width="100%"
               shape="card"
               style={{ height: 'clamp(300px, 32vw, 400px)', marginBottom: '24px' }}
             />
+            {hydration.active && (
+              <p
+                style={{
+                  textAlign: 'center',
+                  margin: '0 0 16px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  color: currentTheme.text.muted,
+                }}
+              >
+                Termine, Provider & Bewertungen werden geladen … {hydration.done}/{hydration.total}
+              </p>
+            )}
             <div className="as-grid">
               {Array.from({ length: 10 }, (_, i) => (
                 <Skeleton key={i} width="100%" shape="card" style={{ height: '176px' }} />
@@ -1032,7 +1114,7 @@ export const AnimeSeasonPage: React.FC = () => {
           />
         )}
 
-        {!loading && !error && totalCount > 0 && (
+        {!loading && !hydration.active && !error && totalCount > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
             {/* ── 0. Hero-Spotlight (volle Breite) ── */}
             {hero &&
@@ -1049,7 +1131,7 @@ export const AnimeSeasonPage: React.FC = () => {
                     tmdbRating={tmdbRating}
                     onOpen={() => void openEntry(hero)}
                     adding={addingId === hero.anime.id}
-                    onAdd={() => void addEntry(hero)}
+                    onAdd={canAdd(hero.anime) ? () => void addEntry(hero) : undefined}
                   />
                 );
               })()}
@@ -1170,29 +1252,6 @@ export const AnimeSeasonPage: React.FC = () => {
                 )}
                 {renderGrid(visibleFinished)}
               </section>
-            )}
-
-            {hasNextPage && (
-              <motion.button
-                type="button"
-                whileTap={tapScaleSmall}
-                onClick={loadMore}
-                disabled={loadingMore}
-                style={{
-                  width: '100%',
-                  minHeight: '48px',
-                  borderRadius: 'var(--radius-lg)',
-                  border: `1px solid ${currentTheme.border.default}`,
-                  background: currentTheme.background.surface,
-                  color: currentTheme.text.secondary,
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  cursor: loadingMore ? 'wait' : 'pointer',
-                  opacity: loadingMore ? 0.6 : 1,
-                }}
-              >
-                {loadingMore ? 'Lädt …' : 'Mehr laden'}
-              </motion.button>
             )}
           </div>
         )}

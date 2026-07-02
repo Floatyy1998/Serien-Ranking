@@ -170,7 +170,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   // „Jetzt" einmalig beim Mount einfrieren — react-hooks/purity verbietet
   // Date.now() im Render; Minuten-Drift ist für Datumsvergleiche irrelevant.
   const [now] = useState(() => Date.now());
-  /** Beschreibung aufgeklappt (Tap auf Text/„mehr" — navigiert NICHT). */
+  /** Beschreibung aufgeklappt („mehr lesen" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
   const title = anime.title.english || anime.title.romaji || 'Unbekannter Titel';
@@ -372,12 +372,13 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
             ) : null}
           </div>
           <h3 className="as-card-title">{title}</h3>
-          {metaLine && <p className="as-card-meta">{metaLine}</p>}
+          {/* Meta IMMER rendern (Platzhalter hält die Zeilenhöhe) — sonst sind
+              Karten ohne Meta-Zeile niedriger als ihre Zeilen-Nachbarn. */}
+          <p className="as-card-meta">{metaLine || ' '}</p>
           {description && (
             /* key wechselt bei Hydration (en → de) → sanfter Fade; min-height
-               in CSS hält die Kartenhöhe stabil (kein Layout-Sprung). Tap auf
-               den Text bzw. „mehr" klappt die VOLLE Beschreibung aus (die
-               Karte navigiert dabei nicht — stopPropagation). */
+               in CSS hält die Kartenhöhe stabil. „mehr lesen" klappt die
+               volle Beschreibung aus (navigiert nicht — stopPropagation). */
             <>
               <p
                 className={

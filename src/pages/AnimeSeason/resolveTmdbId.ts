@@ -34,9 +34,9 @@ import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
 import { normalizeTitle } from './useAnimeListMatch';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
 
-// v8: tmdbRating (vote_average) ergänzt (v7: Filme + mediaType) — Bump
-// lässt gecachte Einträge das Rating nachladen.
-const CACHE_KEY = 'animeSeasonTmdb:v8';
+// v10: AniList-Streaming-Link-Fallback für Provider (v9: pickBest nach
+// Popularität) — Bump lässt Einträge ohne JustWatch-Daten neu auflösen.
+const CACHE_KEY = 'animeSeasonTmdb:v10';
 const TMDB_ANIMATION_GENRE_ID = 16;
 
 export interface TmdbProviderInfo {
@@ -97,6 +97,12 @@ export function readResolveCacheSync(): Record<string, ResolvedTmdbInfo> {
 interface TmdbTvResult {
   id: number;
   genre_ids?: number[];
+  name?: string;
+  original_name?: string;
+  /** Movie-Suche liefert title statt name. */
+  title?: string;
+  original_title?: string;
+  popularity?: number;
 }
 
 async function searchTv(query: string, year?: number): Promise<TmdbTvResult[]> {
@@ -129,11 +135,24 @@ async function searchMovie(query: string, year?: number): Promise<TmdbTvResult[]
   return json.results ?? [];
 }
 
-/** Bestes TV-Ergebnis: bevorzugt Animation (Genre 16), sonst Top-Treffer. */
-function pickBest(results: TmdbTvResult[]): number | null {
+/** Bestes Ergebnis: Animation (Genre 16) bevorzugt; innerhalb des Pools
+ *  gewinnt der exakte Titel-Match, sonst das POPULÄRSTE Ergebnis — das
+ *  TMDB-Such-Ranking stellt sonst Spin-offs vor die Hauptserie („The Slime
+ *  Diaries" vor „That Time I Got Reincarnated as a Slime"). */
+function pickBest(results: TmdbTvResult[], query: string): number | null {
   if (!results.length) return null;
-  const animated = results.find((r) => r.genre_ids?.includes(TMDB_ANIMATION_GENRE_ID));
-  return (animated ?? results[0]).id;
+  const animated = results.filter((r) => r.genre_ids?.includes(TMDB_ANIMATION_GENRE_ID));
+  const pool = animated.length ? animated : results;
+
+  const normalizedQuery = normalizeTitle(query);
+  const exact = pool.find((r) =>
+    [r.name, r.original_name, r.title, r.original_title].some(
+      (candidate) => normalizeTitle(candidate) === normalizedQuery
+    )
+  );
+  if (exact) return exact.id;
+
+  return pool.reduce((best, r) => ((r.popularity ?? 0) > (best.popularity ?? 0) ? r : best)).id;
 }
 
 interface TmdbDetailsResponse {
@@ -181,6 +200,31 @@ async function fetchGermanDetails(
     providers.push({ name: normalized, logo });
   }
   return { overviewDe, providers, rating };
+}
+
+/**
+ * Provider-Fallback aus AniList-Streaming-Links (type STREAMING): TMDBs
+ * JustWatch-Daten hinken bei neuen Simulcasts oft 1–2 Wochen hinterher,
+ * AniList führt den Crunchyroll-Link dagegen ab Ankündigung. Es zählen nur
+ * App-unterstützte Provider (normalizeProviderName filtert), Logos kommen
+ * aus der lokalen Provider-Map — die Karten zeigen also echte Logos.
+ */
+function anilistFallbackProviders(anime: SeasonAnime): TmdbProviderInfo[] {
+  const seen = new Set<string>();
+  const result: TmdbProviderInfo[] = [];
+  for (const link of anime.externalLinks ?? []) {
+    if (link?.type !== 'STREAMING') continue;
+    // Sprachspezifische Links nur DE/EN — andere Sprachen sagen nichts über
+    // die Verfügbarkeit hierzulande aus.
+    if (link.language && link.language !== 'German' && link.language !== 'English') continue;
+    const normalized = normalizeProviderName(link.site);
+    if (!normalized || seen.has(normalized)) continue;
+    const logo = getProviderLogoUrl(normalized);
+    if (!logo) continue;
+    seen.add(normalized);
+    result.push({ name: normalized, logo });
+  }
+  return result;
 }
 
 // ── TVMaze-Datums-Check ──────────────────────────────────────────────────────
@@ -339,22 +383,31 @@ export async function resolveTmdbInfo(
       mediaType === 'movie'
         ? await searchMovie(attempt.query, attempt.year)
         : await searchTv(attempt.query, attempt.year);
-    tmdbId = pickBest(results);
+    tmdbId = pickBest(results, attempt.query);
     if (tmdbId !== null) break;
   }
 
   const premiereDate = await premiereDatePromise;
 
+  // JustWatch leer? → AniList-Streaming-Links als Provider-Fallback.
+  const fallbackProviders = anilistFallbackProviders(anime);
+
   let info: ResolvedTmdbInfo;
   if (tmdbId === null) {
-    info = { tmdbId: null, mediaType, overviewDe: null, providers: null, premiereDate };
+    info = {
+      tmdbId: null,
+      mediaType,
+      overviewDe: null,
+      providers: fallbackProviders.length ? fallbackProviders : null,
+      premiereDate,
+    };
   } else {
     const details = await fetchGermanDetails(tmdbId, mediaType);
     info = {
       tmdbId,
       mediaType,
       overviewDe: details.overviewDe,
-      providers: details.providers,
+      providers: details.providers.length ? details.providers : fallbackProviders,
       premiereDate,
       tmdbRating: details.rating,
     };

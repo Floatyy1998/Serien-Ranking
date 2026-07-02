@@ -19,6 +19,15 @@
   margin: 0 20px 20px;
 }
 
+/* ─── Skeletons ─────────────────────────────────────────────────────────── */
+
+/* Ruhiger, langsamer Sweep statt des globalen 1.5s-Pulses — bei einer
+   ganzen Seite großer Skeleton-Karten wirkte der wie Flackern. */
+.as-skeletons .skeleton-shimmer {
+  animation-duration: 3s;
+  animation-timing-function: linear;
+}
+
 /* ─── Karten-Grid (Querformat-Karten) ───────────────────────────────────── */
 
 .as-grid {
@@ -48,8 +57,9 @@
 /* ─── Grid Item ─────────────────────────────────────────────────────────── */
 
 .as-grid-item {
-  content-visibility: auto;
-  contain-intrinsic-block-size: auto 224px;
+  /* KEIN content-visibility: auto mehr — nach dem Einmal-Mount hinter dem
+     Skeleton ließ es Karten im Viewport erst leer und malte sie ruckartig
+     nach („nicht da und plötzlich da"). ~90 Karten rendern problemlos. */
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--duration-normal) var(--ease-out);
@@ -259,6 +269,9 @@
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  /* Immer 2 Zeilen reservieren → einzeilige Titel machen die Karte nicht
+     niedriger als ihre Zeilen-Nachbarn (align-items: start im Grid). */
+  min-height: calc(2 * 1.2em);
 }
 
 .as-card-meta {
