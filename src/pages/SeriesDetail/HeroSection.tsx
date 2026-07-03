@@ -9,12 +9,14 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useMemo } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { mergeProviders } from '../../lib/providerMerge';
+import type { MergedProvider } from '../../lib/providerMerge';
+import { fetchAniListProviderFallback, isLikelyAnime } from '../../lib/anilistProviderFallback';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -115,6 +117,42 @@ export const HeroSection = memo<HeroSectionProps>(
         }),
       [series.provider, providers]
     );
+
+    // AniList-Streaming-Link-Fallback: JustWatch/TMDB kennt Nischen-Anime und
+    // frische Simulcasts oft nicht. Wenn Katalog + Live-TMDB nichts liefern
+    // und die Serie nach Anime aussieht, holen wir die Provider (mit lokalen
+    // Logos) von AniList — sessionStorage-gecacht, max. 1 Request pro Titel.
+    const [anilistFallback, setAnilistFallback] = useState<MergedProvider[]>([]);
+
+    useEffect(() => {
+      // Serie gewechselt → alten Fallback verwerfen.
+      setAnilistFallback([]);
+    }, [seriesId]);
+
+    useEffect(() => {
+      // Erst wenn der Live-Fetch entschieden hat (providers !== null) UND
+      // leer blieb — sonst würden wir AniList unnötig anfragen.
+      if (providers === null || mergedDisplayProviders.length > 0 || !isLikelyAnime(series)) {
+        return;
+      }
+      let cancelled = false;
+      fetchAniListProviderFallback(series.title || series.name || '')
+        .then((result) => {
+          if (!cancelled && result.length) setAnilistFallback(result);
+        })
+        .catch(() => {
+          /* best-effort */
+        });
+      return () => {
+        cancelled = true;
+      };
+      // series-Identität wechselt pro Listen-Sync — der Re-Run ist dank
+      // Guards + sessionStorage-Cache aber ein No-Op bzw. Cache-Hit.
+    }, [providers, mergedDisplayProviders.length, seriesId, series]);
+
+    const displayProviders = mergedDisplayProviders.length
+      ? mergedDisplayProviders
+      : anilistFallback;
 
     const actionButtons = !isReadOnlyTmdbSeries && (
       <div className="hero-actions">
@@ -463,9 +501,9 @@ export const HeroSection = memo<HeroSectionProps>(
                     justifyContent: 'center',
                   }}
                 >
-                  {mergedDisplayProviders.length > 0 && (
+                  {displayProviders.length > 0 && (
                     <ProviderBadges
-                      providers={mergedDisplayProviders}
+                      providers={displayProviders}
                       size="medium"
                       maxDisplay={4}
                       showNames={false}
@@ -496,9 +534,9 @@ export const HeroSection = memo<HeroSectionProps>(
                   noMargin
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {mergedDisplayProviders.length > 0 && (
+                  {displayProviders.length > 0 && (
                     <ProviderBadges
-                      providers={mergedDisplayProviders}
+                      providers={displayProviders}
                       size="large"
                       maxDisplay={6}
                       showNames={false}
