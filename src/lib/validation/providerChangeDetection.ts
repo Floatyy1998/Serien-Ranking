@@ -162,11 +162,21 @@ export const detectProviderChanges = async (
         const key = series.id.toString();
         const currentProviders = await fetchTMDBProviders(series.id);
 
-        if (currentProviders.length === 0) return null;
-
         const known = knownProviders[key];
 
-        // Erstmaliges Speichern: keine Notification
+        // TMDB (noch) leer: nur als Baseline seeden, wenn wir die Serie zum
+        // ersten Mal sehen — so wird ein späteres "nichts → Provider" als Diff
+        // erkannt und benachrichtigt ("Jetzt auf X"). Bei bereits bekanntem
+        // Stand NICHTS tun: eine transiente TMDB-Leere (Glitch / Rate-Limit /
+        // DE-Datenlücke) darf NICHT als Provider-Entzug fehlinterpretiert
+        // werden.
+        if (currentProviders.length === 0) {
+          if (!known) updatedKnown[key] = { providers: [], lastChecked: now };
+          return null;
+        }
+
+        // Erstmaliges Speichern mit Provider: still seeden (kein Spam für
+        // Serien, die ohnehin schon irgendwo liefen).
         if (!known) {
           updatedKnown[key] = { providers: currentProviders, lastChecked: now };
           return null;

@@ -28,6 +28,7 @@
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
+import { anilistLinkCountsForDe } from '../../lib/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
@@ -231,11 +232,11 @@ function anilistFallbackProviders(anime: SeasonAnime): TmdbProviderInfo[] {
   const result: TmdbProviderInfo[] = [];
   for (const link of anime.externalLinks ?? []) {
     if (link?.type !== 'STREAMING') continue;
-    // Sprachspezifische Links nur DE/EN — andere Sprachen sagen nichts über
-    // die Verfügbarkeit hierzulande aus.
-    if (link.language && link.language !== 'German' && link.language !== 'English') continue;
     const normalized = normalizeProviderName(link.site);
     if (!normalized || seen.has(normalized)) continue;
+    // Region-lose AniList-Links: nur Crunchyroll sprachneutral vertrauen,
+    // Mainstream-SVOD nur mit explizitem German — sonst Falschtreffer in DE.
+    if (!anilistLinkCountsForDe(normalized, link.language)) continue;
     const logo = getProviderLogoUrl(normalized);
     if (!logo) continue;
     seen.add(normalized);

@@ -82,6 +82,29 @@ interface AniListMedia {
 }
 
 /**
+ * Entscheidet, ob ein AniList-STREAMING-Link als DE-Verfügbarkeit zählt.
+ * AniList-Links tragen KEINE Region: Anime auf **Crunchyroll, Netflix und
+ * Amazon Prime Video** sind praktisch immer global (inkl. DE), daher gelten
+ * dort auch region-lose bzw. englische Links (fängt Weltweit-Exclusives wie
+ * Netflix-Simulcasts vor Release). Alle anderen Anbieter (Disney+, WOW, …)
+ * NUR mit explizitem `language === 'German'` — dort weicht der DE-Katalog oft
+ * ab. EINE Quelle der Wahrheit für alle AniList-Provider-Pfade (hier,
+ * [[resolveTmdbId]] im Frontend, `seasonal-anime.js` im Backend).
+ */
+export function anilistLinkCountsForDe(
+  normalizedProvider: string,
+  language: string | null | undefined
+): boolean {
+  const trustRegionless =
+    /crunchyroll/i.test(normalizedProvider) ||
+    normalizedProvider === 'Netflix' ||
+    normalizedProvider === 'Amazon Prime Video';
+  return trustRegionless
+    ? !language || language === 'German' || language === 'English'
+    : language === 'German';
+}
+
+/**
  * Provider für einen Anime-Titel aus AniList-Streaming-Links.
  * Liefert [] wenn kein (valider) Treffer — auch das wird gecacht.
  */
@@ -145,15 +168,7 @@ export async function fetchAniListProviderFallback(title: string): Promise<Merge
       if (link?.type !== 'STREAMING') continue;
       const normalized = normalizeProviderName(link.site ?? '');
       if (!normalized || seen.has(normalized)) continue;
-      // AniList-Links tragen KEINE Region (US-Bias!): Crunchyroll gilt auch
-      // sprachneutral (EU-weiter Anime-Katalog), alle anderen Anbieter nur
-      // mit explizitem language=German — sonst würden US-Lizenzen (Netflix/
-      // Hulu-Style) fälschlich als in DE verfügbar angezeigt.
-      const isCrunchyroll = /crunchyroll/i.test(normalized);
-      const langOk = isCrunchyroll
-        ? !link.language || link.language === 'German' || link.language === 'English'
-        : link.language === 'German';
-      if (!langOk) continue;
+      if (!anilistLinkCountsForDe(normalized, link.language)) continue;
       const logo = getProviderLogoUrl(normalized);
       if (!logo) continue;
       seen.add(normalized);
