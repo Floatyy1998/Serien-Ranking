@@ -646,17 +646,30 @@ export const AnimeSeasonPage: React.FC = () => {
   }, [selected, reloadKey]);
 
   // ── Hero + Sektionen ───────────────────────────────────────────────────────
-  // ── Basis-Entries (STABIL — ohne Datums-Korrekturen) ───────────────────────
-  // Bewusst getrennt vom Display-Memo: die Hydration-Pipeline hängt an
-  // allEntries und darf nicht bei jeder eintreffenden Auflösung neu starten.
+  // ── Basis-Entries (ohne Datums-Korrekturen) ────────────────────────────────
+  // Getrennt vom Display-Memo. Recomputes durch eintreffende Auflösungen sind
+  // ok: die Hydration-Pipeline hängt am pendingKey-Fingerprint + Refs, nicht
+  // an der Array-Identität von allEntries.
   const { newThisSeason, continuingEntries, finishedEntries, allEntries, totalCount, inListCount } =
     useMemo(() => {
       // Filme NICHT gegen die Serienliste matchen — Basistitel-/Franchise-
       // Heuristiken würden den Film sonst auf die gleichnamige Serie mappen.
-      const decorate = (anime: SeasonAnime): DecoratedAnime => ({
-        anime,
-        match: anime.format === 'MOVIE' ? undefined : matchAnime(anime),
-      });
+      // Bereits aufgelöste TMDB-Ids (Server-Export/Hydration) matchen exakt —
+      // faengt Eintraege, deren Titel-Heuristik am deutschen Katalog-Titel
+      // scheitert (AniList liefert english/romaji). Die Hydration-Pipeline
+      // vertraegt die Recomputes: sie haengt am pendingKey-Fingerprint, nicht
+      // an der Array-Identitaet von allEntries.
+      const decorate = (anime: SeasonAnime): DecoratedAnime => {
+        const info =
+          resolved[anime.id] ?? cachedResolved[String(anime.id)] ?? serverResolved[anime.id];
+        return {
+          anime,
+          match:
+            anime.format === 'MOVIE'
+              ? undefined
+              : matchAnime(anime, info?.mediaType === 'movie' ? null : info?.tmdbId),
+        };
+      };
 
       const seasonEntries = items.map(decorate);
       const seasonIds = new Set(items.map((anime) => anime.id));
@@ -689,7 +702,15 @@ export const AnimeSeasonPage: React.FC = () => {
         totalCount: all.length,
         inListCount: all.filter((entry) => entry.match).length,
       };
-    }, [items, continuing, matchAnime, deferredFilter.mode]);
+    }, [
+      items,
+      continuing,
+      matchAnime,
+      deferredFilter.mode,
+      resolved,
+      cachedResolved,
+      serverResolved,
+    ]);
 
   // ── Hero + Timeline (reaktiv — Datums-Priorität: Liste → TVMaze → AniList,
   //    plus optionaler „Mit Provider"-Filter über die Hydration) ─────────────

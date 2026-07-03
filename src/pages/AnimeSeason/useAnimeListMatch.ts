@@ -2,6 +2,10 @@
  * Feature „Anime-Season-Kalender" — „In meiner Liste"-Abgleich.
  *
  * Matching-Strategie (in dieser Reihenfolge):
+ *   0. TMDB-Id: Ist der Eintrag bereits aufgelöst (Server-Export/Hydration),
+ *      matcht die Id exakt gegen die Nutzerliste — deckt alle Fälle ab, in
+ *      denen die Titel-Heuristiken scheitern (Katalog führt den DEUTSCHEN
+ *      Titel, AniList liefert english/romaji).
  *   1. MAL-Id-Mapping: Die Backend-Pipeline (AniList→Jikan) schreibt
  *      `admin/animeFiller/{tmdbId}.malId` — AniList liefert `idMal`, darüber
  *      matchen wir exakt. Quelle ist zuerst der synchrone localStorage-Cache
@@ -71,13 +75,23 @@ function writeEnrichCache(cache: EnrichCache): void {
 }
 
 export interface AnimeListMatch {
-  /** Liefert die Serie aus der Nutzerliste, falls der AniList-Eintrag dazugehört. */
-  matchAnime: (anime: SeasonAnime) => Series | undefined;
+  /**
+   * Liefert die Serie aus der Nutzerliste, falls der AniList-Eintrag dazugehört.
+   * `tmdbId` (falls schon aufgelöst) matcht exakt und schlägt jede Heuristik.
+   */
+  matchAnime: (anime: SeasonAnime, tmdbId?: number | null) => Series | undefined;
 }
 
 export function useAnimeListMatch(): AnimeListMatch {
   const { seriesList } = useSeriesList();
   const [enrichedMalIds, setEnrichedMalIds] = useState<EnrichCache>(() => readEnrichCache());
+
+  // TMDB-Id → Serie (series.id IST die TMDB-Id).
+  const idMap = useMemo(() => {
+    const map = new Map<number, Series>();
+    for (const series of seriesList) map.set(series.id, series);
+    return map;
+  }, [seriesList]);
 
   // MAL-Id → Serie: synchroner animeFiller-Cache + nachgeladene Einzelfeld-Reads.
   const malIdMap = useMemo(() => {
@@ -143,7 +157,11 @@ export function useAnimeListMatch(): AnimeListMatch {
   }, [seriesList]);
 
   const matchAnime = useCallback(
-    (anime: SeasonAnime): Series | undefined => {
+    (anime: SeasonAnime, tmdbId?: number | null): Series | undefined => {
+      if (tmdbId != null) {
+        const byId = idMap.get(tmdbId);
+        if (byId) return byId;
+      }
       if (anime.idMal != null) {
         const byMalId = malIdMap.get(anime.idMal);
         if (byMalId) return byMalId;
@@ -174,7 +192,7 @@ export function useAnimeListMatch(): AnimeListMatch {
       }
       return undefined;
     },
-    [malIdMap, titleMap]
+    [idMap, malIdMap, titleMap]
   );
 
   return { matchAnime };
