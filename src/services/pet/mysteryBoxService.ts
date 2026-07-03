@@ -93,11 +93,25 @@ export async function ensureInitialized(
   const snap = await ref.once('value');
   const data = snap.val();
 
+  // 0 ist ein gueltiger Stand (frischer User unter 20 Episoden) — wer den als
+  // "nicht vorhanden" wertet, re-baselined bei jedem Mount und verschluckt
+  // die erste Box, sobald sie einen App-Neustart ueberlebt.
   const hasExisting =
-    data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber > 0;
+    data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber >= 0;
   const schemaVersion = (data?.schemaVersion as number | undefined) ?? 1;
 
   if (hasExisting && schemaVersion >= BOX_SCHEMA_VERSION) {
+    // Self-Heal: Liegt die Baseline VOR dem aktuellen Stand (Episoden-Zaehlung
+    // gesunken — Serie geloescht, Catalog-Regeneration, geaenderte Zaehlbasis),
+    // wuerde jede neue Box verschluckt: der Counter laeuft bis 20 und springt
+    // ohne Box auf 0. Baseline auf den aktuellen Stand zurueckziehen — das
+    // gewaehrt keine rueckwirkenden Boxen, macht aber die naechste wieder frei.
+    const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+    if (totalEpisodes > 0 && data.lastOpenedBoxNumber > earnedBoxes) {
+      const healed: MysteryBoxData = { ...data, lastOpenedBoxNumber: earnedBoxes };
+      await ref.set(healed);
+      return healed;
+    }
     return data;
   }
 
