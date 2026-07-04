@@ -48,6 +48,7 @@ import {
   Animation,
   ArrowDownward,
   Autorenew,
+  Business,
   CalendarMonth,
   InfoOutlined,
   SmartDisplay,
@@ -343,6 +344,13 @@ interface SeasonFilter {
   mode: FormatMode;
   /** Nur Einträge mit mindestens einem DE-Provider (nach Hydration). */
   providerOnly: boolean;
+  /** Studio-Name (AniList) — '' = alle Studios. */
+  studio: string;
+}
+
+/** Studios eines AniList-Eintrags (alle Nodes, leere raus). */
+function animeStudios(anime: SeasonAnime): string[] {
+  return (anime.studios?.nodes ?? []).map((n) => n?.name).filter((n): n is string => !!n);
 }
 
 const FORMAT_TABS = [
@@ -405,13 +413,17 @@ export const AnimeSeasonPage: React.FC = () => {
           (parsed?.mode === 'all' || parsed?.mode === 'series' || parsed?.mode === 'movies') &&
           typeof parsed?.providerOnly === 'boolean'
         ) {
-          return parsed;
+          return {
+            mode: parsed.mode,
+            providerOnly: parsed.providerOnly,
+            studio: typeof parsed.studio === 'string' ? parsed.studio : '',
+          };
         }
       }
     } catch {
       /* kaputter Eintrag — Default reicht */
     }
-    return { mode: 'all', providerOnly: false };
+    return { mode: 'all', providerOnly: false, studio: '' };
   });
 
   useEffect(() => {
@@ -433,6 +445,11 @@ export const AnimeSeasonPage: React.FC = () => {
     setFilter((prev) => ({ ...prev, providerOnly: !prev.providerOnly }));
   };
 
+  const handleStudioChange = (studio: string) => {
+    hapticSelect();
+    setFilter((prev) => ({ ...prev, studio }));
+  };
+
   // Die Filterleiste liest `filter` (Farbe togglet SOFORT); die teuren
   // Memos (Timeline/Grids, ~100 Karten) hängen am deferred Wert — sonst
   // färbt der Button erst um, wenn der komplette Re-Render durch ist.
@@ -440,6 +457,15 @@ export const AnimeSeasonPage: React.FC = () => {
 
   const [items, setItems] = useState<SeasonAnime[]>([]);
   const [continuing, setContinuing] = useState<ContinuingAnime[]>([]);
+
+  // Studio-Optionen: alle in der Season vorkommenden Studios, alphabetisch.
+  const studioOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const anime of items) for (const s of animeStudios(anime)) set.add(s);
+    for (const entry of continuing) for (const s of animeStudios(entry.anime)) set.add(s);
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [items, continuing]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
@@ -727,6 +753,10 @@ export const AnimeSeasonPage: React.FC = () => {
           cachedResolved[String(entry.anime.id)] ??
           serverResolved[entry.anime.id]);
       if (info && info.tmdbId === null) return false;
+      // Studio-Filter (Single-Select, '' = alle).
+      if (deferredFilter.studio && !animeStudios(entry.anime).includes(deferredFilter.studio)) {
+        return false;
+      }
       if (!deferredFilter.providerOnly) return true;
       if (entry.match) return seriesProviders(entry.match).length > 0;
       return !!info?.providers && info.providers.length > 0;
@@ -785,6 +815,7 @@ export const AnimeSeasonPage: React.FC = () => {
     catalogSeasons,
     now,
     deferredFilter.providerOnly,
+    deferredFilter.studio,
   ]);
 
   const timelineCount = useMemo(
@@ -1201,6 +1232,64 @@ export const AnimeSeasonPage: React.FC = () => {
             Mit Provider
           </motion.button>
         </div>
+
+        {/* Studio-Filter (Single-Select) — nur wenn die Season Studios liefert.
+            Native Select im Filterbar-Gehäuse-Look; aktiv = Primary-getönt. */}
+        {studioOptions.length > 0 && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: filter.studio
+                ? `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`
+                : `${currentTheme.text.muted}08`,
+              borderRadius: '18px',
+              padding: '4px 4px 4px 12px',
+              border: `1px solid ${filter.studio ? 'transparent' : currentTheme.border.default}`,
+              backdropFilter: 'var(--blur-md)',
+              WebkitBackdropFilter: 'var(--blur-md)',
+              boxShadow: filter.studio
+                ? `0 4px 24px ${currentTheme.primary}35, inset 0 1px 0 rgba(255,255,255,0.1)`
+                : 'none',
+            }}
+          >
+            <Business
+              style={{
+                fontSize: '18px',
+                marginRight: '6px',
+                color: filter.studio ? currentTheme.text.secondary : currentTheme.text.muted,
+              }}
+            />
+            <select
+              value={filter.studio}
+              onChange={(e) => handleStudioChange(e.target.value)}
+              aria-label="Studio-Filter"
+              style={{
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                background: 'transparent',
+                border: 'none',
+                outline: 'none',
+                color: filter.studio ? currentTheme.text.secondary : currentTheme.text.muted,
+                fontSize: '13.5px',
+                fontWeight: filter.studio ? 700 : 600,
+                fontFamily: 'inherit',
+                cursor: 'pointer',
+                padding: '7px 10px 7px 0',
+                maxWidth: '180px',
+              }}
+            >
+              <option value="" style={{ color: '#111' }}>
+                Alle Studios
+              </option>
+              {studioOptions.map((studio) => (
+                <option key={studio} value={studio} style={{ color: '#111' }}>
+                  {studio}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       <div
