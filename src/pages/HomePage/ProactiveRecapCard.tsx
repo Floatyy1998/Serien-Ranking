@@ -4,6 +4,7 @@ import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SpeakButton } from '../../components/ui/SpeakButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 
@@ -27,6 +28,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
   ({ recaps, onDismiss, onFetchRecap }) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
+    const { isMobile } = useDeviceType();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [expanded, setExpanded] = useState(false);
     const accent = currentTheme.accent || currentTheme.primary;
@@ -67,9 +69,10 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
             backdropFilter: 'var(--blur-md)',
             WebkitBackdropFilter: 'var(--blur-md)',
             background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee)`,
+            // Karte selbst scrollt NICHT mehr — sonst wandern Kopf +
+            // Schließen-Button beim langen Recap aus dem Bild. Der Recap-Text
+            // bekommt seinen eigenen scrollbaren Bereich (siehe unten).
             overflow: 'hidden',
-            maxHeight: 'calc(100dvh - 80px)',
-            overflowY: 'auto',
           }}
         >
           {/* Close button */}
@@ -96,26 +99,27 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
           </button>
 
           {/* Header */}
-          <div style={{ padding: '16px 16px 0' }}>
+          <div style={{ padding: isMobile ? '12px 12px 0' : '16px 16px 0' }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
-                marginBottom: '12px',
+                marginBottom: isMobile ? '8px' : '12px',
+                paddingRight: '28px',
               }}
             >
               <motion.div
                 animate={{ scale: [1, 1.15, 1], opacity: [1, 0.8, 1] }}
                 transition={{ repeat: Infinity, duration: 2 }}
-                style={{ display: 'flex' }}
+                style={{ display: 'flex', flexShrink: 0 }}
               >
-                <AutoAwesome style={{ fontSize: '28px', color: accent }} />
+                <AutoAwesome style={{ fontSize: isMobile ? '22px' : '28px', color: accent }} />
               </motion.div>
               <h3
                 style={{
                   margin: 0,
-                  fontSize: '1.1rem',
+                  fontSize: isMobile ? '0.95rem' : '1.1rem',
                   fontWeight: 800,
                   color: accent,
                   lineHeight: 1.2,
@@ -130,7 +134,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '12px',
+                flexWrap: isMobile ? 'wrap' : 'nowrap',
+                gap: isMobile ? '10px' : '12px',
                 padding: '10px',
                 background: 'rgba(0,0,0,0.15)',
                 borderRadius: '14px',
@@ -143,8 +148,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                   alt={current.seriesTitle}
                   onClick={() => navigate(`/series/${current.seriesId}`)}
                   style={{
-                    width: '50px',
-                    height: '75px',
+                    width: isMobile ? '44px' : '50px',
+                    height: isMobile ? '66px' : '75px',
                     objectFit: 'cover',
                     borderRadius: '10px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
@@ -155,7 +160,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                   decoding="async"
                 />
               )}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: isMobile ? '120px' : 0 }}>
                 <h4
                   style={{
                     margin: '0 0 6px',
@@ -187,8 +192,17 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       : 'Recap vor der Fortsetzung'}
                 </p>
               </div>
+              {/* Buttons: Desktop rechts als Spalte; Mobile als volle
+                  Zeile UNTER Poster+Titel (flex-basis 100% dank flexWrap). */}
               <div
-                style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '120px' }}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: '8px',
+                  ...(isMobile
+                    ? { flexBasis: '100%', width: '100%' }
+                    : { flexDirection: 'column', minWidth: '120px' }),
+                }}
               >
                 <button
                   onClick={() => navigate(`/series/${current.seriesId}`)}
@@ -197,13 +211,14 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '6px',
-                    padding: '10px 16px',
+                    flex: isMobile ? 1 : undefined,
+                    padding: isMobile ? '9px 12px' : '10px 16px',
                     border: 'none',
                     borderRadius: '12px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
-                    fontSize: '0.9rem',
+                    fontSize: isMobile ? '0.85rem' : '0.9rem',
                     background: accent,
                     color: currentTheme.background.default,
                   }}
@@ -226,13 +241,14 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '6px',
-                      padding: '10px 16px',
+                      flex: isMobile ? 1 : undefined,
+                      padding: isMobile ? '9px 12px' : '10px 16px',
                       border: 'none',
                       borderRadius: '12px',
                       fontWeight: 600,
                       cursor: 'pointer',
                       whiteSpace: 'nowrap',
-                      fontSize: '0.9rem',
+                      fontSize: isMobile ? '0.85rem' : '0.9rem',
                       background: `${accent}20`,
                       color: accent,
                       backdropFilter: 'var(--blur-sm)',
@@ -280,10 +296,14 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
               >
                 <div
                   style={{
-                    padding: '4px 16px 16px',
+                    padding: isMobile ? '4px 12px 12px' : '4px 16px 16px',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '8px',
+                    // Recap-Text scrollt in einem begrenzten Bereich, damit die
+                    // Karte kompakt bleibt (kein Vollbild-Wall auf dem Handy).
+                    maxHeight: isMobile ? '42dvh' : '52vh',
+                    overflowY: 'auto',
                   }}
                 >
                   <div
@@ -329,8 +349,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       />
                       <p
                         style={{
-                          fontSize: '14px',
-                          lineHeight: 1.65,
+                          fontSize: isMobile ? '13px' : '14px',
+                          lineHeight: isMobile ? 1.5 : 1.65,
                           color: currentTheme.text.secondary,
                           margin: 0,
                         }}
