@@ -1,5 +1,6 @@
 import { Movie as MovieIcon, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { PosterImage } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
@@ -37,10 +38,9 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         }}
       >
-        <img
+        <PosterImage
           src={item.poster}
           alt={item.title}
-          decoding="async"
           style={{
             position: 'absolute',
             inset: 0,
@@ -50,7 +50,6 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
             display: 'block',
             borderRadius: '14px',
           }}
-          loading="lazy"
         />
 
         {/* Full overlay */}

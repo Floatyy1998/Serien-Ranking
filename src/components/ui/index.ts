@@ -1,6 +1,7 @@
 export { CarouselNotification } from './CarouselNotification';
 export { CelebrationBurst } from './CelebrationBurst';
 export { IconButton } from './IconButton';
+export { PosterImage } from './PosterImage';
 export { EmptyState } from './EmptyState';
 export { ProfileItemCard } from './ProfileItemCard';
 export type { ProfileCardProvider } from './ProfileItemCard';

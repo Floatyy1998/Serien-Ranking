@@ -6,6 +6,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { AppProviders } from './AppProviders';
+import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
 import { DynamicThemeProvider } from './contexts/ThemeContext';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ElectronUpdateToast } from './components/ElectronUpdateToast';
@@ -138,6 +139,11 @@ export function App() {
 }
 
 function AppContent() {
+  // App-weiter Bild-Retry: fehlgeschlagene <img>-Loads (TMDB u.a.) automatisch
+  // neu laden + Themed-Placeholder-Fallback — deckt Trending, Seasonal, Detail
+  // etc. mit EINEM Listener ab.
+  useGlobalImageRetry();
+
   // Theme initial mit updateTheme erstellen um CSS-Variablen zu lesen
   const [currentTheme, setCurrentTheme] = useState(() => updateTheme());
 
