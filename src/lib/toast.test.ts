@@ -151,7 +151,7 @@ describe('showToast', () => {
     const style = allEls.find((e) => e.id === 'app-toast-style');
     expect(style?._parent).toBe(headEl); // style appended to <head>
 
-    const toast = container!._children[0];
+    const toast = (container as FakeEl)._children[0];
     expect(toast.className).toBe('app-toast');
     expect(findByClass(toast, 'toast-text')?.textContent).toBe('Gespeichert');
   });
@@ -159,7 +159,7 @@ describe('showToast', () => {
   it('success variant → role status / aria-live polite / ✓ icon', async () => {
     const { showToast } = await loadToast();
     showToast('ok', 1500, 'success');
-    const toast = getContainer()!._children[0];
+    const toast = (getContainer() as FakeEl)._children[0];
     expect(toast.getAttribute('role')).toBe('status');
     expect(toast.getAttribute('aria-live')).toBe('polite');
     expect(findByClass(toast, 'toast-icon--success')?.textContent).toBe('✓');
@@ -168,7 +168,7 @@ describe('showToast', () => {
   it('error variant → role alert / aria-live assertive / ! icon', async () => {
     const { showToast } = await loadToast();
     showToast('fehler', 1500, 'error');
-    const toast = getContainer()!._children[0];
+    const toast = (getContainer() as FakeEl)._children[0];
     expect(toast.getAttribute('role')).toBe('alert');
     expect(toast.getAttribute('aria-live')).toBe('assertive');
     expect(findByClass(toast, 'toast-icon--error')?.textContent).toBe('!');
@@ -177,14 +177,14 @@ describe('showToast', () => {
   it('info variant → ℹ icon', async () => {
     const { showToast } = await loadToast();
     showToast('info', 1500, 'info');
-    const toast = getContainer()!._children[0];
+    const toast = (getContainer() as FakeEl)._children[0];
     expect(findByClass(toast, 'toast-icon--info')?.textContent).toBe('ℹ');
   });
 
   it('auto-dismisses after `duration` then removes the node', async () => {
     const { showToast } = await loadToast();
     showToast('bye', 1000);
-    const toast = getContainer()!._children[0];
+    const toast = (getContainer() as FakeEl)._children[0];
 
     vi.advanceTimersByTime(1000); // dismiss animation starts
     expect(toast.classList.contains('toast-out')).toBe(true);
@@ -200,7 +200,7 @@ describe('showToast', () => {
     showToast('b');
     expect(allEls.filter((e) => e.id === 'app-toast-container')).toHaveLength(1);
     expect(allEls.filter((e) => e.id === 'app-toast-style')).toHaveLength(1);
-    expect(getContainer()!._children).toHaveLength(2);
+    expect((getContainer() as FakeEl)._children).toHaveLength(2);
   });
 });
 
@@ -211,7 +211,7 @@ describe('showUndoToast', () => {
     const onUndo = vi.fn();
     showUndoToast('Episode markiert', onUndo);
 
-    const toast = getContainer()!._children[0];
+    const toast = (getContainer() as FakeEl)._children[0];
     expect(toast.className).toContain('toast-interactive');
     expect(findByClass(toast, 'toast-undo-btn')?.textContent).toBe('Rückgängig');
     expect(onUndo).not.toHaveBeenCalled();
@@ -223,8 +223,8 @@ describe('showUndoToast', () => {
     const onCommit = vi.fn();
     showUndoToast('markiert', { onUndo, onCommit, duration: 4000 });
 
-    const toast = getContainer()!._children[0];
-    findByClass(toast, 'toast-undo-btn')!.fire('click');
+    const toast = (getContainer() as FakeEl)._children[0];
+    (findByClass(toast, 'toast-undo-btn') as FakeEl).fire('click');
 
     expect(onUndo).toHaveBeenCalledTimes(1);
     expect(onCommit).not.toHaveBeenCalled();
@@ -248,7 +248,7 @@ describe('showUndoToast', () => {
     const { showUndoToast } = await loadToast();
     const onUndo = vi.fn();
     showUndoToast('markiert', onUndo);
-    const btn = findByClass(getContainer()!._children[0], 'toast-undo-btn')!;
+    const btn = findByClass((getContainer() as FakeEl)._children[0], 'toast-undo-btn') as FakeEl;
     btn.fire('click');
     btn.fire('click');
     expect(onUndo).toHaveBeenCalledTimes(1);
@@ -259,11 +259,11 @@ describe('showUndoToast', () => {
     const onUndo = vi.fn();
     showUndoToast('markiert', onUndo, 2000);
     vi.advanceTimersByTime(1999);
-    expect(getContainer()!._children[0]._removed).toBe(false);
+    expect((getContainer() as FakeEl)._children[0]._removed).toBe(false);
     vi.advanceTimersByTime(1); // hits 2000ms dismiss timer
     // commitNow → dismissToast schedules the 300ms removal
     vi.advanceTimersByTime(300);
-    expect(getContainer()!._children[0]?._removed ?? true).toBe(true);
+    expect((getContainer() as FakeEl)._children[0]?._removed ?? true).toBe(true);
   });
 
   it('commits the oldest toast once the stack limit (3) is exceeded', async () => {
@@ -282,7 +282,7 @@ describe('showUndoToast', () => {
   it('drives the progress bar via requestAnimationFrame and stops at expiry', async () => {
     const { showUndoToast } = await loadToast();
     showUndoToast('markiert', vi.fn() as () => void, 4000);
-    const undoChildren = getContainer()!._children[0]._children;
+    const undoChildren = (getContainer() as FakeEl)._children[0]._children;
     const bar = undoChildren[undoChildren.length - 1]; // bar appended last
 
     expect(rafCbs).toHaveLength(1);

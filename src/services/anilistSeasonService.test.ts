@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 function makeSessionStorage() {
   const map = new Map<string, string>();
   return {
-    getItem: (k: string) => (map.has(k) ? map.get(k)! : null),
+    getItem: (k: string) => map.get(k) ?? null,
     setItem: (k: string, v: string) => void map.set(k, v),
     removeItem: (k: string) => void map.delete(k),
     clear: () => map.clear(),
@@ -201,7 +201,8 @@ describe('fetchContinuingAnime', () => {
     // dedupliziert: id 2 nur einmal
     expect(result.map((r) => r.anime.id)).toEqual([2, 3, 1]);
     // origin von id 1 ist die zuletzt gestartete Season (shift -1 = SPRING 2026)
-    const one = result.find((r) => r.anime.id === 1)!;
+    const one = result.find((r) => r.anime.id === 1);
+    if (!one) throw new Error('Kein Ergebnis für id 1');
     expect(one.origin).toEqual({ season: 'SPRING', year: 2026 });
   });
 

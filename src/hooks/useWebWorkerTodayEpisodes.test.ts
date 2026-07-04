@@ -59,24 +59,24 @@ describe('useWebWorkerTodayEpisodes', () => {
   it('konfiguriert die Episoden-Nachrichtentypen', () => {
     listState.seriesList = [makeSeries()];
     renderHook(() => useWebWorkerTodayEpisodes());
-    expect(capture.lastOptions!.messageType).toBe('PROCESS_EPISODES');
-    expect(capture.lastOptions!.resultType).toBe('EPISODES_RESULT');
+    expect(capture.lastOptions?.messageType).toBe('PROCESS_EPISODES');
+    expect(capture.lastOptions?.resultType).toBe('EPISODES_RESULT');
   });
 
   it('enabled folgt der Länge der Serienliste', () => {
     renderHook(() => useWebWorkerTodayEpisodes());
-    expect(capture.lastOptions!.enabled).toBe(false);
+    expect(capture.lastOptions?.enabled).toBe(false);
 
     listState.seriesList = [makeSeries()];
     renderHook(() => useWebWorkerTodayEpisodes());
-    expect(capture.lastOptions!.enabled).toBe(true);
+    expect(capture.lastOptions?.enabled).toBe(true);
   });
 
   it('reicht die Serienliste als workerInput durch', () => {
     const series = makeSeries();
     listState.seriesList = [series];
     renderHook(() => useWebWorkerTodayEpisodes());
-    const input = capture.lastOptions!.data as { seriesList: Series[] };
+    const input = capture.lastOptions?.data as { seriesList: Series[] };
     expect(input.seriesList).toEqual([series]);
   });
 
@@ -89,6 +89,6 @@ describe('useWebWorkerTodayEpisodes', () => {
     listState.seriesList = [series];
     renderHook(() => useWebWorkerTodayEpisodes());
     // Format `${seriesList.length}-${watchedCount}`
-    expect(capture.lastOptions!.depsKey).toBe('1-1');
+    expect(capture.lastOptions?.depsKey).toBe('1-1');
   });
 });

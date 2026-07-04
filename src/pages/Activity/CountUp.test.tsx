@@ -1,11 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import type * as FramerMotion from 'framer-motion';
 
 // Reduced motion → the value renders immediately (no rAF animation), keeping
 // the assertion deterministic.
 vi.mock('framer-motion', async (orig) => ({
-  ...(await orig<typeof import('framer-motion')>()),
+  ...(await orig<typeof FramerMotion>()),
   useReducedMotion: () => true,
 }));
 

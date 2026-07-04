@@ -76,7 +76,8 @@ describe('useWebWorkerStatsOptimized', () => {
   it('konfiguriert Nachrichtentypen und Debounce korrekt', () => {
     listState.allSeriesList = [makeSeries()];
     renderHook(() => useWebWorkerStatsOptimized());
-    const opts = capture.lastOptions!;
+    const opts = capture.lastOptions;
+    if (!opts) throw new Error('lastOptions nicht gesetzt');
     expect(opts.messageType).toBe('CALCULATE_STATS');
     expect(opts.resultType).toBe('STATS_RESULT');
     expect(opts.debounceMs).toBe(300);
@@ -84,11 +85,11 @@ describe('useWebWorkerStatsOptimized', () => {
 
   it('enabled ist false bei leerer Serienliste, true sobald Serien existieren', () => {
     renderHook(() => useWebWorkerStatsOptimized());
-    expect(capture.lastOptions!.enabled).toBe(false);
+    expect(capture.lastOptions?.enabled).toBe(false);
 
     listState.allSeriesList = [makeSeries()];
     renderHook(() => useWebWorkerStatsOptimized());
-    expect(capture.lastOptions!.enabled).toBe(true);
+    expect(capture.lastOptions?.enabled).toBe(true);
   });
 
   it('reicht seriesList, movieList und userId als workerInput durch', () => {
@@ -97,7 +98,7 @@ describe('useWebWorkerStatsOptimized', () => {
     listState.allSeriesList = [series];
     listState.movieList = [movie];
     renderHook(() => useWebWorkerStatsOptimized());
-    const input = capture.lastOptions!.data as {
+    const input = capture.lastOptions?.data as {
       seriesList: Series[];
       movieList: Movie[];
       userId: string | undefined;
@@ -118,13 +119,13 @@ describe('useWebWorkerStatsOptimized', () => {
     renderHook(() => useWebWorkerStatsOptimized());
     // Format: `${series}-${movies}-${viewCount}-${watchedMovies}-${uid}`
     // viewCount = 2 (watchCount) + 1 (watched) = 3; watchedMovies = 1
-    expect(capture.lastOptions!.depsKey).toBe('1-2-3-1-u1');
+    expect(capture.lastOptions?.depsKey).toBe('1-2-3-1-u1');
   });
 
   it('nimmt user?.uid in den depsKey auf (undefined ohne User)', () => {
     authState.user = null;
     listState.allSeriesList = [makeSeries()];
     renderHook(() => useWebWorkerStatsOptimized());
-    expect(capture.lastOptions!.depsKey).toBe('1-0-0-0-undefined');
+    expect(capture.lastOptions?.depsKey).toBe('1-0-0-0-undefined');
   });
 });

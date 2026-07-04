@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, act, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type * as FramerMotion from 'framer-motion';
 import { CelebrationBurst } from './CelebrationBurst';
 
 if (!window.matchMedia) {
@@ -20,7 +21,7 @@ if (!window.matchMedia) {
 // through a mock we control per-test instead of toggling matchMedia.
 const reduced = vi.hoisted(() => ({ value: false }));
 vi.mock('framer-motion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('framer-motion')>();
+  const actual = await importOriginal<typeof FramerMotion>();
   return { ...actual, useReducedMotion: () => reduced.value };
 });
 

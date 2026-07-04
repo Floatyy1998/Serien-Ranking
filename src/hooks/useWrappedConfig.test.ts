@@ -51,7 +51,7 @@ describe('useWrappedConfig', () => {
   it('übernimmt vorhandene Firebase-Config und beendet loading', async () => {
     const { result } = renderHook(() => useWrappedConfig());
     await act(async () => {
-      await fb.state.cb!(snap({ enabled: true, year: 2025 }));
+      await fb.state.cb?.(snap({ enabled: true, year: 2025 }));
     });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.enabled).toBe(true);
@@ -62,7 +62,7 @@ describe('useWrappedConfig', () => {
   it('erstellt die Config mit Defaults wenn sie fehlt', async () => {
     const { result } = renderHook(() => useWrappedConfig());
     await act(async () => {
-      await fb.state.cb!(snap(null));
+      await fb.state.cb?.(snap(null));
     });
     expect(fb.set).toHaveBeenCalledWith({ enabled: false, year: 2026 });
     await waitFor(() => expect(result.current.loading).toBe(false));
@@ -74,7 +74,7 @@ describe('useWrappedConfig', () => {
     fb.set.mockRejectedValueOnce(new Error('denied'));
     const { result } = renderHook(() => useWrappedConfig());
     await act(async () => {
-      await fb.state.cb!(snap(null));
+      await fb.state.cb?.(snap(null));
     });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.year).toBe(2026);
@@ -83,7 +83,7 @@ describe('useWrappedConfig', () => {
   it('nutzt partielle Config-Felder mit Default-Fallback', async () => {
     const { result } = renderHook(() => useWrappedConfig());
     await act(async () => {
-      await fb.state.cb!(snap({ enabled: true }));
+      await fb.state.cb?.(snap({ enabled: true }));
     });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.enabled).toBe(true);

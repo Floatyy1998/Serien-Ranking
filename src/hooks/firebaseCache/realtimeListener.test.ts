@@ -101,7 +101,7 @@ describe('attachRealtimeListener — value snapshots', () => {
   it('populates state + cache from a present snapshot', async () => {
     const deps = makeDeps();
     attachRealtimeListener('users/u1/series', deps);
-    await fb.state.onArgs!.success(snap(true, { s1: { rating: 5 } }));
+    await fb.state.onArgs?.success(snap(true, { s1: { rating: 5 } }));
 
     expect(deps.setData).toHaveBeenCalledWith({ s1: { rating: 5 } });
     expect(deps.setLastUpdated).toHaveBeenCalledWith(expect.any(Number));
@@ -115,7 +115,7 @@ describe('attachRealtimeListener — value snapshots', () => {
   it('ignores a non-existent snapshot (keeps prior state) but clears loading', async () => {
     const deps = makeDeps();
     attachRealtimeListener('users/u1/series', deps);
-    await fb.state.onArgs!.success(snap(false));
+    await fb.state.onArgs?.success(snap(false));
 
     expect(deps.setData).not.toHaveBeenCalled();
     expect(deps.saveToCache).not.toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe('attachRealtimeListener — error handling', () => {
   it('network error with cached data → offline + stale cache surfaced', async () => {
     const deps = makeDeps({ loadFromCache: vi.fn(async () => ({ s1: {} })) });
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs!.error({ message: 'network request failed' });
+    fb.state.onArgs?.error({ message: 'network request failed' });
     await flush();
 
     expect(deps.setIsOffline).toHaveBeenCalledWith(true);
@@ -140,7 +140,7 @@ describe('attachRealtimeListener — error handling', () => {
   it('network error without cache → "keine Offline-Daten" message', async () => {
     const deps = makeDeps({ loadFromCache: vi.fn(async () => null) });
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs!.error({ message: 'ERR_INTERNET_DISCONNECTED' });
+    fb.state.onArgs?.error({ message: 'ERR_INTERNET_DISCONNECTED' });
     await flush();
 
     expect(deps.setIsOffline).toHaveBeenCalledWith(true);
@@ -151,7 +151,7 @@ describe('attachRealtimeListener — error handling', () => {
   it('non-network error → surfaces the message, no offline fallback', async () => {
     const deps = makeDeps();
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs!.error({ message: 'permission_denied' });
+    fb.state.onArgs?.error({ message: 'permission_denied' });
     await flush();
 
     expect(deps.setError).toHaveBeenCalledWith('permission_denied');
@@ -163,7 +163,7 @@ describe('attachRealtimeListener — error handling', () => {
   it('empty message + empty toString falls back to a generic label', async () => {
     const deps = makeDeps();
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs!.error({ message: '', toString: () => '' });
+    fb.state.onArgs?.error({ message: '', toString: () => '' });
     await flush();
     expect(deps.setError).toHaveBeenCalledWith('Firebase Fehler');
   });
@@ -171,7 +171,7 @@ describe('attachRealtimeListener — error handling', () => {
   it('classifies via toString() when message is absent (network match)', async () => {
     const deps = makeDeps({ loadFromCache: vi.fn(async () => null) });
     attachRealtimeListener('users/u1/series', deps);
-    fb.state.onArgs!.error({ toString: () => 'NETWORK glitch' });
+    fb.state.onArgs?.error({ toString: () => 'NETWORK glitch' });
     await flush();
     expect(deps.setIsOffline).toHaveBeenCalledWith(true);
   });

@@ -42,7 +42,12 @@ function createFakeIndexedDB() {
       createObjectStore: (name: string, opts: { keyPath: string }) => {
         stores.set(name, { keyPath: opts.keyPath, map: new Map() });
       },
-      transaction: () => ({ objectStore: (name: string) => makeStoreHandle(stores.get(name)!) }),
+      transaction: () => ({
+        objectStore: (name: string) =>
+          makeStoreHandle(
+            stores.get(name) as { keyPath: string; map: Map<unknown, Record<string, unknown>> }
+          ),
+      }),
     };
   }
 

@@ -69,7 +69,7 @@ describe('useWebWorker — initial state', () => {
   it('erstellt den Worker über die Factory und registriert message+error Listener', () => {
     renderHook(() => useWebWorker<number, string>('init', baseOptions<number>()));
     expect(lastWorker).not.toBeNull();
-    const types = lastWorker!.addEventListener.mock.calls.map((c) => c[0]);
+    const types = (lastWorker as FakeWorker).addEventListener.mock.calls.map((c) => c[0]);
     expect(types).toContain('message');
     expect(types).toContain('error');
   });
@@ -83,7 +83,10 @@ describe('useWebWorker — posting input', () => {
         baseOptions<{ v: number }>({ data: { v: 1 }, depsKey: 'a' })
       )
     );
-    expect(lastWorker!.postMessage).toHaveBeenCalledWith({ type: 'CALC', data: { v: 1 } });
+    expect((lastWorker as FakeWorker).postMessage).toHaveBeenCalledWith({
+      type: 'CALC',
+      data: { v: 1 },
+    });
   });
 
   it('postet NICHT wenn enabled=false', () => {
@@ -93,7 +96,7 @@ describe('useWebWorker — posting input', () => {
         baseOptions<{ v: number }>({ data: { v: 1 }, depsKey: 'a', enabled: false })
       )
     );
-    expect(lastWorker!.postMessage).not.toHaveBeenCalled();
+    expect((lastWorker as FakeWorker).postMessage).not.toHaveBeenCalled();
   });
 
   it('postet NICHT wenn data=null', () => {
@@ -103,7 +106,7 @@ describe('useWebWorker — posting input', () => {
         baseOptions<{ v: number }>({ data: null, depsKey: 'a' })
       )
     );
-    expect(lastWorker!.postMessage).not.toHaveBeenCalled();
+    expect((lastWorker as FakeWorker).postMessage).not.toHaveBeenCalled();
   });
 
   it('dedupliziert: gleicher depsKey postet nicht erneut', () => {
@@ -115,9 +118,9 @@ describe('useWebWorker — posting input', () => {
         ),
       { initialProps: { key: 'a' } }
     );
-    expect(lastWorker!.postMessage).toHaveBeenCalledTimes(1);
+    expect((lastWorker as FakeWorker).postMessage).toHaveBeenCalledTimes(1);
     rerender({ key: 'a' });
-    expect(lastWorker!.postMessage).toHaveBeenCalledTimes(1);
+    expect((lastWorker as FakeWorker).postMessage).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -130,7 +133,7 @@ describe('useWebWorker — receiving results', () => {
       )
     );
     act(() => {
-      lastWorker!.emit('message', { data: { type: 'RESULT', data: 'done' } });
+      (lastWorker as FakeWorker).emit('message', { data: { type: 'RESULT', data: 'done' } });
     });
     await waitFor(() => expect(result.current.data).toBe('done'));
     expect(result.current.loading).toBe(false);
@@ -145,7 +148,7 @@ describe('useWebWorker — receiving results', () => {
       )
     );
     act(() => {
-      lastWorker!.emit('message', { data: { type: 'OTHER', data: 'nope' } });
+      (lastWorker as FakeWorker).emit('message', { data: { type: 'OTHER', data: 'nope' } });
     });
     expect(result.current.data).toBe('init');
   });
@@ -160,7 +163,7 @@ describe('useWebWorker — error handling', () => {
       )
     );
     act(() => {
-      lastWorker!.emit('error', { message: 'worker boom' });
+      (lastWorker as FakeWorker).emit('error', { message: 'worker boom' });
     });
     await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
     expect(result.current.error?.message).toBe('worker boom');
@@ -177,11 +180,14 @@ describe('useWebWorker — debounce', () => {
         baseOptions<{ v: number }>({ data: { v: 1 }, depsKey: 'a', debounceMs: 300 })
       )
     );
-    expect(lastWorker!.postMessage).not.toHaveBeenCalled();
+    expect((lastWorker as FakeWorker).postMessage).not.toHaveBeenCalled();
     act(() => {
       vi.advanceTimersByTime(300);
     });
-    expect(lastWorker!.postMessage).toHaveBeenCalledWith({ type: 'CALC', data: { v: 1 } });
+    expect((lastWorker as FakeWorker).postMessage).toHaveBeenCalledWith({
+      type: 'CALC',
+      data: { v: 1 },
+    });
   });
 });
 
@@ -193,7 +199,7 @@ describe('useWebWorker — cleanup', () => {
         baseOptions<{ v: number }>({ data: { v: 1 }, depsKey: 'a' })
       )
     );
-    const worker = lastWorker!;
+    const worker = lastWorker as FakeWorker;
     unmount();
     expect(worker.terminate).toHaveBeenCalledTimes(1);
   });

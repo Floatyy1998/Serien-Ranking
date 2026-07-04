@@ -195,15 +195,15 @@ describe('getUserPets — Sync ueber mehrere Pets', () => {
 
     const { getUserPets } = await load();
     const pets = await getUserPets('u1');
-    const petB = pets.find((p) => p.id === 'petB')!;
+    const petB = pets.find((p) => p.id === 'petB');
+    if (!petB) throw new Error('petB fehlt');
 
     // Hintergrund-Union propagiert zu petB
     expect(petB.unlockedBackgrounds).toContain('clearSky');
     // Accessoire-Sets sind nach dem Sync identisch (petB erhaelt das laengere Set)
-    const idsA = pets
-      .find((p) => p.id === 'petA')!
-      .accessories?.map((a) => a.id)
-      .sort();
+    const petA = pets.find((p) => p.id === 'petA');
+    if (!petA) throw new Error('petA fehlt');
+    const idsA = petA.accessories?.map((a) => a.id).sort();
     const idsB = petB.accessories?.map((a) => a.id).sort();
     expect(idsB).toEqual(idsA);
     expect(idsB).toHaveLength(4);

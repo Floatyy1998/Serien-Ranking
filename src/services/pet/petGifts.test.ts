@@ -43,7 +43,7 @@ let lsThrows = false;
 const localStorageMock = {
   getItem: (k: string) => {
     if (lsThrows) throw new Error('quota');
-    return lsStore.has(k) ? lsStore.get(k)! : null;
+    return lsStore.get(k) ?? null;
   },
   setItem: (k: string, v: string) => {
     if (lsThrows) throw new Error('quota');
