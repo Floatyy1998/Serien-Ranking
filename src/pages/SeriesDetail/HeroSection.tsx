@@ -17,6 +17,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { mergeProviders } from '../../lib/providerMerge';
 import type { MergedProvider } from '../../lib/providerMerge';
 import { fetchAniListProviderFallback, isLikelyAnime } from '../../lib/anilistProviderFallback';
+import { fetchStaticCatalogSeries } from '../../lib/staticCatalog';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -118,21 +119,53 @@ export const HeroSection = memo<HeroSectionProps>(
       [series.provider, providers]
     );
 
-    // AniList-Streaming-Link-Fallback: JustWatch/TMDB kennt Nischen-Anime und
-    // frische Simulcasts oft nicht. Wenn Katalog + Live-TMDB nichts liefern
-    // und die Serie nach Anime aussieht, holen wir die Provider (mit lokalen
-    // Logos) von AniList — sessionStorage-gecacht, max. 1 Request pro Titel.
+    // 1. Katalog-Lookup (statischer Katalog, IDB/Memory-gecacht — KEIN Request):
+    //    auch für NICHT-gelistete Serien hat der Backend-Cron oft schon einen
+    //    Provider (z. B. AniList-Crunchyroll-Fallback). Das spart den AniList-
+    //    Call. `series.provider` greift nur bei Listen-Serien — hier per ID.
+    const [catalogProviders, setCatalogProviders] = useState<MergedProvider[]>([]);
+    const [catalogChecked, setCatalogChecked] = useState(false);
+
+    useEffect(() => {
+      let cancelled = false;
+      setCatalogProviders([]);
+      setCatalogChecked(false);
+      fetchStaticCatalogSeries()
+        .then((catalog) => {
+          if (cancelled) return;
+          const entry = catalog?.[String(seriesId)];
+          setCatalogProviders(entry?.providers?.length ? entry.providers : []);
+        })
+        .catch(() => {
+          /* best-effort — dann greift ggf. der AniList-Fallback */
+        })
+        .finally(() => {
+          if (!cancelled) setCatalogChecked(true);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, [seriesId]);
+
+    // 2. AniList-Streaming-Link-Fallback — NUR wenn weder Merge noch Katalog
+    //    etwas haben (JustWatch/TMDB kennt Nischen-Anime/frische Simulcasts
+    //    oft nicht). sessionStorage-gecacht, max. 1 Request pro Titel.
     const [anilistFallback, setAnilistFallback] = useState<MergedProvider[]>([]);
 
     useEffect(() => {
-      // Serie gewechselt → alten Fallback verwerfen.
       setAnilistFallback([]);
     }, [seriesId]);
 
     useEffect(() => {
-      // Erst wenn der Live-Fetch entschieden hat (providers !== null) UND
-      // leer blieb — sonst würden wir AniList unnötig anfragen.
-      if (providers === null || mergedDisplayProviders.length > 0 || !isLikelyAnime(series)) {
+      // Erst wenn Live-Fetch entschieden (providers !== null) UND Katalog
+      // geprüft — beide leer — und die Serie nach Anime aussieht.
+      if (
+        providers === null ||
+        !catalogChecked ||
+        mergedDisplayProviders.length > 0 ||
+        catalogProviders.length > 0 ||
+        !isLikelyAnime(series)
+      ) {
         return;
       }
       let cancelled = false;
@@ -148,11 +181,21 @@ export const HeroSection = memo<HeroSectionProps>(
       };
       // series-Identität wechselt pro Listen-Sync — der Re-Run ist dank
       // Guards + sessionStorage-Cache aber ein No-Op bzw. Cache-Hit.
-    }, [providers, mergedDisplayProviders.length, seriesId, series]);
+    }, [
+      providers,
+      catalogChecked,
+      catalogProviders.length,
+      mergedDisplayProviders.length,
+      seriesId,
+      series,
+    ]);
 
+    // Priorität: Merge (Liste + Live) → Katalog-ID-Lookup → AniList-Fallback.
     const displayProviders = mergedDisplayProviders.length
       ? mergedDisplayProviders
-      : anilistFallback;
+      : catalogProviders.length
+        ? catalogProviders
+        : anilistFallback;
 
     const actionButtons = !isReadOnlyTmdbSeries && (
       <div className="hero-actions">

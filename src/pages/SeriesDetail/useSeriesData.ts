@@ -74,20 +74,24 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
         // Handle error silently
       });
 
-    // Fetch providers
+    // Fetch providers — IMMER setState (auch []), damit `null` = „noch nicht
+    // geladen" von `[]` = „geladen, keine DE-Flatrate" unterscheidbar bleibt.
+    // Sonst blockt der AniList-Provider-Fallback (Guard `providers === null`)
+    // dauerhaft bei Serien ohne DE-Flatrate.
     fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
       .then((res) => res.json())
       .then((data) => {
-        if (data.results?.DE?.flatrate) {
-          setProviders(
-            data.results.DE.flatrate.filter((p: { provider_name: string }) =>
-              SUPPORTED_PROVIDERS.has(p.provider_name)
-            )
-          );
-        }
+        const flatrate = data.results?.DE?.flatrate;
+        setProviders(
+          Array.isArray(flatrate)
+            ? flatrate.filter((p: { provider_name: string }) =>
+                SUPPORTED_PROVIDERS.has(p.provider_name)
+              )
+            : []
+        );
       })
       .catch(() => {
-        // Handle error silently
+        setProviders([]);
       });
 
     // Full fetch if not found locally
