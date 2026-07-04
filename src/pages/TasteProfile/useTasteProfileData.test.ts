@@ -59,11 +59,24 @@ beforeEach(() => {
   state.movieList = [];
   state.backendFetch.mockReset();
   sessionStorage.clear();
+  // Mock the global fetch so the TMDB-enrichment path (enrichRecsWithTMDB) always
+  // resolves deterministically. In CI the module-level TMDB_API_KEY may be non-empty
+  // (env differs from local), which would otherwise trigger REAL network fetches to
+  // api.themoviedb.org and hang the test. Returning a non-ok response makes enrichment
+  // fall through to the unmodified recommendations without any network dependency.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      async () =>
+        ({ ok: false, status: 500, json: async () => ({ results: [] }) }) as unknown as Response
+    )
+  );
 });
 
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('useTasteProfileData - stats', () => {
