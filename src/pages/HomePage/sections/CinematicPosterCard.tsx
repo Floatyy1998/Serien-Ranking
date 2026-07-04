@@ -41,6 +41,7 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
         <PosterImage
           src={item.poster}
           alt={item.title}
+          loading="eager"
           style={{
             position: 'absolute',
             inset: 0,

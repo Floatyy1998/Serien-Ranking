@@ -43,6 +43,7 @@ export function TrendingRankCard({ item, index, cardWidth }: TrendingRankCardPro
         <PosterImage
           src={item.poster}
           alt={item.title}
+          loading="eager"
           style={{
             position: 'absolute',
             inset: 0,
