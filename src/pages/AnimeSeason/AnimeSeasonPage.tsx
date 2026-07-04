@@ -48,7 +48,6 @@ import {
   Animation,
   ArrowDownward,
   Autorenew,
-  Business,
   CalendarMonth,
   InfoOutlined,
   SmartDisplay,
@@ -93,6 +92,7 @@ import type { ContinuingAnime, SeasonAnime, SeasonRef } from '../../services/ani
 import type { Series } from '../../types/Series';
 import { AnimeSeasonCard } from './AnimeSeasonCard';
 import { AnimeSeasonHero } from './AnimeSeasonHero';
+import { AnimeSeasonStudioFilter } from './AnimeSeasonStudioFilter';
 import { dayLabel, isSameDay, relativeDayLabel, startDateToDate } from './animeFormat';
 import { readResolveCacheSync, resolveTmdbInfo } from './resolveTmdbId';
 import type { ResolvedTmdbInfo, TmdbProviderInfo } from './resolveTmdbId';
@@ -1233,62 +1233,13 @@ export const AnimeSeasonPage: React.FC = () => {
           </motion.button>
         </div>
 
-        {/* Studio-Filter (Single-Select) — nur wenn die Season Studios liefert.
-            Native Select im Filterbar-Gehäuse-Look; aktiv = Primary-getönt. */}
+        {/* Studio-Filter — eigenes Glass-Dropdown (kein natives Select). */}
         {studioOptions.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: filter.studio
-                ? `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`
-                : `${currentTheme.text.muted}08`,
-              borderRadius: '18px',
-              padding: '4px 4px 4px 12px',
-              border: `1px solid ${filter.studio ? 'transparent' : currentTheme.border.default}`,
-              backdropFilter: 'var(--blur-md)',
-              WebkitBackdropFilter: 'var(--blur-md)',
-              boxShadow: filter.studio
-                ? `0 4px 24px ${currentTheme.primary}35, inset 0 1px 0 rgba(255,255,255,0.1)`
-                : 'none',
-            }}
-          >
-            <Business
-              style={{
-                fontSize: '18px',
-                marginRight: '6px',
-                color: filter.studio ? currentTheme.text.secondary : currentTheme.text.muted,
-              }}
-            />
-            <select
-              value={filter.studio}
-              onChange={(e) => handleStudioChange(e.target.value)}
-              aria-label="Studio-Filter"
-              style={{
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: filter.studio ? currentTheme.text.secondary : currentTheme.text.muted,
-                fontSize: '13.5px',
-                fontWeight: filter.studio ? 700 : 600,
-                fontFamily: 'inherit',
-                cursor: 'pointer',
-                padding: '7px 10px 7px 0',
-                maxWidth: '180px',
-              }}
-            >
-              <option value="" style={{ color: '#111' }}>
-                Alle Studios
-              </option>
-              {studioOptions.map((studio) => (
-                <option key={studio} value={studio} style={{ color: '#111' }}>
-                  {studio}
-                </option>
-              ))}
-            </select>
-          </div>
+          <AnimeSeasonStudioFilter
+            studios={studioOptions}
+            value={filter.studio}
+            onChange={handleStudioChange}
+          />
         )}
       </div>
 
