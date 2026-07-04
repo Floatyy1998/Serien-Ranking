@@ -16,6 +16,7 @@ import { CircularProgress } from '@mui/material';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
+import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import {
   getProviderSearchUrl,
@@ -145,6 +146,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
   staggerIndex = 0,
 }) => {
   const { currentTheme } = useTheme();
+  const placeholder = useThemedPlaceholder();
   /** Beschreibung aufgeklappt („mehr lesen" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
@@ -207,24 +209,15 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
       style={{ '--as-i': Math.min(staggerIndex, 14) } as React.CSSProperties}
     >
       <article className="as-card">
-        {/* ── Poster links, volle Kartenhöhe ── */}
-        {cover ? (
-          <img
-            src={cover}
-            alt={`Poster von ${title}`}
-            loading="lazy"
-            decoding="async"
-            className="as-card-poster"
-            style={{ background: currentTheme.background.surfaceElevated }}
-          />
-        ) : (
-          <div
-            className="as-card-poster as-card-poster--empty"
-            style={{ background: currentTheme.background.surfaceElevated }}
-          >
-            Kein Poster
-          </div>
-        )}
+        {/* ── Poster links, volle Kartenhöhe (themed Placeholder als Fallback) ── */}
+        <img
+          src={cover || placeholder}
+          alt={`Poster von ${title}`}
+          loading="lazy"
+          decoding="async"
+          className="as-card-poster"
+          style={{ background: currentTheme.background.surfaceElevated }}
+        />
 
         {/* ── Text-Block rechts ── */}
         <div className="as-card-body">
@@ -293,26 +286,30 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
           <p className="as-card-genres">
             {entry.genres?.length ? entry.genres.slice(0, 3).join(' · ') : ' '}
           </p>
-          {description && (
-            <>
-              <p className={descExpanded ? 'as-card-desc as-card-desc--open' : 'as-card-desc'}>
-                {description}
-              </p>
-              {description.length > 160 && (
-                <button
-                  type="button"
-                  className="as-card-more"
-                  style={{ color: lightenColor(currentTheme.primary, 0.2) }}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setDescExpanded((value) => !value);
-                  }}
-                >
-                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
-                </button>
-              )}
-            </>
-          )}
+          {/* Beschreibung IMMER rendern (Platzhalter reserviert die 3-Zeilen-
+              Min-Höhe) — sonst sind Karten ohne Overview kürzer als ihre
+              Zeilen-Nachbarn (Grid ist align-items: start). */}
+          <p className={descExpanded ? 'as-card-desc as-card-desc--open' : 'as-card-desc'}>
+            {description || ' '}
+          </p>
+          {/* Button-Zeile IMMER reservieren (unsichtbar ohne langen Text),
+              damit Karten mit/ohne „mehr lesen" exakt gleich hoch bleiben. */}
+          <button
+            type="button"
+            className="as-card-more"
+            style={{
+              color: lightenColor(currentTheme.primary, 0.2),
+              visibility: description.length > 160 ? 'visible' : 'hidden',
+            }}
+            tabIndex={description.length > 160 ? 0 : -1}
+            aria-hidden={description.length <= 160}
+            onClick={(event) => {
+              event.stopPropagation();
+              setDescExpanded((value) => !value);
+            }}
+          >
+            {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+          </button>
           <div className="as-card-providers">
             <ProviderLogos providers={providers} size={20} searchTitle={title} />
           </div>

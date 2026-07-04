@@ -25,6 +25,7 @@ import { CircularProgress } from '@mui/material';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
+import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import {
   getProviderSearchUrl,
@@ -170,6 +171,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   staggerIndex = 0,
 }) => {
   const { currentTheme } = useTheme();
+  const placeholder = useThemedPlaceholder();
   // „Jetzt" einmalig beim Mount einfrieren — react-hooks/purity verbietet
   // Date.now() im Render; Minuten-Drift ist für Datumsvergleiche irrelevant.
   const [now] = useState(() => Date.now());
@@ -272,24 +274,15 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
           />
         )}
 
-        {/* ── Poster links, volle Kartenhöhe ── */}
-        {cover ? (
-          <img
-            src={cover}
-            alt={`Cover von ${title}`}
-            loading="lazy"
-            decoding="async"
-            className="as-card-poster"
-            style={{ background: tint || currentTheme.background.surfaceElevated }}
-          />
-        ) : (
-          <div
-            className="as-card-poster as-card-poster--empty"
-            style={{ background: currentTheme.background.surfaceElevated }}
-          >
-            Kein Poster
-          </div>
-        )}
+        {/* ── Poster links, volle Kartenhöhe (themed Placeholder als Fallback) ── */}
+        <img
+          src={cover || placeholder}
+          alt={`Cover von ${title}`}
+          loading="lazy"
+          decoding="async"
+          className="as-card-poster"
+          style={{ background: tint || currentTheme.background.surfaceElevated }}
+        />
 
         {/* ── Text-Block rechts ── */}
         <div className="as-card-body">
@@ -383,34 +376,36 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
           <p className="as-card-genres as-fade" key={genres?.length ? 'genres' : 'genres-none'}>
             {genres?.length ? genres.slice(0, 3).join(' · ') : ' '}
           </p>
-          {description && (
-            /* key wechselt bei Hydration (en → de) → sanfter Fade; min-height
-               in CSS hält die Kartenhöhe stabil. „mehr lesen" klappt die
-               volle Beschreibung aus (navigiert nicht — stopPropagation). */
-            <>
-              <p
-                className={
-                  descExpanded ? 'as-card-desc as-card-desc--open as-fade' : 'as-card-desc as-fade'
-                }
-                key={overviewDe ? 'desc-de' : 'desc-fallback'}
-              >
-                {description}
-              </p>
-              {description.length > 160 && (
-                <button
-                  type="button"
-                  className="as-card-more"
-                  style={{ color: lightenColor(currentTheme.primary, 0.2) }}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setDescExpanded((value) => !value);
-                  }}
-                >
-                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
-                </button>
-              )}
-            </>
-          )}
+          {/* Beschreibung IMMER rendern (Platzhalter reserviert die CSS-
+              min-height) — sonst sind Karten ohne Beschreibung kürzer als ihre
+              Zeilen-Nachbarn (Grid ist align-items: start). key wechselt bei
+              Hydration (en → de) → sanfter Fade. */}
+          <p
+            className={
+              descExpanded ? 'as-card-desc as-card-desc--open as-fade' : 'as-card-desc as-fade'
+            }
+            key={overviewDe ? 'desc-de' : 'desc-fallback'}
+          >
+            {description || ' '}
+          </p>
+          {/* Button-Zeile IMMER reservieren (unsichtbar ohne langen Text),
+              damit Karten mit/ohne „mehr lesen" exakt gleich hoch bleiben. */}
+          <button
+            type="button"
+            className="as-card-more"
+            style={{
+              color: lightenColor(currentTheme.primary, 0.2),
+              visibility: description.length > 160 ? 'visible' : 'hidden',
+            }}
+            tabIndex={description.length > 160 ? 0 : -1}
+            aria-hidden={description.length <= 160}
+            onClick={(event) => {
+              event.stopPropagation();
+              setDescExpanded((value) => !value);
+            }}
+          >
+            {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+          </button>
           <div className="as-card-providers as-fade" key={providers.length ? 'prov' : 'prov-none'}>
             <ProviderLogos providers={providers} size={20} searchTitle={title} />
           </div>

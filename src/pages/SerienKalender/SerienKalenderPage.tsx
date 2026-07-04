@@ -13,8 +13,9 @@
  *   0. Hero — Spotlight der nächsten Premiere des Monats mit Live-Countdown.
  *   1. „Premieren-Kalender" — Timeline mit Tages-Nodes (Vergangenheit gedimmt,
  *      HEUTE pulsiert), Querformat-Karten (auto-fill).
- *   Filterleiste: „Alle · Neue Serien · Neue Staffeln" + „Mit Provider" +
- *   Genre-Dropdown. „Aus deiner Liste"-Badge + „+"-Add-Button.
+ *   Filterleiste: „Alle · Serien · Staffeln" + Genre-Dropdown (der Export
+ *   enthält nur Titel mit großem DE-Provider, daher kein „Mit Provider"-Toggle).
+ *   „Aus deiner Liste"-Badge + „+"-Add-Button.
  *
  * Datenquelle: EINE fertig hydratisierte Datei (catalog/tv-premieres.json,
  * Backend-Cron) — keine Client-Auflösung. Karten-Klick → SeriesDetail über die
@@ -23,8 +24,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { CalendarMonth, Category, InfoOutlined, LiveTv, SmartDisplay } from '@mui/icons-material';
+import { CalendarMonth, Category, InfoOutlined, LiveTv } from '@mui/icons-material';
 import {
   EmptyState,
   PageHeader,
@@ -42,7 +42,6 @@ import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../lib/backendApi';
 import { hapticSelect, hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
-import { tapScaleSmall } from '../../lib/motion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { fetchStaticTvPremieres, type TvPremiereStaticEntry } from '../../lib/staticCatalog';
 import { SerienKalenderCard } from './SerienKalenderCard';
@@ -65,7 +64,6 @@ type FilterMode = 'all' | 'new' | 'season';
 
 interface Filter {
   mode: FilterMode;
-  providerOnly: boolean;
   genre: string;
 }
 
@@ -132,7 +130,7 @@ export const SerienKalenderPage: React.FC = () => {
   });
 
   const [filter, setFilter] = useState<Filter>(() =>
-    readSessionJson<Filter>(FILTER_KEY, { mode: 'all', providerOnly: false, genre: '' })
+    readSessionJson<Filter>(FILTER_KEY, { mode: 'all', genre: '' })
   );
 
   const [addingId, setAddingId] = useState<number | null>(null);
@@ -200,7 +198,6 @@ export const SerienKalenderPage: React.FC = () => {
     const list = quarterEntries.filter((e) => {
       if (filter.mode === 'new' && e.type !== 'new') return false;
       if (filter.mode === 'season' && e.type !== 'season') return false;
-      if (filter.providerOnly && !(e.providers || []).some((p) => p.logo)) return false;
       if (filter.genre && !(e.genres || []).includes(filter.genre)) return false;
       return true;
     });
@@ -369,7 +366,9 @@ export const SerienKalenderPage: React.FC = () => {
         style={{ maxWidth: '560px', width: 'calc(100% - 40px)', margin: '0 auto 12px' }}
       />
 
-      {/* Filterleiste: Modus-Segmented + „Mit Provider"-Toggle + Genre-Dropdown. */}
+      {/* Filterleiste: Modus-Segmented + Genre-Dropdown. (Kein „Mit Provider"-
+          Toggle mehr — der Backend-Export enthält ohnehin nur Titel mit einem
+          großen DE-Provider, der Toggle wäre wirkungslos.) */}
       <div className="as-filterbar">
         <TabSwitcher
           tabs={MODE_TABS}
@@ -380,49 +379,6 @@ export const SerienKalenderPage: React.FC = () => {
           }}
           style={{ width: '280px', flexShrink: 0, margin: 0 }}
         />
-        <div
-          style={{
-            display: 'flex',
-            background: `${currentTheme.text.muted}08`,
-            borderRadius: '18px',
-            padding: '4px',
-            border: `1px solid ${currentTheme.border.default}`,
-            backdropFilter: 'var(--blur-md)',
-            WebkitBackdropFilter: 'var(--blur-md)',
-          }}
-        >
-          <motion.button
-            type="button"
-            whileTap={tapScaleSmall}
-            aria-pressed={filter.providerOnly}
-            onClick={() => {
-              hapticSelect();
-              setFilter((f) => ({ ...f, providerOnly: !f.providerOnly }));
-            }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '11px 16px',
-              background: filter.providerOnly
-                ? `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`
-                : 'transparent',
-              border: 'none',
-              borderRadius: '14px',
-              color: filter.providerOnly ? currentTheme.text.secondary : currentTheme.text.muted,
-              fontSize: '13.5px',
-              fontWeight: filter.providerOnly ? 700 : 600,
-              boxShadow: filter.providerOnly
-                ? `0 4px 24px ${currentTheme.primary}35, inset 0 1px 0 rgba(255, 255, 255, 0.1)`
-                : 'none',
-              cursor: 'pointer',
-              transition: 'color 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            }}
-          >
-            <SmartDisplay style={{ fontSize: '18px' }} />
-            Mit Provider
-          </motion.button>
-        </div>
 
         {genreOptions.length > 0 && (
           <SerienKalenderFilter

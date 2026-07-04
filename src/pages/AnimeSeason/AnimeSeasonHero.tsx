@@ -25,6 +25,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
+import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import {
@@ -122,6 +123,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
+  const placeholder = useThemedPlaceholder();
   // Einmalig eingefroren (react-hooks/purity: kein Date.now() im Render).
   const [now] = useState(() => new Date());
   /** Beschreibung aufgeklappt (Tap auf Text/„mehr" — navigiert NICHT). */
@@ -251,17 +253,15 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
       ) : null}
 
       <div className="as-hero-content">
-        {/* Scharfes 2/3-Poster als stehende Karte vor dem Backdrop */}
-        {cover && (
-          <img
-            src={cover}
-            alt={`Poster von ${title}`}
-            loading="lazy"
-            decoding="async"
-            className="as-hero-poster"
-            style={{ background: anime.coverImage?.color || currentTheme.background.surface }}
-          />
-        )}
+        {/* Scharfes 2/3-Poster als stehende Karte (themed Placeholder als Fallback) */}
+        <img
+          src={cover || placeholder}
+          alt={`Poster von ${title}`}
+          loading="lazy"
+          decoding="async"
+          className="as-hero-poster"
+          style={{ background: anime.coverImage?.color || currentTheme.background.surface }}
+        />
 
         <div className="as-hero-stack">
           <p className="as-hero-eyebrow" style={{ color: brightAccent }}>

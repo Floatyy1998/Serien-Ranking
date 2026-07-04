@@ -18,6 +18,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
+import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import { formatStartLong, isSameDay, parsePremiereDate } from './tvPremiereFormat';
@@ -80,6 +81,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
+  const placeholder = useThemedPlaceholder();
   // Einmalig eingefroren (react-hooks/purity: kein Date.now() im Render).
   const [now] = useState(() => new Date());
   const [descExpanded, setDescExpanded] = useState(false);
@@ -189,16 +191,14 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
       ) : null}
 
       <div className="as-hero-content">
-        {cover && (
-          <img
-            src={cover}
-            alt={`Poster von ${title}`}
-            loading="lazy"
-            decoding="async"
-            className="as-hero-poster"
-            style={{ background: currentTheme.background.surface }}
-          />
-        )}
+        <img
+          src={cover || placeholder}
+          alt={`Poster von ${title}`}
+          loading="lazy"
+          decoding="async"
+          className="as-hero-poster"
+          style={{ background: currentTheme.background.surface }}
+        />
 
         <div className="as-hero-stack">
           <p className="as-hero-eyebrow" style={{ color: brightAccent }}>
