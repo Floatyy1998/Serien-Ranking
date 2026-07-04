@@ -44,6 +44,7 @@ const LS_MOVIES_KEY = LS_PREFIX + 'moviesMeta';
 const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
 const LS_SEASONS_BULK_KEY = LS_PREFIX + 'seasonsBulk';
 const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
+const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
 // haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
@@ -87,6 +88,7 @@ let memoryMovies: Record<string, CatalogMovie> | null = null;
 const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
 let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
+let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
@@ -177,6 +179,7 @@ async function invalidateLocalCaches(): Promise<void> {
     idbRemove(LS_MOVIES_KEY),
     idbRemove(LS_SEASONS_BULK_KEY),
     idbRemove(LS_SEASONAL_ANIME_KEY),
+    idbRemove(LS_TV_PREMIERES_KEY),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
 }
@@ -204,6 +207,7 @@ async function revalidateInBackground(localV: number | null): Promise<void> {
   memoryMovies = null;
   memorySeasons.clear();
   memorySeasonsBulk = null;
+  memoryTvPremieres = null;
   await invalidateLocalCaches();
   await setLocalVersion(remote);
 }
@@ -459,6 +463,65 @@ export async function fetchStaticSeasonalAnime(): Promise<Record<
 }
 
 /**
+ * Ein Premieren-Eintrag aus catalog/tv-premieres.json — vom Backend-Cron
+ * täglich vorgerechnet für ein rollierendes 3-Monats-Fenster (Vormonat ·
+ * aktueller Monat · nächster Monat). Ganz neue Serie ODER Staffel-Premiere
+ * eines Rückkehrers; alle Felder bereits deutsch + auf App-Vokabular gemappt.
+ */
+export interface TvPremiereStaticEntry {
+  tmdbId: number;
+  /** 'new' = ganz neue Serie · 'season' = Staffel-Premiere eines Rückkehrers. */
+  type: 'new' | 'season';
+  /** Staffelnummer (nur bei type === 'season'). */
+  seasonNumber?: number;
+  /** Premierentag „YYYY-MM-DD" (Erstausstrahlung bzw. Staffel-Start). */
+  premiereDate: string;
+  title: string;
+  originalTitle: string | null;
+  overviewDe: string | null;
+  poster: string | null;
+  backdrop: string | null;
+  rating: number | null;
+  genres: string[];
+  networks: string[];
+  providers: { name: string; logo: string | null }[];
+}
+
+/**
+ * Laedt catalog/tv-premieres.json (Array vorgerechneter Premieren fuer die
+ * Serien-Kalender-Seite). Gleiche Cache-Strategie wie die uebrigen
+ * Catalog-Files (IDB + Versions-Cache-Busting). null bei 404 = Backend-Export
+ * noch nicht vorhanden → die Page zeigt einen Leer-Zustand.
+ */
+export async function fetchStaticTvPremieres(): Promise<TvPremiereStaticEntry[] | null> {
+  if (memoryTvPremieres) return memoryTvPremieres;
+
+  const cached = await idbGetAny<TvPremiereStaticEntry[]>(LS_TV_PREMIERES_KEY);
+  if (cached) {
+    memoryTvPremieres = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: TvPremiereStaticEntry[] }>('tv-premieres.json', {
+      version,
+    });
+    const entries = Array.isArray(data.entries) ? data.entries : [];
+    memoryTvPremieres = entries;
+    void idbSetVersioned(LS_TV_PREMIERES_KEY, version, entries);
+    return entries;
+  } catch (e) {
+    // 404 = Backend-Export noch nicht da — die Page zeigt einen Leer-Zustand.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] tv-premieres fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
  * Prueft ob serverseitig eine neue Catalog-Version vorliegt und invalidiert
  * in diesem Fall Memory + IDB (aber ohne direkt neu zu fetchen).
  * Wird beim Tab-visibilitychange aufgerufen, damit der Client neue Cron-
@@ -567,6 +630,7 @@ export function clearStaticCatalogCache(): void {
   memorySeasons.clear();
   memorySeasonsBulk = null;
   memorySeasonalAnime = null;
+  memoryTvPremieres = null;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(LS_META_KEY);
@@ -574,5 +638,6 @@ export function clearStaticCatalogCache(): void {
   void idbRemove(LS_VERSION_KEY);
   void idbRemove(LS_SEASONS_BULK_KEY);
   void idbRemove(LS_SEASONAL_ANIME_KEY);
+  void idbRemove(LS_TV_PREMIERES_KEY);
   void idbRemovePrefix(LS_SEASONS_PREFIX);
 }

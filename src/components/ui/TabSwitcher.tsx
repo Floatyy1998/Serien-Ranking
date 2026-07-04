@@ -26,6 +26,11 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
+  // Eindeutige layoutId PRO Instanz — sonst teilen sich mehrere TabSwitcher
+  // auf derselben Seite (z. B. Quartal + Modus im Serien-Kalender) eine
+  // einzige gleitende Pille, die dann zwischen den Leisten hin- und herspringt.
+  const indicatorLayoutId = React.useId();
+
   const activeIndex = tabs.findIndex((t) => t.id === activeTab);
 
   const { onKeyDown: handleTabKeyDown } = useKeyboardNavigation({
@@ -89,7 +94,7 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             {/* Morphing background indicator */}
             {isActive && (
               <motion.div
-                layoutId="tabIndicator"
+                layoutId={indicatorLayoutId}
                 style={{
                   position: 'absolute',
                   inset: 0,

@@ -1,0 +1,1 @@
+export { SerienKalenderPage } from './SerienKalenderPage';

@@ -18,6 +18,7 @@ import {
   Group,
   History,
   Leaderboard,
+  LiveTv,
   MenuBook,
   Palette,
   Pets,
@@ -284,6 +285,12 @@ export const useProfileData = (): UseProfileDataResult => {
         icon: AutoAwesome,
         color: currentTheme.secondary,
         path: '/taste-profile',
+      },
+      {
+        label: 'Serien-Kalender',
+        icon: LiveTv,
+        color: currentTheme.primary,
+        path: '/serien-kalender',
       },
       {
         label: 'Anime-Season',

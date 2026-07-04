@@ -64,6 +64,7 @@ import {
   MangaReadingListPage,
   SubscriptionsPage,
   AnimeSeasonPage,
+  SerienKalenderPage,
   preloadRoutes,
 } from './lazyRoutes';
 
@@ -387,6 +388,14 @@ export const MobileApp = () => {
               element={
                 <Layout hideNav>
                   <AnimeSeasonPage />
+                </Layout>
+              }
+            />
+            <Route
+              path="/serien-kalender"
+              element={
+                <Layout hideNav>
+                  <SerienKalenderPage />
                 </Layout>
               }
             />

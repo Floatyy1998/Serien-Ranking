@@ -254,6 +254,12 @@ export const AnimeSeasonPage = lazyWithRetry(() =>
   }))
 );
 
+export const SerienKalenderPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "serien-kalender" */ './pages/SerienKalender').then((m) => ({
+    default: m.SerienKalenderPage,
+  }))
+);
+
 // Preload all lazy route chunks when the browser is idle
 // so that first navigation to any page feels instant
 export function preloadRoutes() {
