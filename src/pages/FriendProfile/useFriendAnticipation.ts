@@ -5,6 +5,7 @@ import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
+  subscribeCatalogChange,
 } from '../../lib/staticCatalog';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { CatalogSeason, CatalogSeries } from '../../types/CatalogTypes';
@@ -155,6 +156,20 @@ export function useFriendAnticipation(friendUid: string | undefined): {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Silent-Refresh bei neuer Catalog-Version (kein Reload).
+  useEffect(() => {
+    return subscribeCatalogChange(() => {
+      void (async () => {
+        const [series, bulk] = await Promise.all([
+          fetchStaticCatalogSeries(),
+          fetchStaticCatalogSeasonsBulk(),
+        ]);
+        if (series) setSeriesCatalog(series);
+        if (bulk) setSeasonsByTmdb(bulk);
+      })();
+    });
   }, []);
 
   useEffect(() => {

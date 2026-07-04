@@ -12,6 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Volle History, damit `vitest --changed <base>` den Basis-Commit kennt.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -30,8 +33,27 @@ jobs:
       - name: Type check
         run: npm run type-check
 
-      - name: Unit tests
-        run: npm test
+      # Nur die vom Diff betroffenen Tests laufen (nicht die komplette Suite).
+      # Push: Basis = Commit vor dem Push. PR: Basis = Ziel-Branch.
+      # Fallback (neuer Branch / keine Basis) = volle Suite.
+      - name: Unit tests (affected)
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+        run: |
+          BASE=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1 || true
+            BASE="origin/${{ github.base_ref }}"
+          elif [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ] && [ -n "${{ github.event.before }}" ]; then
+            BASE="${{ github.event.before }}"
+          fi
+          if [ -n "$BASE" ] && git rev-parse --verify "$BASE" >/dev/null 2>&1; then
+            echo "Running tests affected since $BASE"
+            npx vitest run --changed "$BASE" --passWithNoTests
+          else
+            echo "No usable base ref — running full suite"
+            npx vitest run --passWithNoTests
+          fi
 
       - name: Build
         run: npx vite build

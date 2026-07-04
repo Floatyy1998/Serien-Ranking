@@ -43,7 +43,11 @@ import { backendFetch } from '../../lib/backendApi';
 import { hapticSelect, hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
-import { fetchStaticTvPremieres, type TvPremiereStaticEntry } from '../../lib/staticCatalog';
+import {
+  fetchStaticTvPremieres,
+  subscribeCatalogChange,
+  type TvPremiereStaticEntry,
+} from '../../lib/staticCatalog';
 import { SerienKalenderCard } from './SerienKalenderCard';
 import { SerienKalenderHero } from './SerienKalenderHero';
 import { SerienKalenderFilter } from './SerienKalenderFilter';
@@ -156,6 +160,22 @@ export const SerienKalenderPage: React.FC = () => {
       cancelled = true;
     };
   }, [reloadKey]);
+
+  // Silent-Refresh: sobald der zentrale Watcher eine neue Catalog-Version
+  // erkennt, die Premieren frisch nachladen — ohne Loading-Flag/Reload, der
+  // bestehende Stand bleibt bis die neuen Daten da sind.
+  useEffect(() => {
+    const unsubscribe = subscribeCatalogChange(() => {
+      fetchStaticTvPremieres()
+        .then((data) => {
+          if (data) setEntries(data);
+        })
+        .catch(() => {
+          // silent — bestehenden Stand behalten
+        });
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     try {

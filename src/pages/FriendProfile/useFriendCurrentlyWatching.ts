@@ -2,7 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { fetchStaticCatalogSeries } from '../../lib/staticCatalog';
+import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../lib/staticCatalog';
 import { readEventUniversal } from '../../services/watchActivity/compactEvent';
 import type { CatalogSeries } from '../../types/CatalogTypes';
 import type { EpisodeWatchEvent } from '../../types/WatchActivity';
@@ -180,6 +180,16 @@ export function useFriendCurrentlyWatching(friendUid: string | undefined): {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Silent-Refresh bei neuer Catalog-Version (kein Reload).
+  useEffect(() => {
+    return subscribeCatalogChange(() => {
+      void (async () => {
+        const c = await fetchStaticCatalogSeries();
+        if (c) setCatalog(c);
+      })();
+    });
   }, []);
 
   const data = useMemo<FriendCurrentlyWatching | null>(() => {

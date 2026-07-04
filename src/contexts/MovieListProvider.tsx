@@ -9,7 +9,7 @@ import {
   fetchStaticCatalogMovies,
   fetchStaticCatalogMoviesFresh,
   clearStaticCatalogCache,
-  checkForCatalogVersionBump,
+  subscribeCatalogChange,
 } from '../lib/staticCatalog';
 
 export const MovieListProvider = ({ children }: { children: React.ReactNode }) => {
@@ -105,38 +105,30 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     }
   }, [userMovieRefs, catalogData, refetchCatalog]);
 
-  // Auto-Refresh: silent refetch bei visibilitychange UND periodischem Poll
-  // (5 min). Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
+  // Auto-Refresh: silent refetch, getrieben vom zentralen Versions-Watcher in
+  // staticCatalog (subscribeCatalogChange). Ein tab-globaler Poll fuer alle
+  // Consumer; userRefs via Ref gelesen, damit RTDB-Deltas das Abo nicht neu
+  // aufsetzen. Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
+  const userMovieRefsRef = useRef(userMovieRefs);
   useEffect(() => {
-    if (!user || !userMovieRefs) return;
-    let lastCheck = 0;
-    let cancelled = false;
+    userMovieRefsRef.current = userMovieRefs;
+  }, [userMovieRefs]);
 
-    const runCheck = async () => {
-      if (cancelled) return;
-      if (document.visibilityState !== 'visible') return;
-      const now = Date.now();
-      if (now - lastCheck < 30 * 1000) return;
-      lastCheck = now;
-      try {
-        const bumped = await checkForCatalogVersionBump();
-        if (!bumped || cancelled) return;
-        const newMovies = await fetchStaticCatalogMovies();
-        if (!cancelled && newMovies) setCatalogData(newMovies);
-      } catch {
-        // silent fail
-      }
-    };
-
-    document.addEventListener('visibilitychange', runCheck);
-    const interval = setInterval(runCheck, 5 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      document.removeEventListener('visibilitychange', runCheck);
-      clearInterval(interval);
-    };
-  }, [user, userMovieRefs]);
+  useEffect(() => {
+    const unsubscribe = subscribeCatalogChange(() => {
+      void (async () => {
+        const refs = userMovieRefsRef.current;
+        if (!refs || Object.keys(refs).length === 0) return;
+        try {
+          const newMovies = await fetchStaticCatalogMovies();
+          if (newMovies) setCatalogData(newMovies);
+        } catch {
+          // silent fail
+        }
+      })();
+    });
+    return unsubscribe;
+  }, []);
 
   const loading = refsLoading || catalogLoading;
 

@@ -14,7 +14,7 @@ import {
   fetchStaticCatalogSeriesFresh,
   fetchStaticCatalogSeasonsBulk,
   clearStaticCatalogCache,
-  checkForCatalogVersionBump,
+  subscribeCatalogChange,
 } from '../lib/staticCatalog';
 
 import firebase from 'firebase/compat/app';
@@ -222,65 +222,50 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   }, [userSeriesRefs, user]);
 
   // Auto-Refresh: Silent refetch der Catalog-Daten, wenn serverseitig eine
-  // neue Version vorliegt. Zwei Trigger-Wege:
-  //   1) visibilitychange (Tab wird wieder sichtbar)
-  //   2) Periodischer Poll alle 5 min, solange der Tab sichtbar ist
-  // Beide rufen denselben silent-Refetch auf (ohne catalogLoading-Flag, also
-  // ohne UI-Flackern). Background-Cron-Updates werden so ganz ohne App-Reload
-  // sichtbar — egal ob der User weg war oder die ganze Zeit aktiv war.
+  // neue Version vorliegt. Getrieben vom zentralen Versions-Watcher in
+  // staticCatalog (subscribeCatalogChange) — EIN tab-globaler Poll (5 min +
+  // visibilitychange, 30s-Debounce) statt eines eigenen Intervalls pro
+  // Provider. Der Callback laeuft ohne catalogLoading-Flag (kein UI-Flackern);
+  // Background-Cron-Updates werden so ganz ohne App-Reload sichtbar.
+  //
+  // Die userRefs werden ueber eine Ref gelesen, damit das Abo NICHT bei jedem
+  // RTDB-Delta neu aufgesetzt wird (frueher resettete das den 5-min-Timer bei
+  // aktiven Usern quasi dauerhaft, sodass der Poll nie ansprang).
+  const userSeriesRefsRef = useRef(userSeriesRefs);
   useEffect(() => {
-    if (!user || !userSeriesRefs) return;
-    let lastCheck = 0;
-    let cancelled = false;
+    userSeriesRefsRef.current = userSeriesRefs;
+  }, [userSeriesRefs]);
 
-    const runCheck = async () => {
-      if (cancelled) return;
-      if (document.visibilityState !== 'visible') return;
-      // Debounce: max alle 30s pruefen, egal welcher Trigger
-      const now = Date.now();
-      if (now - lastCheck < 30 * 1000) return;
-      lastCheck = now;
-      try {
-        const bumped = await checkForCatalogVersionBump();
-        if (!bumped || cancelled) return;
-        // Neue Version: silent refetch ohne catalogLoading-Flag.
-        const tmdbIds = Object.keys(userSeriesRefs);
+  useEffect(() => {
+    const unsubscribe = subscribeCatalogChange(() => {
+      void (async () => {
+        const refs = userSeriesRefsRef.current;
+        if (!refs) return;
+        const tmdbIds = Object.keys(refs);
         if (tmdbIds.length === 0) return;
-        const [newMeta, newBulk] = await Promise.all([
-          fetchStaticCatalogSeries(),
-          fetchStaticCatalogSeasonsBulk(),
-        ]);
-        if (cancelled) return;
-        if (newMeta) setCatalogMeta(newMeta);
-        // Bulk fehlt? Lieber im aktuellen Stand bleiben — beim naechsten
-        // visibilitychange/5min-Poll wird's erneut versucht. KEIN Einzel-
-        // Fallback (293 parallele Requests verstopfen den Connection-Pool).
-        if (newBulk) {
-          const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
-          for (const tmdbId of tmdbIds) {
-            newSeasons[tmdbId] = newBulk[tmdbId] || {};
+        try {
+          const [newMeta, newBulk] = await Promise.all([
+            fetchStaticCatalogSeries(),
+            fetchStaticCatalogSeasonsBulk(),
+          ]);
+          if (newMeta) setCatalogMeta(newMeta);
+          // Bulk fehlt? Lieber im aktuellen Stand bleiben — der naechste Tick
+          // versucht's erneut. KEIN Einzel-Fallback (293 parallele Requests
+          // verstopfen den Connection-Pool).
+          if (newBulk) {
+            const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
+            for (const tmdbId of tmdbIds) {
+              newSeasons[tmdbId] = newBulk[tmdbId] || {};
+            }
+            setCatalogSeasons(newSeasons);
           }
-          setCatalogSeasons(newSeasons);
+        } catch {
+          // silent fail — nicht den haupt-flow stoeren
         }
-      } catch {
-        // silent fail — nicht das haupt-flow stoeren
-      }
-    };
-
-    // Trigger 1: Tab wird wieder sichtbar
-    document.addEventListener('visibilitychange', runCheck);
-
-    // Trigger 2: Periodischer Poll alle 5 min. Der Check selbst kostet nur
-    // einen ~115-byte version.json-Request. Nur bei tatsaechlichem Bump wird
-    // der volle Refetch ausgefuehrt.
-    const interval = setInterval(runCheck, 5 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      document.removeEventListener('visibilitychange', runCheck);
-      clearInterval(interval);
-    };
-  }, [user, userSeriesRefs]);
+      })();
+    });
+    return unsubscribe;
+  }, []);
 
   const loading = refsLoading || watchLoading || catalogLoading;
 

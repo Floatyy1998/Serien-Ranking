@@ -549,14 +549,107 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   if (local !== null && local === remote) {
     return false;
   }
-  // Bump detected: memory + IDB komplett invalidieren
+  // Bump detected: memory + IDB komplett invalidieren.
+  // WICHTIG: auch seasonalAnime + tvPremieres leeren, sonst sehen die
+  // Anime-Season- und Serien-Kalender-Seiten nach einem Bump weiter ihren
+  // stale In-Memory-Stand (die beiden haben keinen eigenen Versions-Check).
   memoryMeta = null;
   memoryMovies = null;
   memorySeasons.clear();
   memorySeasonsBulk = null;
+  memorySeasonalAnime = null;
+  memoryTvPremieres = null;
   await invalidateLocalCaches();
   await setLocalVersion(remote);
   return true;
+}
+
+// ---------- Zentraler Versions-Watcher (Silent-Refresh ueberall) ----------
+//
+// Ein EINZIGER Watcher pro Tab pollt version.json (5-min-Intervall +
+// visibilitychange, 30s-Debounce, nur wenn der Tab sichtbar ist). Erkennt er
+// einen Bump, invalidiert checkForCatalogVersionBump() ALLE Caches (Memory +
+// IDB, inkl. seasonalAnime + tvPremieres) und der Watcher benachrichtigt
+// anschliessend alle Abonnenten. Jeder Abonnent holt seine Catalog-Daten dann
+// frisch (die fetchStatic*-Funktionen cold-pathen automatisch) und setzt
+// seinen React-State neu → Silent-Refresh ohne Reload, auf JEDER Seite.
+//
+// Vorteil ggue. den frueheren Provider-lokalen Intervallen:
+//   - EIN version.json-Request pro Tick statt einer pro Provider
+//   - haengt NICHT an userRefs — ein RTDB-Delta resettet den Timer nicht mehr
+//     (die Provider-Effekte feuerten ihren 5-min-Tick bei aktiven Usern quasi
+//      nie, weil jedes Firebase-Update den Effect neu aufsetzte)
+//   - deckt auch Seiten OHNE List-Provider ab (Serien-Kalender, Anime-Season)
+
+type CatalogChangeListener = () => void;
+const catalogChangeListeners = new Set<CatalogChangeListener>();
+let watcherStarted = false;
+let watcherLastCheck = 0;
+let watcherInFlight = false;
+const WATCHER_POLL_MS = 5 * 60 * 1000;
+const WATCHER_DEBOUNCE_MS = 30 * 1000;
+
+async function runCatalogVersionCheck(): Promise<void> {
+  if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+  const now = Date.now();
+  if (now - watcherLastCheck < WATCHER_DEBOUNCE_MS) return;
+  watcherLastCheck = now;
+  if (watcherInFlight) return;
+  watcherInFlight = true;
+  try {
+    const bumped = await checkForCatalogVersionBump();
+    if (!bumped) return;
+    // Caches sind jetzt invalidiert — alle Abonnenten silent refetchen lassen.
+    for (const cb of Array.from(catalogChangeListeners)) {
+      try {
+        cb();
+      } catch {
+        // ein kaputter Listener darf die anderen nicht blockieren
+      }
+    }
+  } catch {
+    // best-effort — den Haupt-Flow nie stoeren
+  } finally {
+    watcherInFlight = false;
+  }
+}
+
+function startCatalogVersionWatcher(): void {
+  if (watcherStarted) return;
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  watcherStarted = true;
+  // Tab-Sichtbarkeit: feuert bei Tab-Wechsel / Minimieren / Occlusion.
+  document.addEventListener('visibilitychange', () => {
+    void runCatalogVersionCheck();
+  });
+  // Fenster-Fokus: feuert wenn das Browserfenster den OS-Fokus (zurueck)bekommt
+  // — deckt den Fall ab, dass das Tab die ganze Zeit sichtbar BLEIBT (z.B.
+  // Zwei-Monitor-Setup: Klick auf anderen Monitor/andere App und zurueck).
+  // visibilitychange feuert dort NICHT, focus schon. Der 30s-Debounce in
+  // runCatalogVersionCheck verhindert doppelte Checks mit visibilitychange.
+  window.addEventListener('focus', () => {
+    void runCatalogVersionCheck();
+  });
+  // Fallback-Poll, solange der Tab sichtbar ist (Desktop-Tab, der offen bleibt).
+  window.setInterval(() => {
+    void runCatalogVersionCheck();
+  }, WATCHER_POLL_MS);
+}
+
+/**
+ * Abonniert Catalog-Versions-Bumps. `listener` feuert (silent, ohne Reload),
+ * sobald der zentrale Watcher serverseitig eine neue Version erkannt und alle
+ * Caches invalidiert hat. Im Callback holt der Consumer seine Catalog-Daten
+ * frisch (fetchStatic*-Funktionen cold-pathen dann automatisch) und ruft seine
+ * State-Setter. Rueckgabe: Unsubscribe-Funktion. Der Watcher startet lazy beim
+ * ersten Abo und laeuft dann tab-global weiter.
+ */
+export function subscribeCatalogChange(listener: CatalogChangeListener): () => void {
+  catalogChangeListeners.add(listener);
+  startCatalogVersionWatcher();
+  return () => {
+    catalogChangeListeners.delete(listener);
+  };
 }
 
 /**

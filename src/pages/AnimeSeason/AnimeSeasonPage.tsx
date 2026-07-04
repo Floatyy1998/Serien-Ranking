@@ -76,7 +76,11 @@ import { showToast } from '../../lib/toast';
 import { tapScaleSmall } from '../../lib/motion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
-import { fetchStaticCatalogSeasonsBulk, fetchStaticSeasonalAnime } from '../../lib/staticCatalog';
+import {
+  fetchStaticCatalogSeasonsBulk,
+  fetchStaticSeasonalAnime,
+  subscribeCatalogChange,
+} from '../../lib/staticCatalog';
 import type { SeasonalAnimeStaticEntry } from '../../lib/staticCatalog';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
 import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
@@ -526,6 +530,29 @@ export const AnimeSeasonPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Silent-Refresh: bei neuer Catalog-Version die Bulk-Seasons UND den
+  // Seasonal-Anime-Export frisch nachladen — ohne Reload, bestehender Stand
+  // bleibt bis die neuen Daten da sind.
+  useEffect(() => {
+    const unsubscribe = subscribeCatalogChange(() => {
+      fetchStaticCatalogSeasonsBulk()
+        .then((data) => {
+          if (data) setCatalogSeasons(data);
+        })
+        .catch(() => {
+          /* best-effort */
+        });
+      fetchStaticSeasonalAnime()
+        .then((data) => {
+          setServerSeasonal(data);
+        })
+        .catch(() => {
+          /* best-effort */
+        });
+    });
+    return unsubscribe;
   }, []);
 
   /** Server-Export → ResolvedTmdbInfo-Shape (Provider App-normalisiert,

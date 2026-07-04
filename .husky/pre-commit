@@ -1,6 +1,7 @@
-# Commit-Gate: Prettier + ESLint auf den gestagten Dateien (mit Auto-Fix),
-# danach die komplette Vitest-Suite. Spiegelt das CI-Gate aus deploy.yml —
-# was hier scheitert, hätte auch den Production-Deploy geblockt.
+# Commit-Gate: lint-staged laeuft NUR ueber die gestagten Dateien —
+# Prettier + ESLint (mit Auto-Fix) und `vitest related` (nur die Tests, die
+# von den gestagten Dateien betroffen sind). Kein Full-Suite-Lauf mehr beim
+# Commit. Die komplette Suite + Coverage-Gate (85%) laeuft on-demand via
+# `npm run test:coverage` (siehe vitest.config.ts).
 set -e
 npx lint-staged
-npm test
