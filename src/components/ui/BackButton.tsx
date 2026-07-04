@@ -37,11 +37,18 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
       sessionStorage.setItem('ratingsBackNavigation', 'true');
     }
 
-    // Always use browser back navigation
-    if (window.history.length > 1) {
+    // Nur zurückspringen, wenn es eine APP-INTERNE Vorseite gibt. React
+    // Router pflegt in BrowserRouter `history.state.idx` (Position im eigenen
+    // Verlauf) — idx > 0 heißt "es gibt eine vorherige In-App-Seite".
+    // window.history.length war unzuverlässig: es zählt die ganze Browser-
+    // Session (auch fremde Einträge), sodass navigate(-1) die App verlassen
+    // konnte (z. B. Detailseite als erste Seite via Empfehlungs-Link geöffnet
+    // → Zurück landete außerhalb statt auf Home).
+    const historyIdx = typeof window.history.state?.idx === 'number' ? window.history.state.idx : 0;
+    if (historyIdx > 0) {
       navigate(-1);
     } else {
-      navigate('/');
+      navigate(location.pathname.startsWith('/manga') ? '/manga' : '/');
     }
   };
 
