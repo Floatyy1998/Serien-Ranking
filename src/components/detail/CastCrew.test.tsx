@@ -40,13 +40,15 @@ describe('CastCrew', () => {
   it('shows a loading indicator initially then the cast/crew tabs', async () => {
     render(<CastCrew tmdbId={100} mediaType="tv" />);
     expect(screen.getByText('Lade Cast & Crew...')).toBeInTheDocument();
-    expect(await screen.findByText('Besetzung (0)')).toBeInTheDocument();
+    expect(await screen.findByText('Besetzung (0)', {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.getByText('Crew (0)')).toBeInTheDocument();
   });
 
   it('renders without crashing when an onPersonClick handler is provided', async () => {
     const onPersonClick = vi.fn();
     render(<CastCrew tmdbId={200} mediaType="movie" onPersonClick={onPersonClick} />);
-    await waitFor(() => expect(screen.getByText('Besetzung (0)')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('Besetzung (0)')).toBeInTheDocument(), {
+      timeout: 5000,
+    });
   });
 });

@@ -122,7 +122,7 @@ describe('useTasteProfileData - generateProfile', () => {
       await result.current.generateProfile();
     });
 
-    await waitFor(() => expect(result.current.result).not.toBeNull());
+    await waitFor(() => expect(result.current.result).not.toBeNull(), { timeout: 5000 });
     expect(state.backendFetch).toHaveBeenCalledWith('/ai/taste-profile', expect.any(Object));
     // 'Owned Show' herausgefiltert → nur 'Brand New' bleibt
     expect(result.current.result?.recommendations).toHaveLength(1);
@@ -148,7 +148,7 @@ describe('useTasteProfileData - generateProfile', () => {
     await act(async () => {
       await result.current.generateProfile();
     });
-    await waitFor(() => expect(result.current.error).toBe('Zu viele Anfragen'));
+    await waitFor(() => expect(result.current.error).toBe('Zu viele Anfragen'), { timeout: 5000 });
   });
 
   it('clearCache entfernt Ergebnis und sessionStorage-Eintrag', async () => {

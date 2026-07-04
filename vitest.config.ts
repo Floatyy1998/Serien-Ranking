@@ -18,15 +18,14 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     environment: 'node',
     setupFiles: ['./src/test/setup.ts'],
-    // Der volle `--coverage`-Lauf ueber alle jsdom-Komponenten-Tests ist
-    // speicherhungrig — Worker-Zahl begrenzen + Worker-Heap anheben, sonst OOM.
     maxWorkers: 2,
-    // Vitest 4: pool-Optionen sind top-level. Worker-Heap anheben (jsdom-Suite).
+    // Vitest 4: pool-Optionen top-level. Worker-Heap fuer die jsdom-Suite anheben.
     execArgv: ['--max-old-space-size=4096'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary'],
-      // Allowlist: jede gelistete Quelldatei hat eine *.test-Schwester.
+      // Allowlist getesteter Quelldateien (Legal-Seiten bewusst NICHT — laden
+      // gitignored public/legal-Inhalt). ZWEI TIERS via per-glob thresholds.
       include: [
         'src/App.tsx',
         'src/AppProviders.tsx',
@@ -415,7 +414,6 @@ export default defineConfig({
         'src/pages/HomePage/useRewatchHandler.ts',
         'src/pages/HomePage/useUnifiedNotifications.ts',
         'src/pages/HomePage/watchStreakHelpers.ts',
-        'src/pages/Impressum/ImpressumPage.tsx',
         'src/pages/Leaderboard/CelebrationModal.tsx',
         'src/pages/Leaderboard/LeaderboardPage.tsx',
         'src/pages/Leaderboard/PodiumSection.tsx',
@@ -480,9 +478,6 @@ export default defineConfig({
         'src/pages/Pets/PetsPage.tsx',
         'src/pages/Pets/XpBoostHeaderButton.tsx',
         'src/pages/Pets/usePetsData.ts',
-        'src/pages/Privacy/PrivacyComponents.tsx',
-        'src/pages/Privacy/PrivacyPage.tsx',
-        'src/pages/Privacy/usePrivacyData.ts',
         'src/pages/Profile/ProfileComponents.tsx',
         'src/pages/Profile/ProfilePage.tsx',
         'src/pages/Profile/useProfileData.ts',
@@ -656,9 +651,6 @@ export default defineConfig({
         'src/utils/themedPlaceholder.ts',
       ],
       exclude: ['**/*.test.{ts,tsx}', '**/*.d.ts', '**/index.ts', '**/types.ts'],
-      // ZWEI TIERS (per-glob):
-      //  - Logik (.ts): echtes 85%-Gate.
-      //  - View-Komponenten (.tsx): Render-Smoke-Niveau (fangen Crashes/Regressions).
       thresholds: {
         'src/**/*.ts': { lines: 85, statements: 80, functions: 82, branches: 66 },
         'src/**/*.tsx': { lines: 45, statements: 40, functions: 30, branches: 30 },
