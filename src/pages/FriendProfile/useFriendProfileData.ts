@@ -4,6 +4,7 @@ import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -92,18 +93,16 @@ export const calculateProgress = (item: FriendItem): number => {
 /*  Filtering / sorting                                                */
 /* ------------------------------------------------------------------ */
 
+// Mehrfach-Auswahl (ODER): genre/provider sind CSV („Action,Comedy").
 const filterByGenre = (items: FriendItem[], genre: string): FriendItem[] =>
-  items.filter((item) => {
-    const genres = item.genres || item.genre?.genres || [];
-    return Array.isArray(genres) && genres.some((g) => g.toLowerCase() === genre.toLowerCase());
-  });
+  items.filter((item) => matchesAnyCsv(genre, item.genres || item.genre?.genres || []));
 
 const filterByProvider = (items: FriendItem[], provider: string): FriendItem[] =>
-  items.filter(
-    (item) =>
-      item.provider?.provider &&
-      Array.isArray(item.provider.provider) &&
-      item.provider.provider.some((p: FriendProvider) => p.name === provider)
+  items.filter((item) =>
+    matchesAnyCsv(
+      provider,
+      (item.provider?.provider ?? []).map((p: FriendProvider) => p.name)
+    )
   );
 
 const filterBySearch = (items: FriendItem[], search: string): FriendItem[] => {

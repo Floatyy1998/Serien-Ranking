@@ -1,4 +1,5 @@
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -142,18 +143,16 @@ export function calculateProgress(item: PublicItem): number {
 /*  Filtering / sorting (identical to FriendProfile semantics)         */
 /* ------------------------------------------------------------------ */
 
+// Mehrfach-Auswahl (ODER): genre/provider sind CSV („Action,Comedy").
 const filterByGenre = (items: PublicItem[], genre: string): PublicItem[] =>
-  items.filter((item) => {
-    const genres = item.genres || item.genre?.genres || [];
-    return Array.isArray(genres) && genres.some((g) => g.toLowerCase() === genre.toLowerCase());
-  });
+  items.filter((item) => matchesAnyCsv(genre, item.genres || item.genre?.genres || []));
 
 const filterByProvider = (items: PublicItem[], provider: string): PublicItem[] =>
-  items.filter(
-    (item) =>
-      item.provider?.provider &&
-      Array.isArray(item.provider.provider) &&
-      item.provider.provider.some((p: PublicProvider) => p.name === provider)
+  items.filter((item) =>
+    matchesAnyCsv(
+      provider,
+      (item.provider?.provider ?? []).map((p: PublicProvider) => p.name)
+    )
   );
 
 const filterBySearch = (items: PublicItem[], search: string): PublicItem[] => {

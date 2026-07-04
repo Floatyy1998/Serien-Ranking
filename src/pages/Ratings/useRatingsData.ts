@@ -16,6 +16,7 @@ import { useAuth } from '../../AuthContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
+import { matchesAnyCsv, parseCsv } from '../../lib/filters/multiSelectFilter';
 import {
   getRating,
   getSeriesProgress,
@@ -248,17 +249,15 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const preparedSeries = useMemo(() => {
     let items = seriesList.map((s) => ({ s, r: getRating(s) }));
 
-    if (selectedGenre !== 'Alle') {
-      const gl = selectedGenre.toLowerCase();
-      items = items.filter(({ s }) => {
-        const genres = s.genre?.genres;
-        return Array.isArray(genres) && genres.some((g) => g.toLowerCase() === gl);
-      });
+    // Mehrfach-Auswahl (ODER): Item passt, wenn es EINES der gewählten
+    // Genres/Provider hat. Leer = kein Filter.
+    if (parseCsv(selectedGenre).length) {
+      items = items.filter(({ s }) => matchesAnyCsv(selectedGenre, s.genre?.genres ?? []));
     }
 
-    if (selectedProvider) {
+    if (parseCsv(selectedProvider).length) {
       items = items.filter(({ s }) =>
-        s.provider?.provider?.some((p) => p.name === selectedProvider)
+        matchesAnyCsv(selectedProvider, s.provider?.provider?.map((p) => p.name) ?? [])
       );
     }
 
@@ -321,17 +320,13 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const preparedMovies = useMemo(() => {
     let items = movieList.map((m) => ({ m, r: getRating(m) }));
 
-    if (selectedGenre !== 'Alle') {
-      const gl = selectedGenre.toLowerCase();
-      items = items.filter(({ m }) => {
-        const genres = m.genre?.genres;
-        return Array.isArray(genres) && genres.some((g) => g.toLowerCase() === gl);
-      });
+    if (parseCsv(selectedGenre).length) {
+      items = items.filter(({ m }) => matchesAnyCsv(selectedGenre, m.genre?.genres ?? []));
     }
 
-    if (selectedProvider) {
+    if (parseCsv(selectedProvider).length) {
       items = items.filter(({ m }) =>
-        m.provider?.provider?.some((p) => p.name === selectedProvider)
+        matchesAnyCsv(selectedProvider, m.provider?.provider?.map((p) => p.name) ?? [])
       );
     }
 

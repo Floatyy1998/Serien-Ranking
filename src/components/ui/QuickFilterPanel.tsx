@@ -1,5 +1,6 @@
 import { Tooltip } from '@mui/material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
+import { csvIncludes, parseCsv, toggleCsv } from '../../lib/filters/multiSelectFilter';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { SearchInput } from './SearchInput';
 import { GradientText } from './GradientText';
@@ -268,12 +269,19 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
           }}
         >
           {genreMenuItems.map((genre) => {
-            const isActive = selectedGenre === genre.value;
+            // „Alle" (value 'All') = kein Filter → leert die Auswahl; sonst
+            // Mehrfach-Auswahl (ODER) per Toggle im CSV.
+            const isAllOption = genre.value === 'All';
+            const isActive = isAllOption
+              ? parseCsv(selectedGenre).length === 0
+              : csvIncludes(selectedGenre, genre.value);
 
             return (
               <button
                 key={genre.value}
-                onClick={() => setSelectedGenre(isActive ? '' : genre.value)}
+                onClick={() =>
+                  setSelectedGenre(isAllOption ? '' : toggleCsv(selectedGenre, genre.value))
+                }
                 style={{
                   padding: '10px',
                   background: isActive
@@ -318,12 +326,19 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
           }}
         >
           {providerMenuItems.map((provider) => {
-            const isActive = selectedProvider === provider.value;
+            const isAllOption = provider.value === 'All';
+            const isActive = isAllOption
+              ? parseCsv(selectedProvider).length === 0
+              : csvIncludes(selectedProvider, provider.value);
 
             return (
               <Tooltip key={provider.value} title={provider.label} arrow>
                 <button
-                  onClick={() => setSelectedProvider(isActive ? '' : provider.value)}
+                  onClick={() =>
+                    setSelectedProvider(
+                      isAllOption ? '' : toggleCsv(selectedProvider, provider.value)
+                    )
+                  }
                   style={{
                     padding: '12px',
                     background: isActive
