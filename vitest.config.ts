@@ -21,7 +21,8 @@ export default defineConfig({
     // Der volle `--coverage`-Lauf ueber alle jsdom-Komponenten-Tests ist
     // speicherhungrig — Worker-Zahl begrenzen + Worker-Heap anheben, sonst OOM.
     maxWorkers: 2,
-    poolOptions: { forks: { execArgv: ['--max-old-space-size=4096'] } },
+    // Vitest 4: pool-Optionen sind top-level. Worker-Heap anheben (jsdom-Suite).
+    execArgv: ['--max-old-space-size=4096'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary'],
