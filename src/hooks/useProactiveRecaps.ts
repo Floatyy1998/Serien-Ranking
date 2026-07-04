@@ -292,9 +292,15 @@ export function useProactiveRecaps() {
       .catch(() => {});
   }, [user, dismissedState, triggers]);
 
+  // Dismiss-Liste ist erst nach dem Firebase-Read verlässlich. Solange sie
+  // (für einen eingeloggten User) noch lädt, KEINE Recaps liefern — sonst
+  // blitzt ein bereits weggeklickter Recap bei jedem HomePage-Mount für <1s
+  // auf, bis dismissedKeys eintrifft und ihn wieder herausfiltert.
+  const dismissedReady = !user || dismissedState?.uid === user.uid;
+
   const initialRecaps = useMemo(
-    () => buildRecaps(triggers, user, dismissedKeys),
-    [triggers, user, dismissedKeys]
+    () => (dismissedReady ? buildRecaps(triggers, user, dismissedKeys) : []),
+    [dismissedReady, triggers, user, dismissedKeys]
   );
 
   // Mutable state for loading updates (recap content fetched lazily)
