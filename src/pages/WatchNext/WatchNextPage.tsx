@@ -10,7 +10,8 @@ import { useWatchNextEpisodes } from '../../hooks/useWatchNextEpisodes';
 import { PageLayout, ScrollToTopButton } from '../../components/ui';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { useWatchNextSwipe } from './useWatchNextSwipe';
-import { buildFillerLookup, readFillerCacheSync } from '../../services/animeFillerService';
+import { buildFillerLookup, fillerEpisodesFromStatic } from '../../services/animeFillerService';
+import { useAnimeFillerCatalog } from '../../hooks/useAnimeFillerCatalog';
 import { RewatchToggle } from './components/RewatchToggle';
 import { WatchNextEmptyState } from './components/WatchNextEmptyState';
 import { WatchNextEpisodeList } from './components/WatchNextEpisodeList';
@@ -78,21 +79,24 @@ export const WatchNextPage = () => {
     onlyMySubs ? activeProviders : null
   );
 
-  // Filler/recap lookup for the displayed next-up episodes – cache-only.
-  // Watchlist is the canonical "what's next" list, so the chip belongs here
-  // exactly like on the Continue Watching block.
+  // Filler/recap lookup for the displayed next-up episodes – sourced from the
+  // shared static catalog, no per-series Firebase reads. Watchlist is the
+  // canonical "what's next" list, so the chip belongs here exactly like on the
+  // Continue Watching block.
+  const fillerCatalog = useAnimeFillerCatalog();
   const fillerByEpisode = useMemo(() => {
     const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    if (!fillerCatalog) return map;
     const seriesById = new Map(seriesList.map((s) => [s.id, s]));
     for (const ep of nextEpisodes) {
       const series = seriesById.get(ep.seriesId);
       if (!series) continue;
-      const cached = readFillerCacheSync(ep.seriesId);
-      if (!cached) continue;
-      map.set(ep.seriesId, buildFillerLookup(series.seasons, cached.episodes));
+      const entry = fillerCatalog[String(ep.seriesId)];
+      if (!entry) continue;
+      map.set(ep.seriesId, buildFillerLookup(series.seasons, fillerEpisodesFromStatic(entry)));
     }
     return map;
-  }, [nextEpisodes, seriesList]);
+  }, [nextEpisodes, seriesList, fillerCatalog]);
 
   const dragDrop = useEpisodeDragDrop({ nextEpisodes, user, editModeActive });
   const { containerRef, draggedIndex, watchlistOrder } = dragDrop;
@@ -158,7 +162,7 @@ export const WatchNextPage = () => {
 
   return (
     <PageLayout
-      style={{ height: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+      style={{ height: '100dvh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
     >
       <div
         ref={containerRef}

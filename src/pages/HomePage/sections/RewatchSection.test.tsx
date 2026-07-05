@@ -28,7 +28,10 @@ vi.mock('../../../contexts/SeriesListContext', () => ({
 vi.mock('../../../services/animeFillerService', () => ({
   buildFillerLookup: () => new Map(),
   fillerLookupKey: () => '',
-  readFillerCacheSync: () => null,
+  fillerEpisodesFromStatic: () => [],
+}));
+vi.mock('../../../hooks/useAnimeFillerCatalog', () => ({
+  useAnimeFillerCatalog: () => null,
 }));
 vi.mock('../../../lib/providerMerge', () => ({ resolveProviderOverlay: () => undefined }));
 vi.mock('../../../components/detail/ProviderLogoLink', () => ({

@@ -7,9 +7,10 @@ import { NowPlayingIndicator } from '../../../components/ui/NowPlayingIndicator'
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import {
   buildFillerLookup,
+  fillerEpisodesFromStatic,
   fillerLookupKey,
-  readFillerCacheSync,
 } from '../../../services/animeFillerService';
+import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
@@ -104,21 +105,21 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
   const { seriesList } = useSeriesList();
+  const fillerCatalog = useAnimeFillerCatalog();
 
-  // Per-item filler lookup – pulled exclusively from the synchronous
-  // localStorage cache so we never trigger fetches for the whole list.
-  // Pure cache read – no per-render Firebase calls, no AniList/Jikan. If the
-  // backend has already populated this series (and the user has visited the
-  // detail page so the result landed in localStorage), the chip surfaces here.
+  // Per-item filler lookup – sourced from the shared static catalog
+  // (`anime-filler.json`), never per-series Firebase reads. The chip surfaces
+  // for any anime the backend has resolved, no detail-page visit required.
   const fillerByItem = useMemo(() => {
     const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    if (!fillerCatalog) return map;
     for (const it of items) {
-      const cached = readFillerCacheSync(it.id);
-      if (!cached) continue;
-      map.set(it.id, buildFillerLookup(it.seasons, cached.episodes));
+      const entry = fillerCatalog[String(it.id)];
+      if (!entry) continue;
+      map.set(it.id, buildFillerLookup(it.seasons, fillerEpisodesFromStatic(entry)));
     }
     return map;
-  }, [items]);
+  }, [items, fillerCatalog]);
 
   const unwatchlistedWithUnwatched = useMemo(() => {
     let count = 0;

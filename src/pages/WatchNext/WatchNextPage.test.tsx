@@ -28,7 +28,10 @@ vi.mock('../../hooks/useWatchNextEpisodes', () => ({ useWatchNextEpisodes: () =>
 vi.mock('./useWatchNextSwipe', () => ({ useWatchNextSwipe: () => ({}) }));
 vi.mock('../../services/animeFillerService', () => ({
   buildFillerLookup: () => new Map(),
-  readFillerCacheSync: () => null,
+  fillerEpisodesFromStatic: () => [],
+}));
+vi.mock('../../hooks/useAnimeFillerCatalog', () => ({
+  useAnimeFillerCatalog: () => null,
 }));
 vi.mock('../../lib/validation/rewatch.utils', () => ({ hasActiveRewatch: () => false }));
 vi.mock('../../components/ui', async () => {

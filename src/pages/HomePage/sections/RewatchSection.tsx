@@ -13,9 +13,10 @@ import { resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import {
   buildFillerLookup,
+  fillerEpisodesFromStatic,
   fillerLookupKey,
-  readFillerCacheSync,
 } from '../../../services/animeFillerService';
+import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
 import type { Series } from '../../../types/Series';
 
 interface RewatchEpisode {
@@ -71,20 +72,23 @@ export const RewatchSection = React.memo(function RewatchSection({
   const { getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
   const { seriesList } = useSeriesList();
+  const fillerCatalog = useAnimeFillerCatalog();
 
-  // Filler/recap lookup – cache-only, no network.
+  // Filler/recap lookup – sourced from the shared static catalog, no per-series
+  // Firebase reads.
   const fillerByEpisode = useMemo(() => {
     const map = new Map<number, ReturnType<typeof buildFillerLookup>>();
+    if (!fillerCatalog) return map;
     const seriesById = new Map(seriesList.map((s) => [s.id, s]));
     for (const ep of episodes) {
       const series = seriesById.get(ep.id);
       if (!series) continue;
-      const cached = readFillerCacheSync(ep.id);
-      if (!cached) continue;
-      map.set(ep.id, buildFillerLookup(series.seasons, cached.episodes));
+      const entry = fillerCatalog[String(ep.id)];
+      if (!entry) continue;
+      map.set(ep.id, buildFillerLookup(series.seasons, fillerEpisodesFromStatic(entry)));
     }
     return map;
-  }, [episodes, seriesList]);
+  }, [episodes, seriesList, fillerCatalog]);
 
   if (episodes.length === 0) return null;
 

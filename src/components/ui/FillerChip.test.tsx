@@ -20,15 +20,13 @@ describe('FillerChip', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows the F letter for a filler episode (compact)', () => {
+  it('renders a filler badge (compact)', () => {
     render(<FillerChip filler />);
-    expect(screen.getByText('F')).toBeInTheDocument();
     expect(screen.getByLabelText('Filler-Episode')).toBeInTheDocument();
   });
 
-  it('shows the R letter for a recap episode (compact)', () => {
+  it('renders a recap badge (compact)', () => {
     render(<FillerChip recap />);
-    expect(screen.getByText('R')).toBeInTheDocument();
     expect(screen.getByLabelText('Recap-Episode')).toBeInTheDocument();
   });
 

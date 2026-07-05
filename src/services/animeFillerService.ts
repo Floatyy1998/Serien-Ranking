@@ -95,6 +95,23 @@ export function buildFillerLookup(
 }
 
 /**
+ * Convert a compact static-catalog filler entry (`{ f:[…], r:[…] }` of absolute
+ * MAL episode numbers) into the `FillerEpisode[]` shape `buildFillerLookup`
+ * expects. Titles aren't shipped in the static file (the chip doesn't need
+ * them), so they come back empty.
+ */
+export function fillerEpisodesFromStatic(entry: { f?: number[]; r?: number[] }): FillerEpisode[] {
+  const episodes: FillerEpisode[] = [];
+  for (const n of entry.f ?? []) {
+    episodes.push({ malEpisodeNumber: n, title: '', filler: true, recap: false });
+  }
+  for (const n of entry.r ?? []) {
+    episodes.push({ malEpisodeNumber: n, title: '', filler: false, recap: true });
+  }
+  return episodes;
+}
+
+/**
  * Synchronous cache read – returns whatever is already in localStorage.
  * ContinueWatching uses this to decorate next-up posters without spawning
  * Firebase reads per series.
