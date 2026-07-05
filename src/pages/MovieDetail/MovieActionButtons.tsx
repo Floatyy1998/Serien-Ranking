@@ -1,133 +1,42 @@
-import Delete from '@mui/icons-material/Delete';
-import Star from '@mui/icons-material/Star';
-import { Tooltip } from '@mui/material';
-import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { tapScale } from '../../lib/motion';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;
-  isWatched: boolean;
   isReadOnlyTmdbMovie: boolean;
   isAdding: boolean;
-  loading: boolean;
-  movieId: number;
-  movieTitle: string;
-  moviePoster?: string;
-  movieBackdrop?: string;
-  onNavigateRate: () => void;
   onAddMovie: () => void;
-  onDeleteClick: () => void;
 }
 
 export const MovieActionButtons = memo(
-  ({
-    isMobile,
-    isWatched,
-    isReadOnlyTmdbMovie,
-    isAdding,
-    loading,
-    movieId,
-    movieTitle,
-    moviePoster,
-    movieBackdrop,
-    onNavigateRate,
-    onAddMovie,
-    onDeleteClick,
-  }: MovieActionButtonsProps) => {
+  ({ isMobile, isReadOnlyTmdbMovie, isAdding, onAddMovie }: MovieActionButtonsProps) => {
     const { currentTheme } = useTheme();
 
-    if (isReadOnlyTmdbMovie) {
-      return (
-        <div className={`md-add-btn-wrap ${isMobile ? 'md-add-btn-wrap--mobile' : ''}`}>
-          <button
-            onClick={onAddMovie}
-            disabled={isAdding}
-            className={`md-add-btn ${isMobile ? 'md-add-btn--mobile' : ''}`}
-            style={{
-              background: isAdding
-                ? `${currentTheme.primary}80`
-                : `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.primary}CC 100%)`,
-              border: `1px solid ${currentTheme.primary}80`,
-              color: currentTheme.text.secondary,
-              boxShadow: isAdding
-                ? 'none'
-                : `var(--glow-primary), 0 4px 16px -4px ${currentTheme.primary}55`,
-            }}
-          >
-            {isAdding ? 'Wird hinzugefugt...' : 'Film hinzufugen'}
-          </button>
-        </div>
-      );
+    // Eigene Filme haben ihre Aktionen (Bewerten/Empfehlen/Löschen) jetzt im
+    // Hero-Header — hier bleibt nur der "Film hinzufügen"-Button für Nur-Lese-TMDB-Filme.
+    if (!isReadOnlyTmdbMovie) {
+      return null;
     }
 
     return (
-      <div className={`md-actions ${isMobile ? 'md-actions--mobile' : ''}`}>
-        <motion.button
-          whileTap={tapScale}
-          onClick={onNavigateRate}
-          disabled={loading}
-          className={`md-rate-btn ${isMobile ? 'md-rate-btn--mobile' : ''}`}
+      <div className={`md-add-btn-wrap ${isMobile ? 'md-add-btn-wrap--mobile' : ''}`}>
+        <button
+          onClick={onAddMovie}
+          disabled={isAdding}
+          className={`md-add-btn ${isMobile ? 'md-add-btn--mobile' : ''}`}
           style={{
-            background: isWatched
-              ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
-              : 'rgba(255, 255, 255, 0.05)',
-            border: isWatched
-              ? '1px solid rgba(255, 215, 0, 0.3)'
-              : '1px solid rgba(255, 255, 255, 0.1)',
+            background: isAdding
+              ? `${currentTheme.primary}80`
+              : `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.primary}CC 100%)`,
+            border: `1px solid ${currentTheme.primary}80`,
+            color: currentTheme.text.secondary,
+            boxShadow: isAdding
+              ? 'none'
+              : `var(--glow-primary), 0 4px 16px -4px ${currentTheme.primary}55`,
           }}
         >
-          <Star
-            style={{
-              fontSize: isMobile ? '16px' : '18px',
-              color: isWatched ? currentTheme.accent : currentTheme.text.secondary,
-            }}
-          />
-          Bewerten
-        </motion.button>
-
-        <RecommendButton
-          className="action-btn"
-          iconSize={isMobile ? 18 : 20}
-          style={{
-            padding: isMobile ? '10px' : '12px',
-            border: `1px solid ${currentTheme.primary}33`,
-            borderRadius: isMobile ? '10px' : '12px',
-            fontSize: isMobile ? '13px' : '16px',
-            background: `${currentTheme.primary}10`,
-          }}
-          media={{
-            id: movieId,
-            type: 'movie',
-            title: movieTitle,
-            posterPath: moviePoster,
-            backdropPath: movieBackdrop,
-          }}
-        />
-
-        <Tooltip title="Film löschen" arrow>
-          <motion.button
-            whileTap={tapScale}
-            onClick={onDeleteClick}
-            className="action-btn"
-            style={{
-              padding: isMobile ? '10px' : '12px',
-              background: 'rgba(220, 53, 69, 0.1)',
-              border: '1px solid rgba(220, 53, 69, 0.3)',
-              borderRadius: isMobile ? '10px' : '12px',
-              fontSize: isMobile ? '13px' : '16px',
-            }}
-          >
-            <Delete
-              style={{
-                fontSize: isMobile ? '18px' : '20px',
-                color: currentTheme.status?.error || '#ef4444',
-              }}
-            />
-          </motion.button>
-        </Tooltip>
+          {isAdding ? 'Wird hinzugefugt...' : 'Film hinzufugen'}
+        </button>
       </div>
     );
   }

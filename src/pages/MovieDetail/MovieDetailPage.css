@@ -66,6 +66,13 @@
   flex-direction: column;
 }
 
+.md-hero__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .md-hero__header-buttons {
   position: absolute;
   top: calc(20px + env(safe-area-inset-top));

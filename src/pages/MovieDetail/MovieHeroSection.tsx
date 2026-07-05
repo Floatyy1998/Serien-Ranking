@@ -1,7 +1,13 @@
+import Delete from '@mui/icons-material/Delete';
+import Star from '@mui/icons-material/Star';
+import { Tooltip } from '@mui/material';
+import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/providerMerge';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -23,6 +29,8 @@ interface MovieHeroSectionProps {
   getBackdropUrl: (backdropPath: string | undefined) => string;
   formatRuntime: (minutes: number) => string;
   onAddMovie: () => void;
+  onNavigateRate: () => void;
+  onDeleteClick: () => void;
 }
 
 const getPosterUrl = (posterPath: string | undefined, fallback: string): string => {
@@ -47,6 +55,8 @@ export const MovieHeroSection = memo(
     getBackdropUrl,
     formatRuntime,
     onAddMovie,
+    onNavigateRate,
+    onDeleteClick,
   }: MovieHeroSectionProps) => {
     const { currentTheme } = useTheme();
     const themedPlaceholder = useMemo(
@@ -381,6 +391,83 @@ export const MovieHeroSection = memo(
                     </div>
                   )}
                 </>
+              )}
+
+              {/* Actions: Bewerten + Empfehlen (nur fuer eigene Filme) */}
+              {!isReadOnlyTmdbMovie && (
+                <div
+                  className="md-hero__actions"
+                  style={{
+                    justifyContent: isMobile ? 'center' : 'flex-start',
+                    padding: isMobile ? '16px 20px 0' : undefined,
+                    marginTop: isMobile ? 0 : 16,
+                  }}
+                >
+                  <motion.button
+                    whileTap={tapScale}
+                    onClick={onNavigateRate}
+                    className={`md-rate-btn ${isMobile ? 'md-rate-btn--mobile' : ''}`}
+                    style={{
+                      flex: isMobile ? 1 : '0 0 auto',
+                      minWidth: isMobile ? 0 : 160,
+                      background: isWatched
+                        ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 193, 7, 0.15) 100%)'
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: isWatched
+                        ? '1px solid rgba(255, 215, 0, 0.3)'
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                    }}
+                  >
+                    <Star
+                      style={{
+                        fontSize: isMobile ? '16px' : '18px',
+                        color: isWatched ? currentTheme.accent : currentTheme.text.secondary,
+                      }}
+                    />
+                    Bewerten
+                  </motion.button>
+
+                  <RecommendButton
+                    className="action-btn"
+                    iconSize={isMobile ? 18 : 20}
+                    style={{
+                      padding: isMobile ? '10px' : '12px',
+                      border: `1px solid ${currentTheme.primary}33`,
+                      borderRadius: isMobile ? '10px' : '12px',
+                      fontSize: isMobile ? '13px' : '16px',
+                      background: `${currentTheme.primary}10`,
+                    }}
+                    media={{
+                      id: movie.id,
+                      type: 'movie',
+                      title: movie.title,
+                      posterPath,
+                      backdropPath: tmdbBackdrop || movie.backdrop || undefined,
+                    }}
+                  />
+
+                  <Tooltip title="Film löschen" arrow>
+                    <motion.button
+                      whileTap={tapScale}
+                      onClick={onDeleteClick}
+                      className="action-btn"
+                      style={{
+                        padding: isMobile ? '10px' : '12px',
+                        background: 'rgba(220, 53, 69, 0.1)',
+                        border: '1px solid rgba(220, 53, 69, 0.3)',
+                        borderRadius: isMobile ? '10px' : '12px',
+                        fontSize: isMobile ? '13px' : '16px',
+                      }}
+                    >
+                      <Delete
+                        style={{
+                          fontSize: isMobile ? '18px' : '20px',
+                          color: currentTheme.status?.error || '#ef4444',
+                        }}
+                      />
+                    </motion.button>
+                  </Tooltip>
+                </div>
               )}
 
               {/* Video Gallery - pushed to bottom on desktop */}

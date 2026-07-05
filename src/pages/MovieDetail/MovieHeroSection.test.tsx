@@ -9,6 +9,9 @@ vi.mock('../../components/detail', () => ({
   ProviderBadges: () => <div />,
   VideoGallery: () => <div />,
 }));
+vi.mock('../../components/recommendations/RecommendButton', () => ({
+  RecommendButton: () => <button aria-label="empfehlen" />,
+}));
 vi.mock('../../lib/providerMerge', () => ({ mergeProviders: () => [] }));
 vi.mock('../../utils/imageUrl', () => ({ getImageUrl: () => 'poster.jpg' }));
 vi.mock('../../utils/themedPlaceholder', () => ({ buildThemedPlaceholderDataUrl: () => 'ph.jpg' }));
@@ -51,10 +54,14 @@ const baseProps = {
   getBackdropUrl: (p: string | undefined) => p ?? '',
   formatRuntime: (m: number) => `${m} Min.`,
   onAddMovie: vi.fn(),
+  onNavigateRate: vi.fn(),
+  onDeleteClick: vi.fn(),
 };
 
 beforeEach(() => {
   baseProps.onAddMovie = vi.fn();
+  baseProps.onNavigateRate = vi.fn();
+  baseProps.onDeleteClick = vi.fn();
 });
 afterEach(() => cleanup());
 
@@ -75,5 +82,24 @@ describe('MovieHeroSection', () => {
   it('renders the formatted runtime', () => {
     render(<MovieHeroSection {...baseProps} />);
     expect(screen.getByText(/155 Min\./)).toBeInTheDocument();
+  });
+
+  it('shows the Bewerten button for an owned movie and invokes onNavigateRate', () => {
+    render(<MovieHeroSection {...baseProps} />);
+    fireEvent.click(screen.getByText('Bewerten'));
+    expect(baseProps.onNavigateRate).toHaveBeenCalled();
+  });
+
+  it('hides the Bewerten button for a read-only tmdb movie', () => {
+    render(<MovieHeroSection {...baseProps} isReadOnlyTmdbMovie={true} />);
+    expect(screen.queryByText('Bewerten')).not.toBeInTheDocument();
+  });
+
+  it('invokes onDeleteClick from the delete action', () => {
+    const { container } = render(<MovieHeroSection {...baseProps} />);
+    const actionBtns = container.querySelectorAll('.action-btn');
+    const deleteBtn = actionBtns[actionBtns.length - 1] as HTMLElement;
+    fireEvent.click(deleteBtn);
+    expect(baseProps.onDeleteClick).toHaveBeenCalled();
   });
 });

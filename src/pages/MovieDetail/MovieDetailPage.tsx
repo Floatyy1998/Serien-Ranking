@@ -97,24 +97,16 @@ export const MovieDetailPage = memo(() => {
         getBackdropUrl={getBackdropUrl}
         formatRuntime={formatRuntime}
         onAddMovie={handleAddMovie}
+        onNavigateRate={() => navigate(`/rating/movie/${movie.id}`)}
+        onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 
-      {/* Action Buttons */}
+      {/* Action Buttons (nur "Film hinzufügen" für Nur-Lese-TMDB-Filme) */}
       <MovieActionButtons
         isMobile={isMobile}
-        isWatched={isWatched}
         isReadOnlyTmdbMovie={isReadOnlyTmdbMovie}
         isAdding={isAdding}
-        loading={loading}
-        movieId={movie.id}
-        movieTitle={movie.title}
-        moviePoster={
-          movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined
-        }
-        movieBackdrop={tmdbBackdrop || movie.backdrop || undefined}
-        onNavigateRate={() => navigate(`/rating/movie/${movie.id}`)}
         onAddMovie={handleAddMovie}
-        onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 
       {/* Tab Navigation */}
