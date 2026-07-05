@@ -61,6 +61,8 @@ const filters = vi.hoisted(() => ({
   setShowSearch: vi.fn(),
   searchQuery: '',
   setSearchQuery: vi.fn(),
+  onlyMyProviders: false,
+  setOnlyMyProviders: vi.fn(),
   isRestoring: false,
   isDesktop: false,
   headerHeight: 120,
@@ -91,6 +93,18 @@ vi.mock('./useDiscoverFetch', () => ({ useDiscoverFetch: () => fetchState }));
 
 vi.mock('./DiscoverContent', () => ({
   DiscoverContent: () => <div data-testid="discover-content" />,
+}));
+
+const subs = vi.hoisted(() => ({ activeProviders: new Set<string>() }));
+vi.mock('../../hooks/useActiveSubscriptions', () => ({
+  useActiveSubscriptions: () => ({
+    activeProviders: subs.activeProviders,
+    hasAnySubscription: subs.activeProviders.size > 0,
+    isOnActiveSub: () => false,
+    seriesOverrides: {},
+    getSeriesOverride: () => null,
+    loading: false,
+  }),
 }));
 
 vi.mock('../../components/ui', () => ({
@@ -144,5 +158,22 @@ describe('DiscoverPage', () => {
     render(<DiscoverPage />);
     fireEvent.click(screen.getByText('Filme'));
     expect(filters.setActiveTab).toHaveBeenCalledWith('movies');
+  });
+
+  it('disables the abo filter toggle when there are no active subscriptions', () => {
+    subs.activeProviders = new Set();
+    render(<DiscoverPage />);
+    const toggle = screen.getByLabelText('Nur Titel auf meinen aktiven Abos anzeigen');
+    expect(toggle).toBeDisabled();
+  });
+
+  it('toggles the abo filter when the user has active subscriptions', () => {
+    subs.activeProviders = new Set(['Netflix']);
+    render(<DiscoverPage />);
+    const toggle = screen.getByLabelText('Nur Titel auf meinen aktiven Abos anzeigen');
+    expect(toggle).not.toBeDisabled();
+    fireEvent.click(toggle);
+    expect(filters.setOnlyMyProviders).toHaveBeenCalled();
+    subs.activeProviders = new Set();
   });
 });

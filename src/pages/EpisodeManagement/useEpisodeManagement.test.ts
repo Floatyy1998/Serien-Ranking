@@ -30,6 +30,7 @@ const ctx = vi.hoisted(() => ({
   allSeriesList: [] as Series[],
   user: { uid: 'u1' } as { uid: string } | null,
   shouldTriggerQuickRate: vi.fn<(...a: unknown[]) => boolean>(() => false),
+  showQuickRating: vi.fn(),
 }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
@@ -44,7 +45,7 @@ vi.mock('../../hooks/useQuickSeasonRating', () => ({
     quickRatingOpen: false,
     quickRatingSeries: null,
     quickRatingSeasonNumber: 0,
-    showQuickRating: vi.fn(),
+    showQuickRating: ctx.showQuickRating,
     closeQuickRating: vi.fn(),
     saveQuickRating: vi.fn(),
   }),
@@ -59,13 +60,17 @@ vi.mock('../../firebase/analytics', () => ({
 vi.mock('../../lib/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
 }));
-vi.mock('../../lib/toast', () => ({ showToast: vi.fn(), showUndoToast: vi.fn() }));
+vi.mock('../../lib/toast', () => ({
+  showToast: vi.fn(),
+  showUndoToast: vi.fn(),
+  showActionToast: vi.fn(),
+}));
 vi.mock('../../lib/haptics', () => ({ hapticSuccess: vi.fn() }));
 
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { trackEpisodeWatched } from '../../firebase/analytics';
 import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
-import { showUndoToast } from '../../lib/toast';
+import { showActionToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 import { useEpisodeManagement } from './useEpisodeManagement';
 
@@ -153,6 +158,37 @@ describe('useEpisodeManagement', () => {
     expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
     expect(hapticSuccess).toHaveBeenCalledTimes(1);
     expect(showUndoToast).toHaveBeenCalledTimes(1);
+  });
+
+  it('handleEpisodeToggle on the finale shows a non-blocking rating hint (no auto-modal)', async () => {
+    // Letzte Episode der letzten Staffel -> Quick-Rate wäre fällig.
+    ctx.shouldTriggerQuickRate.mockReturnValue(true);
+    ctx.allSeriesList = [
+      makeSeries({
+        seasons: [{ seasonNumber: 0, episodes: [ep({ id: 11, watched: false })] }],
+      }),
+    ];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await act(async () => {
+      await result.current.handleEpisodeToggle(0, 0);
+    });
+
+    // F4: kein automatisches (blockierendes) Öffnen des Rating-Modals.
+    expect(ctx.showQuickRating).not.toHaveBeenCalled();
+    // Stattdessen ein wegwischbarer Hinweis mit „Bewerten"-Aktion.
+    expect(showActionToast).toHaveBeenCalledTimes(1);
+    const [message, opts] = vi.mocked(showActionToast).mock.calls[0] as [
+      string,
+      { actionLabel: string; onAction: () => void },
+    ];
+    expect(message).toContain('Alpha');
+    expect(opts.actionLabel).toBe('Bewerten');
+
+    // Erst der Tap auf „Bewerten" öffnet die Schnellbewertung (Staffel 1).
+    opts.onAction();
+    expect(ctx.showQuickRating).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(ctx.showQuickRating).mock.calls[0][1]).toBe(1);
   });
 
   it('handleEpisodeToggle onCommit fires analytics + the watch fanout for a first watch', async () => {

@@ -297,3 +297,60 @@ describe('showUndoToast', () => {
     expect(rafCbs.length).toBe(before); // did not re-schedule
   });
 });
+
+// ===========================================================================
+describe('showActionToast', () => {
+  it('renders a wipeable interactive toast with a custom action button (info by default)', async () => {
+    const { showActionToast } = await loadToast();
+    const onAction = vi.fn();
+    showActionToast('Serie fertig — jetzt bewerten?', { actionLabel: 'Bewerten', onAction });
+
+    const toast = (getContainer() as FakeEl)._children[0];
+    expect(toast.className).toContain('toast-interactive');
+    expect(toast.getAttribute('role')).toBe('status');
+    expect(findByClass(toast, 'toast-text')?.textContent).toBe('Serie fertig — jetzt bewerten?');
+    expect(findByClass(toast, 'toast-icon--info')?.textContent).toBe('ℹ');
+    expect(findByClass(toast, 'toast-undo-btn')?.textContent).toBe('Bewerten');
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it('action click fires onAction, dismisses, and cancels the auto-dismiss timer', async () => {
+    const { showActionToast } = await loadToast();
+    const onAction = vi.fn();
+    showActionToast('bewerten?', { actionLabel: 'Bewerten', onAction, duration: 6000 });
+
+    const toast = (getContainer() as FakeEl)._children[0];
+    (findByClass(toast, 'toast-undo-btn') as FakeEl).fire('click');
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(toast.classList.contains('toast-out')).toBe(true);
+
+    // Timer wurde beim Klick gecleart → kein zweites Dismiss / kein erneuter Effekt.
+    vi.advanceTimersByTime(6000);
+    expect(onAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('auto-dismisses after `duration` without firing the action (non-blocking)', async () => {
+    const { showActionToast } = await loadToast();
+    const onAction = vi.fn();
+    showActionToast('bewerten?', { actionLabel: 'Bewerten', onAction, duration: 6000 });
+    const toast = (getContainer() as FakeEl)._children[0];
+
+    vi.advanceTimersByTime(6000); // dismiss animation starts
+    expect(toast.classList.contains('toast-out')).toBe(true);
+    vi.advanceTimersByTime(300); // exit animation done → node removed
+    expect(toast._removed).toBe(true);
+    expect(onAction).not.toHaveBeenCalled();
+  });
+
+  it('a click after auto-dismiss is a no-op', async () => {
+    const { showActionToast } = await loadToast();
+    const onAction = vi.fn();
+    showActionToast('bewerten?', { actionLabel: 'Bewerten', onAction, duration: 4000 });
+    const btn = findByClass((getContainer() as FakeEl)._children[0], 'toast-undo-btn') as FakeEl;
+
+    vi.advanceTimersByTime(4000); // settles via timer
+    btn.fire('click');
+    expect(onAction).not.toHaveBeenCalled();
+  });
+});

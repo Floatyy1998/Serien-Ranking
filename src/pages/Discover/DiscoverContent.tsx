@@ -1,4 +1,4 @@
-import { Recommend, Search } from '@mui/icons-material';
+import { Recommend, Search, Subscriptions } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContextDef';
@@ -13,6 +13,10 @@ interface DiscoverContentProps {
   isDesktop: boolean;
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
   results: DiscoverItem[];
+  /** True während der Browse-Grid gerade lädt (unterdrückt den leeren Abo-Hinweis). */
+  loading?: boolean;
+  /** F7: True, wenn der "Auf meinen Abos"-Filter wirksam ist. */
+  onlyMyProviders?: boolean;
   searchResults: DiscoverItem[];
   searchLoading: boolean;
   recommendations: DiscoverItem[];
@@ -22,6 +26,13 @@ interface DiscoverContentProps {
   addToList: (item: DiscoverItem, event?: React.MouseEvent) => Promise<void>;
 }
 
+/** Zusatzzeile für Empty-States, wenn der Abo-Filter aktiv ist. */
+const AboFilterHint = ({ color }: { color: string }) => (
+  <p style={{ fontSize: 'var(--text-sm)', color, marginTop: '10px', fontWeight: 500 }}>
+    Der Filter „Auf meinen Abos" ist aktiv – tippe oben rechts, um ihn auszuschalten.
+  </p>
+);
+
 export const DiscoverContent = memo(
   ({
     activeCategory,
@@ -30,6 +41,8 @@ export const DiscoverContent = memo(
     isDesktop,
     currentTheme,
     results,
+    loading,
+    onlyMyProviders,
     searchResults,
     searchLoading,
     recommendations,
@@ -80,6 +93,7 @@ export const DiscoverContent = memo(
               Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier
               passende Empfehlungen.
             </p>
+            {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
           </motion.div>
         );
       }
@@ -154,6 +168,7 @@ export const DiscoverContent = memo(
               <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
                 Keine Ergebnisse für "{searchQuery}"
               </p>
+              {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
             </motion.div>
           ) : searchResults.length === 0 ? (
             <motion.div
@@ -206,6 +221,36 @@ export const DiscoverContent = memo(
             </div>
           )}
         </div>
+      );
+    }
+
+    if (!loading && results.length === 0 && onlyMyProviders) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{
+            textAlign: 'center',
+            padding: '60px 20px',
+            background: currentTheme.background.surface,
+            borderRadius: 'var(--radius-xl)',
+            border: `1px solid ${currentTheme.border.default}`,
+          }}
+        >
+          <Subscriptions
+            style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }}
+          />
+          <p
+            style={{
+              fontSize: 'var(--text-md)',
+              color: currentTheme.text.secondary,
+              fontWeight: 600,
+            }}
+          >
+            Nichts auf deinen Abos
+          </p>
+          <AboFilterHint color={currentTheme.text.muted} />
+        </motion.div>
       );
     }
 

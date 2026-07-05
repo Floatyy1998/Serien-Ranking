@@ -68,3 +68,20 @@
   outline: 2px solid var(--theme-primary);
   outline-offset: 2px;
 }
+
+/* F7: "Auf meinen Abos"-Toggle — >=44px Tap-Target, sichtbarer Fokus. */
+.discover-abo-toggle {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.discover-abo-toggle:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}

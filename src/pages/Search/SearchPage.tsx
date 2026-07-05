@@ -3,10 +3,11 @@
  * Slim composition component. Business logic in useSearchPage, UI in subcomponents.
  */
 
-import { CalendarToday, Close, Movie, Search } from '@mui/icons-material';
+import { CalendarToday, Close, Movie, Search, Subscriptions } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   Dialog,
@@ -24,6 +25,8 @@ import './SearchPage.css';
 
 export const SearchPage = memo(() => {
   const { currentTheme } = useTheme();
+  const { activeProviders } = useActiveSubscriptions();
+  const canFilterByProviders = activeProviders.size > 0;
 
   const {
     searchQuery,
@@ -42,7 +45,11 @@ export const SearchPage = memo(() => {
     addToList,
     pendingAddIds,
     removeRecentSearch,
-  } = useSearchPage();
+    onlyMyProviders,
+    setOnlyMyProviders,
+  } = useSearchPage(activeProviders);
+
+  const providerFilterActive = onlyMyProviders && canFilterByProviders;
 
   const filterTabs: {
     key: SearchTypeFilter;
@@ -167,6 +174,38 @@ export const SearchPage = memo(() => {
               {tab.label}
             </button>
           ))}
+
+          {/* F7: "Auf meinen Abos"-Toggle */}
+          <button
+            type="button"
+            className="search-filter-btn search-abo-toggle"
+            onClick={() => {
+              if (canFilterByProviders) setOnlyMyProviders(!onlyMyProviders);
+            }}
+            disabled={!canFilterByProviders}
+            aria-pressed={providerFilterActive}
+            aria-label="Nur Titel auf meinen aktiven Abos anzeigen"
+            title={
+              canFilterByProviders
+                ? 'Nur was ich streamen kann'
+                : 'Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen'
+            }
+            style={{
+              background: providerFilterActive
+                ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                : currentTheme.background.surface,
+              border: providerFilterActive ? 'none' : `1px solid ${currentTheme.border.default}`,
+              color: providerFilterActive
+                ? getOptimalTextColor(currentTheme.primary)
+                : currentTheme.text.muted,
+              opacity: canFilterByProviders ? 1 : 0.5,
+              cursor: canFilterByProviders ? 'pointer' : 'not-allowed',
+              boxShadow: providerFilterActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+            }}
+          >
+            <Subscriptions style={{ fontSize: '16px' }} />
+            Abos
+          </button>
         </motion.div>
       </div>
 
@@ -218,8 +257,16 @@ export const SearchPage = memo(() => {
               <EmptyState
                 icon={<Search style={{ fontSize: '48px' }} />}
                 title="Keine Ergebnisse"
-                description={`Keine Treffer für „${searchQuery}". Prüfe die Schreibweise oder suche nach etwas anderem.`}
-                action={{ label: 'Suche löschen', onClick: () => setSearchQuery('') }}
+                description={
+                  providerFilterActive
+                    ? `Keine Treffer für „${searchQuery}" auf deinen aktiven Abos. Schalte den Abo-Filter „Abos" aus, um alle Treffer zu sehen.`
+                    : `Keine Treffer für „${searchQuery}". Prüfe die Schreibweise oder suche nach etwas anderem.`
+                }
+                action={
+                  providerFilterActive
+                    ? { label: 'Abo-Filter aus', onClick: () => setOnlyMyProviders(false) }
+                    : { label: 'Suche löschen', onClick: () => setSearchQuery('') }
+                }
               />
             </motion.div>
           ) : (

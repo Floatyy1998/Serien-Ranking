@@ -354,6 +354,7 @@ export default defineConfig({
         'src/pages/Discover/useDiscoverActions.ts',
         'src/pages/Discover/useDiscoverFetch.ts',
         'src/pages/Discover/useDiscoverFilters.ts',
+        'src/pages/Discover/watchProviderFilter.ts',
         'src/pages/DiscussionFeed/DiscussionFeedPage.tsx',
         'src/pages/EpisodeDiscussion/EpisodeDiscussionComponents.tsx',
         'src/pages/EpisodeDiscussion/EpisodeDiscussionExtras.tsx',

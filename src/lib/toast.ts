@@ -323,3 +323,63 @@ export function showUndoToast(
 
   dismissTimer = setTimeout(() => entry.commitNow(), duration);
 }
+
+interface ActionToastOptions {
+  actionLabel: string;
+  onAction: () => void;
+  duration?: number;
+  variant?: ToastVariant;
+}
+
+/**
+ * Nicht blockierender, wegwischbarer Hinweis-Toast mit EINER Aktion (z. B.
+ * „Bewerten"). Anders als {@link showUndoToast} unterbricht er keinen Ablauf:
+ * er schließt automatisch nach `duration` ohne Nebenwirkung; nur ein Klick auf
+ * den Aktions-Button löst `onAction` aus. Reine Anzeige/Interaktion — keine
+ * Commit-/Undo-Semantik.
+ */
+export function showActionToast(message: string, options: ActionToastOptions): void {
+  const { actionLabel, onAction, duration = 6000, variant = 'info' } = options;
+
+  ensureToastStyles();
+  const container = ensureContainer();
+
+  const toast = document.createElement('div');
+  toast.className = 'app-toast toast-interactive';
+  toast.setAttribute('role', 'status');
+  toast.setAttribute('aria-live', 'polite');
+
+  toast.appendChild(createIcon(variant));
+
+  const text = document.createElement('span');
+  text.className = 'toast-text';
+  text.textContent = message;
+  toast.appendChild(text);
+
+  const divider = document.createElement('div');
+  divider.className = 'toast-divider';
+  toast.appendChild(divider);
+
+  const actionBtn = document.createElement('button');
+  actionBtn.className = 'toast-undo-btn';
+  actionBtn.type = 'button';
+  actionBtn.textContent = actionLabel;
+  toast.appendChild(actionBtn);
+
+  container.appendChild(toast);
+
+  let settled = false;
+  const dismissTimer = setTimeout(() => {
+    if (settled) return;
+    settled = true;
+    dismissToast(toast);
+  }, duration);
+
+  actionBtn.addEventListener('click', () => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(dismissTimer);
+    dismissToast(toast);
+    onAction();
+  });
+}

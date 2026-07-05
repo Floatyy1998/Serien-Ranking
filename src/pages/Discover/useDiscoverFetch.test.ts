@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { useDiscoverFetch } from './useDiscoverFetch';
+import { clearProviderCache } from './watchProviderFilter';
 
 // ── contexts (shared by useDiscoverActions too) ───────────────────────
 const ctx = vi.hoisted(() => ({
@@ -93,6 +94,7 @@ describe('useDiscoverFetch', () => {
     ctx.seriesList = [];
     ctx.movieList = [];
     ctx.user = { uid: 'u1' };
+    clearProviderCache();
     vi.stubEnv('VITE_API_TMDB', 'tmdb-key');
     vi.stubEnv('VITE_USER', 'flo');
   });
@@ -164,6 +166,25 @@ describe('useDiscoverFetch', () => {
     await waitFor(() => expect(result.current.results.length).toBe(1));
     expect(fetchMock).toHaveBeenCalled();
     expect(result.current.hasMore).toBe(false); // page 1 of 1
+  });
+
+  it('filters browse results to active abo providers when onlyMyProviders is on', async () => {
+    stubFetch((url) => {
+      if (url.includes('/watch/providers')) {
+        return url.includes('/tv/101')
+          ? jsonOk({ results: { DE: { flatrate: [{ provider_name: 'Netflix' }] } } })
+          : jsonOk({ results: { DE: { flatrate: [{ provider_name: 'WOW' }] } } });
+      }
+      return jsonOk({ results: [{ id: 101 }, { id: 102 }], total_pages: 1 });
+    });
+    const abo = new Set(['Netflix']);
+    const { result } = renderHook(() =>
+      useDiscoverFetch('series', 'trending', null, false, '', true, true, abo)
+    );
+    await act(async () => {
+      await result.current.fetchFromTMDB(true);
+    });
+    expect(result.current.results.map((r) => r.id)).toEqual([101]);
   });
 
   it('searchItems filters owned, caps at 20 and maps type', async () => {

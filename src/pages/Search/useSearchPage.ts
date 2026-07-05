@@ -12,6 +12,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
 import { backendFetch } from '../../lib/backendApi';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
+import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 
@@ -59,9 +60,21 @@ export interface UseSearchPageResult {
   addToList: (item: SearchResult) => Promise<void>;
   pendingAddIds: Set<string>;
   removeRecentSearch: (term: string) => void;
+  /** F7: "Läuft auf meinen Abos"-Filter. */
+  onlyMyProviders: boolean;
+  setOnlyMyProviders: (value: boolean) => void;
 }
 
-export const useSearchPage = (): UseSearchPageResult => {
+/**
+ * @param activeProviders Set der aktiven Abo-Provider-Namen (aus
+ *   `useActiveSubscriptions`). Leer = kein Provider-Filter möglich (No-Op).
+ */
+// Stabile Default-Referenz (Inline `new Set()` pro Render destabilisiert Callbacks).
+const EMPTY_ACTIVE_PROVIDERS = new Set<string>();
+
+export const useSearchPage = (
+  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS
+): UseSearchPageResult => {
   const navigate = useNavigate();
   const [urlParams, setUrlParams] = useSearchParams();
   const { user } = useAuth() || {};
@@ -123,6 +136,7 @@ export const useSearchPage = (): UseSearchPageResult => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [onlyMyProviders, setOnlyMyProviders] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
       const recent = localStorage.getItem('recentSearches');
@@ -284,7 +298,14 @@ export const useSearchPage = (): UseSearchPageResult => {
         }
 
         results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-        setSearchResults(results);
+
+        // F7: optional auf die aktiven Abos einschränken (client-seitig, weil
+        // TMDBs `/search` keinen `with_watch_providers`-Filter kennt).
+        const filtered =
+          onlyMyProviders && activeProviders.size > 0
+            ? await filterItemsByActiveProviders(results, activeProviders)
+            : results;
+        setSearchResults(filtered);
       } catch (error) {
         console.error('Search error:', error);
         setSearchResults([]);
@@ -292,7 +313,7 @@ export const useSearchPage = (): UseSearchPageResult => {
         setLoading(false);
       }
     },
-    [searchType, saveToRecent]
+    [searchType, saveToRecent, onlyMyProviders, activeProviders]
   );
 
   // inList live ableiten — nur betroffene Items kriegen einen neuen Ref,
@@ -445,5 +466,7 @@ export const useSearchPage = (): UseSearchPageResult => {
     addToList,
     pendingAddIds,
     removeRecentSearch,
+    onlyMyProviders,
+    setOnlyMyProviders,
   };
 };

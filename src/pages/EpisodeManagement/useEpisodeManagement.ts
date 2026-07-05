@@ -12,7 +12,7 @@ import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
-import { showToast, showUndoToast } from '../../lib/toast';
+import { showActionToast, showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
@@ -218,11 +218,16 @@ export const useEpisodeManagement = () => {
         );
       }
 
-      // Quick-Rate: Trigger wenn letzte Episode der letzten Staffel markiert
+      // Quick-Rate: letzte Episode der letzten Staffel markiert.
+      // F4 — nicht blockierend: statt das Modal automatisch zu öffnen (bricht
+      // den Binge ab) zeigen wir einen wegwischbaren Hinweis. Erst ein Tap auf
+      // „Bewerten" öffnet die Schnellbewertung — die Markierung läuft normal weiter.
       if (newWatched && shouldTriggerQuickRate(series, seasonIndex, episodeIndex)) {
-        setTimeout(() => {
-          showQuickRating(series, series.seasons[seasonIndex].seasonNumber + 1);
-        }, 500);
+        const quickRateSeasonNumber = series.seasons[seasonIndex].seasonNumber + 1;
+        showActionToast(`${series.title} fertig — jetzt bewerten?`, {
+          actionLabel: 'Bewerten',
+          onAction: () => showQuickRating(series, quickRateSeasonNumber),
+        });
       }
 
       const label = `S${season.seasonNumber + 1}E${episodeIndex + 1}`;
@@ -466,15 +471,19 @@ export const useEpisodeManagement = () => {
         `${series.title} Staffel ${season.seasonNumber + 1} (${mode})`
       );
 
-      // Quick-Rate: Trigger wenn letzte Staffel komplett markiert
+      // Quick-Rate: letzte Staffel komplett markiert.
+      // F4 — nicht blockierend (siehe handleEpisodeToggle): wegwischbarer
+      // Hinweis statt Auto-Modal; öffnet die Schnellbewertung erst auf Tap.
       if (mode !== 'unwatch') {
         const lastSeasonIndex = series.seasons.length - 1;
         if (seasonIndex === lastSeasonIndex) {
           const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
           if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {
-            setTimeout(() => {
-              showQuickRating(series, season.seasonNumber + 1);
-            }, 500);
+            const quickRateSeasonNumber = season.seasonNumber + 1;
+            showActionToast(`${series.title} fertig — jetzt bewerten?`, {
+              actionLabel: 'Bewerten',
+              onAction: () => showQuickRating(series, quickRateSeasonNumber),
+            });
           }
         }
       }

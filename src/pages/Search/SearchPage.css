@@ -141,6 +141,11 @@
   outline-offset: 2px;
 }
 
+/* F7: "Auf meinen Abos"-Toggle sitzt am Ende der Filterzeile. */
+.search-abo-toggle {
+  margin-left: auto;
+}
+
 /* ===== Content Area ===== */
 
 .search-content {

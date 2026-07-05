@@ -6,12 +6,15 @@ import {
   Recommend,
   Search,
   Star,
+  Subscriptions,
   TrendingUp,
   Whatshot,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
 import { DiscoverContent } from './DiscoverContent';
@@ -27,6 +30,10 @@ import {
 } from '../../components/ui';
 import './DiscoverPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+
+// Stabile leere Referenz: verhindert überflüssige Re-Fetches, solange der
+// Abo-Filter aus ist (Identität ändert sich sonst, wenn die Abos nachladen).
+const EMPTY_PROVIDERS: Set<string> = new Set();
 
 export const DiscoverPage = memo(() => {
   const { currentTheme } = useTheme();
@@ -44,6 +51,8 @@ export const DiscoverPage = memo(() => {
     setShowSearch,
     searchQuery,
     setSearchQuery,
+    onlyMyProviders,
+    setOnlyMyProviders,
     isRestoring,
     isDesktop,
     headerHeight,
@@ -52,6 +61,17 @@ export const DiscoverPage = memo(() => {
     fetchRecommendationsOnRestoreRef,
     fetchFromTMDBOnRestoreRef,
   } = useDiscoverFilters();
+
+  const { activeProviders } = useActiveSubscriptions();
+  // Der Toggle greift nur, wenn der Nutzer mindestens ein AKTIVES Abo gepflegt
+  // hat — sonst gäbe es keine Grundlage zum Filtern (leer + verwirrend).
+  const canFilterByProviders = activeProviders.size > 0;
+  const providerFilterActive = onlyMyProviders && canFilterByProviders;
+  const providerToggleTitle = !canFilterByProviders
+    ? 'Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen'
+    : providerFilterActive
+      ? 'Filter „Auf meinen Abos" aktiv'
+      : 'Nur was ich streamen kann';
 
   const {
     results,
@@ -74,7 +94,9 @@ export const DiscoverPage = memo(() => {
     selectedGenre,
     showSearch,
     searchQuery,
-    isRestoring
+    isRestoring,
+    providerFilterActive,
+    providerFilterActive ? activeProviders : EMPTY_PROVIDERS
   );
 
   // Wire up restore callbacks
@@ -164,6 +186,37 @@ export const DiscoverPage = memo(() => {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
+                <motion.button
+                  type="button"
+                  className="discover-abo-toggle"
+                  whileTap={canFilterByProviders ? tapScaleTight : undefined}
+                  onClick={() => {
+                    if (canFilterByProviders) setOnlyMyProviders((v) => !v);
+                  }}
+                  disabled={!canFilterByProviders}
+                  aria-pressed={providerFilterActive}
+                  aria-label="Nur Titel auf meinen aktiven Abos anzeigen"
+                  title={providerToggleTitle}
+                  style={{
+                    background: providerFilterActive
+                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                      : currentTheme.background.surface,
+                    border: providerFilterActive
+                      ? 'none'
+                      : `1px solid ${currentTheme.border.default}`,
+                    color: providerFilterActive
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.primary,
+                    cursor: canFilterByProviders ? 'pointer' : 'not-allowed',
+                    opacity: canFilterByProviders ? 1 : 0.5,
+                    boxShadow: providerFilterActive
+                      ? `0 4px 12px ${currentTheme.primary}40`
+                      : 'none',
+                  }}
+                >
+                  <Subscriptions style={{ fontSize: '20px' }} />
+                </motion.button>
+
                 {!showSearch && activeCategory !== 'recommendations' && (
                   <motion.button
                     whileTap={tapScaleTight}
@@ -435,6 +488,8 @@ export const DiscoverPage = memo(() => {
             isDesktop={isDesktop}
             currentTheme={currentTheme}
             results={results}
+            loading={loading}
+            onlyMyProviders={providerFilterActive}
             searchResults={searchResults}
             searchLoading={searchLoading}
             recommendations={recommendations}

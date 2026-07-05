@@ -19,6 +19,9 @@ interface UseDiscoverFiltersResult {
   setShowSearch: React.Dispatch<React.SetStateAction<boolean>>;
   searchQuery: string;
   setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  /** F7: "Läuft auf meinen Abos"-Filter. */
+  onlyMyProviders: boolean;
+  setOnlyMyProviders: React.Dispatch<React.SetStateAction<boolean>>;
   isRestoring: boolean;
   isDesktop: boolean;
   headerHeight: number;
@@ -39,6 +42,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   const [showFilters, setShowFilters] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [onlyMyProviders, setOnlyMyProviders] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const { isDesktop } = useDeviceType();
   const [headerHeight, setHeaderHeight] = useState(220);
@@ -87,6 +91,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
           setShowFilters(filters.showFilters || false);
           setSearchQuery(filters.searchQuery || '');
           setShowSearch(filters.showSearch || false);
+          setOnlyMyProviders(filters.onlyMyProviders || false);
 
           setTimeout(() => {
             setIsRestoring(false);
@@ -116,6 +121,7 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
       showFilters,
       searchQuery,
       showSearch,
+      onlyMyProviders,
     };
     sessionStorage.setItem('discoverFilters', JSON.stringify(filterState));
     sessionStorage.setItem('comingFromDetail', 'true');
@@ -140,6 +146,8 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
     setShowSearch,
     searchQuery,
     setSearchQuery,
+    onlyMyProviders,
+    setOnlyMyProviders,
     isRestoring,
     isDesktop,
     headerHeight,

@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { useSearchPage } from './useSearchPage';
+import { clearProviderCache } from '../Discover/watchProviderFilter';
 
 // ── router mock ───────────────────────────────────────────────────────
 const router = vi.hoisted(() => ({
@@ -81,6 +82,7 @@ describe('useSearchPage', () => {
     ctx.isDesktop = true;
     localStorage.clear();
     sessionStorage.clear();
+    clearProviderCache();
     vi.stubEnv('VITE_API_TMDB', 'tmdb-key');
     vi.stubEnv('VITE_USER', 'flo');
     vi.useFakeTimers();
@@ -236,6 +238,26 @@ describe('useSearchPage', () => {
       expect.objectContaining({ method: 'POST' })
     );
     expect(logMovieAdded).toHaveBeenCalled();
+  });
+
+  it('filters results to active abo providers when the toggle is on', async () => {
+    stubFetch((url) => {
+      if (url.includes('/watch/providers')) {
+        return url.includes('/tv/100')
+          ? jsonOk({ results: { DE: { flatrate: [{ provider_name: 'Netflix' }] } } })
+          : jsonOk({ results: { DE: { flatrate: [{ provider_name: 'WOW' }] } } });
+      }
+      return url.includes('/search/tv') ? jsonOk(tvResults) : jsonOk({ results: [] });
+    });
+    const { result } = renderHook(() => useSearchPage(new Set(['Netflix'])));
+    act(() => result.current.setOnlyMyProviders(true));
+    act(() => result.current.setSearchType('series'));
+    act(() => result.current.setSearchQuery('breaking'));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
+    // Breaking Bad (100) läuft auf Netflix → bleibt; Better Call Saul (101) auf WOW → raus.
+    expect(result.current.searchResults.map((r) => r.id)).toEqual([100]);
   });
 
   it('removeRecentSearch prunes the term from state and localStorage', async () => {

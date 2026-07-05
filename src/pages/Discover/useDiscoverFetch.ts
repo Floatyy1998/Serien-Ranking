@@ -6,6 +6,7 @@ import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
+import { filterItemsByActiveProviders } from './watchProviderFilter';
 
 /** Bewertung des aktuellen Nutzers für ein Listen-Item (0, falls unbewertet). */
 function userRatingOf(item: Series | Movie, uid: string | undefined): number {
@@ -45,13 +46,19 @@ interface UseDiscoverFetchResult {
   setupScrollListener: (activeCategory: string) => (() => void) | undefined;
 }
 
+// Stabile Default-Referenz: ein Inline `new Set()` pro Render wechselt die
+// Identitaet, destabilisiert die Fetch-Callbacks und loopt den Auto-Fetch-Effect.
+const EMPTY_ACTIVE_PROVIDERS = new Set<string>();
+
 export const useDiscoverFetch = (
   activeTab: 'series' | 'movies',
   activeCategory: string,
   selectedGenre: number | null,
   showSearch: boolean,
   searchQuery: string,
-  isRestoring: boolean
+  isRestoring: boolean,
+  onlyMyProviders = false,
+  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS
 ): UseDiscoverFetchResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
@@ -212,7 +219,7 @@ export const useDiscoverFetch = (
 
         // Nach Qualität sortieren (TMDB-Wertung, dann Popularität) statt zufällig,
         // damit die stärksten Vorschläge oben stehen.
-        const rankedRecommendations = allRecommendations
+        let rankedRecommendations = allRecommendations
           .sort((a, b) => {
             const va = (a as { vote_average?: number }).vote_average ?? 0;
             const vb = (b as { vote_average?: number }).vote_average ?? 0;
@@ -222,6 +229,13 @@ export const useDiscoverFetch = (
             return pb - pa;
           })
           .slice(0, 20);
+
+        if (onlyMyProviders && activeProviders.size > 0) {
+          rankedRecommendations = await filterItemsByActiveProviders(
+            rankedRecommendations,
+            activeProviders
+          );
+        }
 
         setUsedRecommendationSources(currentUsedSources);
 
@@ -244,7 +258,7 @@ export const useDiscoverFetch = (
         setRecommendationsLoading(false);
       }
     },
-    [activeTab, seriesList, movieList, isInList, uid]
+    [activeTab, seriesList, movieList, isInList, uid, onlyMyProviders, activeProviders]
   );
 
   const fetchFromTMDB = useCallback(
@@ -300,7 +314,7 @@ export const useDiscoverFetch = (
         const data = await response.json();
 
         if (data.results) {
-          const mappedResults = data.results
+          let mappedResults: DiscoverItem[] = data.results
             .filter(
               (item: DiscoverItem) =>
                 !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
@@ -310,6 +324,10 @@ export const useDiscoverFetch = (
               type: activeTab === 'series' ? 'series' : ('movie' as const),
               inList: false,
             }));
+
+          if (onlyMyProviders && activeProviders.size > 0) {
+            mappedResults = await filterItemsByActiveProviders(mappedResults, activeProviders);
+          }
 
           if (reset) {
             setResults(mappedResults);
@@ -336,7 +354,7 @@ export const useDiscoverFetch = (
         setLoading(false);
       }
     },
-    [activeTab, activeCategory, selectedGenre, isInList]
+    [activeTab, activeCategory, selectedGenre, isInList, onlyMyProviders, activeProviders]
   );
 
   useEffect(() => {
@@ -430,7 +448,7 @@ export const useDiscoverFetch = (
         const data = await response.json();
 
         if (data.results) {
-          const mappedResults = data.results
+          let mappedResults: DiscoverItem[] = data.results
             .filter(
               (item: DiscoverItem) =>
                 !isInList(item.id, activeTab === 'series' ? 'series' : 'movie')
@@ -442,6 +460,10 @@ export const useDiscoverFetch = (
               inList: false,
             }));
 
+          if (onlyMyProviders && activeProviders.size > 0) {
+            mappedResults = await filterItemsByActiveProviders(mappedResults, activeProviders);
+          }
+
           setSearchResults(mappedResults);
         }
       } catch (error) {
@@ -450,7 +472,7 @@ export const useDiscoverFetch = (
         setSearchLoading(false);
       }
     },
-    [activeTab, isInList]
+    [activeTab, isInList, onlyMyProviders, activeProviders]
   );
 
   useEffect(() => {

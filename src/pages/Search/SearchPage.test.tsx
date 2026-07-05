@@ -54,6 +54,8 @@ const data = vi.hoisted(() => ({
   searchResults: [] as SearchResult[],
   setSearchQuery: vi.fn(),
   setSearchType: vi.fn(),
+  onlyMyProviders: false,
+  setOnlyMyProviders: vi.fn(),
 }));
 vi.mock('./useSearchPage', () => ({
   useSearchPage: () => ({
@@ -73,6 +75,20 @@ vi.mock('./useSearchPage', () => ({
     addToList: vi.fn(),
     pendingAddIds: new Set<string>(),
     removeRecentSearch: vi.fn(),
+    onlyMyProviders: data.onlyMyProviders,
+    setOnlyMyProviders: data.setOnlyMyProviders,
+  }),
+}));
+
+const subs = vi.hoisted(() => ({ activeProviders: new Set<string>() }));
+vi.mock('../../hooks/useActiveSubscriptions', () => ({
+  useActiveSubscriptions: () => ({
+    activeProviders: subs.activeProviders,
+    hasAnySubscription: subs.activeProviders.size > 0,
+    isOnActiveSub: () => false,
+    seriesOverrides: {},
+    getSeriesOverride: () => null,
+    loading: false,
   }),
 }));
 
@@ -105,6 +121,8 @@ afterEach(() => {
   data.searchQuery = '';
   data.loading = false;
   data.searchResults = [];
+  data.onlyMyProviders = false;
+  subs.activeProviders = new Set();
   vi.clearAllMocks();
 });
 
@@ -134,5 +152,20 @@ describe('SearchPage', () => {
     data.searchResults = [result(1), result(2)];
     render(<SearchPage />);
     expect(screen.getAllByTestId('result')).toHaveLength(2);
+  });
+
+  it('disables the abo filter toggle without active subscriptions', () => {
+    subs.activeProviders = new Set();
+    render(<SearchPage />);
+    expect(screen.getByLabelText('Nur Titel auf meinen aktiven Abos anzeigen')).toBeDisabled();
+  });
+
+  it('toggles the abo filter when active subscriptions exist', () => {
+    subs.activeProviders = new Set(['Netflix']);
+    render(<SearchPage />);
+    const toggle = screen.getByLabelText('Nur Titel auf meinen aktiven Abos anzeigen');
+    expect(toggle).not.toBeDisabled();
+    fireEvent.click(toggle);
+    expect(data.setOnlyMyProviders).toHaveBeenCalledWith(true);
   });
 });
