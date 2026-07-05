@@ -10,6 +10,18 @@
   --theme-text-secondary: #ffffff;
   --theme-secondary-gradient: #8b5cf6;
 
+  /* Design Tokens - Typography Scale
+     Kanonische Font-Größen — Komponenten mappen hart kodierte px hierauf.
+     Basis 16px; px absichtlich (nicht rem), da mit dem übrigen System konsistent. */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 19px;
+  --text-xl: 24px;
+  --text-2xl: 26px;
+  --text-3xl: 32px;
+
   /* Design Tokens - Border Radius */
   --radius-xs: 6px;
   --radius-sm: 8px;
@@ -17,6 +29,7 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-2xl: 24px;
+  --radius-3xl: 28px;
   --radius-full: 9999px;
 
   /* Design Tokens - Spacing (für Paddings/Gaps statt Augenmaß) */
@@ -53,6 +66,9 @@
   --blur-lg: blur(24px);
   --blur-xl: blur(40px);
 
+  /* Design Tokens - Overlay / Modal Backdrop (single source for dialog scrims) */
+  --overlay-backdrop: rgba(0, 0, 0, 0.6);
+
   /* Design Tokens - Opacity */
   --opacity-disabled: 0.5;
   --opacity-muted: 0.6;
@@ -80,7 +96,12 @@
     0 0 20px color-mix(in srgb, var(--theme-primary) 60%, transparent),
     0 0 60px color-mix(in srgb, var(--theme-primary) 30%, transparent),
     0 0 100px color-mix(in srgb, var(--theme-primary) 15%, transparent);
-  --glow-accent: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+  /* Pre-init fallback only — ThemeContext overrides this at runtime with the live
+     accent color as a box-shadow. Aligned to the theme language (green) instead of
+     the old static purple so a pre-hydration flash matches the brand. */
+  --glow-accent:
+    0 0 20px color-mix(in srgb, var(--theme-primary) 45%, transparent),
+    0 0 40px color-mix(in srgb, var(--theme-primary) 20%, transparent);
   --glow-cinematic:
     0 0 30px color-mix(in srgb, var(--theme-primary) 25%, transparent),
     0 0 80px color-mix(in srgb, var(--theme-primary) 10%, transparent),
@@ -139,58 +160,10 @@
   border: 1px solid var(--glass-border-medium);
 }
 
-/* Hide all scrollbars globally - with !important for highest priority */
-*,
-*::before,
-*::after,
-html,
-body,
-div,
-main,
-section,
-article,
-aside,
-nav,
-header,
-footer {
-  scrollbar-width: none !important; /* Firefox */
-  -ms-overflow-style: none !important; /* IE and Edge */
-  scrollbar-gutter: stable !important; /* Prevent layout shift */
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera - including mobile */
-*::-webkit-scrollbar,
-*::-webkit-scrollbar-track,
-*::-webkit-scrollbar-thumb,
-*::-webkit-scrollbar-corner,
-body::-webkit-scrollbar,
-html::-webkit-scrollbar,
-div::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  background: transparent !important;
-}
-
-/* Additional rules for PWA and mobile browsers */
-.MobileApp,
-.Layout,
-[class*='Page'],
-[class*='Container'],
-[class*='Scroll'],
-[class*='List'] {
-  scrollbar-width: none !important;
-  -ms-overflow-style: none !important;
-}
-
-.MobileApp::-webkit-scrollbar,
-.Layout::-webkit-scrollbar,
-[class*='Page']::-webkit-scrollbar,
-[class*='Container']::-webkit-scrollbar,
-[class*='Scroll']::-webkit-scrollbar,
-[class*='List']::-webkit-scrollbar {
-  display: none !important;
-}
+/* Scrollbars: the styled custom scrollbar lives in index.css (single source of
+   truth). The former global `display:none !important` hard-hide was removed so it
+   no longer overrides that styling. To hide a scrollbar on a specific container,
+   opt in with the `.hide-scrollbar` utility below. */
 
 /* Ensure smooth scrolling still works */
 html {

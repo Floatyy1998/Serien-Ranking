@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GradientText, HeaderActions, HorizontalScrollContainer } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
 import { LiveClock } from '../LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -126,13 +127,13 @@ export const GreetingSection = React.memo(function GreetingSection({
             whiteSpace: 'nowrap',
             zIndex: 99999,
             boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-            color: currentTheme.text.secondary,
+            color: getOptimalTextColor(currentTheme.primary),
             pointerEvents: 'auto',
             cursor: greeting.title ? 'pointer' : 'default',
             transition: 'all 0.2s ease',
           }}
         >
-          <span style={{ color: '#ffffff' }}>
+          <span style={{ color: getOptimalTextColor(currentTheme.primary) }}>
             {greetingInfo}
             {greeting.title && ' \u2192'}
           </span>
@@ -169,9 +170,19 @@ export const GreetingSection = React.memo(function GreetingSection({
             >
               <span
                 className="greeting-text"
+                role="button"
+                tabIndex={0}
+                aria-label="Sprache des Grußes anzeigen"
                 onClick={(e) => {
                   e.stopPropagation();
                   setGreetingInfo(greetingInfo ? null : greeting.lang);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setGreetingInfo(greetingInfo ? null : greeting.lang);
+                  }
                 }}
                 style={{
                   cursor: 'pointer',
@@ -205,16 +216,22 @@ export const GreetingSection = React.memo(function GreetingSection({
 
       {/* Search Bar */}
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <motion.div
+        <motion.button
+          type="button"
           whileTap={tapScaleSmall}
           onClick={() => navigate('/search')}
+          aria-label="Suche öffnen"
           style={{
+            width: '100%',
+            font: 'inherit',
+            textAlign: 'left',
             background: `${currentTheme.background.surface}`,
             border: `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
             padding: '14px 16px',
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'flex-start',
             gap: '12px',
             cursor: 'pointer',
             backdropFilter: 'var(--blur-sm)',
@@ -225,7 +242,7 @@ export const GreetingSection = React.memo(function GreetingSection({
           <span style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
             Suche nach Serien oder Filmen
           </span>
-        </motion.div>
+        </motion.button>
       </div>
 
       {/* Quick Stats */}

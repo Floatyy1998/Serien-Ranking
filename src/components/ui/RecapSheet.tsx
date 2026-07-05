@@ -85,7 +85,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
         >
           <div
             style={{
-              fontSize: '11px',
+              fontSize: 'var(--text-xs)',
               fontWeight: 700,
               textTransform: 'uppercase',
               letterSpacing: '2.5px',
@@ -116,7 +116,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
             </h2>
             <span
               style={{
-                fontSize: '13px',
+                fontSize: 'var(--text-sm)',
                 color: currentTheme.text.muted,
                 whiteSpace: 'nowrap',
                 flexShrink: 0,
@@ -153,7 +153,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 <AutoAwesome style={{ fontSize: '14px', color: accent }} />
                 <span
                   style={{
-                    fontSize: '11px',
+                    fontSize: 'var(--text-xs)',
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '1.5px',
@@ -212,7 +212,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
               style={{
                 marginBottom: '20px',
                 padding: '14px',
-                borderRadius: '10px',
+                borderRadius: 'var(--radius-lg)',
                 background: 'rgba(239,68,68,0.08)',
                 border: '1px solid rgba(239,68,68,0.2)',
                 textAlign: 'center',
@@ -245,9 +245,9 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                     padding: '12px',
                     background: `${accent}10`,
                     border: `1px solid ${accent}18`,
-                    borderRadius: '10px',
+                    borderRadius: 'var(--radius-lg)',
                     color: accent,
-                    fontSize: '13px',
+                    fontSize: 'var(--text-sm)',
                     fontWeight: 600,
                     cursor: aiLoading ? 'wait' : 'pointer',
                     display: 'flex',
@@ -277,7 +277,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 key={i}
                 style={{
                   height: '72px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-lg)',
                   background: surface,
                   animation: 'recapPulse 1.5s ease-in-out infinite',
                   opacity: 1 - i * 0.2,
@@ -290,7 +290,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
             <div>
               <div
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   fontWeight: 700,
                   textTransform: 'uppercase',
                   letterSpacing: '1.5px',
@@ -314,7 +314,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                         display: 'flex',
                         gap: '12px',
                         padding: '8px',
-                        borderRadius: '10px',
+                        borderRadius: 'var(--radius-lg)',
                         background: isLast ? `${accent}06` : surface,
                         border: isLast
                           ? `1px solid ${accent}20`
@@ -356,7 +356,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                               backdropFilter: 'var(--blur-sm)',
                               WebkitBackdropFilter: 'var(--blur-sm)',
                               padding: '3px 8px',
-                              borderRadius: '5px',
+                              borderRadius: 'var(--radius-sm)',
                             }}
                           >
                             S{ep.seasonNumber}E{ep.episodeNumber}
@@ -463,7 +463,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                   padding: '11px 14px',
                   background: currentTheme.background.surface,
                   border: '1px solid var(--glass-border-light)',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-lg)',
                   color: currentTheme.text.secondary,
                   fontSize: 'clamp(13px, 1.2vw, 15px)',
                   outline: 'none',
@@ -475,7 +475,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 style={{
                   width: '42px',
                   height: '42px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-lg)',
                   border: 'none',
                   background: question.trim() ? accent : `${accent}20`,
                   color: question.trim() ? currentTheme.background.default : `${accent}60`,
@@ -495,7 +495,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 style={{
                   marginTop: '10px',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-lg)',
                   background: `${accent}08`,
                   border: `1px solid ${accent}15`,
                 }}
@@ -504,7 +504,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                   style={{
                     height: '12px',
                     width: '60%',
-                    borderRadius: '6px',
+                    borderRadius: 'var(--radius-sm)',
                     background: `${accent}15`,
                     animation: 'recapPulse 1.5s ease-in-out infinite',
                   }}
@@ -519,7 +519,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 style={{
                   marginTop: '10px',
                   padding: '12px',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius-lg)',
                   background: `${accent}08`,
                   border: `1px solid ${accent}15`,
                 }}

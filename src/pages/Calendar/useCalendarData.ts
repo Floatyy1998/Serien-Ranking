@@ -14,15 +14,6 @@ import { getImageUrl } from '../../utils/imageUrl';
 
 // ── Utility helpers ──────────────────────────────────────────────
 
-export function contrastTextColor(hex: string): string {
-  const c = hex.replace('#', '');
-  const r = parseInt(c.substring(0, 2), 16);
-  const g = parseInt(c.substring(2, 4), 16);
-  const b = parseInt(c.substring(4, 6), 16);
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
-}
-
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('de-DE', {
     day: 'numeric',
@@ -54,7 +45,7 @@ export type GroupedSchedule = Map<string, SeriesGroup[]>;
 
 export const useCalendarData = () => {
   const { user } = useAuth() || {};
-  const { seriesList } = useSeriesList();
+  const { seriesList, loading } = useSeriesList();
 
   // Week navigation
   const [weekOffset, setWeekOffset] = useState(0);
@@ -273,6 +264,7 @@ export const useCalendarData = () => {
     toggleWatchlistOnly,
 
     // Data
+    loading,
     totalEpisodes,
     watchedCount,
     groupedSchedule,

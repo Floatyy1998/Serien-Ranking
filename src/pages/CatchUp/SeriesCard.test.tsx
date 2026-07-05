@@ -64,7 +64,7 @@ describe('CatchUp SeriesCard', () => {
 
   it('marks the next episode watched via the mark button', async () => {
     render(<SeriesCard item={item} />);
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByRole('button', { name: /als gesehen markieren/ }));
     await waitFor(() => expect(markNextMock).toHaveBeenCalledWith('u1', item.series));
   });
 });

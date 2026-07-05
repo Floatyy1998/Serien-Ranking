@@ -6,6 +6,9 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { SerienTabRanking } from './SerienTabRanking';
+import { SerienTabMonthSelect } from './SerienTabMonthSelect';
+import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
+import { wjCard, wjHero } from './watchJourneyStyles';
 import {
   TMDB_IMAGE_BASE,
   MONTH_NAMES,
@@ -19,12 +22,18 @@ interface SerienTabProps {
   data: WatchJourneyData;
 }
 
+/**
+ * Breite der linken Zeilen-Labelspalte (Poster + Titel + Abstände) vor dem
+ * Gantt-Balken. Die Monats-Kopfzeile wird um genau diesen Betrag eingerückt,
+ * damit die Monatsbeschriftungen über dem Balkenbereich sitzen.
+ */
+const TIMELINE_LABELS_WIDTH = { mobile: 95, desktop: 253 } as const;
+
 export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
-  const bgSurface = currentTheme.background.surface;
   const primaryColor = currentTheme.primary;
 
   const { isMobile } = useDeviceType();
@@ -39,13 +48,13 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
 
   if (seriesStats.length === 0) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <MovieFilter style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
-        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Serien-Daten</h3>
-        <p style={{ color: textSecondary, fontSize: 14 }}>
-          Schau Serien, um deine Serie-Reise zu sehen!
-        </p>
-      </div>
+      <WatchJourneyTabEmptyState
+        icon={
+          <MovieFilter style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
+        }
+        title="Keine Serien-Daten"
+        description="Schau Serien, um deine persönliche Serien-Reise zu sehen!"
+      />
     );
   }
 
@@ -55,15 +64,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '24px',
-          borderRadius: '24px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+        style={{ ...wjHero(currentTheme), position: 'relative', overflow: 'hidden' }}
       >
         <div
           style={{
@@ -117,13 +118,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <div
           style={{
@@ -149,95 +144,27 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
 
           {/* Month range selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ position: 'relative' }}>
-              <select
-                value={monthRangeStart}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setMonthRangeStart(val);
-                  if (val > monthRangeEnd) setMonthRangeEnd(val);
-                }}
-                style={{
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  background: `${primaryColor}15`,
-                  border: `1px solid ${primaryColor}30`,
-                  borderRadius: 8,
-                  padding: isMobile ? '6px 28px 6px 10px' : '8px 32px 8px 12px',
-                  color: textPrimary,
-                  fontSize: isMobile ? 12 : 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {MONTH_NAMES.map((name, i) => (
-                  <option
-                    key={i}
-                    value={i + 1}
-                    style={{ background: bgSurface, color: textPrimary }}
-                  >
-                    {name}
-                  </option>
-                ))}
-              </select>
-              <ExpandMore
-                style={{
-                  position: 'absolute',
-                  right: 6,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: 18,
-                  color: primaryColor,
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
+            <SerienTabMonthSelect
+              value={monthRangeStart}
+              onChange={(val) => {
+                setMonthRangeStart(val);
+                if (val > monthRangeEnd) setMonthRangeEnd(val);
+              }}
+              months={MONTH_NAMES}
+              ariaLabel="Startmonat der Timeline"
+              compact={isMobile}
+            />
             <span style={{ color: textSecondary, fontSize: 13 }}>–</span>
-            <div style={{ position: 'relative' }}>
-              <select
-                value={monthRangeEnd}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setMonthRangeEnd(val);
-                  if (val < monthRangeStart) setMonthRangeStart(val);
-                }}
-                style={{
-                  appearance: 'none',
-                  WebkitAppearance: 'none',
-                  background: `${primaryColor}15`,
-                  border: `1px solid ${primaryColor}30`,
-                  borderRadius: 8,
-                  padding: isMobile ? '6px 28px 6px 10px' : '8px 32px 8px 12px',
-                  color: textPrimary,
-                  fontSize: isMobile ? 12 : 13,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {MONTH_NAMES.map((name, i) => (
-                  <option
-                    key={i}
-                    value={i + 1}
-                    style={{ background: bgSurface, color: textPrimary }}
-                  >
-                    {name}
-                  </option>
-                ))}
-              </select>
-              <ExpandMore
-                style={{
-                  position: 'absolute',
-                  right: 6,
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  fontSize: 18,
-                  color: primaryColor,
-                  pointerEvents: 'none',
-                }}
-              />
-            </div>
+            <SerienTabMonthSelect
+              value={monthRangeEnd}
+              onChange={(val) => {
+                setMonthRangeEnd(val);
+                if (val < monthRangeStart) setMonthRangeStart(val);
+              }}
+              months={MONTH_NAMES}
+              ariaLabel="Endmonat der Timeline"
+              compact={isMobile}
+            />
           </div>
         </div>
 
@@ -246,7 +173,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           style={{
             display: 'flex',
             marginBottom: 8,
-            paddingLeft: isMobile ? 95 : 253,
+            paddingLeft: isMobile ? TIMELINE_LABELS_WIDTH.mobile : TIMELINE_LABELS_WIDTH.desktop,
           }}
         >
           {MONTH_NAMES.slice(monthRangeStart - 1, monthRangeEnd).map((month, i) => (
@@ -270,11 +197,20 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           {(showAllTimeline ? timelineSeries : timelineSeries.slice(0, 10)).map((series, index) => (
             <motion.div
               key={series.seriesId}
+              role="button"
+              tabIndex={0}
+              aria-label={`${series.title} öffnen`}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               whileTap={{ opacity: 0.7 }}
               transition={{ delay: Math.min(index * 0.03, 0.3) }}
               onClick={() => navigate(`/series/${series.seriesId}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/series/${series.seriesId}`);
+                }
+              }}
               style={{
                 display: 'flex',
                 alignItems: 'center',

@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { tapScale } from '../../lib/motion';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface Provider {
   name: string;
@@ -44,8 +45,8 @@ export const ProviderFilter = React.memo(
             style={{
               background: !selected
                 ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                : `rgba(255,255,255,0.05)`,
-              color: !selected ? theme.text.secondary : theme.text.primary,
+                : `var(--glass-light)`,
+              color: !selected ? getOptimalTextColor(theme.primary) : theme.text.primary,
             }}
           >
             Alle
@@ -60,8 +61,11 @@ export const ProviderFilter = React.memo(
                 background:
                   selected === provider.name
                     ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-                    : `rgba(255,255,255,0.05)`,
-                color: selected === provider.name ? theme.text.secondary : theme.text.primary,
+                    : `var(--glass-light)`,
+                color:
+                  selected === provider.name
+                    ? getOptimalTextColor(theme.primary)
+                    : theme.text.primary,
               }}
             >
               {provider.logo && (

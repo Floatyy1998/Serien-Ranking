@@ -245,7 +245,16 @@ export const MangaRatingsPage = () => {
               <motion.div
                 key={manga.anilistId}
                 className="manga-ratings-item"
+                role="button"
+                tabIndex={0}
+                aria-label={`${manga.title} öffnen`}
                 onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/manga/${manga.anilistId}`);
+                  }
+                }}
                 style={GRID_ITEM_STYLE}
                 whileTap={tapScale}
               >

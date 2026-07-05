@@ -7,6 +7,7 @@ import { Add, Check, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { SearchResult } from './useSearchPage';
@@ -47,55 +48,67 @@ export const SearchResultCard = memo(
       return date ? new Date(date).getFullYear() : 'TBA';
     }, [item.release_date, item.first_air_date]);
 
-    const typeBadgeGradient =
-      item.type === 'series'
-        ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
-        : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
+    const label = item.title || item.name || '';
+    const typeLabel = item.type === 'series' ? 'Serie' : 'Film';
+    const accentGradient = `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
+    // WCAG-optimale Textfarbe auf der Primär-/Akzent-Gradientfläche (Type-Badge, Add-/Check-Button)
+    const onAccent = useMemo(
+      () => getOptimalTextColor(currentTheme.primary),
+      [currentTheme.primary]
+    );
 
     return (
       <div className="search-result-item" style={{ position: 'relative' }}>
-        <div className="search-result-poster" onClick={() => onItemClick(item)}>
-          <img
-            src={imageUrl}
-            alt={item.title || item.name}
-            loading="lazy"
-            decoding="async"
-            className="search-result-poster-img"
-            onError={(e) => {
-              const img = e.currentTarget;
-              if (img.src !== fallbackPoster) img.src = fallbackPoster;
-            }}
-          />
-
-          {/* Gradient Overlay */}
-          <div className="search-result-gradient-overlay" />
-
-          {/* Rating Badge */}
-          {item.vote_average && item.vote_average > 0 && (
-            <div
-              className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
-            >
-              <Star
-                style={{
-                  fontSize: isDesktop ? '12px' : '10px',
-                  color: currentTheme.accent,
-                }}
-              />
-              {item.vote_average.toFixed(1)}
-            </div>
-          )}
-
-          {/* Type Badge */}
-          <div
-            className={`search-type-badge ${isDesktop ? 'search-type-badge--desktop' : ''}`}
-            style={{ background: typeBadgeGradient }}
+        <div className="search-result-poster">
+          <button
+            type="button"
+            className="search-result-poster-btn"
+            onClick={() => onItemClick(item)}
+            aria-label={`${typeLabel} „${label}" öffnen`}
           >
-            {item.type === 'series' ? 'Serie' : 'Film'}
-          </div>
+            <img
+              src={imageUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="search-result-poster-img"
+              onError={(e) => {
+                const img = e.currentTarget;
+                if (img.src !== fallbackPoster) img.src = fallbackPoster;
+              }}
+            />
+
+            {/* Gradient Overlay */}
+            <div className="search-result-gradient-overlay" />
+
+            {/* Rating Badge */}
+            {item.vote_average && item.vote_average > 0 && (
+              <div
+                className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
+              >
+                <Star
+                  style={{
+                    fontSize: isDesktop ? '12px' : '10px',
+                    color: currentTheme.accent,
+                  }}
+                />
+                {item.vote_average.toFixed(1)}
+              </div>
+            )}
+
+            {/* Type Badge */}
+            <div
+              className={`search-type-badge ${isDesktop ? 'search-type-badge--desktop' : ''}`}
+              style={{ background: accentGradient, color: onAccent }}
+            >
+              {typeLabel}
+            </div>
+          </button>
 
           {/* Add/Check Button */}
           {!item.inList ? (
             <button
+              type="button"
               className={`search-add-btn ${isDesktop ? 'search-add-btn--desktop' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -103,8 +116,9 @@ export const SearchResultCard = memo(
                 onAddToList(item);
               }}
               disabled={isPending}
+              aria-label={`„${label}" zur Liste hinzufügen`}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                background: accentGradient,
                 boxShadow: `0 4px 12px ${currentTheme.primary}50`,
                 cursor: isPending ? 'wait' : 'pointer',
               }}
@@ -116,8 +130,8 @@ export const SearchResultCard = memo(
                   style={{
                     width: isDesktop ? 18 : 16,
                     height: isDesktop ? 18 : 16,
-                    border: `2px solid ${currentTheme.text.secondary}40`,
-                    borderTopColor: currentTheme.text.secondary,
+                    border: `2px solid ${onAccent}40`,
+                    borderTopColor: onAccent,
                     borderRadius: '50%',
                   }}
                 />
@@ -125,7 +139,7 @@ export const SearchResultCard = memo(
                 <Add
                   style={{
                     fontSize: isDesktop ? '20px' : '18px',
-                    color: currentTheme.text.secondary,
+                    color: onAccent,
                   }}
                 />
               )}
@@ -133,15 +147,17 @@ export const SearchResultCard = memo(
           ) : (
             <div
               className={`search-check-badge ${isDesktop ? 'search-check-badge--desktop' : ''}`}
+              role="img"
+              aria-label={`„${label}" ist in deiner Liste`}
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status?.success || '#22c55e'})`,
+                background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status.success})`,
                 boxShadow: `0 4px 12px ${currentTheme.status.success}50`,
               }}
             >
               <Check
                 style={{
                   fontSize: isDesktop ? '20px' : '18px',
-                  color: currentTheme.text.secondary,
+                  color: getOptimalTextColor(currentTheme.status.success),
                 }}
               />
             </div>
@@ -150,7 +166,7 @@ export const SearchResultCard = memo(
 
         {/* Title */}
         <h3 className="search-result-title" style={{ color: currentTheme.text.primary }}>
-          {item.title || item.name}
+          {label}
         </h3>
 
         {/* Year */}

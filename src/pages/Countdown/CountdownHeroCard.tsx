@@ -14,9 +14,18 @@ interface CountdownHeroCardProps {
   onClick: () => void;
 }
 
+function countdownText(daysUntil: number): string {
+  if (daysUntil === 0) return 'startet heute';
+  if (daysUntil === 1) return 'in 1 Tag';
+  return `in ${daysUntil} Tagen`;
+}
+
 export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onClick }) => {
   const { currentTheme } = useTheme();
   const ACCENT = currentTheme.accent;
+
+  const seasonLabel =
+    item.type === 'mid-season-return' ? 'Rückkehr' : `Staffel ${item.seasonNumber}`;
 
   return (
     <motion.button
@@ -25,6 +34,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
       transition={{ duration: 0.4 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
+      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. Details öffnen`}
       className="cd-hero"
       style={{
         border: `1px solid ${ACCENT}40`,

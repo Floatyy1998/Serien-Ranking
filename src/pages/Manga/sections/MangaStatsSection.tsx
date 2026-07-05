@@ -116,43 +116,48 @@ export const MangaStatsSection: React.FC = React.memo(() => {
               gap: 4,
             }}
           >
-            <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
-              <circle
-                cx={ringSize / 2}
-                cy={ringSize / 2}
-                r={radius}
-                fill="none"
-                stroke={`${currentTheme.text.primary}10`}
-                strokeWidth={strokeWidth}
-              />
-              <circle
-                cx={ringSize / 2}
-                cy={ringSize / 2}
-                r={radius}
-                fill="none"
-                stroke="url(#mangaGradient)"
-                strokeWidth={strokeWidth}
-                strokeDasharray={circumference}
-                strokeDashoffset={ringOffset}
-                strokeLinecap="round"
-              />
-              <defs>
-                <linearGradient id="mangaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={currentTheme.primary} />
-                  <stop offset="100%" stopColor={currentTheme.accent} />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div
-              style={{
-                marginTop: -ringSize / 2 - 16,
-                fontSize: 22,
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                color: currentTheme.text.primary,
-              }}
-            >
-              {stats.progressPct}%
+            <div style={{ position: 'relative', width: ringSize, height: ringSize }}>
+              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke={`${currentTheme.text.primary}10`}
+                  strokeWidth={strokeWidth}
+                />
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke="url(#mangaGradient)"
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={ringOffset}
+                  strokeLinecap="round"
+                />
+                <defs>
+                  <linearGradient id="mangaGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={currentTheme.primary} />
+                    <stop offset="100%" stopColor={currentTheme.accent} />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 22,
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-display)',
+                  color: currentTheme.text.primary,
+                }}
+              >
+                {stats.progressPct}%
+              </div>
             </div>
             <div
               style={{
@@ -160,7 +165,6 @@ export const MangaStatsSection: React.FC = React.memo(() => {
                 color: currentTheme.text.secondary,
                 opacity: 0.6,
                 textAlign: 'center',
-                marginTop: ringSize / 2 - 24,
               }}
             >
               {stats.totalChaptersKnown > 0

@@ -38,10 +38,14 @@
   box-sizing: border-box;
 }
 
-/* Allow text selection where needed */
+/* Allow text selection where needed.
+   Fields + opt-in .selectable, plus all flowing text content so titles,
+   descriptions and episode names stay copyable (the global `* { user-select:none }`
+   above only needs to suppress selection on interactive/layout chrome). */
 .mobile-app input,
 .mobile-app textarea,
-.mobile-app .selectable {
+.mobile-app .selectable,
+.mobile-app :is(p, h1, h2, h3, h4, h5, h6, span, li, blockquote, td, dd, dt) {
   -webkit-user-select: text;
   user-select: text;
 }
@@ -95,7 +99,7 @@
 /* Typography */
 .mobile-app h1 {
   font-family: var(--font-display);
-  font-size: 28px;
+  font-size: 1.75rem; /* 28px @ 16px base */
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.02em;
@@ -103,7 +107,7 @@
 
 .mobile-app h2 {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 1.25rem; /* 20px @ 16px base */
   font-weight: 700;
   margin: 0;
   letter-spacing: -0.01em;
@@ -111,7 +115,7 @@
 
 .mobile-app h3 {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 1rem; /* 16px @ 16px base */
   font-weight: 600;
   margin: 0;
 }
@@ -122,9 +126,10 @@
   margin: 0;
 }
 
-/* Touch targets minimum 44x44px */
+/* Touch targets minimum 44x44px — only real buttons / explicit touch targets.
+   Inline <a> text links are intentionally excluded so they are not torn into
+   44px flex blocks. Use .touchable on links that must be a full tap target. */
 .mobile-app button,
-.mobile-app a,
 .mobile-app .touchable {
   min-height: 44px;
   min-width: 44px;

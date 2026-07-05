@@ -23,7 +23,8 @@
 /* === Page layout === */
 
 .cu-page {
-  height: 100vh;
+  height: 100vh; /* Fallback für Browser ohne dvh */
+  height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -102,6 +103,7 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
+  min-height: 44px;
   padding: 12px 8px;
   border-radius: var(--radius-lg);
   border: none;
@@ -120,6 +122,14 @@
 
 .cu-sort-btn:active {
   transform: scale(0.95);
+}
+
+.cu-sort-btn:focus-visible,
+.cu-card:focus-visible,
+.cu-card-mark-next:focus-visible,
+.cu-empty-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .cu-sort-title {

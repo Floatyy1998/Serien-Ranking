@@ -137,7 +137,16 @@ export const MangaCatchUpPage = () => {
           {sorted.map((item) => (
             <motion.div
               key={item.manga.anilistId}
+              role="button"
+              tabIndex={0}
+              aria-label={`${item.manga.title} öffnen`}
               onClick={() => navigate(`/manga/${item.manga.anilistId}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/manga/${item.manga.anilistId}`);
+                }
+              }}
               style={{
                 display: 'flex',
                 gap: 14,

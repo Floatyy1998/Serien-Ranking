@@ -1,7 +1,7 @@
 import { Delete, Save, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { BackButton } from '../../components/ui';
+import { BackButton, Dialog } from '../../components/ui';
 import { useRatingData } from './useRatingData';
 import { OverallRatingSection } from './OverallRatingSection';
 import { GenreRatingSection } from './GenreRatingSection';
@@ -19,10 +19,13 @@ export const RatingPage = () => {
     genreRatings,
     isSaving,
     snackbar,
+    deleteConfirmOpen,
     handleRatingChange,
     handleGenreRatingChange,
     handleSave,
     handleDelete,
+    confirmDelete,
+    cancelDelete,
   } = useRatingData();
 
   if (!item) {
@@ -120,6 +123,19 @@ export const RatingPage = () => {
 
       {/* Snackbar */}
       <RatingSnackbar open={snackbar.open} message={snackbar.message} />
+
+      {/* Delete confirmation */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={cancelDelete}
+        title="Bewertung löschen"
+        message={`Bewertung für "${item.title}" wirklich löschen?`}
+        type="warning"
+        actions={[
+          { label: 'Abbrechen', onClick: cancelDelete, variant: 'secondary' },
+          { label: 'Löschen', onClick: confirmDelete },
+        ]}
+      />
     </div>
   );
 };

@@ -275,12 +275,20 @@ export function SeasonsSection({
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {/* View toggle */}
               <button
+                type="button"
                 onClick={() => setEpisodeView(episodeView === 'list' ? 'grid' : 'list')}
+                aria-label={
+                  episodeView === 'list'
+                    ? 'Zur Grid-Ansicht wechseln'
+                    : 'Zur Listen-Ansicht wechseln'
+                }
                 style={{
                   background: 'rgba(255,255,255,0.08)',
                   border: '1px solid rgba(255,255,255,0.12)',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--radius-sm)',
                   padding: '4px',
+                  minWidth: 44,
+                  minHeight: 44,
                   color: currentTheme.text.secondary,
                   cursor: 'pointer',
                   display: 'flex',
@@ -321,22 +329,34 @@ export function SeasonsSection({
                 const fillerInfo = fillerByKey?.get(
                   fillerLookupKey(selectedSeason.seasonNumber + 1, episodeIndex + 1)
                 );
+                const activateRow = () => {
+                  if (episode.watched) {
+                    setShowRewatchDialog({
+                      show: true,
+                      type: 'episode',
+                      item: episode,
+                      seasonNumber: selectedSeason.seasonNumber + 1,
+                      episodeNumber: episodeIndex + 1,
+                    });
+                  } else {
+                    navigate(
+                      `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
+                    );
+                  }
+                };
                 return (
                   <div
                     key={episode.id}
-                    onClick={() => {
-                      if (episode.watched) {
-                        setShowRewatchDialog({
-                          show: true,
-                          type: 'episode',
-                          item: episode,
-                          seasonNumber: selectedSeason.seasonNumber + 1,
-                          episodeNumber: episodeIndex + 1,
-                        });
-                      } else {
-                        navigate(
-                          `/episode/${series.id}/s/${selectedSeason.seasonNumber + 1}/e/${episodeIndex + 1}`
-                        );
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Episode ${episodeIndex + 1}${episode.name ? `: ${episode.name}` : ''} — ${
+                      episode.watched ? 'gesehen, Optionen anzeigen' : 'Details öffnen'
+                    }`}
+                    onClick={activateRow}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        activateRow();
                       }
                     }}
                     className={`episode-list-item ${episode.watched ? 'episode-list-item--watched' : 'episode-list-item--unwatched'}`}
@@ -499,9 +519,17 @@ export function SeasonsSection({
                     enterTouchDelay={0}
                     leaveTouchDelay={1500}
                   >
-                    <motion.div
+                    <motion.button
+                      type="button"
                       whileHover={{ scale: 1.1 }}
                       whileTap={tapScale}
+                      aria-label={
+                        (isRewatched
+                          ? `Episode ${episodeIndex + 1} – Optionen anzeigen`
+                          : episode.watched
+                            ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
+                            : `Episode ${episodeIndex + 1} als gesehen markieren`) + fillerLabel
+                      }
                       onClick={() => {
                         if (isRewatched) {
                           setShowRewatchDialog({
@@ -517,6 +545,8 @@ export function SeasonsSection({
                       }}
                       className="episode-cell"
                       style={{
+                        padding: 0,
+                        fontFamily: 'inherit',
                         background: episode.watched
                           ? isRewatched
                             ? `${warningColor}30`
@@ -580,7 +610,7 @@ export function SeasonsSection({
                           }}
                         />
                       )}
-                    </motion.div>
+                    </motion.button>
                   </Tooltip>
                 );
               })}

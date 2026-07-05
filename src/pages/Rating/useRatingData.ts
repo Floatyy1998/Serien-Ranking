@@ -23,10 +23,13 @@ export interface UseRatingDataResult {
   genreRatings: Record<string, number>;
   isSaving: boolean;
   snackbar: { open: boolean; message: string };
+  deleteConfirmOpen: boolean;
   handleRatingChange: (value: number) => void;
   handleGenreRatingChange: (genre: string, value: number) => void;
   handleSave: () => Promise<void>;
-  handleDelete: () => Promise<void>;
+  handleDelete: () => void;
+  confirmDelete: () => Promise<void>;
+  cancelDelete: () => void;
 }
 
 export const useRatingData = (): UseRatingDataResult => {
@@ -39,6 +42,7 @@ export const useRatingData = (): UseRatingDataResult => {
   const [overallRating, setOverallRating] = useState(0);
   const [genreRatings, setGenreRatings] = useState<Record<string, number>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
@@ -186,9 +190,16 @@ export const useRatingData = (): UseRatingDataResult => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!user || !item) return;
-    if (!window.confirm(`Bewertung für ${item.title} wirklich löschen?`)) return;
+    setDeleteConfirmOpen(true);
+  };
+
+  const cancelDelete = () => setDeleteConfirmOpen(false);
+
+  const confirmDelete = async () => {
+    setDeleteConfirmOpen(false);
+    if (!user || !item) return;
 
     setIsSaving(true);
 
@@ -216,9 +227,12 @@ export const useRatingData = (): UseRatingDataResult => {
     genreRatings,
     isSaving,
     snackbar,
+    deleteConfirmOpen,
     handleRatingChange,
     handleGenreRatingChange,
     handleSave,
     handleDelete,
+    confirmDelete,
+    cancelDelete,
   };
 };

@@ -168,6 +168,8 @@ export const DiscoverPage = memo(() => {
                   <motion.button
                     whileTap={tapScaleTight}
                     onClick={() => setShowFilters(!showFilters)}
+                    aria-label="Genre filtern"
+                    aria-expanded={showFilters}
                     style={{
                       padding: '10px',
                       background: selectedGenre
@@ -203,6 +205,8 @@ export const DiscoverPage = memo(() => {
                       setShowFilters(false);
                     }
                   }}
+                  aria-label={showSearch ? 'Suche schließen' : 'Suche öffnen'}
+                  aria-expanded={showSearch}
                   style={{
                     padding: '10px',
                     background: showSearch
@@ -232,6 +236,8 @@ export const DiscoverPage = memo(() => {
               >
                 <input
                   type="text"
+                  className="discover-search-input"
+                  aria-label={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen`}
                   placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
                   value={searchQuery}
                   onChange={(e) => {
@@ -247,7 +253,6 @@ export const DiscoverPage = memo(() => {
                     borderRadius: '14px',
                     color: currentTheme.text.primary,
                     fontSize: '15px',
-                    outline: 'none',
                     transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                     backdropFilter: 'var(--blur-md)',
                     WebkitBackdropFilter: 'var(--blur-md)',
@@ -311,7 +316,7 @@ export const DiscoverPage = memo(() => {
                     }}
                   >
                     <Icon style={{ fontSize: '20px' }} />
-                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{cat.label}</span>
+                    <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700 }}>{cat.label}</span>
                   </motion.button>
                 );
               })}
@@ -356,7 +361,7 @@ export const DiscoverPage = memo(() => {
                         : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '10px',
                       color: !selectedGenre ? currentTheme.primary : currentTheme.text.primary,
-                      fontSize: '13px',
+                      fontSize: 'var(--text-sm)',
                       fontWeight: 600,
                       cursor: 'pointer',
                       textAlign: 'center',
@@ -387,7 +392,7 @@ export const DiscoverPage = memo(() => {
                           selectedGenre === genre.id
                             ? currentTheme.primary
                             : currentTheme.text.primary,
-                        fontSize: '13px',
+                        fontSize: 'var(--text-sm)',
                         fontWeight: 500,
                         cursor: 'pointer',
                         textAlign: 'center',

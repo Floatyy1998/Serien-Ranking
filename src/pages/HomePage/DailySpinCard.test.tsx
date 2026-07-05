@@ -58,6 +58,22 @@ describe('DailySpinCard', () => {
     expect(screen.getByTestId('wheel')).toBeInTheDocument();
   });
 
+  it('does not keep the gold icon background once the spin is unavailable', () => {
+    // Regression: available startet true (lastSpinDate=null) -> Gold-Gradient
+    // wird gesetzt; danach setzt Firebase lastSpinDate=heute -> available=false.
+    // Der Ersatzwert MUSS eine gültige CSS-Farbe sein, sonst lehnt der Browser
+    // ihn ab und das Icon bleibt fälschlich gold.
+    fb.resolve = (path: string) => (path.endsWith('lastSpinDate') ? 'TODAY' : null);
+    const { container } = render(<DailySpinCard />);
+    expect(screen.getByText('Morgen wieder verfügbar')).toBeInTheDocument();
+    const iconBox = Array.from(container.querySelectorAll('div')).find(
+      (d) => (d as HTMLElement).style.width === '40px'
+    ) as HTMLElement | undefined;
+    expect(iconBox).toBeTruthy();
+    expect(iconBox?.style.background).not.toContain('FFD93D');
+    expect(iconBox?.style.background).not.toContain('gradient');
+  });
+
   it('shows the unavailable state with streak and total spins when already spun today', () => {
     fb.resolve = (path: string) => {
       if (path.endsWith('lastSpinDate')) return 'TODAY';

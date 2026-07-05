@@ -1,5 +1,6 @@
 .mobile-episode-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--color-background-default);
   color: var(--color-text-primary);
   display: flex;
@@ -142,6 +143,17 @@
 .tab-nav-button:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+}
+
+/* Sichtbare Tastatur-Fokus-States (Keyboard-Navigation) */
+.tab-nav-button:focus-visible,
+.season-tab:focus-visible,
+.mark-all-button:focus-visible,
+.catch-up-button:focus-visible,
+.action-button:focus-visible,
+.dialog-button:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .tabs-container {
@@ -366,9 +378,31 @@
   background: var(--glass-light);
   border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
-  cursor: pointer;
   transition: all var(--duration-normal) var(--ease-out);
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Watch-Toggle-Bereich (Rolle button): füllt die Zeile ohne die Diskussions-Control */
+.episode-item__toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.episode-item__toggle:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 3px;
+  border-radius: var(--radius-md);
 }
 
 .episode-item:hover {
@@ -450,6 +484,9 @@
 }
 
 .episode-discussion-btn {
+  min-width: 44px;
+  min-height: 44px;
+  flex-shrink: 0;
   background: var(--glass-light) !important;
   border-radius: var(--radius-md) !important;
   transition: all 0.3s ease !important;
@@ -457,6 +494,11 @@
 
 .episode-discussion-btn:hover {
   background: var(--glass-heavy) !important;
+}
+
+.episode-discussion-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .episode-status {

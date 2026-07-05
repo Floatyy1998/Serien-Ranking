@@ -38,14 +38,16 @@ describe('WatchlistGapsSection', () => {
   it('shows the no-subscriptions empty state', () => {
     render(<WatchlistGapsSection watchlistGaps={[]} activeCount={0} />);
     expect(
-      screen.getByText('Sobald du Abos markierst, zeigen wir hier Lücken.')
+      screen.getByText(
+        'Sobald du Abos markierst, zeigen wir hier Serien, die du sonst nirgends streamen kannst.'
+      )
     ).toBeInTheDocument();
   });
 
   it('shows the no-gaps empty state when there are active subscriptions', () => {
     render(<WatchlistGapsSection watchlistGaps={[]} activeCount={3} />);
     expect(
-      screen.getByText('Keine Lücken – alle Watchlist-Serien laufen auf deinen aktiven Abos.')
+      screen.getByText('Alle Watchlist-Serien laufen auf deinen aktiven Abos.')
     ).toBeInTheDocument();
   });
 

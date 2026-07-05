@@ -118,7 +118,7 @@ describe('SearchResultCard', () => {
         isDesktop={false}
       />
     );
-    fireEvent.click(container.querySelector('.search-result-poster') as HTMLElement);
+    fireEvent.click(container.querySelector('.search-result-poster-btn') as HTMLElement);
     expect(onItemClick).toHaveBeenCalledTimes(1);
   });
 });

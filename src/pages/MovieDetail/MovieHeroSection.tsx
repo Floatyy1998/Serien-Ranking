@@ -9,6 +9,7 @@ import { RecommendButton } from '../../components/recommendations/RecommendButto
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/providerMerge';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
@@ -155,17 +156,20 @@ export const MovieHeroSection = memo(
 
             {isReadOnlyTmdbMovie && (
               <button
+                type="button"
                 onClick={onAddMovie}
                 disabled={isAdding}
+                aria-label="Zur Sammlung hinzufügen"
+                title="Zur Sammlung hinzufügen"
                 className="md-hero__action-btn md-hero__action-btn--add"
                 style={{
                   background: isAdding
                     ? `${currentTheme.status.success}88`
                     : `${currentTheme.status.success}CC`,
-                  color: currentTheme.text.secondary,
+                  color: getOptimalTextColor(currentTheme.status.success),
                 }}
               >
-                {isAdding ? '...' : '+'}
+                <span aria-hidden>{isAdding ? '...' : '+'}</span>
               </button>
             )}
           </div>
@@ -232,7 +236,7 @@ export const MovieHeroSection = memo(
                   padding: isMobile ? '0 20px' : undefined,
                   gap: isMobile ? '3px 8px' : undefined,
                   fontSize: isMobile ? 13 : undefined,
-                  color: isMobile ? 'rgba(255,255,255,0.55)' : undefined,
+                  color: isMobile ? currentTheme.text.muted : undefined,
                   marginTop: isMobile ? 8 : undefined,
                 }}
               >
@@ -268,18 +272,7 @@ export const MovieHeroSection = memo(
                 }}
               >
                 {allGenres.slice(0, 4).map((genre, i) => (
-                  <span
-                    key={i}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      padding: '4px 12px',
-                      borderRadius: 9999,
-                      color: 'rgba(255,255,255,0.7)',
-                      background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}
-                  >
+                  <span key={i} className="md-genre-tag">
                     {genre}
                   </span>
                 ))}

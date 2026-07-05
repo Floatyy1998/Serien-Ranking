@@ -252,7 +252,16 @@
 }
 
 .rate-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
   font-size: 28px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: inherit;
   cursor: pointer;
   transition: all 0.3s var(--ease-default);
   filter: grayscale(0.5);
@@ -261,6 +270,12 @@
 .rate-emoji:hover {
   transform: scale(1.1);
   filter: grayscale(0);
+}
+
+.rate-emoji:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .rate-emoji.active {
@@ -328,6 +343,12 @@
   border: 3px solid white;
 }
 
+.rate-range:focus-visible,
+.rate-genre-range:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 4px;
+}
+
 .rate-slider-marks {
   display: flex;
   justify-content: space-between;
@@ -374,6 +395,13 @@
   background: var(--glass-heavy);
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+}
+
+.rate-tab-btn:focus-visible,
+.rate-quick-btn:focus-visible,
+.rate-action-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .rate-quick-btn.active {

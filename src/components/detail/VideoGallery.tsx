@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 interface Video {
@@ -122,6 +123,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
       <motion.button
         whileTap={tapScale}
         onClick={() => setIsOpen(true)}
+        aria-label="Videos ansehen"
         style={
           buttonStyle === 'icon'
             ? {
@@ -227,6 +229,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
             {/* Close Button */}
             <Tooltip title="Schließen" arrow>
               <button
+                aria-label="Schließen"
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedVideo(null);
@@ -326,7 +329,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         border: 'none',
                         background:
                           activeTab === 'trailers' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color: currentTheme.text.secondary,
+                        color:
+                          activeTab === 'trailers'
+                            ? getOptimalTextColor(currentTheme.primary)
+                            : currentTheme.text.secondary,
                         fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
@@ -345,7 +351,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                         border: 'none',
                         background:
                           activeTab === 'bts' ? currentTheme.primary : 'rgba(255,255,255,0.1)',
-                        color: currentTheme.text.secondary,
+                        color:
+                          activeTab === 'bts'
+                            ? getOptimalTextColor(currentTheme.primary)
+                            : currentTheme.text.secondary,
                         fontSize: '15px',
                         fontWeight: 500,
                         cursor: 'pointer',
@@ -373,6 +382,15 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                     whileTap={tapScaleSmall}
                     onClick={() => {
                       setSelectedVideo(video);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${video.name} abspielen`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedVideo(video);
+                      }
                     }}
                     style={{
                       cursor: 'pointer',
@@ -425,7 +443,10 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                           }}
                         >
                           <PlayArrow
-                            style={{ fontSize: '28px', color: currentTheme.text.primary }}
+                            style={{
+                              fontSize: '28px',
+                              color: getOptimalTextColor(currentTheme.primary),
+                            }}
                           />
                         </div>
                       </div>
@@ -457,7 +478,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                             background: currentTheme.primary,
                             fontSize: '12px',
                             fontWeight: 500,
-                            color: currentTheme.text.primary,
+                            color: getOptimalTextColor(currentTheme.primary),
                           }}
                         >
                           Offiziell

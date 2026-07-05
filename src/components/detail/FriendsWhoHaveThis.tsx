@@ -125,12 +125,26 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
             arrow
           >
             <div
+              role="button"
+              tabIndex={0}
+              aria-label={`Profil von ${friend.displayName} öffnen`}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/friend/${friend.uid}`);
               }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/friend/${friend.uid}`);
+                }
+              }}
               style={{
                 position: 'relative',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
               }}
@@ -141,84 +155,87 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
                 e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              {/* Avatar Circle */}
-              <div
-                style={{
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  ...(friend.photoURL
-                    ? {
-                        backgroundImage: `url("${friend.photoURL}")`,
-                        backgroundPosition: 'center',
-                        backgroundSize: 'cover',
-                      }
-                    : {
-                        background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
-                      }),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '13px',
-                  fontWeight: 700,
-                  color: currentTheme.text.primary,
-                  border: hasRating
-                    ? `2px solid ${currentTheme.accent}`
-                    : '2px solid rgba(255, 255, 255, 0.4)',
-                  boxShadow: hasRating
-                    ? isHighRating
-                      ? '0 0 10px rgba(255, 215, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3)'
-                      : '0 0 6px rgba(255, 165, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.3)'
-                    : '0 2px 6px rgba(0, 0, 0, 0.3)',
-                }}
-                // tooltip handled by parent Tooltip wrapper
-              >
-                {!friend.photoURL && <Person style={{ fontSize: '15px', color: 'white' }} />}
-              </div>
-
-              {/* Rating Badge - Bottom Center */}
-              {hasRating && (
+              {/* Avatar + Badge Wrapper (28px visual, 44px touch target on parent) */}
+              <div style={{ position: 'relative' }}>
+                {/* Avatar Circle */}
                 <div
                   style={{
-                    position: 'absolute',
-                    bottom: '-7px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    background: isHighRating
-                      ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`
-                      : `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`,
-                    borderRadius: '8px',
-                    padding: '1px 5px',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    ...(friend.photoURL
+                      ? {
+                          backgroundImage: `url("${friend.photoURL}")`,
+                          backgroundPosition: 'center',
+                          backgroundSize: 'cover',
+                        }
+                      : {
+                          background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
+                        }),
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '2px',
-                    border: '1.5px solid rgba(0, 0, 0, 0.8)',
-                    boxShadow: isHighRating
-                      ? '0 0 6px rgba(255, 215, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5)'
-                      : '0 1px 3px rgba(0, 0, 0, 0.5)',
-                    whiteSpace: 'nowrap',
+                    justifyContent: 'center',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    color: currentTheme.text.primary,
+                    border: hasRating
+                      ? `2px solid ${currentTheme.accent}`
+                      : '2px solid rgba(255, 255, 255, 0.4)',
+                    boxShadow: hasRating
+                      ? isHighRating
+                        ? '0 0 10px rgba(255, 215, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3)'
+                        : '0 0 6px rgba(255, 165, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.3)'
+                      : '0 2px 6px rgba(0, 0, 0, 0.3)',
                   }}
+                  // tooltip handled by parent Tooltip wrapper
                 >
-                  <Star
+                  {!friend.photoURL && <Person style={{ fontSize: '15px', color: 'white' }} />}
+                </div>
+
+                {/* Rating Badge - Bottom Center */}
+                {hasRating && (
+                  <div
                     style={{
-                      fontSize: '8px',
-                      color: currentTheme.background.default,
-                      filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.4))',
-                    }}
-                  />
-                  <span
-                    style={{
-                      fontSize: '9px',
-                      fontWeight: 900,
-                      color: currentTheme.background.default,
-                      lineHeight: 1,
-                      textShadow: '0 0 3px rgba(255,255,255,0.3)',
+                      position: 'absolute',
+                      bottom: '-7px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: isHighRating
+                        ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`
+                        : `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent} 100%)`,
+                      borderRadius: '8px',
+                      padding: '1px 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '2px',
+                      border: '1.5px solid rgba(0, 0, 0, 0.8)',
+                      boxShadow: isHighRating
+                        ? '0 0 6px rgba(255, 215, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.5)'
+                        : '0 1px 3px rgba(0, 0, 0, 0.5)',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {friend.rating}
-                  </span>
-                </div>
-              )}
+                    <Star
+                      style={{
+                        fontSize: '8px',
+                        color: currentTheme.background.default,
+                        filter: 'drop-shadow(0 0 1px rgba(255,255,255,0.4))',
+                      }}
+                    />
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        fontWeight: 900,
+                        color: currentTheme.background.default,
+                        lineHeight: 1,
+                        textShadow: '0 0 3px rgba(255,255,255,0.3)',
+                      }}
+                    >
+                      {friend.rating}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </Tooltip>
         );
@@ -232,8 +249,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
               width: '28px',
               height: '28px',
               borderRadius: '50%',
-              background:
-                'linear-gradient(135deg, rgba(102, 126, 234, 0.5) 0%, rgba(118, 75, 162, 0.5) 100%)',
+              background: `linear-gradient(135deg, ${currentTheme.primary}80 0%, ${currentTheme.accent}80 100%)`,
               border: '2px solid rgba(255, 255, 255, 0.4)',
               display: 'flex',
               alignItems: 'center',

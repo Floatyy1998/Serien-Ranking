@@ -5,6 +5,7 @@ import { useAuth } from '../../AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
 import { tapScale } from '../../lib/motion';
 
@@ -160,7 +161,9 @@ export const MangaReadJourneyPage = () => {
                   background: active
                     ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                     : `${currentTheme.text.primary}08`,
-                  color: active ? '#fff' : currentTheme.text.secondary,
+                  color: active
+                    ? getOptimalTextColor(currentTheme.primary)
+                    : currentTheme.text.secondary,
                   fontSize: 13,
                   fontWeight: active ? 700 : 500,
                   cursor: 'pointer',

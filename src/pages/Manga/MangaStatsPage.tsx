@@ -180,52 +180,59 @@ export const MangaStatsPage = () => {
 
           {/* Right: Progress ring */}
           <div style={{ textAlign: 'center' }}>
-            <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
-              <circle
-                cx={ringSize / 2}
-                cy={ringSize / 2}
-                r={radius}
-                fill="none"
-                stroke={`${currentTheme.text.primary}10`}
-                strokeWidth={strokeWidth}
-              />
-              <motion.circle
-                cx={ringSize / 2}
-                cy={ringSize / 2}
-                r={radius}
-                fill="none"
-                stroke="url(#statsGrad)"
-                strokeWidth={strokeWidth}
-                strokeLinecap="round"
-                strokeDasharray={circumference}
-                initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset: ringOffset }}
-                transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
-              />
-              <defs>
-                <linearGradient id="statsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor={currentTheme.primary} />
-                  <stop offset="50%" stopColor={currentTheme.accent} />
-                  <stop offset="100%" stopColor={currentTheme.status?.success || '#22c55e'} />
-                </linearGradient>
-              </defs>
-            </svg>
             <div
-              style={{
-                marginTop: -ringSize / 2 - 12,
-                fontSize: 18,
-                fontWeight: 800,
-                color: currentTheme.text.primary,
-              }}
+              style={{ position: 'relative', width: ringSize, height: ringSize, margin: '0 auto' }}
             >
-              {stats.progressPct}%
+              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke={`${currentTheme.text.primary}10`}
+                  strokeWidth={strokeWidth}
+                />
+                <motion.circle
+                  cx={ringSize / 2}
+                  cy={ringSize / 2}
+                  r={radius}
+                  fill="none"
+                  stroke="url(#statsGrad)"
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  initial={{ strokeDashoffset: circumference }}
+                  animate={{ strokeDashoffset: ringOffset }}
+                  transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+                />
+                <defs>
+                  <linearGradient id="statsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={currentTheme.primary} />
+                    <stop offset="50%" stopColor={currentTheme.accent} />
+                    <stop offset="100%" stopColor={currentTheme.status?.success || '#22c55e'} />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: currentTheme.text.primary,
+                }}
+              >
+                {stats.progressPct}%
+              </div>
             </div>
             <div
               style={{
                 fontSize: 10,
                 color: currentTheme.text.secondary,
                 opacity: 0.5,
-                marginTop: ringSize / 2 - 18,
+                marginTop: 4,
               }}
             >
               {stats.readInKnown}/{stats.totalKnown}

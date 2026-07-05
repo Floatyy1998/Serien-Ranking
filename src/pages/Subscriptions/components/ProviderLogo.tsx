@@ -1,4 +1,5 @@
 import { tmdbLogoUrl } from '../../../hooks/useProviderLogos';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { ProviderBrand } from '../providerBrands';
 
 interface ProviderLogoProps {
@@ -36,7 +37,12 @@ export const ProviderLogo: React.FC<ProviderLogoProps> = ({
       {logoUrl ? (
         <img src={logoUrl} alt={name} loading="lazy" decoding="async" />
       ) : (
-        <span>{brand.abbr}</span>
+        // Dimmed (inaktive) Logos liegen halbtransparent über der dunklen Card →
+        // weißes Kürzel bleibt lesbar. Volle Markenfarbe: WCAG-optimalen Text wählen
+        // (helle Marken wie Amazon/Crunchyroll/WOW brauchen dunkles Kürzel).
+        <span style={dimmed ? undefined : { color: getOptimalTextColor(brand.color) }}>
+          {brand.abbr}
+        </span>
       )}
     </div>
   );

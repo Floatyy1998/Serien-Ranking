@@ -2,7 +2,7 @@ import { ChatBubbleOutline, Check, DateRange, Visibility } from '@mui/icons-mate
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
@@ -36,34 +36,68 @@ export const EpisodeListItem = memo(
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
 
-    return (
-      <motion.div
-        className={`episode-item ${episode.watched ? 'watched' : ''}`}
-        whileTap={tapScaleSmall}
-        onClick={onEpisodeClick}
-      >
-        <div className="episode-number">{index + 1}</div>
+    const handleToggleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onEpisodeClick();
+      }
+    };
 
-        <div className="episode-details">
-          <h3>{episode.name}</h3>
-          <div className="episode-meta">
-            <span className="meta-item">
-              <DateRange fontSize="small" />
-              {getUnifiedEpisodeDate(episode.air_date)}
-            </span>
-            {episode.firstWatchedAt && (
-              <span className="meta-item watched-date">
-                <Visibility fontSize="small" />
-                {getUnifiedEpisodeDate(episode.firstWatchedAt)}
+    return (
+      <div className={`episode-item ${episode.watched ? 'watched' : ''}`}>
+        {/* Toggle-Bereich: die ganze Zeile (ohne Diskussions-Control) ist der Watch-Toggle */}
+        <motion.div
+          className="episode-item__toggle"
+          role="button"
+          tabIndex={0}
+          aria-label={`Folge ${index + 1}: ${episode.name}, ${
+            episode.watched ? 'gesehen' : 'nicht gesehen'
+          }`}
+          whileTap={tapScaleSmall}
+          onClick={onEpisodeClick}
+          onKeyDown={handleToggleKeyDown}
+        >
+          <div className="episode-number">{index + 1}</div>
+
+          <div className="episode-details">
+            <h3>{episode.name}</h3>
+            <div className="episode-meta">
+              <span className="meta-item">
+                <DateRange fontSize="small" />
+                {getUnifiedEpisodeDate(episode.air_date)}
               </span>
+              {episode.firstWatchedAt && (
+                <span className="meta-item watched-date">
+                  <Visibility fontSize="small" />
+                  {getUnifiedEpisodeDate(episode.firstWatchedAt)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="episode-status">
+            {episode.watched ? (
+              <div className="status-watched">
+                <Check />
+                {(episode.watchCount || 0) > 1 && (
+                  <span className="watch-count">{episode.watchCount}x</span>
+                )}
+              </div>
+            ) : (
+              <div className="status-unwatched" />
             )}
           </div>
-        </div>
+        </motion.div>
 
-        {/* Discussion Button */}
+        {/* Discussion Control: visuell getrenntes Geschwister, nicht im Toggle verschachtelt */}
         <Tooltip title="Diskussion" arrow>
           <button
             className="episode-discussion-btn"
+            aria-label={
+              discussionCount > 0
+                ? `Diskussion zu Folge ${index + 1}, ${discussionCount} Beiträge`
+                : `Diskussion zu Folge ${index + 1}`
+            }
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${index + 1}`);
@@ -86,20 +120,7 @@ export const EpisodeListItem = memo(
             {discussionCount > 0 && <span style={DISCUSSION_COUNT_STYLE}>{discussionCount}</span>}
           </button>
         </Tooltip>
-
-        <div className="episode-status">
-          {episode.watched ? (
-            <div className="status-watched">
-              <Check />
-              {(episode.watchCount || 0) > 1 && (
-                <span className="watch-count">{episode.watchCount}x</span>
-              )}
-            </div>
-          ) : (
-            <div className="status-unwatched" />
-          )}
-        </div>
-      </motion.div>
+      </div>
     );
   }
 );

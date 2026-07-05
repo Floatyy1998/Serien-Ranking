@@ -170,6 +170,18 @@
   border-color: var(--glass-border-light);
 }
 
+.manga-quick-tile:focus-visible,
+.manga-filter-tab:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.manga-collection-item:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
 .manga-quick-tile__label {
   font-size: 13px;
   font-weight: 600;

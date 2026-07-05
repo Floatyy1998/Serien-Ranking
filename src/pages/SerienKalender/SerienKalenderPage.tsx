@@ -335,14 +335,17 @@ export const SerienKalenderPage: React.FC = () => {
     </div>
   );
 
+  // Angeglichen an AnimeSeasonPage.renderSectionTitle (Design-Konsistenz:
+  // gleiche Display-Font, Gaps und Margins über beide Kalender-Seiten).
   const renderSectionTitle = (icon: React.ReactNode, title: string) => (
     <h2
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '10px',
-        margin: '0 0 var(--space-4)',
+        gap: '8px',
+        margin: '0 0 var(--space-3)',
         fontSize: '20px',
+        fontFamily: 'var(--font-display)',
         fontWeight: 800,
         letterSpacing: '-0.01em',
       }}

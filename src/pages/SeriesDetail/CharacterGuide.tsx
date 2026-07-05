@@ -64,6 +64,7 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
         onChange={(e) => setQuestion(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && onAsk()}
         placeholder="Was ist nochmal mit ... passiert?"
+        aria-label="Frage zur Serie"
         disabled={questionLoading}
         style={{
           flex: 1,
@@ -77,8 +78,10 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
         }}
       />
       <button
+        type="button"
         onClick={onAsk}
         disabled={!question.trim() || questionLoading}
+        aria-label="Frage absenden"
         style={{
           width: '44px',
           height: '44px',

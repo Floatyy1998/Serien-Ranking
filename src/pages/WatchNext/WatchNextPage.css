@@ -44,6 +44,11 @@
   transform: scale(0.95);
 }
 
+.watch-next-header__btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 .watch-next-header__btn--active {
   color: var(--color-text-secondary, white);
   box-shadow: var(--btn-active-shadow, 0 4px 15px rgba(0, 0, 0, 0.3));
@@ -68,15 +73,23 @@
   font-size: 15px;
   margin-bottom: 12px;
   outline: none;
-  transition: border-color 0.3s var(--ease-default);
+  transition:
+    border-color 0.3s var(--ease-default),
+    outline 0.1s ease;
+}
+
+.watch-next-filter__input:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 /* Provider chips */
 .provider-chip {
   padding: 6px 12px;
+  min-height: 44px;
   border: 1px solid var(--glass-border-light);
-  border-radius: 9999px;
-  font-size: 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -91,6 +104,11 @@
 
 .provider-chip:hover {
   transform: scale(1.03);
+}
+
+.provider-chip:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 /* Episode list */
@@ -123,10 +141,16 @@
 
 /* Rewatch toggle */
 .watch-next-rewatch-toggle {
+  width: 100%;
   padding: 12px 16px;
   border-radius: var(--radius-lg);
   margin-bottom: 12px;
   cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  -webkit-appearance: none;
+  appearance: none;
   backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
   transition:
@@ -137,6 +161,11 @@
 .watch-next-rewatch-toggle:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+.watch-next-rewatch-toggle:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .watch-next-rewatch-toggle__content {

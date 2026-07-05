@@ -1,4 +1,4 @@
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { MotionConfig } from 'framer-motion';
 import { Suspense, useEffect, useState } from 'react';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
@@ -14,7 +14,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { RouteTracker } from './components/RouteTracker';
 
 import './styles/performance.css';
-import { updateTheme } from './theme';
 import { AuthProvider } from './authProvider';
 import { AuthContext } from './AuthContext';
 import { loadSavedTheme } from './themeHelpers';
@@ -144,89 +143,72 @@ function AppContent() {
   // etc. mit EINEM Listener ab.
   useGlobalImageRetry();
 
-  // Theme initial mit updateTheme erstellen um CSS-Variablen zu lesen
-  const [currentTheme, setCurrentTheme] = useState(() => updateTheme());
-
-  // Theme bei Änderungen aktualisieren
-  useEffect(() => {
-    const handleThemeChange = () => {
-      const newTheme = updateTheme();
-      setCurrentTheme(newTheme);
-    };
-
-    // Event Listener für Theme-Änderungen
-    window.addEventListener('themeChanged', handleThemeChange);
-
-    // Initiales Theme nochmal updaten falls CSS-Variablen sich geändert haben
-    handleThemeChange();
-
-    return () => {
-      window.removeEventListener('themeChanged', handleThemeChange);
-    };
-  }, []);
+  // Das MUI-Theme kommt ausschließlich aus <DynamicThemeProvider> (baut das
+  // Objekt-Theme via createMuiTheme aus den --theme-*-CSS-Variablen und
+  // reagiert selbst auf 'themeChanged'). Der frühere äußere
+  // <ThemeProvider theme={themeConfig}> wurde von MUI komplett ersetzt und ist
+  // deshalb entfernt — siehe theme/dynamicTheme.ts createMuiTheme.
 
   return (
     <AppProviders>
-      <ThemeProvider theme={currentTheme}>
-        <DynamicThemeProvider>
-          <CssBaseline />
-          <RouteTracker />
-          <ElectronUpdateToast />
-          <div className="w-full">
-            <a href="#main-content" className="skip-to-content">
-              Zum Hauptinhalt springen
-            </a>
-            <main className="w-full" id="main-content" tabIndex={-1}>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  <Route
-                    path="/login"
-                    element={
-                      <AuthContext.Consumer>
-                        {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
-                      </AuthContext.Consumer>
-                    }
-                  />
-                  <Route
-                    path="/register"
-                    element={
-                      <AuthContext.Consumer>
-                        {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
-                      </AuthContext.Consumer>
-                    }
-                  />
-                  <Route path="/public/:publicId" element={<PublicProfilePage />} />
-                  <Route path="/privacy" element={<PrivacyPage />} />
-                  <Route path="/impressum" element={<ImpressumPage />} />
-                  <Route
-                    path="/*"
-                    element={
-                      <AuthContext.Consumer>
-                        {(auth) => {
-                          // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
-                          if (auth?.user) {
-                            return (
-                              <EmailVerificationBanner>
-                                <MobileApp />
-                              </EmailVerificationBanner>
-                            );
-                          } else if (auth?.authStateResolved) {
-                            return <StartPage />;
-                          } else {
-                            // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
-                            return null;
-                          }
-                        }}
-                      </AuthContext.Consumer>
-                    }
-                  />
-                  <Route path="*" element={<Navigate to="/" />} />
-                </Routes>
-              </Suspense>
-            </main>
-          </div>
-        </DynamicThemeProvider>
-      </ThemeProvider>
+      <DynamicThemeProvider>
+        <CssBaseline />
+        <RouteTracker />
+        <ElectronUpdateToast />
+        <div className="w-full">
+          <a href="#main-content" className="skip-to-content">
+            Zum Hauptinhalt springen
+          </a>
+          <main className="w-full" id="main-content" tabIndex={-1}>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route
+                  path="/login"
+                  element={
+                    <AuthContext.Consumer>
+                      {(auth) => (auth?.user ? <Navigate to="/" /> : <LoginPage />)}
+                    </AuthContext.Consumer>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <AuthContext.Consumer>
+                      {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
+                    </AuthContext.Consumer>
+                  }
+                />
+                <Route path="/public/:publicId" element={<PublicProfilePage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/impressum" element={<ImpressumPage />} />
+                <Route
+                  path="/*"
+                  element={
+                    <AuthContext.Consumer>
+                      {(auth) => {
+                        // Kein LoadingSpinner mehr - alles wird im SplashScreen geladen
+                        if (auth?.user) {
+                          return (
+                            <EmailVerificationBanner>
+                              <MobileApp />
+                            </EmailVerificationBanner>
+                          );
+                        } else if (auth?.authStateResolved) {
+                          return <StartPage />;
+                        } else {
+                          // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
+                          return null;
+                        }
+                      }}
+                    </AuthContext.Consumer>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </Suspense>
+          </main>
+        </div>
+      </DynamicThemeProvider>
     </AppProviders>
   );
 }

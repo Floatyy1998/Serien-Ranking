@@ -1,6 +1,7 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
@@ -184,7 +185,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
                 height: '100%',
                 fontSize: style.fontSize,
                 fontWeight: 'bold',
-                color: 'white',
+                color: getOptimalTextColor(currentTheme.primary),
                 background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
               }}
             >
@@ -262,7 +263,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
             justifyContent: 'center',
             fontSize: style.fontSize,
             fontWeight: 'bold',
-            color: 'rgba(255, 255, 255, 0.7)',
+            color: currentTheme.text.secondary,
           }}
         >
           +{remainingCount}
@@ -273,7 +274,7 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         <span
           style={{
             fontSize: '12px',
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: currentTheme.text.secondary,
             marginLeft: '4px',
           }}
         >

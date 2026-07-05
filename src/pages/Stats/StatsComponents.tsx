@@ -142,7 +142,7 @@ export const HeroSection = memo(({ stats, timeData, theme }: HeroSectionProps) =
       <div className="stats-ring-wrapper">
         <AnimatedRing progress={stats.progress} size={90} strokeWidth={8} color={theme.primary} />
         <div className="stats-ring-label">
-          <span className="stats-ring-percent">{Math.min(99, Math.round(stats.progress))}%</span>
+          <span className="stats-ring-percent">{Math.min(100, Math.round(stats.progress))}%</span>
           <span className="stats-ring-text" style={{ color: theme.text.muted }}>
             Fortschritt
           </span>
@@ -238,14 +238,20 @@ interface ActorUniverseBannerProps {
 }
 
 export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBannerProps) => (
-  <motion.div
+  <motion.button
+    type="button"
     className="stats-actor-banner"
+    aria-label="Actor Universe entdecken – Verbindungen zwischen Schauspielern"
     initial={{ opacity: 0, x: -20 }}
     animate={{ opacity: 1, x: 0 }}
     transition={{ delay: 0.5 }}
     whileTap={tapScaleSmall}
     onClick={onNavigate}
     style={{
+      display: 'block',
+      width: '100%',
+      textAlign: 'left',
+      font: 'inherit',
       background: `linear-gradient(135deg, ${theme.background.default} 0%, ${theme.background.surface} 50%, ${theme.background.surface} 100%)`,
       border: `1px solid ${theme.primary}30`,
     }}
@@ -296,7 +302,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
         Erkunden
       </div>
     </div>
-  </motion.div>
+  </motion.button>
 ));
 ActorUniverseBanner.displayName = 'ActorUniverseBanner';
 

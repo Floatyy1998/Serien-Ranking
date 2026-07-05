@@ -19,8 +19,12 @@ afterEach(() => cleanup());
 describe('WatchJourneyTabs', () => {
   it('renders all tab buttons and the active tab title', () => {
     render(<WatchJourneyTabs activeTab="activity" onTabChange={() => {}} />);
-    // 7 tab buttons
-    expect(screen.getAllByRole('button')).toHaveLength(7);
+    // 7 tab buttons, exposed as ARIA tabs inside a tablist
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(7);
+    // Icon-only tabs carry an accessible name via aria-label
+    expect(screen.getByRole('tab', { name: 'Aktivität' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
     // Active tab label rendered in the title heading
     expect(screen.getByRole('heading', { name: 'Aktivität' })).toBeInTheDocument();
   });
@@ -28,7 +32,7 @@ describe('WatchJourneyTabs', () => {
   it('invokes onTabChange when a tab is clicked', () => {
     const onTabChange = vi.fn<(tab: string) => void>();
     render(<WatchJourneyTabs activeTab="trends" onTabChange={onTabChange} />);
-    fireEvent.click(screen.getAllByRole('button')[2]);
+    fireEvent.click(screen.getAllByRole('tab')[2]);
     expect(onTabChange).toHaveBeenCalledTimes(1);
   });
 });

@@ -15,8 +15,17 @@ interface CountdownListItemProps {
   onClick: () => void;
 }
 
+function countdownText(daysUntil: number): string {
+  if (daysUntil === 0) return 'startet heute';
+  if (daysUntil === 1) return 'in 1 Tag';
+  return `in ${daysUntil} Tagen`;
+}
+
 export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, index, onClick }) => {
   const { currentTheme } = useTheme();
+
+  const seasonLabel =
+    item.type === 'mid-season-return' ? 'Rückkehr' : `Staffel ${item.seasonNumber}`;
 
   return (
     <motion.button
@@ -25,6 +34,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
+      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. Details öffnen`}
       className="cd-item"
       style={{
         border: `1px solid ${currentTheme.border.default}`,

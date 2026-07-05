@@ -2,7 +2,7 @@ import { CalendarMonth, ChevronRight, LiveTv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { PageHeader, PageLayout } from '../../components/ui';
+import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
 import { useCalendarData } from './useCalendarData';
 import { CalendarToolbar } from './CalendarToolbar';
@@ -23,6 +23,7 @@ export const CalendarPage = () => {
     sunday,
     watchlistOnly,
     toggleWatchlistOnly,
+    loading,
     totalEpisodes,
     watchedCount,
     groupedSchedule,
@@ -71,42 +72,16 @@ export const CalendarPage = () => {
             navigate('/anime-season');
           }}
           aria-label="Anime-Season-Kalender öffnen"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            width: 'calc(100% - 40px)',
-            margin: '4px 20px 12px',
-            minHeight: 52,
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-lg)',
-            border: `1px solid ${currentTheme.primary}40`,
-            background: `linear-gradient(135deg, ${currentTheme.primary}1f, var(--glass-light))`,
-            backdropFilter: 'var(--blur-md)',
-            WebkitBackdropFilter: 'var(--blur-md)',
-            color: currentTheme.text.secondary,
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
+          className="cal-entry-btn cal-entry-btn--first"
         >
-          <LiveTv style={{ color: currentTheme.primary, fontSize: 22, flexShrink: 0 }} />
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span
-              style={{
-                display: 'block',
-                fontWeight: 800,
-                fontSize: 14,
-                fontFamily: 'var(--font-display)',
-                color: currentTheme.text.secondary,
-              }}
-            >
-              Anime-Season
-            </span>
-            <span style={{ display: 'block', fontSize: 12, color: currentTheme.text.muted }}>
+          <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+          <span className="cal-entry-btn__body">
+            <span className="cal-entry-btn__title">Anime-Season</span>
+            <span className="cal-entry-btn__sub">
               Was läuft diese Season? Airing-Tage & Countdown
             </span>
           </span>
-          <ChevronRight style={{ color: currentTheme.text.muted, flexShrink: 0 }} />
+          <ChevronRight className="cal-entry-btn__chevron" />
         </motion.button>
 
         {/* Prominenter Einstieg in den Serien-Kalender (Premieren-Discovery) */}
@@ -117,57 +92,48 @@ export const CalendarPage = () => {
             navigate('/serien-kalender');
           }}
           aria-label="Serien-Kalender öffnen"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            width: 'calc(100% - 40px)',
-            margin: '0 20px 12px',
-            minHeight: 52,
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-lg)',
-            border: `1px solid ${currentTheme.primary}40`,
-            background: `linear-gradient(135deg, ${currentTheme.primary}1f, var(--glass-light))`,
-            backdropFilter: 'var(--blur-md)',
-            WebkitBackdropFilter: 'var(--blur-md)',
-            color: currentTheme.text.secondary,
-            cursor: 'pointer',
-            textAlign: 'left',
-          }}
+          className="cal-entry-btn"
         >
-          <CalendarMonth style={{ color: currentTheme.primary, fontSize: 22, flexShrink: 0 }} />
-          <span style={{ flex: 1, minWidth: 0 }}>
-            <span
-              style={{
-                display: 'block',
-                fontWeight: 800,
-                fontSize: 14,
-                fontFamily: 'var(--font-display)',
-                color: currentTheme.text.secondary,
-              }}
-            >
-              Serien-Kalender
-            </span>
-            <span style={{ display: 'block', fontSize: 12, color: currentTheme.text.muted }}>
-              Neue Serien & Staffeln entdecken
-            </span>
+          <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+          <span className="cal-entry-btn__body">
+            <span className="cal-entry-btn__title">Serien-Kalender</span>
+            <span className="cal-entry-btn__sub">Neue Serien & Staffeln entdecken</span>
           </span>
-          <ChevronRight style={{ color: currentTheme.text.muted, flexShrink: 0 }} />
+          <ChevronRight className="cal-entry-btn__chevron" />
         </motion.button>
 
-        <CalendarGrid
-          groupedSchedule={groupedSchedule}
-          todayKey={todayKey}
-          backdrops={backdrops}
-          expandedGroups={expandedGroups}
-          onToggleGroup={toggleGroup}
-          onMarkWatched={handleMarkWatched}
-        />
-
-        {totalEpisodes === 0 && (
-          <div className="cal-empty">
-            <p style={{ color: currentTheme.text.muted }}>Keine Episoden in dieser Woche</p>
+        {loading ? (
+          <div
+            className="cal-loading"
+            role="status"
+            aria-label="Kalender wird geladen"
+            aria-busy="true"
+          >
+            {Array.from({ length: 5 }, (_, i) => (
+              <SkeletonListRow key={i} avatarShape="card" />
+            ))}
           </div>
+        ) : totalEpisodes === 0 ? (
+          <EmptyState
+            icon={<CalendarMonth style={{ fontSize: 48 }} />}
+            title="Keine Episoden in dieser Woche"
+            description="In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an."
+            iconColor={currentTheme.text.secondary}
+            action={
+              weekOffset !== 0
+                ? { label: 'Zur aktuellen Woche', onClick: goToCurrentWeek }
+                : undefined
+            }
+          />
+        ) : (
+          <CalendarGrid
+            groupedSchedule={groupedSchedule}
+            todayKey={todayKey}
+            backdrops={backdrops}
+            expandedGroups={expandedGroups}
+            onToggleGroup={toggleGroup}
+            onMarkWatched={handleMarkWatched}
+          />
         )}
       </div>
     </PageLayout>

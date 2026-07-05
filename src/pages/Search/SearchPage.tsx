@@ -7,8 +7,10 @@ import { CalendarToday, Close, Movie, Search } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   Dialog,
+  EmptyState,
   SkeletonRatingsGrid,
   PageHeader,
   ScrollToTopButton,
@@ -112,13 +114,16 @@ export const SearchPage = memo(() => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Suche nach Serien & Filmen..."
+              aria-label="Suche nach Serien und Filmen"
               autoFocus
               className="search-input"
               style={{ color: currentTheme.text.primary, outline: 'none' }}
             />
             <button
+              type="button"
               onClick={() => searchQuery && setSearchQuery('')}
               className="search-clear-btn"
+              aria-label="Suche löschen"
               style={{
                 background: searchQuery ? `${currentTheme.text.muted}20` : 'transparent',
                 color: currentTheme.text.muted,
@@ -142,14 +147,19 @@ export const SearchPage = memo(() => {
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
+              type="button"
               className="search-filter-btn"
               onClick={() => setSearchType(tab.key)}
+              aria-pressed={searchType === tab.key}
+              aria-label={`Filter: ${tab.label}`}
               style={{
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
                 border:
                   searchType === tab.key ? 'none' : `1px solid ${currentTheme.border.default}`,
                 color:
-                  searchType === tab.key ? currentTheme.text.secondary : currentTheme.text.muted,
+                  searchType === tab.key
+                    ? getOptimalTextColor(currentTheme.primary)
+                    : currentTheme.text.muted,
                 boxShadow: searchType === tab.key ? `0 4px 15px ${currentTheme.primary}40` : 'none',
               }}
             >
@@ -204,24 +214,13 @@ export const SearchPage = memo(() => {
               </div>
             </motion.div>
           ) : searchQuery && !loading ? (
-            <motion.div
-              key="empty"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="search-empty-state"
-            >
-              <div
-                className="search-empty-icon"
-                style={{ background: `${currentTheme.text.muted}10` }}
-              >
-                <Search style={{ fontSize: '48px', color: currentTheme.text.muted }} />
-              </div>
-              <h2 className="search-empty-title" style={{ color: currentTheme.text.primary }}>
-                Keine Ergebnisse
-              </h2>
-              <p className="search-empty-text" style={{ color: currentTheme.text.muted }}>
-                Keine Ergebnisse für "{searchQuery}"
-              </p>
+            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <EmptyState
+                icon={<Search style={{ fontSize: '48px' }} />}
+                title="Keine Ergebnisse"
+                description={`Keine Treffer für „${searchQuery}". Prüfe die Schreibweise oder suche nach etwas anderem.`}
+                action={{ label: 'Suche löschen', onClick: () => setSearchQuery('') }}
+              />
             </motion.div>
           ) : (
             <SearchSuggestions

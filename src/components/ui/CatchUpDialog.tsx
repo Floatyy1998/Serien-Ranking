@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState, type CSSProperties } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { Series } from '../../types/Series';
+import { BottomSheet } from './BottomSheet';
 
 interface CatchUpDialogProps {
   open: boolean;
@@ -69,39 +69,35 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
     return `Markiert ${episodesToMark} Episoden als gesehen (${parts.join(' + ')})`;
   })();
 
-  if (!open) return null;
+  const selectStyle: CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    background: 'var(--glass-medium)',
+    border: '1px solid var(--glass-border-light)',
+    borderRadius: 'var(--radius-lg)',
+    color: currentTheme.text.primary,
+    fontSize: '15px',
+    outline: 'none',
+    cursor: 'pointer',
+    transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  };
+
+  const labelStyle: CSSProperties = {
+    fontSize: 'var(--text-sm)',
+    fontWeight: 600,
+    color: currentTheme.text.muted,
+    marginBottom: '6px',
+    display: 'block',
+  };
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(10, 14, 26, 0.75)',
-        backdropFilter: 'var(--blur-md)',
-        WebkitBackdropFilter: 'var(--blur-md)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-      }}
+    <BottomSheet
+      isOpen={open}
+      onClose={onClose}
+      maxWidth="400px"
+      ariaLabel="Aktuellen Stand wählen"
     >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          background: currentTheme.background.card || currentTheme.background.default,
-          borderRadius: '20px',
-          border: '1px solid var(--glass-border-light)',
-          padding: '24px',
-          width: '100%',
-          maxWidth: '360px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.15)',
-        }}
-      >
+      <div style={{ padding: '8px 24px 24px' }}>
         <h3
           style={{
             fontSize: '18px',
@@ -116,35 +112,14 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
 
         {/* Season Picker */}
         <div style={{ marginBottom: '14px' }}>
-          <label
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: currentTheme.text.muted,
-              marginBottom: '6px',
-              display: 'block',
-            }}
-          >
-            Staffel
-          </label>
+          <label style={labelStyle}>Staffel</label>
           <select
             value={selectedSeason}
             onChange={(e) => {
               setSelectedSeason(Number(e.target.value));
               setSelectedEpisode(0);
             }}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: 'var(--glass-medium)',
-              border: '1px solid var(--glass-border-light)',
-              borderRadius: '12px',
-              color: currentTheme.text.primary,
-              fontSize: '15px',
-              outline: 'none',
-              cursor: 'pointer',
-              transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
+            style={selectStyle}
           >
             {seasons.map((season, idx) => (
               <option key={idx} value={idx}>
@@ -156,32 +131,11 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
 
         {/* Episode Picker */}
         <div style={{ marginBottom: '18px' }}>
-          <label
-            style={{
-              fontSize: '13px',
-              fontWeight: 600,
-              color: currentTheme.text.muted,
-              marginBottom: '6px',
-              display: 'block',
-            }}
-          >
-            Episode
-          </label>
+          <label style={labelStyle}>Episode</label>
           <select
             value={selectedEpisode}
             onChange={(e) => setSelectedEpisode(Number(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              background: 'var(--glass-medium)',
-              border: '1px solid var(--glass-border-light)',
-              borderRadius: '12px',
-              color: currentTheme.text.primary,
-              fontSize: '15px',
-              outline: 'none',
-              cursor: 'pointer',
-              transition: 'border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            }}
+            style={selectStyle}
           >
             {currentSeasonEpisodes.map((ep, idx) => (
               <option key={idx} value={idx + 1}>
@@ -197,14 +151,14 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
           style={{
             padding: '12px',
             background: currentTheme.background.surface,
-            borderRadius: '12px',
+            borderRadius: 'var(--radius-lg)',
             marginBottom: '20px',
             border: `1px solid ${currentTheme.border.default}`,
           }}
         >
           <p
             style={{
-              fontSize: '14px',
+              fontSize: 'var(--text-base)',
               color: currentTheme.text.secondary,
               margin: 0,
               lineHeight: 1.5,
@@ -223,7 +177,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               padding: '12px',
               background: 'var(--glass-medium)',
               border: '1px solid var(--glass-border-light)',
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-lg)',
               color: currentTheme.text.primary,
               fontSize: '15px',
               fontWeight: 600,
@@ -251,7 +205,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                   : 'var(--glass-medium)',
               border: 'none',
-              borderRadius: '12px',
+              borderRadius: 'var(--radius-lg)',
               color: episodesToMark > 0 ? 'white' : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 600,
@@ -262,7 +216,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             Markieren
           </button>
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </BottomSheet>
   );
 };

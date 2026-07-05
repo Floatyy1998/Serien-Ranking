@@ -17,11 +17,21 @@ export const StatCard = memo(
   ({ icon, label, value, iconColor, subValue, onClick }: StatCardProps) => (
     <Paper
       onClick={onClick}
+      {...(onClick && {
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': `${label}: ${value}`,
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        },
+      })}
       sx={{
         p: 2,
-        background:
-          'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%)',
-        border: '1px solid rgba(255, 255, 255, 0.06)',
+        background: 'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
+        border: '1px solid var(--glass-border-subtle)',
         borderRadius: 3,
         position: 'relative',
         overflow: 'hidden',
@@ -37,6 +47,10 @@ export const StatCard = memo(
               borderColor: `${iconColor}25`,
             }
           : {},
+        '&:focus-visible': {
+          outline: '2px solid var(--theme-primary)',
+          outlineOffset: '2px',
+        },
         '&::after': {
           content: '""',
           position: 'absolute',
@@ -44,7 +58,7 @@ export const StatCard = memo(
           left: '10%',
           right: '10%',
           height: '1px',
-          background: `linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent)`,
+          background: `linear-gradient(90deg, transparent, var(--glass-border-light), transparent)`,
           pointerEvents: 'none',
         },
       }}

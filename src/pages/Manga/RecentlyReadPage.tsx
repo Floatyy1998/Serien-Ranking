@@ -136,7 +136,16 @@ export const RecentlyReadPage = () => {
                 {group.manga.map((manga) => (
                   <motion.div
                     key={manga.anilistId}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${manga.title} öffnen`}
                     onClick={() => navigate(`/manga/${manga.anilistId}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/manga/${manga.anilistId}`);
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       gap: 12,

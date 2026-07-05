@@ -71,8 +71,17 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
             return (
               <motion.div
                 key={`${variant}-${item.id}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`${item.title} öffnen`}
                 whileTap={tapScale}
                 onClick={() => navigate(`/manga/${item.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/manga/${item.id}`);
+                  }
+                }}
                 style={{ cursor: 'pointer', flexShrink: 0, minWidth: cardWidth }}
               >
                 <div
@@ -252,8 +261,17 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
           return (
             <motion.div
               key={`${variant}-${item.id}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`${item.title} öffnen`}
               whileTap={tapScale}
               onClick={() => navigate(`/manga/${item.id}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/manga/${item.id}`);
+                }
+              }}
               style={{ flexShrink: 0, cursor: 'pointer', minWidth: cardWidth }}
             >
               <div

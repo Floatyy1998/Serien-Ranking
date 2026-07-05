@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { logChapterRead } from '../../services/readActivityService';
 import {
@@ -217,12 +218,15 @@ export const MangaReadingListPage = () => {
               </div>
             </div>
             <motion.button
+              type="button"
+              aria-label="Filter und Sortierung"
+              aria-expanded={showFilter}
               whileTap={tapScale}
               onClick={() => setShowFilter(!showFilter)}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
+                width: 44,
+                height: 44,
+                borderRadius: 12,
                 border: 'none',
                 cursor: 'pointer',
                 display: 'flex',
@@ -231,7 +235,9 @@ export const MangaReadingListPage = () => {
                 background: showFilter
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                   : 'rgba(255,255,255,0.05)',
-                color: showFilter ? '#fff' : currentTheme.text.primary,
+                color: showFilter
+                  ? getOptimalTextColor(currentTheme.primary)
+                  : currentTheme.text.primary,
               }}
             >
               <FilterList />

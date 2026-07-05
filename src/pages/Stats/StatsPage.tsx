@@ -4,10 +4,10 @@
  * subcomponents in StatsComponents, layout in StatsPage.css.
  */
 
-import { IosShare } from '@mui/icons-material';
+import { InsightsRounded, IosShare } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, PageHeader, PageLayout } from '../../components/ui';
+import { EmptyState, IconButton, PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { hapticTap } from '../../lib/haptics';
 import {
@@ -36,6 +36,30 @@ export const StatsPage = () => {
     },
     [navigate]
   );
+
+  const isEmpty = stats.totalSeries === 0 && stats.totalMovies === 0;
+
+  if (isEmpty) {
+    return (
+      <PageLayout>
+        <PageHeader
+          title="Statistiken"
+          gradientFrom={currentTheme.text.primary}
+          subtitle="Dein Viewing-Universum in Zahlen"
+          sticky={false}
+        />
+        <EmptyState
+          icon={<InsightsRounded style={{ fontSize: 52 }} />}
+          title="Noch keine Statistiken"
+          description="Sobald du Serien und Filme trackst, entsteht hier dein persönliches Viewing-Universum – Watchtime, Fortschritt, Top-Genres und mehr."
+          action={{
+            label: 'Serien entdecken',
+            onClick: () => navigate('/discover'),
+          }}
+        />
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout>

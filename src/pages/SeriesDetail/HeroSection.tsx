@@ -110,6 +110,11 @@ export const HeroSection = memo<HeroSectionProps>(
     const seriesId = series.tmdb_id || series.id;
     const hasRating = parseFloat(overallRating) > 0;
     const iconSize = isMobile ? 17 : 19;
+    const warningColor = fullTheme.status?.warning || '#f59e0b';
+    const copyTitle = () => {
+      navigator.clipboard.writeText(series.title);
+      showToast('Titel kopiert');
+    };
     const mergedDisplayProviders = useMemo(
       () =>
         mergeProviders({
@@ -215,6 +220,7 @@ export const HeroSection = memo<HeroSectionProps>(
           whileTap={tapScale}
           onClick={onNavigateRating}
           className="hero-actions__btn"
+          aria-label="Bewerten"
           style={
             hasRating
               ? {
@@ -234,6 +240,7 @@ export const HeroSection = memo<HeroSectionProps>(
             whileTap={tapScale}
             onClick={onWatchlistToggle}
             className="hero-actions__btn"
+            aria-label={series.watchlist ? 'Von Watchlist entfernen' : 'Zur Watchlist hinzufügen'}
             style={
               series.watchlist
                 ? {
@@ -269,12 +276,13 @@ export const HeroSection = memo<HeroSectionProps>(
             whileTap={tapScale}
             onClick={onHideToggle}
             className="hero-actions__btn"
+            aria-label={series.hidden ? 'Einblenden' : 'Ausblenden'}
             style={
               series.hidden
                 ? {
-                    color: fullTheme.status?.warning || '#f59e0b',
-                    borderColor: 'rgba(255,152,0,0.25)',
-                    background: 'rgba(255,152,0,0.08)',
+                    color: warningColor,
+                    borderColor: `${warningColor}40`,
+                    background: `${warningColor}14`,
                   }
                 : undefined
             }
@@ -292,6 +300,7 @@ export const HeroSection = memo<HeroSectionProps>(
             whileTap={{ scale: isDeleting ? 1 : 0.96 }}
             onClick={onDelete}
             disabled={isDeleting}
+            aria-label="Löschen"
             className="hero-actions__btn hero-actions__btn--danger"
             style={{ opacity: isDeleting ? 0.4 : 1 }}
           >
@@ -360,6 +369,7 @@ export const HeroSection = memo<HeroSectionProps>(
             <button
               onClick={onAddSeries}
               disabled={isAdding}
+              aria-label="Zur Sammlung hinzufügen"
               className="hero-section__add-btn"
               style={{
                 top: isMobile
@@ -422,6 +432,8 @@ export const HeroSection = memo<HeroSectionProps>(
             )}
             <h1
               className="hero-section__title"
+              tabIndex={0}
+              title="Titel kopieren"
               style={{
                 fontSize: isMobile ? '24px' : '28px',
                 cursor: 'pointer',
@@ -430,9 +442,12 @@ export const HeroSection = memo<HeroSectionProps>(
                 paddingRight: isMobile ? undefined : 80,
                 letterSpacing: '-0.02em',
               }}
-              onClick={() => {
-                navigator.clipboard.writeText(series.title);
-                showToast('Titel kopiert');
+              onClick={copyTitle}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  copyTitle();
+                }
               }}
             >
               {series.title}
@@ -446,7 +461,7 @@ export const HeroSection = memo<HeroSectionProps>(
                 justifyContent: isMobile ? 'center' : 'flex-start',
                 padding: isMobile ? '0 20px' : undefined,
                 marginTop: isMobile ? 8 : undefined,
-                color: isMobile ? 'rgba(255,255,255,0.55)' : undefined,
+                color: isMobile ? fullTheme.text.muted : undefined,
               }}
             >
               {(tmdbFirstAirDate || series.first_air_date || series.release_date) && (

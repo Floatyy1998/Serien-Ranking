@@ -97,8 +97,8 @@ export const StatsGrid = () => {
               p: 2,
               height: '100%',
               background:
-                'linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.015) 100%)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
+                'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
+              border: '1px solid var(--glass-border-subtle)',
               borderRadius: 3,
               display: 'flex',
               flexDirection: 'column',
@@ -115,7 +115,7 @@ export const StatsGrid = () => {
                 right: '10%',
                 height: '1px',
                 background:
-                  'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent)',
+                  'linear-gradient(90deg, transparent, var(--glass-border-light), transparent)',
                 pointerEvents: 'none',
               },
             }}
@@ -139,8 +139,8 @@ export const StatsGrid = () => {
                   cy={ringSize / 2}
                   r={ringRadius}
                   fill="none"
-                  stroke="rgba(255, 255, 255, 0.06)"
                   strokeWidth={ringStroke}
+                  style={{ stroke: 'var(--glass-border-subtle)' }}
                 />
                 <circle
                   cx={ringSize / 2}

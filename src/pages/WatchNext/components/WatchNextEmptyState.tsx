@@ -32,15 +32,14 @@ export const WatchNextEmptyState = () => {
       </h2>
       <p
         style={{
-          fontSize: '15px',
-          color: currentTheme.text.muted,
-          margin: 0,
-          lineHeight: 1.5,
+          fontSize: 'var(--text-base)',
+          color: currentTheme.text.secondary,
+          margin: '0 auto',
+          maxWidth: '300px',
+          lineHeight: 1.6,
         }}
       >
-        Schaue eine Serie an um hier
-        <br />
-        die nächsten Episoden zu sehen!
+        Schaue eine Serie an um hier die nächsten Episoden zu sehen!
       </p>
     </motion.div>
   );

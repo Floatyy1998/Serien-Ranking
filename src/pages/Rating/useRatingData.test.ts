@@ -153,22 +153,33 @@ describe('useRatingData', () => {
     expect(logMovieWatch).toHaveBeenCalled();
   });
 
-  it('handleDelete removes the rating only after the user confirms', async () => {
+  it('handleDelete opens a confirm dialog and only removes after confirmDelete', async () => {
     ctx.allSeriesList = [makeSeries({ rating: { Drama: 8 } })];
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const { result } = renderHook(() => useRatingData());
 
-    await act(async () => {
-      await result.current.handleDelete();
+    // Requesting delete opens the confirm dialog but does not delete yet
+    act(() => {
+      result.current.handleDelete();
     });
+    expect(result.current.deleteConfirmOpen).toBe(true);
     expect(fb.removeMock).not.toHaveBeenCalled();
 
-    confirmSpy.mockReturnValue(true);
-    await act(async () => {
-      await result.current.handleDelete();
+    // Cancelling closes the dialog without deleting
+    act(() => {
+      result.current.cancelDelete();
     });
+    expect(result.current.deleteConfirmOpen).toBe(false);
+    expect(fb.removeMock).not.toHaveBeenCalled();
+
+    // Confirming performs the actual delete
+    act(() => {
+      result.current.handleDelete();
+    });
+    await act(async () => {
+      await result.current.confirmDelete();
+    });
+    expect(result.current.deleteConfirmOpen).toBe(false);
     expect(fb.removeMock).toHaveBeenCalled();
     expect(trackRatingDeleted).toHaveBeenCalledWith('123', 'series');
-    confirmSpy.mockRestore();
   });
 });

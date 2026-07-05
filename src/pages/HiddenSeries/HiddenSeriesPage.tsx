@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
 import { tapScaleTight } from '../../lib/motion';
+import './HiddenSeriesPage.css';
 
 // Static inline styles hoisted out of render (no per-render allocation)
 const CONTENT_WRAPPER_STYLE: React.CSSProperties = { position: 'relative', zIndex: 1 };
@@ -133,7 +134,7 @@ export const HiddenSeriesPage: React.FC = () => {
             <p
               style={{
                 margin: 0,
-                color: currentTheme.text.muted,
+                color: currentTheme.text.secondary,
                 fontSize: '15px',
                 maxWidth: '280px',
                 lineHeight: 1.5,
@@ -155,6 +156,10 @@ export const HiddenSeriesPage: React.FC = () => {
               return (
                 <motion.div
                   key={series.id}
+                  className="hidden-series-card"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${series.title} öffnen`}
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -162,6 +167,12 @@ export const HiddenSeriesPage: React.FC = () => {
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   onClick={() => {
                     navigate(`/series/${series.id}`);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/series/${series.id}`);
+                    }
                   }}
                   style={{
                     // Native virtualization: skip layout/paint of offscreen rows
@@ -239,6 +250,8 @@ export const HiddenSeriesPage: React.FC = () => {
 
                   {/* Unhide button */}
                   <motion.button
+                    className="hidden-series-unhide"
+                    aria-label={`${series.title} weiterschauen`}
                     whileTap={tapScaleTight}
                     onClick={(e) => handleUnhide(series.id, e)}
                     style={{

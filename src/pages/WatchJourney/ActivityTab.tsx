@@ -14,6 +14,7 @@ import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
+import { wjCard, wjHero } from './watchJourneyStyles';
 
 interface ActivityTabProps {
   data: WatchJourneyData;
@@ -23,7 +24,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
   const { currentTheme } = useTheme();
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
-  const bgSurface = currentTheme.background.surface;
 
   // Prepare data for bar chart
   const chartData = useMemo(() => {
@@ -51,15 +51,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '24px',
-          borderRadius: '24px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+        style={{ ...wjHero(currentTheme), position: 'relative', overflow: 'hidden' }}
       >
         <div
           style={{
@@ -169,13 +161,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{

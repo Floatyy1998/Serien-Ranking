@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { wjCard, wjHero } from './watchJourneyStyles';
 
 interface InsightsTabProps {
   data: WatchJourneyData;
@@ -307,13 +308,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '24px',
-          borderRadius: '24px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjHero(currentTheme)}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <Timer style={{ color: runtimeColor, fontSize: 28 }} />
@@ -372,13 +367,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        style={{
-          margin: '0 20px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={{ ...wjCard(currentTheme), margin: '0 var(--space-5)' }}
       >
         <h3
           style={{

@@ -55,7 +55,10 @@ vi.mock('./GenreRatingSection', () => ({
 vi.mock('./RatingSnackbar', () => ({
   RatingSnackbar: ({ open }: { open: boolean }) => (open ? <div data-testid="snackbar" /> : null),
 }));
-vi.mock('../../components/ui', () => ({ BackButton: () => <button aria-label="back" /> }));
+vi.mock('../../components/ui', () => ({
+  BackButton: () => <button aria-label="back" />,
+  Dialog: ({ open }: { open?: boolean }) => (open ? <div data-testid="delete-dialog" /> : null),
+}));
 
 import { RatingPage } from './RatingPage';
 

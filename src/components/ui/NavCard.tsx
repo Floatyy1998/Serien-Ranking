@@ -32,7 +32,7 @@ export const NavCard: React.FC<NavCardProps> = ({
       style={{
         margin: '0 20px',
         padding: '12px 14px',
-        borderRadius: '14px',
+        borderRadius: 'var(--radius-xl)',
         background: currentTheme.background.surface,
         border: `1px solid ${currentTheme.border.default}`,
         cursor: 'pointer',

@@ -51,6 +51,17 @@
   line-height: 1;
 }
 
+/* Hit-slop: keep the visible circle at 20px but expand the tap target to 44px */
+.rw-search-clear::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+}
+
 /* ── Time range chips ─────────────────────────────────────────────────────── */
 
 .rw-time-range-chips {
@@ -80,30 +91,6 @@
   padding: 20px;
   position: relative;
   z-index: 1;
-}
-
-/* ── Empty state ──────────────────────────────────────────────────────────── */
-
-.rw-empty-state {
-  text-align: center;
-  padding: 60px 20px;
-}
-
-.rw-empty-icon {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rw-empty-title {
-  margin: 0 0 8px;
-  font-size: 20px;
-  font-weight: 700;
-  font-family: var(--font-display);
 }
 
 /* ── Date group header ────────────────────────────────────────────────────── */
@@ -209,6 +196,8 @@
 .rw-rewatch-btn {
   border-radius: 10px;
   padding: 8px;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -218,6 +207,8 @@
 .rw-rewatch-btn-small {
   border-radius: 8px;
   padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -301,4 +292,20 @@
 
 .rw-bottom-spacer {
   height: 100px;
+}
+
+/* ── Focus-visible states (keyboard accessibility) ────────────────────────── */
+
+.rw-search-input:focus-visible,
+.rw-search-clear:focus-visible,
+.rw-episode-poster:focus-visible,
+.rw-episode-series-name:focus-visible,
+.rw-episode-info:focus-visible,
+.rw-rewatch-btn:focus-visible,
+.rw-rewatch-btn-small:focus-visible,
+.rw-accordion-header:focus-visible,
+.rw-accordion-poster:focus-visible,
+.rw-accordion-episode-name:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }

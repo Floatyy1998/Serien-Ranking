@@ -91,13 +91,16 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 
     /**
      * Semantische Textfarben:
-     * - primary: Accent/highlight color (the theme's primary color)
-     * - secondary: Main readable body text color
-     * - muted: Dimmed/secondary text color
-     * - accent: Secondary accent for special highlights
+     * - primary: ACHTUNG — Akzent-/Highlight-Farbe (= Theme-Primary), KEIN
+     *            Lesetext. Für Fließtext `body`/`secondary` verwenden.
+     * - body:    Klar benannter Alias für lesbaren Fließtext (= `secondary`).
+     * - secondary: Haupt-Lesetext-Farbe (identisch zu `body`).
+     * - muted: Gedimmte Sekundär-/Tertiärtext-Farbe.
+     * - accent: Sekundär-Akzent für besondere Hervorhebungen.
      */
     text: {
       primary: primaryColor,
+      body: textColor || backgroundTextColors.secondary,
       secondary: textColor || backgroundTextColors.secondary,
       muted: textColor ? withOpacity(textColor, 0.6) : backgroundTextColors.muted,
       accent: finalAccentColor,
@@ -197,11 +200,27 @@ export function validateThemeConfig(config: Partial<UserThemeConfig>): UserTheme
 }
 
 // Exportiert Theme für Material-UI
+//
+// WICHTIG: Dies ist die EINZIGE Quelle für das MUI-Objekt-Theme (via
+// ThemeContext: `createTheme(createMuiTheme(currentTheme))`). Die
+// `components`-Overrides (Chip/Dialog/Accordion/Tab/TextField/Tooltip/…)
+// wurden aus dem alten `theme/themeConfig.ts` hierher gezogen: früher
+// umschloss ein zweites `<ThemeProvider theme={themeConfig}>` in App.tsx
+// diesen Provider und wurde von MUI komplett ersetzt → die Overrides waren
+// zur Laufzeit tot. Jetzt sind sie theme-responsiv (nutzen `dynamicTheme.*`).
 export function createMuiTheme(dynamicTheme: ReturnType<typeof generateDynamicTheme>) {
+  const primaryColor = dynamicTheme.primary;
+  const backgroundColor = dynamicTheme.background.default;
+  const border = dynamicTheme.border;
+  const overlay = dynamicTheme.overlay;
+
   return {
     palette: {
       mode: 'dark' as const,
       primary: {
+        main: dynamicTheme.primary,
+      },
+      secondary: {
         main: dynamicTheme.primary,
       },
       background: {
@@ -218,6 +237,179 @@ export function createMuiTheme(dynamicTheme: ReturnType<typeof generateDynamicTh
     },
     shape: {
       borderRadius: 12,
+    },
+    components: {
+      MuiTooltip: {
+        styleOverrides: {
+          tooltip: {
+            backgroundColor: backgroundColor,
+            color: primaryColor,
+            fontSize: '1rem',
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            backgroundImage: 'none !important',
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+          },
+          containedPrimary: {
+            backgroundColor: primaryColor,
+            color: backgroundColor,
+            fontWeight: 600,
+            '&:hover': {
+              backgroundColor: primaryColor,
+            },
+          },
+          outlinedPrimary: {
+            borderColor: primaryColor,
+            color: primaryColor,
+            '&:hover': {
+              borderColor: primaryColor,
+              backgroundColor: 'transparent',
+            },
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            backgroundColor: backgroundColor,
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: backgroundColor,
+            backgroundImage: 'none',
+            maxWidth: '50%',
+            boxShadow: `0 25px 50px -12px ${withOpacity(primaryColor, 0.15)}`,
+            border: `1px solid ${border.lighter}`,
+            '@media (max-width: 600px)': {
+              maxWidth: '100%',
+            },
+            '@media (max-width: 2000px) and (min-width: 601px)': {
+              maxWidth: '75%',
+            },
+          },
+        },
+      },
+      MuiAccordion: {
+        styleOverrides: {
+          root: {
+            backgroundColor: overlay.light,
+            border: `1px solid ${border.light}`,
+            borderRadius: '12px',
+            '&:before': {
+              display: 'none',
+            },
+            '&.Mui-expanded': {
+              margin: '8px 0',
+            },
+            transition: 'all 0.2s ease-in-out',
+          },
+        },
+      },
+      MuiAccordionSummary: {
+        styleOverrides: {
+          root: {
+            color: primaryColor,
+            padding: '0 24px',
+            minHeight: '56px',
+            transition: 'all 0.2s ease-in-out',
+            borderTopLeftRadius: '8px',
+            borderTopRightRadius: '8px',
+            borderBottomLeftRadius: '8px',
+            borderBottomRightRadius: '8px',
+            '&.Mui-expanded': {
+              borderBottomLeftRadius: '0px',
+              borderBottomRightRadius: '0px',
+            },
+          },
+        },
+      },
+      MuiAccordionDetails: {
+        styleOverrides: {
+          root: {
+            backgroundColor: overlay.black,
+            borderTop: `1px solid ${border.light}`,
+            padding: 0,
+            borderBottomLeftRadius: '12px',
+            borderBottomRightRadius: '12px',
+          },
+        },
+      },
+      MuiTabs: {
+        styleOverrides: {
+          indicator: {
+            backgroundColor: primaryColor,
+          },
+        },
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            '&.Mui-selected': {
+              color: primaryColor,
+            },
+          },
+        },
+      },
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+            backgroundColor: backgroundColor,
+            '& .MuiOutlinedInput-root': {
+              '& fieldset': {
+                borderColor: border.default,
+              },
+              '&:hover fieldset': {
+                borderColor: primaryColor,
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: primaryColor,
+              },
+            },
+            '& .MuiInputLabel-root': {
+              '&.Mui-focused': {
+                color: primaryColor,
+              },
+            },
+          },
+        },
+      },
+      // MuiChip bewusst NICHT ueberschrieben: dieses Override war frueher tot
+      // (das App.tsx-Doppel-ThemeProvider ersetzte es), der reale Baseline-Look
+      // sind die kompakten MUI-Default-Chips (z.B. die Home-Quick-Stats-Pills).
+      // Ein minWidth:140px/minHeight:40px-Override wuerde sie unerwuenscht
+      // vergroessern, daher hier ausgelassen.
+      MuiDialogTitle: {
+        styleOverrides: {
+          root: {
+            textAlign: 'center' as const,
+            position: 'relative' as const,
+            fontSize: '1.5rem',
+            paddingLeft: '48px',
+            paddingRight: '48px',
+            '& .closeButton': {
+              position: 'absolute' as const,
+              right: 8,
+              top: 8,
+              color: 'red',
+            },
+          },
+        },
+      },
     },
   };
 }

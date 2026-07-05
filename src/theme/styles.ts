@@ -23,6 +23,11 @@ export const commonStyles = {
   } as React.CSSProperties,
 
   // Button Styles
+  // HINWEIS: `commonStyles` sind reine Inline-Style-Objekte (React.CSSProperties).
+  // Pseudo-Selektoren wie `&:hover`/`&:focus` funktionieren in Inline-Styles
+  // NICHT — sie wurden hier entfernt (waren stille Tote). Für Hover/Focus eine
+  // CSS-Klasse oder MUI `sx` verwenden. Die gewünschten Hover-Werte sind unten
+  // in `commonHoverStyles` als Referenz hinterlegt.
   primaryButton: {
     backgroundColor: 'var(--theme-primary)',
     color: colors.background.default,
@@ -32,9 +37,6 @@ export const commonStyles = {
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      backgroundColor: 'var(--theme-primary-hover)',
-    },
   } as React.CSSProperties,
 
   outlineButton: {
@@ -46,9 +48,6 @@ export const commonStyles = {
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      backgroundColor: colors.overlay.medium,
-    },
   } as React.CSSProperties,
 
   errorButton: {
@@ -60,9 +59,6 @@ export const commonStyles = {
     fontWeight: '600',
     cursor: 'pointer',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
-      backgroundColor: colors.status.errorHover,
-    },
   } as React.CSSProperties,
 
   // Card Styles
@@ -146,6 +142,9 @@ export const commonStyles = {
   } as React.CSSProperties,
 
   // Input Styles
+  // Pseudo-Selektoren `&:focus`/`&:hover` entfernt (in Inline-Styles wirkungslos).
+  // Für Focus/Hover eine CSS-Klasse oder `sx` nutzen; Ziel-Border ist
+  // `colors.border.primary` (siehe `commonHoverStyles.inputFocus`).
   input: {
     backgroundColor: colors.background.input,
     border: `1px solid ${colors.border.default}`,
@@ -154,13 +153,6 @@ export const commonStyles = {
     color: colors.text.secondary,
     fontSize: '1rem',
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:focus': {
-      outline: 'none',
-      borderColor: colors.border.primary,
-    },
-    '&:hover': {
-      borderColor: colors.border.primary,
-    },
   } as React.CSSProperties,
 
   // Notification und Status
@@ -217,8 +209,24 @@ export const commonStyles = {
   } as React.CSSProperties,
 };
 
+// Referenz-Hover/Focus-Werte für die Inline-Style-Buttons oben.
+// NICHT direkt als Inline-Style spreadbar (Pseudo-Selektoren greifen dort
+// nicht) — als Vorlage für CSS-Klassen / MUI `sx` gedacht.
+export const commonHoverStyles = {
+  primaryButtonHover: { backgroundColor: 'var(--theme-primary-hover)' },
+  outlineButtonHover: { backgroundColor: colors.overlay.medium },
+  errorButtonHover: { backgroundColor: colors.status.errorHover },
+  inputFocus: { outline: 'none', borderColor: colors.border.primary },
+  inputHover: { borderColor: colors.border.primary },
+} as const;
+
 // Helper-Funktionen für dynamische Styles
 export const styleHelpers = {
+  /**
+   * @deprecated Erzeugt ein Objekt mit `&:hover`-Key. Das funktioniert NUR in
+   * MUI `sx`/Emotion, NICHT in echten Inline-Styles (`style={...}`) — dort ist
+   * der Pseudo-Selektor wirkungslos. Für Hover eine CSS-Klasse oder `sx` nutzen.
+   */
   withHover: (baseStyle: React.CSSProperties, hoverStyle: React.CSSProperties) => ({
     ...baseStyle,
     transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',

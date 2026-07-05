@@ -86,8 +86,11 @@ export const OverallRatingSection = ({
         {/* Emoji Indicators */}
         <div className="rate-emoji-row">
           {ratingEmojis.map((emoji, i) => (
-            <motion.div
+            <motion.button
               key={emoji.value}
+              type="button"
+              aria-label={emoji.label}
+              aria-pressed={activeEmojiIndex === i}
               className={`rate-emoji ${activeEmojiIndex === i ? 'active' : ''}`}
               onClick={() => onRatingChange(emoji.value)}
               whileTap={tapScaleTight}
@@ -97,7 +100,7 @@ export const OverallRatingSection = ({
               }}
             >
               {emoji.icon}
-            </motion.div>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -112,6 +115,8 @@ export const OverallRatingSection = ({
           value={overallRating}
           onChange={(e) => onRatingChange(parseFloat(e.target.value))}
           className="rate-range"
+          aria-label="Gesamtbewertung"
+          aria-valuetext={`${overallRating.toFixed(1)} von 10`}
           style={{
             background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, var(--color-background-surface) ${overallRating * 10}%, var(--color-background-surface) 100%)`,
           }}

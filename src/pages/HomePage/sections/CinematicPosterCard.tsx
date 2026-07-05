@@ -23,6 +23,15 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
     <motion.div
       whileTap={tapScale}
       onClick={() => navigate(`/${item.type}/${item.id}`)}
+      role="button"
+      tabIndex={0}
+      aria-label={item.title}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/${item.type}/${item.id}`);
+        }
+      }}
       style={{
         flexShrink: 0,
         cursor: 'pointer',

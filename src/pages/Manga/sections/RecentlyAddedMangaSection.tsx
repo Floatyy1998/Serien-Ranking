@@ -49,6 +49,9 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
           {recentManga.map((manga) => (
             <motion.div
               key={manga.anilistId}
+              role="button"
+              tabIndex={0}
+              aria-label={`${manga.title} öffnen`}
               style={{
                 width: 110,
                 flexShrink: 0,
@@ -56,6 +59,12 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
               }}
               whileTap={tapScale}
               onClick={() => navigate(`/manga/${manga.anilistId}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/manga/${manga.anilistId}`);
+                }
+              }}
             >
               <div
                 style={{

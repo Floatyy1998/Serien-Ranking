@@ -2,6 +2,21 @@ import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
+/**
+ * Marketing-Markenpalette der Start-Seite (Pre-Auth Landing).
+ * BEWUSSTE AUSNAHME vom Theme-System: fixe Violett/Pink-Marke statt
+ * currentTheme/var(--theme-primary). Die Landing wird ausgeloggt gerendert –
+ * ein Angleichen an das Default-Theme (Grün/Schwarz) würde das Marketing-Design
+ * verändern. Werte daher bewusst hart & hier dokumentiert.
+ */
+const BRAND = {
+  purple: '#a855f7',
+  purpleDark: '#9333ea',
+  pink: '#ec4899',
+  pinkDark: '#db2777',
+  purpleRGB: '168, 85, 247',
+} as const;
+
 export const FooterCTA = () => (
   <motion.div
     initial={{ opacity: 0 }}
@@ -23,16 +38,16 @@ export const FooterCTA = () => (
         sx={{
           px: 5,
           py: 1.75,
-          background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)',
+          background: `linear-gradient(135deg, ${BRAND.purple} 0%, ${BRAND.pink} 100%)`,
           color: 'white',
           fontWeight: 600,
           fontSize: '1.1rem',
           borderRadius: 3,
           textTransform: 'none',
-          boxShadow: '0 4px 16px rgba(168, 85, 247, 0.3)',
+          boxShadow: `0 4px 16px rgba(${BRAND.purpleRGB}, 0.3)`,
           '&:hover': {
-            background: 'linear-gradient(135deg, #9333ea 0%, #db2777 100%)',
-            boxShadow: '0 6px 20px rgba(168, 85, 247, 0.4)',
+            background: `linear-gradient(135deg, ${BRAND.purpleDark} 0%, ${BRAND.pinkDark} 100%)`,
+            boxShadow: `0 6px 20px rgba(${BRAND.purpleRGB}, 0.4)`,
           },
         }}
       >

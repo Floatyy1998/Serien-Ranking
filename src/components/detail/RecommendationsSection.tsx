@@ -275,6 +275,15 @@ const MagneticCard = memo(
     return (
       <motion.div
         onClick={onClick}
+        role="button"
+        tabIndex={0}
+        aria-label={`${title} öffnen`}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onClick();
+          }
+        }}
         whileTap={{ scale: 0.97 }}
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -376,8 +385,8 @@ const MagneticCard = memo(
                   position: 'absolute',
                   top: 9,
                   right: 9,
-                  width: 30,
-                  height: 30,
+                  width: 44,
+                  height: 44,
                   borderRadius: '50%',
                   border: justAdded
                     ? `1px solid ${currentTheme.status.success}aa`

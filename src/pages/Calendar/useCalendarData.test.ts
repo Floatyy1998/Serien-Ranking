@@ -2,13 +2,7 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
-import {
-  useCalendarData,
-  contrastTextColor,
-  toDateKey,
-  formatDate,
-  WEEKDAYS_SHORT,
-} from './useCalendarData';
+import { useCalendarData, toDateKey, formatDate, WEEKDAYS_SHORT } from './useCalendarData';
 
 // ── firebase compat mock ──────────────────────────────────────────────
 const fb = vi.hoisted(() => {
@@ -212,10 +206,6 @@ describe('useCalendarData', () => {
 });
 
 describe('calendar utilities', () => {
-  it('contrastTextColor picks dark text on light backgrounds', () => {
-    expect(contrastTextColor('#ffffff')).toBe('#1a1a1a');
-    expect(contrastTextColor('#000000')).toBe('#ffffff');
-  });
   it('toDateKey formats YYYY-MM-DD', () => {
     expect(toDateKey(new Date(2026, 0, 5))).toBe('2026-01-05');
   });

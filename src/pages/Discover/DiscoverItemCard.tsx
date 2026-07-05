@@ -9,6 +9,7 @@ import { getImageUrl } from '../../utils/imageUrl';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { handleImgError } from './discoverItemHelpers';
 import { tapScale } from '../../lib/motion';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 // Premium memoized item card
 export const ItemCard = memo(
@@ -39,11 +40,20 @@ export const ItemCard = memo(
         <div
           className="discover-poster-wrap"
           onClick={handlePosterClick}
+          role="button"
+          tabIndex={0}
+          aria-label={item.title || item.name}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handlePosterClick();
+            }
+          }}
           style={{
             width: '100%',
             aspectRatio: '2/3',
             position: 'relative',
-            borderRadius: '14px',
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
             marginBottom: '10px',
             cursor: 'pointer',
@@ -71,7 +81,7 @@ export const ItemCard = memo(
               left: 0,
               right: 0,
               height: '60%',
-              background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+              background: `linear-gradient(to top, ${currentTheme.background.default}cc 0%, transparent 100%)`,
               pointerEvents: 'none',
             }}
           />
@@ -83,11 +93,11 @@ export const ItemCard = memo(
                 top: '10px',
                 right: '10px',
                 padding: '5px 10px',
-                background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.85), rgba(20, 20, 40, 0.9))',
+                background: `linear-gradient(135deg, ${currentTheme.background.default}d9, ${currentTheme.background.default}e6)`,
                 backdropFilter: 'var(--blur-sm)',
                 WebkitBackdropFilter: 'var(--blur-sm)',
                 borderRadius: '10px',
-                fontSize: '13px',
+                fontSize: 'var(--text-sm)',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -124,7 +134,7 @@ export const ItemCard = memo(
                   background: `${currentTheme.background.default}bf`,
                   backdropFilter: 'var(--blur-lg) saturate(1.4)',
                   WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
-                  borderRadius: '16px 16px 0 0',
+                  borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
                   padding: '14px 12px',
                   display: 'flex',
                   flexDirection: 'column',
@@ -133,25 +143,42 @@ export const ItemCard = memo(
                 }}
               >
                 {/* Close handle */}
-                <div
+                <button
+                  type="button"
+                  aria-label="Info schließen"
+                  className="discover-info-close"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowInfo(false);
                   }}
                   style={{
-                    width: '32px',
-                    height: '4px',
-                    borderRadius: '2px',
-                    background: 'rgba(255, 255, 255, 0.3)',
-                    margin: '0 auto 10px',
+                    width: '44px',
+                    height: '20px',
+                    padding: 0,
+                    border: 'none',
+                    background: 'transparent',
+                    margin: '0 auto 6px',
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
-                />
+                >
+                  <span
+                    style={{
+                      display: 'block',
+                      width: '32px',
+                      height: '4px',
+                      borderRadius: 'var(--radius-full)',
+                      background: 'var(--glass-border-medium)',
+                    }}
+                  />
+                </button>
 
                 {/* Title */}
                 <h3
                   style={{
-                    fontSize: '14px',
+                    fontSize: 'var(--text-base)',
                     fontWeight: 700,
                     margin: '0 0 6px',
                     color: currentTheme.text.secondary,
@@ -167,9 +194,9 @@ export const ItemCard = memo(
                 {/* Overview */}
                 <p
                   style={{
-                    fontSize: '12px',
+                    fontSize: 'var(--text-sm)',
                     lineHeight: 1.5,
-                    color: currentTheme.text.muted,
+                    color: currentTheme.text.secondary,
                     margin: 0,
                     flex: 1,
                     overflow: 'hidden',
@@ -192,8 +219,8 @@ export const ItemCard = memo(
                     background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                     border: 'none',
                     borderRadius: '10px',
-                    color: currentTheme.text.secondary,
-                    fontSize: '13px',
+                    color: getOptimalTextColor(currentTheme.primary),
+                    fontSize: 'var(--text-sm)',
                     fontWeight: 600,
                     cursor: 'pointer',
                     display: 'flex',
@@ -222,8 +249,8 @@ export const ItemCard = memo(
                   position: 'absolute',
                   bottom: '10px',
                   right: '10px',
-                  width: '34px',
-                  height: '34px',
+                  width: '44px',
+                  height: '44px',
                   background:
                     addingItem === `${item.type}-${item.id}`
                       ? 'var(--glass-heavy)'
@@ -243,7 +270,10 @@ export const ItemCard = memo(
                 <Add
                   style={{
                     fontSize: '20px',
-                    color: currentTheme.text.secondary,
+                    color:
+                      addingItem === `${item.type}-${item.id}`
+                        ? currentTheme.text.secondary
+                        : getOptimalTextColor(currentTheme.primary),
                     opacity: addingItem === `${item.type}-${item.id}` ? 0.5 : 1,
                   }}
                 />
@@ -252,12 +282,12 @@ export const ItemCard = memo(
           )}
         </div>
 
-        <h2
+        <h3
           style={{
-            fontSize: isDesktop ? '14px' : '13px',
+            fontSize: isDesktop ? 'var(--text-base)' : 'var(--text-sm)',
             fontWeight: 700,
             margin: 0,
-            color: currentTheme.text.primary,
+            color: currentTheme.text.secondary,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
@@ -267,11 +297,11 @@ export const ItemCard = memo(
           }}
         >
           {item.title || item.name}
-        </h2>
+        </h3>
 
         <p
           style={{
-            fontSize: '13px',
+            fontSize: 'var(--text-sm)',
             color: currentTheme.text.muted,
             margin: '4px 0 0 0',
             fontWeight: 500,
@@ -286,7 +316,7 @@ export const ItemCard = memo(
           <p
             title={`Weil du „${item.basedOn}" magst`}
             style={{
-              fontSize: '11px',
+              fontSize: 'var(--text-xs)',
               color: currentTheme.primary,
               margin: '4px 0 0 0',
               fontWeight: 600,

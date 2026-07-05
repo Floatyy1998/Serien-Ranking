@@ -138,13 +138,16 @@ function ProviderBadgeArea({
         {renderBadge(visible[0])}
         {/* Mobile-only +N overlay opens the popup with the full list. */}
         {providers.length > 1 && (
-          <span
+          <button
+            type="button"
             className="ratings-provider-count ratings-provider-count--mobile"
-            style={{ color: textColor, cursor: 'pointer' }}
+            style={{ color: textColor }}
             onClick={openPopup}
+            aria-label={`${providers.length - 1} weitere Anbieter`}
+            aria-expanded={showPopup}
           >
             +{providers.length - 1}
-          </span>
+          </button>
         )}
       </div>
 
@@ -157,7 +160,8 @@ function ProviderBadgeArea({
 
       {/* Desktop overflow counter — opens popup with the full list */}
       {overflow > 0 && (
-        <div
+        <button
+          type="button"
           className="ratings-provider-badge ratings-provider-badge--desktop"
           style={{
             background: bgColor,
@@ -167,9 +171,11 @@ function ProviderBadgeArea({
             cursor: 'pointer',
           }}
           onClick={openPopup}
+          aria-label={`${overflow} weitere Anbieter`}
+          aria-expanded={showPopup}
         >
           +{overflow}
-        </div>
+        </button>
       )}
 
       {/* Portal popup so it's not clipped by parent overflow rules */}

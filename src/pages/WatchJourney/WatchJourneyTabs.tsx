@@ -41,12 +41,16 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
     <>
       {/* Tab bar */}
       <div className="wj-tabs-scroll">
-        <div className="wj-tabs-bar">
+        <div className="wj-tabs-bar" role="tablist" aria-label="Watch-Journey-Ansichten">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <motion.button
                 key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                aria-label={tab.label}
                 whileTap={tapScale}
                 onClick={() => onTabChange(tab.id)}
                 className="wj-tab-btn"

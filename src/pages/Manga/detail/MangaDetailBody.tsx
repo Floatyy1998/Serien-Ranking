@@ -222,7 +222,14 @@ export const MangaDetailBody = ({
         <SectionTitle color={currentTheme.text.primary}>Bewertung</SectionTitle>
         <div className="manga-detail-rating">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
-            <button key={star} className="manga-detail-star-btn" onClick={() => onRating(star)}>
+            <button
+              key={star}
+              type="button"
+              className="manga-detail-star-btn"
+              aria-label={`${star} von 10 Sternen`}
+              aria-pressed={star <= userRating}
+              onClick={() => onRating(star)}
+            >
               <Star
                 style={{
                   fontSize: 28,
@@ -383,7 +390,16 @@ export const MangaDetailBody = ({
             {relations.map((rel) => (
               <div
                 key={rel.node.id}
+                role="button"
+                tabIndex={0}
+                aria-label={rel.node.title.english || rel.node.title.romaji}
                 onClick={() => navigate(`/manga/${rel.node.id}`)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/manga/${rel.node.id}`);
+                  }
+                }}
                 style={{ width: 90, flexShrink: 0, cursor: 'pointer' }}
               >
                 <img
@@ -436,7 +452,16 @@ export const MangaDetailBody = ({
               return (
                 <div
                   key={m.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={m.title.english || m.title.romaji}
                   onClick={() => navigate(`/manga/${m.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/manga/${m.id}`);
+                    }
+                  }}
                   style={{ width: 90, flexShrink: 0, cursor: 'pointer' }}
                 >
                   <img

@@ -1,7 +1,6 @@
 import { Subscriptions as SubscriptionsIcon } from '@mui/icons-material';
 import { useState } from 'react';
-import { PageHeader, PageLayout } from '../../components/ui';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { EmptyState, PageHeader, PageLayout, Skeleton } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useProviderLogos } from '../../hooks/useProviderLogos';
 import { useSubscriptionsData } from '../../hooks/useSubscriptionsData';
@@ -33,7 +32,6 @@ export const SubscriptionsPage = () => {
   } = useSubscriptionsData();
 
   const accent = currentTheme.accent || currentTheme.primary;
-  const border = currentTheme.border.default;
   const muted = currentTheme.text.muted;
 
   const inactiveInsights = insights.filter((i) => !i.active);
@@ -84,12 +82,28 @@ export const SubscriptionsPage = () => {
             </span>
           </div>
 
-          {loading && <LoadingSpinner size={36} />}
+          {loading && (
+            <div className="sub-skeleton-list" role="status" aria-label="Abos werden geladen">
+              {Array.from({ length: 3 }, (_, i) => (
+                <div key={i} className="sub-skeleton-card">
+                  <Skeleton width={42} height={42} shape="card" />
+                  <div className="sub-skeleton-card-body">
+                    <Skeleton width="55%" height={14} shape="text" />
+                    <Skeleton width="80%" height={11} shape="text" />
+                  </div>
+                  <Skeleton width={64} height={28} shape="pill" />
+                </div>
+              ))}
+            </div>
+          )}
 
           {!loading && activeInsights.length === 0 && (
-            <div className="sub-empty" style={{ borderColor: border, color: muted }}>
-              Noch keine Abos markiert. Wähle unten aus, welche Dienste du gerade hast.
-            </div>
+            <EmptyState
+              icon={<SubscriptionsIcon style={{ fontSize: 48 }} />}
+              title="Noch keine Abos markiert"
+              description="Wähle unten aus, welche Streaming-Dienste du gerade abonniert hast."
+              iconColor={currentTheme.text.secondary}
+            />
           )}
 
           {!loading && activeInsights.length > 0 && (

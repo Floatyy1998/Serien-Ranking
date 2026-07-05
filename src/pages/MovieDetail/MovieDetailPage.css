@@ -101,8 +101,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   transition:
     transform var(--duration-fast) ease,
     box-shadow var(--duration-fast) ease;
@@ -115,6 +115,16 @@
 
 .md-hero__action-btn:active {
   transform: scale(0.95);
+}
+
+.md-hero__action-btn:focus-visible,
+.md-rate-btn:focus-visible,
+.md-add-btn:focus-visible,
+.action-btn:focus-visible,
+.md-rating-badge:focus-visible,
+.md-not-found__btn:focus-visible {
+  outline: 2px solid var(--theme-primary, currentColor);
+  outline-offset: 2px;
 }
 
 .md-hero__action-btn--delete {
@@ -403,16 +413,18 @@
 }
 
 .md-genre-tag {
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 9999px;
-  font-size: 13px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  background: var(--glass-medium);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--theme-text-secondary);
+  border: 1px solid var(--glass-border-medium);
   transition: background var(--duration-fast) ease;
 }
 
 .md-genre-tag:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--glass-heavy);
 }
 
 .md-info-grid {

@@ -16,6 +16,8 @@ vi.mock('../../contexts/ThemeContextDef', () => ({
   }),
 }));
 
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
+
 vi.mock('recharts', () => {
   const P = ({ children }: { children?: React.ReactNode }) => <div>{children}</div>;
   return {

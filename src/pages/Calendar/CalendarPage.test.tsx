@@ -50,6 +50,8 @@ vi.mock('framer-motion', async () => {
 vi.mock('../../components/ui', () => ({
   PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
+  EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
+  SkeletonListRow: () => <div data-testid="skeleton" />,
 }));
 vi.mock('../../contexts/ThemeContextDef', () => {
   const make = (): unknown =>

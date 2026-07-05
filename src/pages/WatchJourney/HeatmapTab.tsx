@@ -6,6 +6,7 @@ import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveConta
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { DAY_NAMES } from '../../services/watchJourneyService';
+import { wjCard } from './watchJourneyStyles';
 
 interface HeatmapTabProps {
   data: WatchJourneyData;
@@ -161,13 +162,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{
@@ -254,15 +249,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-          position: 'relative',
-          overflowX: 'auto',
-        }}
+        style={{ ...wjCard(currentTheme), position: 'relative', overflowX: 'auto' }}
       >
         <h3
           style={{
@@ -324,7 +311,14 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                   style={{
                     position: 'absolute',
                     left: `${(hour / 23) * 100}%`,
-                    transform: 'translateX(-50%)',
+                    // Keep the first/last label fully inside the track instead of
+                    // clipping half of it off the left/right edge.
+                    transform:
+                      hour === 0
+                        ? 'translateX(0)'
+                        : hour === 23
+                          ? 'translateX(-100%)'
+                          : 'translateX(-50%)',
                     fontSize: 11,
                     color: textPrimary,
                     whiteSpace: 'nowrap',
@@ -361,19 +355,27 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                     const intensity = cell ? cell.count / maxCount : 0;
                     const isPeak = hour === data.peakHour && day === data.peakDay;
                     const isHovered = hoveredCell?.hour === hour && hoveredCell?.day === day;
+                    const count = cell?.count || 0;
+                    const showCell = () =>
+                      setHoveredCell({ hour, day, count, minutes: cell?.minutes || 0 });
                     return (
-                      <div
+                      <button
                         key={hour}
-                        onMouseEnter={() =>
-                          setHoveredCell({
-                            hour,
-                            day,
-                            count: cell?.count || 0,
-                            minutes: cell?.minutes || 0,
-                          })
-                        }
+                        type="button"
+                        // Touch has no hover: tapping toggles the detail tooltip.
+                        onClick={() => (isHovered ? setHoveredCell(null) : showCell())}
+                        onMouseEnter={showCell}
+                        aria-label={`${DAY_NAMES[day]} ${hour}:00 – ${count} ${
+                          count === 1 ? 'Session' : 'Sessions'
+                        }`}
+                        aria-pressed={isHovered}
                         style={{
+                          appearance: 'none',
+                          WebkitAppearance: 'none',
                           flex: 1,
+                          minWidth: 0,
+                          margin: 0,
+                          padding: 0,
                           aspectRatio: '1 / 1',
                           borderRadius: 4,
                           background:

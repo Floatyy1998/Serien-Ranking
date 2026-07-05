@@ -95,7 +95,11 @@ export const RecentlyWatchedPage = memo(() => {
                 ))}
               </motion.div>
             ) : totalEpisodes === 0 ? (
-              <EmptyState searchQuery={searchQuery} daysToShow={daysToShow} />
+              <EmptyState
+                searchQuery={searchQuery}
+                daysToShow={daysToShow}
+                onClearSearch={() => setSearchQuery('')}
+              />
             ) : (
               <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                 {loadedDateGroups.map((dateGroup, groupIndex) => {

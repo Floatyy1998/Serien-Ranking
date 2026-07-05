@@ -119,7 +119,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <Item {...itemProps}>
         <h2
           style={{
-            fontSize: '19px',
+            fontSize: 'var(--text-lg)',
             fontFamily: 'var(--font-display)',
             fontWeight: 700,
             color: currentTheme.text.primary,
@@ -135,8 +135,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <Item {...itemProps}>
           <p
             style={{
-              color: currentTheme.text.muted,
-              fontSize: '14px',
+              color: currentTheme.text.secondary,
+              fontSize: 'var(--text-base)',
               margin: 0,
               maxWidth: '300px',
               marginLeft: 'auto',
@@ -160,9 +160,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               padding: '13px 32px',
               background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
               border: 'none',
-              borderRadius: '14px',
+              borderRadius: 'var(--radius-xl)',
               color: getOptimalTextColor(currentTheme.primary),
-              fontSize: '14px',
+              fontSize: 'var(--text-base)',
               fontWeight: 700,
               cursor: 'pointer',
               boxShadow: `0 4px 24px ${currentTheme.primary}35, 0 0 40px ${currentTheme.primary}12, inset 0 1px 0 rgba(255, 255, 255, 0.12)`,

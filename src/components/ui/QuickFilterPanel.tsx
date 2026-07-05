@@ -82,10 +82,10 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             style={{
               background: `${currentTheme.accent}1a`,
               border: `1px solid ${currentTheme.accent}4d`,
-              borderRadius: '14px',
+              borderRadius: 'var(--radius-xl)',
               padding: '6px 12px',
               color: currentTheme.accent,
-              fontSize: '14px',
+              fontSize: 'var(--text-base)',
               fontWeight: 600,
               cursor: 'pointer',
             }}
@@ -149,9 +149,9 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                     ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
                     : 'var(--glass-medium)',
                   border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
-                  borderRadius: '14px',
+                  borderRadius: 'var(--radius-xl)',
                   color: currentTheme.text.secondary,
-                  fontSize: '14px',
+                  fontSize: 'var(--text-base)',
                   fontWeight: isActive ? 600 : 500,
                   cursor: 'pointer',
                   display: 'flex',
@@ -192,7 +192,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
               padding: '12px 16px',
               background: 'var(--glass-medium)',
               border: '1px solid var(--glass-border-light)',
-              borderRadius: '14px',
+              borderRadius: 'var(--radius-xl)',
               color: currentTheme.text.secondary,
               fontSize: '15px',
             }}
@@ -288,9 +288,9 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                     ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
                     : 'var(--glass-medium)',
                   border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
-                  borderRadius: '14px',
+                  borderRadius: 'var(--radius-xl)',
                   color: currentTheme.text.secondary,
-                  fontSize: '13px',
+                  fontSize: 'var(--text-sm)',
                   fontWeight: isActive ? 600 : 500,
                   cursor: 'pointer',
                   backdropFilter: isActive ? 'none' : 'var(--blur-sm)',
@@ -345,7 +345,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                       ? `linear-gradient(135deg, ${currentTheme.accent} 0%, ${currentTheme.accent}cc 100%)`
                       : 'var(--glass-medium)',
                     border: `1px solid ${isActive ? 'transparent' : `${currentTheme.border.default}`}`,
-                    borderRadius: '14px',
+                    borderRadius: 'var(--radius-xl)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -373,7 +373,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                   ) : (
                     <span
                       style={{
-                        fontSize: '13px',
+                        fontSize: 'var(--text-sm)',
                         fontWeight: 600,
                         color: currentTheme.text.secondary,
                         textAlign: 'center',

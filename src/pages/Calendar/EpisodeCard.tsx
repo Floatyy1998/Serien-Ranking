@@ -11,9 +11,25 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getProviderBrand } from '../Subscriptions/providerBrands';
 import type { SeriesGroup } from './useCalendarData';
-import { contrastTextColor } from './useCalendarData';
+
+/**
+ * Macht ein nicht-natives interaktives Element (role="button" auf einem div)
+ * per Tastatur bedienbar: Enter/Space lösen die Aktion aus. Verschachtelte
+ * Buttons/Links behalten ihr eigenes Verhalten — deshalb reagieren wir nur,
+ * wenn das Event direkt am Element (nicht an einem Kind) ausgelöst wurde.
+ */
+function activateOnKey(action: () => void) {
+  return (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      action();
+    }
+  };
+}
 
 /**
  * Liefert die Brand-Color der Episode (vom abonnierten Provider, sonst vom
@@ -131,7 +147,9 @@ const ProviderBadge = memo(
         title={url ? tooltip : provider.name}
         loading="lazy"
         decoding="async"
-        className={className}
+        // Ohne Link trägt das <img> die Positions-/Größen-Klasse; mit Link
+        // wandert diese auf den <a> (44px-Hit-Target), das <img> füllt ihn.
+        className={url ? 'cal-ep-provider-img' : className}
       />
     );
     if (!url) return img;
@@ -141,8 +159,9 @@ const ProviderBadge = memo(
         target="_blank"
         rel="noopener noreferrer"
         title={tooltip}
+        aria-label={tooltip}
         onClick={(e) => handleProviderLinkClick(e, normalized ?? '', searchTitle, url)}
-        style={{ display: 'contents' }}
+        className={`${className} cal-ep-provider-link`}
       >
         {img}
       </a>
@@ -161,11 +180,10 @@ const PremiereOverlay = memo(
     type: NonNullable<WeeklyEpisode['premiereType']>;
     themePrimary: string;
   }) => {
-    const bg = type === 'season-start' ? themePrimary : themePrimary;
     return (
       <span
         className="cal-ep-premiere-overlay"
-        style={{ background: bg, color: contrastTextColor(bg) }}
+        style={{ background: themePrimary, color: getOptimalTextColor(themePrimary) }}
       >
         {premiereLabel(type)}
       </span>
@@ -189,6 +207,8 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
     return (
       <div
         className={`cal-ep-status${small ? ' small' : ''}`}
+        role="img"
+        aria-label="Gesehen"
         style={{
           background: `${currentTheme.status.success}18`,
           color: currentTheme.status.success,
@@ -201,6 +221,8 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
 
   return (
     <button
+      type="button"
+      aria-label="Als gesehen markieren"
       className={`cal-ep-mark${small ? ' small' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
@@ -251,7 +273,7 @@ const PosterWrap = memo(
             className="cal-ep-break-overlay"
             style={{
               background: breakColor(breakType),
-              color: contrastTextColor(breakColor(breakType)),
+              color: getOptimalTextColor(breakColor(breakType)),
             }}
           >
             {breakLabel(breakType)}
@@ -261,6 +283,8 @@ const PosterWrap = memo(
         {watched ? (
           <div
             className="cal-ep-status-overlay"
+            role="img"
+            aria-label="Gesehen"
             style={{
               background: `${currentTheme.status.success}cc`,
               color: currentTheme.text.secondary,
@@ -270,6 +294,8 @@ const PosterWrap = memo(
           </div>
         ) : onMark ? (
           <button
+            type="button"
+            aria-label="Als gesehen markieren"
             className="cal-ep-mark-overlay"
             onClick={(e) => {
               e.stopPropagation();
@@ -364,7 +390,11 @@ export const SingleEpisodeCard = memo(
           position: 'relative',
           opacity: hasNoActiveSub ? 0.55 : 1,
         }}
+        role="button"
+        tabIndex={0}
+        aria-label={`${ep.seriesTitle} ${formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)} – Details öffnen`}
         onClick={handleClick}
+        onKeyDown={activateOnKey(handleClick)}
       >
         {stripColor && (
           <span aria-hidden className="cal-ep-brand-strip" style={{ background: stripColor }} />
@@ -530,7 +560,15 @@ export const EpisodeGroupCard = memo(
           <span aria-hidden className="cal-ep-brand-strip" style={{ background: stripColor }} />
         )}
         {/* Group header */}
-        <div className="cal-ep cal-ep-group-header" onClick={onToggle}>
+        <div
+          className="cal-ep cal-ep-group-header"
+          role="button"
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          aria-label={`${group.seriesTitle}, ${countLabel} – ${isExpanded ? 'einklappen' : 'ausklappen'}`}
+          onClick={onToggle}
+          onKeyDown={activateOnKey(onToggle)}
+        >
           {/* Desktop: poster card */}
           <PosterWrap
             posterSrc={backdropSrc || firstEp.poster}
@@ -617,6 +655,8 @@ export const EpisodeGroupCard = memo(
             {allWatched && (
               <div
                 className="cal-ep-status"
+                role="img"
+                aria-label="Alle gesehen"
                 style={{
                   background: `${currentTheme.status.success}18`,
                   color: currentTheme.status.success,
@@ -638,34 +678,44 @@ export const EpisodeGroupCard = memo(
         {/* Expanded episode list */}
         {isExpanded && (
           <div className="cal-ep-group-list">
-            {group.episodes.map((ep) => (
-              <div
-                key={`${ep.seriesId}-${ep.seasonIndex}-${ep.episodeIndex}`}
-                className="cal-ep-sub"
-                onClick={() =>
-                  navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`)
-                }
-              >
-                <span className="cal-ep-sub-nr" style={{ color: currentTheme.primary }}>
-                  E{String(ep.episodeNumber).padStart(2, '0')}
-                </span>
-                <span className="cal-ep-sub-name" style={{ color: currentTheme.text.secondary }}>
-                  {ep.episodeName}
-                  {formatAirTime(ep.airstamp) && (
-                    <span
-                      style={{ color: currentTheme.text.muted, marginLeft: 6, fontSize: '0.85em' }}
-                    >
-                      {formatAirTime(ep.airstamp)}
-                    </span>
-                  )}
-                </span>
-                <WatchIndicator
-                  watched={ep.watched}
-                  onMark={() => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex)}
-                  small
-                />
-              </div>
-            ))}
+            {group.episodes.map((ep) => {
+              const openEpisode = () =>
+                navigate(`/episode/${ep.seriesId}/s/${ep.seasonNumber}/e/${ep.episodeNumber}`);
+              return (
+                <div
+                  key={`${ep.seriesId}-${ep.seasonIndex}-${ep.episodeIndex}`}
+                  className="cal-ep-sub"
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`E${String(ep.episodeNumber).padStart(2, '0')} ${ep.episodeName} – Details öffnen`}
+                  onClick={openEpisode}
+                  onKeyDown={activateOnKey(openEpisode)}
+                >
+                  <span className="cal-ep-sub-nr" style={{ color: currentTheme.primary }}>
+                    E{String(ep.episodeNumber).padStart(2, '0')}
+                  </span>
+                  <span className="cal-ep-sub-name" style={{ color: currentTheme.text.secondary }}>
+                    {ep.episodeName}
+                    {formatAirTime(ep.airstamp) && (
+                      <span
+                        style={{
+                          color: currentTheme.text.muted,
+                          marginLeft: 6,
+                          fontSize: '0.85em',
+                        }}
+                      >
+                        {formatAirTime(ep.airstamp)}
+                      </span>
+                    )}
+                  </span>
+                  <WatchIndicator
+                    watched={ep.watched}
+                    onMark={() => onMarkWatched(ep.seriesId, ep.seasonIndex, ep.episodeIndex)}
+                    small
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

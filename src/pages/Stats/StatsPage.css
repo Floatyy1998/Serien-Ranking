@@ -159,6 +159,11 @@
   overflow: hidden;
 }
 
+.stats-actor-banner:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 .stats-actor-star {
   position: absolute;
   border-radius: 50%;

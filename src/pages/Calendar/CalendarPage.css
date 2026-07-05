@@ -18,9 +18,12 @@
   border-radius: var(--radius-md);
   color: inherit;
   padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.2s ease;
 }
@@ -33,12 +36,18 @@
   transform: scale(0.92);
 }
 
+.cal-arrow-btn:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
+}
+
 .cal-week-chip {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   color: inherit;
   padding: 6px 14px;
+  min-height: 44px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -48,6 +57,11 @@
 
 .cal-week-chip.is-current {
   background: rgba(255, 255, 255, 0.06);
+}
+
+.cal-week-chip:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
 }
 
 /* Filter */
@@ -77,6 +91,11 @@
 
 .cal-filter-chip:active {
   transform: scale(0.95);
+}
+
+.cal-filter-chip:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
 }
 
 /* Stats */
@@ -258,6 +277,14 @@
   transform: scale(0.98);
 }
 
+/* Sichtbarer Fokus für die tastaturbedienbaren role="button"-Karten */
+.cal-ep:focus-visible,
+.cal-ep-group-header:focus-visible,
+.cal-ep-sub:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: -2px;
+}
+
 /* Poster wrapper — hidden on mobile, visible on desktop */
 .cal-ep-poster-wrap {
   display: none;
@@ -349,6 +376,32 @@
   border: 2px solid rgba(15, 20, 35, 1);
 }
 
+/* Provider-Badge ist ein Link: die Sizing-Klasse (oben, .cal-ep-provider-badge
+   bzw. -mobile) sitzt jetzt auf dem <a> und positioniert es absolut; das <img>
+   füllt es. Optisch bleibt das Logo klein, aber ein transparentes ::after
+   vergrößert die Tap-Fläche auf ≥44px (verschachtelte Tap-Targets entschärft).
+   Kein display hier setzen — das <a> wird durch position:absolute blockifiziert,
+   und die desktop-only .cal-ep-provider-badge behält so ihr mobiles display:none. */
+.cal-ep-provider-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.cal-ep-provider-link::after {
+  content: '';
+  position: absolute;
+  inset: -11px;
+  border-radius: 50%;
+}
+
+.cal-ep-provider-link:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
+}
+
 /* Watch status */
 .cal-ep-status {
   flex-shrink: 0;
@@ -366,6 +419,7 @@
 }
 
 .cal-ep-mark {
+  position: relative;
   flex-shrink: 0;
   width: 34px;
   height: 34px;
@@ -387,6 +441,19 @@
   transform: scale(0.85);
 }
 
+/* Optisch klein (34/24px), aber ≥44px Tap-Fläche via transparentem Slop. */
+.cal-ep-mark::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+}
+
+.cal-ep-mark:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
+}
+
 .cal-ep-mark.small {
   width: 24px;
   height: 24px;
@@ -394,6 +461,10 @@
   min-height: 24px !important;
   max-width: 24px;
   max-height: 24px;
+}
+
+.cal-ep-mark.small::after {
+  inset: -10px;
 }
 
 /* Group */
@@ -476,11 +547,72 @@
   padding: 0;
 }
 
-/* Empty state */
-.cal-empty {
-  text-align: center;
-  padding: 40px 20px;
-  font-size: 15px;
+/* ── Entry buttons (Anime-Season / Serien-Kalender) ── */
+.cal-entry-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 40px);
+  margin: 0 20px 12px;
+  min-height: 52px;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--theme-primary, #00d123) 25%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--theme-primary, #00d123) 12%, transparent),
+    var(--glass-light)
+  );
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Erster Entry-Button: kleiner Abstand zur Toolbar darüber. */
+.cal-entry-btn--first {
+  margin-top: 4px;
+}
+
+.cal-entry-btn:focus-visible {
+  outline: 2px solid var(--theme-primary, #00d123);
+  outline-offset: 2px;
+}
+
+.cal-entry-btn__icon {
+  color: var(--theme-primary, #00d123);
+  flex-shrink: 0;
+}
+
+.cal-entry-btn__chevron {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.cal-entry-btn__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.cal-entry-btn__title {
+  display: block;
+  font-weight: 800;
+  font-size: var(--text-base);
+  font-family: var(--font-display);
+  color: var(--color-text-secondary);
+}
+
+.cal-entry-btn__sub {
+  display: block;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+/* Loading skeletons (mirrors Countdown) */
+.cal-loading {
+  padding: 0 16px;
 }
 
 /* =========================================
@@ -769,6 +901,18 @@
   .cal-ep-mark-overlay:hover {
     background: rgba(255, 255, 255, 0.2);
     transform: scale(1.1);
+  }
+
+  .cal-ep-mark-overlay::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+  }
+
+  .cal-ep-mark-overlay:focus-visible {
+    outline: 2px solid var(--theme-primary, #00d123);
+    outline-offset: 2px;
   }
 
   /* Premiere badge inline — hide on desktop (using overlay instead) */

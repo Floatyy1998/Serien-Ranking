@@ -8,6 +8,8 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
+import { EmptyState as UiEmptyState } from '../../components/ui/EmptyState';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
 import { tapScale, tapScaleTight } from '../../lib/motion';
@@ -113,6 +115,7 @@ export const SearchBar = memo<{
       <input
         type="text"
         placeholder="Serie suchen..."
+        aria-label="Serie suchen"
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         className="rw-search-input"
@@ -124,8 +127,10 @@ export const SearchBar = memo<{
       />
       {searchQuery && (
         <button
+          type="button"
           onClick={() => onSearchChange('')}
           className="rw-search-clear"
+          aria-label="Suche löschen"
           style={{
             background: `${currentTheme.text.muted}20`,
             color: currentTheme.text.muted,
@@ -166,7 +171,9 @@ export const TimeRangeChips = memo<{
             boxShadow:
               daysToShow === range.days ? `0 4px 12px ${currentTheme.status.success}40` : 'none',
             color:
-              daysToShow === range.days ? currentTheme.text.secondary : currentTheme.text.secondary,
+              daysToShow === range.days
+                ? getOptimalTextColor(currentTheme.primary)
+                : currentTheme.text.secondary,
             fontSize: '14px',
             fontWeight: 600,
             cursor: 'pointer',
@@ -184,30 +191,27 @@ TimeRangeChips.displayName = 'TimeRangeChips';
 
 // ── Empty state ─────────────────────────────────────────────────────────────
 
-export const EmptyState = memo<{ searchQuery: string; daysToShow: number }>(
-  ({ searchQuery, daysToShow }) => {
-    const { currentTheme } = useTheme();
+export const EmptyState = memo<{
+  searchQuery: string;
+  daysToShow: number;
+  onClearSearch: () => void;
+}>(({ searchQuery, daysToShow, onClearSearch }) => {
+  const { currentTheme } = useTheme();
 
-    return (
-      <motion.div
-        key="empty"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="rw-empty-state"
-      >
-        <div className="rw-empty-icon" style={{ background: `${currentTheme.text.muted}10` }}>
-          <History style={{ fontSize: '48px', color: currentTheme.text.muted }} />
-        </div>
-        <h2 className="rw-empty-title">Keine Episoden gefunden</h2>
-        <p style={{ margin: 0, color: currentTheme.text.muted, fontSize: '15px' }}>
-          {searchQuery
-            ? `Keine Ergebnisse für "${searchQuery}"`
-            : `In den letzten ${daysToShow} Tagen keine Episoden gesehen`}
-        </p>
-      </motion.div>
-    );
-  }
-);
+  return (
+    <UiEmptyState
+      icon={<History style={{ fontSize: '48px' }} />}
+      iconColor={currentTheme.text.muted}
+      title="Keine Episoden gefunden"
+      description={
+        searchQuery
+          ? `Keine Ergebnisse für "${searchQuery}"`
+          : `In den letzten ${daysToShow} Tagen keine Episoden gesehen`
+      }
+      action={searchQuery ? { label: 'Suche löschen', onClick: onClearSearch } : undefined}
+    />
+  );
+});
 EmptyState.displayName = 'EmptyState';
 
 // ── Date group header ───────────────────────────────────────────────────────
@@ -298,13 +302,31 @@ export const SingleEpisodeCard = memo<{
           alt={episode.seriesName}
           loading="lazy"
           decoding="async"
+          role="button"
+          tabIndex={0}
+          aria-label={`${episode.seriesName} öffnen`}
           onClick={() => onNavigateToSeries(episode.seriesId)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onNavigateToSeries(episode.seriesId);
+            }
+          }}
           className="rw-episode-poster"
         />
 
         <div style={CARD_BODY_STYLE}>
           <h3
+            role="button"
+            tabIndex={0}
+            aria-label={`${episode.seriesName} öffnen`}
             onClick={() => onNavigateToSeries(episode.seriesId)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToSeries(episode.seriesId);
+              }
+            }}
             className="rw-episode-series-name"
             style={{ color: currentTheme.text.primary }}
           >
@@ -312,9 +334,18 @@ export const SingleEpisodeCard = memo<{
           </h3>
 
           <p
+            role="button"
+            tabIndex={0}
+            aria-label={`Zur Episode S${episode.seasonNumber} E${episode.episodeNumber} springen`}
             onClick={() =>
               onNavigateToEpisode(episode.seriesId, episode.seasonNumber, episode.episodeNumber)
             }
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onNavigateToEpisode(episode.seriesId, episode.seasonNumber, episode.episodeNumber);
+              }
+            }}
             className="rw-episode-info"
             style={{ color: currentTheme.text.secondary }}
           >
@@ -356,9 +387,11 @@ export const SingleEpisodeCard = memo<{
           />
 
           <motion.button
+            type="button"
             whileTap={tapScaleTight}
             onClick={() => onRewatch(episode)}
             className="rw-rewatch-btn"
+            aria-label={isCompleting ? 'Als gesehen markiert' : 'Erneut ansehen'}
             style={{
               background: `${currentTheme.status.success}15`,
               border: `1px solid ${currentTheme.status.success}30`,

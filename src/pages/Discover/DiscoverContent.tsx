@@ -55,7 +55,7 @@ export const DiscoverContent = memo(
               textAlign: 'center',
               padding: '60px 20px',
               background: currentTheme.background.surface,
-              borderRadius: '20px',
+              borderRadius: 'var(--radius-xl)',
               border: `1px solid ${currentTheme.border.default}`,
             }}
           >
@@ -68,7 +68,7 @@ export const DiscoverContent = memo(
             />
             <p
               style={{
-                fontSize: '16px',
+                fontSize: 'var(--text-md)',
                 color: currentTheme.text.secondary,
                 marginBottom: '8px',
                 fontWeight: 600,
@@ -76,7 +76,7 @@ export const DiscoverContent = memo(
             >
               Keine Empfehlungen verfügbar
             </p>
-            <p style={{ fontSize: '14px', color: currentTheme.text.muted }}>
+            <p style={{ fontSize: 'var(--text-base)', color: currentTheme.text.secondary }}>
               Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier
               passende Empfehlungen.
             </p>
@@ -87,7 +87,7 @@ export const DiscoverContent = memo(
         <div>
           <p
             style={{
-              fontSize: '14px',
+              fontSize: 'var(--text-base)',
               color: currentTheme.text.muted,
               marginBottom: '20px',
               textAlign: 'center',
@@ -140,7 +140,7 @@ export const DiscoverContent = memo(
                 textAlign: 'center',
                 padding: '60px 20px',
                 background: currentTheme.background.surface,
-                borderRadius: '20px',
+                borderRadius: 'var(--radius-xl)',
                 border: `1px solid ${currentTheme.border.default}`,
               }}
             >
@@ -163,7 +163,7 @@ export const DiscoverContent = memo(
                 textAlign: 'center',
                 padding: '60px 20px',
                 background: currentTheme.background.surface,
-                borderRadius: '20px',
+                borderRadius: 'var(--radius-xl)',
                 border: `1px solid ${currentTheme.border.default}`,
               }}
             >

@@ -25,6 +25,15 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
     <motion.div
       whileTap={{ scale: 0.97 }}
       onClick={() => navigate('/countdowns')}
+      role="button"
+      tabIndex={0}
+      aria-label={`Countdown: ${countdown.title}, Staffel ${countdown.seasonNumber} ${daysText}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate('/countdowns');
+        }
+      }}
       style={{
         margin: '0 20px 16px',
         borderRadius: '14px',
@@ -124,7 +133,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           style={{
             margin: 0,
             fontSize: isDesktop ? '14px' : '13px',
-            color: 'rgba(255,255,255,0.7)',
+            color: _ct.text.secondary,
           }}
         >
           Staffel {countdown.seasonNumber} &middot; {daysText}
@@ -172,9 +181,9 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             </span>
             <span
               style={{
-                fontSize: '7px',
+                fontSize: 'var(--text-xs)',
                 fontWeight: 600,
-                color: 'rgba(255,255,255,0.6)',
+                color: _ct.text.secondary,
                 textTransform: 'uppercase',
               }}
             >

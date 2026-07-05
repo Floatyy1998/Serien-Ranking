@@ -10,6 +10,12 @@ import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../lib/motion';
 
+// Bewusste Akzent-Konstanten für das Glücksrad: gamifizierte Gold/Orange-
+// Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
+const SPIN_GOLD = '#FFD93D';
+const SPIN_ORANGE = '#FF9800';
+const SPIN_ICON_DARK = '#1a1a2e';
+
 export const DailySpinCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -66,13 +72,22 @@ export const DailySpinCard: React.FC = () => {
         <motion.div
           onClick={() => setShowWheel(true)}
           whileTap={tapScaleSmall}
+          role="button"
+          tabIndex={0}
+          aria-label={available ? 'Glücksrad drehen' : 'Glücksrad – morgen wieder verfügbar'}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setShowWheel(true);
+            }
+          }}
           style={{
             padding: '12px 14px',
             borderRadius: '14px',
             background: available
               ? `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.surface})`
               : currentTheme.background.surface,
-            border: `1px solid ${available ? '#FFD93D40' : currentTheme.border.default}`,
+            border: `1px solid ${available ? `${SPIN_GOLD}40` : currentTheme.border.default}`,
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -89,9 +104,13 @@ export const DailySpinCard: React.FC = () => {
               width: 40,
               height: 40,
               borderRadius: '12px',
+              // WICHTIG: gültige CSS-Farbe verwenden. `${text.muted}20` ergab
+              // `rgba(...)20` (ungültig) -> der Browser lehnt den Wert ab und
+              // behält den zuvor gesetzten Gold-Gradienten (Icon blieb gold,
+              // obwohl available=false). Token ist gültig und wird sauber gesetzt.
               background: available
-                ? 'linear-gradient(135deg, #FFD93D, #FF9800)'
-                : `${currentTheme.text.muted}20`,
+                ? `linear-gradient(135deg, ${SPIN_GOLD}, ${SPIN_ORANGE})`
+                : 'var(--glass-light)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -105,7 +124,10 @@ export const DailySpinCard: React.FC = () => {
               style={{ display: 'flex' }}
             >
               <AutoAwesome
-                style={{ fontSize: 20, color: available ? '#1a1a2e' : currentTheme.text.muted }}
+                style={{
+                  fontSize: 20,
+                  color: available ? SPIN_ICON_DARK : currentTheme.text.muted,
+                }}
               />
             </motion.div>
           </div>
@@ -128,7 +150,7 @@ export const DailySpinCard: React.FC = () => {
               style={{
                 margin: '1px 0 0',
                 fontSize: 12,
-                color: available ? '#FFD93D' : currentTheme.text.secondary,
+                color: available ? SPIN_GOLD : currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -146,8 +168,8 @@ export const DailySpinCard: React.FC = () => {
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: '#FFD93D',
-                  background: '#FFD93D18',
+                  color: SPIN_GOLD,
+                  background: `${SPIN_GOLD}18`,
                   padding: '2px 6px',
                   borderRadius: 4,
                 }}
@@ -163,7 +185,7 @@ export const DailySpinCard: React.FC = () => {
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
-                  background: '#FFD93D',
+                  background: SPIN_GOLD,
                 }}
               />
             )}

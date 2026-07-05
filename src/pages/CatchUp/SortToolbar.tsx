@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SortOption, SortDirection } from './useCatchUpData';
 
 interface SortToolbarProps {
@@ -17,11 +18,27 @@ interface SortToolbarProps {
   onSortClick: (value: SortOption) => void;
 }
 
-const SORT_OPTIONS: { value: SortOption; icon: React.ReactNode }[] = [
-  { value: 'episodes', icon: <MovieFilter style={{ fontSize: 18 }} /> },
-  { value: 'time', icon: <Timer style={{ fontSize: 18 }} /> },
-  { value: 'progress', icon: <TrendingUp style={{ fontSize: 18 }} /> },
-  { value: 'recent', icon: <Bolt style={{ fontSize: 18 }} /> },
+const SORT_OPTIONS: { value: SortOption; icon: React.ReactNode; label: string }[] = [
+  {
+    value: 'episodes',
+    icon: <MovieFilter style={{ fontSize: 18 }} />,
+    label: 'Nach Episoden sortieren',
+  },
+  {
+    value: 'time',
+    icon: <Timer style={{ fontSize: 18 }} />,
+    label: 'Nach verbleibender Zeit sortieren',
+  },
+  {
+    value: 'progress',
+    icon: <TrendingUp style={{ fontSize: 18 }} />,
+    label: 'Nach Fortschritt sortieren',
+  },
+  {
+    value: 'recent',
+    icon: <Bolt style={{ fontSize: 18 }} />,
+    label: 'Nach zuletzt geschaut sortieren',
+  },
 ];
 
 export const SortToolbar = memo<SortToolbarProps>(
@@ -37,13 +54,18 @@ export const SortToolbar = memo<SortToolbarProps>(
               return (
                 <button
                   key={option.value}
+                  type="button"
                   className="cu-sort-btn"
                   onClick={() => onSortClick(option.value)}
+                  aria-label={option.label}
+                  aria-pressed={isActive}
                   style={{
                     background: isActive
                       ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
                       : 'transparent',
-                    color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
+                    color: isActive
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.muted,
                     boxShadow: isActive ? `0 2px 8px ${currentTheme.primary}40` : 'none',
                   }}
                 >

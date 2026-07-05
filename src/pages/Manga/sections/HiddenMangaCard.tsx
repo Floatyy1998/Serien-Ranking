@@ -32,7 +32,7 @@ export const HiddenMangaCard: React.FC = React.memo(() => {
             Versteckte Manga
           </div>
           <div style={{ fontSize: 12, color: currentTheme.text.secondary, opacity: 0.7 }}>
-            {count} {count === 1 ? 'Manga' : 'Manga'} pausiert
+            {count} Manga pausiert
           </div>
         </div>
       </div>

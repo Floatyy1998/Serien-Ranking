@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { tapScale } from '../../lib/motion';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface SortOption {
   key: string;
@@ -36,13 +37,14 @@ export const SortBar = React.memo(
 
     const activeStyle = (active: boolean) => ({
       padding: '8px 14px',
+      minHeight: 44,
       background: active
         ? `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`
-        : `rgba(255,255,255,0.05)`,
+        : `var(--glass-light)`,
       border: 'none' as const,
-      borderRadius: '10px',
-      color: active ? theme.text.secondary : theme.text.primary,
-      fontSize: '13px',
+      borderRadius: 'var(--radius-md)',
+      color: active ? getOptimalTextColor(theme.primary) : theme.text.primary,
+      fontSize: 'var(--text-sm)',
       fontWeight: 600 as const,
       cursor: 'pointer' as const,
       display: 'flex' as const,

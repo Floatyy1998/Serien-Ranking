@@ -2,6 +2,7 @@ import { Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { wjCard } from './watchJourneyStyles';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -38,13 +39,7 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      style={{
-        margin: '0 20px',
-        padding: '20px',
-        borderRadius: '20px',
-        background: currentTheme.background.surface,
-        border: `1px solid ${currentTheme.border.default}`,
-      }}
+      style={{ ...wjCard(currentTheme), margin: '0 var(--space-5)' }}
     >
       <h3
         style={{
@@ -62,17 +57,26 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
         {seriesStats.slice(0, 10).map((series, index) => (
           <motion.div
             key={series.seriesId}
+            role="button"
+            tabIndex={0}
+            aria-label={`${series.title} öffnen`}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             whileTap={{ opacity: 0.7 }}
             transition={{ delay: 0.3 + index * 0.05 }}
             onClick={() => navigate(`/series/${series.seriesId}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                navigate(`/series/${series.seriesId}`);
+              }
+            }}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 12,
               padding: '12px',
-              borderRadius: 12,
+              borderRadius: 'var(--radius-md)',
               background: index === 0 ? `${primaryColor}15` : 'transparent',
               border: index === 0 ? `1px solid ${primaryColor}30` : 'none',
               cursor: 'pointer',

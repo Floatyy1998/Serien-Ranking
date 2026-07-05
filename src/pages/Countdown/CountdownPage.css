@@ -18,7 +18,7 @@
 
 .cd-section-label {
   margin: 8px 0 0;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -34,6 +34,11 @@
   cursor: pointer;
   padding: 0;
   text-align: left;
+}
+
+.cd-hero:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .cd-hero-bg {
@@ -107,13 +112,13 @@
 .cd-hero-season {
   margin: 4px 0 0;
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .cd-hero-date {
   margin: 2px 0 0;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 /* ── Countdown circle (hero) ── */
@@ -129,7 +134,7 @@
 }
 
 .cd-hero-circle-today {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 800;
   color: #fff;
   line-height: 1;
@@ -138,16 +143,16 @@
 }
 
 .cd-hero-circle-days {
-  font-size: 24px;
+  font-size: var(--text-xl);
   font-weight: 800;
   color: #fff;
   line-height: 1;
 }
 
 .cd-hero-circle-label {
-  font-size: 9px;
+  font-size: var(--text-xs);
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.85);
   margin-top: 1px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -163,6 +168,11 @@
   cursor: pointer;
   text-align: left;
   width: 100%;
+}
+
+.cd-item:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .cd-item-poster {
@@ -199,7 +209,7 @@
 
 .cd-item-meta {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 
 /* ── Day count badge (list item) ── */
@@ -212,7 +222,7 @@
 }
 
 .cd-item-days-today {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 800;
   line-height: 1;
   text-transform: uppercase;
@@ -226,6 +236,6 @@
 }
 
 .cd-item-days-label {
-  font-size: 9px;
+  font-size: var(--text-xs);
   margin-top: 2px;
 }

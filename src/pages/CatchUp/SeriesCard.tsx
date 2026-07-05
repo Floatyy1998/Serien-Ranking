@@ -23,6 +23,19 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
     navigate(`/series/${item.series.id}`);
   }, [navigate, item.series.id]);
 
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      // Nur reagieren, wenn die Karte selbst fokussiert ist – nicht wenn das
+      // Tastatur-Event von einem inneren Control (Mark-Button) hochblubbert.
+      if (e.target !== e.currentTarget) return;
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        handleClick();
+      }
+    },
+    [handleClick]
+  );
+
   const handleMarkNext = useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -48,7 +61,11 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
   return (
     <div
       className="cu-card"
+      role="button"
+      tabIndex={0}
+      aria-label={`${item.series.title} öffnen`}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       style={{
         background: currentTheme.background.surface,
         border: `1px solid ${currentTheme.border.default}`,

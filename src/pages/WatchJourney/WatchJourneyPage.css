@@ -216,6 +216,12 @@
   border-radius: var(--radius-md);
 }
 
+.wj-year-btn:focus-visible,
+.wj-year-option:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 .wj-year-dropdown {
   margin: 0 20px 16px;
   overflow: hidden;
@@ -273,6 +279,7 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
+  min-height: 44px;
   padding: 12px 8px;
   border-radius: 0;
   border: none;
@@ -281,6 +288,11 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.3s var(--ease-default);
+}
+
+.wj-tab-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: -2px;
 }
 
 /* ===== Active Tab Title ===== */

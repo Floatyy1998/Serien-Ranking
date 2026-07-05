@@ -482,6 +482,22 @@
   opacity: 0.55;
 }
 
+/* ─── Sichtbarer Fokusring für interaktive Elemente ─────────────────── */
+/* Der Slider setzt outline:none; hier per :focus-visible ein Tastatur-Ring
+ * wieder herstellen. Buttons bekommen denselben konsistenten Ring. */
+.inline-rating-range:focus-visible,
+.inline-rating-submit:focus-visible,
+.series-notification-btn:focus-visible,
+.series-notification-collapse-btn:focus-visible,
+.series-notification-nav-btn:focus-visible,
+.series-notification-dot:focus-visible,
+.snooze-menu-item:focus-visible,
+.notif-hub-tab:focus-visible,
+.notif-hub-mini:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 /* ─── Carousel dots ─────────────────────────────────────────────────── */
 .series-notification-nav {
   display: flex;

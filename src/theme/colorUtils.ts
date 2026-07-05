@@ -48,19 +48,25 @@ export function getContrastRatio(color1: string, color2: string): number {
 }
 
 /**
- * Bestimmt die optimale Textfarbe für einen gegebenen Hintergrund
- * Berücksichtigt WCAG AA Standards (Kontrast >= 4.5:1)
+ * Bestimmt die optimale Textfarbe (reines Schwarz/Weiß) für einen gegebenen
+ * Hintergrund nach WCAG 2.1.
+ *
+ * `getContrastRatio` basiert auf der sRGB-linearisierten Relativluminanz
+ * (L = 0.2126R + 0.7152G + 0.0722B mit Gamma-Korrektur je Kanal). Wir wählen
+ * die Endfarbe (#000 oder #fff) mit dem HÖHEREN Kontrastverhältnis gegen die
+ * Fläche — das ist die WCAG-optimale Entscheidung.
+ *
+ * Für helle Flächen liefert Schwarz den besseren Kontrast: z. B. beim
+ * Default-Grün #00d123 (L ≈ 0.46) ist blackContrast ≈ 10 ≫ whiteContrast ≈ 2,
+ * also korrekt SCHWARZ statt Weiß. Der Umschlagpunkt Schwarz↔Weiß liegt bei
+ * L ≈ 0.18; alles darüber (also insbesondere L > 0.35–0.4) bekommt dunklen Text.
  */
 export function getOptimalTextColor(backgroundColor: string): string {
   const whiteContrast = getContrastRatio(backgroundColor, '#ffffff');
   const blackContrast = getContrastRatio(backgroundColor, '#000000');
 
-  // Prüfe ob weiß oder schwarz besseren Kontrast bietet
-  if (whiteContrast >= blackContrast) {
-    return whiteContrast >= 4.5 ? '#ffffff' : '#f0f0f0';
-  } else {
-    return blackContrast >= 4.5 ? '#000000' : '#1a1a1a';
-  }
+  // Höheres Kontrastverhältnis gewinnt; bei Gleichstand Schwarz (dunkler Text).
+  return blackContrast >= whiteContrast ? '#000000' : '#ffffff';
 }
 
 /**

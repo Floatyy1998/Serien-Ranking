@@ -20,9 +20,14 @@ export const RewatchToggle = ({
   const { currentTheme } = useTheme();
 
   return (
-    <motion.div
+    <motion.button
+      type="button"
       whileTap={tapScaleSmall}
       onClick={onToggle}
+      aria-expanded={showRewatches}
+      aria-label={`${activeRewatchCount} aktive ${
+        activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'
+      } ${showRewatches ? 'ausblenden' : 'anzeigen'}`}
       className="watch-next-rewatch-toggle"
       style={{
         background: showRewatches
@@ -31,17 +36,17 @@ export const RewatchToggle = ({
         border: `1px solid ${currentTheme.accent || '#f59e0b'}${showRewatches ? '50' : '30'}`,
       }}
     >
-      <div className="watch-next-rewatch-toggle__content">
-        <div className="watch-next-rewatch-toggle__label">
+      <span className="watch-next-rewatch-toggle__content">
+        <span className="watch-next-rewatch-toggle__label">
           <Repeat style={{ fontSize: '15px', color: currentTheme.accent || '#f59e0b' }} />
           {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
-        </div>
+        </span>
         {showRewatches ? (
           <ExpandLess style={{ fontSize: '18px', color: currentTheme.text.muted }} />
         ) : (
           <ExpandMore style={{ fontSize: '18px', color: currentTheme.text.muted }} />
         )}
-      </div>
-    </motion.div>
+      </span>
+    </motion.button>
   );
 };

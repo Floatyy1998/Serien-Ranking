@@ -28,13 +28,16 @@ export const colors = {
 
   /**
    * Semantische Textfarben:
-   * - primary: Accent/highlight color (the theme's primary color)
-   * - secondary: Main readable body text color
-   * - muted: Dimmed/secondary text color
-   * - accent: Secondary accent for special highlights
+   * - primary: ACHTUNG — das ist die Akzent-/Highlight-Farbe (= Theme-Primary),
+   *            NICHT die Lesetext-Farbe. Für Fließtext `body`/`secondary` nutzen.
+   * - body:    Klar benannter Alias für lesbaren Fließtext (= `secondary`).
+   * - secondary: Haupt-Lesetext-Farbe (identisch zu `body`).
+   * - muted:   Gedimmte Sekundär-/Tertiärtext-Farbe.
+   * - accent:  Sekundär-Akzent für besondere Hervorhebungen.
    */
   text: {
     primary: 'var(--color-text-primary, #00d123)',
+    body: 'var(--color-text-secondary, #ffffff)',
     secondary: 'var(--color-text-secondary, #ffffff)',
     muted: 'var(--color-text-muted, #cccccc)',
     accent: 'var(--color-text-accent, #008a6e)',

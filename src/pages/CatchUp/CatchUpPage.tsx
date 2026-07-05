@@ -29,6 +29,7 @@ export const CatchUpPage: React.FC = () => {
     handleSortClick,
     currentLabel,
     scrollContainerRef,
+    loading,
   } = useCatchUpData();
 
   const hasData = catchUpData.length > 0;
@@ -37,7 +38,7 @@ export const CatchUpPage: React.FC = () => {
     <PageLayout
       ref={scrollContainerRef}
       style={{
-        height: '100vh',
+        height: '100dvh',
         overflowY: 'auto',
         overflowX: 'hidden',
         color: currentTheme.text.primary,
@@ -72,8 +73,9 @@ export const CatchUpPage: React.FC = () => {
           />
         )}
 
-        {/* Empty State */}
-        {!hasData && <EmptyState />}
+        {/* Empty State - nur zeigen, wenn wirklich nichts (mehr) aufzuholen ist,
+            nicht während die Serienliste noch lädt (sonst blitzt "Alles aufgeholt!"). */}
+        {!hasData && !loading && <EmptyState />}
 
         {/* Series List */}
         <motion.div

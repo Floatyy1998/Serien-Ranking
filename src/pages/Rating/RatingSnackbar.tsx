@@ -14,6 +14,8 @@ export const RatingSnackbar = ({ open, message }: RatingSnackbarProps) => {
   return (
     <div
       className="rate-snackbar"
+      role="status"
+      aria-live="polite"
       style={{
         background: currentTheme.status.success,
       }}

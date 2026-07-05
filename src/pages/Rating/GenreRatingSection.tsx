@@ -85,6 +85,8 @@ export const GenreRatingSection = ({
                 value={genreRatings[genre]}
                 onChange={(e) => onGenreRatingChange(genre, parseFloat(e.target.value))}
                 className="rate-genre-range"
+                aria-label={`Bewertung ${genre}`}
+                aria-valuetext={`${genreRatings[genre].toFixed(1)} von 10`}
                 style={{
                   background: `linear-gradient(to right, ${color} 0%, ${color} ${genreRatings[genre] * 10}%, var(--color-background-surface) ${genreRatings[genre] * 10}%, var(--color-background-surface) 100%)`,
                 }}

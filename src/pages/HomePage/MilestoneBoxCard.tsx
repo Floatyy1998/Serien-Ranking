@@ -17,6 +17,11 @@ import {
 } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
 
+// Bewusste Akzent-Konstanten für die Mystery Box: gamifizierte Lila/Magenta-
+// Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
+const BOX_PURPLE = '#9C27B0';
+const BOX_MAGENTA = '#E040FB';
+
 export const MilestoneBoxCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -93,11 +98,24 @@ export const MilestoneBoxCard: React.FC = () => {
               : undefined
           }
           whileTap={hasBox ? { scale: 0.98 } : undefined}
+          {...(hasBox && {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': `Mystery Box öffnen – ${availableBoxes} verfügbar`,
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                hapticCelebrate();
+                setCelebrate(true);
+                setShowBox(true);
+              }
+            },
+          })}
           style={{
             padding: '12px 14px',
             borderRadius: '14px',
             background: currentTheme.background.surface,
-            border: `1px solid ${hasBox ? '#9C27B040' : currentTheme.border.default}`,
+            border: `1px solid ${hasBox ? `${BOX_PURPLE}40` : currentTheme.border.default}`,
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -115,7 +133,7 @@ export const MilestoneBoxCard: React.FC = () => {
               height: 40,
               borderRadius: '12px',
               background: hasBox
-                ? 'linear-gradient(135deg, #9C27B0, #E040FB)'
+                ? `linear-gradient(135deg, ${BOX_PURPLE}, ${BOX_MAGENTA})`
                 : `${currentTheme.text.muted}20`,
               display: 'flex',
               alignItems: 'center',
@@ -152,7 +170,7 @@ export const MilestoneBoxCard: React.FC = () => {
               style={{
                 margin: '1px 0 0',
                 fontSize: 12,
-                color: hasBox ? '#E040FB' : currentTheme.text.secondary,
+                color: hasBox ? BOX_MAGENTA : currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -174,8 +192,8 @@ export const MilestoneBoxCard: React.FC = () => {
                     style={{
                       fontSize: 10,
                       fontWeight: 700,
-                      color: '#E040FB',
-                      background: '#E040FB18',
+                      color: BOX_MAGENTA,
+                      background: `${BOX_MAGENTA}18`,
                       padding: '2px 6px',
                       borderRadius: 4,
                     }}
@@ -190,7 +208,7 @@ export const MilestoneBoxCard: React.FC = () => {
                     width: 8,
                     height: 8,
                     borderRadius: '50%',
-                    background: '#E040FB',
+                    background: BOX_MAGENTA,
                   }}
                 />
               </>
@@ -211,7 +229,7 @@ export const MilestoneBoxCard: React.FC = () => {
                     style={{
                       height: '100%',
                       borderRadius: 2,
-                      background: 'linear-gradient(90deg, #9C27B0, #E040FB)',
+                      background: `linear-gradient(90deg, ${BOX_PURPLE}, ${BOX_MAGENTA})`,
                     }}
                   />
                 </div>

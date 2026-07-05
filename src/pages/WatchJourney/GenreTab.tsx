@@ -6,6 +6,8 @@ import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveConta
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
+import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
+import { wjCard } from './watchJourneyStyles';
 
 interface GenreTabProps {
   data: WatchJourneyData;
@@ -68,13 +70,13 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
 
   if (data.topGenres.length === 0) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <TheaterComedy style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
-        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Genre-Daten</h3>
-        <p style={{ color: textSecondary, fontSize: 14 }}>
-          Genres werden beim Markieren von Episoden erfasst
-        </p>
-      </div>
+      <WatchJourneyTabEmptyState
+        icon={
+          <TheaterComedy style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
+        }
+        title="Keine Genre-Daten"
+        description="Genres werden beim Markieren von Episoden erfasst. Schau etwas, um deine Genre-Verteilung zu sehen!"
+      />
     );
   }
 
@@ -146,13 +148,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{
@@ -222,7 +218,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
             marginTop: 8,
           }}
         >
-          {pieData.slice(0, 6).map((item) => (
+          {pieData.map((item) => (
             <div key={item.name} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.fill }} />
               <span style={{ color: textSecondary, fontSize: 12 }}>{item.name}</span>
@@ -236,13 +232,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{

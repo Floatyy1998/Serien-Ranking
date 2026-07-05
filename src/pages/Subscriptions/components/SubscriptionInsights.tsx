@@ -99,14 +99,7 @@ export const SubscriptionInsights = ({
             <ErrorOutline style={{ fontSize: 16 }} />
             Vorschlag
           </p>
-          <p
-            style={{
-              fontSize: 14,
-              color: currentTheme.text.primary,
-              margin: '8px 0 0 0',
-              lineHeight: 1.5,
-            }}
-          >
+          <p className="sub-insight-suggestion" style={{ color: currentTheme.text.primary }}>
             Du zahlst aktuell{' '}
             <strong style={{ color: warning }}>{formatEuro(wastedMonthlySpend)}</strong> pro Monat
             für Anbieter, die du seit über <strong>{unusedThresholdDays} Tagen</strong> nicht

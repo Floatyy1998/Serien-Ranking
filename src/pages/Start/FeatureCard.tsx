@@ -1,6 +1,15 @@
 import { Paper } from '@mui/material';
 import { motion } from 'framer-motion';
 
+/**
+ * Default-Akzent der Feature-Karten (Pre-Auth Landing).
+ * BEWUSSTE Marketing-Ausnahme vom Theme-System (fixe Violett-Marke statt
+ * currentTheme/var(--theme-primary)); die Landing rendert ausgeloggt, wo nur das
+ * Default-Theme Grün/Schwarz greifen würde. Einzelne Karten überschreiben `color`
+ * mit der Marketing-Palette (siehe FeaturesGrid).
+ */
+const BRAND_PURPLE = '#a855f7';
+
 export interface FeatureCardProps {
   icon: React.ReactNode;
   title: string;
@@ -14,7 +23,7 @@ export const FeatureCard = ({
   title,
   description,
   delay,
-  color = '#a855f7',
+  color = BRAND_PURPLE,
 }: FeatureCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}

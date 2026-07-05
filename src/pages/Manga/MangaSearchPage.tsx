@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { searchManga } from '../../services/anilistService';
 import type { AniListMangaSearchResult } from '../../types/Manga';
@@ -100,6 +101,8 @@ export const MangaSearchPage = () => {
     [user, mangaList]
   );
 
+  const addButtonTextColor = getOptimalTextColor(currentTheme.primary);
+
   return (
     <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
       {/* ─── Sticky Header ───────────────────────── */}
@@ -123,6 +126,8 @@ export const MangaSearchPage = () => {
           {/* Back + Search Input */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <motion.button
+              type="button"
+              aria-label="Suche schließen"
               whileTap={tapScaleTight}
               onClick={() => navigate('/manga')}
               style={{
@@ -131,7 +136,11 @@ export const MangaSearchPage = () => {
                 color: currentTheme.text.primary,
                 cursor: 'pointer',
                 padding: 4,
+                minWidth: 44,
+                minHeight: 44,
                 display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               <Close style={{ fontSize: 22 }} />
@@ -271,8 +280,17 @@ export const MangaSearchPage = () => {
               return (
                 <motion.div
                   key={result.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${result.title.english || result.title.romaji} öffnen`}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(`/manga/${result.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      navigate(`/manga/${result.id}`);
+                    }
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <div
@@ -358,18 +376,20 @@ export const MangaSearchPage = () => {
 
                     {/* Add button */}
                     <motion.button
+                      type="button"
+                      aria-label={`${result.title.english || result.title.romaji} zur Sammlung hinzufügen`}
                       whileTap={{ scale: 0.85 }}
                       onClick={(e) => handleAdd(e, result)}
                       style={{
                         position: 'absolute',
                         bottom: 10,
                         right: 10,
-                        width: 34,
-                        height: 34,
-                        borderRadius: 10,
+                        width: 44,
+                        height: 44,
+                        borderRadius: 12,
                         border: 'none',
                         background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                        color: '#fff',
+                        color: addButtonTextColor,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -384,7 +404,7 @@ export const MangaSearchPage = () => {
                             width: 16,
                             height: 16,
                             border: '2px solid rgba(255,255,255,0.3)',
-                            borderTopColor: '#fff',
+                            borderTopColor: addButtonTextColor,
                             borderRadius: '50%',
                             animation: 'spin 0.6s linear infinite',
                           }}

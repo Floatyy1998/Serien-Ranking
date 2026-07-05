@@ -2,6 +2,9 @@ import { Star, TrendingUp, People, EmojiEvents, Movie, Tv, AutoStories } from '@
 import { motion } from 'framer-motion';
 import { FeatureCard } from './FeatureCard';
 
+// Pro-Feature-Akzentfarben: bewusste Marketing-Palette der Pre-Auth-Landing,
+// entkoppelt vom Theme-System (die Landing rendert ausgeloggt). Nicht auf
+// currentTheme/Theme-Tokens umstellen – siehe FeatureCard.
 const FEATURES = [
   {
     icon: <Tv sx={{ fontSize: 24 }} />,

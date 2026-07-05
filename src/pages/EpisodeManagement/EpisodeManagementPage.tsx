@@ -1,6 +1,8 @@
 import { ExpandLess, ExpandMore, Refresh } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { PageHeader, CatchUpDialog } from '../../components/ui';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { BulkActionBar } from './BulkActionBar';
@@ -231,20 +233,28 @@ function WatchCountDialog({
   onDecrease: () => void;
   onClose: () => void;
 }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialogRef, open && !!episode, onClose);
+
   if (!open || !episode) return null;
 
   return (
     <div className="watch-dialog-overlay" onClick={onClose}>
       <motion.div
+        ref={dialogRef}
         className="watch-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="watch-dialog-title"
+        aria-describedby="watch-dialog-desc"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="dialog-header">
-          <h3>{episode.name}</h3>
-          <p>Aktuell: {episode.watchCount || 1}x gesehen</p>
+          <h3 id="watch-dialog-title">{episode.name}</h3>
+          <p id="watch-dialog-desc">Aktuell: {episode.watchCount || 1}x gesehen</p>
         </div>
 
         <div className="dialog-buttons">

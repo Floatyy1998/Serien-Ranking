@@ -100,9 +100,7 @@ function CountdownTiles({ target }: { target: number }) {
           style={{ borderColor: `${currentTheme.primary}33` }}
         >
           <span className="as-countdown-value">{String(tile.value).padStart(2, '0')}</span>
-          <span className="as-countdown-label" style={{ color: 'rgba(255,255,255,0.65)' }}>
-            {tile.label}
-          </span>
+          <span className="as-countdown-label">{tile.label}</span>
         </div>
       ))}
     </div>

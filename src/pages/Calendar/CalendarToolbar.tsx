@@ -35,12 +35,13 @@ const WeekNav = memo(
 
     return (
       <div className="cal-week-switcher">
-        <button className="cal-arrow-btn" onClick={onPrev}>
+        <button className="cal-arrow-btn" onClick={onPrev} aria-label="Vorherige Woche">
           <ChevronLeft style={{ fontSize: '20px' }} />
         </button>
         <button
           className={`cal-week-chip ${weekOffset === 0 ? 'is-current' : ''}`}
           onClick={onReset}
+          aria-label="Zur aktuellen Woche"
           style={
             weekOffset === 0
               ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary }
@@ -49,7 +50,7 @@ const WeekNav = memo(
         >
           KW {kwNumber} &middot; {formatDate(monday)} – {formatDate(sunday)}
         </button>
-        <button className="cal-arrow-btn" onClick={onNext}>
+        <button className="cal-arrow-btn" onClick={onNext} aria-label="Nächste Woche">
           <ChevronRight style={{ fontSize: '20px' }} />
         </button>
       </div>

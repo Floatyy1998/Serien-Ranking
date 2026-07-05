@@ -37,7 +37,7 @@ const SCROLL_STORAGE_KEY = 'catchup-scroll-position';
 const VALID_SORT_OPTIONS: SortOption[] = ['episodes', 'time', 'progress', 'recent'];
 
 export const useCatchUpData = () => {
-  const { seriesList } = useSeriesList();
+  const { seriesList, loading } = useSeriesList();
   const [searchParams, setSearchParams] = useSearchParams();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
@@ -235,6 +235,7 @@ export const useCatchUpData = () => {
     handleSortClick,
     currentLabel,
     scrollContainerRef,
+    loading,
   };
 };
 

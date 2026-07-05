@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { NotificationItem } from './notifications/NotificationItem';
 import { RecommendationCard } from './notifications/RecommendationCard';
 import type { UnifiedNotification } from './useUnifiedNotifications';
@@ -110,13 +111,14 @@ export const NotificationSheet = React.memo(function NotificationSheet({
               <motion.button
                 whileTap={tapScaleTight}
                 onClick={onMarkAllRead}
+                aria-label="Alle als gelesen markieren"
                 style={{
-                  width: '40px',
-                  height: '40px',
+                  width: '44px',
+                  height: '44px',
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
                   border: 'none',
-                  color: currentTheme.text.secondary,
+                  color: getOptimalTextColor(currentTheme.primary),
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -136,88 +136,114 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
             overflow: 'hidden',
           }}
         >
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            aria-expanded={expanded}
+          {/* Header row: sibling buttons (no nested interactive elements) */}
+          <div
             style={{
-              all: 'unset',
-              width: '100%',
-              boxSizing: 'border-box',
               display: 'flex',
               alignItems: 'center',
               gap: 12,
               padding: isMobile ? '10px 14px' : '12px 18px',
-              cursor: 'pointer',
-              color: currentTheme.text.primary,
-              fontSize: isMobile ? '13px' : '14px',
             }}
           >
-            <FilterListAlt style={{ fontSize: 18, color: accent }} />
-            <span style={{ flex: 1, fontWeight: 600 }}>
-              {data.fillerCount > 0 && (
-                <>
-                  <span style={{ color: accent }}>{data.fillerCount}</span> Filler
-                </>
-              )}
-              {data.fillerCount > 0 && data.recapCount > 0 && (
-                <span style={{ color: currentTheme.text.muted }}> · </span>
-              )}
-              {data.recapCount > 0 && (
-                <>
-                  <span style={{ color: recapColor }}>{data.recapCount}</span> Recap
-                </>
-              )}
-              <span
-                style={{
-                  color: currentTheme.text.muted,
-                  fontWeight: 400,
-                  marginLeft: 6,
-                  fontSize: '0.92em',
-                }}
-              >
-                · {data.totalEpisodes ?? '?'} Folgen gesamt
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-expanded={expanded}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                background: 'none',
+                border: 'none',
+                margin: 0,
+                padding: 0,
+                font: 'inherit',
+                textAlign: 'left',
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                cursor: 'pointer',
+                color: currentTheme.text.primary,
+                fontSize: isMobile ? '13px' : '14px',
+              }}
+            >
+              <FilterListAlt style={{ fontSize: 18, color: accent }} />
+              <span style={{ flex: 1, minWidth: 0, fontWeight: 600 }}>
+                {data.fillerCount > 0 && (
+                  <>
+                    <span style={{ color: accent }}>{data.fillerCount}</span> Filler
+                  </>
+                )}
+                {data.fillerCount > 0 && data.recapCount > 0 && (
+                  <span style={{ color: currentTheme.text.muted }}> · </span>
+                )}
+                {data.recapCount > 0 && (
+                  <>
+                    <span style={{ color: recapColor }}>{data.recapCount}</span> Recap
+                  </>
+                )}
+                <span
+                  style={{
+                    color: currentTheme.text.muted,
+                    fontWeight: 400,
+                    marginLeft: 6,
+                    fontSize: '0.92em',
+                  }}
+                >
+                  · {data.totalEpisodes ?? '?'} Folgen gesamt
+                </span>
               </span>
-            </span>
+            </button>
             {onReload && (
-              <span
-                role="button"
-                tabIndex={0}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onReload();
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onReload();
-                  }
-                }}
+              <button
+                type="button"
+                onClick={onReload}
                 aria-label="Filler-Infos neu laden"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  width: 26,
-                  height: 26,
-                  borderRadius: 6,
+                  width: 32,
+                  height: 32,
+                  flexShrink: 0,
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  margin: 0,
+                  borderRadius: 'var(--radius-xs)',
                   color: currentTheme.text.muted,
                   cursor: 'pointer',
                 }}
               >
                 <Refresh style={{ fontSize: 14 }} />
-              </span>
+              </button>
             )}
-            <ChevronRight
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              aria-label={expanded ? 'Details einklappen' : 'Details ausklappen'}
               style={{
-                fontSize: 20,
-                color: currentTheme.text.muted,
-                transform: expanded ? 'rotate(90deg)' : 'none',
-                transition: 'transform 0.18s',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                margin: 0,
+                cursor: 'pointer',
               }}
-            />
-          </button>
+            >
+              <ChevronRight
+                style={{
+                  fontSize: 20,
+                  color: currentTheme.text.muted,
+                  transform: expanded ? 'rotate(90deg)' : 'none',
+                  transition: 'transform 0.18s',
+                }}
+              />
+            </button>
+          </div>
 
           <AnimatePresence initial={false}>
             {expanded && (

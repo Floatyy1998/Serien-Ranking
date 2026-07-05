@@ -25,6 +25,15 @@ export function TrendingRankCard({ item, index, cardWidth }: TrendingRankCardPro
     <motion.div
       whileTap={tapScale}
       onClick={() => navigate(`/${item.type}/${item.id}`)}
+      role="button"
+      tabIndex={0}
+      aria-label={`Platz ${index + 1}: ${item.title}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/${item.type}/${item.id}`);
+        }
+      }}
       style={{
         cursor: 'pointer',
         flexShrink: 0,

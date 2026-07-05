@@ -62,7 +62,7 @@ export const EmptyState = memo(() => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
         className="cu-empty-text"
-        style={{ color: currentTheme.text.muted }}
+        style={{ color: currentTheme.text.secondary }}
       >
         Du bist bei allen Serien up-to-date. Zeit für etwas Neues!
       </motion.p>

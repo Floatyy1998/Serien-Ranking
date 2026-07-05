@@ -393,7 +393,7 @@ export const SeriesDetailPage = memo(() => {
                 activeTab === tab.key
                   ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
                   : undefined,
-              color: activeTab === tab.key ? '#fff' : undefined,
+              color: activeTab === tab.key ? getOptimalTextColor(currentTheme.primary) : undefined,
               fontSize: isMobile ? '12px' : '13px',
               fontWeight: activeTab === tab.key ? 600 : 500,
             }}

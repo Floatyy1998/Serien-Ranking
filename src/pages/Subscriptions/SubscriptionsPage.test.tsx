@@ -42,6 +42,7 @@ vi.mock('@mui/icons-material', () => {
       'Person',
       'PersonAdd',
       'PlaylistAdd',
+      'PlaylistAddCheck',
       'PlaylistRemove',
       'RecordVoiceOver',
       'Save',
@@ -160,8 +161,9 @@ describe('SubscriptionsPage', () => {
   it('shows the empty state when there are no active subscriptions', () => {
     data.overrides = { insights: [], activeInsights: [] };
     render(<SubscriptionsPage />);
+    expect(screen.getByText('Noch keine Abos markiert')).toBeInTheDocument();
     expect(
-      screen.getByText('Noch keine Abos markiert. Wähle unten aus, welche Dienste du gerade hast.')
+      screen.getByText('Wähle unten aus, welche Streaming-Dienste du gerade abonniert hast.')
     ).toBeInTheDocument();
   });
 });

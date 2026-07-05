@@ -52,15 +52,38 @@ export const SeriesAccordion = memo<{
         }}
       >
         {/* Accordion header */}
-        <div onClick={() => onToggle(dateKey, seriesId)} className="rw-accordion-header">
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={isExpanded}
+          aria-label={`${firstEpisode.seriesName}, ${episodes.length} Episoden`}
+          onClick={() => onToggle(dateKey, seriesId)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onToggle(dateKey, seriesId);
+            }
+          }}
+          className="rw-accordion-header"
+        >
           <img
             src={firstEpisode.seriesPoster}
             alt={firstEpisode.seriesName}
             loading="lazy"
             decoding="async"
+            role="button"
+            tabIndex={0}
+            aria-label={`${firstEpisode.seriesName} öffnen`}
             onClick={(e) => {
               e.stopPropagation();
               onNavigateToSeries(firstEpisode.seriesId);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                onNavigateToSeries(firstEpisode.seriesId);
+              }
             }}
             className="rw-accordion-poster"
           />
@@ -134,6 +157,9 @@ export const SeriesAccordion = memo<{
                     >
                       <div style={FLEX_1_STYLE}>
                         <p
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Zur Episode S${episode.seasonNumber} E${episode.episodeNumber} springen`}
                           onClick={() =>
                             onNavigateToEpisode(
                               episode.seriesId,
@@ -141,6 +167,16 @@ export const SeriesAccordion = memo<{
                               episode.episodeNumber
                             )
                           }
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              onNavigateToEpisode(
+                                episode.seriesId,
+                                episode.seasonNumber,
+                                episode.episodeNumber
+                              );
+                            }
+                          }}
                           className="rw-accordion-episode-name"
                           style={{ color: currentTheme.text.primary }}
                         >
@@ -171,7 +207,9 @@ export const SeriesAccordion = memo<{
                       />
 
                       <motion.button
+                        type="button"
                         whileTap={tapScaleTight}
+                        aria-label={isCompleting ? 'Als gesehen markiert' : 'Erneut ansehen'}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRewatch(episode);

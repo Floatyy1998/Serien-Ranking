@@ -356,6 +356,14 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  border: none;
+  font-family: inherit;
+}
+
+.ratings-provider-badge:focus-visible,
+.ratings-provider-count:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 .ratings-provider-badge img {
@@ -381,6 +389,8 @@
   padding: 0 3px;
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* Desktop-only badges: hidden on mobile */

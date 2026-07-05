@@ -1,7 +1,10 @@
+import { PlaylistAddCheck } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { EmptyState } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import type { WatchlistGap } from '../../../hooks/useSubscriptionsData';
+import { tapScale } from '../../../lib/motion';
 import { getProviderBrand } from '../providerBrands';
 
 interface WatchlistGapsSectionProps {
@@ -18,6 +21,7 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
   const surface = currentTheme.background.surface;
   const border = currentTheme.border.default;
   const muted = currentTheme.text.muted;
+  const bodyColor = currentTheme.text.secondary;
 
   return (
     <div className="sub-section">
@@ -31,65 +35,74 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
           </span>
         )}
       </div>
-      <p className="sub-section-hint" style={{ color: muted }}>
+      <p className="sub-section-hint" style={{ color: bodyColor }}>
         Diese Watchlist-Serien laufen nur bei Anbietern, die du gerade nicht abonniert hast.
       </p>
 
       {watchlistGaps.length === 0 ? (
-        <div className="sub-empty" style={{ borderColor: border, color: muted }}>
-          {activeCount === 0
-            ? 'Sobald du Abos markierst, zeigen wir hier Lücken.'
-            : 'Keine Lücken – alle Watchlist-Serien laufen auf deinen aktiven Abos.'}
-        </div>
+        <EmptyState
+          icon={<PlaylistAddCheck style={{ fontSize: 48 }} />}
+          title={activeCount === 0 ? 'Noch keine Lücken' : 'Keine Lücken'}
+          description={
+            activeCount === 0
+              ? 'Sobald du Abos markierst, zeigen wir hier Serien, die du sonst nirgends streamen kannst.'
+              : 'Alle Watchlist-Serien laufen auf deinen aktiven Abos.'
+          }
+          iconColor={bodyColor}
+        />
       ) : (
         <div className="sub-gap-list">
-          {watchlistGaps.slice(0, 30).map(({ series, providers }) => (
-            <motion.div
-              key={series.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="sub-gap-card"
-              style={{
-                background: surface,
-                borderColor: border,
-                color: currentTheme.text.primary,
-              }}
-              onClick={() => navigate(`/series/${series.id}`)}
-            >
-              {series.poster?.poster && (
-                <img
-                  src={series.poster.poster}
-                  alt={series.title || series.original_name || 'Serie'}
-                  className="sub-gap-poster"
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-              <div className="sub-gap-body">
-                <p className="sub-gap-title">
-                  {series.title || series.original_name || 'Unbekannt'}
-                </p>
-                <div className="sub-gap-providers">
-                  {providers.map((p) => {
-                    const b = getProviderBrand(p);
-                    return (
-                      <span
-                        key={p}
-                        className="sub-gap-chip"
-                        style={{
-                          borderColor: `${b.color}40`,
-                          color: currentTheme.text.primary,
-                        }}
-                      >
-                        <span className="sub-gap-chip-dot" style={{ background: b.color }} />
-                        {p}
-                      </span>
-                    );
-                  })}
+          {watchlistGaps.slice(0, 30).map(({ series, providers }) => {
+            const gapTitle = series.title || series.original_name || 'Unbekannt';
+            return (
+              <motion.button
+                key={series.id}
+                type="button"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                whileTap={tapScale}
+                className="sub-gap-card"
+                style={{
+                  background: surface,
+                  borderColor: border,
+                  color: currentTheme.text.primary,
+                }}
+                onClick={() => navigate(`/series/${series.id}`)}
+                aria-label={`${gapTitle} öffnen`}
+              >
+                {series.poster?.poster && (
+                  <img
+                    src={series.poster.poster}
+                    alt=""
+                    className="sub-gap-poster"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div className="sub-gap-body">
+                  <p className="sub-gap-title">{gapTitle}</p>
+                  <div className="sub-gap-providers">
+                    {providers.map((p) => {
+                      const b = getProviderBrand(p);
+                      return (
+                        <span
+                          key={p}
+                          className="sub-gap-chip"
+                          style={{
+                            borderColor: `${b.color}40`,
+                            color: currentTheme.text.primary,
+                          }}
+                        >
+                          <span className="sub-gap-chip-dot" style={{ background: b.color }} />
+                          {p}
+                        </span>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.button>
+            );
+          })}
           {watchlistGaps.length > 30 && (
             <p style={{ fontSize: 12, textAlign: 'center', color: muted, marginTop: 4 }}>
               + {watchlistGaps.length - 30} weitere

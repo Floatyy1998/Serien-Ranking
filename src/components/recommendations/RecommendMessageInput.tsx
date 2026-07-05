@@ -39,6 +39,7 @@ export const RecommendMessageInput: React.FC<RecommendMessageInputProps> = ({
           }}
         />
         <div
+          id="recommend-message-label"
           style={{
             fontSize: isMobile ? 13 : 14,
             fontWeight: 800,
@@ -78,6 +79,7 @@ export const RecommendMessageInput: React.FC<RecommendMessageInputProps> = ({
           onChange={(e) => onMessageChange(e.target.value.slice(0, MAX_MESSAGE_LENGTH))}
           onFocus={() => setMessageFocused(true)}
           onBlur={() => setMessageFocused(false)}
+          aria-labelledby="recommend-message-label"
           placeholder="Sag was dazu…"
           rows={isMobile ? 2 : 3}
           style={{

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useId } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { GradientText } from '../../components/ui';
 
@@ -13,12 +13,16 @@ export const GradientRing = memo<GradientRingProps>(({ progress, size = 56, stro
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (progress / 100) * circumference;
+  // Stabile, pro-Instanz eindeutige ID – verhindert kollidierende
+  // <linearGradient id> (Render-Hazard), wenn mehrere Ringe denselben
+  // progress-Wert haben.
+  const gradientId = `ring-gradient-${useId().replace(/:/g, '')}`;
 
   return (
     <div className="cu-ring-wrap" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="cu-ring-svg">
         <defs>
-          <linearGradient id={`ring-gradient-${progress}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor={currentTheme.primary} />
             <stop offset="100%" stopColor={currentTheme.secondary} />
           </linearGradient>
@@ -36,7 +40,7 @@ export const GradientRing = memo<GradientRingProps>(({ progress, size = 56, stro
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke={`url(#ring-gradient-${progress})`}
+          stroke={`url(#${gradientId})`}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}

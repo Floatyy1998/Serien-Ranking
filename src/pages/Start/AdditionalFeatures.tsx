@@ -10,6 +10,9 @@ interface HighlightItem {
   color: string;
 }
 
+// Pro-Highlight-Akzentfarben: bewusste Marketing-Palette der Pre-Auth-Landing,
+// entkoppelt vom Theme-System (die Landing rendert ausgeloggt). Nicht auf
+// currentTheme/Theme-Tokens umstellen.
 const HIGHLIGHTS: HighlightItem[] = [
   {
     icon: Speed,

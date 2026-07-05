@@ -78,38 +78,43 @@ export const SearchSuggestions = memo(
               }}
             >
               {recentSearches.map((term, index) => (
-                <motion.button
+                <motion.div
                   key={term}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + index * 0.03 }}
-                  onClick={() => onSelectTerm(term)}
-                  className="search-recent-item"
+                  className="search-recent-row"
                   style={{
                     borderBottom:
                       index < recentSearches.length - 1
                         ? `1px solid ${currentTheme.border.default}`
                         : 'none',
-                    color: currentTheme.text.primary,
                   }}
                 >
-                  <div className="search-recent-item-content">
-                    <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
-                    <span>{term}</span>
-                  </div>
-                  <motion.div
+                  <button
+                    type="button"
+                    onClick={() => onSelectTerm(term)}
+                    className="search-recent-item"
+                    aria-label={`Nach „${term}" suchen`}
+                    style={{ color: currentTheme.text.primary }}
+                  >
+                    <span className="search-recent-item-content">
+                      <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
+                      <span>{term}</span>
+                    </span>
+                  </button>
+                  <motion.button
+                    type="button"
                     whileHover={{ scale: 1.1 }}
                     whileTap={tapScaleTight}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveRecent(term);
-                    }}
+                    onClick={() => onRemoveRecent(term)}
                     className="search-recent-remove-btn"
+                    aria-label={`„${term}" entfernen`}
                     style={{ background: `${currentTheme.text.muted}15` }}
                   >
                     <Close style={{ fontSize: '16px', color: currentTheme.text.muted }} />
-                  </motion.div>
-                </motion.button>
+                  </motion.button>
+                </motion.div>
               ))}
             </div>
           </section>

@@ -43,10 +43,19 @@ export const HiddenMangaPage = () => {
             <motion.div
               key={manga.anilistId}
               layout
+              role="button"
+              tabIndex={0}
+              aria-label={`${manga.title} öffnen`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, height: 0 }}
               onClick={() => navigate(`/manga/${manga.anilistId}`)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  navigate(`/manga/${manga.anilistId}`);
+                }
+              }}
               style={{
                 display: 'flex',
                 gap: 14,

@@ -779,9 +779,13 @@
   text-shadow: 0 0 16px color-mix(in srgb, var(--theme-primary) 65%, transparent);
 }
 
+/* Labels kräftiger als zuvor (war inline 65% Weiß, soff auf hellen Bannern
+   ab) + Text-Shadow zur Trennung vom Backdrop. */
 .as-countdown-label {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
 }

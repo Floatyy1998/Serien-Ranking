@@ -6,6 +6,8 @@ import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveConta
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
+import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
+import { wjCard } from './watchJourneyStyles';
 
 interface ProviderTabProps {
   data: WatchJourneyData;
@@ -68,13 +70,11 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
 
   if (data.topProviders.length === 0) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <Subscriptions style={{ fontSize: 64, color: `${textMuted}30`, marginBottom: 16 }} />
-        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Provider-Daten</h3>
-        <p style={{ color: textSecondary, fontSize: 14 }}>
-          Streaming-Dienste werden beim Markieren von Episoden erfasst
-        </p>
-      </div>
+      <WatchJourneyTabEmptyState
+        icon={<Subscriptions style={{ fontSize: 64, color: `${textMuted}30`, marginBottom: 16 }} />}
+        title="Keine Provider-Daten"
+        description="Streaming-Dienste werden beim Markieren von Episoden erfasst. Schau etwas, um deine Streaming-Verteilung zu sehen!"
+      />
     );
   }
 
@@ -146,13 +146,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{
@@ -239,13 +233,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2 }}
-        style={{
-          margin: '0 20px 24px',
-          padding: '20px',
-          borderRadius: '20px',
-          background: bgSurface,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
+        style={wjCard(currentTheme)}
       >
         <h3
           style={{

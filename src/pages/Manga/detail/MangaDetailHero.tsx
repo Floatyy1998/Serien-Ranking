@@ -254,8 +254,10 @@ export const MangaDetailHero = ({
                 }}
               >
                 <button
+                  type="button"
                   onClick={() => onChapterChange(editChapter - 1)}
                   className="manga-hero-stepper"
+                  aria-label="Ein Kapitel zurück"
                   style={{ color: 'rgba(255,255,255,0.3)' }}
                 >
                   <Remove style={{ fontSize: 20 }} />
@@ -263,6 +265,7 @@ export const MangaDetailHero = ({
                 <input
                   type="text"
                   inputMode="numeric"
+                  aria-label="Aktuelles Kapitel"
                   defaultValue={editChapter}
                   key={editChapter}
                   onFocus={(e) => e.target.select()}
@@ -289,8 +292,10 @@ export const MangaDetailHero = ({
                   }}
                 />
                 <button
+                  type="button"
                   onClick={() => onChapterChange(editChapter + 1)}
                   className="manga-hero-stepper"
+                  aria-label="Ein Kapitel weiter"
                   style={{ color: 'rgba(255,255,255,0.3)' }}
                 >
                   <Add style={{ fontSize: 20 }} />
@@ -298,7 +303,7 @@ export const MangaDetailHero = ({
                 {effectiveChapters && (
                   <span
                     style={{
-                      color: 'rgba(255,255,255,0.2)',
+                      color: 'rgba(255,255,255,0.6)',
                       fontSize: 13,
                       fontWeight: 500,
                       marginLeft: 4,

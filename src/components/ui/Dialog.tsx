@@ -33,7 +33,7 @@ export const Dialog = memo(
         case 'error':
           return currentTheme.status.error;
         case 'warning':
-          return currentTheme.primary;
+          return currentTheme.status.warning;
         default:
           return currentTheme.primary;
       }
@@ -57,7 +57,7 @@ export const Dialog = memo(
                 left: 0,
                 right: 0,
                 bottom: 0,
-                background: 'rgba(0, 0, 0, 0.6)',
+                background: 'var(--overlay-backdrop)',
                 backdropFilter: 'var(--blur-sm)',
                 WebkitBackdropFilter: 'var(--blur-sm)',
                 zIndex: 'var(--z-modal-backdrop)' as string,

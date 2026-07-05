@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GradientText } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContextDef';
 import { tapScale } from '../../../lib/motion';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { ProviderFilter } from '../ProviderFilter';
 import { SortBar } from '../SortBar';
 
@@ -97,13 +98,17 @@ export const WatchNextHeader = ({
               <motion.button
                 whileTap={tapScale}
                 onClick={onToggleEditMode}
+                aria-label="Reihenfolge bearbeiten"
+                aria-pressed={editModeActive}
                 className={`watch-next-header__btn${editModeActive ? ' watch-next-header__btn--active' : ''}`}
                 style={
                   {
                     background: editModeActive
                       ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                      : `rgba(255,255,255,0.05)`,
-                    color: editModeActive ? currentTheme.text.secondary : currentTheme.text.primary,
+                      : `var(--glass-light)`,
+                    color: editModeActive
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.primary,
                     '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
                   } as React.CSSProperties
                 }
@@ -117,13 +122,17 @@ export const WatchNextHeader = ({
             <motion.button
               whileTap={tapScale}
               onClick={onToggleFilter}
+              aria-label="Filter"
+              aria-expanded={showFilter}
               className={`watch-next-header__btn${showFilter ? ' watch-next-header__btn--active' : ''}`}
               style={
                 {
                   background: showFilter
                     ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                    : `rgba(255,255,255,0.05)`,
-                  color: showFilter ? currentTheme.text.secondary : currentTheme.text.primary,
+                    : `var(--glass-light)`,
+                  color: showFilter
+                    ? getOptimalTextColor(currentTheme.primary)
+                    : currentTheme.text.primary,
                   '--btn-active-shadow': `0 4px 15px ${currentTheme.primary}40`,
                 } as React.CSSProperties
               }
@@ -146,6 +155,7 @@ export const WatchNextHeader = ({
             <input
               type="text"
               placeholder="Serie suchen..."
+              aria-label="Serie suchen"
               value={filterInput}
               onChange={(e) => onFilterInputChange(e.target.value)}
               className="watch-next-filter__input"
@@ -176,25 +186,31 @@ export const WatchNextHeader = ({
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 8,
+                  minHeight: 44,
                   padding: '7px 12px',
-                  borderRadius: 999,
+                  borderRadius: 'var(--radius-full)',
                   border: `1px solid ${onlyMySubs ? currentTheme.primary : currentTheme.border.default}`,
                   background: onlyMySubs
                     ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
-                    : 'rgba(255,255,255,0.04)',
-                  color: onlyMySubs ? currentTheme.text.secondary : currentTheme.text.primary,
-                  fontSize: 12,
+                    : 'var(--glass-light)',
+                  color: onlyMySubs
+                    ? getOptimalTextColor(currentTheme.primary)
+                    : currentTheme.text.primary,
+                  fontSize: 'var(--text-xs)',
                   fontWeight: 600,
                   cursor: 'pointer',
                 }}
                 aria-pressed={onlyMySubs}
+                aria-label="Nur meine Abos anzeigen"
               >
                 <span
                   style={{
                     width: 6,
                     height: 6,
                     borderRadius: 3,
-                    background: onlyMySubs ? '#fff' : currentTheme.text.muted,
+                    background: onlyMySubs
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.muted,
                   }}
                 />
                 Nur meine Abos

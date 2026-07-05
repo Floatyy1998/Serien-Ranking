@@ -159,18 +159,23 @@ export const MangaPage = () => {
 
       {/* ─── Search Bar ──────────────── */}
       <div style={{ padding: '0 20px', marginBottom: 20 }}>
-        <motion.div
+        <motion.button
+          type="button"
           whileTap={tapScaleSmall}
           onClick={() => navigate('/manga/search')}
+          aria-label="Manga suchen"
           style={{
+            width: '100%',
+            textAlign: 'left',
             background: currentTheme.background.surface,
             border: '1px solid var(--glass-border-subtle)',
-            borderRadius: 16,
+            borderRadius: 'var(--radius-lg)',
             padding: '14px 16px',
             display: 'flex',
             alignItems: 'center',
             gap: 12,
             cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
             backdropFilter: 'var(--blur-sm)',
             WebkitBackdropFilter: 'var(--blur-sm)',
           }}
@@ -179,7 +184,7 @@ export const MangaPage = () => {
           <span style={{ color: currentTheme.text.secondary, fontSize: 14, opacity: 0.5 }}>
             Manga, Manhwa, Manhua suchen...
           </span>
-        </motion.div>
+        </motion.button>
       </div>
 
       {/* ─── Quick Actions Grid ──────────────── */}
@@ -428,7 +433,19 @@ const MangaCard = ({
   const userRating = userId ? manga.rating?.[userId] || 0 : 0;
 
   return (
-    <div className="manga-collection-item" onClick={onClick}>
+    <div
+      className="manga-collection-item"
+      role="button"
+      tabIndex={0}
+      aria-label={manga.title}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+    >
       <div className="manga-collection-card">
         <img
           className="manga-collection-poster"

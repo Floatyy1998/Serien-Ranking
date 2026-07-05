@@ -39,8 +39,23 @@
     <!-- Catalog-API: TLS-Handshake parallel zum HTML-Parse starten,
          spart 100-300 ms beim ersten Catalog-Fetch (seriesMeta, seasonsAll, moviesMeta) -->
     <link rel="preconnect" href="https://serienapi.konrad-dinges.de" crossorigin />
+    <!-- Satoshi (body/display font) is served from Fontshare — start the TLS
+         handshake early so the stylesheet below is not render-blocking -->
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
     <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
     <link rel="dns-prefetch" href="https://api.themoviedb.org" />
+
+    <!-- Satoshi (primary body + display font) — moved out of index.css @import
+         to a non-render-blocking preload + stylesheet -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700,800,900&display=swap"
+    />
 
     <!-- Editorial display + monospace accent fonts for the cinematic onboarding -->
     <link

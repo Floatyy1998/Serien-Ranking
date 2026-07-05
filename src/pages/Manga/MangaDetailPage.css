@@ -119,6 +119,14 @@
   color: #fff !important;
 }
 
+.manga-hero-stepper:focus-visible,
+.manga-detail-counter-btn:focus-visible,
+.manga-detail-status-btn:focus-visible,
+.manga-detail-star-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 .manga-hero-stepper:active {
   transform: scale(0.9);
 }
@@ -321,6 +329,13 @@
 
 .manga-detail-action-btn:hover {
   background: rgba(255, 255, 255, 0.05);
+}
+
+.manga-detail-action-btn:focus-visible,
+.manga-detail-delete-btn:focus-visible,
+.manga-detail-link-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
 
 /* External Link Buttons */

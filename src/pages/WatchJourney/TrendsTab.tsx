@@ -20,6 +20,8 @@ import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 import { CustomTooltip } from './CustomTooltip';
 import { TrendsYearCards } from './TrendsYearCards';
+import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
+import { wjCard, wjHeading } from './watchJourneyStyles';
 
 const TrendIcon = ({
   trend,
@@ -45,7 +47,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
   const { currentTheme } = useTheme();
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
-  const bgSurface = currentTheme.background.surface;
   const primaryColor = currentTheme.primary;
 
   const isSingleYear = data.yearlyData.length === 1;
@@ -95,31 +96,16 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
   if (data.yearlyData.length === 0) {
     return (
-      <div style={{ padding: '60px 20px', textAlign: 'center' }}>
-        <Timeline style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
-        <h3 style={{ color: textPrimary, fontSize: 18, marginBottom: 8 }}>Keine Trend-Daten</h3>
-        <p style={{ color: textSecondary, fontSize: 14 }}>
-          Schau mehr Content um Trends über die Jahre zu sehen
-        </p>
-      </div>
+      <WatchJourneyTabEmptyState
+        icon={<Timeline style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />}
+        title="Keine Trend-Daten"
+        description="Schau mehr Serien und Filme, um deine Trends über die Jahre zu sehen!"
+      />
     );
   }
 
-  const cardStyle = {
-    margin: '0 20px 24px',
-    padding: '20px',
-    borderRadius: '20px',
-    background: bgSurface,
-    border: `1px solid ${currentTheme.border.default}`,
-  };
-
-  const headingStyle = {
-    color: textPrimary,
-    fontSize: 16,
-    fontFamily: 'var(--font-display)',
-    fontWeight: 700 as const,
-    margin: '0 0 20px',
-  };
+  const cardStyle = wjCard(currentTheme);
+  const headingStyle = wjHeading(textPrimary, 20);
 
   return (
     <div>

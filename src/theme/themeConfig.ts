@@ -2,6 +2,15 @@ import { createTheme } from '@mui/material/styles';
 import '../global.css';
 import { colors } from './colors';
 
+// DEPRECATED als MUI-Theme-Quelle.
+// Das aktive MUI-Objekt-Theme wird ausschließlich in `theme/dynamicTheme.ts`
+// (`createMuiTheme`) gebaut und über `contexts/ThemeContext.tsx` bereitgestellt.
+// Die `components`-Overrides unten wurden dorthin übernommen; früher umschloss
+// ein zweiter `<ThemeProvider theme={theme}>` in `App.tsx` den DynamicThemeProvider
+// und wurde von MUI komplett ersetzt → diese Overrides waren zur Laufzeit tot.
+// Dieses Modul bleibt vorerst nur wegen des Barrel-Re-Exports in `theme/index.ts`
+// bestehen; für neues Theming NICHT verwenden.
+
 // Funktion zum Erstellen eines dynamischen Themes basierend auf gespeicherten Farben
 const createDynamicTheme = () => {
   // CSS-Variablen direkt lesen für Material-UI Theme

@@ -44,14 +44,6 @@ img {
   -webkit-backface-visibility: hidden;
 }
 
-/* Optimize animations */
-@media (prefers-reduced-motion: no-preference) {
-  * {
-    animation-duration: 0.3s !important;
-    transition-duration: 0.2s !important;
-  }
-}
-
 /* Disable animations during scroll */
 .is-scrolling * {
   animation-play-state: paused !important;

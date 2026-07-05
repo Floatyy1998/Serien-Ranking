@@ -13,7 +13,6 @@ vi.mock('../../hooks/useActiveSubscriptions', () => ({
     getSeriesOverride: () => null,
   }),
 }));
-vi.mock('./useCalendarData', () => ({ contrastTextColor: () => '#000000' }));
 vi.mock('../../contexts/ThemeContextDef', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
