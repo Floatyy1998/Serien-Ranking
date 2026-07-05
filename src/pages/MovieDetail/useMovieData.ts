@@ -87,11 +87,19 @@ export const useMovieData = () => {
   const isReadOnlyTmdbMovie = !localMovie && !!tmdbMovie;
 
   const currentRating = useMemo(() => {
-    if (!movie?.rating || !user?.uid) return 0;
-    return movie.rating[user.uid] || 0;
-  }, [movie, user]);
+    if (!movie?.rating) return 0;
+    // Film-rating ist GENRE-keyed ({ Action: 8, General: 7, ... }), NICHT { uid: wert }.
+    // "bewertet/gesehen" = irgendein positiver Wert -> Mittel der positiven Werte.
+    const values = Object.values(movie.rating).filter(
+      (r) => typeof r === 'number' && r > 0
+    ) as number[];
+    if (values.length === 0) return 0;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  }, [movie]);
 
-  const isWatched = currentRating > 0;
+  // "Gesehen" leitet sich aus einer Bewertung ODER dem expliziten watched-Flag
+  // ab — so kann ein Film ohne Bewertung als gesehen markiert werden (F1).
+  const isWatched = currentRating > 0 || movie?.watched === true;
 
   const averageRating = useMemo(() => {
     if (!movie?.rating) return 0;
@@ -270,6 +278,36 @@ export const useMovieData = () => {
     }
   }, [movie, user, tmdbMovie, navigate]);
 
+  /**
+   * F1: "Gesehen"-Toggle ohne Bewertungs-Umweg. Setzt `watched` (+ `watchedAt`)
+   * direkt in der RTDB und bumpt `meta/serienVersion` atomar mit. Die Bewertung
+   * (`rating`) bleibt unangetastet. Der Realtime-Listener rehydriert den State.
+   */
+  const handleToggleWatched = useCallback(async () => {
+    if (!movie || !user) return;
+
+    const next = !isWatched;
+    try {
+      const updates: Record<string, unknown> = {
+        [`users/${user.uid}/movies/${movie.id}/watched`]: next,
+        // Beim Markieren bestehendes watchedAt bewahren, sonst jetzt setzen;
+        // beim Zurücknehmen entfernen (null).
+        [`users/${user.uid}/movies/${movie.id}/watchedAt`]: next
+          ? movie.watchedAt || new Date().toISOString()
+          : null,
+        [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+      };
+      await firebase.database().ref().update(updates);
+    } catch {
+      // best-effort: bei Fehler kurz informieren, State kommt vom Listener
+      setDialog({
+        open: true,
+        message: 'Der Gesehen-Status konnte nicht gespeichert werden.',
+        type: 'error',
+      });
+    }
+  }, [movie, user, isWatched]);
+
   const handleDeleteMovie = useCallback(async () => {
     if (!movie || !user) return;
 
@@ -336,6 +374,7 @@ export const useMovieData = () => {
     // Handlers
     handleAddMovie,
     handleDeleteMovie,
+    handleToggleWatched,
 
     // Helpers
     getBackdropUrl,

@@ -1,4 +1,6 @@
 import {
+  Check,
+  CheckCircle,
   Delete,
   Edit,
   Link,
@@ -7,7 +9,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
 import type { MangaDexChapterInfo } from '../../../services/mangadexService';
@@ -59,6 +61,7 @@ interface MangaDetailBodyProps {
   setShowDeleteConfirm: (v: boolean) => void;
   // handlers
   onStatusChange: (status: Manga['readStatus']) => void;
+  onChapterChange: (chapter: number) => void;
   onRating: (rating: number) => void;
   onPlatformSelect: (platform: string) => void;
   onSaveNotes: () => void;
@@ -85,6 +88,7 @@ export const MangaDetailBody = ({
   showDeleteConfirm,
   setShowDeleteConfirm,
   onStatusChange,
+  onChapterChange,
   onRating,
   onPlatformSelect,
   onSaveNotes,
@@ -93,6 +97,22 @@ export const MangaDetailBody = ({
 }: MangaDetailBodyProps) => {
   const navigate = useNavigate();
   const notesRef = useRef<HTMLTextAreaElement>(null);
+
+  // Chapter for which a *backward* progress reset is awaiting confirmation.
+  const [confirmChapter, setConfirmChapter] = useState<number | null>(null);
+  const currentChapter = manga.currentChapter ?? 0;
+
+  // "Bis hier gelesen": setzt currentChapter auf dieses Kapitel. Nur ein
+  // RUECKschritt (Kapitel < aktueller Stand) verlangt eine Bestaetigung,
+  // vorwaerts direkt. Nutzt handleChapterChange der Detail-Page (Status-Auto-
+  // Logik + lastReadAt + Chapter-Read-Log) — kein Ad-hoc-Write hier.
+  const handleMarkReadUpTo = (chapter: number) => {
+    if (chapter < currentChapter) {
+      setConfirmChapter(chapter);
+    } else {
+      onChapterChange(chapter);
+    }
+  };
 
   const recommendations = displayData?.recommendations?.edges?.slice(0, 6) || [];
   const externalLinks = displayData?.externalLinks || [];
@@ -145,55 +165,113 @@ export const MangaDetailBody = ({
               )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {chapterInfo.recentChapters.map((ch) => (
-                <div
-                  key={ch.chapter}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                    padding: '6px 0',
-                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                  }}
-                >
-                  <span
+              {chapterInfo.recentChapters.map((ch) => {
+                const isRead = currentChapter >= ch.chapter;
+                const isConfirming = confirmChapter === ch.chapter;
+                return (
+                  <div
+                    key={ch.chapter}
                     style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: currentTheme.text.primary,
-                      minWidth: 50,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '6px 0',
+                      borderBottom: '1px solid rgba(255,255,255,0.04)',
                     }}
                   >
-                    Kap. {ch.chapter}
-                  </span>
-                  <span
-                    style={{
-                      flex: 1,
-                      fontSize: 12,
-                      color: currentTheme.text.secondary,
-                      opacity: 0.7,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {ch.title || ''}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: currentTheme.text.secondary,
-                      opacity: 0.5,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {new Date(ch.publishedAt).toLocaleDateString('de-DE', {
-                      day: 'numeric',
-                      month: 'short',
-                    })}
-                  </span>
-                </div>
-              ))}
+                    <span
+                      style={{
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: currentTheme.text.primary,
+                        minWidth: 50,
+                      }}
+                    >
+                      Kap. {ch.chapter}
+                    </span>
+                    <span
+                      style={{
+                        flex: 1,
+                        fontSize: 12,
+                        color: currentTheme.text.secondary,
+                        opacity: 0.7,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {ch.title || ''}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: currentTheme.text.secondary,
+                        opacity: 0.5,
+                        flexShrink: 0,
+                      }}
+                    >
+                      {new Date(ch.publishedAt).toLocaleDateString('de-DE', {
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </span>
+                    {isConfirming ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        <span
+                          style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.8 }}
+                        >
+                          Zurücksetzen?
+                        </span>
+                        <button
+                          type="button"
+                          className="manga-chapter-confirm-btn"
+                          onClick={() => {
+                            onChapterChange(ch.chapter);
+                            setConfirmChapter(null);
+                          }}
+                          style={{
+                            background: `${currentTheme.primary}20`,
+                            color: currentTheme.primary,
+                          }}
+                        >
+                          Ja
+                        </button>
+                        <button
+                          type="button"
+                          className="manga-chapter-confirm-btn"
+                          onClick={() => setConfirmChapter(null)}
+                          style={{
+                            background: `${currentTheme.text.primary}10`,
+                            color: currentTheme.text.secondary,
+                          }}
+                        >
+                          Nein
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="manga-chapter-read-btn"
+                        aria-label={
+                          isRead
+                            ? `Fortschritt auf Kapitel ${ch.chapter} zurücksetzen`
+                            : `Bis Kapitel ${ch.chapter} als gelesen markieren`
+                        }
+                        aria-pressed={isRead}
+                        onClick={() => handleMarkReadUpTo(ch.chapter)}
+                      >
+                        {isRead ? (
+                          <CheckCircle style={{ fontSize: 20, color: currentTheme.primary }} />
+                        ) : (
+                          <Check
+                            style={{ fontSize: 20, color: `${currentTheme.text.primary}40` }}
+                          />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </Section>
         )}

@@ -236,6 +236,7 @@ export const MangaDetailPage = () => {
         showDeleteConfirm={showDeleteConfirm}
         setShowDeleteConfirm={setShowDeleteConfirm}
         onStatusChange={handleStatusChange}
+        onChapterChange={handleChapterChange}
         onRating={handleRating}
         onPlatformSelect={handlePlatformSelect}
         onSaveNotes={handleSaveNotes}

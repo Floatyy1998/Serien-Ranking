@@ -289,7 +289,7 @@ export const WatchStreakCard: React.FC = () => {
                 style={{
                   background: shieldEligible
                     ? `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`
-                    : `${currentTheme.text.muted}20`,
+                    : 'var(--glass-light)',
                   border: 'none',
                   borderRadius: 8,
                   width: 32,

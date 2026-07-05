@@ -2,7 +2,13 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
-import { useCatchUpData, formatTime, formatTimeString } from './useCatchUpData';
+import {
+  useCatchUpData,
+  advanceCatchUpView,
+  formatTime,
+  formatTimeString,
+  type CatchUpSeries,
+} from './useCatchUpData';
 
 // ── react-router-dom mock ─────────────────────────────────────────────
 const router = vi.hoisted(() => ({
@@ -157,6 +163,56 @@ describe('useCatchUpData', () => {
       { sort: 'episodes', dir: 'desc' },
       { replace: true }
     );
+  });
+});
+
+describe('advanceCatchUpView (optimistischer Vorlauf)', () => {
+  const makeItem = (): CatchUpSeries => ({
+    series: makeSeries({
+      id: 1,
+      title: 'Alpha',
+      episodeRuntime: 40,
+      seasons: [
+        {
+          seasonNumber: 0,
+          episodes: [ep({ id: 1, watched: true }), ep({ id: 2 }), ep({ id: 3 }), ep({ id: 4 })],
+        },
+      ] as Series['seasons'],
+    }),
+    totalEpisodes: 4,
+    watchedEpisodes: 1,
+    remainingEpisodes: 3,
+    remainingMinutes: 120,
+    progress: 25,
+    currentSeason: 1,
+    currentEpisode: 2,
+  });
+
+  it('returns the same item reference when advance is 0', () => {
+    const item = makeItem();
+    expect(advanceCatchUpView(item, 0)).toBe(item);
+  });
+
+  it('advances the displayed next episode and recomputes the derived numbers', () => {
+    const view = advanceCatchUpView(makeItem(), 1);
+    expect(view).not.toBeNull();
+    // Ep 2 gilt optimistisch als gesehen → nächste ist Ep 3.
+    expect(view?.currentEpisode).toBe(3);
+    expect(view?.watchedEpisodes).toBe(2);
+    expect(view?.remainingEpisodes).toBe(2);
+    expect(view?.remainingMinutes).toBe(80); // 120 - 40
+    expect(Math.round(view?.progress ?? 0)).toBe(50);
+  });
+
+  it('advances across two taps to the following episode', () => {
+    const view = advanceCatchUpView(makeItem(), 2);
+    expect(view?.currentEpisode).toBe(4);
+    expect(view?.remainingEpisodes).toBe(1);
+  });
+
+  it('returns null once the series is fully caught up', () => {
+    // 3 ungesehene übrig → 3 Vorläufe holen alles auf.
+    expect(advanceCatchUpView(makeItem(), 3)).toBeNull();
   });
 });
 

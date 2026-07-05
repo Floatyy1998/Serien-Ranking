@@ -30,6 +30,8 @@ export const useContinueWatching = () => {
     episodeRuntime: number;
     seasons: Series['seasons'];
     chipType?: EpisodeChipType;
+    /** Sort/priority signal only — no longer a hard include/exclude gate. */
+    watchlist?: boolean;
   }
 
   const continueWatching = useMemo(() => {
@@ -37,10 +39,18 @@ export const useContinueWatching = () => {
 
     for (let i = 0; i < seriesList.length; i++) {
       const series = seriesList[i];
-      if (!series.watchlist) continue;
+      // Versteckte Serien nie zeigen. Watchlist-Flag ist KEIN Ausschlusskriterium
+      // mehr (F2): Serien mit echtem Fortschritt sollen auch ohne gesetzte
+      // Watchlist im „Weiter schauen"-Feed auftauchen.
+      if (series.hidden) continue;
 
       const lastWatchedAt = getSeriesLastWatchedAt(series);
-      const { progress } = calculateSeriesMetrics(series);
+      const { progress, watchedEpisodes, remainingEpisodes } = calculateSeriesMetrics(series);
+      // Angefangen (mind. eine aired Episode gesehen) UND nicht komplett fertig
+      // (noch aired-Episoden offen). Die konkrete nächste ungesehene aired
+      // Episode ermittelt die Schleife unten; ohne sie wird nichts gepusht.
+      if (watchedEpisodes === 0 || remainingEpisodes === 0) continue;
+
       const seasons = series.seasons;
 
       if (seasons) {
@@ -77,6 +87,7 @@ export const useContinueWatching = () => {
                 provider: series.provider,
                 episodeRuntime: episode.runtime || series.episodeRuntime,
                 chipType,
+                watchlist: !!series.watchlist,
               });
               foundNext = true;
               break;
@@ -89,7 +100,10 @@ export const useContinueWatching = () => {
     items.sort((a, b) => {
       const dateA = new Date(a.lastWatchedAt).getTime();
       const dateB = new Date(b.lastWatchedAt).getTime();
-      return dateB - dateA;
+      if (dateB !== dateA) return dateB - dateA;
+      // Gleich zuletzt gesehen → Watchlist-Serien leicht bevorzugen.
+      if (a.watchlist !== b.watchlist) return a.watchlist ? -1 : 1;
+      return 0;
     });
 
     return items.slice(0, HOME_CAROUSEL_MAX_ITEMS);

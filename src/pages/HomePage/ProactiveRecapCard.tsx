@@ -390,7 +390,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       width: i === currentIndex ? '24px' : '8px',
                       height: '8px',
                       borderRadius: i === currentIndex ? '4px' : '50%',
-                      background: i === currentIndex ? accent : `${currentTheme.text.muted}40`,
+                      background: i === currentIndex ? accent : 'var(--glass-medium)',
                       cursor: 'pointer',
                       transition: 'all 0.3s',
                     }}

@@ -158,7 +158,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                   style={{
                     marginTop: 8,
                     paddingTop: 8,
-                    borderTop: `1px solid ${currentTheme.text.muted}20`,
+                    borderTop: '1px solid var(--glass-border-light)',
                     fontSize: 12,
                     color: currentTheme.status?.warning || '#f59e0b',
                   }}
@@ -177,7 +177,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                   flex: 1,
                   padding: '10px',
                   borderRadius: 12,
-                  border: `1px solid ${currentTheme.text.muted}30`,
+                  border: '1px solid var(--glass-border-medium)',
                   background: 'transparent',
                   color: currentTheme.text.secondary,
                   fontSize: 14,

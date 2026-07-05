@@ -1,3 +1,4 @@
+import Check from '@mui/icons-material/Check';
 import Delete from '@mui/icons-material/Delete';
 import Star from '@mui/icons-material/Star';
 import { Tooltip } from '@mui/material';
@@ -31,6 +32,7 @@ interface MovieHeroSectionProps {
   formatRuntime: (minutes: number) => string;
   onAddMovie: () => void;
   onNavigateRate: () => void;
+  onToggleWatched: () => void;
   onDeleteClick: () => void;
 }
 
@@ -57,6 +59,7 @@ export const MovieHeroSection = memo(
     formatRuntime,
     onAddMovie,
     onNavigateRate,
+    onToggleWatched,
     onDeleteClick,
   }: MovieHeroSectionProps) => {
     const { currentTheme } = useTheme();
@@ -397,6 +400,33 @@ export const MovieHeroSection = memo(
                   }}
                 >
                   <motion.button
+                    type="button"
+                    whileTap={tapScale}
+                    onClick={onToggleWatched}
+                    aria-pressed={isWatched}
+                    aria-label={isWatched ? 'Als nicht gesehen markieren' : 'Als gesehen markieren'}
+                    className={`md-rate-btn md-seen-btn ${isMobile ? 'md-rate-btn--mobile' : ''} ${
+                      isWatched ? 'md-seen-btn--active' : ''
+                    }`}
+                    style={{
+                      flex: isMobile ? 1 : '0 0 auto',
+                      minWidth: isMobile ? 0 : 140,
+                      minHeight: 44,
+                      background: isWatched
+                        ? `${currentTheme.status.success}22`
+                        : 'rgba(255, 255, 255, 0.05)',
+                      border: isWatched
+                        ? `1px solid ${currentTheme.status.success}`
+                        : '1px solid rgba(255, 255, 255, 0.1)',
+                      color: isWatched ? currentTheme.status.success : currentTheme.text.secondary,
+                    }}
+                  >
+                    <Check aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
+                    {isWatched ? 'Gesehen' : 'Als gesehen'}
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
                     whileTap={tapScale}
                     onClick={onNavigateRate}
                     className={`md-rate-btn ${isMobile ? 'md-rate-btn--mobile' : ''}`}

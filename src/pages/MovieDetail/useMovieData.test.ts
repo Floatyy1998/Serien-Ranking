@@ -13,9 +13,12 @@ vi.mock('react-router-dom', () => ({
 // ── firebase compat ───────────────────────────────────────────────────
 const fb = vi.hoisted(() => {
   const removeMock = vi.fn(() => Promise.resolve());
-  const refMock = vi.fn((_p?: string) => ({ remove: removeMock }));
-  const database = () => ({ ref: refMock });
-  return { removeMock, refMock, database };
+  const updateMock = vi.fn((_updates?: Record<string, unknown>) => Promise.resolve());
+  const refMock = vi.fn((_p?: string) => ({ remove: removeMock, update: updateMock }));
+  const database = Object.assign(() => ({ ref: refMock }), {
+    ServerValue: { TIMESTAMP: { '.sv': 'timestamp' } },
+  });
+  return { removeMock, updateMock, refMock, database };
 });
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
@@ -122,7 +125,8 @@ describe('useMovieData', () => {
 
     expect(result.current.movie?.id).toBe(123);
     expect(result.current.isReadOnlyTmdbMovie).toBe(false);
-    expect(result.current.currentRating).toBe(8);
+    // rating ist genre-keyed; currentRating = Gesamtbewertung (Mittel der positiven Werte)
+    expect(result.current.currentRating).toBe(7); // mean(8,6)
     expect(result.current.isWatched).toBe(true);
     expect(result.current.averageRating).toBe(7); // mean(8,6)
     await waitFor(() => expect(result.current.tmdbBackdrop).toBe('/b.jpg'));
@@ -187,6 +191,69 @@ describe('useMovieData', () => {
     });
     expect(result.current.dialog).toMatchObject({ open: true, type: 'info' });
     expect(rr.navigate).not.toHaveBeenCalled();
+  });
+
+  it('isWatched is true when the movie has watched=true even without a rating', () => {
+    ctx.movieList = [makeMovie({ id: 123, rating: {}, watched: true })];
+    stubFetch(handler);
+    const { result } = renderHook(() => useMovieData());
+    expect(result.current.currentRating).toBe(0);
+    expect(result.current.isWatched).toBe(true);
+  });
+
+  it('handleToggleWatched: marks watched with watchedAt, bumps version, leaves rating untouched', async () => {
+    ctx.movieList = [makeMovie({ id: 123, rating: {} })];
+    stubFetch(handler);
+    const { result } = renderHook(() => useMovieData());
+    expect(result.current.isWatched).toBe(false);
+
+    await act(async () => {
+      await result.current.handleToggleWatched();
+    });
+
+    expect(fb.updateMock).toHaveBeenCalledTimes(1);
+    const updates = fb.updateMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates['users/u1/movies/123/watched']).toBe(true);
+    expect(updates['users/u1/movies/123/watchedAt']).toBeTruthy();
+    expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
+    // Bewertung wird NICHT verändert
+    expect(Object.keys(updates)).not.toContain('users/u1/movies/123/rating');
+  });
+
+  it('handleToggleWatched: un-marks a watched movie (watched=false, watchedAt=null)', async () => {
+    ctx.movieList = [
+      makeMovie({ id: 123, rating: {}, watched: true, watchedAt: '2025-01-01T00:00:00.000Z' }),
+    ];
+    stubFetch(handler);
+    const { result } = renderHook(() => useMovieData());
+    expect(result.current.isWatched).toBe(true);
+
+    await act(async () => {
+      await result.current.handleToggleWatched();
+    });
+
+    const updates = fb.updateMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates['users/u1/movies/123/watched']).toBe(false);
+    expect(updates['users/u1/movies/123/watchedAt']).toBeNull();
+    expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
+  });
+
+  it('handleToggleWatched: preserves an existing watchedAt when re-marking after a rating', async () => {
+    ctx.movieList = [
+      makeMovie({ id: 123, rating: { u1: 7 }, watchedAt: '2024-06-01T12:00:00.000Z' }),
+    ];
+    stubFetch(handler);
+    const { result } = renderHook(() => useMovieData());
+    // rating>0 → isWatched true → toggle target is "un-mark"
+    expect(result.current.isWatched).toBe(true);
+
+    await act(async () => {
+      await result.current.handleToggleWatched();
+    });
+    const updates = fb.updateMock.mock.calls[0][0] as Record<string, unknown>;
+    expect(updates['users/u1/movies/123/watched']).toBe(false);
+    // rating map is never part of the write
+    expect(Object.keys(updates)).not.toContain('users/u1/movies/123/rating');
   });
 
   it('handleDeleteMovie: removes the movie and tracks the deletion', async () => {

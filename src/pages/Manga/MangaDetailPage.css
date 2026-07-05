@@ -262,6 +262,50 @@
   transform: scale(1.2);
 }
 
+/* Chapter "read up to" action */
+.manga-chapter-read-btn {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+
+.manga-chapter-read-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.manga-chapter-read-btn:active {
+  transform: scale(0.92);
+}
+
+.manga-chapter-read-btn:focus-visible,
+.manga-chapter-confirm-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.manga-chapter-confirm-btn {
+  min-height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+}
+
+.manga-chapter-confirm-btn:active {
+  transform: scale(0.95);
+}
+
 /* Description */
 .manga-detail-description {
   font-size: 14px;

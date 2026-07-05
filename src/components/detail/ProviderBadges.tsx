@@ -3,7 +3,7 @@ import React from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
-  getProviderSearchUrl,
+  getProviderTitleUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
@@ -43,8 +43,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   maxDisplay = 3,
   showNames = false,
   searchTitle,
-  tmdbId: _tmdbId, // Reserved for future TMDB-ID-based deep links
-  mediaType: _mediaType, // Reserved for future JustWatch integration
+  tmdbId, // Für Direkt-Links zur Titelseite (siehe getProviderTitleUrl)
+  mediaType, // 'tv' | 'movie' — medientyp-spezifische Direkt-Links
 }) => {
   const { currentTheme } = useTheme();
   if (!providers || (Array.isArray(providers) && providers.length === 0)) return null;
@@ -149,10 +149,13 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         const providerName = provider.provider_name || provider.name || 'Unknown';
         const providerId = provider.provider_id || provider.id || index;
 
-        // Deep Link über normalisierten Namen — nutzt dieselbe Tabelle wie
-        // alle anderen Provider-Anzeigen (Carousel, Rating-Cards).
+        // Deep Link über normalisierten Namen — bevorzugt einen Direkt-Link zur
+        // Titelseite (falls TMDB-ID/mediaType ein stabiles Anbieter-Schema
+        // erlauben), sonst Fallback auf die Anbieter-Suche.
         const normalizedName = normalizeProviderName(providerName);
-        const deepLink = searchTitle ? getProviderSearchUrl(normalizedName, searchTitle) : null;
+        const deepLink = searchTitle
+          ? getProviderTitleUrl(normalizedName, { tmdbId, mediaType, title: searchTitle })
+          : null;
 
         const badgeContent = (
           <>

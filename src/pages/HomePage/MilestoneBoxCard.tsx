@@ -134,7 +134,7 @@ export const MilestoneBoxCard: React.FC = () => {
               borderRadius: '12px',
               background: hasBox
                 ? `linear-gradient(135deg, ${BOX_PURPLE}, ${BOX_MAGENTA})`
-                : `${currentTheme.text.muted}20`,
+                : 'var(--glass-light)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -219,7 +219,7 @@ export const MilestoneBoxCard: React.FC = () => {
                     width: 40,
                     height: 4,
                     borderRadius: 2,
-                    background: `${currentTheme.text.muted}20`,
+                    background: 'var(--glass-light)',
                     overflow: 'hidden',
                   }}
                 >

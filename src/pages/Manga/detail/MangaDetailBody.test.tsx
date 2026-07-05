@@ -53,6 +53,7 @@ function baseProps(overrides: Partial<BodyProps> = {}): BodyProps {
     showDeleteConfirm: false,
     setShowDeleteConfirm: vi.fn(),
     onStatusChange: vi.fn(),
+    onChapterChange: vi.fn(),
     onRating: vi.fn(),
     onPlatformSelect: vi.fn(),
     onSaveNotes: vi.fn(),
@@ -86,6 +87,52 @@ describe('MangaDetailBody', () => {
     expect(screen.getByText('Wirklich entfernen?')).toBeInTheDocument();
     fireEvent.click(screen.getByText('Ja'));
     expect(onDelete).toHaveBeenCalledTimes(1);
+  });
+
+  const chapterInfo = {
+    mangadexId: null,
+    estimatedNextDate: null,
+    avgDaysBetweenReleases: null,
+    recentChapters: [
+      { chapter: 40, publishedAt: '2024-01-01', title: 'A' },
+      { chapter: 60, publishedAt: '2024-02-01', title: 'B' },
+    ],
+  } as unknown as BodyProps['chapterInfo'];
+
+  it('setzt currentChapter beim Klick auf "bis hier gelesen" (Vorwärtsschritt) direkt', () => {
+    const onChapterChange = vi.fn();
+    render(
+      <MangaDetailBody
+        {...baseProps({
+          manga: makeManga({ currentChapter: 50, status: 'RELEASING' }),
+          chapterInfo,
+          onChapterChange,
+        })}
+      />
+    );
+    // Kapitel 60 liegt über dem Stand 50 → direkter Vorwärtsschritt, keine Bestätigung
+    fireEvent.click(screen.getByRole('button', { name: 'Bis Kapitel 60 als gelesen markieren' }));
+    expect(onChapterChange).toHaveBeenCalledWith(60);
+  });
+
+  it('verlangt Bestätigung bei einem Rückschritt und ruft dann onChapterChange auf', () => {
+    const onChapterChange = vi.fn();
+    render(
+      <MangaDetailBody
+        {...baseProps({
+          manga: makeManga({ currentChapter: 50, status: 'RELEASING' }),
+          chapterInfo,
+          onChapterChange,
+        })}
+      />
+    );
+    // Kapitel 40 liegt unter dem Stand 50 → Rückschritt, erst bestätigen
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Fortschritt auf Kapitel 40 zurücksetzen' })
+    );
+    expect(onChapterChange).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByText('Ja'));
+    expect(onChapterChange).toHaveBeenCalledWith(40);
   });
 
   it('zeigt Verstecken-Aktion abhängig vom hidden-Flag', () => {

@@ -91,3 +91,65 @@ export function getProviderSearchUrl(normalizedName: string, title: string): str
       return null;
   }
 }
+
+export type ProviderMediaType = 'tv' | 'movie';
+
+/** Kontext, aus dem ein Direkt-Link zur Titelseite gebaut werden kann. */
+export interface ProviderTitleOptions {
+  /** TMDB-ID des Titels — Basis für ID-adressierte Deep-Links (falls der
+   *  Anbieter so etwas anbietet). */
+  tmdbId?: number;
+  /** Medientyp, für medientyp-spezifische Pfade. */
+  mediaType?: ProviderMediaType;
+  /** Klartext-Titel — Fallback-Query für die Anbieter-Suche. */
+  title: string;
+}
+
+type DirectTitleLinkBuilder = (opts: ProviderTitleOptions) => string | null;
+
+/**
+ * Registry der Anbieter, die einen STABILEN, öffentlich dokumentierten
+ * Deep-Link direkt auf die Titel-/Detailseite erlauben, der sich aus den uns
+ * vorliegenden Daten (TMDB-ID / mediaType / Titel) deterministisch bauen lässt.
+ *
+ * WICHTIG (Stand der Recherche, Juli 2026): KEIN unterstützter deutscher
+ * Streaming-Anbieter adressiert seine Titelseiten über die TMDB-ID oder einen
+ * aus dem Titel zuverlässig ableitbaren Slug. Netflix (`/title/<netflixId>`),
+ * Disney+ (`/video/<uuid>`) und Crunchyroll (`/series/<crId>/<slug>`) nutzen
+ * jeweils anbieter-INTERNE IDs, die wir ohne eine JustWatch-/Mapping-Schicht
+ * nicht kennen. Ein geratener Slug bzw. eine geratene ID wäre ein „erfundenes
+ * Schema" → bewusst nicht gemacht. Deshalb ist die Registry aktuell leer und
+ * `getProviderTitleUrl` fällt für alle Anbieter auf die bewährte Anbieter-Suche
+ * zurück.
+ *
+ * Sobald eine ID-Mapping-Quelle existiert (z. B. das per-Titel `wo`/JustWatch-
+ * Feld oder eine Provider-ID-Tabelle), ist DIES der einzige Ort, an dem ein
+ * Builder ergänzt werden muss — die aufrufenden Badges nutzen bereits
+ * `getProviderTitleUrl`.
+ */
+const DIRECT_TITLE_LINK_BUILDERS: Partial<Record<string, DirectTitleLinkBuilder>> = {
+  // Absichtlich leer — siehe Doc-Kommentar. Kein Anbieter erlaubt einen
+  // stabilen TMDB-/Titel-basierten Direkt-Link ohne anbieter-interne ID.
+};
+
+/**
+ * Liefert – wo der Anbieter einen bekannten, stabilen Direkt-Link auf die
+ * Titelseite erlaubt – genau diesen Deep-Link, sonst die bisherige
+ * Anbieter-Suche über den Klartext-Titel (`getProviderSearchUrl`).
+ *
+ * Konservativ: es werden ausschließlich Schemata aus
+ * `DIRECT_TITLE_LINK_BUILDERS` benutzt (keine geratenen URLs). Der Rückgabewert
+ * wird — wie schon bei der reinen Suche — an `handleProviderLinkClick`
+ * durchgereicht, sodass der Disney+-Clipboard-Fallback unverändert greift.
+ */
+export function getProviderTitleUrl(
+  normalizedName: string,
+  opts: ProviderTitleOptions
+): string | null {
+  const builder = DIRECT_TITLE_LINK_BUILDERS[normalizedName];
+  if (builder) {
+    const direct = builder(opts);
+    if (direct) return direct;
+  }
+  return getProviderSearchUrl(normalizedName, opts.title);
+}

@@ -92,18 +92,17 @@ function ProviderBadgeArea({
     return () => document.removeEventListener('pointerdown', handler, true);
   }, [showPopup]);
 
-  // Desktop: show up to 3 logos, Mobile: show 1 logo
-  const MAX_DESKTOP = 3;
-  const visible = providers.slice(0, MAX_DESKTOP);
-  const overflow = providers.length - MAX_DESKTOP;
+  // Show up to 2 provider logos; from the 3rd provider on, the 3rd slot becomes
+  // a "+N" badge instead of a logo (2 providers -> both logos, no badge).
+  const MAX_LOGOS = 2;
+  const overflow = providers.length - MAX_LOGOS;
+  const visible = overflow > 0 ? providers.slice(0, MAX_LOGOS) : providers;
 
   // Renders a single provider badge as a deep link when a search URL is known,
-  // otherwise as a plain div (no broken anchor). The mobile +N counter overlay
-  // is rendered as an absolute-positioned span that intercepts its own click
-  // to open the popup instead of navigating to the link.
-  const renderBadge = (p: PreparedItem['providers'][number], extraClass = '') => {
+  // otherwise as a plain div (no broken anchor).
+  const renderBadge = (p: PreparedItem['providers'][number]) => {
     const url = getProviderSearchUrl(p.name, searchTitle);
-    const className = `ratings-provider-badge${extraClass ? ` ${extraClass}` : ''}`;
+    const className = 'ratings-provider-badge';
     const style: React.CSSProperties = { background: bgColor };
     const content = <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />;
     const tooltip = providerNeedsClipboardCopy(p.name)
@@ -133,43 +132,18 @@ function ProviderBadgeArea({
 
   return (
     <div className="ratings-provider-badges" ref={badgeRef}>
-      {/* First provider — direct link, with optional +N popup trigger overlay */}
-      <div style={{ position: 'relative' }}>
-        {renderBadge(visible[0])}
-        {/* Mobile-only +N overlay opens the popup with the full list. */}
-        {providers.length > 1 && (
-          <button
-            type="button"
-            className="ratings-provider-count ratings-provider-count--mobile"
-            style={{ color: textColor }}
-            onClick={openPopup}
-            aria-label={`${providers.length - 1} weitere Anbieter`}
-            aria-expanded={showPopup}
-          >
-            +{providers.length - 1}
-          </button>
-        )}
-      </div>
-
-      {/* Extra provider logos (desktop only, hidden on mobile) */}
-      {visible.slice(1).map((p) => (
-        <React.Fragment key={p.name}>
-          {renderBadge(p, 'ratings-provider-badge--desktop')}
-        </React.Fragment>
+      {/* Actual provider logos (up to MAX_VISIBLE) */}
+      {visible.map((p) => (
+        <React.Fragment key={p.name}>{renderBadge(p)}</React.Fragment>
       ))}
 
-      {/* Desktop overflow counter — opens popup with the full list */}
+      {/* "+N" badge — same size as a logo, sits to the right of them (not
+          overlaid). Only shown when there are MORE providers than are visible. */}
       {overflow > 0 && (
         <button
           type="button"
-          className="ratings-provider-badge ratings-provider-badge--desktop"
-          style={{
-            background: bgColor,
-            fontSize: '11px',
-            fontWeight: 700,
-            color: textColor,
-            cursor: 'pointer',
-          }}
+          className="ratings-provider-badge ratings-provider-count-badge"
+          style={{ background: bgColor, color: textColor }}
           onClick={openPopup}
           aria-label={`${overflow} weitere Anbieter`}
           aria-expanded={showPopup}

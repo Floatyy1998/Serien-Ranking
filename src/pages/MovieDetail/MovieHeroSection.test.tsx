@@ -3,6 +3,54 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Movie } from '../../types/Movie';
 
+// framer-motion's motion-value lifecycle throws in the jsdom test env
+// (`removeOnChange is not a function`); a prop-stripping passthrough is enough here.
+vi.mock('framer-motion', async () => {
+  const { createElement, forwardRef, Fragment } = await import('react');
+  const SKIP = new Set([
+    'initial',
+    'animate',
+    'exit',
+    'whileTap',
+    'whileHover',
+    'whileInView',
+    'whileFocus',
+    'whileDrag',
+    'viewport',
+    'transition',
+    'layout',
+    'layoutId',
+    'drag',
+    'dragConstraints',
+    'onViewportEnter',
+    'onViewportLeave',
+    'variants',
+    'custom',
+    'onAnimationStart',
+    'onAnimationComplete',
+  ]);
+  const make = (tag: string) =>
+    forwardRef((props: Record<string, unknown>, ref: React.Ref<unknown>) => {
+      const clean: Record<string, unknown> = {};
+      for (const k in props) if (!SKIP.has(k)) clean[k] = props[k];
+      return createElement(tag, { ...clean, ref });
+    });
+  const cache: Record<string, unknown> = {};
+  const motion = new Proxy(
+    {},
+    { get: (_t: object, tag: string | symbol) => (cache[String(tag)] ??= make(String(tag))) }
+  );
+  return {
+    motion,
+    AnimatePresence: ({ children }: { children?: React.ReactNode }) =>
+      createElement(Fragment, null, children),
+    useMotionValue: (v: unknown) => ({ get: () => v, set: () => {} }),
+    useSpring: (v: unknown) => v,
+    useTransform: () => ({ get: () => 0, set: () => {} }),
+    useMotionTemplate: () => '',
+  };
+});
+
 vi.mock('../../components/ui', () => ({ BackButton: () => <button aria-label="back" /> }));
 vi.mock('../../components/detail', () => ({
   FriendsWhoHaveThis: () => <div />,
@@ -55,12 +103,14 @@ const baseProps = {
   formatRuntime: (m: number) => `${m} Min.`,
   onAddMovie: vi.fn(),
   onNavigateRate: vi.fn(),
+  onToggleWatched: vi.fn(),
   onDeleteClick: vi.fn(),
 };
 
 beforeEach(() => {
   baseProps.onAddMovie = vi.fn();
   baseProps.onNavigateRate = vi.fn();
+  baseProps.onToggleWatched = vi.fn();
   baseProps.onDeleteClick = vi.fn();
 });
 afterEach(() => cleanup());
@@ -93,6 +143,26 @@ describe('MovieHeroSection', () => {
   it('hides the Bewerten button for a read-only tmdb movie', () => {
     render(<MovieHeroSection {...baseProps} isReadOnlyTmdbMovie={true} />);
     expect(screen.queryByText('Bewerten')).not.toBeInTheDocument();
+  });
+
+  it('shows the "Gesehen" toggle for an owned movie and invokes onToggleWatched', () => {
+    render(<MovieHeroSection {...baseProps} />);
+    const btn = screen.getByRole('button', { name: 'Als gesehen markieren' });
+    expect(btn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(btn);
+    expect(baseProps.onToggleWatched).toHaveBeenCalled();
+  });
+
+  it('reflects the watched state on the toggle (aria-pressed + label)', () => {
+    render(<MovieHeroSection {...baseProps} isWatched={true} />);
+    const btn = screen.getByRole('button', { name: 'Als nicht gesehen markieren' });
+    expect(btn).toHaveAttribute('aria-pressed', 'true');
+    expect(btn).toHaveTextContent('Gesehen');
+  });
+
+  it('hides the "Gesehen" toggle for a read-only tmdb movie', () => {
+    render(<MovieHeroSection {...baseProps} isReadOnlyTmdbMovie={true} />);
+    expect(screen.queryByRole('button', { name: /gesehen markieren/i })).not.toBeInTheDocument();
   });
 
   it('invokes onDeleteClick from the delete action', () => {

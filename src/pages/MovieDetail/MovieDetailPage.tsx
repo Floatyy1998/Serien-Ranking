@@ -39,6 +39,7 @@ export const MovieDetailPage = memo(() => {
     snackbar,
     handleAddMovie,
     handleDeleteMovie,
+    handleToggleWatched,
     getBackdropUrl,
     formatRuntime,
   } = useMovieData();
@@ -98,6 +99,7 @@ export const MovieDetailPage = memo(() => {
         formatRuntime={formatRuntime}
         onAddMovie={handleAddMovie}
         onNavigateRate={() => navigate(`/rating/movie/${movie.id}`)}
+        onToggleWatched={handleToggleWatched}
         onDeleteClick={() => setShowDeleteConfirm(true)}
       />
 

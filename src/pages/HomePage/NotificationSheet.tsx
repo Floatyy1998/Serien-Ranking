@@ -143,7 +143,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   height: '72px',
                   margin: '0 auto 16px',
                   borderRadius: '50%',
-                  background: `${currentTheme.text.muted}10`,
+                  background: 'var(--glass-subtle)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

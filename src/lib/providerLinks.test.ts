@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getProviderSearchUrl,
+  getProviderTitleUrl,
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from './providerLinks';
@@ -75,6 +76,41 @@ describe('getProviderSearchUrl', () => {
   it('encodiert Sonderzeichen im Titel korrekt (Query-Provider)', () => {
     const url = getProviderSearchUrl('Netflix', 'Tom & Jerry: A/B?');
     expect(url).toBe('https://www.netflix.com/search?q=Tom%20%26%20Jerry%3A%20A%2FB%3F');
+  });
+});
+
+describe('getProviderTitleUrl', () => {
+  it('baut für unterstützte Anbieter (mit TMDB-ID + mediaType) einen nutzbaren Link', () => {
+    const url = getProviderTitleUrl('Netflix', {
+      tmdbId: 1396,
+      mediaType: 'tv',
+      title: 'Breaking Bad',
+    });
+    expect(url).not.toBeNull();
+    // Solange kein Anbieter TMDB-adressierbare Titelseiten hat, ist der Link
+    // die bewährte Anbieter-Suche über den Titel (dokumentierter Fallback).
+    expect(url).toBe(getProviderSearchUrl('Netflix', 'Breaking Bad'));
+  });
+
+  it('fällt ohne TMDB-ID/mediaType auf die Titel-Suche zurück', () => {
+    expect(getProviderTitleUrl('Amazon Prime Video', { title: 'Dexter' })).toBe(
+      getProviderSearchUrl('Amazon Prime Video', 'Dexter')
+    );
+  });
+
+  it('Disney Plus: statische Browse-Seite bleibt (Clipboard-Fallback intakt)', () => {
+    const url = getProviderTitleUrl('Disney Plus', {
+      tmdbId: 84958,
+      mediaType: 'tv',
+      title: 'Loki',
+    });
+    expect(url).toBe('https://www.disneyplus.com/de-de/browse/search');
+    expect(providerNeedsClipboardCopy('Disney Plus')).toBe(true);
+  });
+
+  it('unbekannter Anbieter → null (kein Absturz)', () => {
+    expect(getProviderTitleUrl('Sky Ticket', { title: 'X' })).toBeNull();
+    expect(getProviderTitleUrl('', { tmdbId: 1, mediaType: 'movie', title: 'X' })).toBeNull();
   });
 });
 

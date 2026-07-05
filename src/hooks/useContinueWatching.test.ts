@@ -80,12 +80,54 @@ describe('useContinueWatching', () => {
     });
   });
 
-  it('ignoriert Serien ohne watchlist-Flag', () => {
+  it('zeigt angefangene Serien MIT Fortschritt auch OHNE watchlist-Flag (F2)', () => {
     const list = [
       makeSeries({
         id: 6,
         watchlist: false,
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [
+              ep({ id: 1, watched: true, lastWatchedAt: '2026-05-01T00:00:00Z' }),
+              ep({ id: 2, watched: false }),
+            ],
+          },
+        ],
+      }),
+    ];
+    const result = run(list);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe(6);
+    expect(result[0].nextEpisode.episodeId).toBe(2);
+  });
+
+  it('ignoriert noch nicht angefangene Serien (keine Episode gesehen)', () => {
+    const list = [
+      makeSeries({
+        id: 9,
+        watchlist: true,
         seasons: [{ seasonNumber: 0, episodes: [ep({ id: 1, watched: false })] }],
+      }),
+    ];
+    expect(run(list)).toEqual([]);
+  });
+
+  it('ignoriert versteckte (hidden) Serien trotz Fortschritt', () => {
+    const list = [
+      makeSeries({
+        id: 10,
+        watchlist: true,
+        hidden: true,
+        seasons: [
+          {
+            seasonNumber: 0,
+            episodes: [
+              ep({ id: 1, watched: true, lastWatchedAt: '2026-05-01T00:00:00Z' }),
+              ep({ id: 2, watched: false }),
+            ],
+          },
+        ],
       }),
     ];
     expect(run(list)).toEqual([]);
@@ -167,7 +209,10 @@ describe('useContinueWatching', () => {
           seasons: [
             {
               seasonNumber: 0,
-              episodes: [ep({ id: i * 10, watched: false })],
+              episodes: [
+                ep({ id: i * 10, watched: true, lastWatchedAt: '2026-05-01T00:00:00Z' }),
+                ep({ id: i * 10 + 1, watched: false }),
+              ],
             },
           ],
         })

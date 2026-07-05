@@ -241,6 +241,67 @@ export const useCatchUpData = () => {
 
 // --- Utility helpers ---
 
+/**
+ * Optimistischer Vorlauf für eine CatchUp-Karte.
+ *
+ * Liefert eine {@link CatchUpSeries}-Sicht, in der die ersten `advance` noch
+ * ungesehenen, bereits ausgestrahlten Folgen als gesehen gelten – ohne auf den
+ * Firebase-Re-Hydrate zu warten. So zeigt die Karte beim Bingen sofort die
+ * NÄCHSTE Folge (SxEy) an, statt bis zum Realtime-Update dieselbe zu behalten.
+ *
+ * Reine Funktion (keine Seiteneffekte) – der eigentliche Mark-Write läuft
+ * weiterhin über {@link markNextEpisodeWatched}. Konvergiert automatisch, sobald
+ * die echten Daten nachkommen: der Aufrufer baut `advance` dann wieder ab.
+ *
+ * @returns die vorgeschobene Sicht, oder `null`, wenn die Serie durch den
+ *          Vorlauf vollständig aufgeholt ist (Karte ausblenden).
+ */
+export const advanceCatchUpView = (item: CatchUpSeries, advance: number): CatchUpSeries | null => {
+  if (advance <= 0) return item;
+
+  const series = item.series;
+  const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
+
+  let skipped = 0;
+  let skippedMinutes = 0;
+  let nextSeason: number | null = null;
+  let nextEpisode = item.currentEpisode;
+
+  const seasons = series.seasons ?? [];
+  for (let s = 0; s < seasons.length && nextSeason === null; s++) {
+    const episodes = seasons[s].episodes ?? [];
+    for (let k = 0; k < episodes.length; k++) {
+      const episode = episodes[k];
+      if (episode?.watched || !hasEpisodeAired(episode)) continue;
+      if (skipped < advance) {
+        skipped++;
+        skippedMinutes += episode.runtime || seriesRuntime;
+        continue;
+      }
+      nextSeason = (seasons[s].seasonNumber ?? 0) + 1;
+      nextEpisode = episode.episode_number || k + 1;
+      break;
+    }
+  }
+
+  // Keine nächste ungesehene Folge mehr übrig → Serie aufgeholt → Karte weg.
+  if (nextSeason === null) return null;
+
+  const watchedEpisodes = item.watchedEpisodes + skipped;
+  const remainingEpisodes = item.totalEpisodes - watchedEpisodes;
+  if (remainingEpisodes <= 0) return null;
+
+  return {
+    ...item,
+    watchedEpisodes,
+    remainingEpisodes,
+    remainingMinutes: Math.max(0, item.remainingMinutes - skippedMinutes),
+    progress: (watchedEpisodes / item.totalEpisodes) * 100,
+    currentSeason: nextSeason,
+    currentEpisode: nextEpisode,
+  };
+};
+
 export const formatTime = (minutes: number): { value: number; unit: string } => {
   if (minutes < 60) return { value: minutes, unit: 'Min' };
   const hours = Math.floor(minutes / 60);

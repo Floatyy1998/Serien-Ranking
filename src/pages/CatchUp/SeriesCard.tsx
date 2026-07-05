@@ -1,15 +1,40 @@
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { getImageUrl } from '../../utils/imageUrl';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { markNextEpisodeWatched } from '../../hooks/markNextEpisode';
+import { hasEpisodeAired } from '../../utils/episodeDate';
+import type { Series } from '../../types/Series';
 import { GradientRing } from './GradientRing';
-import { formatTimeString, type CatchUpSeries } from './useCatchUpData';
+import { advanceCatchUpView, formatTimeString, type CatchUpSeries } from './useCatchUpData';
 
 interface SeriesCardProps {
   item: CatchUpSeries;
+}
+
+/**
+ * Klont eine Serie und markiert ihre ersten `advance` ungesehenen, bereits
+ * ausgestrahlten Folgen als gesehen. Dadurch wählt `findNextEpisode()` in
+ * {@link markNextEpisodeWatched} beim optimistischen Binge die NÄCHSTE Folge –
+ * nicht dieselbe (Doppel-Mark-Schutz), ohne die Mark-Pipeline selbst zu ändern.
+ */
+function cloneSeriesWithAdvance(series: Series, advance: number): Series {
+  if (advance <= 0) return series;
+  let remaining = advance;
+  const seasons = series.seasons?.map((season) => {
+    if (remaining <= 0 || !season.episodes) return season;
+    const episodes = season.episodes.map((ep) => {
+      if (remaining > 0 && !ep?.watched && hasEpisodeAired(ep)) {
+        remaining--;
+        return { ...ep, watched: true };
+      }
+      return ep;
+    });
+    return { ...season, episodes };
+  });
+  return { ...series, seasons };
 }
 
 export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
@@ -17,7 +42,27 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
   const authContext = useAuth();
   const user = authContext?.user;
   const { currentTheme } = useTheme();
-  const [marking, setMarking] = useState(false);
+
+  // Optimistischer Vorlauf: Anzahl der Folgen, die lokal schon als "gesehen"
+  // gelten, aber deren Firebase-Update noch nicht in `item` angekommen ist.
+  // Ref = synchrone Wahrheit (nächster Tap trifft die nächste Folge), State =
+  // Render-Trigger.
+  const [pendingAdvance, setPendingAdvance] = useState(0);
+  const pendingAdvanceRef = useRef(0);
+  const prevWatchedRef = useRef(item.watchedEpisodes);
+
+  // Konvergenz: sobald die echten Daten die Marks widerspiegeln (watchedEpisodes
+  // steigt), den Vorlauf entsprechend abbauen – Anzeige bleibt stabil, kein
+  // Zurückflackern auf eine schon markierte Folge.
+  useEffect(() => {
+    const prev = prevWatchedRef.current;
+    prevWatchedRef.current = item.watchedEpisodes;
+    if (item.watchedEpisodes > prev) {
+      const delta = item.watchedEpisodes - prev;
+      pendingAdvanceRef.current = Math.max(0, pendingAdvanceRef.current - delta);
+      setPendingAdvance(pendingAdvanceRef.current);
+    }
+  }, [item.watchedEpisodes]);
 
   const handleClick = useCallback(() => {
     navigate(`/series/${item.series.id}`);
@@ -39,22 +84,39 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
   const handleMarkNext = useCallback(
     async (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!user || marking) return;
-      setMarking(true);
-      try {
-        await markNextEpisodeWatched(user.uid, item.series);
-      } finally {
-        setMarking(false);
+      if (!user) return;
+      const advance = pendingAdvanceRef.current;
+      // Nicht über das Ende hinaus vor-advancen (nichts mehr zu markieren).
+      if (advance >= item.remainingEpisodes) return;
+
+      // Sofort optimistisch weiterschieben (synchron via Ref), damit ein
+      // schneller zweiter Tap die nächste – nicht dieselbe – Folge markiert.
+      pendingAdvanceRef.current = advance + 1;
+      setPendingAdvance(pendingAdvanceRef.current);
+
+      // Serie so klonen, dass die bereits optimistisch abgehakten Folgen als
+      // gesehen gelten → markNextEpisodeWatched zielt auf die richtige Folge.
+      const seriesForMark = cloneSeriesWithAdvance(item.series, advance);
+      const ok = await markNextEpisodeWatched(user.uid, seriesForMark);
+      if (!ok) {
+        // Fehlschlag → Vorlauf zurücknehmen.
+        pendingAdvanceRef.current = Math.max(0, pendingAdvanceRef.current - 1);
+        setPendingAdvance(pendingAdvanceRef.current);
       }
     },
-    [user, marking, item.series]
+    [user, item.series, item.remainingEpisodes]
   );
 
   const handleImgError = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     (e.target as HTMLImageElement).style.opacity = '0';
   }, []);
 
-  const accentAlpha = Math.round(item.progress * 2.55)
+  // Anzeige-Sicht mit optimistischem Vorlauf. `null` = durch Markieren komplett
+  // aufgeholt → Karte sauber ausblenden (bis der Realtime-Update sie eh entfernt).
+  const view = advanceCatchUpView(item, pendingAdvance);
+  if (!view) return null;
+
+  const accentAlpha = Math.round(view.progress * 2.55)
     .toString(16)
     .padStart(2, '0');
 
@@ -93,7 +155,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
         />
         {/* Episode badge */}
         <div className="cu-card-badge">
-          <span className="cu-card-badge-count">{item.remainingEpisodes}</span>
+          <span className="cu-card-badge-count">{view.remainingEpisodes}</span>
           <span className="cu-card-badge-label">EP</span>
         </div>
       </div>
@@ -106,7 +168,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
 
         <div className="cu-card-meta">
           <span className="cu-card-episode" style={{ color: currentTheme.text.secondary }}>
-            S{item.currentSeason} E{item.currentEpisode}
+            S{view.currentSeason} E{view.currentEpisode}
           </span>
           <span
             className="cu-card-time"
@@ -115,7 +177,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
               color: currentTheme.primary,
             }}
           >
-            {formatTimeString(item.remainingMinutes)}
+            {formatTimeString(view.remainingMinutes)}
           </span>
         </div>
 
@@ -127,14 +189,14 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
           <div
             className="cu-card-progress-fill"
             style={{
-              width: `${item.progress}%`,
+              width: `${view.progress}%`,
               background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
             }}
           />
         </div>
         <div className="cu-card-progress-label" style={{ color: currentTheme.text.muted }}>
           <span>
-            {item.watchedEpisodes} von {item.totalEpisodes}
+            {view.watchedEpisodes} von {view.totalEpisodes}
           </span>
         </div>
 
@@ -142,8 +204,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
         <button
           type="button"
           onClick={handleMarkNext}
-          disabled={marking}
-          aria-label={`S${item.currentSeason} E${item.currentEpisode} als gesehen markieren`}
+          aria-label={`S${view.currentSeason} E${view.currentEpisode} als gesehen markieren`}
           className="cu-card-mark-next"
           style={{
             marginTop: 8,
@@ -151,21 +212,20 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
             minHeight: 40,
             borderRadius: 10,
             border: 'none',
-            cursor: marking ? 'default' : 'pointer',
+            cursor: 'pointer',
             fontSize: 13,
             fontWeight: 700,
-            opacity: marking ? 0.6 : 1,
             background: currentTheme.primary,
             color: getOptimalTextColor(currentTheme.primary),
           }}
         >
-          ✓ S{item.currentSeason} E{item.currentEpisode} gesehen
+          ✓ S{view.currentSeason} E{view.currentEpisode} gesehen
         </button>
       </div>
 
       {/* Progress Ring */}
       <div className="cu-card-ring">
-        <GradientRing progress={item.progress} size={52} strokeWidth={4} />
+        <GradientRing progress={view.progress} size={52} strokeWidth={4} />
       </div>
     </div>
   );
