@@ -165,29 +165,50 @@
 .ratings-list {
   display: flex;
   flex-direction: column;
+  gap: 8px;
 }
 
+/* Zeile = Glass-Card mit Abstand statt Full-width-Streifen mit Trennlinie. */
 .ratings-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 6px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  contain-intrinsic-block-size: auto 64px;
+  gap: 14px;
+  padding: 10px 16px 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--glass-light);
+  border: 1px solid var(--glass-border-subtle);
+  contain-intrinsic-block-size: auto 104px;
+  transition:
+    background var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) var(--ease-out);
 }
 
 /* Zeilen heben nicht ab wie Grid-Karten — dezentes Hover-Highlight. */
 .ratings-row:hover {
   transform: none;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--glass-medium);
+  border-color: var(--glass-border-light);
+}
+
+/* Platzierung in der Rating-Rangliste (nur bei Sortierung nach Rating). */
+.ratings-row-rank {
+  flex: none;
+  min-width: 28px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
 }
 
 .ratings-row-thumb {
-  width: 34px;
-  height: 48px;
-  border-radius: 6px;
+  width: 56px;
+  height: 82px;
+  border-radius: var(--radius-sm);
   object-fit: cover;
   flex: none;
+  box-shadow: var(--shadow-sm);
 }
 
 .ratings-row-meta {
@@ -195,37 +216,128 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .ratings-row-title {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .ratings-row-sub {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.ratings-row-bar {
-  display: block;
-  height: 3px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.12);
+/* Status-Zeile: nächste Folge + Fortschritt bzw. „Komplett gesehen". */
+.ratings-row-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  min-width: 0;
+}
+
+.ratings-row-next {
+  white-space: nowrap;
   overflow: hidden;
-  margin-top: 2px;
+  text-overflow: ellipsis;
+}
+
+.ratings-row-done {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Kurzer Balken in der Status-Zeile — bewusst NICHT über die volle
+   Zeilenbreite (sonst entsteht pro Zeile eine durchgehende farbige Linie). */
+.ratings-row-bar {
+  flex: none;
+  width: 110px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
 }
 
 .ratings-row-bar i {
   display: block;
   height: 100%;
   border-radius: 2px;
+}
+
+.ratings-row-percent {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.ratings-row-watchlist {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.ratings-row-providers {
+  flex: none;
+  display: flex;
+}
+
+/* Score-Block rechts: die Bewertung ist auf dieser Seite die Hauptinfo. */
+.ratings-row-score {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 52px;
+  font-family: var(--font-display);
+}
+
+.ratings-row-score-star {
+  font-size: 0.72rem;
+}
+
+.ratings-row-score-value {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Schmale Screens: kompakter, Provider-Badges ausblenden. */
+@media (max-width: 639px) {
+  .ratings-row {
+    gap: 10px;
+    padding: 8px 12px 8px 10px;
+  }
+
+  .ratings-row-thumb {
+    width: 48px;
+    height: 70px;
+  }
+
+  .ratings-row-providers {
+    display: none;
+  }
+
+  .ratings-row-bar {
+    width: 64px;
+  }
+
+  .ratings-row-score {
+    min-width: 40px;
+  }
 }
 
 .ratings-row-mark {

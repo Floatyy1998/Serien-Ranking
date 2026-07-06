@@ -86,4 +86,45 @@ describe('RatingCompactRow (D5)', () => {
     expect(row.dataset.id).toBe('1');
     expect(row.dataset.movie).toBeUndefined();
   });
+
+  it('zeigt Score-Block mit Rating und Rang (bei Rating-Sortierung)', () => {
+    mark.findNextEpisode.mockReturnValue(null);
+    render(<RatingCompactRow item={item} series={series} uid="u1" theme={theme} rank={3} />);
+    expect(screen.getByLabelText('Bewertung 8.4')).toBeInTheDocument();
+    expect(screen.getByText('8.4')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
+  });
+
+  it('unbewertet: „–" statt Score, leerer Rang-Platzhalter', () => {
+    mark.findNextEpisode.mockReturnValue(null);
+    const { container } = render(
+      <RatingCompactRow
+        item={{ ...item, rating: 0 }}
+        series={series}
+        uid="u1"
+        theme={theme}
+        rank={7}
+      />
+    );
+    expect(screen.getByLabelText('Unbewertet')).toBeInTheDocument();
+    const rankEl = container.querySelector('.ratings-row-rank') as HTMLElement;
+    expect(rankEl).toBeTruthy();
+    expect(rankEl.textContent).toBe('');
+  });
+
+  it('zeigt Watchlist-Chip, wenn das Item auf der Watchlist ist', () => {
+    mark.findNextEpisode.mockReturnValue(null);
+    const themeWithInfo = {
+      ...theme,
+      status: { success: '#4cd137', warning: '#f5a623', info: { main: '#2196f3', gradient: '' } },
+    } as unknown as typeof theme;
+    render(
+      <RatingCompactRow
+        item={{ ...item, isMovie: true, progress: 0, watchlist: true }}
+        uid="u1"
+        theme={themeWithInfo}
+      />
+    );
+    expect(screen.getByText('Watchlist')).toBeInTheDocument();
+  });
 });

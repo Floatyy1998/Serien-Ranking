@@ -35,8 +35,9 @@ function handleImgError(e: React.SyntheticEvent<HTMLImageElement>) {
 }
 
 // ─── Provider Badge with Popup ──────────────────────────────────────────
+// Auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
 
-function ProviderBadgeArea({
+export function ProviderBadgeArea({
   providers,
   bgColor,
   textColor,

@@ -58,6 +58,13 @@ export const RatingsPage: React.FC = () => {
     return map;
   }, [allSeriesList]);
 
+  // Rang nur zeigen, wenn die effektive Sortierung rating-desc ist (spiegelt
+  // effectiveSortBy aus useRatingsData: „recently-added" erzwingt date-desc,
+  // „ongoing" erzwingt rating-desc).
+  const rankedByRating =
+    quickFilter !== 'recently-added' &&
+    (quickFilter === 'ongoing' || (filters.sortBy || 'rating-desc') === 'rating-desc');
+
   // ─── Loading State ──────────────────────────────────
   if (!user) {
     return (
@@ -143,13 +150,14 @@ export const RatingsPage: React.FC = () => {
         {itemsToRender.length > 0 ? (
           density === 'compact' ? (
             <div className="ratings-list" onClick={handleGridClick}>
-              {itemsToRender.map((item) => (
+              {itemsToRender.map((item, idx) => (
                 <RatingCompactRow
                   key={`${item.isMovie ? 'm' : 's'}-${item.id}`}
                   item={item}
                   series={item.isMovie ? undefined : seriesById.get(item.id)}
                   uid={user?.uid}
                   theme={currentTheme}
+                  rank={rankedByRating ? idx + 1 : undefined}
                 />
               ))}
               <div className="ratings-spacer" />
