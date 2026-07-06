@@ -6,6 +6,7 @@ import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './lib/firebase/userSearchIndex';
+import { dbRef, paths, serverTimestamp } from './lib/db/ref';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -136,7 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               if (!localTheme) {
                 // Kein lokales Theme vorhanden - versuche Cloud-Theme zu laden
-                const themeRef = firebase.database().ref(`users/${user.uid}/theme`);
+                const themeRef = dbRef(paths.theme(user.uid));
                 try {
                   const themeSnapshot = await themeRef.once('value');
                   const cloudTheme = themeSnapshot.val();
@@ -173,7 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               }
               // else: local theme exists, keep it — cloud updates are ignored
 
-              const userRef = firebase.database().ref(`users/${user.uid}`);
+              const userRef = dbRef(paths.user(user.uid));
               const snapshot = await userRef.once('value');
 
               if (!snapshot.exists()) {
@@ -183,8 +184,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   email: user.email,
                   displayName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
                   photoURL: user.photoURL || null,
-                  createdAt: firebase.database.ServerValue.TIMESTAMP,
-                  lastActive: firebase.database.ServerValue.TIMESTAMP,
+                  createdAt: serverTimestamp(),
+                  lastActive: serverTimestamp(),
                   isOnline: true,
                   onboardingComplete: false,
                 };
@@ -207,7 +208,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setOnboardingComplete(existingData?.onboardingComplete !== false);
 
                 const updateData = {
-                  lastActive: firebase.database.ServerValue.TIMESTAMP,
+                  lastActive: serverTimestamp(),
                   isOnline: true,
                 };
 
@@ -234,10 +235,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
               // Bei Disconnect offline setzen
               userRef.child('isOnline').onDisconnect().set(false);
-              userRef
-                .child('lastActive')
-                .onDisconnect()
-                .set(firebase.database.ServerValue.TIMESTAMP);
+              userRef.child('lastActive').onDisconnect().set(serverTimestamp());
             }
           });
         } catch {

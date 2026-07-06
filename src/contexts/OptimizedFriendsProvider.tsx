@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { dbRef, dbGet, userPath, paths } from '../lib/db/ref';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
@@ -61,9 +60,9 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     if (user) {
       const loadReadTimes = async () => {
         try {
-          const readTimesRef = firebase.database().ref(`users/${user.uid}/readTimes`);
-          const snapshot = await readTimesRef.once('value');
-          const data = snapshot.val();
+          const data = await dbGet<{ requests?: number; activities?: number }>(
+            userPath(user.uid, 'readTimes')
+          );
 
           if (data) {
             setLastReadRequestsTime(data.requests || 0);
@@ -73,7 +72,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
             const now = Date.now();
             setLastReadRequestsTime(now);
             setLastReadActivitiesTime(now);
-            await firebase.database().ref(`users/${user.uid}/readTimes`).set({
+            await dbRef(userPath(user.uid, 'readTimes')).set({
               requests: now,
               activities: now,
             });
@@ -97,16 +96,12 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   useEffect(() => {
     if (!user) return;
 
-    const incomingRef = firebase
-      .database()
-      .ref('friendRequests')
+    const incomingRef = dbRef('friendRequests')
       .orderByChild('toUserId')
       .equalTo(user.uid)
       .limitToLast(50);
 
-    const outgoingRef = firebase
-      .database()
-      .ref('friendRequests')
+    const outgoingRef = dbRef('friendRequests')
       .orderByChild('fromUserId')
       .equalTo(user.uid)
       .limitToLast(50);
@@ -201,9 +196,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
       const activityPromises = friends.map(async (friend) => {
         try {
-          const activitiesRef = firebase
-            .database()
-            .ref(`users/${friend.uid}/activities`)
+          const activitiesRef = dbRef(userPath(friend.uid, 'activities'))
             .orderByChild('timestamp')
             .startAt(sevenDaysAgo)
             .limitToLast(30);
@@ -334,11 +327,8 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
     const syncProfile = async () => {
       try {
-        const currentUserSnapshot = await firebase
-          .database()
-          .ref(`users/${user.uid}`)
-          .once('value');
-        const currentUserData = currentUserSnapshot.val() || {};
+        const currentUserData: Record<string, string | null | undefined> =
+          (await dbGet<Record<string, string | null | undefined>>(paths.user(user.uid))) || {};
 
         const update = {
           photoURL: currentUserData.photoURL || user.photoURL || null,
@@ -350,9 +340,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
 
         await Promise.all(
           friends.map((friend) =>
-            firebase
-              .database()
-              .ref(`users/${friend.uid}/friends/${user.uid}`)
+            dbRef(userPath(friend.uid, 'friends', user.uid))
               .update(update)
               .catch(() => {
                 // Silent fail fuer einzelne Freunde (z.B. Permission)
@@ -383,7 +371,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     setLastReadRequestsTime(now);
 
     try {
-      await firebase.database().ref(`users/${user.uid}/readTimes/requests`).set(now);
+      await dbRef(userPath(user.uid, 'readTimes', 'requests')).set(now);
     } catch (error) {
       console.error('Failed to save read time:', error);
     }
@@ -402,7 +390,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     setLastReadActivitiesTime(now);
 
     try {
-      await firebase.database().ref(`users/${user.uid}/readTimes/activities`).set(now);
+      await dbRef(userPath(user.uid, 'readTimes', 'activities')).set(now);
     } catch (error) {
       console.error('Failed to save read time:', error);
     }

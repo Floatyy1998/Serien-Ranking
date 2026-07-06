@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
 import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../lib/staticCatalog';
-import 'firebase/compat/database';
+import { dbRef, dbGet, userPath, paths } from '../../lib/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { PublicItem, PublicFilters } from './publicProfileHelpers';
@@ -47,11 +46,7 @@ export function usePublicProfileData() {
         // Step 1: publicId -> userId via oeffentlich lesbarer Lookup-Node.
         // (Vorher wurde der gesamte /users-Tree iteriert, was unter den
         // aktuellen Security-Rules ohne Auth nicht mehr erlaubt ist.)
-        const lookupSnap = await firebase
-          .database()
-          .ref(`publicProfiles/${publicId}`)
-          .once('value');
-        const lookup = lookupSnap.val() as { userId?: string } | null;
+        const lookup = await dbGet<{ userId?: string }>(`publicProfiles/${publicId}`);
         const foundUserId = lookup?.userId || null;
 
         if (!foundUserId) {
@@ -71,11 +66,11 @@ export function usePublicProfileData() {
           staticSeriesCatalog,
           staticMoviesCatalog,
         ] = await Promise.all([
-          firebase.database().ref(`users/${foundUserId}/isPublicProfile`).once('value'),
-          firebase.database().ref(`users/${foundUserId}/username`).once('value'),
-          firebase.database().ref(`users/${foundUserId}/displayName`).once('value'),
-          firebase.database().ref(`users/${foundUserId}/series`).once('value'),
-          firebase.database().ref(`users/${foundUserId}/movies`).once('value'),
+          dbRef(userPath(foundUserId, 'isPublicProfile')).once('value'),
+          dbRef(userPath(foundUserId, 'username')).once('value'),
+          dbRef(paths.displayName(foundUserId)).once('value'),
+          dbRef(paths.series(foundUserId)).once('value'),
+          dbRef(paths.movies(foundUserId)).once('value'),
           fetchStaticCatalogSeries(),
           fetchStaticCatalogMovies(),
         ]);

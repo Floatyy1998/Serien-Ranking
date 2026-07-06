@@ -33,7 +33,7 @@ export const dbGet = async <T = unknown>(path: string): Promise<T | null> => {
 
 /** Multi-Path-Update von der DB-Root aus (Keys = volle Pfade). */
 export const dbUpdate = (updates: Record<string, unknown>): Promise<void> =>
-  db().ref().update(updates);
+  db().ref('/').update(updates);
 
 /**
  * Ergänzt eine Multi-Path-Update-Map um den `serienVersion`-Bump und wendet sie

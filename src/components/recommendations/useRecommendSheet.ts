@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
@@ -48,10 +47,7 @@ export const useRecommendSheet = ({ isOpen, onClose, media }: UseRecommendSheetA
     Promise.all(
       friends.map(async (friend) => {
         try {
-          const snap = await firebase
-            .database()
-            .ref(`users/${friend.uid}/${subPath}/${media.id}`)
-            .once('value');
+          const snap = await dbRef(userPath(friend.uid, subPath, media.id)).once('value');
           return snap.exists() ? friend.uid : null;
         } catch {
           return null;

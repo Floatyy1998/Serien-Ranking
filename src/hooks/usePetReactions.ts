@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 
 export type PetReactionTone =
   | 'cheer'
@@ -222,7 +223,7 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
   // (within 60s) so a tab opened later doesn't replay a stale trigger.
   useEffect(() => {
     if (!uid) return;
-    const ref = firebase.database().ref(`users/${uid}/petTrigger`);
+    const ref = dbRef(userPath(uid, 'petTrigger'));
     let lastSeenAt = 0;
     const onValue = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as { tone?: PetReactionTone; at?: number } | null;
@@ -243,7 +244,7 @@ export function usePetReactions(uid: string | undefined): PetReaction | null {
   useEffect(() => {
     if (!uid) return;
     const year = new Date().getFullYear();
-    const ref = firebase.database().ref(`users/${uid}/wrapped/${year}/streak`);
+    const ref = dbRef(userPath(uid, 'wrapped', year, 'streak'));
 
     const onValue = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as { currentStreak?: number } | null;

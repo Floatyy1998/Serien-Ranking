@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, dbGet, serverTimestamp, userPath, paths } from '../lib/db/ref';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import type { FriendActivity, FriendRequest } from '../types/Friend';
 
@@ -15,9 +14,7 @@ export async function sendFriendRequestOp(
   const lower = username.toLowerCase();
   let userData: Record<string, Record<string, unknown>> | null = null;
   try {
-    const snapshot = await firebase
-      .database()
-      .ref('userSearchIndex')
+    const snapshot = await dbRef('userSearchIndex')
       .orderByChild('usernameLower')
       .equalTo(lower)
       .once('value');
@@ -27,7 +24,7 @@ export async function sendFriendRequestOp(
   }
   if (!userData) {
     try {
-      const usersRef = firebase.database().ref('users');
+      const usersRef = dbRef('users');
       let snapshot = await usersRef.orderByChild('usernameLower').equalTo(lower).once('value');
       userData = snapshot.val();
       if (!userData) {
@@ -45,11 +42,9 @@ export async function sendFriendRequestOp(
   const targetUserData = userData[targetUserId];
 
   // Aktueller User Daten laden für fromUsername/fromUserEmail
-  const currentUserRef = firebase.database().ref(`users/${user.uid}`);
-  const currentUserSnapshot = await currentUserRef.once('value');
-  const currentUserData = currentUserSnapshot.val();
+  const currentUserData = await dbGet<Record<string, unknown>>(paths.user(user.uid));
 
-  const requestRef = firebase.database().ref('friendRequests').push();
+  const requestRef = dbRef('friendRequests').push();
 
   await requestRef.set({
     fromUserId: user.uid,
@@ -59,7 +54,7 @@ export async function sendFriendRequestOp(
     fromUserEmail: currentUserData?.email || user.email || '',
     toUserEmail: targetUserData?.email || '',
     status: 'pending',
-    sentAt: firebase.database.ServerValue.TIMESTAMP,
+    sentAt: serverTimestamp(),
   });
 
   return true;
@@ -76,9 +71,7 @@ export async function acceptFriendRequestOp(
   setFriendRequests: React.Dispatch<React.SetStateAction<FriendRequest[]>>,
   refetchFriends: () => void
 ): Promise<void> {
-  const requestRef = firebase.database().ref(`friendRequests/${requestId}`);
-  const snapshot = await requestRef.once('value');
-  const request = snapshot.val();
+  const request = await dbGet<{ fromUserId: string }>(`friendRequests/${requestId}`);
 
   if (!request) return;
 
@@ -87,8 +80,7 @@ export async function acceptFriendRequestOp(
   // einzeln lesbar. email ist dann nicht mehr lesbar → best-effort (null).
   const readVal = async (path: string): Promise<unknown> => {
     try {
-      const snap = await firebase.database().ref(path).once('value');
-      return snap.val();
+      return await dbGet(path);
     } catch {
       return null;
     }
@@ -100,39 +92,31 @@ export async function acceptFriendRequestOp(
     readVal(`users/${request.fromUserId}/email`),
   ]);
 
-  const currentUserRef = firebase.database().ref(`users/${user.uid}`);
-  const currentUserSnapshot = await currentUserRef.once('value');
-  const currentUserData = currentUserSnapshot.val();
+  const currentUserData = await dbGet<Record<string, unknown>>(paths.user(user.uid));
 
   // Freund zur eigenen Liste hinzufügen
-  await firebase
-    .database()
-    .ref(`users/${user.uid}/friends/${request.fromUserId}`)
-    .set({
-      uid: request.fromUserId,
-      email: fromEmail ?? null,
-      username: fromUsername || 'unknown',
-      displayName: fromDisplayName || fromUsername || null,
-      photoURL: fromPhotoURL || null,
-      friendsSince: firebase.database.ServerValue.TIMESTAMP,
-    });
+  await dbRef(userPath(user.uid, 'friends', request.fromUserId)).set({
+    uid: request.fromUserId,
+    email: fromEmail ?? null,
+    username: fromUsername || 'unknown',
+    displayName: fromDisplayName || fromUsername || null,
+    photoURL: fromPhotoURL || null,
+    friendsSince: serverTimestamp(),
+  });
 
   // Sich selbst zur Freundesliste hinzufügen
-  await firebase
-    .database()
-    .ref(`users/${request.fromUserId}/friends/${user.uid}`)
-    .set({
-      uid: user.uid,
-      email: user.email,
-      username: currentUserData?.username || 'unknown',
-      displayName: currentUserData?.displayName || currentUserData?.username || user.displayName,
-      photoURL: currentUserData?.photoURL || user.photoURL || null,
-      friendsSince: firebase.database.ServerValue.TIMESTAMP,
-    });
+  await dbRef(userPath(request.fromUserId, 'friends', user.uid)).set({
+    uid: user.uid,
+    email: user.email,
+    username: currentUserData?.username || 'unknown',
+    displayName: currentUserData?.displayName || currentUserData?.username || user.displayName,
+    photoURL: currentUserData?.photoURL || user.photoURL || null,
+    friendsSince: serverTimestamp(),
+  });
 
-  await firebase.database().ref(`friendRequests/${requestId}`).update({
+  await dbRef(`friendRequests/${requestId}`).update({
     status: 'accepted',
-    respondedAt: firebase.database.ServerValue.TIMESTAMP,
+    respondedAt: serverTimestamp(),
   });
 
   // Remove the request from local state immediately
@@ -160,9 +144,9 @@ export async function declineFriendRequestOp(
   requestId: string,
   setFriendRequests: React.Dispatch<React.SetStateAction<FriendRequest[]>>
 ): Promise<void> {
-  await firebase.database().ref(`friendRequests/${requestId}`).update({
+  await dbRef(`friendRequests/${requestId}`).update({
     status: 'declined',
-    respondedAt: firebase.database.ServerValue.TIMESTAMP,
+    respondedAt: serverTimestamp(),
   });
 
   setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
@@ -172,7 +156,7 @@ export async function cancelFriendRequestOp(
   requestId: string,
   setSentRequests: React.Dispatch<React.SetStateAction<FriendRequest[]>>
 ): Promise<void> {
-  await firebase.database().ref(`friendRequests/${requestId}`).remove();
+  await dbRef(`friendRequests/${requestId}`).remove();
 
   setSentRequests((prev) => prev.filter((req) => req.id !== requestId));
 }
@@ -182,9 +166,9 @@ export async function removeFriendOp(
   friendId: string,
   refetchFriends: () => void
 ): Promise<void> {
-  await firebase.database().ref(`users/${userId}/friends/${friendId}`).remove();
+  await dbRef(userPath(userId, 'friends', friendId)).remove();
 
-  await firebase.database().ref(`users/${friendId}/friends/${userId}`).remove();
+  await dbRef(userPath(friendId, 'friends', userId)).remove();
 
   refetchFriends();
 }
@@ -194,7 +178,7 @@ export async function updateUserActivityOp(
   activity: Omit<FriendActivity, 'id' | 'userId' | 'userName' | 'timestamp'>
 ): Promise<void> {
   try {
-    const activitiesRef = firebase.database().ref(`users/${user.uid}/activities`);
+    const activitiesRef = dbRef(userPath(user.uid, 'activities'));
 
     // Add new activity
     const newActivityRef = activitiesRef.push();
@@ -202,7 +186,7 @@ export async function updateUserActivityOp(
       ...activity,
       userId: user.uid,
       userName: user.displayName || user.email?.split('@')[0] || 'Unbekannt',
-      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      timestamp: serverTimestamp(),
     });
 
     // Limit to max 30 activities per user

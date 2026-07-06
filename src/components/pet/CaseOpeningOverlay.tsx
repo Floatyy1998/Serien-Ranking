@@ -9,6 +9,7 @@ import { ACCESSORIES } from './data/accessories';
 import { seededRandom } from '../../utils/seededRandom';
 import './CaseOpeningOverlay.css';
 import { tapScale } from '../../lib/motion';
+import { dbRef, userPath } from '../../lib/db/ref';
 
 interface CaseOpeningOverlayProps {
   dropData: { dropId: string; accessoryId: string; rarity: string } | null;
@@ -161,27 +162,23 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
     }
 
     // Check Firebase if pending drop still exists
-    import('firebase/compat/app').then(({ default: firebase }) => {
-      const uid = auth?.user?.uid;
-      if (!uid) return;
-      firebase
-        .database()
-        .ref(`users/${uid}/pendingAccessoryDrops/${dropData.dropId}`)
-        .once('value')
-        .then((snap) => {
-          if (snap.exists()) {
-            setAlreadyClaimed(false);
-            // Reset position BEFORE switching to spinning
-            x.jump(100);
-            requestAnimationFrame(() => {
-              setPhase('spinning');
-            });
-          } else {
-            setAlreadyClaimed(true);
-            setPhase('reveal');
-          }
-        });
-    });
+    const uid = auth?.user?.uid;
+    if (!uid) return;
+    dbRef(userPath(uid, 'pendingAccessoryDrops', dropData.dropId))
+      .once('value')
+      .then((snap) => {
+        if (snap.exists()) {
+          setAlreadyClaimed(false);
+          // Reset position BEFORE switching to spinning
+          x.jump(100);
+          requestAnimationFrame(() => {
+            setPhase('spinning');
+          });
+        } else {
+          setAlreadyClaimed(true);
+          setPhase('reveal');
+        }
+      });
   }, [dropData, x, auth?.user?.uid]);
 
   // Cleanup audio context on unmount

@@ -18,7 +18,6 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,6 +25,7 @@ import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { trackRegister } from '../../firebase/analytics';
 import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
+import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -75,15 +75,15 @@ export const RegisterPage = () => {
         // diesen set()-Write bereits an, geht es in den "bestehender User"-Branch
         // mit `existingData?.onboardingComplete !== false` → undefined !== false →
         // true, und das Onboarding wird nie angezeigt.
-        await firebase.database().ref(`users/${userCredential.user.uid}`).set({
+        await dbRef(paths.user(userCredential.user.uid)).set({
           uid: userCredential.user.uid,
           email: userCredential.user.email,
           username: username,
           usernameLower: username.toLowerCase(),
           displayName: username,
           displayNameLower: username.toLowerCase(),
-          createdAt: firebase.database.ServerValue.TIMESTAMP,
-          lastActive: firebase.database.ServerValue.TIMESTAMP,
+          createdAt: serverTimestamp(),
+          lastActive: serverTimestamp(),
           isOnline: true,
           onboardingComplete: false,
         });

@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { dbGet, paths } from './lib/db/ref';
 
 // Funktion um eine Farbe heller oder dunkler zu machen
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
@@ -48,9 +48,7 @@ export const loadSavedTheme = async (userId?: string) => {
   // Falls kein lokales Theme, Cloud-Theme als Fallback laden
   if (!theme && userId) {
     try {
-      const themeRef = firebase.database().ref(`users/${userId}/theme`);
-      const snapshot = await themeRef.once('value');
-      theme = snapshot.val();
+      theme = await dbGet(paths.theme(userId));
       if (theme) {
         // WICHTIG: Speichere Cloud-Theme temporär im localStorage,
         // damit BackgroundMedia Komponente es aufgreifen kann (speziell für Videos)

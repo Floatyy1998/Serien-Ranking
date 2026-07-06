@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../../lib/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import {
   fetchStaticCatalogSeries,
@@ -116,7 +115,7 @@ export function useFriendAnticipation(friendUid: string | undefined): {
     let cancelled = false;
     (async () => {
       try {
-        const snap = await firebase.database().ref(`users/${friendUid}/series`).once('value');
+        const snap = await dbRef(paths.series(friendUid)).once('value');
         if (cancelled) return;
         const data = (snap.val() ?? {}) as Record<string, UserSeriesEntry>;
         const allIds: number[] = [];

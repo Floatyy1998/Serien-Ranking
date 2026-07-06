@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 
 export type PetGiftType = 'snack' | 'toy';
 
@@ -66,7 +65,7 @@ export async function sendPetGift(opts: {
     },
   };
 
-  await firebase.database().ref(`users/${toUid}/notifications`).push(payload);
+  await dbRef(userPath(toUid, 'notifications')).push(payload);
 
   try {
     localStorage.setItem(COOLDOWN_LS_PREFIX + toUid, String(Date.now()));

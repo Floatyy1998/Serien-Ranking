@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useAuth } from '../../AuthContext';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
@@ -73,16 +72,17 @@ export function useRewatchHandler() {
       });
       return;
     }
-    const epPath = `users/${user.uid}/seriesWatch/${item.id}/seasons/${item.seasonIndex}/eps/${epId}`;
-    const db = firebase.database();
+    const epPath = `${paths.seriesWatchItem(user.uid, item.id)}/seasons/${item.seasonIndex}/eps/${epId}`;
+    const rewatchPath = `${paths.seriesItem(user.uid, item.id)}/rewatch`;
+    const rewatchLastWatchedAtPath = `${rewatchPath}/lastWatchedAt`;
     const nowIso = new Date().toISOString();
     const nowUnix = Math.floor(Date.now() / 1000);
 
     try {
       // Snapshot vorher lesen
       const [epSnap, rewatchLastSnap] = await Promise.all([
-        db.ref(epPath).once('value'),
-        db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).once('value'),
+        dbRef(epPath).once('value'),
+        dbRef(rewatchLastWatchedAtPath).once('value'),
       ]);
 
       const val = (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
@@ -97,13 +97,13 @@ export function useRewatchHandler() {
       const prevRewatchLastWatchedAt: string | null = rewatchLastSnap.val() || null;
 
       const newWatchCount = prevCount + 1;
-      const rewatchEpsPath = `users/${user.uid}/series/${item.id}/rewatch/rewatchedEps/${epId}`;
+      const rewatchEpsPath = `${rewatchPath}/rewatchedEps/${epId}`;
       const updates: Record<string, unknown> = {
         [`${epPath}/c`]: newWatchCount,
         [`${epPath}/l`]: nowUnix,
         [rewatchEpsPath]: true,
-        [`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`]: nowIso,
-        [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+        [rewatchLastWatchedAtPath]: nowIso,
+        [paths.serienVersion(user.uid)]: serverTimestamp(),
       };
       if (!prevWatched) {
         updates[`${epPath}/w`] = 1;
@@ -111,7 +111,7 @@ export function useRewatchHandler() {
           updates[`${epPath}/f`] = nowUnix;
         }
       }
-      await db.ref().update(updates);
+      await dbUpdate(updates);
 
       // Ep aus der UI ausblenden — jeder Swipe = Ep fertig fuer diese Runde
       // (rewatchedEps-Flag ist jetzt gesetzt, unabhaengig vom watchCount).
@@ -148,7 +148,7 @@ export function useRewatchHandler() {
           if (!allDone) break;
         }
         if (allDone) {
-          await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).remove();
+          await dbRef(rewatchPath).remove();
           rewatchRemoved = true;
         }
       }
@@ -162,9 +162,9 @@ export function useRewatchHandler() {
           });
           try {
             if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
-              await db.ref(epPath).remove();
+              await dbRef(epPath).remove();
             } else {
-              await db.ref(epPath).set({
+              await dbRef(epPath).set({
                 ...(prevWatched ? { w: prevWatched } : {}),
                 ...(prevCount ? { c: prevCount } : {}),
                 ...(prevFirst ? { f: prevFirst } : {}),
@@ -173,21 +173,17 @@ export function useRewatchHandler() {
             }
             if (rewatchRemoved && series?.rewatch) {
               // rewatch wurde komplett entfernt — original wiederherstellen
-              await db.ref(`users/${user.uid}/series/${item.id}/rewatch`).set(series.rewatch);
+              await dbRef(rewatchPath).set(series.rewatch);
             } else {
               // rewatchedEps-Flag fuer diese Episode zuruecknehmen
-              await db.ref(rewatchEpsPath).remove();
+              await dbRef(rewatchEpsPath).remove();
               if (prevRewatchLastWatchedAt) {
-                await db
-                  .ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`)
-                  .set(prevRewatchLastWatchedAt);
+                await dbRef(rewatchLastWatchedAtPath).set(prevRewatchLastWatchedAt);
               } else {
-                await db.ref(`users/${user.uid}/series/${item.id}/rewatch/lastWatchedAt`).remove();
+                await dbRef(rewatchLastWatchedAtPath).remove();
               }
             }
-            await db
-              .ref(`users/${user.uid}/meta/serienVersion`)
-              .set(firebase.database.ServerValue.TIMESTAMP);
+            await dbRef(paths.serienVersion(user.uid)).set(serverTimestamp());
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
           }

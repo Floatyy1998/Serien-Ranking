@@ -1,10 +1,10 @@
-import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { getMangaById } from '../services/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangaUpdatesService';
 import type { Manga } from '../types/Manga';
+import { dbRef, paths, userPath } from '../lib/db/ref';
 import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag
@@ -99,10 +99,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
             }
           }
           if (Object.keys(updates).length > 0) {
-            await firebase
-              .database()
-              .ref(`users/${user.uid}/manga/${manga.anilistId}`)
-              .update(updates);
+            await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
           }
         } catch {
           // Silent fail per manga
@@ -169,10 +166,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
           if (!manga.description && data.description) updates.description = data.description;
 
           if (Object.keys(updates).length > 0) {
-            await firebase
-              .database()
-              .ref(`users/${user.uid}/manga/${manga.anilistId}`)
-              .update(updates);
+            await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
           }
         } catch {
           // Silent fail per manga
@@ -184,7 +178,7 @@ export const MangaListProvider = ({ children }: { children: React.ReactNode }) =
   const toggleHideManga = useCallback(
     async (anilistId: number, hidden: boolean) => {
       if (!user) return;
-      await firebase.database().ref(`users/${user.uid}/manga/${anilistId}/hidden`).set(hidden);
+      await dbRef(userPath(user.uid, 'manga', anilistId, 'hidden')).set(hidden);
     },
     [user]
   );

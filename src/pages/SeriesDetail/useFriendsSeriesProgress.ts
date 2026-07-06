@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, paths } from '../../lib/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import type { Series } from '../../types/Series';
@@ -134,12 +133,8 @@ export function useFriendsSeriesProgress(
       const results = await Promise.all(
         friends.map(async (f) => {
           try {
-            const snap = await firebase
-              .database()
-              .ref(`users/${f.uid}/seriesWatch/${seriesId}`)
-              .once('value');
             const analyzed = analyzeFriendWatch(
-              snap.val() as SeriesWatchSnap | null,
+              await dbGet<SeriesWatchSnap>(paths.seriesWatchItem(f.uid, seriesId)),
               maps.epIdToPos,
               maps.seasonArrayPositions
             );

@@ -1,5 +1,6 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import type {
@@ -42,7 +43,7 @@ export function useRecommendations(): UseRecommendationsReturn {
     }
 
     setLoading(true);
-    const ref = firebase.database().ref(`users/${user.uid}/recommendations`);
+    const ref = dbRef(userPath(user.uid, 'recommendations'));
 
     const handle = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
@@ -93,9 +94,8 @@ export function useRecommendations(): UseRecommendationsReturn {
         status: 'pending',
       };
 
-      const db = firebase.database();
       await Promise.all(
-        recipientUids.map((uid) => db.ref(`users/${uid}/recommendations`).push(base))
+        recipientUids.map((uid) => dbRef(userPath(uid, 'recommendations')).push(base))
       );
       return recipientUids.length;
     },
@@ -105,7 +105,7 @@ export function useRecommendations(): UseRecommendationsReturn {
   const updateStatus = useCallback(
     async (id: string, status: RecommendationStatus): Promise<void> => {
       if (!user) return;
-      await firebase.database().ref(`users/${user.uid}/recommendations/${id}/status`).set(status);
+      await dbRef(userPath(user.uid, 'recommendations', id, 'status')).set(status);
     },
     [user]
   );

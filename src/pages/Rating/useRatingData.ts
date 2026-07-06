@@ -1,5 +1,3 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
@@ -13,6 +11,7 @@ import { WatchActivityService } from '../../services/watchActivityService';
 import type { Movie as MovieType } from '../../types/Movie';
 import { trackRatingSaved, trackRatingDeleted } from '../../firebase/analytics';
 import type { Series } from '../../types/Series';
+import { dbRef, paths } from '../../lib/db/ref';
 
 export interface UseRatingDataResult {
   item: (Series | MovieType) | undefined;
@@ -140,9 +139,11 @@ export const useRatingData = (): UseRatingDataResult => {
       }
 
       if (Object.keys(ratingsToSave).length > 0) {
-        const ratingRef = firebase
-          .database()
-          .ref(`users/${user.uid}/${type === 'series' ? 'series' : 'movies'}/${item.id}/rating`);
+        const ratingRef = dbRef(
+          type === 'series'
+            ? paths.seriesRating(user.uid, item.id)
+            : paths.movieRating(user.uid, item.id)
+        );
 
         await ratingRef.set(ratingsToSave);
 
@@ -150,7 +151,7 @@ export const useRatingData = (): UseRatingDataResult => {
         if (type === 'movie') {
           const movieItem = item as MovieType;
           const now = new Date().toISOString();
-          const movieRef = firebase.database().ref(`users/${user.uid}/movies/${item.id}`);
+          const movieRef = dbRef(paths.movieItem(user.uid, item.id));
 
           await movieRef.child('ratedAt').set(now);
 
@@ -204,9 +205,11 @@ export const useRatingData = (): UseRatingDataResult => {
     setIsSaving(true);
 
     try {
-      const ratingRef = firebase
-        .database()
-        .ref(`users/${user.uid}/${type === 'series' ? 'series' : 'movies'}/${item.id}/rating`);
+      const ratingRef = dbRef(
+        type === 'series'
+          ? paths.seriesRating(user.uid, item.id)
+          : paths.movieRating(user.uid, item.id)
+      );
 
       await ratingRef.remove();
       trackRatingDeleted(String(item.id), type || 'unknown');

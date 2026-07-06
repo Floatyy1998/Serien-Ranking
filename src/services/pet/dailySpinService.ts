@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, dbGet, userPath } from '../../lib/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
@@ -206,18 +205,14 @@ function weightedRandomIndex(weights: number[]): number {
 
 /** Check if the user can spin today */
 export async function canSpinToday(userId: string): Promise<boolean> {
-  const ref = firebase.database().ref(`users/${userId}/dailySpin/lastSpinDate`);
-  const snap = await ref.once('value');
-  const lastDate = snap.val();
+  const lastDate = await dbGet<string>(userPath(userId, 'dailySpin', 'lastSpinDate'));
   if (!lastDate) return true;
   return lastDate !== toLocalDateString(new Date());
 }
 
 /** Get current daily spin data */
 export async function getDailySpinData(userId: string): Promise<DailySpinData | null> {
-  const ref = firebase.database().ref(`users/${userId}/dailySpin`);
-  const snap = await ref.once('value');
-  return snap.val();
+  return dbGet<DailySpinData>(userPath(userId, 'dailySpin'));
 }
 
 /** Perform the daily spin and return the reward + segment index */
@@ -279,7 +274,7 @@ export async function performDailySpin(
 
   // Save spin result
   const today = toLocalDateString(new Date());
-  const spinRef = firebase.database().ref(`users/${userId}/dailySpin`);
+  const spinRef = dbRef(userPath(userId, 'dailySpin'));
   const snap = await spinRef.once('value');
   const current = snap.val() || { totalSpins: 0, history: [] };
 
@@ -364,7 +359,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
   const alivePet = pets.find((p) => p.isAlive);
   if (!alivePet) return;
 
-  const petRef = firebase.database().ref(`users/${userId}/pets/${alivePet.id}`);
+  const petRef = dbRef(userPath(userId, 'pets', alivePet.id));
 
   switch (reward.type) {
     case 'xp_boost': {
@@ -375,7 +370,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
         source: 'daily_spin',
         wonAt: Date.now(),
       };
-      const invRef = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+      const invRef = dbRef(userPath(userId, 'xpBoostInventory'));
       const invSnap = await invRef.once('value');
       const inventory: XpBoostItem[] = invSnap.val() || [];
       inventory.push(boostItem);
@@ -394,10 +389,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
         const unlocked = [...(p.unlockedBackgrounds || [])];
         if (!unlocked.includes(reward.backgroundId)) {
           unlocked.push(reward.backgroundId);
-          await firebase
-            .database()
-            .ref(`users/${userId}/pets/${p.id}/unlockedBackgrounds`)
-            .set(unlocked);
+          await dbRef(userPath(userId, 'pets', p.id, 'unlockedBackgrounds')).set(unlocked);
         }
       }
       break;
@@ -433,7 +425,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
 export async function getActiveXpBoost(
   userId: string
 ): Promise<{ multiplier: number; remainingEpisodes: number } | null> {
-  const ref = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const ref = dbRef(userPath(userId, 'activeXpBoost'));
   const snap = await ref.once('value');
   const data = snap.val();
   if (!data) return null;
@@ -454,7 +446,7 @@ export async function getActiveXpBoost(
 
 /** Decrement remaining episodes on the active boost. Called after XP is applied. */
 export async function consumeXpBoostEpisode(userId: string): Promise<void> {
-  const ref = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const ref = dbRef(userPath(userId, 'activeXpBoost'));
   const snap = await ref.once('value');
   const data = snap.val();
   if (!data) return;
@@ -480,7 +472,7 @@ function migrateMinutesToEpisodes(minutes: number): number {
 
 /** Get all collected (unused) XP boosts */
 export async function getXpBoostInventory(userId: string): Promise<XpBoostItem[]> {
-  const ref = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+  const ref = dbRef(userPath(userId, 'xpBoostInventory'));
   const snap = await ref.once('value');
   const raw: Record<string, unknown>[] = snap.val() || [];
   if (raw.length === 0) return [];
@@ -510,14 +502,14 @@ export async function getXpBoostInventory(userId: string): Promise<XpBoostItem[]
 
 /** Activate a boost from inventory by index */
 export async function activateXpBoost(userId: string, index: number): Promise<boolean> {
-  const ref = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+  const ref = dbRef(userPath(userId, 'xpBoostInventory'));
   const snap = await ref.once('value');
   const inventory: XpBoostItem[] = snap.val() || [];
 
   if (index < 0 || index >= inventory.length) return false;
 
   // Check if a boost is already active
-  const activeRef = firebase.database().ref(`users/${userId}/activeXpBoost`);
+  const activeRef = dbRef(userPath(userId, 'activeXpBoost'));
   const activeSnap = await activeRef.once('value');
   const active = activeSnap.val();
   if (active && active.remainingEpisodes > 0) return false;

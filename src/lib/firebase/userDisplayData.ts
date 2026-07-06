@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, paths, userPath } from '../db/ref';
 /** Minimal user shape accepted by getUserDisplayData (works with both compat and modular User). */
 interface AuthUserLike {
   uid: string;
@@ -18,8 +17,8 @@ interface UserDisplayData {
  * Falls back to auth user data, then email prefix, then 'Anonym'.
  */
 export async function getUserDisplayData(authUser: AuthUserLike): Promise<UserDisplayData> {
-  const snapshot = await firebase.database().ref(`users/${authUser.uid}`).once('value');
-  const data = snapshot.val() || {};
+  const data =
+    (await dbGet<{ displayName?: string; photoURL?: string }>(paths.user(authUser.uid))) || {};
 
   return {
     username: data.displayName || authUser.displayName || authUser.email?.split('@')[0] || 'Anonym',
@@ -43,8 +42,7 @@ export interface PublicUserFields {
 export async function fetchPublicUserFields(uid: string): Promise<PublicUserFields> {
   const readField = async (field: string): Promise<string | null> => {
     try {
-      const snap = await firebase.database().ref(`users/${uid}/${field}`).once('value');
-      const value = snap.val();
+      const value = await dbGet(userPath(uid, field));
       return typeof value === 'string' && value.trim().length > 0 ? value : null;
     } catch {
       return null;

@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Bolt from '@mui/icons-material/Bolt';
 import PlayArrow from '@mui/icons-material/PlayArrow';
 import Check from '@mui/icons-material/Check';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';
@@ -52,7 +53,7 @@ export const XpBoostHeaderButton: React.FC = () => {
   // Real-time active boost listener
   useEffect(() => {
     if (!user?.uid) return;
-    const ref = firebase.database().ref(`users/${user.uid}/activeXpBoost`);
+    const ref = dbRef(userPath(user.uid, 'activeXpBoost'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
       if (data && data.remainingEpisodes > 0) {

@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type { Pet } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
@@ -49,7 +48,7 @@ export async function watchedEpisode(userId: string, petId: string): Promise<Pet
     updateData.hunger = pet.hunger;
   }
 
-  await firebase.database().ref(`users/${userId}/pets/${petId}`).update(updateData);
+  await dbRef(userPath(userId, 'pets', petId)).update(updateData);
 
   return pet;
 }
@@ -161,7 +160,7 @@ export async function watchedSeriesWithGenre(
     updateData.hunger = pet.hunger;
   }
 
-  await firebase.database().ref(`users/${userId}/pets/${petId}`).update(updateData);
+  await dbRef(userPath(userId, 'pets', petId)).update(updateData);
 
   return pet;
 }

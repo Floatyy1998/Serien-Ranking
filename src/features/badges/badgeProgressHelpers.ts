@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type { Badge, BadgeProgress } from './badgeDefinitions';
 import type { BadgeCounters, BadgeMovieItem, BadgeSeriesItem } from './badgeTypes';
 import { hasValidRating } from './badgeCheckers';
@@ -181,7 +181,7 @@ export async function getSocialProgress(
 ): Promise<BadgeProgress | null> {
   if (!badge.requirements.friends) return null;
 
-  const friendsSnapshot = await firebase.database().ref(`users/${userId}/friends`).once('value');
+  const friendsSnapshot = await dbRef(userPath(userId, 'friends')).once('value');
   const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
   return {

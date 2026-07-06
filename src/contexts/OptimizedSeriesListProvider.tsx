@@ -17,8 +17,7 @@ import {
   subscribeCatalogChange,
 } from '../lib/staticCatalog';
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../lib/db/ref';
 import { bumpSeriesVersion } from '../lib/firebase/seriesVersionBump';
 import {
   fixMissingFirstWatchedAt,
@@ -49,15 +48,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     refetch: refetchRefs,
     isStale,
     isOffline,
-  } = useEnhancedFirebaseCache<Record<string, UserSeriesRef>>(
-    user ? `users/${user.uid}/series` : '',
-    {
-      ttl: 24 * 60 * 60 * 1000,
-      useRealtimeListener: true,
-      enableOfflineSupport: true,
-      syncOnReconnect: true,
-    }
-  );
+  } = useEnhancedFirebaseCache<Record<string, UserSeriesRef>>(user ? paths.series(user.uid) : '', {
+    ttl: 24 * 60 * 60 * 1000,
+    useRealtimeListener: true,
+    enableOfflineSupport: true,
+    syncOnReconnect: true,
+  });
 
   // 2. Watch-Daten (delta-sync auf seasons)
   const {
@@ -65,12 +61,12 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     loading: watchLoading,
     refetch: refetchWatch,
   } = useEnhancedFirebaseCache<Record<string, SeriesWatchData>>(
-    user ? `users/${user.uid}/seriesWatch` : '',
+    user ? paths.seriesWatch(user.uid) : '',
     {
       ttl: 24 * 60 * 60 * 1000,
       useDeltaSync: true,
       deltaSubKey: 'seasons',
-      versionPath: user ? `users/${user.uid}/meta/serienVersion` : undefined,
+      versionPath: user ? paths.serienVersion(user.uid) : undefined,
       enableOfflineSupport: true,
       syncOnReconnect: true,
     }
@@ -474,7 +470,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       if (!user) return;
       const series = allSeries.find((s) => s.id === tmdbId);
       if (!series) return;
-      const ref = firebase.database().ref(`users/${user.uid}/series/${series.id}/hidden`);
+      const ref = dbRef(`${paths.seriesItem(user.uid, series.id)}/hidden`);
       if (hidden) {
         await ref.set(true);
       } else {

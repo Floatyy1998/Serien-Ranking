@@ -1,7 +1,7 @@
-import firebase from 'firebase/compat/app';
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { getMangaDexInfo } from '../../services/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
+import { dbRef, paths } from '../../lib/db/ref';
 
 /**
  * Zentrale Funktion zum Hinzufügen eines Manga zur Liste.
@@ -61,5 +61,5 @@ export async function addMangaToList(
     }
   }
 
-  await firebase.database().ref(`users/${userId}/manga/${result.id}`).set(manga);
+  await dbRef(paths.mangaItem(userId, result.id)).set(manga);
 }

@@ -3,7 +3,6 @@
  * Uses SwipeableEpisodeRow with swipe-to-mark-chapter-read, undo toast, etc.
  */
 import { MenuBook } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
 import React, { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../AuthContext';
@@ -13,6 +12,7 @@ import { useTheme } from '../../../contexts/ThemeContextDef';
 import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
 import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';
+import { dbRef, paths } from '../../../lib/db/ref';
 
 function formatLastRead(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -88,7 +88,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
           updates.completedAt = new Date().toISOString();
         }
 
-        await firebase.database().ref(`users/${user.uid}/manga/${item.anilistId}`).update(updates);
+        await dbRef(paths.mangaItem(user.uid, item.anilistId)).update(updates);
         await logChapterRead(user.uid, manga, newChapter, item.currentChapter);
       },
       [user, mangaList]

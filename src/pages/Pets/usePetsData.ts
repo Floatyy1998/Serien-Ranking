@@ -3,8 +3,9 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { useAuth } from '../../AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
@@ -87,7 +88,7 @@ export function usePetsData() {
   // der User die Seite neu laden muss.
   useEffect(() => {
     if (!user) return;
-    const ref = firebase.database().ref(`users/${user.uid}/pets`);
+    const ref = dbRef(userPath(user.uid, 'pets'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       const val = snap.val();
       if (!val || typeof val !== 'object') return;

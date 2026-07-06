@@ -1,6 +1,4 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
@@ -13,6 +11,7 @@ import {
 } from '../theme/dynamicTheme';
 import { setThemedPlaceholder } from '../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
+import { dbRef, paths } from '../lib/db/ref';
 import { ThemeContext } from './ThemeContextDef';
 import type { ThemeContextType } from './ThemeContextDef';
 
@@ -188,10 +187,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
       // Speichere in Firebase nur wenn Sync-Mode auf 'cloud' steht
       if (syncMode === 'cloud' && user?.uid) {
         try {
-          await firebase
-            .database()
-            .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-            .set(config);
+          await dbRef(paths.theme(user.uid)).set(config); // Gleicher Pfad wie Desktop!
         } catch {
           // ignore — theme is persisted in localStorage too, cloud sync is best-effort
         }
@@ -211,10 +207,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     // Lösche auch aus Firebase
     if (user?.uid) {
       try {
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .remove();
+        await dbRef(paths.theme(user.uid)).remove(); // Gleicher Pfad wie Desktop!
       } catch {
         // ignore — local reset is what the user actually sees, cloud cleanup is best-effort
       }
@@ -244,10 +237,7 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
     // Falls kein lokales Theme, Cloud-Theme als Fallback
     if (!loadedConfig && user?.uid) {
       try {
-        const snapshot = await firebase
-          .database()
-          .ref(`users/${user.uid}/theme`) // Gleicher Pfad wie Desktop!
-          .once('value');
+        const snapshot = await dbRef(paths.theme(user.uid)).once('value'); // Gleicher Pfad wie Desktop!
 
         if (snapshot.exists()) {
           loadedConfig = snapshot.val();

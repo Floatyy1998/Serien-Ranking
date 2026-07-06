@@ -2,8 +2,7 @@
  * useTasteMatchData - Custom Hook fuer TasteMatch Daten-Loading und State
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../../lib/db/ref';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
@@ -62,7 +61,7 @@ export const useTasteMatchData = (): TasteMatchData => {
         // Punkt-Reads, weil users/$other unter den gehärteten Rules nicht
         // mehr komplett lesbar ist — displayName/photoURL bleiben es einzeln.
         const [currentUserSnapshot, friendFields] = await Promise.all([
-          firebase.database().ref(`users/${user.uid}`).once('value'),
+          dbRef(paths.user(user.uid)).once('value'),
           fetchPublicUserFields(friendId),
         ]);
 

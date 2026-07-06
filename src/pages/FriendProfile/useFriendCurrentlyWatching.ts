@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../lib/staticCatalog';
@@ -145,9 +144,7 @@ export function useFriendCurrentlyWatching(friendUid: string | undefined): {
         // and `t: "ep"` instead of `type: "episode_watch"`. Sort by `ts` so the
         // query is index-friendly; readEventUniversal expands each event to the
         // legacy shape so downstream code can rely on `type`, `seriesId`, etc.
-        const snap = await firebase
-          .database()
-          .ref(`users/${friendUid}/wrapped/${year}/events`)
+        const snap = await dbRef(userPath(friendUid, 'wrapped', year, 'events'))
           .orderByChild('ts')
           .startAt(cutoffUnixSec)
           .limitToLast(200)

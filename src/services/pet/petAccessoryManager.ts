@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type {
   Pet,
   PetAccessory,
@@ -24,7 +23,7 @@ async function getDropConfig(): Promise<{
   };
 }> {
   try {
-    const snap = await firebase.database().ref('admin/config/petDrops').once('value');
+    const snap = await dbRef('admin/config/petDrops').once('value');
     if (snap.exists()) {
       const val = snap.val();
       return {
@@ -110,7 +109,7 @@ export async function toggleAccessory(
     }
   }
 
-  await firebase.database().ref(`users/${userId}/pets/${petId}/accessories`).set(pet.accessories);
+  await dbRef(userPath(userId, 'pets', petId, 'accessories')).set(pet.accessories);
   return pet;
 }
 
@@ -242,8 +241,8 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
   const [accessoryId, def] = unowned[Math.floor(Math.random() * unowned.length)];
 
   // Write pending drop + notification in one go
-  const dropRef = firebase.database().ref(`users/${userId}/pendingAccessoryDrops`).push();
-  const notifRef = firebase.database().ref(`users/${userId}/notifications`).push();
+  const dropRef = dbRef(userPath(userId, 'pendingAccessoryDrops')).push();
+  const notifRef = dbRef(userPath(userId, 'notifications')).push();
   const now = Date.now();
 
   await Promise.all([
@@ -271,7 +270,7 @@ export async function claimAccessoryDrop(
   accessoryId: string
 ): Promise<boolean> {
   // Verify pending drop exists
-  const dropRef = firebase.database().ref(`users/${userId}/pendingAccessoryDrops/${dropId}`);
+  const dropRef = dbRef(userPath(userId, 'pendingAccessoryDrops', dropId));
   const snapshot = await dropRef.once('value');
   if (!snapshot.exists()) return false;
 
@@ -289,10 +288,7 @@ export async function claimAccessoryDrop(
     if (!alreadyOwned) {
       if (!alivePet.accessories) alivePet.accessories = [];
       alivePet.accessories.push(makeAccessory(accessoryId, def, false, true));
-      await firebase
-        .database()
-        .ref(`users/${userId}/pets/${alivePet.id}/accessories`)
-        .set(alivePet.accessories);
+      await dbRef(userPath(userId, 'pets', alivePet.id, 'accessories')).set(alivePet.accessories);
     }
   }
 
@@ -352,10 +348,7 @@ export async function checkAndUnlockAccessories(pet: Pet): Promise<void> {
   }
 
   if (changed) {
-    await firebase
-      .database()
-      .ref(`users/${pet.userId}/pets/${pet.id}/accessories`)
-      .set(pet.accessories);
+    await dbRef(userPath(pet.userId, 'pets', pet.id, 'accessories')).set(pet.accessories);
   }
 }
 
@@ -399,7 +392,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 
   if (Object.keys(updates).length > 0) {
-    await firebase.database().ref(`users/${pet.userId}/pets/${pet.id}`).update(updates);
+    await dbRef(userPath(pet.userId, 'pets', pet.id)).update(updates);
   }
 }
 
@@ -424,7 +417,7 @@ export async function equipBackground(
     if (!pet.unlockedBackgrounds?.includes(backgroundId)) return pet;
   }
 
-  const ref = firebase.database().ref(`users/${userId}/pets/${petId}/equippedBackground`);
+  const ref = dbRef(userPath(userId, 'pets', petId, 'equippedBackground'));
   if (backgroundId === null) {
     await ref.remove();
     delete pet.equippedBackground;
@@ -448,6 +441,6 @@ export async function changePetColor(
   }
 
   pet.color = newColor;
-  await firebase.database().ref(`users/${userId}/pets/${petId}/color`).set(newColor);
+  await dbRef(userPath(userId, 'pets', petId, 'color')).set(newColor);
   return pet;
 }

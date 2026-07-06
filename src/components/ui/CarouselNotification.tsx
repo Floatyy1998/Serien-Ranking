@@ -18,8 +18,7 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, dbUpdate, paths, userPath } from '../../lib/db/ref';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -324,7 +323,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
           timestamp: Date.now() + jitter,
         };
       });
-      await firebase.database().ref().update(updates);
+      await dbUpdate(updates);
     }
   };
 
@@ -372,21 +371,17 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         return;
       }
       if (variant === 'inactive-rewatch') {
-        await firebase.database().ref(`users/${user.uid}/series/${seriesItem.id}/rewatch`).remove();
+        await dbRef(userPath(user.uid, 'series', seriesItem.id, 'rewatch')).remove();
       } else if (config.watchlistValue !== undefined) {
         const prevValue = seriesItem.watchlist;
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/series/${seriesItem.id}/watchlist`)
-          .set(config.watchlistValue);
+        await dbRef(userPath(user.uid, 'series', seriesItem.id, 'watchlist')).set(
+          config.watchlistValue
+        );
 
         // Undo-Toast (außer für new-season "Hinzufügen" — da ist Undo unklar)
         if (variant !== 'new-season') {
           showUndoToast(`${seriesItem.title} entfernt`, async () => {
-            await firebase
-              .database()
-              .ref(`users/${user.uid}/series/${seriesItem.id}/watchlist`)
-              .set(prevValue);
+            await dbRef(userPath(user.uid, 'series', seriesItem.id, 'watchlist')).set(prevValue);
             setActionedIds((prev) => {
               const next = new Set(prev);
               next.delete(seriesItem.id);
@@ -422,7 +417,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
         ratingsToSave['General'] = rating;
       }
 
-      const ratingRef = firebase.database().ref(`users/${user.uid}/series/${seriesItem.id}/rating`);
+      const ratingRef = dbRef(paths.seriesRating(user.uid, seriesItem.id));
       await ratingRef.set(ratingsToSave);
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));

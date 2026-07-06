@@ -1,11 +1,11 @@
 import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
+import { dbGet, dbRef, paths } from '../../lib/db/ref';
 
 const AUTO_DELETE_DAYS = 5;
 
@@ -17,7 +17,7 @@ export function useBugReportData() {
   useEffect(() => {
     if (!user) return;
 
-    const ref = firebase.database().ref('bugTickets');
+    const ref = dbRef('bugTickets');
     const handler = ref
       .orderByChild('createdBy')
       .equalTo(user.uid)
@@ -67,7 +67,7 @@ export function useBugReportData() {
     }): Promise<boolean> => {
       if (!user) return false;
       try {
-        const ticketId = firebase.database().ref('bugTickets').push().key ?? crypto.randomUUID();
+        const ticketId = dbRef('bugTickets').push().key ?? crypto.randomUUID();
         const displayName = user.displayName || (await getUserDisplayName(user.uid)) || 'Unbekannt';
         const isBug = data.ticketType === 'bug';
 
@@ -89,7 +89,7 @@ export function useBugReportData() {
           ...(data.consoleErrors ? { consoleErrors: data.consoleErrors } : {}),
         };
 
-        await firebase.database().ref(`bugTickets/${ticketId}`).set(ticket);
+        await dbRef(`bugTickets/${ticketId}`).set(ticket);
 
         // Notification an Admin
         await sendNotificationToUser(ADMIN_UID, {
@@ -112,7 +112,7 @@ export function useBugReportData() {
     async (ticketId: string, text: string): Promise<boolean> => {
       if (!user) return false;
       try {
-        const commentId = firebase.database().ref().push().key ?? crypto.randomUUID();
+        const commentId = dbRef().push().key ?? crypto.randomUUID();
         const displayName = user.displayName || (await getUserDisplayName(user.uid)) || 'Unbekannt';
 
         const comment: TicketComment = {
@@ -124,14 +124,11 @@ export function useBugReportData() {
           createdAt: new Date().toISOString(),
         };
 
-        await firebase.database().ref(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
-        await firebase
-          .database()
-          .ref(`bugTickets/${ticketId}/updatedAt`)
-          .set(new Date().toISOString());
+        await dbRef(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
+        await dbRef(`bugTickets/${ticketId}/updatedAt`).set(new Date().toISOString());
 
         // Notification an Admin
-        const ticketSnap = await firebase.database().ref(`bugTickets/${ticketId}`).once('value');
+        const ticketSnap = await dbRef(`bugTickets/${ticketId}`).once('value');
         const ticketData = ticketSnap.val();
         const ticketTitle = ticketData?.title || 'Ticket';
         const ticketType = ticketData?.ticketType || 'bug';
@@ -158,10 +155,10 @@ export function useBugReportData() {
     ): Promise<boolean> => {
       if (!user) return false;
       try {
-        await firebase
-          .database()
-          .ref(`bugTickets/${ticketId}`)
-          .update({ ...updates, updatedAt: new Date().toISOString() });
+        await dbRef(`bugTickets/${ticketId}`).update({
+          ...updates,
+          updatedAt: new Date().toISOString(),
+        });
         return true;
       } catch (error) {
         console.error('Ticket update failed:', error);
@@ -177,7 +174,7 @@ export function useBugReportData() {
 /** Auto-Cleanup: abgeschlossene Tickets nach 5 Tagen löschen (inkl. Screenshots) */
 export async function cleanupOldTickets() {
   try {
-    const snap = await firebase.database().ref('bugTickets').once('value');
+    const snap = await dbRef('bugTickets').once('value');
     const all = snap.val();
     if (!all) return;
     const cutoff = Date.now() - AUTO_DELETE_DAYS * 24 * 60 * 60 * 1000;
@@ -195,7 +192,7 @@ export async function cleanupOldTickets() {
             }
           }
         }
-        await firebase.database().ref(`bugTickets/${id}`).remove();
+        await dbRef(`bugTickets/${id}`).remove();
       }
     }
   } catch {
@@ -205,8 +202,7 @@ export async function cleanupOldTickets() {
 
 async function getUserDisplayName(uid: string): Promise<string> {
   try {
-    const snap = await firebase.database().ref(`users/${uid}/displayName`).once('value');
-    return snap.val() || '';
+    return (await dbGet<string>(paths.displayName(uid))) || '';
   } catch {
     return '';
   }

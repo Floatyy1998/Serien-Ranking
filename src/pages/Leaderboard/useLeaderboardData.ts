@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, userPath } from '../../lib/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -138,11 +137,9 @@ export function useLeaderboardData() {
         if (user?.uid && loaded.length > 0) {
           const latest = loaded[0];
           try {
-            const histSnap = await firebase
-              .database()
-              .ref(`users/${user.uid}/leaderboard/history/${latest.monthKey}`)
-              .once('value');
-            const hist = histSnap.val() as Record<string, number> | null;
+            const hist = await dbGet<Record<string, number>>(
+              userPath(user.uid, 'leaderboard', 'history', latest.monthKey)
+            );
             const myWatchtime = hist?.watchtimeThisMonth ?? 0;
             const top3Score = latest.third?.score ?? 0;
             const myUidInTop3 = [latest.first, latest.second, latest.third].some(

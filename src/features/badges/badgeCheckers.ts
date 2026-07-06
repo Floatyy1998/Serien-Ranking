@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type { Badge } from './badgeDefinitions';
 import type {
   BadgeCounters,
@@ -66,7 +66,7 @@ export async function checkSocialBadgeFromCounters(
   _series: BadgeSeriesItem[],
   _movies: BadgeMovieItem[]
 ): Promise<{ earned: boolean; details?: string } | null> {
-  const friendsSnapshot = await firebase.database().ref(`users/${userId}/friends`).once('value');
+  const friendsSnapshot = await dbRef(userPath(userId, 'friends')).once('value');
   const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
   if (friendsCount >= (badge.requirements.friends ?? 0)) {

@@ -4,7 +4,6 @@
  * Swipe right = mark next chapter as read.
  */
 import { FilterList, MenuBook } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +28,7 @@ import {
 } from './mangaUtils';
 import type { Manga } from '../../types/Manga';
 import { tapScale } from '../../lib/motion';
+import { dbRef, paths } from '../../lib/db/ref';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
 
@@ -162,7 +162,7 @@ export const MangaReadingListPage = () => {
         updates.completedAt = new Date().toISOString();
       }
 
-      await firebase.database().ref(`users/${user.uid}/manga/${manga.anilistId}`).update(updates);
+      await dbRef(paths.mangaItem(user.uid, manga.anilistId)).update(updates);
       await logChapterRead(user.uid, manga, newChapter, manga.currentChapter);
     },
     [user]

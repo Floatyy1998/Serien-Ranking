@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Whatshot, Shield } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useAuth } from '../../AuthContext';
@@ -31,7 +32,7 @@ export const WatchStreakCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
-    const ref = firebase.database().ref(`users/${user.uid}/wrapped/${year}/streak`);
+    const ref = dbRef(userPath(user.uid, 'wrapped', year, 'streak'));
 
     const handler = (snapshot: firebase.database.DataSnapshot) => {
       const data = snapshot.val();
@@ -48,9 +49,7 @@ export const WatchStreakCard: React.FC = () => {
         // geschaut wird. Vorjahr als Fallback laden, damit die Streak nicht
         // fälschlich auf 0 springt (getStreakStatus zeigt sie bei echtem
         // Abbruch weiterhin als "verloren" an).
-        firebase
-          .database()
-          .ref(`users/${user.uid}/wrapped/${year - 1}/streak`)
+        dbRef(userPath(user.uid, 'wrapped', year - 1, 'streak'))
           .once('value')
           .then((prevSnap) => {
             const prev = prevSnap.val();
@@ -78,7 +77,7 @@ export const WatchStreakCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
 
-    const activePetRef = firebase.database().ref(`users/${user.uid}/petWidget/activePetId`);
+    const activePetRef = dbRef(userPath(user.uid, 'petWidget', 'activePetId'));
     let petRef: firebase.database.Reference | null = null;
     let petHandler: ((s: firebase.database.DataSnapshot) => void) | null = null;
 
@@ -94,7 +93,7 @@ export const WatchStreakCard: React.FC = () => {
         return;
       }
 
-      petRef = firebase.database().ref(`users/${user.uid}/pets/${activePetId}`);
+      petRef = dbRef(userPath(user.uid, 'pets', activePetId));
       petHandler = (petSnap: firebase.database.DataSnapshot) => {
         const data = petSnap.val();
         if (data) {

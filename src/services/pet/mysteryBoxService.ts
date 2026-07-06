@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
@@ -90,7 +89,7 @@ export async function ensureInitialized(
   userId: string,
   totalEpisodes: number
 ): Promise<MysteryBoxData> {
-  const ref = firebase.database().ref(`users/${userId}/mysteryBox`);
+  const ref = dbRef(userPath(userId, 'mysteryBox'));
   const snap = await ref.once('value');
   const data = snap.val();
 
@@ -164,14 +163,11 @@ export async function openMysteryBox(
   const reward = await generateMysteryReward(userId, rarity);
 
   // Speichern
-  await firebase
-    .database()
-    .ref(`users/${userId}/mysteryBox`)
-    .set({
-      boxesOpened: (data?.boxesOpened || 0) + 1,
-      lastOpenedBoxNumber: boxNumber,
-      schemaVersion: BOX_SCHEMA_VERSION,
-    });
+  await dbRef(userPath(userId, 'mysteryBox')).set({
+    boxesOpened: (data?.boxesOpened || 0) + 1,
+    lastOpenedBoxNumber: boxNumber,
+    schemaVersion: BOX_SCHEMA_VERSION,
+  });
 
   // Reward anwenden
   await applyMysteryReward(userId, reward);
@@ -383,7 +379,7 @@ async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Pro
       if (def.color) newAcc.color = def.color;
 
       const accessories = [...(alivePet.accessories || []), newAcc];
-      await firebase.database().ref(`users/${userId}/pets/${alivePet.id}`).update({ accessories });
+      await dbRef(userPath(userId, 'pets', alivePet.id)).update({ accessories });
       break;
     }
     case 'background': {
@@ -396,17 +392,14 @@ async function applyMysteryReward(userId: string, reward: MysteryBoxReward): Pro
         const unlocked = [...(p.unlockedBackgrounds || [])];
         if (!unlocked.includes(reward.backgroundId)) {
           unlocked.push(reward.backgroundId);
-          await firebase
-            .database()
-            .ref(`users/${userId}/pets/${p.id}/unlockedBackgrounds`)
-            .set(unlocked);
+          await dbRef(userPath(userId, 'pets', p.id, 'unlockedBackgrounds')).set(unlocked);
         }
       }
       break;
     }
     case 'xp_boost': {
       // Add to inventory (same as daily spin)
-      const invRef = firebase.database().ref(`users/${userId}/xpBoostInventory`);
+      const invRef = dbRef(userPath(userId, 'xpBoostInventory'));
       const invSnap = await invRef.once('value');
       const inventory = invSnap.val() || [];
       inventory.push({

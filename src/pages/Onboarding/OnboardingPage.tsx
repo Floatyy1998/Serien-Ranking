@@ -1,5 +1,3 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -16,6 +14,7 @@ import { DiscoveryStep } from './steps/DiscoveryStep';
 import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { dbRef, userPath } from '../../lib/db/ref';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];
@@ -181,17 +180,17 @@ export const OnboardingPage: React.FC = () => {
       if (selectedProviders.size > 0) {
         const providersConfig: Record<string, { active: boolean }> = {};
         for (const name of selectedProviders) providersConfig[name] = { active: true };
-        await firebase.database().ref(`users/${uid}/subscriptions/providers`).set(providersConfig);
+        await dbRef(userPath(uid, 'subscriptions', 'providers')).set(providersConfig);
         invalidateActiveSubscriptions(uid);
       }
 
-      await firebase.database().ref(`users/${uid}/onboardingComplete`).set(true);
+      await dbRef(userPath(uid, 'onboardingComplete')).set(true);
       setOnboardingComplete?.(true);
       setCompletionProgress(100);
       setTimeout(() => navigate('/', { replace: true }), 500);
     } catch (e) {
       console.error('[onboarding] finish error', e);
-      await firebase.database().ref(`users/${uid}/onboardingComplete`).set(true);
+      await dbRef(userPath(uid, 'onboardingComplete')).set(true);
       setOnboardingComplete?.(true);
       navigate('/', { replace: true });
     }
@@ -209,7 +208,7 @@ export const OnboardingPage: React.FC = () => {
 
   const handleSkip = useCallback(async () => {
     if (!user?.uid) return;
-    await firebase.database().ref(`users/${user.uid}/onboardingComplete`).set(true);
+    await dbRef(userPath(user.uid, 'onboardingComplete')).set(true);
     setOnboardingComplete?.(true);
     navigate('/', { replace: true });
   }, [user?.uid, setOnboardingComplete, navigate]);

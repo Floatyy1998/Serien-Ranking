@@ -5,7 +5,7 @@
  * Reduziert Firebase-Belastung drastisch und funktioniert offline.
  */
 
-import firebase from 'firebase/compat/app';
+import { dbRef, serverTimestamp, userPath, paths } from '../../lib/db/ref';
 import {
   BADGE_DEFINITIONS,
   type Badge,
@@ -91,8 +91,8 @@ export class OfflineBadgeSystem {
 
   private async getSeriesData(): Promise<BadgeSeriesItem[]> {
     const [refsSnap, watchSnap] = await Promise.all([
-      firebase.database().ref(`users/${this.userId}/series`).once('value'),
-      firebase.database().ref(`users/${this.userId}/seriesWatch`).once('value'),
+      dbRef(paths.series(this.userId)).once('value'),
+      dbRef(paths.seriesWatch(this.userId)).once('value'),
     ]);
     if (!refsSnap.exists()) return [];
     const refs = refsSnap.val() as Record<string, Record<string, unknown>>;
@@ -130,7 +130,7 @@ export class OfflineBadgeSystem {
   }
 
   private async getMoviesData(): Promise<BadgeMovieItem[]> {
-    const snapshot = await firebase.database().ref(`users/${this.userId}/movies`).once('value');
+    const snapshot = await dbRef(paths.movies(this.userId)).once('value');
     if (!snapshot.exists()) return [];
     return Object.values(snapshot.val() as Record<string, Record<string, unknown>>).map((ref) => ({
       rating: ref.rating,
@@ -140,9 +140,7 @@ export class OfflineBadgeSystem {
   private async getActivitiesData(): Promise<unknown[]> {
     // limitToLast begrenzt auf die letzten 200 Activities. Aeltere sind fuer
     // Badge-Berechnungen irrelevant und wuerden nur Egress kosten.
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${this.userId}/activities`)
+    const snapshot = await dbRef(userPath(this.userId, 'activities'))
       .orderByKey()
       .limitToLast(200)
       .once('value');
@@ -150,10 +148,7 @@ export class OfflineBadgeSystem {
   }
 
   private async getBadgeCounters(): Promise<BadgeCounters> {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${this.userId}/badgeCounters`)
-      .once('value');
+    const snapshot = await dbRef(userPath(this.userId, 'badgeCounters')).once('value');
     return snapshot.exists() ? (snapshot.val() as BadgeCounters) : {};
   }
 
@@ -163,20 +158,17 @@ export class OfflineBadgeSystem {
       return this.cachedBadges;
     }
 
-    const snapshot = await firebase.database().ref(`users/${this.userId}/badges`).once('value');
+    const snapshot = await dbRef(userPath(this.userId, 'badges')).once('value');
 
     this.cachedBadges = snapshot.exists() ? Object.values(snapshot.val()) : [];
     return this.cachedBadges;
   }
 
   private async saveBadge(badge: EarnedBadge): Promise<void> {
-    await firebase
-      .database()
-      .ref(`users/${this.userId}/badges/${badge.id}`)
-      .set({
-        ...badge,
-        earnedAt: firebase.database.ServerValue.TIMESTAMP,
-      });
+    await dbRef(userPath(this.userId, 'badges', badge.id)).set({
+      ...badge,
+      earnedAt: serverTimestamp(),
+    });
   }
 
   /**
@@ -365,10 +357,7 @@ export class OfflineBadgeSystem {
     socialBadges: Badge[];
     earnedSocialBadges: EarnedBadge[];
   }> {
-    const friendsSnapshot = await firebase
-      .database()
-      .ref(`users/${this.userId}/friends`)
-      .once('value');
+    const friendsSnapshot = await dbRef(userPath(this.userId, 'friends')).once('value');
     const friendsCount = friendsSnapshot.exists() ? Object.keys(friendsSnapshot.val()).length : 0;
 
     const socialBadges = BADGE_DEFINITIONS.filter((b) => b.category === 'social');

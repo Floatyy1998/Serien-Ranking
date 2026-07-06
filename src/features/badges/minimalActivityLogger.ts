@@ -11,7 +11,7 @@
  * Episode-Watching wird NICHT mehr geloggt.
  */
 
-import firebase from 'firebase/compat/app';
+import { dbRef, serverTimestamp, userPath } from '../../lib/db/ref';
 import { badgeCounterService } from './badgeCounterService';
 import type { EarnedBadge } from './badgeDefinitions';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';
@@ -52,13 +52,13 @@ const logFriendActivity = async (
   activityData: FriendActivityData
 ): Promise<void> => {
   try {
-    const activitiesRef = firebase.database().ref(`users/${userId}/activities`);
+    const activitiesRef = dbRef(userPath(userId, 'activities'));
 
     // Add new activity
     const newActivityRef = activitiesRef.push();
     await newActivityRef.set({
       ...activityData,
-      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      timestamp: serverTimestamp(),
     });
 
     // Limit to max 30 activities
@@ -323,7 +323,7 @@ export const logEpisodeWatchedActivity = async (
   posterPath?: string
 ): Promise<void> => {
   try {
-    const activitiesRef = firebase.database().ref(`users/${userId}/activities`);
+    const activitiesRef = dbRef(userPath(userId, 'activities'));
     const snapshot = await activitiesRef.orderByChild('timestamp').once('value');
     const activities =
       (snapshot.val() as Record<
@@ -359,7 +359,7 @@ export const logEpisodeWatchedActivity = async (
         seasonNumber,
         episodeNumber,
         watchedCount: nextCount,
-        timestamp: firebase.database.ServerValue.TIMESTAMP,
+        timestamp: serverTimestamp(),
         ...(posterPath && { posterPath }),
       });
       return;
@@ -375,7 +375,7 @@ export const logEpisodeWatchedActivity = async (
       episodeNumber,
       watchedCount: 1,
       ...(posterPath && { posterPath }),
-      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      timestamp: serverTimestamp(),
     });
 
     // Cap bei 30 (wie logFriendActivity).

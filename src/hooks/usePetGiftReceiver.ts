@@ -1,7 +1,8 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect } from 'react';
 import { useAuth } from '../AuthContext';
+import { dbRef, dbGet, userPath } from '../lib/db/ref';
 
 /**
  * Listens for incoming pet_gift notifications and applies their effects
@@ -18,9 +19,7 @@ export function usePetGiftReceiver(): void {
   useEffect(() => {
     if (!user?.uid) return;
     const uid = user.uid;
-    const notifRef = firebase
-      .database()
-      .ref(`users/${uid}/notifications`)
+    const notifRef = dbRef(userPath(uid, 'notifications'))
       .orderByChild('timestamp')
       .limitToLast(20);
 
@@ -37,14 +36,10 @@ export function usePetGiftReceiver(): void {
           continue;
 
         try {
-          const activePetSnap = await firebase
-            .database()
-            .ref(`users/${uid}/petWidget/activePetId`)
-            .once('value');
-          const activePetId = activePetSnap.val() as string | null;
+          const activePetId = await dbGet<string>(userPath(uid, 'petWidget', 'activePetId'));
           if (!activePetId) continue;
 
-          const petRef = firebase.database().ref(`users/${uid}/pets/${activePetId}`);
+          const petRef = dbRef(userPath(uid, 'pets', activePetId));
           const petSnap = await petRef.once('value');
           const pet = petSnap.val() as {
             hunger?: number;
@@ -53,10 +48,7 @@ export function usePetGiftReceiver(): void {
           } | null;
           if (!pet) continue;
           if (pet.isAlive === false) {
-            await firebase
-              .database()
-              .ref(`users/${uid}/notifications/${notifId}/applied`)
-              .set(true);
+            await dbRef(userPath(uid, 'notifications', notifId, 'applied')).set(true);
             continue;
           }
 
@@ -70,7 +62,7 @@ export function usePetGiftReceiver(): void {
 
           await Promise.all([
             petRef.update({ hunger: newHunger, happiness: newHappiness }),
-            firebase.database().ref(`users/${uid}/notifications/${notifId}/applied`).set(true),
+            dbRef(userPath(uid, 'notifications', notifId, 'applied')).set(true),
           ]);
         } catch (err) {
           console.error('[usePetGiftReceiver] apply failed', err);

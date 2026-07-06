@@ -7,8 +7,7 @@
  * will (Filter, Coloring, Recommendations).
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { mergeProviderNames } from '../lib/providerMerge';
@@ -30,9 +29,7 @@ async function loadSubs(uid: string): Promise<SubsSnapshot> {
   if (cached) return cached;
   const inFlight = pending.get(uid);
   if (inFlight) return inFlight;
-  const p = firebase
-    .database()
-    .ref(`users/${uid}/subscriptions`)
+  const p = dbRef(userPath(uid, 'subscriptions'))
     .once('value')
     .then((snap) => {
       const raw = (snap.val() ?? {}) as {
@@ -105,9 +102,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
       setLoading(false);
     });
     // Auch hasAnySubscription separat ermitteln (auch inaktive Abos zählen)
-    firebase
-      .database()
-      .ref(`users/${user.uid}/subscriptions/providers`)
+    dbRef(userPath(user.uid, 'subscriptions', 'providers'))
       .once('value')
       .then((snap) => {
         if (cancelled) return;

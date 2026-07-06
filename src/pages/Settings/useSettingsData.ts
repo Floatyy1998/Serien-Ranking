@@ -3,7 +3,6 @@
  */
 
 import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +10,7 @@ import { useAuth } from '../../AuthContext';
 import { trackLogout } from '../../firebase/analytics';
 import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
+import { dbRef, dbUpdate, paths, userPath } from '../../lib/db/ref';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ export const useSettingsData = () => {
 
     const loadUserData = async () => {
       try {
-        const userRef = firebase.database().ref(`users/${user.uid}`);
+        const userRef = dbRef(paths.user(user.uid));
         const snapshot = await userRef.once('value');
         const userData = snapshot.val();
 
@@ -104,7 +104,7 @@ export const useSettingsData = () => {
         const downloadURL = await imageRef.getDownloadURL();
 
         await user.updateProfile({ photoURL: downloadURL });
-        await firebase.database().ref(`users/${user.uid}/photoURL`).set(downloadURL);
+        await dbRef(userPath(user.uid, 'photoURL')).set(downloadURL);
         // Such-Index spiegeln (best-effort, wirft nie)
         void syncUserSearchIndex(user.uid, { photoURL: downloadURL });
         await user.reload();
@@ -129,10 +129,7 @@ export const useSettingsData = () => {
 
     try {
       setSaving(true);
-      await firebase
-        .database()
-        .ref(`users/${user.uid}`)
-        .update({ username, usernameLower: username.toLowerCase() });
+      await dbRef(paths.user(user.uid)).update({ username, usernameLower: username.toLowerCase() });
       // Such-Index spiegeln (best-effort, wirft nie)
       void syncUserSearchIndex(user.uid, { username });
       setUsernameEditable(false);
@@ -154,10 +151,10 @@ export const useSettingsData = () => {
     try {
       setSaving(true);
       await user.updateProfile({ displayName: displayName });
-      await firebase
-        .database()
-        .ref(`users/${user.uid}`)
-        .update({ displayName, displayNameLower: displayName.toLowerCase() });
+      await dbRef(paths.user(user.uid)).update({
+        displayName,
+        displayNameLower: displayName.toLowerCase(),
+      });
       // Such-Index spiegeln (best-effort, wirft nie)
       void syncUserSearchIndex(user.uid, { displayName });
       await user.reload();
@@ -194,8 +191,8 @@ export const useSettingsData = () => {
         // (publicProfiles/{publicId}/userId) damit unauthentifizierte
         // Visitor das Profil ueber den publicId-Path resolven koennen.
         const updates: Record<string, unknown> = {
-          [`users/${user.uid}/isPublicProfile`]: enabled,
-          [`users/${user.uid}/publicProfileId`]: enabled ? newPublicProfileId : null,
+          [userPath(user.uid, 'isPublicProfile')]: enabled,
+          [userPath(user.uid, 'publicProfileId')]: enabled ? newPublicProfileId : null,
         };
         if (enabled && newPublicProfileId) {
           updates[`publicProfiles/${newPublicProfileId}`] = { userId: user.uid };
@@ -203,7 +200,7 @@ export const useSettingsData = () => {
         if (!enabled && publicProfileId) {
           updates[`publicProfiles/${publicProfileId}`] = null;
         }
-        await firebase.database().ref('/').update(updates);
+        await dbUpdate(updates);
 
         setIsPublicProfile(enabled);
         setPublicProfileId(enabled ? newPublicProfileId : '');
@@ -238,13 +235,13 @@ export const useSettingsData = () => {
 
       // Atomic: alten Lookup loeschen, neuen anlegen, user-Feld updaten.
       const updates: Record<string, unknown> = {
-        [`users/${user.uid}/publicProfileId`]: newPublicProfileId,
+        [userPath(user.uid, 'publicProfileId')]: newPublicProfileId,
         [`publicProfiles/${newPublicProfileId}`]: { userId: user.uid },
       };
       if (oldPublicId && oldPublicId !== newPublicProfileId) {
         updates[`publicProfiles/${oldPublicId}`] = null;
       }
-      await firebase.database().ref('/').update(updates);
+      await dbUpdate(updates);
 
       setPublicProfileId(newPublicProfileId);
 

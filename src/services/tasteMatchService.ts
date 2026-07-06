@@ -2,8 +2,7 @@
  * TasteMatchService - Berechnet Geschmacks-Match zwischen zwei Usern
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../lib/db/ref';
 import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../lib/staticCatalog';
 
 export interface TasteMatchResult {
@@ -95,8 +94,8 @@ async function loadUserData(userId: string): Promise<UserData> {
   // Catalog via Static-File, Firebase-Fallback.
   const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
     await Promise.all([
-      firebase.database().ref(`users/${userId}/series`).once('value'),
-      firebase.database().ref(`users/${userId}/movies`).once('value'),
+      dbRef(paths.series(userId)).once('value'),
+      dbRef(paths.movies(userId)).once('value'),
       fetchStaticCatalogSeries(),
       fetchStaticCatalogMovies(),
     ]);

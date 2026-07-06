@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, dbUpdate, userPath } from '../lib/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
@@ -244,7 +243,7 @@ export function useProactiveRecaps() {
     if (!user) return; // beim Logout greift der derived useMemo (UID-Mismatch → leeres Set)
     const uid = user.uid;
     let cancelled = false;
-    const ref = firebase.database().ref(`users/${uid}/proactiveRecapDismissed`);
+    const ref = dbRef(userPath(uid, 'proactiveRecapDismissed'));
     ref
       .once('value')
       .then((snap) => {
@@ -284,10 +283,7 @@ export function useProactiveRecaps() {
     stale.forEach((k) => {
       updates[`users/${user.uid}/proactiveRecapDismissed/${k}`] = null;
     });
-    firebase
-      .database()
-      .ref()
-      .update(updates)
+    dbUpdate(updates)
       // bewusst still: Best-effort-Cleanup, veraltete Dismiss-Keys stören nicht
       .catch(() => {});
   }, [user, dismissedState, triggers]);
@@ -350,9 +346,7 @@ export function useProactiveRecaps() {
         next.add(cacheKey);
         return { uid, keys: next };
       });
-      firebase
-        .database()
-        .ref(`users/${uid}/proactiveRecapDismissed/${cacheKey}`)
+      dbRef(userPath(uid, 'proactiveRecapDismissed', cacheKey))
         .set(Date.now())
         // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
         .catch(() => {});

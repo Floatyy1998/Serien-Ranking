@@ -2,10 +2,9 @@
  * useSeriesActions - Extracts all Firebase action handlers from SeriesDetailPage
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
@@ -115,8 +114,8 @@ export function useSeriesActions(
       onConfirm: async () => {
         setIsDeleting(true);
         try {
-          await firebase.database().ref(`users/${userId}/series/${series.id}`).remove();
-          await firebase.database().ref(`users/${userId}/seriesWatch/${series.id}`).remove();
+          await dbRef(paths.seriesItem(userId, series.id)).remove();
+          await dbRef(paths.seriesWatchItem(userId, series.id)).remove();
           bumpSeriesVersion(userId);
           trackSeriesDeleted(String(series.id), series.title || '');
           showSnackbar('Serie erfolgreich gelöscht!');
@@ -133,10 +132,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     try {
       const newWatchlistStatus = !series.watchlist;
-      await firebase
-        .database()
-        .ref(`users/${userId}/series/${series.id}/watchlist`)
-        .set(newWatchlistStatus);
+      await dbRef(`${paths.seriesItem(userId, series.id)}/watchlist`).set(newWatchlistStatus);
       if (newWatchlistStatus) {
         const { logWatchlistAdded } = await import('../../features/badges/minimalActivityLogger');
         await logWatchlistAdded(userId, series.title, series.id);
@@ -169,18 +165,17 @@ export function useSeriesActions(
         );
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
-        const db = firebase.database();
         const epId = episode.id;
         if (!epId) throw new Error('Episode-ID fehlt');
-        const epPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
+        const epPath = `${paths.seriesWatchItem(userId, series.id)}/seasons/${seasonIndex}/eps/${epId}`;
 
         // DB-Snapshot lesen statt nur lokalen State, damit `w` immer korrekt
         // gesetzt wird (Edge-Case: lokal watched=true aber DB-Wert ohne `w`,
         // z.B. nach Catalog-Reorganization mit verwaister rewatchedEps-Map).
-        const rewatchLastWatchedAtPath = `users/${userId}/series/${series.id}/rewatch/lastWatchedAt`;
+        const rewatchLastWatchedAtPath = `${paths.seriesItem(userId, series.id)}/rewatch/lastWatchedAt`;
         const [epSnap, rewatchLastSnap] = await Promise.all([
-          db.ref(epPath).once('value'),
-          db.ref(rewatchLastWatchedAtPath).once('value'),
+          dbRef(epPath).once('value'),
+          dbRef(rewatchLastWatchedAtPath).once('value'),
         ]);
         const epVal =
           (epSnap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
@@ -193,7 +188,7 @@ export function useSeriesActions(
         const nowUnix = Math.floor(Date.now() / 1000);
         const nowIso = new Date().toISOString();
         const newWatchCount = prevWatchCount + 1;
-        const rewatchEpsPath = `users/${userId}/series/${series.id}/rewatch/rewatchedEps/${epId}`;
+        const rewatchEpsPath = `${paths.seriesItem(userId, series.id)}/rewatch/rewatchedEps/${epId}`;
         const hadRewatch = !!series.rewatch?.active;
 
         // Atomarer Multi-Path Update — w und f defensiv setzen falls fehlend.
@@ -203,7 +198,7 @@ export function useSeriesActions(
         const updates: Record<string, unknown> = {
           [`${epPath}/c`]: newWatchCount,
           [`${epPath}/l`]: nowUnix,
-          [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [paths.serienVersion(userId)]: serverTimestamp(),
         };
         if (!prevWatched) {
           updates[`${epPath}/w`] = 1;
@@ -243,7 +238,7 @@ export function useSeriesActions(
             if (!allDone) break;
           }
           if (allDone) {
-            await db.ref(`users/${userId}/series/${series.id}/rewatch`).remove();
+            await dbRef(`${paths.seriesItem(userId, series.id)}/rewatch`).remove();
             bumpSeriesVersion(userId);
             showSnackbar(`Rewatch #${series.rewatch?.round} abgeschlossen!`);
             rewatchRemoved = true;
@@ -270,7 +265,7 @@ export function useSeriesActions(
                 undoUpdates[rewatchEpsPath] = null;
                 undoUpdates[rewatchLastWatchedAtPath] = prevRewatchLastWatchedAt;
               }
-              await db.ref().update(undoUpdates);
+              await dbUpdate(undoUpdates);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }
@@ -310,12 +305,11 @@ export function useSeriesActions(
         );
         if (seasonIndex === -1 || episodeIndex === -1) throw new Error('Episode not found');
 
-        const db = firebase.database();
         const epId = episode.id;
         if (!epId) throw new Error('Episode-ID fehlt');
-        const epPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
+        const epPath = `${paths.seriesWatchItem(userId, series.id)}/seasons/${seasonIndex}/eps/${epId}`;
 
-        const snap = await db.ref(epPath).once('value');
+        const snap = await dbRef(epPath).once('value');
         const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
         const prevWatchCount: number = val.c || 0;
         const prevFirst: number = val.f || 0;
@@ -323,9 +317,9 @@ export function useSeriesActions(
         const prevWatched: number = val.w || 0;
 
         if (episode.watchCount && episode.watchCount > 1) {
-          await db.ref(`${epPath}/c`).set(episode.watchCount - 1);
+          await dbRef(`${epPath}/c`).set(episode.watchCount - 1);
         } else {
-          await db.ref(epPath).remove();
+          await dbRef(epPath).remove();
         }
         bumpSeriesVersion(userId);
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
@@ -336,9 +330,9 @@ export function useSeriesActions(
           async () => {
             try {
               if (!prevWatched && prevWatchCount === 0 && !prevFirst && !prevLast) {
-                await db.ref(epPath).remove();
+                await dbRef(epPath).remove();
               } else {
-                await db.ref(epPath).set({
+                await dbRef(epPath).set({
                   ...(prevWatched ? { w: prevWatched } : {}),
                   ...(prevWatchCount ? { c: prevWatchCount } : {}),
                   ...(prevFirst ? { f: prevFirst } : {}),
@@ -373,8 +367,7 @@ export function useSeriesActions(
         return;
       }
 
-      const db = firebase.database();
-      const epPath = `users/${userId}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
+      const epPath = `${paths.seriesWatchItem(userId, series.id)}/seasons/${seasonIndex}/eps/${epId}`;
       const prevWatched = !!episode.watched;
       const prevWatchCount = episode.watchCount || 0;
       const prevFirstWatchedAt = episode.firstWatchedAt;
@@ -394,7 +387,7 @@ export function useSeriesActions(
             {
               [epPath]: null,
               ...(willAutoAddToWatchlist ? autoWatchlistUpdates(userId, series) : {}),
-              [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+              [paths.serienVersion(userId)]: serverTimestamp(),
             },
             queueLabel
           );
@@ -405,7 +398,7 @@ export function useSeriesActions(
             [`${epPath}/c`]: 1,
             [`${epPath}/l`]: nowUnix,
             ...autoWatchlistUpdates(userId, series),
-            [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+            [paths.serienVersion(userId)]: serverTimestamp(),
           };
           if (!prevFirstWatchedAt) {
             updates[`${epPath}/f`] = nowUnix;
@@ -422,7 +415,7 @@ export function useSeriesActions(
           onUndo: async () => {
             try {
               const undoUpdates: Record<string, unknown> = {
-                [`users/${userId}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+                [paths.serienVersion(userId)]: serverTimestamp(),
               };
               if (!prevWatched && prevWatchCount === 0) {
                 undoUpdates[epPath] = null;
@@ -436,7 +429,7 @@ export function useSeriesActions(
                   ? Math.floor(new Date(prevLastWatchedAt).getTime() / 1000)
                   : 0;
               }
-              await db.ref().update(undoUpdates);
+              await dbUpdate(undoUpdates);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }
@@ -491,8 +484,8 @@ export function useSeriesActions(
           ? Math.max(1, currentMaxCount - 1)
           : Math.max(1, currentMaxCount);
 
-        const seriesPath = `users/${userId}/series/${series.id}`;
-        await firebase.database().ref(`${seriesPath}/rewatch`).set({
+        const seriesPath = paths.seriesItem(userId, series.id);
+        await dbRef(`${seriesPath}/rewatch`).set({
           active: true,
           round: newRound,
           startedAt: new Date().toISOString(),
@@ -500,7 +493,7 @@ export function useSeriesActions(
         });
 
         if (!series.watchlist) {
-          await firebase.database().ref(`${seriesPath}/watchlist`).set(true);
+          await dbRef(`${seriesPath}/watchlist`).set(true);
         }
 
         showSnackbar(
@@ -520,7 +513,7 @@ export function useSeriesActions(
   const handleStopRewatch = useCallback(async () => {
     if (!series || !userId) return;
     try {
-      await firebase.database().ref(`users/${userId}/series/${series.id}/rewatch`).remove();
+      await dbRef(`${paths.seriesItem(userId, series.id)}/rewatch`).remove();
       bumpSeriesVersion(userId);
       showSnackbar('Rewatch beendet.');
     } catch {

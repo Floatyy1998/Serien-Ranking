@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { useCallback, useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 import { NotificationContext } from './NotificationContextDef';
 import type { AppNotification, NotificationContextType } from './NotificationContextDef';
 
@@ -45,7 +46,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         toDelete.forEach((id) => {
           updates[id] = null;
         });
-        await firebase.database().ref(`users/${user.uid}/notifications`).update(updates);
+        await dbRef(userPath(user.uid, 'notifications')).update(updates);
       }
     },
     [user]
@@ -55,9 +56,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     if (!user) return;
 
     // Load notifications from Firebase
-    const notificationsRef = firebase
-      .database()
-      .ref(`users/${user.uid}/notifications`)
+    const notificationsRef = dbRef(userPath(user.uid, 'notifications'))
       .orderByChild('timestamp')
       .limitToLast(50);
 
@@ -101,7 +100,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
         read: false,
       };
 
-      const notificationsRef = firebase.database().ref(`users/${user.uid}/notifications`);
+      const notificationsRef = dbRef(userPath(user.uid, 'notifications'));
       await notificationsRef.push(newNotification);
       // Firebase realtime listener handles the state update automatically
     },
@@ -112,10 +111,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     async (notificationId: string) => {
       if (!user) return;
 
-      await firebase
-        .database()
-        .ref(`users/${user.uid}/notifications/${notificationId}/read`)
-        .set(true);
+      await dbRef(userPath(user.uid, 'notifications', notificationId, 'read')).set(true);
 
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
@@ -135,7 +131,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
     });
 
     if (Object.keys(updates).length > 0) {
-      await firebase.database().ref(`users/${user.uid}/notifications`).update(updates);
+      await dbRef(userPath(user.uid, 'notifications')).update(updates);
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     }
@@ -144,7 +140,7 @@ export const NotificationProvider = ({ children }: NotificationProviderProps) =>
   const clearNotifications = useCallback(async () => {
     if (!user) return;
 
-    await firebase.database().ref(`users/${user.uid}/notifications`).remove();
+    await dbRef(userPath(user.uid, 'notifications')).remove();
 
     setNotifications([]);
   }, [user]);

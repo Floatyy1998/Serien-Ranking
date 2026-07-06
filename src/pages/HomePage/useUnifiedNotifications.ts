@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import { useAuth } from '../../AuthContext';
 import { useNotifications } from '../../contexts/NotificationContextDef';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
@@ -198,7 +197,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     if (!user) return;
     const uid = user.uid;
     let cancelled = false;
-    const ref = firebase.database().ref(`users/${uid}/readTimes/announcements`);
+    const ref = dbRef(userPath(uid, 'readTimes', 'announcements'));
     ref
       .once('value')
       .then((snap) => {
@@ -235,9 +234,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         const current = prev?.uid === uid ? prev.ts : 0;
         const next = Math.max(current, ann.timestamp);
         if (next === current) return prev;
-        firebase
-          .database()
-          .ref(`users/${uid}/readTimes/announcements`)
+        dbRef(userPath(uid, 'readTimes', 'announcements'))
           .set(next)
           // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
           .catch(() => {});
@@ -439,9 +436,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     // unread until they actually surface.
     const newReadTime = Date.now();
     setStoredReadTime({ uid, ts: newReadTime });
-    firebase
-      .database()
-      .ref(`users/${uid}/readTimes/announcements`)
+    dbRef(userPath(uid, 'readTimes', 'announcements'))
       .set(newReadTime)
       // bewusst still: lokaler State ist schon gesetzt, Firebase-Write ist Best-effort
       .catch(() => {});
@@ -455,14 +450,12 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     if (typeof window === 'undefined' || !user) return;
     (window as unknown as Record<string, unknown>).notificationsDebug = {
       resetAnnouncements: () => {
-        firebase
-          .database()
-          .ref(`users/${user.uid}/readTimes/announcements`)
+        dbRef(userPath(user.uid, 'readTimes', 'announcements'))
           .set(0)
           .then(() => location.reload());
       },
       setReadTime: (ts: number) => {
-        firebase.database().ref(`users/${user.uid}/readTimes/announcements`).set(ts);
+        dbRef(userPath(user.uid, 'readTimes', 'announcements')).set(ts);
       },
       currentReadTime: () => storedReadTime?.ts ?? null,
     };

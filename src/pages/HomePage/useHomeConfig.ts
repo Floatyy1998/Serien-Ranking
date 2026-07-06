@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../../lib/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 // Default orders
@@ -230,9 +229,7 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     //    egal ob Firebase noch antwortet
     const timeoutId = window.setTimeout(markReady, 2500);
 
-    firebase
-      .database()
-      .ref(`users/${uid}/homeConfig`)
+    dbRef(paths.homeConfig(uid))
       .once('value')
       .then((snap) => {
         const data = snap.val();

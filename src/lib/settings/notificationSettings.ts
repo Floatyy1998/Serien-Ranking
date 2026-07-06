@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
 
 export const DEFAULT_INACTIVE_THRESHOLD_DAYS = 30;
 /** Erlaubte Optionen für das UI. `0` = "aus" (keine Inactive-Notifications). */
@@ -20,11 +19,8 @@ const load = async (userId: string): Promise<NotificationSettings> => {
   const cached = cache.get(userId);
   if (cached && Date.now() - cached.loadedAt < CACHE_TTL) return cached.value;
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/notificationSettings`)
-      .once('value');
-    const value = (snapshot.val() as NotificationSettings | null) || {};
+    const value =
+      (await dbGet<NotificationSettings>(userPath(userId, 'notificationSettings'))) || {};
     cache.set(userId, { value, loadedAt: Date.now() });
     return value;
   } catch {
@@ -50,10 +46,7 @@ export const setInactiveThresholdDays = async (
   userId: string,
   days: InactiveThresholdOption
 ): Promise<void> => {
-  await firebase
-    .database()
-    .ref(`users/${userId}/notificationSettings/inactiveThresholdDays`)
-    .set(days);
+  await dbRef(userPath(userId, 'notificationSettings', 'inactiveThresholdDays')).set(days);
   invalidate(userId);
 };
 
@@ -68,10 +61,9 @@ export const setProviderNotificationsEnabled = async (
   userId: string,
   enabled: boolean
 ): Promise<void> => {
-  await firebase
-    .database()
-    .ref(`users/${userId}/notificationSettings/providerNotificationsEnabled`)
-    .set(enabled);
+  await dbRef(userPath(userId, 'notificationSettings', 'providerNotificationsEnabled')).set(
+    enabled
+  );
   invalidate(userId);
 };
 
@@ -112,10 +104,10 @@ export const snoozeNotifications = async (
   const until = Date.now() + days * DAY_MS;
   const updates: Record<string, number> = {};
   for (const id of seriesIds) {
-    updates[`users/${userId}/notificationSnooze/${category}/${id}`] = until;
+    updates[userPath(userId, 'notificationSnooze', category, id)] = until;
   }
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[Snooze] Failed to snooze ${category}: ${message}`);
@@ -127,11 +119,9 @@ export const getSnoozedUntil = async (
   userId: string
 ): Promise<Record<string, number>> => {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/notificationSnooze/${category}`)
-      .once('value');
-    return (snapshot.val() as Record<string, number> | null) || {};
+    return (
+      (await dbGet<Record<string, number>>(userPath(userId, 'notificationSnooze', category))) || {}
+    );
   } catch {
     return {};
   }
@@ -152,12 +142,12 @@ export const cleanupSnoozes = async (
   const updates: Record<string, null> = {};
   for (const [id, until] of Object.entries(current)) {
     if (until < now || !validIds.has(id)) {
-      updates[`users/${userId}/notificationSnooze/${category}/${id}`] = null;
+      updates[userPath(userId, 'notificationSnooze', category, id)] = null;
     }
   }
   if (Object.keys(updates).length === 0) return;
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch {
     // best-effort cleanup
   }

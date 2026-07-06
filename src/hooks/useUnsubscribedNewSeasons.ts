@@ -7,8 +7,7 @@
  * hat — sonst wäre die Warnung sinnlos.
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, dbUpdate, userPath } from '../lib/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
@@ -35,8 +34,8 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
     if (!user) return;
     let cancelled = false;
     Promise.all([
-      firebase.database().ref(`users/${user.uid}/subscriptions/providers`).once('value'),
-      firebase.database().ref(`users/${user.uid}/unsubscribedNewSeasonDismissed`).once('value'),
+      dbRef(userPath(user.uid, 'subscriptions', 'providers')).once('value'),
+      dbRef(userPath(user.uid, 'unsubscribedNewSeasonDismissed')).once('value'),
     ])
       .then(([providersSnap, dismissSnap]) => {
         if (cancelled) return;
@@ -88,7 +87,7 @@ export function useUnsubscribedNewSeasons(seriesWithNewSeasons: Series[]): {
     }
     setDismissed(nextLocal);
     try {
-      await firebase.database().ref().update(updates);
+      await dbUpdate(updates);
     } catch (err: unknown) {
       console.error('[useUnsubscribedNewSeasons] Failed to dismiss:', err);
     }

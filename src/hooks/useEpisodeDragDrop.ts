@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { dbRef, userPath } from '../lib/db/ref';
 import type { NextEpisode } from './useWatchNextEpisodes';
 
 interface UseEpisodeDragDropOptions {
@@ -46,7 +45,7 @@ export const useEpisodeDragDrop = ({
   useEffect(() => {
     if (!user) return;
 
-    const orderRef = firebase.database().ref(`users/${user.uid}/watchlistOrder`);
+    const orderRef = dbRef(userPath(user.uid, 'watchlistOrder'));
     orderRef.on('value', (snapshot) => {
       const order = snapshot.val();
       if (order && Array.isArray(order)) {
@@ -188,7 +187,7 @@ export const useEpisodeDragDrop = ({
         // Remove duplicates and keep first occurrence
         const uniqueOrder = [...new Set(newOrder)];
         setWatchlistOrder(uniqueOrder);
-        await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
+        await dbRef(userPath(user.uid, 'watchlistOrder')).set(uniqueOrder);
       }
 
       setDraggedIndex(null);
@@ -451,7 +450,7 @@ export const useEpisodeDragDrop = ({
       const newOrder = newEpisodes.map((ep) => ep.seriesId);
       const uniqueOrder = [...new Set(newOrder)];
       setWatchlistOrder(uniqueOrder);
-      await firebase.database().ref(`users/${user.uid}/watchlistOrder`).set(uniqueOrder);
+      await dbRef(userPath(user.uid, 'watchlistOrder')).set(uniqueOrder);
     }
 
     setDraggedIndex(null);

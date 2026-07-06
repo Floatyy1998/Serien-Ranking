@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import Inventory2 from '@mui/icons-material/Inventory2';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -43,7 +44,7 @@ export const MilestoneBoxCard: React.FC = () => {
   // Listener mit korrekten Werten.
   useEffect(() => {
     if (!user?.uid) return;
-    const ref = firebase.database().ref(`users/${user.uid}/mysteryBox`);
+    const ref = dbRef(userPath(user.uid, 'mysteryBox'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val() as {
         lastOpenedBoxNumber?: number;

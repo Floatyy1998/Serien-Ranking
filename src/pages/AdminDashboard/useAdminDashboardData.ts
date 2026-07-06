@@ -2,9 +2,8 @@
  * useAdminDashboardData - Fetches analytics data from Firebase RTDB
  * for the admin dashboard overview and all tabs.
  */
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { dbRef, paths } from '../../lib/db/ref';
 
 // ─── Types ───────────────────────────────────────────────────────────────
 
@@ -91,13 +90,12 @@ export function useAdminDashboardData(daysRange = 30) {
   useEffect(() => {
     const loadDailyStats = async () => {
       setLoading(true);
-      const db = firebase.database();
       const stats: DailyStats[] = [];
 
       for (let i = 0; i < daysRange; i++) {
         const dk = dateKey(i);
         try {
-          const snap = await db.ref(`analytics/global/daily/${dk}`).once('value');
+          const snap = await dbRef(`analytics/global/daily/${dk}`).once('value');
           const val = snap.val();
           if (val) {
             stats.push({
@@ -141,10 +139,9 @@ export function useAdminDashboardData(daysRange = 30) {
   // Vorher liefen zwei separate once('value') auf analytics/users (haelfte
   // der Bytes gedoppelt). Beide States werden aus demselben Snapshot befuellt.
   useEffect(() => {
-    const db = firebase.database();
     const today = dateKey(0);
 
-    db.ref('analytics/users')
+    dbRef('analytics/users')
       .once('value')
       .then((snap) => {
         const val = snap.val();
@@ -171,14 +168,13 @@ export function useAdminDashboardData(daysRange = 30) {
 
   // Load user profiles for display names (einzeln pro UID statt /users komplett)
   useEffect(() => {
-    const db = firebase.database();
     const uids = new Set([...Object.keys(userMetas), ...realtimeUsers.map((u) => u.uid)]);
     if (uids.size === 0) return;
 
     Promise.all(
       [...uids].map(async (uid) => {
         try {
-          const snap = await db.ref(`users/${uid}`).once('value');
+          const snap = await dbRef(paths.user(uid)).once('value');
           const val = snap.val();
           if (!val) return null;
           return {
@@ -207,8 +203,7 @@ export function useAdminDashboardData(daysRange = 30) {
 
   // Realtime users listener
   useEffect(() => {
-    const db = firebase.database();
-    const ref = db.ref('analytics/global/realtime/activeUsers');
+    const ref = dbRef('analytics/global/realtime/activeUsers');
 
     const handler = ref.on('value', (snap) => {
       const val = snap.val();
@@ -332,12 +327,11 @@ export function useAdminDashboardData(daysRange = 30) {
   // Per-user daily stats loader
   const loadUserDailyStats = useCallback(
     async (uid: string, days = 7): Promise<UserDailyStats[]> => {
-      const db = firebase.database();
       const stats: UserDailyStats[] = [];
       for (let i = 0; i < days; i++) {
         const dk = dateKey(i);
         try {
-          const snap = await db.ref(`analytics/users/${uid}/daily/${dk}`).once('value');
+          const snap = await dbRef(`analytics/users/${uid}/daily/${dk}`).once('value');
           const val = snap.val();
           if (val) {
             stats.push({
@@ -358,9 +352,8 @@ export function useAdminDashboardData(daysRange = 30) {
 
   // Per-user raw events loader
   const loadUserEvents = useCallback(async (uid: string, date: string) => {
-    const db = firebase.database();
     try {
-      const snap = await db.ref(`analytics/users/${uid}/events/${date}`).once('value');
+      const snap = await dbRef(`analytics/users/${uid}/events/${date}`).once('value');
       const val = snap.val();
       if (!val) return [];
       const allEvents: Array<{ e: string; p?: Record<string, unknown>; t: number }> = [];
@@ -379,10 +372,9 @@ export function useAdminDashboardData(daysRange = 30) {
 
   // Load all raw events for today across all users
   const loadAllRawEvents = useCallback(async (date?: string) => {
-    const db = firebase.database();
     const targetDate = date || dateKey(0);
     try {
-      const snap = await db.ref('analytics/users').once('value');
+      const snap = await dbRef('analytics/users').once('value');
       const val = snap.val();
       if (!val) return [];
       const allEvents: Array<{

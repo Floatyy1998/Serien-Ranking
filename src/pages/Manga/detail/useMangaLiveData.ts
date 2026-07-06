@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import { useEffect, useState } from 'react';
 import { getMangaById } from '../../../services/anilistService';
 import {
@@ -8,6 +8,7 @@ import {
   type MangaDexInfo,
 } from '../../../services/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
+import { dbRef, paths } from '../../../lib/db/ref';
 
 interface UseMangaLiveDataArgs {
   user: firebase.User | null | undefined;
@@ -84,9 +85,7 @@ export const useMangaLiveData = ({
       updates.lastReleaseDate = newestRelease;
     }
     if (Object.keys(updates).length > 0) {
-      firebase
-        .database()
-        .ref(`users/${user.uid}/manga/${anilistId}`)
+      dbRef(paths.mangaItem(user.uid, anilistId))
         .update(updates)
         // bewusst still: Persistieren ist Best-effort, nächster Besuch versucht es erneut
         .catch(() => {});

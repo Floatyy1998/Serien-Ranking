@@ -5,7 +5,7 @@
  * Nur für zeitkritische Badges wie Quickwatch die nicht aus Serien-Daten berechenbar sind.
  */
 
-import firebase from 'firebase/compat/app';
+import { dbRef, dbGet, userPath } from '../../lib/db/ref';
 
 class BadgeCounterService {
   /**
@@ -13,9 +13,7 @@ class BadgeCounterService {
    */
   async incrementQuickwatchCounter(userId: string): Promise<void> {
     try {
-      const counterRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/quickwatchEpisodes`);
+      const counterRef = dbRef(userPath(userId, 'badgeCounters', 'quickwatchEpisodes'));
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch {
       /* ignore — non-critical write/read */
@@ -27,7 +25,7 @@ class BadgeCounterService {
    */
   async incrementRewatchCounter(userId: string): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/rewatchEpisodes`);
+      const counterRef = dbRef(userPath(userId, 'badgeCounters', 'rewatchEpisodes'));
       await counterRef.transaction((current) => (current || 0) + 1);
     } catch {
       /* ignore — non-critical write/read */
@@ -40,10 +38,8 @@ class BadgeCounterService {
   async updateStreakCounter(userId: string): Promise<void> {
     try {
       const today = new Date().toDateString();
-      const lastActivityRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/lastActivityDate`);
-      const streakRef = firebase.database().ref(`users/${userId}/badgeCounters/currentStreak`);
+      const lastActivityRef = dbRef(userPath(userId, 'badgeCounters', 'lastActivityDate'));
+      const streakRef = dbRef(userPath(userId, 'badgeCounters', 'currentStreak'));
 
       const lastActivitySnapshot = await lastActivityRef.once('value');
       const lastActivityDate = lastActivitySnapshot.val();
@@ -85,11 +81,11 @@ class BadgeCounterService {
    */
   async incrementSocialCounter(userId: string, type: 'series' | 'movie'): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/itemsAdded`);
+      const counterRef = dbRef(userPath(userId, 'badgeCounters', 'itemsAdded'));
       await counterRef.transaction((current) => (current || 0) + 1);
 
       // Auch typ-spezifische Counter
-      const typeCounterRef = firebase.database().ref(`users/${userId}/badgeCounters/${type}Added`);
+      const typeCounterRef = dbRef(userPath(userId, 'badgeCounters', `${type}Added`));
       await typeCounterRef.transaction((current) => (current || 0) + 1);
     } catch {
       /* ignore — non-critical write/read */
@@ -110,9 +106,7 @@ class BadgeCounterService {
 
       // STEP 1: Erst alle abgelaufenen Sessions auf 0 setzen
       for (const timeframe of timeframes) {
-        const bingeRef = firebase
-          .database()
-          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe.key}`);
+        const bingeRef = dbRef(userPath(userId, 'badgeCounters', 'bingeWindows', timeframe.key));
 
         await bingeRef.transaction((current) => {
           if (!current) return current; // Keine Session vorhanden
@@ -128,9 +122,7 @@ class BadgeCounterService {
 
       // STEP 2: Dann neue Episode hinzufügen (neue Session starten wenn nötig)
       for (const timeframe of timeframes) {
-        const bingeRef = firebase
-          .database()
-          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe.key}`);
+        const bingeRef = dbRef(userPath(userId, 'badgeCounters', 'bingeWindows', timeframe.key));
 
         await bingeRef.transaction((current) => {
           if (!current) {
@@ -163,9 +155,7 @@ class BadgeCounterService {
       const timeframes = ['10hours', '1day', '2days'];
 
       for (const timeframe of timeframes) {
-        const bingeRef = firebase
-          .database()
-          .ref(`users/${userId}/badgeCounters/bingeWindows/${timeframe}`);
+        const bingeRef = dbRef(userPath(userId, 'badgeCounters', 'bingeWindows', timeframe));
         const snapshot = await bingeRef.once('value');
         const current = snapshot.val();
 
@@ -184,9 +174,7 @@ class BadgeCounterService {
   async recordMarathonEpisode(userId: string): Promise<void> {
     try {
       const weekKey = this.getWeekKey();
-      const marathonRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/marathonWeeks/${weekKey}`);
+      const marathonRef = dbRef(userPath(userId, 'badgeCounters', 'marathonWeeks', weekKey));
 
       await marathonRef.transaction((current) => {
         const newValue = (current || 0) + 1;
@@ -203,9 +191,7 @@ class BadgeCounterService {
   async recordMarathonProgress(userId: string, episodeCount: number): Promise<void> {
     try {
       const weekKey = this.getWeekKey();
-      const marathonRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/marathonWeeks/${weekKey}`);
+      const marathonRef = dbRef(userPath(userId, 'badgeCounters', 'marathonWeeks', weekKey));
 
       await marathonRef.transaction((current) => (current || 0) + episodeCount);
     } catch {
@@ -224,9 +210,7 @@ class BadgeCounterService {
   }> {
     try {
       const weekKey = this.getWeekKey();
-      const marathonWeeksRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/marathonWeeks`);
+      const marathonWeeksRef = dbRef(userPath(userId, 'badgeCounters', 'marathonWeeks'));
       const snapshot = await marathonWeeksRef.once('value');
       const marathonWeeks = snapshot.val() || {};
 
@@ -290,7 +274,7 @@ class BadgeCounterService {
    */
   async incrementCounter(userId: string, counterName: string, amount: number = 1): Promise<void> {
     try {
-      const counterRef = firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`);
+      const counterRef = dbRef(userPath(userId, 'badgeCounters', counterName));
       await counterRef.transaction((current) => (current || 0) + amount);
     } catch {
       /* ignore — non-critical write/read */
@@ -302,11 +286,7 @@ class BadgeCounterService {
    */
   async getCounter(userId: string, counterName: string): Promise<number> {
     try {
-      const snapshot = await firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/${counterName}`)
-        .once('value');
-      return snapshot.val() || 0;
+      return (await dbGet<number>(userPath(userId, 'badgeCounters', counterName))) || 0;
     } catch {
       return 0;
     }
@@ -317,8 +297,7 @@ class BadgeCounterService {
    */
   async getAllCounters(userId: string): Promise<Record<string, number>> {
     try {
-      const snapshot = await firebase.database().ref(`users/${userId}/badgeCounters`).once('value');
-      return snapshot.val() || {};
+      return (await dbGet<Record<string, number>>(userPath(userId, 'badgeCounters'))) || {};
     } catch {
       return {};
     }
@@ -329,7 +308,7 @@ class BadgeCounterService {
    */
   async resetCounter(userId: string, counterName: string): Promise<void> {
     try {
-      await firebase.database().ref(`users/${userId}/badgeCounters/${counterName}`).set(0);
+      await dbRef(userPath(userId, 'badgeCounters', counterName)).set(0);
     } catch {
       /* ignore — non-critical write/read */
     }
@@ -340,7 +319,7 @@ class BadgeCounterService {
    */
   async clearAllCounters(userId: string): Promise<void> {
     try {
-      await firebase.database().ref(`users/${userId}/badgeCounters`).remove();
+      await dbRef(userPath(userId, 'badgeCounters')).remove();
     } catch {
       /* ignore — non-critical write/read */
     }
@@ -352,9 +331,7 @@ class BadgeCounterService {
   async ensureCurrentMarathonWeek(userId: string): Promise<void> {
     try {
       const currentWeekKey = this.getWeekKey();
-      const marathonWeeksRef = firebase
-        .database()
-        .ref(`users/${userId}/badgeCounters/marathonWeeks`);
+      const marathonWeeksRef = dbRef(userPath(userId, 'badgeCounters', 'marathonWeeks'));
       const snapshot = await marathonWeeksRef.once('value');
       const marathonWeeks = snapshot.val() || {};
 

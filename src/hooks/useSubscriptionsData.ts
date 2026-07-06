@@ -6,8 +6,7 @@
  * Lücken in der Watchlist (neue Staffeln auf nicht-abonnierten Providern).
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
@@ -67,7 +66,7 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
     let cancelled = false;
     const currentYear = new Date().getFullYear();
     Promise.all([
-      firebase.database().ref(`users/${user.uid}/subscriptions`).once('value'),
+      dbRef(userPath(user.uid, 'subscriptions')).once('value'),
       getYearlyActivity(user.uid, currentYear),
       getYearlyActivity(user.uid, currentYear - 1),
     ])
@@ -299,7 +298,7 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
   const persist = useCallback(
     async (next: SubscriptionsConfig) => {
       if (!user) return;
-      await firebase.database().ref(`users/${user.uid}/subscriptions`).set(next);
+      await dbRef(userPath(user.uid, 'subscriptions')).set(next);
       // Modul-Cache invalidieren: alle anderen Hook-Aufrufer (Calendar, HomePage
       // Sections, WatchNext-Filter) sollen den neuen Override + Active-Set sehen.
       invalidateActiveSubscriptions(user.uid);

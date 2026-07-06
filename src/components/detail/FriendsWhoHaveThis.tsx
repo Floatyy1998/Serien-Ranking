@@ -1,7 +1,6 @@
 import { Person, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, userPath } from '../../lib/db/ref';
 import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
@@ -50,9 +49,9 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
         await Promise.all(
           friends.map(async (friend) => {
             try {
-              const itemRef = firebase.database().ref(`users/${friend.uid}/${subPath}/${itemId}`);
-              const snapshot = await itemRef.once('value');
-              const foundItem = snapshot.val() as Record<string, unknown> | null;
+              const foundItem = await dbGet<Record<string, unknown>>(
+                userPath(friend.uid, subPath, itemId)
+              );
               if (!foundItem) return;
 
               // Fallback: photoURL aus users/{uid}/photoURL nachladen, falls der
@@ -60,11 +59,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
               let photoURL = friend.photoURL;
               if (!photoURL) {
                 try {
-                  const photoSnap = await firebase
-                    .database()
-                    .ref(`users/${friend.uid}/photoURL`)
-                    .once('value');
-                  photoURL = photoSnap.val() || undefined;
+                  photoURL = (await dbGet<string>(userPath(friend.uid, 'photoURL'))) || undefined;
                 } catch {
                   // ignore
                 }

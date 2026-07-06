@@ -1,6 +1,7 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
+import { dbRef, userPath } from '../../lib/db/ref';
 import type { Pet } from '../../types/pet.types';
 
 interface RawPet extends Omit<Pet, 'lastFed' | 'createdAt' | 'deathTime'> {
@@ -28,7 +29,7 @@ export function useFriendPet(friendUid: string | undefined): {
     let petRef: firebase.database.Reference | null = null;
     let petHandler: ((s: firebase.database.DataSnapshot) => void) | null = null;
 
-    activePetRef = firebase.database().ref(`users/${friendUid}/petWidget/activePetId`);
+    activePetRef = dbRef(userPath(friendUid, 'petWidget', 'activePetId'));
 
     const activeHandler = (snapshot: firebase.database.DataSnapshot) => {
       const activePetId = snapshot.val() as string | null;
@@ -45,7 +46,7 @@ export function useFriendPet(friendUid: string | undefined): {
         return;
       }
 
-      petRef = firebase.database().ref(`users/${friendUid}/pets/${activePetId}`);
+      petRef = dbRef(userPath(friendUid, 'pets', activePetId));
       petHandler = (snap: firebase.database.DataSnapshot) => {
         const data = snap.val() as RawPet | null;
         if (!data) {

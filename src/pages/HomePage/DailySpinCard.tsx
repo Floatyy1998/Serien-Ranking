@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
+import { dbRef, userPath } from '../../lib/db/ref';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
 import { useTheme } from '../../contexts/ThemeContextDef';
@@ -30,7 +31,7 @@ export const DailySpinCard: React.FC = () => {
   // wenn der User im DailySpinWheel oder anderswo gespint hat.
   useEffect(() => {
     if (!user?.uid) return;
-    const ref = firebase.database().ref(`users/${user.uid}/dailySpin/lastSpinDate`);
+    const ref = dbRef(userPath(user.uid, 'dailySpin', 'lastSpinDate'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       setLastSpinDate(snap.val());
     };
@@ -42,7 +43,7 @@ export const DailySpinCard: React.FC = () => {
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
-    const ref = firebase.database().ref(`users/${user.uid}/wrapped/${year}/streak`);
+    const ref = dbRef(userPath(user.uid, 'wrapped', year, 'streak'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       const data = snap.val();
       setStreakDays(data?.currentStreak || 0);
@@ -54,7 +55,7 @@ export const DailySpinCard: React.FC = () => {
   // Load total spins
   useEffect(() => {
     if (!user?.uid) return;
-    const ref = firebase.database().ref(`users/${user.uid}/dailySpin/totalSpins`);
+    const ref = dbRef(userPath(user.uid, 'dailySpin', 'totalSpins'));
     const handler = (snap: firebase.database.DataSnapshot) => {
       setTotalSpins(snap.val() || 0);
     };

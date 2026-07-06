@@ -3,8 +3,7 @@
  * Manages section ordering, visibility toggles, drag-drop, and Firebase persistence
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths } from '../../lib/db/ref';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';
@@ -170,7 +169,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       if (!user) return;
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
       saveTimerRef.current = setTimeout(() => {
-        firebase.database().ref(`users/${user.uid}/homeConfig`).set(config);
+        dbRef(paths.homeConfig(user.uid)).set(config);
       }, 500);
     },
     [user]
@@ -203,9 +202,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
 
   useEffect(() => {
     if (!user) return;
-    firebase
-      .database()
-      .ref(`users/${user.uid}/homeConfig`)
+    dbRef(paths.homeConfig(user.uid))
       .once('value')
       .then((snap) => {
         const data = snap.val();

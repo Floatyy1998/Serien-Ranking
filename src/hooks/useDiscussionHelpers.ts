@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, userPath } from '../lib/db/ref';
 import type { DiscussionItemType } from '../types/Discussion';
 
 // Helper to generate a unique path for discussions
@@ -31,7 +30,7 @@ export const sendNotificationToUser = async (
   }
 ) => {
   try {
-    const notificationRef = firebase.database().ref(`users/${targetUserId}/notifications`);
+    const notificationRef = dbRef(userPath(targetUserId, 'notifications'));
     await notificationRef.push({
       ...notification,
       timestamp: Date.now(),

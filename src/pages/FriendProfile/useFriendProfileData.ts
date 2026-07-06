@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
 import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../lib/staticCatalog';
-import 'firebase/compat/database';
+import { dbRef, dbGet, paths } from '../../lib/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';
@@ -288,19 +287,16 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
 
         // Punkt-Query statt Full-User-Read: nur displayName benoetigt (~50 Bytes
         // statt ~50-100 KB fuer das komplette User-Objekt).
-        const nameSnap = await firebase
-          .database()
-          .ref(`users/${friendId}/displayName`)
-          .once('value');
-        setFriendName(nameSnap.val() || 'User');
+        const friendDisplayName = await dbGet<string>(paths.displayName(friendId));
+        setFriendName(friendDisplayName || 'User');
 
         // Lade User-Refs + Catalog parallel.
         // Catalog wird aus statischen Server-Files geladen (kein Firebase-Egress),
         // mit Firebase-Fallback falls Static-Endpoint nicht erreichbar ist.
         const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
           await Promise.all([
-            firebase.database().ref(`users/${friendId}/series`).once('value'),
-            firebase.database().ref(`users/${friendId}/movies`).once('value'),
+            dbRef(paths.series(friendId)).once('value'),
+            dbRef(paths.movies(friendId)).once('value'),
             fetchStaticCatalogSeries(),
             fetchStaticCatalogMovies(),
           ]);
