@@ -14,8 +14,7 @@
  *   3. On reload-button: POST to backend, then re-read Firebase
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet } from '../lib/db/ref';
 import { backendFetch } from '../lib/backendApi';
 
 const CACHE_PREFIX = 'animeFiller_v4:';
@@ -232,11 +231,7 @@ function readBackendItem(item: BackendFillerItem): { n: number; t: string } {
  */
 async function fetchBackendUpdatedAt(seriesId: number | string): Promise<number | null> {
   try {
-    const snap = await firebase
-      .database()
-      .ref(`admin/animeFiller/${seriesId}/updatedAt`)
-      .once('value');
-    const v = snap.val();
+    const v = await dbGet(`admin/animeFiller/${seriesId}/updatedAt`);
     return typeof v === 'number' ? v : null;
   } catch {
     return null;
@@ -251,8 +246,7 @@ async function fetchBackendFillerData(
   seriesId: number | string
 ): Promise<{ data: AnimeFillerData | null; backendUpdatedAt: number | null }> {
   try {
-    const snap = await firebase.database().ref(`admin/animeFiller/${seriesId}`).once('value');
-    const v = snap.val() as BackendFillerRecord | null;
+    const v = await dbGet<BackendFillerRecord>(`admin/animeFiller/${seriesId}`);
     if (!v || v.status !== 'ok' || !v.malId) {
       return { data: null, backendUpdatedAt: v?.updatedAt ?? null };
     }

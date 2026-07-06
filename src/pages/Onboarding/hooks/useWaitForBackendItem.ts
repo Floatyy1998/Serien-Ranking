@@ -1,7 +1,8 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback } from 'react';
 import { useAuth } from '../../../AuthContext';
+import { dbRef, paths } from '../../../lib/db/ref';
 
 /**
  * Wartet bis das Backend einen Eintrag fuer eine TMDB-Id unter
@@ -15,8 +16,8 @@ export function useWaitForBackendItem() {
     (type: 'series' | 'movie', tmdbId: number, timeoutMs: number = 60_000): Promise<boolean> => {
       const uid = user?.uid;
       if (!uid) return Promise.resolve(false);
-      const path = `users/${uid}/${type === 'series' ? 'series' : 'movies'}/${tmdbId}`;
-      const ref = firebase.database().ref(path);
+      const path = type === 'series' ? paths.seriesItem(uid, tmdbId) : paths.movieItem(uid, tmdbId);
+      const ref = dbRef(path);
 
       return new Promise<boolean>((resolve) => {
         let settled = false;

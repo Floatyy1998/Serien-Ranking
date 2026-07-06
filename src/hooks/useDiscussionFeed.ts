@@ -1,6 +1,7 @@
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
+import { dbRef } from '../lib/db/ref';
 import type { DiscussionFeedEntry, DiscussionItemType } from '../types/Discussion';
 
 export type FeedFilterType = 'all' | DiscussionItemType;
@@ -20,7 +21,7 @@ export const useDiscussionFeed = (
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const ref = firebase.database().ref('discussionFeed');
+    const ref = dbRef('discussionFeed');
     let query: firebase.database.Query;
 
     if (filter !== 'all') {

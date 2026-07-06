@@ -1,6 +1,4 @@
 import { CheckCircle, Close, Person, PersonAdd, Star } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
@@ -14,6 +12,7 @@ import {
   GradientText,
   LoadingSpinner,
 } from '../../components/ui';
+import { db, dbRef } from '../../lib/db/ref';
 import { tapScaleSmall } from '../../lib/motion';
 
 interface UserSearchResult {
@@ -66,7 +65,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         const query = searchQuery.toLowerCase();
         const endKey = query + '\uf8ff';
         const runPrefixQueries = async (path: string) => {
-          const ref = firebase.database().ref(path);
+          const ref = dbRef(path);
           const [byUsername, byDisplayName] = await Promise.all([
             ref
               .orderByChild('usernameLower')
@@ -119,8 +118,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
             let seriesCount = 0;
             let moviesCount = 0;
             try {
-              const dbUrl = (firebase.database().app.options as { databaseURL?: string })
-                .databaseURL;
+              const dbUrl = (db().app.options as { databaseURL?: string }).databaseURL;
               const token = await user?.getIdToken();
               const [sRes, mRes] = await Promise.all([
                 fetch(`${dbUrl}/users/${uid}/series.json?shallow=true&auth=${token}`),

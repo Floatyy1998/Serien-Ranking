@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback } from 'react';
+import { dbUpdate, paths } from '../../../lib/db/ref';
 import { useAuth } from '../../../AuthContext';
 import { fetchStaticCatalogSeasons } from '../../../lib/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
@@ -113,9 +112,9 @@ export function useApplyWatchProgress() {
 
             const shouldStayOnWatchlist = target.kind !== 'total';
             const updates: Record<string, unknown> = {};
-            updates[`users/${uid}/seriesWatch/${tmdbId}/seasons`] = seasonsObj;
-            updates[`users/${uid}/series/${tmdbId}/watchlist`] = shouldStayOnWatchlist;
-            await firebase.database().ref().update(updates);
+            updates[`${paths.seriesWatchItem(uid, tmdbId)}/seasons`] = seasonsObj;
+            updates[`${paths.seriesItem(uid, tmdbId)}/watchlist`] = shouldStayOnWatchlist;
+            await dbUpdate(updates);
           } catch (err) {
             console.warn(`[onboarding] applyWatchProgress failed for ${tmdbId}`, err);
           } finally {

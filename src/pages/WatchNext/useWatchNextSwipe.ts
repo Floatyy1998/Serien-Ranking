@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useState } from 'react';
+import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
 import type { PanInfo } from 'framer-motion';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched } from '../../firebase/analytics';
@@ -93,14 +92,13 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       showToast('Episode-ID fehlt', 2000, 'error');
       return;
     }
-    const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${episode.seasonIndex}/eps/${epId}`;
-    const db = firebase.database();
+    const epPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${episode.seasonIndex}/eps/${epId}`;
     const uid = user.uid;
     const label = `S${episode.seasonIndex + 1}E${episode.episodeIndex + 1}`;
     const nowUnix = Math.floor(Date.now() / 1000);
 
     try {
-      const snap = await db.ref(epPath).once('value');
+      const snap = await dbRef(epPath).once('value');
       const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
       const prevCount: number = val.c || 0;
       const prevFirst: number = val.f || 0;
@@ -114,7 +112,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
         [`${epPath}/w`]: 1,
         [`${epPath}/c`]: prevCount + 1,
         [`${epPath}/l`]: nowUnix,
-        [`users/${uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+        [paths.serienVersion(uid)]: serverTimestamp(),
       };
       if (!episode.isRewatch && !prevFirst) {
         updates[`${epPath}/f`] = nowUnix;
@@ -132,9 +130,9 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
           });
           try {
             if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
-              await db.ref(epPath).remove();
+              await dbRef(epPath).remove();
             } else {
-              await db.ref(epPath).set({
+              await dbRef(epPath).set({
                 ...(prevWatched ? { w: prevWatched } : {}),
                 ...(prevCount ? { c: prevCount } : {}),
                 ...(prevFirst ? { f: prevFirst } : {}),

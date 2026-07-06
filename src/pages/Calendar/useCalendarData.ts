@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../firebase/analytics';
@@ -142,7 +141,6 @@ export const useCalendarData = () => {
   const handleMarkWatched = useCallback(
     async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
       if (!user) return;
-      const db = firebase.database();
       const series = seriesList.find((s) => s.id === seriesId);
       const episode = series?.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
       const episodeId = episode?.id;
@@ -150,11 +148,11 @@ export const useCalendarData = () => {
         showToast('Episode-ID fehlt', 2000, 'error');
         return;
       }
-      const epBase = `users/${user.uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
+      const epBase = `${paths.seriesWatchItem(user.uid, seriesId)}/seasons/${seasonIndex}/eps/${episodeId}`;
 
       try {
         // Snapshot vorher (ganzen Entry auf einmal)
-        const snap = await db.ref(epBase).once('value');
+        const snap = await dbRef(epBase).once('value');
         const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
         const prevCount: number = val.c || 0;
         const prevFirst: number = val.f || 0;
@@ -172,7 +170,7 @@ export const useCalendarData = () => {
         if (!prevFirst) {
           updates[`${epBase}/f`] = nowUnix;
         }
-        updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
+        updates[paths.serienVersion(user.uid)] = serverTimestamp();
 
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
@@ -181,9 +179,9 @@ export const useCalendarData = () => {
           onUndo: async () => {
             try {
               if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
-                await db.ref(epBase).remove();
+                await dbRef(epBase).remove();
               } else {
-                await db.ref(epBase).set({
+                await dbRef(epBase).set({
                   ...(prevWatched ? { w: prevWatched } : {}),
                   ...(prevCount ? { c: prevCount } : {}),
                   ...(prevFirst ? { f: prevFirst } : {}),

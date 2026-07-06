@@ -1,5 +1,4 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../lib/db/ref';
 import type { DiscussionFeedEntry } from '../types/Discussion';
 
 const FEED_PATH = 'discussionFeed';
@@ -8,7 +7,7 @@ export const writeDiscussionFeedEntry = async (
   entry: Omit<DiscussionFeedEntry, 'id'>
 ): Promise<string | null> => {
   try {
-    const ref = firebase.database().ref(FEED_PATH);
+    const ref = dbRef(FEED_PATH);
     const newRef = await ref.push(entry);
     return newRef.key;
   } catch (error) {
@@ -20,7 +19,7 @@ export const writeDiscussionFeedEntry = async (
 
 export const deleteDiscussionFeedEntries = async (discussionId: string): Promise<void> => {
   try {
-    const ref = firebase.database().ref(FEED_PATH);
+    const ref = dbRef(FEED_PATH);
     const snapshot = await ref.orderByChild('discussionId').equalTo(discussionId).once('value');
     if (snapshot.exists()) {
       const updates: Record<string, null> = {};

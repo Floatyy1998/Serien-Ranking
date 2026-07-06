@@ -128,7 +128,8 @@ const fb = vi.hoisted(() => {
     onDisconnect: () => ({ remove: async () => {}, set: async () => {} }),
   });
 
-  const database = (() => ({ ref: (p = '') => makeRef(p) })) as unknown as {
+  // firebase.database().ref('/') und .ref() zeigen beide auf die Root → '/' auf '' normalisieren.
+  const database = (() => ({ ref: (p = '') => makeRef(p === '/' ? '' : p) })) as unknown as {
     (): { ref: (p?: string) => Ref };
     ServerValue: { TIMESTAMP: unknown; increment: (n: number) => unknown };
   };

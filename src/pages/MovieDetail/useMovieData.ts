@@ -1,5 +1,3 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
@@ -11,7 +9,7 @@ import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
 import { backendFetch } from '../../lib/backendApi';
-import { paths, updateWithSeriesVersion } from '../../lib/db/ref';
+import { dbRef, paths, updateWithSeriesVersion } from '../../lib/db/ref';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -313,7 +311,7 @@ export const useMovieData = () => {
     try {
       setLoading(true);
 
-      const movieRef = firebase.database().ref(`users/${user.uid}/movies/${movie.id}`);
+      const movieRef = dbRef(paths.movieItem(user.uid, movie.id));
       await movieRef.remove();
       trackMovieDeleted(String(movie.id), movie.title || '');
       setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });

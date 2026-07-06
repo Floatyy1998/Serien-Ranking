@@ -1,9 +1,8 @@
 import { Circle, ManageSearch } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useState } from 'react';
 import type { useTheme } from '../../../contexts/ThemeContextDef';
+import { dbRef } from '../../../lib/db/ref';
 import { buildUserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';
 import type { UserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';
 import { DataTable } from '../components/DataTable';
@@ -50,7 +49,7 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
     setRebuildState('running');
     setRebuildMessage('Lese alle User…');
     try {
-      const snap = await firebase.database().ref('users').once('value');
+      const snap = await dbRef('users').once('value');
       const users = (snap.val() as Record<string, Record<string, unknown> | null> | null) || {};
       const updates: Record<string, UserSearchIndexEntry> = {};
       let skipped = 0;
@@ -66,7 +65,7 @@ export const UsersTab = React.memo<UsersTabProps>(({ data, theme }) => {
       const count = Object.keys(updates).length;
       setRebuildMessage(`Schreibe ${count} Einträge…`);
       if (count > 0) {
-        await firebase.database().ref('userSearchIndex').update(updates);
+        await dbRef('userSearchIndex').update(updates);
       }
       setRebuildState('done');
       setRebuildMessage(

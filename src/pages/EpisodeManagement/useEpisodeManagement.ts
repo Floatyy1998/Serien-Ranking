@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useEffect, useRef, useState } from 'react';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -184,7 +183,7 @@ export const useEpisodeManagement = () => {
         showToast('Episode-ID fehlt', 2000, 'error');
         return;
       }
-      const epPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${epId}`;
+      const epPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${seasonIndex}/eps/${epId}`;
 
       const willAutoAddToWatchlist = newWatched && shouldAutoEnableWatchlist(series);
       const queueLabel = `${series.title} S${season.seasonNumber + 1}E${episodeIndex + 1} Toggle`;
@@ -199,7 +198,7 @@ export const useEpisodeManagement = () => {
           [`${epPath}/c`]: newWatchCount,
           [`${epPath}/l`]: nowUnix,
           ...autoWatchlistUpdates(user.uid, series),
-          [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+          [paths.serienVersion(user.uid)]: serverTimestamp(),
         };
         if (!episode.firstWatchedAt) {
           updates[`${epPath}/f`] = nowUnix;
@@ -212,7 +211,7 @@ export const useEpisodeManagement = () => {
           user.uid,
           {
             [epPath]: null,
-            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+            [paths.serienVersion(user.uid)]: serverTimestamp(),
           },
           queueLabel
         );
@@ -242,21 +241,18 @@ export const useEpisodeManagement = () => {
               lastWatchedAt?: string;
             };
             if (!prevEp.watched && !(prevEp.watchCount && prevEp.watchCount > 0)) {
-              await firebase.database().ref(epPath).remove();
+              await dbRef(epPath).remove();
             } else {
-              await firebase
-                .database()
-                .ref(epPath)
-                .set({
-                  w: prevEp.watched ? 1 : 0,
-                  c: prevEp.watchCount || 0,
-                  ...(prevEp.firstWatchedAt
-                    ? { f: Math.floor(new Date(prevEp.firstWatchedAt).getTime() / 1000) }
-                    : {}),
-                  ...(prevEp.lastWatchedAt
-                    ? { l: Math.floor(new Date(prevEp.lastWatchedAt).getTime() / 1000) }
-                    : {}),
-                });
+              await dbRef(epPath).set({
+                w: prevEp.watched ? 1 : 0,
+                c: prevEp.watchCount || 0,
+                ...(prevEp.firstWatchedAt
+                  ? { f: Math.floor(new Date(prevEp.firstWatchedAt).getTime() / 1000) }
+                  : {}),
+                ...(prevEp.lastWatchedAt
+                  ? { l: Math.floor(new Date(prevEp.lastWatchedAt).getTime() / 1000) }
+                  : {}),
+              });
             }
           } catch {
             showToast('Undo fehlgeschlagen', 2000, 'error');
@@ -339,7 +335,7 @@ export const useEpisodeManagement = () => {
 
     try {
       const nowUnix = Math.floor(Date.now() / 1000);
-      const basePath = `users/${user.uid}/seriesWatch/${series.id}/seasons`;
+      const basePath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons`;
       const updates: Record<string, unknown> = {};
       const markedEpPaths: string[] = []; // fuer Undo: alle neu-gemarkten Eps
 
@@ -366,7 +362,7 @@ export const useEpisodeManagement = () => {
         });
       });
 
-      updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
+      updates[paths.serienVersion(user.uid)] = serverTimestamp();
       // Bulk-Mark als EIN Queue-Eintrag (eine Multi-Path-Map) über die
       // persistente Offline-Queue; Undo bleibt direkt.
       await applyUserUpdate(
@@ -383,9 +379,8 @@ export const useEpisodeManagement = () => {
           for (const epBase of markedEpPaths) {
             undoUpdates[epBase] = null;
           }
-          undoUpdates[`users/${user.uid}/meta/serienVersion`] =
-            firebase.database.ServerValue.TIMESTAMP;
-          await firebase.database().ref().update(undoUpdates);
+          undoUpdates[paths.serienVersion(user.uid)] = serverTimestamp();
+          await dbUpdate(undoUpdates);
         } catch {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }
@@ -410,8 +405,7 @@ export const useEpisodeManagement = () => {
 
     try {
       const nowUnix = Math.floor(Date.now() / 1000);
-      const seasonPath = `users/${user.uid}/seriesWatch/${series.id}/seasons/${seasonIndex}`;
-      const db = firebase.database();
+      const seasonPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${seasonIndex}`;
       const updates: Record<string, unknown> = {
         ...(willAutoAddToWatchlist ? autoWatchlistUpdates(user.uid, series) : {}),
       };
@@ -462,7 +456,7 @@ export const useEpisodeManagement = () => {
           lastUnix: ep.lastWatchedAt ? Math.floor(new Date(ep.lastWatchedAt).getTime() / 1000) : 0,
         }));
 
-      updates[`users/${user.uid}/meta/serienVersion`] = firebase.database.ServerValue.TIMESTAMP;
+      updates[paths.serienVersion(user.uid)] = serverTimestamp();
       // Staffel-Bulk-Mark als EIN Queue-Eintrag über die persistente
       // Offline-Queue; Undo bleibt direkt.
       await applyUserUpdate(
@@ -509,7 +503,7 @@ export const useEpisodeManagement = () => {
               undoUpdates[`${epBase}/l`] = ep.lastUnix;
             }
           });
-          await db.ref().update(undoUpdates);
+          await dbUpdate(undoUpdates);
         } catch {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }

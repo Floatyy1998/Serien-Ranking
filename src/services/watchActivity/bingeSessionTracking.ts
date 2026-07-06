@@ -5,8 +5,7 @@
  * dem zeitlichen Abstand zwischen Episoden.
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, dbRef } from '../../lib/db/ref';
 import type { BingeSession } from '../../types/WatchActivity';
 import { generateEventId, getBingeSessionsPath } from './shared';
 
@@ -18,9 +17,7 @@ export async function getActiveBingeSession(
 ): Promise<BingeSession | null> {
   try {
     const year = new Date().getFullYear();
-    const snapshot = await firebase
-      .database()
-      .ref(getBingeSessionsPath(userId, year))
+    const snapshot = await dbRef(getBingeSessionsPath(userId, year))
       .orderByChild('seriesId')
       .equalTo(seriesId)
       .once('value');
@@ -71,7 +68,7 @@ export async function updateBingeSession(
         });
         activeSession.totalMinutes += episodeRuntime;
 
-        await firebase.database().ref(`${bingeSessionsPath}/${activeSession.id}`).update({
+        await dbRef(`${bingeSessionsPath}/${activeSession.id}`).update({
           episodes: activeSession.episodes,
           totalMinutes: activeSession.totalMinutes,
         });
@@ -79,7 +76,7 @@ export async function updateBingeSession(
         return activeSession.id;
       } else {
         // End session
-        await firebase.database().ref(`${bingeSessionsPath}/${activeSession.id}`).update({
+        await dbRef(`${bingeSessionsPath}/${activeSession.id}`).update({
           isActive: false,
           endedAt: lastEpisode.watchedAt,
         });
@@ -104,7 +101,7 @@ export async function updateBingeSession(
       isActive: true,
     };
 
-    await firebase.database().ref(`${bingeSessionsPath}/${newSessionId}`).set(newSession);
+    await dbRef(`${bingeSessionsPath}/${newSessionId}`).set(newSession);
 
     return newSessionId;
   } catch (error) {
@@ -119,12 +116,7 @@ export async function getBingeSessionsForYear(
   year: number
 ): Promise<BingeSession[]> {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(getBingeSessionsPath(userId, year))
-      .once('value');
-
-    const data = snapshot.val() as Record<string, BingeSession> | null;
+    const data = await dbGet<Record<string, BingeSession>>(getBingeSessionsPath(userId, year));
     if (!data) return [];
 
     return Object.values(data);

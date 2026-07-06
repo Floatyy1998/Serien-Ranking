@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
+import { serverTimestamp } from '../../lib/db/ref';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -284,7 +283,7 @@ export const useEpisodeDiscussion = () => {
           user.uid,
           {
             [epPath]: null,
-            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+            [`users/${user.uid}/meta/serienVersion`]: serverTimestamp(),
           },
           queueLabel
         );
@@ -300,7 +299,7 @@ export const useEpisodeDiscussion = () => {
             [`${epPath}/c`]: 1,
             [`${epPath}/f`]: nowUnix,
             [`${epPath}/l`]: nowUnix,
-            [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
+            [`users/${user.uid}/meta/serienVersion`]: serverTimestamp(),
           },
           queueLabel
         );

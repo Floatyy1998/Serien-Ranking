@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FiberNew, CheckCircle } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../../../lib/db/ref';
 
 interface NewEpisode {
   season: number;
@@ -99,7 +98,7 @@ export function NewEpisodesTab({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ref = firebase.database().ref('admin/newEpisodes');
+    const ref = dbRef('admin/newEpisodes');
     const handler = ref.on('value', (snap) => {
       setData(snap.val());
       setLoading(false);

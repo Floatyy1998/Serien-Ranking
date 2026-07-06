@@ -4,8 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../lib/db/ref';
 import { FEATURES } from '../config/features';
 
 interface WrappedConfig {
@@ -22,7 +21,7 @@ export const useWrappedConfig = (): WrappedConfig => {
   });
 
   useEffect(() => {
-    const configRef = firebase.database().ref('config/wrapped');
+    const configRef = dbRef('config/wrapped');
 
     const unsubscribe = configRef.on('value', async (snapshot) => {
       const data = snapshot.val();

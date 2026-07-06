@@ -6,9 +6,10 @@ import {
   PlayCircleOutline,
   Refresh,
 } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
+import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useTheme } from '../../../contexts/ThemeContextDef';
+import { dbRef } from '../../../lib/db/ref';
 
 interface Counts {
   ok?: number;
@@ -57,7 +58,7 @@ export const AnimeFillerTab = () => {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    const ref = firebase.database().ref('admin/animeFiller_meta');
+    const ref = dbRef('admin/animeFiller_meta');
     const handler = (snap: firebase.database.DataSnapshot) => {
       setMeta(snap.val() as MetaDoc | null);
       setLoading(false);

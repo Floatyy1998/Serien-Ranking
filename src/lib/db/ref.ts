@@ -19,6 +19,13 @@ export { paths, userPath } from './paths';
  */
 export const serverTimestamp = (): object => firebase.database.ServerValue.TIMESTAMP as object;
 
+/**
+ * Atomarer Server-seitiger Increment-Sentinel (`ServerValue.increment`). Lazy,
+ * gleiche Begründung wie `serverTimestamp`. Für Zähler wie `replyCount`/`likes`.
+ */
+export const serverIncrement = (delta: number): object =>
+  firebase.database.ServerValue.increment(delta) as object;
+
 /** `firebase.database()` — eine Stelle, falls die Instanziierung mal wechselt. */
 export const db = () => firebase.database();
 

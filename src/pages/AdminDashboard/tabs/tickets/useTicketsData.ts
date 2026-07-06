@@ -4,6 +4,7 @@ import 'firebase/compat/storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../AuthContext';
+import { dbRef } from '../../../../lib/db/ref';
 import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
 import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
@@ -49,7 +50,7 @@ export function useTicketsData(): UseTicketsDataResult {
     // limitToLast begrenzt den Listener auf die 100 neuesten Tickets (Push-Keys
     // sind chronologisch). Spart massiv Egress, weil ein einzelner Ticket-Update
     // sonst den kompletten Tickets-Node neu herunterlaedt.
-    const query = firebase.database().ref('bugTickets').orderByKey().limitToLast(100);
+    const query = dbRef('bugTickets').orderByKey().limitToLast(100);
     const handler = query.on('value', (snap) => {
       const val = snap.val();
       if (val) {
@@ -94,10 +95,10 @@ export function useTicketsData(): UseTicketsDataResult {
         await deleteScreenshots(ticket.screenshots);
         updates.screenshots = [];
       }
-      await firebase
-        .database()
-        .ref(`bugTickets/${ticketId}`)
-        .update({ ...updates, updatedAt: new Date().toISOString() });
+      await dbRef(`bugTickets/${ticketId}`).update({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      });
       if (updates.status && ticket && updates.status !== ticket.status) {
         const statusLabel = (STATUS_CONFIG[updates.status] || STATUS_CONFIG.done).label;
         await sendNotificationToUser(ticket.createdBy, {
@@ -114,7 +115,7 @@ export function useTicketsData(): UseTicketsDataResult {
   const addAdminComment = useCallback(
     async (ticketId: string, text: string) => {
       if (!user) return;
-      const commentId = firebase.database().ref().push().key ?? crypto.randomUUID();
+      const commentId = dbRef().push().key ?? crypto.randomUUID();
       const comment: TicketComment = {
         id: commentId,
         authorUid: user.uid,
@@ -123,11 +124,8 @@ export function useTicketsData(): UseTicketsDataResult {
         text,
         createdAt: new Date().toISOString(),
       };
-      await firebase.database().ref(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
-      await firebase
-        .database()
-        .ref(`bugTickets/${ticketId}/updatedAt`)
-        .set(new Date().toISOString());
+      await dbRef(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
+      await dbRef(`bugTickets/${ticketId}/updatedAt`).set(new Date().toISOString());
       const ticket = tickets.find((t) => t.id === ticketId);
       if (ticket) {
         await sendNotificationToUser(ticket.createdBy, {
@@ -144,7 +142,7 @@ export function useTicketsData(): UseTicketsDataResult {
   const addAdminNote = useCallback(
     async (ticketId: string, text: string) => {
       if (!user) return;
-      const noteId = firebase.database().ref().push().key ?? crypto.randomUUID();
+      const noteId = dbRef().push().key ?? crypto.randomUUID();
       const entry: TicketComment = {
         id: noteId,
         authorUid: user.uid,
@@ -153,7 +151,7 @@ export function useTicketsData(): UseTicketsDataResult {
         text,
         createdAt: new Date().toISOString(),
       };
-      await firebase.database().ref(`bugTickets/${ticketId}/adminNotes/${noteId}`).set(entry);
+      await dbRef(`bugTickets/${ticketId}/adminNotes/${noteId}`).set(entry);
     },
     [user]
   );
@@ -164,7 +162,7 @@ export function useTicketsData(): UseTicketsDataResult {
       if (ticket?.screenshots?.length) {
         await deleteScreenshots(ticket.screenshots);
       }
-      await firebase.database().ref(`bugTickets/${ticketId}`).remove();
+      await dbRef(`bugTickets/${ticketId}`).remove();
     },
     [tickets, deleteScreenshots]
   );

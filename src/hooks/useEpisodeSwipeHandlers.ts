@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
+import { dbRef, dbUpdate, paths } from '../lib/db/ref';
 import { useAuth } from '../AuthContext';
 import { trackEpisodeWatched } from '../firebase/analytics';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
@@ -73,10 +72,9 @@ async function markEpisodeWatchedInFirebase(
   episodeId: number | string,
   queueLabel?: string
 ): Promise<EpisodeSnapshot> {
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
-  const db = firebase.database();
+  const base = `${paths.seriesWatchItem(uid, seriesId)}/seasons/${seasonIndex}/eps/${episodeId}`;
 
-  const snap = await db.ref(base).once('value');
+  const snap = await dbRef(base).once('value');
   const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
   const previousWatched = (val.w ?? 0) === 1;
   const previousCount: number = val.c ?? 0;
@@ -109,7 +107,6 @@ async function revertEpisodeWatch(
   episodeId: number | string,
   snapshot: EpisodeSnapshot
 ): Promise<void> {
-  const db = firebase.database();
   const firstIso = snapshot.hadFirstWatched ? null : null; // f wird unten nur geschrieben wenn reset
   void firstIso;
   const updates = buildEpisodeUnwatchUpdates(
@@ -123,11 +120,11 @@ async function revertEpisodeWatch(
     snapshot.previousLastWatchedAt
   );
   // Wenn vorher ein firstWatchedAt existierte, nicht ueberschreiben — sonst 0 setzen
-  const base = `users/${uid}/seriesWatch/${seriesId}/seasons/${seasonIndex}/eps/${episodeId}`;
+  const base = `${paths.seriesWatchItem(uid, seriesId)}/seasons/${seasonIndex}/eps/${episodeId}`;
   if (snapshot.hadFirstWatched) {
     delete (updates as Record<string, unknown>)[`${base}/f`];
   }
-  await db.ref().update(updates);
+  await dbUpdate(updates);
 }
 
 /**

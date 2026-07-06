@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../../../lib/db/ref';
 
 interface DataIssue {
   type?: string;
@@ -58,7 +57,7 @@ export function DataHealthTab({
   const [filterType, setFilterType] = useState<string | null>(null);
 
   useEffect(() => {
-    const ref = firebase.database().ref('admin/dataIntegrityIssues');
+    const ref = dbRef('admin/dataIntegrityIssues');
     const handler = ref.on('value', (snap) => {
       setIssuesByUser(snap.val() || {});
       setLoading(false);
@@ -84,24 +83,21 @@ export function DataHealthTab({
   }, [issuesByUser]);
 
   const handleDeleteUserIssues = async (uid: string) => {
-    await firebase.database().ref(`admin/dataIntegrityIssues/${uid}`).remove();
+    await dbRef(`admin/dataIntegrityIssues/${uid}`).remove();
   };
 
   const handleDeleteCorruptEpisode = async (uid: string, issue: DataIssue) => {
     setDeletingPath(issue.firebasePath);
     try {
-      await firebase.database().ref(issue.firebasePath).remove();
+      await dbRef(issue.firebasePath).remove();
       const remaining = issuesByUser[uid]?.issues?.filter(
         (i) => i.firebasePath !== issue.firebasePath
       );
       if (!remaining || remaining.length === 0) {
         await handleDeleteUserIssues(uid);
       } else {
-        await firebase.database().ref(`admin/dataIntegrityIssues/${uid}/issues`).set(remaining);
-        await firebase
-          .database()
-          .ref(`admin/dataIntegrityIssues/${uid}/issueCount`)
-          .set(remaining.length);
+        await dbRef(`admin/dataIntegrityIssues/${uid}/issues`).set(remaining);
+        await dbRef(`admin/dataIntegrityIssues/${uid}/issueCount`).set(remaining.length);
       }
     } finally {
       setDeletingPath(null);

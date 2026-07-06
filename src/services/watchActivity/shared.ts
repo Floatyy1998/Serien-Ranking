@@ -4,8 +4,7 @@
  * Pfad-Funktionen, Event-Helfer und gemeinsame Konstanten.
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, dbRef, userPath } from '../../lib/db/ref';
 import type { ActivityEvent } from '../../types/WatchActivity';
 import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
 import { compactifyEvent, isCompactEvent, expandCompactEvent } from './compactEvent';
@@ -22,19 +21,19 @@ const LAST_CLEANUP_KEY = 'wrapped_last_cleanup_year';
 // ============================================================================
 
 export function getEventsPath(userId: string, year: number): string {
-  return `users/${userId}/${WRAPPED_BASE}/${year}/events`;
+  return userPath(userId, WRAPPED_BASE, year, 'events');
 }
 
 export function getBingeSessionsPath(userId: string, year: number): string {
-  return `users/${userId}/${WRAPPED_BASE}/${year}/bingeSessions`;
+  return userPath(userId, WRAPPED_BASE, year, 'bingeSessions');
 }
 
 export function getStreakPath(userId: string, year: number): string {
-  return `users/${userId}/${WRAPPED_BASE}/${year}/streak`;
+  return userPath(userId, WRAPPED_BASE, year, 'streak');
 }
 
 export function getWrappedBasePath(userId: string): string {
-  return `users/${userId}/${WRAPPED_BASE}`;
+  return userPath(userId, WRAPPED_BASE);
 }
 
 // ============================================================================
@@ -137,7 +136,7 @@ export async function saveEvent(userId: string, event: ActivityEvent): Promise<b
     const compact = compactifyEvent(event);
     const cleanCompact = cleanObject(compact as unknown as Record<string, unknown>);
 
-    await firebase.database().ref(eventPath).set(cleanCompact);
+    await dbRef(eventPath).set(cleanCompact);
 
     return true;
   } catch (error) {
@@ -153,7 +152,7 @@ export async function saveEvent(userId: string, event: ActivityEvent): Promise<b
 
 export async function clearAllWrappedData(userId: string): Promise<void> {
   try {
-    await firebase.database().ref(getWrappedBasePath(userId)).remove();
+    await dbRef(getWrappedBasePath(userId)).remove();
     localStorage.removeItem(LAST_CLEANUP_KEY);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -188,9 +187,7 @@ function hydrateTemporalFields(event: ActivityEvent): ActivityEvent {
 export async function getYearlyActivity(userId: string, year: number): Promise<ActivityEvent[]> {
   const eventsPath = getEventsPath(userId, year);
   try {
-    const snapshot = await firebase.database().ref(eventsPath).once('value');
-
-    const data = snapshot.val() as Record<string, unknown> | null;
+    const data = await dbGet<Record<string, unknown>>(eventsPath);
 
     if (data) {
       // Universeller Reader: erkennt Compact (ts/t/s/...) UND Legacy

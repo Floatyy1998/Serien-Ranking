@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Speed, Timer, Storage, Cloud, CleaningServices } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../../../lib/db/ref';
 
 interface PhaseData {
   ms: number;
@@ -65,7 +64,7 @@ export function PerformanceTab({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const ref = firebase.database().ref('admin/performance');
+    const ref = dbRef('admin/performance');
     const handler = ref.on('value', (snap) => {
       setData(snap.val() || {});
       setLoading(false);

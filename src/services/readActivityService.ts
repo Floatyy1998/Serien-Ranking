@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { dbRef, userPath } from '../lib/db/ref';
 import type { Manga } from '../types/Manga';
 
 /**
@@ -22,7 +22,7 @@ interface CompactMangaEvent {
 
 function getEventsPath(userId: string): string {
   const year = new Date().getFullYear();
-  return `users/${userId}/wrapped/${year}/mangaEvents`;
+  return userPath(userId, 'wrapped', year, 'mangaEvents');
 }
 
 export async function logChapterRead(
@@ -49,9 +49,7 @@ export async function logChapterRead(
     if ((manga.rereadCount || 0) > 0) event.rw = 1;
 
     promises.push(
-      firebase
-        .database()
-        .ref(getEventsPath(userId))
+      dbRef(getEventsPath(userId))
         .push(event)
         .then(() => undefined)
     );
@@ -69,5 +67,5 @@ export async function logMangaRating(userId: string, manga: Manga, rating: numbe
     rat: rating,
   };
 
-  await firebase.database().ref(getEventsPath(userId)).push(event);
+  await dbRef(getEventsPath(userId)).push(event);
 }

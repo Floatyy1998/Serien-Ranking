@@ -1,7 +1,6 @@
 import { Save } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
+import { dbRef } from '../../../lib/db/ref';
 
 interface ConfigTabProps {
   theme: {
@@ -34,9 +33,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    firebase
-      .database()
-      .ref('admin/config/petDrops')
+    dbRef('admin/config/petDrops')
       .once('value')
       .then((snap) => {
         if (snap.exists()) {
@@ -51,7 +48,7 @@ export function ConfigTab({ theme }: ConfigTabProps) {
   }, []);
 
   const handleSave = useCallback(async () => {
-    await firebase.database().ref('admin/config/petDrops').set(config);
+    await dbRef('admin/config/petDrops').set(config);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }, [config]);

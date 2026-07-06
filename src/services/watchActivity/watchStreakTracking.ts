@@ -4,8 +4,7 @@
  * Berechnet und verwaltet die tägliche Watch-Streak des Nutzers.
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbGet, dbRef } from '../../lib/db/ref';
 import type { WatchStreak } from '../../types/WatchActivity';
 import { toLocalDateString } from '../../lib/date/date.utils';
 import { getStreakPath } from './shared';
@@ -15,7 +14,7 @@ export async function updateWatchStreak(userId: string): Promise<void> {
     const now = new Date();
     const year = now.getFullYear();
     const today = toLocalDateString(now);
-    const streakRef = firebase.database().ref(getStreakPath(userId, year));
+    const streakRef = dbRef(getStreakPath(userId, year));
     const snapshot = await streakRef.once('value');
 
     let currentStreak: WatchStreak | null = snapshot.val() as WatchStreak | null;
@@ -25,11 +24,7 @@ export async function updateWatchStreak(userId: string): Promise<void> {
       // Silvester laufende Streak nicht abbricht und der All-Time-Rekord
       // (longestStreak) erhalten bleibt. Die Fortsetzungs-Logik unten prüft dann
       // via lastWatchDate === gestern, ob die Streak tatsächlich weiterläuft.
-      const prevSnap = await firebase
-        .database()
-        .ref(getStreakPath(userId, year - 1))
-        .once('value');
-      const prev = prevSnap.val() as WatchStreak | null;
+      const prev = await dbGet<WatchStreak>(getStreakPath(userId, year - 1));
       currentStreak = {
         currentStreak: prev?.currentStreak ?? 0,
         longestStreak: prev?.longestStreak ?? 0,
@@ -79,8 +74,7 @@ export async function updateWatchStreak(userId: string): Promise<void> {
 
 export async function getWatchStreak(userId: string, year: number): Promise<WatchStreak | null> {
   try {
-    const snapshot = await firebase.database().ref(getStreakPath(userId, year)).once('value');
-    return snapshot.val() as WatchStreak | null;
+    return await dbGet<WatchStreak>(getStreakPath(userId, year));
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[WatchActivity] Failed to get watch streak: ${message}`);

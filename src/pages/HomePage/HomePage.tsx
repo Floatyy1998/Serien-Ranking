@@ -1,10 +1,9 @@
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
+import { dbGet, dbRef, paths } from '../../lib/db/ref';
 import { SectionHeader } from '../../components/ui';
 import { SeriesNotificationHub } from './SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
@@ -55,12 +54,9 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (user) {
-      firebase
-        .database()
-        .ref(`users/${user.uid}/displayName`)
-        .once('value')
-        .then((snap) => {
-          if (snap.val()) setDbDisplayName(snap.val());
+      dbGet<string>(paths.displayName(user.uid))
+        .then((name) => {
+          if (name) setDbDisplayName(name);
         })
         .catch(() => {}); // bewusst still: Begrüßung fällt auf den Auth-Displaynamen zurück
     }
@@ -167,7 +163,7 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    const ref = firebase.database().ref(`admin/userMessages/${user.uid}/text`);
+    const ref = dbRef(`admin/userMessages/${user.uid}/text`);
     ref.on('value', (snap) => setAdminMessage(snap.val() || null));
     return () => ref.off('value');
   }, [user]);

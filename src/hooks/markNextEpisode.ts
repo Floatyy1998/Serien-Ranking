@@ -10,9 +10,8 @@
  *   seasonIndex = Array-Index in series.seasons, episodeId = episode.id.
  */
 
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import type { Series } from '../types/Series';
+import { dbRef, dbUpdate, paths } from '../lib/db/ref';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { buildEpisodeWatchedUpdates, buildEpisodeUnwatchUpdates } from '../lib/compactWatch';
 import { hapticSuccess } from '../lib/haptics';
@@ -75,11 +74,10 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
   if (!next || !next.episodeId) return false;
 
   const { seasonIndex, seasonNumber, episodeNumber, episodeId, runtime, airDate } = next;
-  const db = firebase.database();
-  const base = `users/${uid}/seriesWatch/${series.id}/seasons/${seasonIndex}/eps/${episodeId}`;
+  const base = `${paths.seriesWatchItem(uid, series.id)}/seasons/${seasonIndex}/eps/${episodeId}`;
 
   try {
-    const snap = await db.ref(base).once('value');
+    const snap = await dbRef(base).once('value');
     const val = (snap.val() as { w?: number; c?: number; f?: number; l?: number } | null) || {};
     const previousWatched = (val.w ?? 0) === 1;
     const previousCount = val.c ?? 0;
@@ -123,7 +121,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
           if (hadFirstWatched) {
             delete (updates as Record<string, unknown>)[`${base}/f`];
           }
-          await db.ref().update(updates);
+          await dbUpdate(updates);
         } catch {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }

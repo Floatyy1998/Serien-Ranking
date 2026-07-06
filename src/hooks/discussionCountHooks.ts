@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
+import { dbRef } from '../lib/db/ref';
 
 interface DiscussionCounts {
   [key: string]: number;
@@ -26,7 +25,7 @@ export const useDiscussionCount = (
   useEffect(() => {
     if (!itemId) return;
 
-    const ref = firebase.database().ref(path);
+    const ref = dbRef(path);
 
     // Einmaliger Read statt Realtime-Listener
     ref.once('value').then((snapshot) => {
@@ -53,7 +52,7 @@ export const useEpisodeDiscussionCounts = (
 
     // Ein einziger Batch-Read für alle Episoden der Staffel
     const parentPath = `discussions/episode`;
-    const ref = firebase.database().ref(parentPath);
+    const ref = dbRef(parentPath);
 
     // Lade alle Diskussionen die mit dieser seriesId+season beginnen
     const prefix = `${seriesId}_s${seasonNumber}_e`;

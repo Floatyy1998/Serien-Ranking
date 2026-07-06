@@ -1,7 +1,6 @@
 import { Delete, Send } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
+import { dbRef } from '../../../lib/db/ref';
 
 interface UserMessage {
   text: string;
@@ -31,18 +30,14 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   const [search, setSearch] = useState('');
 
   const loadMessages = useCallback(() => {
-    firebase
-      .database()
-      .ref('admin/userMessages')
+    dbRef('admin/userMessages')
       .once('value')
       .then((snap) => setMessages(snap.val() || {}));
   }, []);
 
   useEffect(() => {
     loadMessages();
-    firebase
-      .database()
-      .ref('users')
+    dbRef('users')
       .once('value')
       .then((snap) => {
         const val = snap.val() || {};
@@ -60,7 +55,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   const handleSend = async () => {
     if (!selectedUid || !text.trim()) return;
     const name = users[selectedUid]?.displayName || users[selectedUid]?.username || selectedUid;
-    await firebase.database().ref(`admin/userMessages/${selectedUid}`).set({
+    await dbRef(`admin/userMessages/${selectedUid}`).set({
       text: text.trim(),
       displayName: name,
       createdAt: new Date().toISOString(),
@@ -71,7 +66,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   };
 
   const handleDelete = async (uid: string) => {
-    await firebase.database().ref(`admin/userMessages/${uid}`).remove();
+    await dbRef(`admin/userMessages/${uid}`).remove();
     loadMessages();
   };
 

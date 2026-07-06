@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../lib/db/ref';
 import { useAuth } from '../AuthContext';
 import { showToast } from '../lib/toast';
 import { ADMIN_UID } from '../config/admin';
@@ -13,7 +12,7 @@ export function useAdminHealthAlert() {
 
     const IGNORED_TYPES = new Set(['missing-all-genre', 'missing-all-rating']);
 
-    const ref = firebase.database().ref('admin/dataIntegrityIssues');
+    const ref = dbRef('admin/dataIntegrityIssues');
     ref.once('value').then((snap) => {
       const data = snap.val();
       if (!data) return;

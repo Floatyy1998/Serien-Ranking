@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbRef } from '../../../lib/db/ref';
 
 interface BackendError {
   timestamp: string;
@@ -49,7 +48,7 @@ export function BackendErrorsTab({
   const [activeAction, setActiveAction] = useState<string | null>(null);
 
   useEffect(() => {
-    const ref = firebase.database().ref('admin/backendErrors');
+    const ref = dbRef('admin/backendErrors');
     const handler = ref.on('value', (snap) => {
       const data = snap.val();
       if (data && typeof data === 'object') {
@@ -67,11 +66,11 @@ export function BackendErrorsTab({
   }, []);
 
   const handleClear = async () => {
-    await firebase.database().ref('admin/backendErrors').remove();
+    await dbRef('admin/backendErrors').remove();
   };
 
   const handleClearAction = async (action: string) => {
-    await firebase.database().ref(`admin/backendErrors/${action}`).remove();
+    await dbRef(`admin/backendErrors/${action}`).remove();
   };
 
   // Collect all errors across all actions

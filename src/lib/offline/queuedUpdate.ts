@@ -4,7 +4,7 @@
  *
  * Verhalten:
  * - Online (navigator.onLine && zuletzt bekannter `.info/connected`-Status):
- *   direkter `firebase.database().ref().update(updates)`. Bestätigt der
+ *   direkter `dbUpdate(updates)`. Bestätigt der
  *   Server nicht innerhalb des Timeouts (SDK hängt Offline-Writes sonst
  *   endlos in-memory), gilt der Write als fehlgeschlagen → Queue.
  * - Offline oder Write fehlgeschlagen: Eintrag wird in IndexedDB gequeued
@@ -31,6 +31,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import { dbRef, dbUpdate } from '../db/ref';
 import { hapticSuccess } from '../haptics';
 import { showToast } from '../toast';
 import { isPermissionDenied, pendingWriteQueue } from './pendingWriteQueue';
@@ -83,10 +84,7 @@ function notifyQueuedOnce(): void {
 }
 
 function writeEntry(entry: PendingWriteEntry): Promise<void> {
-  return withTimeout(
-    firebase.database().ref().update(entry.updates) as Promise<void>,
-    WRITE_TIMEOUT_MS
-  );
+  return withTimeout(dbUpdate(entry.updates), WRITE_TIMEOUT_MS);
 }
 
 async function replayPendingWrites(): Promise<void> {
@@ -120,17 +118,14 @@ function attachFirebaseListeners(attempt: number): void {
     return;
   }
   try {
-    firebase
-      .database()
-      .ref('.info/connected')
-      .on('value', (snap) => {
-        const connected = snap.val() === true;
-        const wasConnected = lastConnected;
-        lastConnected = connected;
-        if (connected && wasConnected === false) {
-          void replayPendingWrites();
-        }
-      });
+    dbRef('.info/connected').on('value', (snap) => {
+      const connected = snap.val() === true;
+      const wasConnected = lastConnected;
+      lastConnected = connected;
+      if (connected && wasConnected === false) {
+        void replayPendingWrites();
+      }
+    });
     // Feuert einmal beim Start (Auth ready) und nach jedem Login.
     firebase.auth().onAuthStateChanged((user) => {
       if (user) void replayPendingWrites();
@@ -172,10 +167,7 @@ export async function applyUserUpdate(
 ): Promise<{ queued: boolean }> {
   if (isProbablyOnline()) {
     try {
-      await withTimeout(
-        firebase.database().ref().update(updates) as Promise<void>,
-        WRITE_TIMEOUT_MS
-      );
+      await withTimeout(dbUpdate(updates), WRITE_TIMEOUT_MS);
       return { queued: false };
     } catch (err) {
       // Regel-Verstöße nicht queuen — die würden beim Replay wieder scheitern.
@@ -194,11 +186,7 @@ export async function applyUserUpdate(
   // aber sofort den lokalen SDK-Cache und damit die Listener/Provider).
   await pendingWriteQueue.enqueue(uid, updates, label);
   try {
-    void firebase
-      .database()
-      .ref()
-      .update(updates)
-      .catch(() => {});
+    void dbUpdate(updates).catch(() => {});
   } catch {
     // Firebase evtl. (noch) nicht initialisiert — Queue reicht.
   }

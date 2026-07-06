@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
+import { dbRef, serverIncrement } from '../lib/db/ref';
 import { useAuth } from '../AuthContext';
 import type {
   DiscussionFeedMetadata,
@@ -44,7 +43,7 @@ export const useDiscussionReplies = (
   useEffect(() => {
     if (!discussionId || !shouldFetch) return;
 
-    const ref = firebase.database().ref(repliesPath);
+    const ref = dbRef(repliesPath);
 
     const listener = ref.orderByChild('createdAt').on(
       'value',
@@ -103,15 +102,15 @@ export const useDiscussionReplies = (
         }
 
         // Add reply
-        await firebase.database().ref(repliesPath).push(newReply);
+        await dbRef(repliesPath).push(newReply);
 
         // Update reply count and lastReplyAt on discussion
-        const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
+        const discussionRef = dbRef(`${discussionPath}/${discussionId}`);
         const discussionSnapshot = await discussionRef.once('value');
         const discussion = discussionSnapshot.val();
 
         await discussionRef.update({
-          replyCount: firebase.database.ServerValue.increment(1),
+          replyCount: serverIncrement(1),
           lastReplyAt: Date.now(),
         });
 
@@ -124,7 +123,7 @@ export const useDiscussionReplies = (
         }
 
         // Add all reply authors
-        const existingRepliesSnapshot = await firebase.database().ref(repliesPath).once('value');
+        const existingRepliesSnapshot = await dbRef(repliesPath).once('value');
         if (existingRepliesSnapshot.exists()) {
           const existingReplies = existingRepliesSnapshot.val();
           Object.values(existingReplies).forEach((reply: unknown) => {
@@ -210,7 +209,7 @@ export const useDiscussionReplies = (
       if (!user?.uid || !discussionId) return false;
 
       try {
-        const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
+        const replyRef = dbRef(`${repliesPath}/${replyId}`);
         const snapshot = await replyRef.once('value');
         const reply = snapshot.val();
 
@@ -273,7 +272,7 @@ export const useDiscussionReplies = (
       if (!user?.uid || !discussionId) return false;
 
       try {
-        const replyRef = firebase.database().ref(`${repliesPath}/${replyId}`);
+        const replyRef = dbRef(`${repliesPath}/${replyId}`);
         const snapshot = await replyRef.once('value');
         const reply = snapshot.val();
 
@@ -285,9 +284,9 @@ export const useDiscussionReplies = (
         await replyRef.remove();
 
         // Update reply count on discussion
-        const discussionRef = firebase.database().ref(`${discussionPath}/${discussionId}`);
+        const discussionRef = dbRef(`${discussionPath}/${discussionId}`);
         await discussionRef.update({
-          replyCount: firebase.database.ServerValue.increment(-1),
+          replyCount: serverIncrement(-1),
         });
 
         return true;
@@ -306,7 +305,7 @@ export const useDiscussionReplies = (
       if (!user?.uid) return;
 
       try {
-        const likeRef = firebase.database().ref(`${repliesPath}/${replyId}/likes/${user.uid}`);
+        const likeRef = dbRef(`${repliesPath}/${replyId}/likes/${user.uid}`);
         const snapshot = await likeRef.once('value');
 
         if (snapshot.exists()) {
@@ -315,10 +314,7 @@ export const useDiscussionReplies = (
           await likeRef.set(true);
 
           // Send notification to reply author (if not self)
-          const replySnapshot = await firebase
-            .database()
-            .ref(`${repliesPath}/${replyId}`)
-            .once('value');
+          const replySnapshot = await dbRef(`${repliesPath}/${replyId}`).once('value');
           const reply = replySnapshot.val();
           if (reply && reply.userId !== user.uid) {
             const { username } = await getUserDisplayData(user);

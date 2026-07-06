@@ -16,7 +16,8 @@ const fb = vi.hoisted(() => {
   const updateMock = vi.fn(async (_u: unknown) => {});
   const makeSnap = (val: unknown) => ({ val: () => val });
   const refMock = vi.fn((path?: string) => {
-    if (path == null) return { update: updateMock };
+    // ref() und ref('/') zeigen beide auf die Root → Multi-Path-Update.
+    if (path == null || path === '/') return { update: updateMock };
     return { once: vi.fn(async () => makeSnap(store[path] ?? null)) };
   });
   const database = () => ({ ref: refMock });

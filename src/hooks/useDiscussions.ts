@@ -1,6 +1,5 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useState } from 'react';
+import { dbRef } from '../lib/db/ref';
 import { useAuth } from '../AuthContext';
 import type {
   CreateDiscussionInput,
@@ -59,7 +58,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
   useEffect(() => {
     if (!itemId) return;
 
-    const ref = firebase.database().ref(path);
+    const ref = dbRef(path);
 
     const listener = ref.orderByChild('createdAt').on(
       'value',
@@ -128,7 +127,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           isSpoiler: input.isSpoiler || false,
         };
 
-        const ref = firebase.database().ref(path);
+        const ref = dbRef(path);
         const newRef = await ref.push(newDiscussion);
 
         // Write to discussion feed (fire-and-forget)
@@ -168,7 +167,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       if (!user?.uid) return false;
 
       try {
-        const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
+        const discussionRef = dbRef(`${path}/${discussionId}`);
         const snapshot = await discussionRef.once('value');
         const discussion = snapshot.val();
 
@@ -234,7 +233,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       if (!user?.uid) return false;
 
       try {
-        const discussionRef = firebase.database().ref(`${path}/${discussionId}`);
+        const discussionRef = dbRef(`${path}/${discussionId}`);
         const snapshot = await discussionRef.once('value');
         const discussion = snapshot.val();
 
@@ -245,7 +244,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
         await discussionRef.remove();
         // Also remove replies
-        await firebase.database().ref(`discussionReplies/${discussionId}`).remove();
+        await dbRef(`discussionReplies/${discussionId}`).remove();
         // Remove feed entries (fire-and-forget)
         deleteDiscussionFeedEntries(discussionId);
 
@@ -265,7 +264,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       if (!user?.uid) return;
 
       try {
-        const likeRef = firebase.database().ref(`${path}/${discussionId}/likes/${user.uid}`);
+        const likeRef = dbRef(`${path}/${discussionId}/likes/${user.uid}`);
         const snapshot = await likeRef.once('value');
 
         if (snapshot.exists()) {
@@ -274,10 +273,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           await likeRef.set(true);
 
           // Send notification to discussion author (if not self)
-          const discussionSnapshot = await firebase
-            .database()
-            .ref(`${path}/${discussionId}`)
-            .once('value');
+          const discussionSnapshot = await dbRef(`${path}/${discussionId}`).once('value');
           const discussion = discussionSnapshot.val();
           if (discussion && discussion.userId !== user.uid) {
             const { username } = await getUserDisplayData(user);

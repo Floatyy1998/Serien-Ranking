@@ -2,9 +2,8 @@
  * useRecentlyWatched - Custom hook for RecentlyWatchedPage business logic
  * Manages state, data loading, scroll persistence, search debounce, and episode actions.
  */
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -222,10 +221,15 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
         console.error('Rewatch: Episode-ID fehlt');
         return;
       }
-      const epPath = `users/${user.uid}/seriesWatch/${episode.seriesId}/seasons/${episode.seasonIndex}/eps/${epId}`;
-      const db = firebase.database();
-      await db.ref(`${epPath}/c`).set(episode.watchCount + 1);
-      await db.ref(`${epPath}/l`).set(Math.floor(Date.now() / 1000));
+      const epPath = `${paths.seriesWatchItem(user.uid, episode.seriesId)}/seasons/${episode.seasonIndex}/eps/${epId}`;
+      // Rewatch-Increment atomar inkl. serienVersion-Bump (fehlte bisher —
+      // andere Geräte sahen den erhöhten watchCount erst nach Full-Reload;
+      // analog zu useSeriesActions.handleEpisodeRewatch / useRewatchHandler).
+      await dbUpdate({
+        [`${epPath}/c`]: episode.watchCount + 1,
+        [`${epPath}/l`]: Math.floor(Date.now() / 1000),
+        [paths.serienVersion(user.uid)]: serverTimestamp(),
+      });
 
       // Nur Pet-XP an dieser Site — keine Badge-Counter und kein Wrapped-Event
       // (bestehendes Verhalten beibehalten).

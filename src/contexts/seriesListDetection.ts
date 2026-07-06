@@ -14,8 +14,7 @@ import {
   type ProviderChangeInfo,
 } from '../lib/validation/providerChangeDetection';
 import type { Series } from '../types/Series';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
+import { dbUpdate } from '../lib/db/ref';
 
 // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
 export async function fixMissingFirstWatchedAt(
@@ -57,7 +56,7 @@ export async function fixMissingFirstWatchedAt(
     });
 
     if (Object.keys(updates).length > 0) {
-      await firebase.database().ref().update(updates);
+      await dbUpdate(updates);
     }
   } catch (error) {
     console.error('❌ Error fixing firstWatchedAt dates:', error);
