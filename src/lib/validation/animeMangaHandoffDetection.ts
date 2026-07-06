@@ -5,6 +5,23 @@ import { hasEpisodeAired } from '../../utils/episodeDate';
 import { fetchStaticAnimeManga } from '../staticCatalog';
 import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
+/** Nur Staffeln melden, die in diesem Fenster fertig geschaut wurden. */
+const HANDOFF_RECENCY_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** Neuester Watch-Zeitstempel (ms) einer Staffel, oder 0 wenn keiner bekannt. */
+function seasonCompletionAt(
+  eps: Array<{ lastWatchedAt?: string; firstWatchedAt?: string }>
+): number {
+  let latest = 0;
+  for (const ep of eps) {
+    const ts = ep.lastWatchedAt || ep.firstWatchedAt;
+    if (!ts) continue;
+    const d = new Date(ts).getTime();
+    if (d > latest) latest = d;
+  }
+  return latest;
+}
+
 export interface AnimeMangaHandoff {
   series: Series;
   /** 1-basierte, gerade abgeschlossene Staffel. */
@@ -54,6 +71,7 @@ export async function detectAnimeMangaHandoff(
     // Höchste vollständig ausgestrahlte + komplett gesehene Staffel mit Schätzung.
     let bestSeason = 0;
     let bestChapter = 0;
+    let bestCompletion = 0;
     for (const season of normalizeSeasons(series.seasons)) {
       const seasonNum = (season.seasonNumber ?? 0) + 1;
       const est = entry.s?.[String(seasonNum)];
@@ -67,9 +85,16 @@ export async function detectAnimeMangaHandoff(
       if (seasonNum > bestSeason) {
         bestSeason = seasonNum;
         bestChapter = est;
+        bestCompletion = seasonCompletionAt(eps);
       }
     }
     if (bestSeason === 0) continue;
+
+    // NICHT rückwirkend: nur Staffeln, die *kürzlich* fertig geschaut wurden.
+    // Ohne diesen Filter würde die Detection beim Feature-Start für die gesamte
+    // Anime-Historie feuern (hunderte Notifications). Fehlt der Zeitstempel
+    // (Alt-Daten ohne firstWatchedAt), wird bewusst NICHT gemeldet.
+    if (!bestCompletion || now - bestCompletion > HANDOFF_RECENCY_MS) continue;
 
     const key = `${series.id}-${bestSeason}`;
     if (notified[key]?.dismissed) continue;

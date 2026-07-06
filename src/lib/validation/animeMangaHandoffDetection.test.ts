@@ -40,7 +40,17 @@ import { detectAnimeMangaHandoff } from './animeMangaHandoffDetection';
 
 const UID = 'u1';
 
-const ep = (o: { id?: number; episode_number?: number; watched?: boolean } = {}) => ({
+const RECENT = new Date().toISOString(); // innerhalb des 7-Tage-Fensters
+const OLD = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(); // vor 60 Tagen
+
+const ep = (
+  o: {
+    id?: number;
+    episode_number?: number;
+    watched?: boolean;
+    lastWatchedAt?: string;
+  } = {}
+) => ({
   id: 1,
   name: 'E',
   air_date: '2020-01-01', // liegt in der Vergangenheit → aired
@@ -52,11 +62,17 @@ const ep = (o: { id?: number; episode_number?: number; watched?: boolean } = {})
 const makeSeries = (o: Partial<Series> = {}): Series =>
   ({ id: 1, title: 'Fairy Tail', seasons: [], rating: {}, ...o }) as unknown as Series;
 
-const seasonWatched = (seasonNumber: number, watched: boolean) => ({
+// Gesehene Staffeln bekommen standardmäßig einen kürzlichen Abschluss-Zeitstempel.
+const seasonWatched = (seasonNumber: number, watched: boolean, lastWatchedAt = RECENT) => ({
   seasonNumber,
   episodes: [
-    ep({ id: seasonNumber * 10 + 1, watched }),
-    ep({ id: seasonNumber * 10 + 2, episode_number: 2, watched }),
+    ep({ id: seasonNumber * 10 + 1, watched, lastWatchedAt: watched ? lastWatchedAt : undefined }),
+    ep({
+      id: seasonNumber * 10 + 2,
+      episode_number: 2,
+      watched,
+      lastWatchedAt: watched ? lastWatchedAt : undefined,
+    }),
   ],
 });
 
@@ -112,6 +128,27 @@ describe('detectAnimeMangaHandoff', () => {
     const res = await detectAnimeMangaHandoff([series], UID);
     expect(res).toHaveLength(1);
     expect(res[0]).toMatchObject({ seasonNumber: 2, estimatedChapter: 260 });
+  });
+
+  it('does NOT surface seasons completed long ago (kein rückwirkendes Feuern)', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120 } },
+    });
+    const series = makeSeries({ seasons: [seasonWatched(0, true, OLD)] as Series['seasons'] });
+    expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
+  });
+
+  it('does not surface a completed season without any watch timestamp', async () => {
+    catalog.fetchStaticAnimeManga.mockResolvedValue({
+      '1': { m: 999, t: 'M', c: 545, s: { '1': 120 } },
+    });
+    // watched:true, aber lastWatchedAt bewusst entfernt → keine Recency ableitbar
+    const series = makeSeries({
+      seasons: [
+        { seasonNumber: 0, episodes: [ep({ id: 1, watched: true }), ep({ id: 2, watched: true })] },
+      ] as Series['seasons'],
+    });
+    expect(await detectAnimeMangaHandoff([series], UID)).toEqual([]);
   });
 
   it('does not re-surface a season that was already dismissed', async () => {
