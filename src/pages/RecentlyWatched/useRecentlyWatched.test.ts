@@ -8,8 +8,9 @@ import { useRecentlyWatched } from './useRecentlyWatched';
 // ── firebase compat mock ──────────────────────────────────────────────
 const fb = vi.hoisted(() => {
   const setSpy = vi.fn(async () => {});
-  const refMock = vi.fn(() => ({ set: setSpy }));
-  return { setSpy, refMock };
+  const updateSpy = vi.fn(async () => {});
+  const refMock = vi.fn(() => ({ set: setSpy, update: updateSpy }));
+  return { setSpy, updateSpy, refMock };
 });
 vi.mock('firebase/compat/app', () => {
   const database = Object.assign(() => ({ ref: fb.refMock }), {
@@ -87,6 +88,7 @@ describe('useRecentlyWatched', () => {
     ctx.user = { uid: 'u1' };
     router.navigate.mockReset();
     fb.setSpy.mockClear();
+    fb.updateSpy.mockClear();
     fb.refMock.mockClear();
     runEpisodeWatchFanout.mockClear();
     sessionStorage.clear();
@@ -132,7 +134,13 @@ describe('useRecentlyWatched', () => {
     await act(async () => {
       await result.current.handleRewatchEpisode(watchedEp({ watchCount: 2 }));
     });
-    expect(fb.setSpy).toHaveBeenCalledWith(3); // watchCount + 1
+    // Atomarer Multi-Path-Update inkl. serienVersion-Bump (watchCount + 1).
+    expect(fb.updateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        'users/u1/seriesWatch/1/seasons/0/eps/10/c': 3,
+        'users/u1/meta/serienVersion': { '.sv': 'timestamp' },
+      })
+    );
     expect(runEpisodeWatchFanout).toHaveBeenCalledWith(
       expect.objectContaining({ isRewatch: true, badgeCounters: false, wrappedEvent: false })
     );
