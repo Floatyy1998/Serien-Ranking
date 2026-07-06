@@ -410,7 +410,11 @@ export const HeroSection = memo<HeroSectionProps>(
           {posterUrl && (
             <div
               className={`hero-section__poster-wrap${
-                progressStats.percentage > 0 ? ' hero-section__poster-wrap--ring' : ''
+                progressStats.percentage > 0
+                  ? ` hero-section__poster-wrap--ring${
+                      progressStats.percentage >= 100 ? ' hero-section__poster-wrap--ring-done' : ''
+                    }`
+                  : ''
               }`}
               style={
                 {

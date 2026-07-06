@@ -84,8 +84,36 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
+/* Heat-Ramp-Bogen (Rot → Orange → Theme-Farbe) + Einzeichnen-Animation,
+   analog zum Ratings-Grid (@property --prog-anim ist dort registriert;
+   doppelte Registrierung wäre ein No-Op, daher hier keine zweite). */
 .hero-section__poster-wrap--ring::after {
-  background: conic-gradient(from -90deg, var(--ring-color) calc(var(--prog) * 1%), transparent 0);
+  --prog-anim: var(--prog);
+  background: conic-gradient(
+    from -90deg,
+    #ff3d5a 0deg,
+    #ffb020 calc(var(--prog-anim) * 1.8deg),
+    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    transparent 0
+  );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-section__poster-wrap--ring::after {
+    animation: ring-draw-hero 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes ring-draw-hero {
+  from {
+    --prog-anim: 0;
+  }
+}
+
+/* Komplett gesehen: ruhiges, durchgängiges Success-Grün statt Heat-Ramp. */
+.hero-section__poster-wrap--ring-done::after {
+  background: conic-gradient(var(--ring-color) 0 360deg);
+  animation: none;
 }
 
 /* Composes design-token glassmorphism (background + blur + border) with the

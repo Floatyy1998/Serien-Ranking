@@ -434,12 +434,45 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
-.ratings-card--ring::after {
-  background: conic-gradient(from -90deg, var(--ring-color) calc(var(--prog) * 1%), transparent 0);
+/* Animierbarer Fortschrittswert: registriert, damit der Bogen sich beim
+   Einblenden von 0 auf --prog "zeichnen" kann (progressive enhancement —
+   Browser ohne @property zeigen den Ring einfach statisch). */
+@property --prog-anim {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0;
 }
 
-/* Komplett gesehen: voller Ring in der Success-Farbe (kein Glow — der
-   wirkte wie ein Neon-Rahmen ums Poster). */
+/* Der Bogen läuft als Heat-Ramp Rot → Orange → Theme-Farbe an der Spitze. */
+.ratings-card--ring::after {
+  --prog-anim: var(--prog);
+  background: conic-gradient(
+    from -90deg,
+    #ff3d5a 0deg,
+    #ffb020 calc(var(--prog-anim) * 1.8deg),
+    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    transparent 0
+  );
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ratings-card--ring::after {
+    animation: ring-draw 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes ring-draw {
+  from {
+    --prog-anim: 0;
+  }
+}
+
+/* Komplett gesehen: durchgängiger Ring in der Success-Farbe (statt
+   Heat-Ramp) — „fertig" liest sich als ruhiges Grün, ohne Neon-Glow. */
+.ratings-card--ring-done::after {
+  background: conic-gradient(var(--ring-color) 0 360deg);
+  animation: none;
+}
 
 .ratings-card-progress-text {
   font-size: 10px;
