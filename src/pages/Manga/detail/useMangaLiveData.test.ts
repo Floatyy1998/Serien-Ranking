@@ -19,7 +19,7 @@ const svc = vi.hoisted(() => ({
   getMangaDexChapterDates: vi.fn(async () => null as unknown),
 }));
 vi.mock('../../../services/anilistService', () => ({ getMangaById: svc.getMangaById }));
-vi.mock('../../../services/mangadexService', () => ({
+vi.mock('../../../services/mangaUpdatesService', () => ({
   getMangaDexInfo: svc.getMangaDexInfo,
   getMangaDexChapterDates: svc.getMangaDexChapterDates,
 }));

@@ -9,6 +9,7 @@ import {
   findLastWatch,
   calculateLateNightStats,
   calculateHeatmapData,
+  calculateLongestStreak,
 } from './temporal';
 import type { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 
@@ -263,5 +264,35 @@ describe('calculateHeatmapData', () => {
       ep({ dayOfWeek: undefined as unknown as number, hour: undefined as unknown as number }),
     ]);
     expect(heatmap[0][12]).toBe(1);
+  });
+});
+
+describe('calculateLongestStreak', () => {
+  it('gibt 0 ohne Watch-Events zurück', () => {
+    expect(calculateLongestStreak([])).toBe(0);
+  });
+
+  it('zählt einen einzelnen Tag als Streak 1', () => {
+    expect(calculateLongestStreak([ep({ timestamp: '2026-01-01T20:00:00' })])).toBe(1);
+  });
+
+  it('findet die längste Kette aufeinanderfolgender Tage', () => {
+    const events = [
+      ep({ timestamp: '2026-01-01T20:00:00' }),
+      ep({ timestamp: '2026-01-02T20:00:00' }),
+      ep({ timestamp: '2026-01-03T20:00:00' }), // Streak 3
+      ep({ timestamp: '2026-01-05T20:00:00' }), // Lücke
+      ep({ timestamp: '2026-01-06T20:00:00' }), // Streak 2
+    ];
+    expect(calculateLongestStreak(events)).toBe(3);
+  });
+
+  it('entdoppelt mehrere Events am selben Tag und ist reihenfolge-unabhängig', () => {
+    const events = [
+      ep({ timestamp: '2026-02-11T20:00:00' }),
+      ep({ timestamp: '2026-02-10T08:00:00' }),
+      ep({ timestamp: '2026-02-10T22:00:00' }),
+    ];
+    expect(calculateLongestStreak(events)).toBe(2);
   });
 });

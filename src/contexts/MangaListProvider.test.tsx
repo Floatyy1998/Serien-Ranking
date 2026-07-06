@@ -37,7 +37,7 @@ vi.mock('firebase/compat/app', () => ({
 vi.mock('../services/anilistService', () => ({
   getMangaById: vi.fn(async () => null),
 }));
-vi.mock('../services/mangadexService', () => ({
+vi.mock('../services/mangaUpdatesService', () => ({
   getMangaDexInfo: vi.fn(async () => ({ latestChapter: 0 })),
   getMangaDexChapterDates: vi.fn(async () => ({ recentChapters: [] })),
 }));

@@ -6,7 +6,7 @@ import {
   getMangaDexInfo,
   type MangaDexChapterInfo,
   type MangaDexInfo,
-} from '../../../services/mangadexService';
+} from '../../../services/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 
 interface UseMangaLiveDataArgs {

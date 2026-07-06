@@ -13,6 +13,7 @@ import type {
   LateNightStats,
 } from '../../types/Wrapped';
 import { MONTH_NAMES, DAY_NAMES, TIME_OF_DAY_LABELS } from '../../types/Wrapped';
+import { toLocalDateString } from '../../lib/date';
 
 export function calculateMonthlyBreakdown(events: ActivityEvent[]): MonthStats[] {
   const months: MonthStats[] = [];
@@ -288,4 +289,38 @@ export function calculateHeatmapData(events: ActivityEvent[]): number[][] {
   }
 
   return heatmap;
+}
+
+// ========================================
+// Streak (längste Serie aufeinanderfolgender Watch-Tage)
+// ========================================
+
+/**
+ * Längste Kette aufeinanderfolgender Kalendertage mit mindestens einem
+ * Watch-Event. Rein aus den Event-Timestamps abgeleitet (lokale Zeitzone,
+ * damit ein Mitternachts-Watch nicht auf den Vortag rutscht).
+ */
+export function calculateLongestStreak(events: ActivityEvent[]): number {
+  const watchEvents = events.filter(
+    (e) => e.type === 'episode_watch' || e.type === 'movie_watch' || e.type === 'movie_rating'
+  );
+  if (watchEvents.length === 0) return 0;
+
+  // Eindeutige Tage (YYYY-MM-DD) → aufsteigend sortierte Millisekunden-Marken.
+  const dayMs = [...new Set(watchEvents.map((e) => toLocalDateString(new Date(e.timestamp))))]
+    .map((d) => new Date(d).getTime())
+    .sort((a, b) => a - b);
+
+  const ONE_DAY = 24 * 60 * 60 * 1000;
+  let longest = 1;
+  let current = 1;
+  for (let i = 1; i < dayMs.length; i++) {
+    if (dayMs[i] - dayMs[i - 1] === ONE_DAY) {
+      current++;
+      if (current > longest) longest = current;
+    } else {
+      current = 1;
+    }
+  }
+  return longest;
 }

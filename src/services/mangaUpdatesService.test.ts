@@ -6,7 +6,7 @@ vi.mock('../lib/backendApi', () => ({ backendFetch: backendFetchMock }));
 
 // Frisches Modul je Test → In-Memory-Caches leer.
 async function load() {
-  return import('./mangadexService');
+  return import('./mangaUpdatesService');
 }
 
 function res(body: unknown, ok = true) {

@@ -21,3 +21,13 @@ export const getFormattedDate = (date: string) => {
 
   return `${day}.${month}.${year}`;
 };
+
+/**
+ * Langes deutsches Datum, z.B. „5. Juli 2026". Geteilter Helfer für
+ * Countdown-/Premieren-Anzeigen (ersetzt identische lokale Duplikate).
+ */
+export const formatSeasonDate = (date: string | Date): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return 'Ungültiges Datum';
+  return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
+};

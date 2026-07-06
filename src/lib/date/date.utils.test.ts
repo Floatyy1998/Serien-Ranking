@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getFormattedDate, toLocalDateString } from './date.utils';
+import { formatSeasonDate, getFormattedDate, toLocalDateString } from './date.utils';
 
 describe('date.utils', () => {
   describe('toLocalDateString', () => {
@@ -50,6 +50,20 @@ describe('date.utils', () => {
 
     it('formatiert ein Datum am Jahresende korrekt', () => {
       expect(getFormattedDate('2023-12-31T12:00:00')).toBe('31.12.2023');
+    });
+  });
+
+  describe('formatSeasonDate', () => {
+    it('formatiert langes deutsches Datum aus einem String', () => {
+      expect(formatSeasonDate('2026-07-05T12:00:00')).toBe('5. Juli 2026');
+    });
+
+    it('akzeptiert auch ein Date-Objekt', () => {
+      expect(formatSeasonDate(new Date(2026, 0, 1, 12))).toBe('1. Januar 2026');
+    });
+
+    it('gibt "Ungültiges Datum" für nicht-parsbare Eingaben zurück', () => {
+      expect(formatSeasonDate('nope')).toBe('Ungültiges Datum');
     });
   });
 });

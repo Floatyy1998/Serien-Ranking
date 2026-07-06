@@ -31,13 +31,11 @@ import {
 } from '../../lib/settings/notificationSettings';
 import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
+import { formatSeasonDate } from '../../lib/date';
 import type { Series } from '../../types/Series';
 import './CarouselNotification.css';
 
 const NOTIF_DAY_MS = 24 * 60 * 60 * 1000;
-
-const formatSeasonDate = (d: Date): string =>
-  d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
 
 /**
  * Startdatum der neuesten Staffel (höchste Staffelnummer mit Episoden). Die

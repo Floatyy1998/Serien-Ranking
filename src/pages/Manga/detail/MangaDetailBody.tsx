@@ -12,7 +12,7 @@ import {
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
-import type { MangaDexChapterInfo } from '../../../services/mangadexService';
+import type { MangaDexChapterInfo } from '../../../services/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { inferStatus } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';

@@ -3,11 +3,7 @@ import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
-}
+import { formatSeasonDate } from '../../lib/date';
 
 interface CountdownListItemProps {
   item: SeriesCountdown;
@@ -66,7 +62,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
         </h3>
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
           {item.type === 'mid-season-return' ? 'Rückkehr' : 'Staffel ' + item.seasonNumber} &middot;{' '}
-          {formatDate(item.nextDate)}
+          {formatSeasonDate(item.nextDate)}
         </p>
       </div>
 

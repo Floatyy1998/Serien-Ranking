@@ -1,6 +1,6 @@
 import firebase from 'firebase/compat/app';
 import type { AniListMangaSearchResult } from '../../types/Manga';
-import { getMangaDexInfo } from '../../services/mangadexService';
+import { getMangaDexInfo } from '../../services/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
 
 /**

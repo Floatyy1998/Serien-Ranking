@@ -28,6 +28,7 @@ import {
   findLastWatch,
   calculateLateNightStats,
   calculateHeatmapData,
+  calculateLongestStreak,
 } from './temporal';
 import { calculateAchievements } from './achievements';
 import { generateFunFacts } from './funFacts';
@@ -86,6 +87,9 @@ export function calculateWrappedStats(
   // Unique Serien
   const uniqueSeriesIds = new Set(episodeEvents.map((e) => e.seriesId));
 
+  // Längste Streak aufeinanderfolgender Watch-Tage im Jahr
+  const longestStreak = calculateLongestStreak(yearEvents);
+
   // Achievements
   const achievements = calculateAchievements({
     totalEpisodes,
@@ -94,7 +98,7 @@ export function calculateWrappedStats(
     favoriteTimeOfDay,
     favoriteDayOfWeek,
     topGenres,
-    longestStreak: 0, // TODO: Aus Streak-Daten
+    longestStreak,
     yearBingeSessions,
   });
 
@@ -145,7 +149,7 @@ export function calculateWrappedStats(
               yearBingeSessions.length
           )
         : 0,
-    longestStreak: 0, // TODO: Aus Streak-Daten holen
+    longestStreak,
     currentStreak: 0,
     deviceBreakdown,
     achievements,

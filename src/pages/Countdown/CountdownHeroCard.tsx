@@ -3,11 +3,7 @@ import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
-
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
-}
+import { formatSeasonDate } from '../../lib/date';
 
 interface CountdownHeroCardProps {
   item: SeriesCountdown;
@@ -82,7 +78,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
           </p>
           <h2 className="cd-hero-title">{item.title}</h2>
           <p className="cd-hero-season">Staffel {item.seasonNumber}</p>
-          <p className="cd-hero-date">{formatDate(item.nextDate)}</p>
+          <p className="cd-hero-date">{formatSeasonDate(item.nextDate)}</p>
         </div>
 
         {/* Countdown circle */}
