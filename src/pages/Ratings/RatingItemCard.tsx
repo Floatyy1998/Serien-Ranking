@@ -10,6 +10,7 @@ import { Tooltip } from '@mui/material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { useTheme } from '../../contexts/ThemeContextDef';
+import { useDrawInProgress } from '../../hooks/useDrawInProgress';
 import {
   getProviderSearchUrl,
   handleProviderLinkClick,
@@ -211,119 +212,126 @@ interface RatingItemCardProps {
 
 // ─── Component ──────────────────────────────────────────────────────────
 
-export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => (
-  // data-poster is read by the grid's click handler so the Detail page poster
-  // is already in the browser cache by the time React mounts the route.
-  <div
-    className="ratings-grid-item"
-    data-id={item.id}
-    data-movie={item.isMovie || undefined}
-    data-poster={item.posterUrl || undefined}
-  >
-    {/* Card container — no overflow:hidden (iOS Safari fix).
-        D1: Serien mit Fortschritt bekommen einen umlaufenden Fortschritts-Ring
-        (conic-gradient im ::after, gespeist aus --prog/--ring-color). */}
+export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => {
+  // D1: --prog wird per rAF animiert ans Karten-Element geschrieben
+  // (Draw-In des Fortschritts-Rings), nicht als statischer Inline-Style.
+  const cardRef = useRef<HTMLDivElement>(null);
+  useDrawInProgress(cardRef, item.isMovie ? 0 : item.progress);
+
+  return (
+    // data-poster is read by the grid's click handler so the Detail page poster
+    // is already in the browser cache by the time React mounts the route.
     <div
-      className={`ratings-card${
-        !item.isMovie && item.progress > 0
-          ? ` ratings-card--ring${item.progress === 100 ? ' ratings-card--ring-done' : ''}`
-          : ''
-      }`}
-      style={
-        {
-          '--prog': item.progress,
-          '--ring-color': item.progress === 100 ? theme.status.success : theme.primary,
-        } as React.CSSProperties
-      }
+      className="ratings-grid-item"
+      data-id={item.id}
+      data-movie={item.isMovie || undefined}
+      data-poster={item.posterUrl || undefined}
     >
-      {/* Poster image — shared element for the View Transitions API.
+      {/* Card container — no overflow:hidden (iOS Safari fix).
+          D1: Serien mit Fortschritt bekommen einen umlaufenden Fortschritts-Ring
+          (conic-gradient im ::after, gespeist aus --prog/--ring-color). */}
+      <div
+        ref={cardRef}
+        className={`ratings-card${
+          !item.isMovie && item.progress > 0
+            ? ` ratings-card--ring${item.progress === 100 ? ' ratings-card--ring-done' : ''}`
+            : ''
+        }`}
+        style={
+          {
+            '--ring-color': item.progress === 100 ? theme.status.success : theme.primary,
+          } as React.CSSProperties
+        }
+      >
+        {/* Poster image — shared element for the View Transitions API.
           The `view-transition-name` must be unique per element, so we key it
           by media type + id. Browsers without VT support ignore the style.
           See global.css → @view-transition. */}
-      <img
-        src={item.posterUrl || PLACEHOLDER_SVG}
-        alt={item.title}
-        loading="lazy"
-        decoding="async"
-        className="ratings-card-poster"
-        onError={handleImgError}
-        style={{
-          background: theme.background.surface,
-          viewTransitionName: `poster-${item.isMovie ? 'movie' : 'series'}-${item.id}`,
-        }}
-      />
+        <img
+          src={item.posterUrl || PLACEHOLDER_SVG}
+          alt={item.title}
+          loading="lazy"
+          decoding="async"
+          className="ratings-card-poster"
+          onError={handleImgError}
+          style={{
+            background: theme.background.surface,
+            viewTransitionName: `poster-${item.isMovie ? 'movie' : 'series'}-${item.id}`,
+          }}
+        />
 
-      {/* Full overlay */}
-      <div className="ratings-card-overlay">
-        {/* Top row: providers left, type+watchlist+rating right */}
-        <div className="ratings-card-top">
-          {/* Left: provider badges */}
-          <div className="ratings-card-top-left">
-            {item.providers.length > 0 && (
-              <ProviderBadgeArea
-                providers={item.providers}
-                bgColor={`${theme.background.default}dd`}
-                textColor={theme.text.muted}
-                searchTitle={item.title}
-              />
-            )}
-          </div>
-
-          {/* Right: watchlist badge */}
-          <div className="ratings-card-top-right">
-            {item.watchlist && (
-              <Tooltip title="Auf deiner Watchlist" arrow>
-                <div
-                  className="ratings-card-watchlist-badge"
-                  style={{ background: `${theme.status.info}dd` }}
-                >
-                  <WatchLater style={{ fontSize: '13px', color: '#fff' }} />
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom: gradient + title + meta */}
-        <div className="ratings-card-bottom">
-          <h2 className="ratings-card-title">{item.title}</h2>
-
-          <div className="ratings-card-meta">
-            {/* Rating */}
-            {item.rating > 0 && (
-              <span className="ratings-card-rating" style={{ color: theme.status.warning }}>
-                <Star className="ratings-card-meta-icon" />
-                {item.rating.toFixed(1)}
-              </span>
-            )}
-
-            {/* Year */}
-            {item.rating > 0 && item.year && <span className="ratings-card-dot">&bull;</span>}
-            {item.year && <span>{item.year}</span>}
-
-            {/* Genres */}
-            {item.year && item.genres && <span className="ratings-card-dot">&bull;</span>}
-            {item.genres && <span className="ratings-card-genres">{item.genres}</span>}
-          </div>
-
-          {/* Fortschritt (Serien): der Ring um die Karte trägt die Visualisierung,
-              hier bleibt nur der präzise Text (D1 ersetzt den alten Balken). */}
-          {!item.isMovie && item.progress > 0 && (
-            <div className="ratings-card-progress">
-              <span
-                className="ratings-card-progress-text"
-                style={{
-                  color: item.progress === 100 ? theme.status.success : theme.primary,
-                }}
-              >
-                {item.progress === 100 ? 'Fertig' : `${Math.round(item.progress)}%`}
-              </span>
+        {/* Full overlay */}
+        <div className="ratings-card-overlay">
+          {/* Top row: providers left, type+watchlist+rating right */}
+          <div className="ratings-card-top">
+            {/* Left: provider badges */}
+            <div className="ratings-card-top-left">
+              {item.providers.length > 0 && (
+                <ProviderBadgeArea
+                  providers={item.providers}
+                  bgColor={`${theme.background.default}dd`}
+                  textColor={theme.text.muted}
+                  searchTitle={item.title}
+                />
+              )}
             </div>
-          )}
+
+            {/* Right: watchlist badge */}
+            <div className="ratings-card-top-right">
+              {item.watchlist && (
+                <Tooltip title="Auf deiner Watchlist" arrow>
+                  <div
+                    className="ratings-card-watchlist-badge"
+                    style={{ background: `${theme.status.info}dd` }}
+                  >
+                    <WatchLater style={{ fontSize: '13px', color: '#fff' }} />
+                  </div>
+                </Tooltip>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom: gradient + title + meta */}
+          <div className="ratings-card-bottom">
+            <h2 className="ratings-card-title">{item.title}</h2>
+
+            <div className="ratings-card-meta">
+              {/* Rating */}
+              {item.rating > 0 && (
+                <span className="ratings-card-rating" style={{ color: theme.status.warning }}>
+                  <Star className="ratings-card-meta-icon" />
+                  {item.rating.toFixed(1)}
+                </span>
+              )}
+
+              {/* Year */}
+              {item.rating > 0 && item.year && <span className="ratings-card-dot">&bull;</span>}
+              {item.year && <span>{item.year}</span>}
+
+              {/* Genres */}
+              {item.year && item.genres && <span className="ratings-card-dot">&bull;</span>}
+              {item.genres && <span className="ratings-card-genres">{item.genres}</span>}
+            </div>
+
+            {/* Fortschritt (Serien): der Ring um die Karte trägt die Visualisierung,
+              hier bleibt nur der präzise Text (D1 ersetzt den alten Balken). */}
+            {!item.isMovie && item.progress > 0 && (
+              <div className="ratings-card-progress">
+                <span
+                  className="ratings-card-progress-text"
+                  style={{
+                    color: item.progress === 100 ? theme.status.success : theme.primary,
+                  }}
+                >
+                  {item.progress === 100 ? 'Fertig' : `${Math.round(item.progress)}%`}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-));
+  );
+});
 
 RatingItemCard.displayName = 'RatingItemCard';

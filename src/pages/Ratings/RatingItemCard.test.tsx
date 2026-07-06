@@ -30,6 +30,19 @@ const item: PreparedItem = {
   providers: [{ name: 'Netflix', logo: 'https://example.com/n.png' }],
 };
 
+// Ring-Draw-In (useDrawInProgress) soll im Test sofort den Zielwert setzen:
+// prefers-reduced-motion melden → Hook nimmt den Instant-Pfad.
+window.matchMedia = ((query: string) => ({
+  matches: query.includes('prefers-reduced-motion'),
+  media: query,
+  addEventListener: () => {},
+  removeEventListener: () => {},
+  addListener: () => {},
+  removeListener: () => {},
+  onchange: null,
+  dispatchEvent: () => false,
+})) as unknown as typeof window.matchMedia;
+
 afterEach(() => cleanup());
 
 describe('RatingItemCard', () => {

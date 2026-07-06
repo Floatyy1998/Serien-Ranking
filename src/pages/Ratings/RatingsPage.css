@@ -434,42 +434,28 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* Hinweis: @property --prog-anim ist in global.css registriert (muss global
-   sein, da diese Datei route-gesplittet lädt).
-   Heat-Ramp mit Fortschritts-Semantik: der Bogen startet rot, und die
+/* Heat-Ramp mit Fortschritts-Semantik: der Bogen startet rot, und die
    FARBE DER SPITZE wandert mit dem Fortschritt über Orange nach Grün
    (Hue 4° → 120°). Bei 40% endet er also orange — grün gibt's erst kurz
    vor „fertig". Zwischenstop bei der halben Hue gegen matschige
-   sRGB-Interpolation. */
+   sRGB-Interpolation. --prog (0–100) schreibt useDrawInProgress per rAF
+   animiert ans Element — das Draw-In läuft in JS, nicht in CSS. */
 .ratings-card--ring::after {
-  --prog-anim: var(--prog);
   background: conic-gradient(
     from -90deg,
     hsl(4 85% 55%) 0deg,
-    hsl(calc(var(--prog-anim) * 0.6) 85% 52%) calc(var(--prog-anim) * 1.8deg),
-    hsl(calc(var(--prog-anim) * 1.2) 85% 50%) calc(var(--prog-anim) * 3.6deg),
+    hsl(calc(var(--prog, 0) * 0.6) 85% 52%) calc(var(--prog, 0) * 1.8deg),
+    hsl(calc(var(--prog, 0) * 1.2) 85% 50%) calc(var(--prog, 0) * 3.6deg),
     transparent 0
   );
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .ratings-card--ring::after {
-    animation: ring-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
-  }
-}
-
-@keyframes ring-draw {
-  from {
-    --prog-anim: 0;
-  }
-}
-
 /* Komplett gesehen: durchgängiger Ring in der Success-Farbe (statt
-   Heat-Ramp). Zeichnet sich ebenfalls ein (--prog ist 100). */
+   Heat-Ramp). Zeichnet sich ebenfalls ein (--prog läuft auf 100). */
 .ratings-card--ring-done::after {
   background: conic-gradient(
     from -90deg,
-    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    var(--ring-color) calc(var(--prog, 0) * 3.6deg),
     transparent 0
   );
 }

@@ -9,7 +9,8 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useDrawInProgress } from '../../hooks/useDrawInProgress';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
@@ -90,6 +91,9 @@ export const HeroSection = memo<HeroSectionProps>(
     onDelete,
   }) => {
     const { currentTheme: fullTheme } = useTheme();
+    // D1: Ring-Fortschritt wird per rAF animiert (--prog) an den Wrapper geschrieben.
+    const posterWrapRef = useRef<HTMLDivElement>(null);
+    useDrawInProgress(posterWrapRef, progressStats.percentage);
     const genres = (series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(
       (g) => g && g.trim() !== '' && g !== 'All'
     );
@@ -409,6 +413,7 @@ export const HeroSection = memo<HeroSectionProps>(
               gleiche Technik wie im Ratings-Grid. */}
           {posterUrl && (
             <div
+              ref={posterWrapRef}
               className={`hero-section__poster-wrap${
                 progressStats.percentage > 0
                   ? ` hero-section__poster-wrap--ring${
@@ -418,7 +423,6 @@ export const HeroSection = memo<HeroSectionProps>(
               }`}
               style={
                 {
-                  '--prog': progressStats.percentage,
                   '--ring-color':
                     progressStats.percentage >= 100
                       ? currentTheme.status.success

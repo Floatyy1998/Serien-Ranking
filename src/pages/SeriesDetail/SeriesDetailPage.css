@@ -84,38 +84,25 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* Heat-Ramp-Bogen (Rot → Orange → Theme-Farbe) + Einzeichnen-Animation,
-   analog zum Ratings-Grid (@property --prog-anim ist dort registriert;
-   doppelte Registrierung wäre ein No-Op, daher hier keine zweite). */
+/* Heat-Ramp-Bogen (Rot → Orange → Grün mit dem Fortschritt), analog zum
+   Ratings-Grid. --prog schreibt useDrawInProgress per rAF animiert ans
+   Element — das Draw-In läuft in JS, nicht in CSS. */
 .hero-section__poster-wrap--ring::after {
-  --prog-anim: var(--prog);
   background: conic-gradient(
     from -90deg,
     hsl(4 85% 55%) 0deg,
-    hsl(calc(var(--prog-anim) * 0.6) 85% 52%) calc(var(--prog-anim) * 1.8deg),
-    hsl(calc(var(--prog-anim) * 1.2) 85% 50%) calc(var(--prog-anim) * 3.6deg),
+    hsl(calc(var(--prog, 0) * 0.6) 85% 52%) calc(var(--prog, 0) * 1.8deg),
+    hsl(calc(var(--prog, 0) * 1.2) 85% 50%) calc(var(--prog, 0) * 3.6deg),
     transparent 0
   );
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .hero-section__poster-wrap--ring::after {
-    animation: ring-draw-hero 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
-  }
-}
-
-@keyframes ring-draw-hero {
-  from {
-    --prog-anim: 0;
-  }
-}
-
 /* Komplett gesehen: durchgängiges Success-Grün statt Heat-Ramp.
-   Zeichnet sich ebenfalls ein (--prog ist 100). */
+   Zeichnet sich ebenfalls ein (--prog läuft auf 100). */
 .hero-section__poster-wrap--ring-done::after {
   background: conic-gradient(
     from -90deg,
-    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    var(--ring-color) calc(var(--prog, 0) * 3.6deg),
     transparent 0
   );
 }
