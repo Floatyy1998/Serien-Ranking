@@ -17,7 +17,9 @@ import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
+import { getProviderColor } from '../../../lib/providerColors';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { normalizeProviderName } from '../../../lib/validation/providerChangeDetection';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
@@ -102,7 +104,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.primary;
-  const { getSeriesOverride } = useActiveSubscriptions();
+  const { getSeriesOverride, activeProviders } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
   const { seriesList } = useSeriesList();
   const fillerCatalog = useAnimeFillerCatalog();
@@ -222,19 +224,29 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   fillerLookupKey(item.nextEpisode.seasonNumber, item.nextEpisode.episodeNumber)
                 );
 
+              // D4 — Provider-Farbfacette: läuft die Serie auf einem AKTIVEN
+              // Abo, färbt dessen Markenfarbe die Karten-Akzente (Randbalken,
+              // Glow); sonst bleibt der Theme-Akzent (neutral).
+              const resolved = resolveProviderOverlay(
+                getSeriesOverride(item.id),
+                item.provider?.provider?.[0]?.logo,
+                item.provider?.provider?.[0]?.name
+              );
+              const canonicalProvider = resolved ? normalizeProviderName(resolved.name) : null;
+              const providerColor =
+                canonicalProvider && activeProviders.has(canonicalProvider)
+                  ? getProviderColor(canonicalProvider)
+                  : null;
+              const cardAccent = providerColor || accentColor;
+
               return (
                 <SwipeableEpisodeRow
                   key={episodeKey}
                   itemKey={episodeKey}
                   poster={item.poster}
                   posterAlt={item.title}
-                  accentColor={accentColor}
+                  accentColor={cardAccent}
                   posterOverlay={(() => {
-                    const resolved = resolveProviderOverlay(
-                      getSeriesOverride(item.id),
-                      item.provider?.provider?.[0]?.logo,
-                      item.provider?.provider?.[0]?.name
-                    );
                     const isActivelyWatching = (() => {
                       if (!item.lastWatchedAt) return false;
                       const then = new Date(item.lastWatchedAt).getTime();

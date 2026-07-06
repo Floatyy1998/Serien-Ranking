@@ -49,4 +49,28 @@ describe('RatingItemCard', () => {
     render(<RatingItemCard item={{ ...item, progress: 100 }} theme={theme} />);
     expect(screen.getByText('Fertig')).toBeInTheDocument();
   });
+
+  it('D1: zeichnet den Fortschritts-Ring für Serien mit Fortschritt', () => {
+    const { container } = render(<RatingItemCard item={item} theme={theme} />);
+    const card = container.querySelector('.ratings-card');
+    expect(card).toHaveClass('ratings-card--ring');
+    expect(card).not.toHaveClass('ratings-card--ring-done');
+    expect((card as HTMLElement).style.getPropertyValue('--prog')).toBe('50');
+  });
+
+  it('D1: markiert komplett gesehene Serien als ring-done (Success-Farbe)', () => {
+    const { container } = render(
+      <RatingItemCard item={{ ...item, progress: 100 }} theme={theme} />
+    );
+    const card = container.querySelector('.ratings-card') as HTMLElement;
+    expect(card).toHaveClass('ratings-card--ring-done');
+    expect(card.style.getPropertyValue('--ring-color')).toBe('#4cd137');
+  });
+
+  it('D1: Filme bekommen keinen Ring', () => {
+    const { container } = render(
+      <RatingItemCard item={{ ...item, isMovie: true, progress: 0 }} theme={theme} />
+    );
+    expect(container.querySelector('.ratings-card')).not.toHaveClass('ratings-card--ring');
+  });
 });

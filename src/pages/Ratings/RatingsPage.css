@@ -137,6 +137,117 @@
   transform: scale(0.97);
 }
 
+/* ─── D5: Dichte-Modus (Toggle + Kompakt-Liste) ───────────────────────── */
+
+.ratings-density-toggle {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.ratings-density-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: background var(--duration-normal) var(--ease-out);
+}
+
+.ratings-density-btn:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
+.ratings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ratings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  contain-intrinsic-block-size: auto 64px;
+}
+
+/* Zeilen heben nicht ab wie Grid-Karten — dezentes Hover-Highlight. */
+.ratings-row:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ratings-row-thumb {
+  width: 34px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex: none;
+}
+
+.ratings-row-meta {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ratings-row-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ratings-row-sub {
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ratings-row-bar {
+  display: block;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.ratings-row-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+}
+
+.ratings-row-mark {
+  flex: none;
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ratings-row-mark:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.ratings-row-mark:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
+}
+
 /* ─── Cinematic Card ──────────────────────────────────────────────────── */
 
 .ratings-card {
@@ -293,44 +404,46 @@
 .ratings-card-progress {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
   margin-top: 2px;
 }
 
-.ratings-card-progress-track {
-  flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.ratings-card-progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  position: relative;
-}
-
-.ratings-card-progress-fill::after {
+/* D1: Fortschritts-Ring um das Poster (Serien). Zwei Ring-Layer via Mask:
+   ::before = gedimmter Track (voller Kreis), ::after = gesehener Bogen in
+   --ring-color mit Glow. --prog (0–100) und --ring-color kommen inline. */
+.ratings-card--ring::before,
+.ratings-card--ring::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.25) 50%,
-    transparent 100%
-  );
-  animation: progressShimmer 2s ease-in-out infinite;
+  inset: -5px;
+  border-radius: calc(var(--radius-lg) + 5px);
+  padding: 3px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-@keyframes progressShimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+.ratings-card--ring::before {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.ratings-card--ring::after {
+  background: conic-gradient(from -90deg, var(--ring-color) calc(var(--prog) * 1%), transparent 0);
+  filter: drop-shadow(0 0 5px var(--ring-color));
+}
+
+/* Komplett gesehen: Ring glüht dezent. */
+.ratings-card--ring-done {
+  box-shadow:
+    var(--shadow-cinematic),
+    0 0 16px -2px var(--ring-color);
 }
 
 .ratings-card-progress-text {

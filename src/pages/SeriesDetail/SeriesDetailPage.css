@@ -49,6 +49,41 @@
     0 20px 60px rgba(0, 0, 0, 0.6),
     0 6px 20px rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  display: block;
+}
+
+/* D1: Fortschritts-Ring ums Detail-Poster — gleiche Technik wie im
+   Ratings-Grid (::before = gedimmter Track, ::after = Bogen mit Glow). */
+.hero-section__poster-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.hero-section__poster-wrap--ring::before,
+.hero-section__poster-wrap--ring::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: calc(var(--poster-radius, 16px) + 6px);
+  padding: 4px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.hero-section__poster-wrap--ring::before {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.hero-section__poster-wrap--ring::after {
+  background: conic-gradient(from -90deg, var(--ring-color) calc(var(--prog) * 1%), transparent 0);
+  filter: drop-shadow(0 0 6px var(--ring-color));
 }
 
 /* Composes design-token glassmorphism (background + blur + border) with the

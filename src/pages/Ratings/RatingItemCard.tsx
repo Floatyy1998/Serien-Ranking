@@ -220,8 +220,22 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
     data-movie={item.isMovie || undefined}
     data-poster={item.posterUrl || undefined}
   >
-    {/* Card container — no overflow:hidden (iOS Safari fix) */}
-    <div className="ratings-card">
+    {/* Card container — no overflow:hidden (iOS Safari fix).
+        D1: Serien mit Fortschritt bekommen einen umlaufenden Fortschritts-Ring
+        (conic-gradient im ::after, gespeist aus --prog/--ring-color). */}
+    <div
+      className={`ratings-card${
+        !item.isMovie && item.progress > 0
+          ? ` ratings-card--ring${item.progress === 100 ? ' ratings-card--ring-done' : ''}`
+          : ''
+      }`}
+      style={
+        {
+          '--prog': item.progress,
+          '--ring-color': item.progress === 100 ? theme.status.success : theme.primary,
+        } as React.CSSProperties
+      }
+    >
       {/* Poster image — shared element for the View Transitions API.
           The `view-transition-name` must be unique per element, so we key it
           by media type + id. Browsers without VT support ignore the style.
@@ -292,21 +306,10 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
             {item.genres && <span className="ratings-card-genres">{item.genres}</span>}
           </div>
 
-          {/* Progress bar for series */}
+          {/* Fortschritt (Serien): der Ring um die Karte trägt die Visualisierung,
+              hier bleibt nur der präzise Text (D1 ersetzt den alten Balken). */}
           {!item.isMovie && item.progress > 0 && (
             <div className="ratings-card-progress">
-              <div className="ratings-card-progress-track">
-                <div
-                  className="ratings-card-progress-fill"
-                  style={{
-                    width: `${item.progress}%`,
-                    background:
-                      item.progress === 100
-                        ? theme.status.success
-                        : `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary})`,
-                  }}
-                />
-              </div>
               <span
                 className="ratings-card-progress-text"
                 style={{

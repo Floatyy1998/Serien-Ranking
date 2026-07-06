@@ -9,7 +9,7 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
@@ -404,19 +404,36 @@ export const HeroSection = memo<HeroSectionProps>(
         >
           {/* Poster — shared view-transition target. Matches the listing
               card's `poster-series-${id}` in RatingItemCard so chromium-based
-              browsers animate the morph automatically. */}
+              browsers animate the morph automatically.
+              D1: Wrapper trägt den Fortschritts-Ring (conic ::before/::after),
+              gleiche Technik wie im Ratings-Grid. */}
           {posterUrl && (
-            <img
-              src={posterUrl}
-              alt={series.title}
-              className="hero-section__poster"
-              style={{
-                viewTransitionName: `poster-series-${series.id}`,
-                ...(isMobile
-                  ? { width: 150, height: 220, borderRadius: 14, marginBottom: 20 }
-                  : {}),
-              }}
-            />
+            <div
+              className={`hero-section__poster-wrap${
+                progressStats.percentage > 0 ? ' hero-section__poster-wrap--ring' : ''
+              }`}
+              style={
+                {
+                  '--prog': progressStats.percentage,
+                  '--ring-color':
+                    progressStats.percentage >= 100
+                      ? currentTheme.status.success
+                      : fullTheme.primary,
+                  '--poster-radius': isMobile ? '14px' : '16px',
+                  ...(isMobile ? { marginBottom: 20 } : {}),
+                } as CSSProperties
+              }
+            >
+              <img
+                src={posterUrl}
+                alt={series.title}
+                className="hero-section__poster"
+                style={{
+                  viewTransitionName: `poster-series-${series.id}`,
+                  ...(isMobile ? { width: 150, height: 220, borderRadius: 14 } : {}),
+                }}
+              />
+            </div>
           )}
 
           {/* Info */}
