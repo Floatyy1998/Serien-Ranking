@@ -83,6 +83,8 @@ export const HomePage: React.FC = () => {
     clearUnratedSeries,
     providerChanges,
     clearProviderChanges,
+    animeMangaHandoffs,
+    clearAnimeMangaHandoffs,
   } = useSeriesList();
   const { currentTheme } = useTheme();
   const { countdowns } = useSeriesCountdowns();
@@ -409,6 +411,8 @@ export const HomePage: React.FC = () => {
         onDismissCompleted={clearCompletedSeries}
         unratedSeries={unratedSeries}
         onDismissUnrated={clearUnratedSeries}
+        animeMangaHandoffs={animeMangaHandoffs}
+        onDismissAnimeManga={clearAnimeMangaHandoffs}
       />
 
       <GreetingSection

@@ -108,3 +108,23 @@ export async function detectAnimeMangaHandoff(
 
   return out;
 }
+
+/**
+ * Persistiert das Dismiss eines Handoffs, damit die Notification für diese
+ * (Serie, Staffel) nicht wiederkommt. Best-effort.
+ */
+export async function markAnimeMangaHandoffDismissed(
+  userId: string,
+  seriesId: number,
+  seasonNumber: number
+): Promise<void> {
+  try {
+    await firebase
+      .database()
+      .ref(`users/${userId}/animeMangaNotifications/${seriesId}-${seasonNumber}`)
+      .set({ dismissed: true, timestamp: Date.now() });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[AnimeMangaHandoff] Failed to persist dismiss: ${message}`);
+  }
+}

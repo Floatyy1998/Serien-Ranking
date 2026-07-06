@@ -44,6 +44,8 @@ function baseProps(): React.ComponentProps<typeof SeriesNotificationHub> {
     onDismissCompleted: noop,
     unratedSeries: [],
     onDismissUnrated: noop,
+    animeMangaHandoffs: [],
+    onDismissAnimeManga: noop,
   };
 }
 

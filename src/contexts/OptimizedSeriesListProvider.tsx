@@ -24,6 +24,7 @@ import {
   fixMissingFirstWatchedAt,
   runSequentialDetections,
   type ProviderChangeInfo,
+  type AnimeMangaHandoff,
   type DetectionResults,
 } from './seriesListDetection';
 import { SeriesListContext } from './SeriesListContext';
@@ -37,6 +38,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   const [completedSeries, setCompletedSeries] = useState<Series[]>([]);
   const [unratedSeries, setUnratedSeries] = useState<Series[]>([]);
   const [providerChanges, setProviderChanges] = useState<ProviderChangeInfo[]>([]);
+  const [animeMangaHandoffs, setAnimeMangaHandoffs] = useState<AnimeMangaHandoff[]>([]);
 
   const detectionRunRef = useRef(false);
 
@@ -350,6 +352,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
         if (partial.completedSeries) setCompletedSeries(partial.completedSeries);
         if (partial.unratedSeries) setUnratedSeries(partial.unratedSeries);
         if (partial.providerChanges) setProviderChanges(partial.providerChanges);
+        if (partial.animeMangaHandoffs) setAnimeMangaHandoffs(partial.animeMangaHandoffs);
       },
       abortController.signal
     );
@@ -370,6 +373,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       setCompletedSeries([]);
       setUnratedSeries([]);
       setProviderChanges([]);
+      setAnimeMangaHandoffs([]);
       detectionRunRef.current = false;
     };
   }, [user]);
@@ -398,6 +402,10 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setProviderChanges([]);
   }, []);
 
+  const clearAnimeMangaHandoffs = useCallback(() => {
+    setAnimeMangaHandoffs([]);
+  }, []);
+
   const recheckForNewSeasons = useCallback(() => {
     detectionRunRef.current = false;
     setSeriesWithNewSeasons([]);
@@ -406,6 +414,7 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     setCompletedSeries([]);
     setUnratedSeries([]);
     setProviderChanges([]);
+    setAnimeMangaHandoffs([]);
 
     if (user && seriesList.length > 0) {
       detectionRunRef.current = true;
@@ -516,12 +525,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       completedSeries,
       unratedSeries,
       providerChanges,
+      animeMangaHandoffs,
       clearNewSeasons,
       clearInactiveSeries,
       clearInactiveRewatches,
       clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
+      clearAnimeMangaHandoffs,
       recheckForNewSeasons,
       refetchSeries,
       refetchAfterAdd,
@@ -541,12 +552,14 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       completedSeries,
       unratedSeries,
       providerChanges,
+      animeMangaHandoffs,
       clearNewSeasons,
       clearInactiveSeries,
       clearInactiveRewatches,
       clearCompletedSeries,
       clearUnratedSeries,
       clearProviderChanges,
+      clearAnimeMangaHandoffs,
       recheckForNewSeasons,
       refetchSeries,
       refetchAfterAdd,

@@ -6,6 +6,10 @@ import {
 import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
 import { detectUnratedSeries } from '../lib/validation/unratedSeriesDetection';
 import {
+  detectAnimeMangaHandoff,
+  type AnimeMangaHandoff,
+} from '../lib/validation/animeMangaHandoffDetection';
+import {
   detectProviderChanges,
   type ProviderChangeInfo,
 } from '../lib/validation/providerChangeDetection';
@@ -60,7 +64,7 @@ export async function fixMissingFirstWatchedAt(
   }
 }
 
-export type { ProviderChangeInfo };
+export type { ProviderChangeInfo, AnimeMangaHandoff };
 
 export interface DetectionResults {
   seriesWithNewSeasons: Series[];
@@ -69,6 +73,7 @@ export interface DetectionResults {
   completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
+  animeMangaHandoffs: AnimeMangaHandoff[];
 }
 
 /**
@@ -142,5 +147,15 @@ export async function runSequentialDetections(
     }
   } catch (error) {
     console.error('Error detecting provider changes:', error);
+  }
+
+  // 6. Anime→Manga-Anschluss (Staffel durch → Manga weiterlesen)
+  try {
+    const handoffs = await detectAnimeMangaHandoff(seriesList, userId);
+    if (handoffs.length > 0) {
+      onUpdate({ animeMangaHandoffs: handoffs });
+    }
+  } catch (error) {
+    console.error('Error detecting anime→manga handoffs:', error);
   }
 }

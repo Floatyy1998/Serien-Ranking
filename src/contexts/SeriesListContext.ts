@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react';
 import type { Series } from '../types/Series';
-import type { ProviderChangeInfo } from './seriesListDetection';
+import type { ProviderChangeInfo, AnimeMangaHandoff } from './seriesListDetection';
 
 export interface SeriesListContextType {
   seriesList: Series[];
@@ -13,12 +13,14 @@ export interface SeriesListContextType {
   completedSeries: Series[];
   unratedSeries: Series[];
   providerChanges: ProviderChangeInfo[];
+  animeMangaHandoffs: AnimeMangaHandoff[];
   clearNewSeasons: () => void;
   clearInactiveSeries: () => void;
   clearInactiveRewatches: () => void;
   clearCompletedSeries: () => void;
   clearUnratedSeries: () => void;
   clearProviderChanges: () => void;
+  clearAnimeMangaHandoffs: () => void;
   recheckForNewSeasons: () => void;
   refetchSeries: () => void;
   refetchAfterAdd: (newSeriesId?: number | string) => Promise<void>;
@@ -41,12 +43,14 @@ export const SeriesListContext = createContext<SeriesListContextType>({
   completedSeries: [],
   unratedSeries: [],
   providerChanges: [],
+  animeMangaHandoffs: [],
   clearNewSeasons: () => {},
   clearInactiveSeries: () => {},
   clearInactiveRewatches: () => {},
   clearCompletedSeries: () => {},
   clearUnratedSeries: () => {},
   clearProviderChanges: () => {},
+  clearAnimeMangaHandoffs: () => {},
   recheckForNewSeasons: () => {},
   refetchSeries: () => {},
   refetchAfterAdd: async () => {},

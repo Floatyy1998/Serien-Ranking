@@ -11,6 +11,7 @@ import {
   AccessTime,
   AutoStories,
   CheckCircle,
+  MenuBook,
   NewReleases,
   StarOutline,
   SwapHoriz,
@@ -24,7 +25,8 @@ import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { ProactiveRecapCard } from './ProactiveRecapCard';
 import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
 import { UnsubscribedNewSeasonNotification } from '../../components/ui/UnsubscribedNewSeasonNotification';
-import type { ProviderChangeInfo } from '../../contexts/seriesListDetection';
+import { AnimeMangaHandoffNotification } from '../../components/ui/AnimeMangaHandoffNotification';
+import type { ProviderChangeInfo, AnimeMangaHandoff } from '../../contexts/seriesListDetection';
 import type { UnsubscribedNewSeasonEntry } from '../../hooks/useUnsubscribedNewSeasons';
 import '../../components/ui/CarouselNotification.css';
 
@@ -36,7 +38,8 @@ type CategoryKey =
   | 'inactive'
   | 'inactive-rewatch'
   | 'completed'
-  | 'unrated';
+  | 'unrated'
+  | 'anime-manga';
 
 interface CategoryDef {
   key: CategoryKey;
@@ -74,6 +77,12 @@ const CATEGORY_DEFS: CategoryDef[] = [
     color: (t) => t.status.success,
   },
   { key: 'unrated', label: 'Bewerten', Icon: StarOutline, color: (t) => t.primary },
+  {
+    key: 'anime-manga',
+    label: 'Manga',
+    Icon: MenuBook,
+    color: (t) => t.accent || t.primary,
+  },
 ];
 
 interface SeriesNotificationHubProps {
@@ -96,6 +105,8 @@ interface SeriesNotificationHubProps {
   onDismissCompleted: () => void;
   unratedSeries: Series[];
   onDismissUnrated: () => void;
+  animeMangaHandoffs: AnimeMangaHandoff[];
+  onDismissAnimeManga: () => void;
 }
 
 export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
@@ -114,6 +125,8 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
   onDismissCompleted,
   unratedSeries,
   onDismissUnrated,
+  animeMangaHandoffs,
+  onDismissAnimeManga,
 }) => {
   const { currentTheme } = useTheme();
 
@@ -128,6 +141,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       'inactive-rewatch': inactiveRewatches.length,
       completed: completedSeries.length,
       unrated: unratedSeries.length,
+      'anime-manga': animeMangaHandoffs.length,
     }),
     [
       proactiveRecaps.recaps.length,
@@ -138,6 +152,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       inactiveRewatches.length,
       completedSeries.length,
       unratedSeries.length,
+      animeMangaHandoffs.length,
     ]
   );
 
@@ -218,6 +233,13 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
             variant="unrated"
             series={unratedSeries}
             onDismiss={onDismissUnrated}
+          />
+        );
+      case 'anime-manga':
+        return (
+          <AnimeMangaHandoffNotification
+            handoffs={animeMangaHandoffs}
+            onDismiss={onDismissAnimeManga}
           />
         );
       default:
