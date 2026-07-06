@@ -5,6 +5,7 @@ import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { FillerChip } from '../../../components/ui/FillerChip';
 import { NowPlayingIndicator } from '../../../components/ui/NowPlayingIndicator';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
+import { ContinueHeroCard } from './ContinueHeroCard';
 import {
   buildFillerLookup,
   fillerEpisodesFromStatic,
@@ -186,6 +187,17 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     );
   }
 
+  const visibleItems = items.filter(
+    (item) =>
+      !hiddenEpisodes.has(
+        `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`
+      )
+  );
+  // D6: das oberste (zuletzt gesehene) Item bekommt die kanonische Hero-Karte,
+  // der Rest bleibt die kompakte, wischbare Liste.
+  const heroItem = visibleItems[0];
+  const restItems = visibleItems.slice(1, 6);
+
   return (
     <section style={{ marginBottom: '32px' }}>
       <SectionHeader
@@ -203,194 +215,197 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
           position: 'relative',
         }}
       >
+        {heroItem && (
+          <ContinueHeroCard
+            item={heroItem}
+            onOpen={(hero) =>
+              onPosterClick(
+                hero.id,
+                hero.title,
+                `/episode/${hero.id}/s/${hero.nextEpisode.seasonNumber}/e/${hero.nextEpisode.episodeNumber}`
+              )
+            }
+            onMarkWatched={() => onComplete(heroItem, 'right')}
+          />
+        )}
         <AnimatePresence mode="popLayout">
-          {items
-            .filter(
-              (item) =>
-                !hiddenEpisodes.has(
-                  `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`
-                )
-            )
-            .slice(0, 6)
-            .map((item) => {
-              const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
-              const pace = calculateWatchingPace(item.seasons, item.episodeRuntime);
-              const paceText = formatPaceLine(pace, true);
-              const nextFiller = fillerByItem
-                .get(item.id)
-                ?.get(
-                  fillerLookupKey(item.nextEpisode.seasonNumber, item.nextEpisode.episodeNumber)
-                );
+          {restItems.map((item) => {
+            const episodeKey = `${item.id}-${item.nextEpisode.seasonNumber}-${item.nextEpisode.episodeNumber}`;
+            const pace = calculateWatchingPace(item.seasons, item.episodeRuntime);
+            const paceText = formatPaceLine(pace, true);
+            const nextFiller = fillerByItem
+              .get(item.id)
+              ?.get(fillerLookupKey(item.nextEpisode.seasonNumber, item.nextEpisode.episodeNumber));
 
-              return (
-                <SwipeableEpisodeRow
-                  key={episodeKey}
-                  itemKey={episodeKey}
-                  poster={item.poster}
-                  posterAlt={item.title}
-                  accentColor={accentColor}
-                  posterOverlay={(() => {
-                    const resolved = resolveProviderOverlay(
-                      getSeriesOverride(item.id),
-                      item.provider?.provider?.[0]?.logo,
-                      item.provider?.provider?.[0]?.name
-                    );
-                    const isActivelyWatching = (() => {
-                      if (!item.lastWatchedAt) return false;
-                      const then = new Date(item.lastWatchedAt).getTime();
-                      if (isNaN(then)) return false;
-                      return Date.now() - then < ACTIVE_WATCH_WINDOW_MS;
-                    })();
-                    if (!resolved && !isActivelyWatching) return undefined;
-                    return (
-                      <>
-                        {isActivelyWatching && (
-                          <NowPlayingIndicator color={accentColor} position="top-left" />
-                        )}
-                        {resolved && (
-                          <ProviderLogoLink
-                            src={resolved.src}
-                            name={resolved.name}
-                            searchTitle={item.title}
-                            style={{
-                              position: 'absolute',
-                              bottom: -2,
-                              right: -2,
-                              width: 26,
-                              height: 26,
-                              borderRadius: 6,
-                              objectFit: 'cover',
-                              boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
-                              border: '1.5px solid rgba(15,20,35,1)',
-                            }}
-                          />
-                        )}
-                      </>
-                    );
-                  })()}
-                  isCompleting={completingEpisodes.has(episodeKey)}
-                  isSwiping={swipingEpisodes.has(episodeKey)}
-                  dragOffset={dragOffsets[episodeKey] || 0}
-                  swipeDirection={swipeDirections[episodeKey]}
-                  onSwipeStart={() => onSwipeStart(episodeKey)}
-                  onSwipeDrag={(offset) => onSwipeDrag(episodeKey, offset)}
-                  onSwipeEnd={() => onSwipeEnd(episodeKey)}
-                  onComplete={(dir) => onComplete(item, dir)}
-                  onPosterClick={() =>
-                    onPosterClick(
-                      item.id,
-                      item.title,
-                      `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`
-                    )
-                  }
-                  content={
+            return (
+              <SwipeableEpisodeRow
+                key={episodeKey}
+                itemKey={episodeKey}
+                poster={item.poster}
+                posterAlt={item.title}
+                accentColor={accentColor}
+                posterOverlay={(() => {
+                  const resolved = resolveProviderOverlay(
+                    getSeriesOverride(item.id),
+                    item.provider?.provider?.[0]?.logo,
+                    item.provider?.provider?.[0]?.name
+                  );
+                  const isActivelyWatching = (() => {
+                    if (!item.lastWatchedAt) return false;
+                    const then = new Date(item.lastWatchedAt).getTime();
+                    if (isNaN(then)) return false;
+                    return Date.now() - then < ACTIVE_WATCH_WINDOW_MS;
+                  })();
+                  if (!resolved && !isActivelyWatching) return undefined;
+                  return (
                     <>
-                      <h3
-                        style={{
-                          fontSize: isMobile ? '13px' : '16px',
-                          fontWeight: 700,
-                          margin: '0 0 2px 0',
-                          letterSpacing: '-0.01em',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {item.title}
-                      </h3>
-                      <p
-                        style={{
-                          fontSize: isMobile ? '11px' : '14px',
-                          margin: 0,
-                          color: item.chipType ? chipColor(item.chipType) : accentColor,
-                          fontWeight: 500,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
-                        {item.nextEpisode.name}
-                        {item.chipType && (
-                          <span
-                            style={{
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              padding: '1px 5px',
-                              borderRadius: 4,
-                              marginLeft: 6,
-                              background: `${chipColor(item.chipType)}20`,
-                              color: chipColor(item.chipType),
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.3px',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {chipLabel(item.chipType)}
-                          </span>
-                        )}
-                        {nextFiller && (
-                          <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
-                            <FillerChip
-                              filler={nextFiller.filler}
-                              recap={nextFiller.recap}
-                              variant="label"
-                            />
-                          </span>
-                        )}
-                      </p>
-                      {(() => {
-                        const lastWatchedText = formatLastWatched(item.lastWatchedAt);
-                        const parts = [paceText, lastWatchedText].filter(Boolean);
-                        return parts.length > 0 ? (
-                          <p
-                            style={{
-                              fontSize: isMobile ? '10px' : '13px',
-                              margin: '2px 0 0 0',
-                              color: currentTheme.text.muted,
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {parts.join(' · ')}
-                          </p>
-                        ) : null;
-                      })()}
-                      <div
-                        style={{
-                          marginTop: '6px',
-                          height: '4px',
-                          background: currentTheme.border.default,
-                          borderRadius: '2px',
-                          overflow: 'hidden',
-                          position: 'relative',
-                        }}
-                      >
-                        <div
+                      {isActivelyWatching && (
+                        <NowPlayingIndicator color={accentColor} position="top-left" />
+                      )}
+                      {resolved && (
+                        <ProviderLogoLink
+                          src={resolved.src}
+                          name={resolved.name}
+                          searchTitle={item.title}
                           style={{
                             position: 'absolute',
-                            left: 0,
-                            top: 0,
-                            height: '100%',
-                            width: `${item.progress}%`,
-                            background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                            transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            bottom: -2,
+                            right: -2,
+                            width: 26,
+                            height: 26,
+                            borderRadius: 6,
+                            objectFit: 'cover',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.5)',
+                            border: '1.5px solid rgba(15,20,35,1)',
                           }}
                         />
-                      </div>
+                      )}
                     </>
-                  }
-                  action={
-                    <EpisodeDiscussionButton
-                      seriesId={item.id}
-                      seasonNumber={item.nextEpisode.seasonNumber}
-                      episodeNumber={item.nextEpisode.episodeNumber}
-                    />
-                  }
-                />
-              );
-            })}
+                  );
+                })()}
+                isCompleting={completingEpisodes.has(episodeKey)}
+                isSwiping={swipingEpisodes.has(episodeKey)}
+                dragOffset={dragOffsets[episodeKey] || 0}
+                swipeDirection={swipeDirections[episodeKey]}
+                onSwipeStart={() => onSwipeStart(episodeKey)}
+                onSwipeDrag={(offset) => onSwipeDrag(episodeKey, offset)}
+                onSwipeEnd={() => onSwipeEnd(episodeKey)}
+                onComplete={(dir) => onComplete(item, dir)}
+                onPosterClick={() =>
+                  onPosterClick(
+                    item.id,
+                    item.title,
+                    `/episode/${item.id}/s/${item.nextEpisode.seasonNumber}/e/${item.nextEpisode.episodeNumber}`
+                  )
+                }
+                content={
+                  <>
+                    <h3
+                      style={{
+                        fontSize: isMobile ? '13px' : '16px',
+                        fontWeight: 700,
+                        margin: '0 0 2px 0',
+                        letterSpacing: '-0.01em',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {item.title}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: isMobile ? '11px' : '14px',
+                        margin: 0,
+                        color: item.chipType ? chipColor(item.chipType) : accentColor,
+                        fontWeight: 500,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} •{' '}
+                      {item.nextEpisode.name}
+                      {item.chipType && (
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            padding: '1px 5px',
+                            borderRadius: 4,
+                            marginLeft: 6,
+                            background: `${chipColor(item.chipType)}20`,
+                            color: chipColor(item.chipType),
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {chipLabel(item.chipType)}
+                        </span>
+                      )}
+                      {nextFiller && (
+                        <span style={{ marginLeft: 6, verticalAlign: 'middle' }}>
+                          <FillerChip
+                            filler={nextFiller.filler}
+                            recap={nextFiller.recap}
+                            variant="label"
+                          />
+                        </span>
+                      )}
+                    </p>
+                    {(() => {
+                      const lastWatchedText = formatLastWatched(item.lastWatchedAt);
+                      const parts = [paceText, lastWatchedText].filter(Boolean);
+                      return parts.length > 0 ? (
+                        <p
+                          style={{
+                            fontSize: isMobile ? '10px' : '13px',
+                            margin: '2px 0 0 0',
+                            color: currentTheme.text.muted,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {parts.join(' · ')}
+                        </p>
+                      ) : null;
+                    })()}
+                    <div
+                      style={{
+                        marginTop: '6px',
+                        height: '4px',
+                        background: currentTheme.border.default,
+                        borderRadius: '2px',
+                        overflow: 'hidden',
+                        position: 'relative',
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          height: '100%',
+                          width: `${item.progress}%`,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                          transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}
+                      />
+                    </div>
+                  </>
+                }
+                action={
+                  <EpisodeDiscussionButton
+                    seriesId={item.id}
+                    seasonNumber={item.nextEpisode.seasonNumber}
+                    episodeNumber={item.nextEpisode.episodeNumber}
+                  />
+                }
+              />
+            );
+          })}
         </AnimatePresence>
       </div>
     </section>

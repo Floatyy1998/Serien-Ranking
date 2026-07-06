@@ -52,6 +52,33 @@ vi.mock('../../../components/detail/ProviderLogoLink', () => ({
 vi.mock('../../../components/Discussion', () => ({
   EpisodeDiscussionButton: () => <button type="button">discuss</button>,
 }));
+vi.mock('./ContinueHeroCard', () => ({
+  ContinueHeroCard: ({
+    item,
+    onOpen,
+    onMarkWatched,
+  }: {
+    item: {
+      title: string;
+      nextEpisode: { seasonNumber: number; episodeNumber: number; name: string };
+    };
+    onOpen: (i: unknown) => void;
+    onMarkWatched: (i: unknown) => void;
+  }) => (
+    <div>
+      <span>{item.title}</span>
+      <span>
+        S{item.nextEpisode.seasonNumber} E{item.nextEpisode.episodeNumber} {item.nextEpisode.name}
+      </span>
+      <button type="button" data-testid="hero-open" onClick={() => onOpen(item)}>
+        hero-open
+      </button>
+      <button type="button" data-testid="hero-watched" onClick={() => onMarkWatched(item)}>
+        hero-watched
+      </button>
+    </div>
+  ),
+}));
 vi.mock('../../../components/ui/FillerChip', () => ({ FillerChip: () => <span /> }));
 vi.mock('../../../components/ui/NowPlayingIndicator', () => ({
   NowPlayingIndicator: () => <span />,
@@ -176,16 +203,40 @@ describe('ContinueWatchingSection', () => {
     expect(screen.getByText('Noch nichts zum Weiterschauen')).toBeInTheDocument();
   });
 
-  it('renders the item row with title and next-episode name', () => {
+  it('renders the top item as the canonical hero card', () => {
     renderT({ items: [item] });
     expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
     expect(screen.getByText(/Cat in the Bag/)).toBeInTheDocument();
+    // Single item → hero only, no compact row.
+    expect(screen.queryByTestId('complete')).not.toBeInTheDocument();
   });
 
-  it('invokes onComplete when the row completes', () => {
+  it('renders remaining items as compact rows below the hero', () => {
+    const item2: CWItem = {
+      ...item,
+      id: 2,
+      title: 'Better Call Saul',
+      nextEpisode: { ...item.nextEpisode, name: 'Uno' },
+    };
+    renderT({ items: [item, item2] });
+    // Hero = first item, row = second item.
+    expect(screen.getByText('Breaking Bad')).toBeInTheDocument();
+    expect(screen.getByText('Better Call Saul')).toBeInTheDocument();
+    expect(screen.getByTestId('complete')).toBeInTheDocument();
+  });
+
+  it('invokes onComplete when the hero mark-watched is tapped', () => {
     const onComplete = vi.fn();
     renderT({ items: [item], onComplete });
-    fireEvent.click(screen.getByTestId('complete'));
+    fireEvent.click(screen.getByTestId('hero-watched'));
     expect(onComplete).toHaveBeenCalledWith(item, 'right');
+  });
+
+  it('invokes onComplete when a compact row completes', () => {
+    const item2: CWItem = { ...item, id: 2, title: 'Better Call Saul' };
+    const onComplete = vi.fn();
+    renderT({ items: [item, item2], onComplete });
+    fireEvent.click(screen.getByTestId('complete'));
+    expect(onComplete).toHaveBeenCalledWith(item2, 'right');
   });
 });
