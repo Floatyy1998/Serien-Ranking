@@ -1,7 +1,6 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useState } from 'react';
 import { useAuth } from '../AuthContext';
+import { dbRef, paths } from '../lib/db/ref';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';
 import { trackRatingSaved } from '../firebase/analytics';
@@ -76,8 +75,7 @@ export const useQuickSeasonRating = () => {
       }
 
       try {
-        const ratingRef = firebase.database().ref(`users/${user.uid}/series/${series.id}/rating`);
-        await ratingRef.set(ratingsToSave);
+        await dbRef(paths.seriesRating(user.uid, series.id)).set(ratingsToSave);
 
         trackRatingSaved(String(series.id), 'series', rating);
 

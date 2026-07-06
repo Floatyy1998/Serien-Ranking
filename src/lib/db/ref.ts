@@ -11,8 +11,13 @@ import { paths } from './paths';
 
 export { paths, userPath } from './paths';
 
-/** Server-Timestamp-Sentinel für RTDB-Writes. */
-export const SERVER_TIMESTAMP = firebase.database.ServerValue.TIMESTAMP;
+/**
+ * Server-Timestamp-Sentinel für RTDB-Writes. Lazy (Funktion, nicht Top-Level-
+ * Const), damit der Import von `ref.ts` nicht bricht, wenn ein Consumer-Test
+ * Firebase unvollständig mockt — `firebase.database.ServerValue` wird erst zur
+ * Aufrufzeit gelesen.
+ */
+export const serverTimestamp = (): object => firebase.database.ServerValue.TIMESTAMP as object;
 
 /** `firebase.database()` — eine Stelle, falls die Instanziierung mal wechselt. */
 export const db = () => firebase.database();
@@ -37,8 +42,8 @@ export const dbUpdate = (updates: Record<string, unknown>): Promise<void> =>
 export const updateWithSeriesVersion = (
   uid: string,
   updates: Record<string, unknown>
-): Promise<void> => dbUpdate({ ...updates, [paths.serienVersion(uid)]: SERVER_TIMESTAMP });
+): Promise<void> => dbUpdate({ ...updates, [paths.serienVersion(uid)]: serverTimestamp() });
 
 /** Setzt nur den `serienVersion`-Bump (wenn kein weiterer Write anfällt). */
 export const bumpSeriesVersion = (uid: string): Promise<void> =>
-  db().ref(paths.serienVersion(uid)).set(SERVER_TIMESTAMP);
+  db().ref(paths.serienVersion(uid)).set(serverTimestamp());

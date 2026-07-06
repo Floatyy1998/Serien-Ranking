@@ -1,9 +1,8 @@
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/database';
 import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
+import { dbRef, paths } from '../lib/db/ref';
 import { detectUnratedMovies } from '../lib/validation/unratedMoviesDetection';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';
 import { trackRatingSaved } from '../firebase/analytics';
@@ -80,12 +79,12 @@ export const useUnratedQueue = () => {
         ratingsToSave['General'] = rating;
       }
 
-      const node = item.type === 'series' ? 'series' : 'movies';
+      const ratingPath =
+        item.type === 'series'
+          ? paths.seriesRating(user.uid, item.id)
+          : paths.movieRating(user.uid, item.id);
       try {
-        await firebase
-          .database()
-          .ref(`users/${user.uid}/${node}/${item.id}/rating`)
-          .set(ratingsToSave);
+        await dbRef(ratingPath).set(ratingsToSave);
 
         trackRatingSaved(String(item.id), item.type, rating);
         await logRatingAdded(user.uid, item.title, item.type, rating, item.id);
