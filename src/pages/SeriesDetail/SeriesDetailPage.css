@@ -66,8 +66,8 @@
 .hero-section__poster-wrap--ring::after {
   content: '';
   position: absolute;
-  inset: -8px;
-  border-radius: calc(var(--poster-radius, 16px) + 8px);
+  inset: -3px;
+  border-radius: calc(var(--poster-radius, 16px) + 3px);
   padding: 2px;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -91,9 +91,9 @@
   --prog-anim: var(--prog);
   background: conic-gradient(
     from -90deg,
-    #ff3d5a 0deg,
-    #ffb020 calc(var(--prog-anim) * 1.8deg),
-    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    hsl(4 85% 55%) 0deg,
+    hsl(calc(var(--prog-anim) * 0.6) 85% 52%) calc(var(--prog-anim) * 1.8deg),
+    hsl(calc(var(--prog-anim) * 1.2) 85% 50%) calc(var(--prog-anim) * 3.6deg),
     transparent 0
   );
 }
