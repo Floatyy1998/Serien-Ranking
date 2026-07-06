@@ -19,6 +19,7 @@ import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, userPath } from '../../lib/db/ref';
+import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { useAuth } from '../../AuthContext';
 import { useTheme } from '../../contexts/ThemeContextDef';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -372,6 +373,9 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
       }
       if (variant === 'inactive-rewatch') {
         await dbRef(userPath(user.uid, 'series', seriesItem.id, 'rewatch')).remove();
+        // Rewatch-Stop bumpt serienVersion — analog zu useSeriesActions.handleStopRewatch,
+        // damit der Zustand konsistent zum kanonischen „Rewatch beenden" bleibt.
+        bumpSeriesVersion(user.uid);
       } else if (config.watchlistValue !== undefined) {
         const prevValue = seriesItem.watchlist;
         await dbRef(userPath(user.uid, 'series', seriesItem.id, 'watchlist')).set(
