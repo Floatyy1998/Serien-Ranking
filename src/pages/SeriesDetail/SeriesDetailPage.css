@@ -110,10 +110,14 @@
   }
 }
 
-/* Komplett gesehen: ruhiges, durchgängiges Success-Grün statt Heat-Ramp. */
+/* Komplett gesehen: durchgängiges Success-Grün statt Heat-Ramp.
+   Zeichnet sich ebenfalls ein (--prog ist 100). */
 .hero-section__poster-wrap--ring-done::after {
-  background: conic-gradient(var(--ring-color) 0 360deg);
-  animation: none;
+  background: conic-gradient(
+    from -90deg,
+    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    transparent 0
+  );
 }
 
 /* Composes design-token glassmorphism (background + blur + border) with the

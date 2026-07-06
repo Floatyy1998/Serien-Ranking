@@ -465,10 +465,13 @@
 }
 
 /* Komplett gesehen: durchgängiger Ring in der Success-Farbe (statt
-   Heat-Ramp) — „fertig" liest sich als ruhiges Grün, ohne Neon-Glow. */
+   Heat-Ramp). Zeichnet sich ebenfalls ein (--prog ist 100). */
 .ratings-card--ring-done::after {
-  background: conic-gradient(var(--ring-color) 0 360deg);
-  animation: none;
+  background: conic-gradient(
+    from -90deg,
+    var(--ring-color) calc(var(--prog-anim) * 3.6deg),
+    transparent 0
+  );
 }
 
 .ratings-card-progress-text {
