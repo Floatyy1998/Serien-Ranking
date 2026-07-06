@@ -7,7 +7,8 @@ import { memo } from 'react';
 import { EvolvingPixelPet } from '../../components/pet';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import { PET_TYPE_NAMES, PET_BACKGROUNDS } from '../../types/pet.types';
+import { PET_TYPE_NAMES } from '../../types/pet.types';
+import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 

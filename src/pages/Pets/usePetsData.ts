@@ -9,7 +9,7 @@ import { useAuth } from '../../AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
-import { ACCESSORIES } from '../../types/pet.types';
+import { ACCESSORIES } from '../../components/pet/data/accessories';
 import type { Pet } from '../../types/pet.types';
 
 export function usePetsData() {

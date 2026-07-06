@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
-import { ACCESSORIES } from '../../types/pet.types';
+import { ACCESSORIES } from '../../components/pet/data/accessories';
 
 // Nested-Path Firebase-Mock inkl. push().
 const fb = vi.hoisted(() => {

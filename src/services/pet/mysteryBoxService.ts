@@ -1,7 +1,8 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
-import { ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
+import { ACCESSORIES } from '../../components/pet/data/accessories';
+import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { getUserPets } from './petCore';
 
 // ============================================================

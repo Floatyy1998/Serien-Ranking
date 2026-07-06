@@ -6,7 +6,9 @@ import type {
   AccessoryRarity,
   AccessoryDefinition,
 } from '../../types/pet.types';
-import { PET_COLORS, ACCESSORIES, PET_BACKGROUNDS } from '../../types/pet.types';
+import { PET_COLORS } from '../../types/pet.types';
+import { ACCESSORIES } from '../../components/pet/data/accessories';
+import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { PET_CONFIG } from './petConstants';
 import { getUserPet, getUserPets } from './petCore';
 

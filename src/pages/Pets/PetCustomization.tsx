@@ -6,15 +6,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useMemo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContextDef';
-import {
-  PET_COLORS,
-  ACCESSORIES,
-  RARITY_COLORS,
-  RARITY_LABELS,
-  getAccessoryRarity,
-  PET_BACKGROUNDS,
-  getBackgroundRarity,
-} from '../../types/pet.types';
+import { PET_COLORS, RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
+import { ACCESSORIES, getAccessoryRarity } from '../../components/pet/data/accessories';
+import { PET_BACKGROUNDS, getBackgroundRarity } from '../../components/pet/data/petBackgrounds';
 import type { Pet, AccessoryRarity } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
