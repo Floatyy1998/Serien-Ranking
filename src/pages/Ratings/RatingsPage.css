@@ -434,16 +434,9 @@
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* Animierbarer Fortschrittswert: registriert, damit der Bogen sich beim
-   Einblenden von 0 auf --prog "zeichnen" kann (progressive enhancement —
-   Browser ohne @property zeigen den Ring einfach statisch). */
-@property --prog-anim {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
-
-/* Heat-Ramp mit Fortschritts-Semantik: der Bogen startet rot, und die
+/* Hinweis: @property --prog-anim ist in global.css registriert (muss global
+   sein, da diese Datei route-gesplittet lädt).
+   Heat-Ramp mit Fortschritts-Semantik: der Bogen startet rot, und die
    FARBE DER SPITZE wandert mit dem Fortschritt über Orange nach Grün
    (Hue 4° → 120°). Bei 40% endet er also orange — grün gibt's erst kurz
    vor „fertig". Zwischenstop bei der halben Hue gegen matschige
@@ -461,7 +454,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .ratings-card--ring::after {
-    animation: ring-draw 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: ring-draw 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
   }
 }
 

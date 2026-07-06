@@ -580,6 +580,16 @@ button:active:not(:disabled),
   inherits: false;
 }
 
+/* D1 Fortschritts-Ring: animierbarer Fortschrittswert (0–100). Muss GLOBAL
+   registriert sein — die Ring-Styles leben in route-gesplitteten CSS-Chunks
+   (RatingsPage/SeriesDetailPage), und ohne Registrierung sind Custom
+   Properties nicht animierbar (Draw-In-Animation bliebe stumm). */
+@property --prog-anim {
+  syntax: '<number>';
+  initial-value: 0;
+  inherits: false;
+}
+
 .animated-border {
   position: relative;
   border: none !important;
