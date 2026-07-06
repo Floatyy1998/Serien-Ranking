@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Manga } from '../../types/Manga';
 import { tapScaleSmall } from '../../lib/motion';
 

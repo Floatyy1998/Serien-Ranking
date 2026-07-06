@@ -9,7 +9,7 @@ import CompareArrows from '@mui/icons-material/CompareArrows';
 import Person from '@mui/icons-material/Person';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Close from '@mui/icons-material/Close';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
 import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';

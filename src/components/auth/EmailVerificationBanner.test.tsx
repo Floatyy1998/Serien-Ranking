@@ -20,7 +20,7 @@ vi.mock('../../AuthContext', () => ({
   useAuth: () => ({ user: authState.user, authStateResolved: authState.authStateResolved }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

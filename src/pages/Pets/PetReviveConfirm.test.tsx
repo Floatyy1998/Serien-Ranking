@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Pet } from '../../types/pet.types';
 import { PetReviveConfirm } from './PetReviveConfirm';
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

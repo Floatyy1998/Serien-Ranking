@@ -29,7 +29,7 @@ const { theme, dataRef } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme, getMobilePageBackground: () => '#000000' }),
 }));
 vi.mock('./useRatingsData', () => ({ useRatingsData: () => dataRef.current }));

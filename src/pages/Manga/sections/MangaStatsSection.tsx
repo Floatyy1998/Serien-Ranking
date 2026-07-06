@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { IconContainer, SectionHeader } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../AuthContext';
 import type { Manga } from '../../../types/Manga';
 import { getEffectiveChapterCount } from '../mangaUtils';

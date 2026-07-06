@@ -12,7 +12,7 @@ const { navigateMock, markNextMock } = vi.hoisted(() => ({
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

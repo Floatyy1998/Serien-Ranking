@@ -3,7 +3,7 @@ import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { SpoilerReveal } from '../ui/SpoilerReveal';

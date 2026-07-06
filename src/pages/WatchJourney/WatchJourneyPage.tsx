@@ -5,7 +5,7 @@
  * Slim composition component - business logic in useWatchJourneyData hook.
  */
 
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
 import { ACCENT_COLORS } from './accentColors';
 import { useWatchJourneyData } from './useWatchJourneyData';

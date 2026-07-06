@@ -2,7 +2,7 @@ import { ExpandMore, MovieFilter, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { SerienTabRanking } from './SerienTabRanking';

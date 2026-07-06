@@ -1,6 +1,6 @@
 import { Add, Remove } from '@mui/icons-material';
 import { BackButton } from '../../../components/ui';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { Manga } from '../../../types/Manga';
 import { getDisplayFormat, getStatusLabel } from '../mangaUtils';
 

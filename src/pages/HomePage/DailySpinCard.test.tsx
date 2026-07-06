@@ -8,7 +8,7 @@ const fb = vi.hoisted(() => ({ resolve: (_path: string): unknown => null }));
 
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: u }) }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { defaultDynamicTheme } = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: defaultDynamicTheme }) };
 });

@@ -5,7 +5,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PET_TYPE_NAMES, PET_TYPES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';

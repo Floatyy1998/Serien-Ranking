@@ -8,7 +8,7 @@ const seriesState = vi.hoisted(() => ({ list: [] as unknown[] }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { defaultDynamicTheme } = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: defaultDynamicTheme }) };
 });

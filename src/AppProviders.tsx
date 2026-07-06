@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 import { MangaListProvider } from './contexts/MangaListProvider';
 import { MovieListProvider } from './contexts/MovieListProvider';
-import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationContext';
+import { NotificationProvider as GeneralNotificationProvider } from './contexts/NotificationProvider';
 import { OptimizedFriendsProvider } from './contexts/OptimizedFriendsProvider';
 import { SeriesListProvider } from './contexts/OptimizedSeriesListProvider';
-import { RatingsStateProvider } from './contexts/RatingsStateContext';
+import { RatingsStateProvider } from './contexts/RatingsStateProvider';
 import { BadgeProvider } from './features/badges/BadgeProvider';
 import { StatsProvider } from './features/stats/StatsProvider';
 

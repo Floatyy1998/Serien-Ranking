@@ -2,7 +2,7 @@ import { ChatBubbleOutline } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
 
 export const EpisodeDiscussionButton: React.FC<{

@@ -19,7 +19,7 @@ vi.mock('framer-motion', async () => {
     motion: new Proxy({} as Record<string, unknown>, { get: (_t, tag) => make(String(tag)) }),
   };
 });
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

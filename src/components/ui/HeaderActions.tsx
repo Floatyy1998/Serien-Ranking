@@ -3,7 +3,7 @@ import { Badge } from '@mui/material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface HeaderActionsProps {
   totalUnreadBadge: number;

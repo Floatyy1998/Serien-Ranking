@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
 vi.mock('@mui/icons-material', () => ({ ChevronLeft: () => null, ChevronRight: () => null }));
 vi.mock('./useCalendarData', () => ({ formatDate: (d: Date) => `D${d.getDate()}` }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

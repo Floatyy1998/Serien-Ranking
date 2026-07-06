@@ -1,7 +1,7 @@
 import { Cancel, Check } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 import { tapScaleTight } from '../../../lib/motion';

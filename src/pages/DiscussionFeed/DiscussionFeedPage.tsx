@@ -2,7 +2,7 @@ import { ChatBubbleOutline, Movie, Reply, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PageLayout, PageHeader, SkeletonListRow, EmptyState } from '../../components/ui';
 import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';

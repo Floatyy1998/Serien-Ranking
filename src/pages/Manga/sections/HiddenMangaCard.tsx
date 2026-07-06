@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IconContainer, NavCard } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 export const HiddenMangaCard: React.FC = React.memo(() => {
   const { hiddenMangaList } = useMangaList();

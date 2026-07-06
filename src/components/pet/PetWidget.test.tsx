@@ -14,7 +14,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

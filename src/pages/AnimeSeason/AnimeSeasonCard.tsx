@@ -23,7 +23,7 @@
 import React, { useState } from 'react';
 import { CircularProgress } from '@mui/material';
 import { Add, CheckCircle } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';

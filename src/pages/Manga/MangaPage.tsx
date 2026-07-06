@@ -15,7 +15,7 @@ import { useAuth } from '../../AuthContext';
 import { GradientText, HeaderActions, SectionHeader } from '../../components/ui';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { NotificationSheet } from '../HomePage/NotificationSheet';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';

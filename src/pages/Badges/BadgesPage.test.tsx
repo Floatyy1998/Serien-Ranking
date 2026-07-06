@@ -34,7 +34,7 @@ vi.mock('@mui/icons-material', () => ({
   Refresh: () => <span />,
 }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {
       get: (_t, prop) => {

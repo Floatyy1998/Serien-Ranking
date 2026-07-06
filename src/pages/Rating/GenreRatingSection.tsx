@@ -8,7 +8,7 @@ import {
   Mood,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const ICON_SIZE = { fontSize: 20 };
 

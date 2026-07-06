@@ -35,7 +35,7 @@ vi.mock('firebase/compat/app', () => ({
 vi.mock('firebase/compat/auth', () => ({}));
 vi.mock('react-router-dom', () => ({ useNavigate: () => state.navigate }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: state.allSeriesList }),
 }));
@@ -51,7 +51,7 @@ vi.mock('../../contexts/OptimizedFriendsContext', () => ({
     unreadRequestsCount: state.unreadRequestsCount,
   }),
 }));
-vi.mock('../../features/badges/BadgeContextDef', () => ({
+vi.mock('../../features/badges/BadgeContext', () => ({
   useBadges: () => ({ unreadBadgesCount: state.unreadBadgesCount }),
 }));
 vi.mock('../../hooks/useEnhancedFirebaseCache', () => ({

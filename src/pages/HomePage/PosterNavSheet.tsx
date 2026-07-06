@@ -2,7 +2,7 @@ import PlayCircle from '@mui/icons-material/PlayCircle';
 import Tv from '@mui/icons-material/Tv';
 import { motion } from 'framer-motion';
 import { BottomSheet } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 
 interface PosterNavState {

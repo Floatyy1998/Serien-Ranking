@@ -40,7 +40,7 @@ vi.mock('framer-motion', async () => {
   return { motion };
 });
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) =>

@@ -9,7 +9,7 @@ import {
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { UnsubscribedNewSeasonEntry } from '../../hooks/useUnsubscribedNewSeasons';
 import './CarouselNotification.css';
 

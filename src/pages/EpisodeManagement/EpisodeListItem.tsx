@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import type { Series } from '../../types/Series';
 import { tapScaleSmall } from '../../lib/motion';

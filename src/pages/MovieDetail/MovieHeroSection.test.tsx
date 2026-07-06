@@ -63,7 +63,7 @@ vi.mock('../../components/recommendations/RecommendButton', () => ({
 vi.mock('../../lib/providerMerge', () => ({ mergeProviders: () => [] }));
 vi.mock('../../utils/imageUrl', () => ({ getImageUrl: () => 'poster.jpg' }));
 vi.mock('../../utils/themedPlaceholder', () => ({ buildThemedPlaceholderDataUrl: () => 'ph.jpg' }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

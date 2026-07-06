@@ -36,7 +36,7 @@ import {
 } from '../../components/ui';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { trackSeriesAdded } from '../../firebase/analytics';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../lib/backendApi';

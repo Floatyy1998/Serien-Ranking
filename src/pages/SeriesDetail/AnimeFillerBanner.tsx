@@ -11,7 +11,7 @@ import FilterListAlt from '@mui/icons-material/FilterAlt';
 import Refresh from '@mui/icons-material/Refresh';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { AnimeFillerData } from '../../services/animeFillerService';
 
 interface AnimeFillerBannerProps {

@@ -11,7 +11,7 @@ import { useMemo, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getDisplayFormat, getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 
 export const MangaStatsPage = () => {

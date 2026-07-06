@@ -1,7 +1,7 @@
 import { Check, SkipNext } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { memo, useCallback } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { fillerLookupKey } from '../../services/animeFillerService';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';

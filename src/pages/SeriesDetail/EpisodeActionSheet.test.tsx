@@ -46,7 +46,7 @@ vi.mock('@mui/icons-material', () => ({
   Repeat: () => null,
   RemoveCircle: () => null,
 }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

@@ -21,7 +21,7 @@ const theme = {
   text: { primary: '#ffffff', secondary: '#eeeeee', muted: '#888888' },
 };
 
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => ({ seriesList: [] }) }));
 vi.mock('../../firebase/analytics', () => ({ trackSeriesAdded: vi.fn() }));

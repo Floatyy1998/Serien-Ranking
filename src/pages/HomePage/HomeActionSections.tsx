@@ -6,7 +6,7 @@ import History from '@mui/icons-material/History';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Star from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 interface QuickActionsProps {

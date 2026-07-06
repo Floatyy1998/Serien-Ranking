@@ -9,7 +9,7 @@ import PersonRounded from '@mui/icons-material/PersonRounded';
 import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
 import { showUndoToast } from '../../../lib/toast';
 import { useActivityGrouping } from '../useActivityGrouping';

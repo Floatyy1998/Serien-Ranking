@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';
 import { GradientText } from '../ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { WrappedStats } from '../../types/Wrapped';
 import { hapticTap } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IconContainer, NavCard } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { getEffectiveChapterCount } from '../mangaUtils';
 
 export const MangaCatchUpCard: React.FC = React.memo(() => {

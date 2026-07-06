@@ -1,4 +1,4 @@
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';

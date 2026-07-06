@@ -1,7 +1,7 @@
 import { Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { scaleIn, tapScale } from '../../lib/motion';
 import { IconButton } from './IconButton';

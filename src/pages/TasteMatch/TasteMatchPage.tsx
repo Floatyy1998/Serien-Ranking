@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
 import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from './constants';

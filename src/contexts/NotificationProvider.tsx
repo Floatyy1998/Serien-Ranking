@@ -4,8 +4,8 @@ import { useAuth } from '../AuthContext';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../lib/db/ref';
-import { NotificationContext } from './NotificationContextDef';
-import type { AppNotification, NotificationContextType } from './NotificationContextDef';
+import { NotificationContext } from './NotificationContext';
+import type { AppNotification, NotificationContextType } from './NotificationContext';
 
 interface NotificationProviderProps {
   children: ReactNode;

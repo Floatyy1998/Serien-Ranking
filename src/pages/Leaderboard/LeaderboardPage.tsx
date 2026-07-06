@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { LeaderboardCategory } from '../../types/Leaderboard';
 import { CelebrationModal } from './CelebrationModal';
 import './LeaderboardPage.css';

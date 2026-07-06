@@ -8,7 +8,7 @@ const cfg = vi.hoisted(() => ({ enabled: true, year: 2025, loading: false }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { defaultDynamicTheme } = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: defaultDynamicTheme }) };
 });

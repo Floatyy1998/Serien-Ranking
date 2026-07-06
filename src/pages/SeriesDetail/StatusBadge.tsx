@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getEpisodeAirDate, hasEpisodeAired } from '../../utils/episodeDate';
 import type { Series } from '../../types/Series';
 

@@ -1,6 +1,6 @@
 import { AutoAwesome, RecordVoiceOver, Star, TrendingUp } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { BackButton, GradientText } from '../../components/ui';
 import { RecommendationsTab } from './RecommendationsTab';
 import { TopActorsTab } from './TopActorsTab';

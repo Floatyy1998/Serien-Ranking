@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../AuthContext';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
 import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';

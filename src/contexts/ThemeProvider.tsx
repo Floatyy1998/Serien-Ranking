@@ -12,8 +12,8 @@ import {
 import { setThemedPlaceholder } from '../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
 import { dbRef, paths } from '../lib/db/ref';
-import { ThemeContext } from './ThemeContextDef';
-import type { ThemeContextType } from './ThemeContextDef';
+import { ThemeContext } from './ThemeContext';
+import type { ThemeContextType } from './ThemeContext';
 
 // Zentrale Funktion zum Setzen aller CSS-Variablen
 function applyCSSVariables(

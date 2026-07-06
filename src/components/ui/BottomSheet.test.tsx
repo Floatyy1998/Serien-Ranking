@@ -16,7 +16,7 @@ if (!window.matchMedia) {
   })) as unknown as typeof window.matchMedia;
 }
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       background: { surface: '#111', default: '#000' },

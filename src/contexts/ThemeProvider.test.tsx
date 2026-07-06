@@ -19,8 +19,8 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/database', () => ({}));
 
-import { DynamicThemeProvider } from './ThemeContext';
-import { useTheme } from './ThemeContextDef';
+import { DynamicThemeProvider } from './ThemeProvider';
+import { useTheme } from './ThemeContext';
 
 const Consumer = () => {
   const { currentTheme, syncMode } = useTheme();

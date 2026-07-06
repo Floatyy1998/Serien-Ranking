@@ -1,4 +1,4 @@
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 /** Item returned from TMDB discover/search/recommendations endpoints, enriched with local fields */
 export interface DiscoverItem {

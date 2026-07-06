@@ -3,7 +3,7 @@
  */
 
 import { memo, useEffect, useState } from 'react';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 const VALID_HEX = /^#[0-9a-fA-F]{6}$/;
 

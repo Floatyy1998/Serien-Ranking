@@ -26,7 +26,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-vi.mock('../../../contexts/ThemeContextDef', async () => {
+vi.mock('../../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme, defaultThemeConfig } = await import('../../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme(defaultThemeConfig);
   return { useTheme: () => ({ currentTheme }) };

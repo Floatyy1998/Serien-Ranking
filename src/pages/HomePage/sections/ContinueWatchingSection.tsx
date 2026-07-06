@@ -12,7 +12,7 @@ import {
 } from '../../../services/animeFillerService';
 import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';

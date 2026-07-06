@@ -6,7 +6,7 @@ import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
 import ForumRounded from '@mui/icons-material/ForumRounded';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
 import { tapScaleSmall } from '../../../lib/motion';

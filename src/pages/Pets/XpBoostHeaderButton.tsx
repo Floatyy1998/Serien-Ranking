@@ -6,7 +6,7 @@ import Check from '@mui/icons-material/Check';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../lib/db/ref';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';
 import type { XpBoostItem } from '../../services/pet/dailySpinService';

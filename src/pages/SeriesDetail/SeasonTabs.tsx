@@ -1,7 +1,7 @@
 import { Check } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { SeriesSeason } from './types';
 import { tapScale } from '../../lib/motion';
 

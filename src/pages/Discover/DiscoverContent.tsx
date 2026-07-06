@@ -1,7 +1,7 @@
 import { Recommend, Search, Subscriptions } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../../components/ui';
 import { ItemCard } from './DiscoverItemCard';
 import type { DiscoverItem } from './discoverItemHelpers';

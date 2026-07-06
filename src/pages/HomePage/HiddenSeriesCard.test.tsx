@@ -8,7 +8,7 @@ const { navigateMock, hidden } = vi.hoisted(() => ({
 }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({
     primaryColor: '#00d123',

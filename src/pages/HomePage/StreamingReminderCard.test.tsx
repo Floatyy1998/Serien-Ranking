@@ -16,7 +16,7 @@ const subs = vi.hoisted(() => ({
   }>,
 }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { defaultDynamicTheme } = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: defaultDynamicTheme }) };
 });

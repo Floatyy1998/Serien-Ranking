@@ -1,6 +1,6 @@
 import { TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { ACCENT_COLORS } from './accentColors';
 
 export const WatchJourneyLoadingState: React.FC = () => {

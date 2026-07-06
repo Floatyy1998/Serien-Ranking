@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTheme } from '../contexts/ThemeContextDef';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * Generiert einen Poster-Placeholder als data: URL — mit TV-Rank Logo als

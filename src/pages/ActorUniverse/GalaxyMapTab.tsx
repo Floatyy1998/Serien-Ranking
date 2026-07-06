@@ -1,7 +1,7 @@
 import { ZoomIn, ZoomOut } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import { seededRandom } from '../../utils/seededRandom';

@@ -11,7 +11,7 @@ vi.mock('../../contexts/MangaListContext', () => ({
   useMangaList: () => ({ mangaList: listState.list, toggleHideManga }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

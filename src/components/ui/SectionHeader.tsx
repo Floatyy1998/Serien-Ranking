@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface SectionHeaderProps {
   icon: React.ReactNode;

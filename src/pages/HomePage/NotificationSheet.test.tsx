@@ -8,7 +8,7 @@ import type { UnifiedNotification } from './useUnifiedNotifications';
 const navigate = vi.fn<(to: string) => void>();
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const actual = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };
 });

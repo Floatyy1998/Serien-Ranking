@@ -13,7 +13,7 @@ import {
   YAxis,
 } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { MultiYearTrendsData } from '../../services/watchJourneyService';
 import { GENRE_COLORS, getColor } from '../../services/watchJourneyTypes';
 import { ACCENT_COLORS } from './accentColors';

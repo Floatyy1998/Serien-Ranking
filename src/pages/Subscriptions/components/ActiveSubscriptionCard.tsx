@@ -8,7 +8,7 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import type { UseSubscriptionsDataResult } from '../../../hooks/useSubscriptionsData';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';

@@ -26,7 +26,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 const mangaState = vi.hoisted(() => ({ mangaList: [] as { anilistId: number }[] }));
 vi.mock('../../contexts/MangaListContext', () => ({ useMangaList: () => mangaState }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, p) =>

@@ -1,7 +1,7 @@
 import { CalendarMonth, ChevronRight, LiveTv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
 import { useCalendarData } from './useCalendarData';

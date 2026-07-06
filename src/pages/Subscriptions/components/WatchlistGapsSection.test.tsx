@@ -22,7 +22,7 @@ const theme = vi.hoisted(() => ({
     status: { success: '#4caf50', warning: '#f59e0b', error: '#ef4444' },
   },
 }));
-vi.mock('../../../contexts/ThemeContextDef', () => ({ useTheme: () => theme }));
+vi.mock('../../../contexts/ThemeContext', () => ({ useTheme: () => theme }));
 
 const makeGap = (id: number, title: string, providers: string[]): WatchlistGap => ({
   series: { id, title, original_name: title, poster: { poster: '' } } as unknown as Series,

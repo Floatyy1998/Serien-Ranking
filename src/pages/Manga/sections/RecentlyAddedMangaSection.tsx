@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 import { getDisplayFormat } from '../mangaUtils';
 import { tapScale } from '../../../lib/motion';

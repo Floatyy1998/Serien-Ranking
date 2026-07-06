@@ -2,7 +2,7 @@ import { Save, SkipNext, CheckCircle } from '@mui/icons-material';
 import type { PanInfo } from 'framer-motion';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUrl';
 import { hapticSuccess } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';

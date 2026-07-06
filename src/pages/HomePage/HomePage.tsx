@@ -9,7 +9,7 @@ import { SeriesNotificationHub } from './SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useEpisodeSwipeHandlers } from '../../hooks/useEpisodeSwipeHandlers';
 import { useProactiveRecaps } from '../../hooks/useProactiveRecaps';
 import { useSeasonalRecommendations } from '../../hooks/useSeasonalRecommendations';

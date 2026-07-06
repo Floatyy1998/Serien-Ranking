@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
 import { FORMAT_COLORS, getDisplayFormat, type AppTheme } from '../mangaUtils';

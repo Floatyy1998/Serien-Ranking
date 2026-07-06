@@ -1,7 +1,7 @@
 import { Tooltip } from '@mui/material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
 import { csvIncludes, parseCsv, toggleCsv } from '../../lib/filters/multiSelectFilter';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { SearchInput } from './SearchInput';
 import { GradientText } from './GradientText';
 

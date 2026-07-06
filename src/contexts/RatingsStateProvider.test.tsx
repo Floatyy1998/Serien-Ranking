@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { RatingsStateProvider } from './RatingsStateContext';
-import { useRatingsState } from './RatingsStateContextDef';
+import { RatingsStateProvider } from './RatingsStateProvider';
+import { useRatingsState } from './RatingsStateContext';
 
 const Consumer = () => {
   const { getRatingsState, updateRatingsState } = useRatingsState();

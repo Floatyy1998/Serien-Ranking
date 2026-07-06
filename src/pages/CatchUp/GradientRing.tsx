@@ -1,5 +1,5 @@
 import { memo, useId } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { GradientText } from '../../components/ui';
 
 interface GradientRingProps {

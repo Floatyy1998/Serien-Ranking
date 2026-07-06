@@ -1,7 +1,7 @@
 import { Person } from '@mui/icons-material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface UserAvatarProps {
   userId: string;

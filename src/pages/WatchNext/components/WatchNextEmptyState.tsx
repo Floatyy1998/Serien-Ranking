@@ -1,6 +1,6 @@
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 /** Empty-State, wenn keine nächsten Episoden anstehen. */
 export const WatchNextEmptyState = () => {

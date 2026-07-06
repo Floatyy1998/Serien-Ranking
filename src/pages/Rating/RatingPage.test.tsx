@@ -42,7 +42,7 @@ const { theme, dataRef } = vi.hoisted(() => ({
     },
   },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme }),
 }));
 vi.mock('./useRatingData', () => ({ useRatingData: () => dataRef.current }));

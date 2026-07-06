@@ -39,7 +39,7 @@ vi.mock('firebase/compat/database', () => ({}));
 vi.mock('../../components/ui', () => ({
   GradientText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

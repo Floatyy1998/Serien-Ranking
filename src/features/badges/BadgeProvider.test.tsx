@@ -20,7 +20,7 @@ vi.mock('./offlineBadgeSystem', () => ({
 vi.mock('./minimalActivityLogger', () => ({ registerBadgeCallback, removeBadgeCallback }));
 
 import { BadgeProvider } from './BadgeProvider';
-import { BadgeContext } from './BadgeContextDef';
+import { BadgeContext } from './BadgeContext';
 
 const CountConsumer = () => {
   const ctx = useContext(BadgeContext);

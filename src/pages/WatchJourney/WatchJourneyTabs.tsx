@@ -8,7 +8,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { TabType } from './types';
 import { tapScale } from '../../lib/motion';
 

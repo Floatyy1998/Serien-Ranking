@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   IconButton,
   EmptyState,

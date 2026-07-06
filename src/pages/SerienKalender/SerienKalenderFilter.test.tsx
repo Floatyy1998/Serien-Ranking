@@ -33,7 +33,7 @@ const { theme } = vi.hoisted(() => ({
     border: { default: '#333333' },
   },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
 vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn() }));
 

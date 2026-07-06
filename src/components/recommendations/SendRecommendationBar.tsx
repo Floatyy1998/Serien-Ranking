@@ -1,6 +1,6 @@
 import Send from '@mui/icons-material/Send';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 
 interface SendRecommendationBarProps {

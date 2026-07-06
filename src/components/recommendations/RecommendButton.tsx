@@ -2,7 +2,7 @@ import Send from '@mui/icons-material/Send';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { RecommendSheet } from './RecommendSheet';
 import { tapScale } from '../../lib/motion';

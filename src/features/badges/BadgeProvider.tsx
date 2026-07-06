@@ -6,8 +6,8 @@ import { CelebrationBurst } from '../../components/ui';
 import { hapticCelebrate } from '../../lib/haptics';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger
 import BadgeNotification from './BadgeNotification';
-import { BadgeContext } from './BadgeContextDef';
-import type { BadgeContextType } from './BadgeContextDef';
+import { BadgeContext } from './BadgeContext';
+import type { BadgeContextType } from './BadgeContext';
 import type { EarnedBadge } from './badgeDefinitions';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';
 

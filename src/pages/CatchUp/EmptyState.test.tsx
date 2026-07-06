@@ -24,7 +24,7 @@ vi.mock('@mui/icons-material', () => ({
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

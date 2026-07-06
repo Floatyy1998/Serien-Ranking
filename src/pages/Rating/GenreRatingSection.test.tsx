@@ -26,7 +26,7 @@ vi.mock('@mui/icons-material', () => ({
 }));
 
 const { theme } = vi.hoisted(() => ({ theme: { accent: '#22d3ee' } }));
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme }),
 }));
 

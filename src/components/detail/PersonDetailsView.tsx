@@ -1,7 +1,7 @@
 import { Movie, Person, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getFormattedDate } from '../../lib/date/date.utils';
 import { HorizontalScrollContainer } from '../ui';
 import type { CreditItem, PersonDetailsData } from './CastCrew.types';

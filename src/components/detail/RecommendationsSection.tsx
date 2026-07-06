@@ -11,7 +11,7 @@ import {
   useTransform,
 } from 'framer-motion';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';

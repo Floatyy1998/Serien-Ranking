@@ -21,7 +21,7 @@
 import React, { useEffect, useState } from 'react';
 import { CircularProgress } from '@mui/material';
 import { Add, CheckCircle } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';

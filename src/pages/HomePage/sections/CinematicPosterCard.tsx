@@ -1,7 +1,7 @@
 import { Movie as MovieIcon, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { PosterImage } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { tapScale } from '../../../lib/motion';

@@ -2,7 +2,7 @@ import { Close, PlayArrow, PlayCircle, Theaters } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 

@@ -8,7 +8,7 @@ vi.mock('./contexts/MangaListProvider', () => ({
 vi.mock('./contexts/MovieListProvider', () => ({
   MovieListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/NotificationContext', () => ({
+vi.mock('./contexts/NotificationProvider', () => ({
   NotificationProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./contexts/OptimizedFriendsProvider', () => ({
@@ -17,7 +17,7 @@ vi.mock('./contexts/OptimizedFriendsProvider', () => ({
 vi.mock('./contexts/OptimizedSeriesListProvider', () => ({
   SeriesListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/RatingsStateContext', () => ({
+vi.mock('./contexts/RatingsStateProvider', () => ({
   RatingsStateProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./features/badges/BadgeProvider', () => ({

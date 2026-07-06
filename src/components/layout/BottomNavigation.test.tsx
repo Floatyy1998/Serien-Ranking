@@ -10,9 +10,9 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: routerState.pathname }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: {} }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: {} }) }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({ useOptimizedFriends: () => ({}) }));
-vi.mock('../../contexts/NotificationContextDef', () => ({ useNotifications: () => ({}) }));
+vi.mock('../../contexts/NotificationContext', () => ({ useNotifications: () => ({}) }));
 vi.mock('../../hooks/useKeyboardNavigation', () => ({
   useKeyboardNavigation: () => ({ onKeyDown: vi.fn() }),
 }));

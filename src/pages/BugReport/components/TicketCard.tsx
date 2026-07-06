@@ -1,7 +1,7 @@
 import { ChatBubbleOutline, ExpandMore, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';

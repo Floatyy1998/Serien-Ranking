@@ -42,7 +42,7 @@ vi.mock('../../AuthContext', () => ({
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ refetchSeries: vi.fn() }),
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

@@ -1,7 +1,7 @@
 import { Add, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { GradientText, HorizontalScrollContainer } from '../../components/ui';
 import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import './ActorUniversePage.css';

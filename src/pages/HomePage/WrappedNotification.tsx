@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 
 // Floating Icon Component

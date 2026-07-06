@@ -8,7 +8,7 @@ import { InsightsRounded, IosShare } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState, IconButton, PageHeader, PageLayout } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
 import {
   ActorUniverseBanner,

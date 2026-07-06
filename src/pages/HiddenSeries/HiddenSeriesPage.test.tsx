@@ -29,7 +29,7 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => ({ Visibility: () => <span /> }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => seriesValue }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {
       get: (_t, prop) => {

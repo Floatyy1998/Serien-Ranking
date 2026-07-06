@@ -8,7 +8,7 @@
  */
 
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { WrappedStats } from '../../types/Wrapped';
 import { ShareCardFrame } from '../share/ShareCardFrame';
 import { ShareCardSheet } from '../share/ShareCardSheet';

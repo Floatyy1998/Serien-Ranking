@@ -5,7 +5,7 @@
 import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 

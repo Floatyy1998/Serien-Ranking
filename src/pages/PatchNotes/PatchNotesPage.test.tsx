@@ -60,7 +60,7 @@ vi.mock('@mui/icons-material', () => {
   return Object.fromEntries(names.map((n) => [n, Stub]));
 });
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {
       get: (_t, prop) => {

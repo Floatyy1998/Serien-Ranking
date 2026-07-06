@@ -2,7 +2,7 @@ import { AutoAwesome, Send } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { SpeakButton } from '../../components/ui/SpeakButton';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { CharacterDescription } from '../../hooks/useCharacterDescriptions';
 

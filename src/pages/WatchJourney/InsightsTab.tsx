@@ -1,7 +1,7 @@
 import { LocalFireDepartment, Replay, Timer } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { wjCard, wjHero } from './watchJourneyStyles';
 

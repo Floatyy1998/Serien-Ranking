@@ -2,7 +2,7 @@ import { Add, MenuBook } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { PageHeader, PageLayout } from '../../../components/ui';
 import type { AniListMangaSearchResult } from '../../../types/Manga';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { ANILIST_STATUS_LABELS, getDisplayFormat } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';
 

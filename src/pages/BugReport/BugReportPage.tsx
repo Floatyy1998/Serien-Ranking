@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { NewTicketForm } from './components/NewTicketForm';
 import { TicketCard } from './components/TicketCard';
 import { useBugReportData } from './useBugReportData';

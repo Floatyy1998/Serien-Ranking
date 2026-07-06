@@ -4,7 +4,7 @@ import 'firebase/compat/storage';
 import { motion } from 'framer-motion';
 import { memo, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 const NewDiscussionFormInner: React.FC<{

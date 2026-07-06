@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight, Today } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContextDef';
+import type { useTheme } from '../../../contexts/ThemeContext';
 import type { useAdminDashboardData } from '../useAdminDashboardData';
 import {
   FILTERS,

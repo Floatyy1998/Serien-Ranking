@@ -7,7 +7,7 @@ import { AutoAwesome, Movie, Refresh, Star, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PageLayout, PageHeader } from '../../components/ui';
 import { CONFIDENCE_COLORS } from './constants';
 import { useTasteProfileData } from './useTasteProfileData';

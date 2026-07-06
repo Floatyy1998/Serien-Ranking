@@ -9,7 +9,7 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: '/watch-journey' }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

@@ -1,7 +1,7 @@
 import { Subscriptions as SubscriptionsIcon } from '@mui/icons-material';
 import { useState } from 'react';
 import { EmptyState, PageHeader, PageLayout, Skeleton } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useProviderLogos } from '../../hooks/useProviderLogos';
 import { useSubscriptionsData } from '../../hooks/useSubscriptionsData';
 import { ActiveSubscriptionCard } from './components/ActiveSubscriptionCard';

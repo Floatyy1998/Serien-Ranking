@@ -17,7 +17,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
   })) as unknown as typeof window.matchMedia;
 }
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({
     primaryColor: '#00d123',

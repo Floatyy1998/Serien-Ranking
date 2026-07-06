@@ -5,7 +5,7 @@ import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { FillerChip } from '../../../components/ui/FillerChip';
 import { SectionHeader, SwipeableEpisodeRow } from '../../../components/ui';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';

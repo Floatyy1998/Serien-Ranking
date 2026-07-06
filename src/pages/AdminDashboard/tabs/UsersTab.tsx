@@ -1,7 +1,7 @@
 import { Circle, ManageSearch } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContextDef';
+import type { useTheme } from '../../../contexts/ThemeContext';
 import { dbRef } from '../../../lib/db/ref';
 import { buildUserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';
 import type { UserSearchIndexEntry } from '../../../lib/firebase/userSearchIndex';

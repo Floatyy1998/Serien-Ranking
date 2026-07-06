@@ -5,7 +5,7 @@ import { EpisodeDiscussionButton } from '../../../components/Discussion';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { SwipeableEpisodeRow } from '../../../components/ui';
 import { FillerChip } from '../../../components/ui/FillerChip';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { useEpisodeDragDrop } from '../../../hooks/useEpisodeDragDrop';
 import type { NextEpisode } from '../../../hooks/useWatchNextEpisodes';

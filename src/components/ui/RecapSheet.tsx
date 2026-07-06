@@ -1,7 +1,7 @@
 import { AutoAwesome, Send } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { RecapEpisode } from '../../hooks/useRecapData';
 import { BottomSheet } from './BottomSheet';

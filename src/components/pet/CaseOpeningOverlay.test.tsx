@@ -7,7 +7,7 @@ vi.mock('../../AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'u1' } }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: { text: { primary: '#fff', secondary: '#eee' } },
   }),

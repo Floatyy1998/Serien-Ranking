@@ -16,7 +16,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { colors } from '../../theme';
 import { StatCard } from './StatCard';
 import { useHomeStats } from './useHomeStats';

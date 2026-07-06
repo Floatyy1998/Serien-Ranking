@@ -10,7 +10,7 @@ import React from 'react';
 import { ShareCardFrame } from '../../components/share/ShareCardFrame';
 import { ShareCardSheet } from '../../components/share/ShareCardSheet';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { FormattedTime, StatsData } from './useStatsData';
 
 // ==================== Karten-Bausteine ====================

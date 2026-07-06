@@ -8,7 +8,7 @@ import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics
 import Schedule from '@mui/icons-material/Schedule';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { memo, useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { IconContainer, NavCard } from '../../components/ui';
 

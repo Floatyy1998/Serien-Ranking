@@ -1,7 +1,7 @@
 import { Cancel, Person, PlayCircle, Send } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { tapScale } from '../../../lib/motion';

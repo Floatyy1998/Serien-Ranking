@@ -7,7 +7,7 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
-import { StatsContext } from './StatsContextDef';
+import { StatsContext } from './StatsContext';
 
 interface StatsEpisode {
   watched: boolean;

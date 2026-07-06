@@ -4,7 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { FirstLastSlide } from './FirstLastSlide';
 import type { FirstLastWatch } from '../../types/Wrapped';
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

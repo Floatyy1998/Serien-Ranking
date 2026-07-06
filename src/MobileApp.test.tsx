@@ -29,7 +29,7 @@ vi.mock('./contexts/OptimizedFriendsContext', () => ({
     friendRequests: [],
   }),
 }));
-vi.mock('./contexts/NotificationContextDef', () => ({
+vi.mock('./contexts/NotificationContext', () => ({
   useNotifications: () => ({ unreadCount: 0, notifications: [] }),
 }));
 vi.mock('./hooks/useAdminHealthAlert', () => ({ useAdminHealthAlert: () => {} }));

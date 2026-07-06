@@ -1,7 +1,7 @@
 import { Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { wjCard } from './watchJourneyStyles';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';

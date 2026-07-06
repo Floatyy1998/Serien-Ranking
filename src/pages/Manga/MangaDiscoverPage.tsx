@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { discoverManga, type DiscoverCategory } from '../../services/anilistService';

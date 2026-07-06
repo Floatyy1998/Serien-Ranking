@@ -7,7 +7,7 @@ import { EmojiEvents, Refresh } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
 import { getOfflineBadgeSystem } from '../../features/badges/offlineBadgeSystem';

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import { Area, AreaChart, CartesianGrid, Pie, PieChart, Tooltip, XAxis, YAxis } from 'recharts';
 import { SafeResponsiveContainer } from '../../components/ui/SafeResponsiveContainer';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';

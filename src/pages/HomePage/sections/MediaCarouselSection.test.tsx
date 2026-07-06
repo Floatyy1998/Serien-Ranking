@@ -6,7 +6,7 @@ import { ThemeProvider, createTheme } from '@mui/material';
 import { MediaCarouselSection } from './MediaCarouselSection';
 import type { MediaItem } from './mediaCarouselTypes';
 
-vi.mock('../../../contexts/ThemeContextDef', () => {
+vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, p) =>

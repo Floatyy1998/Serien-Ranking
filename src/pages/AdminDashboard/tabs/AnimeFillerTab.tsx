@@ -8,7 +8,7 @@ import {
 } from '@mui/icons-material';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { dbRef } from '../../../lib/db/ref';
 
 interface Counts {

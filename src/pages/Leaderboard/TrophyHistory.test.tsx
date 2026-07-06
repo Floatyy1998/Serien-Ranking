@@ -17,7 +17,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('@mui/icons-material', () => ({ EmojiEvents: () => null }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

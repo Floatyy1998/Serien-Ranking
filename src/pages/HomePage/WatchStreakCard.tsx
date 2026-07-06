@@ -5,7 +5,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../lib/db/ref';
 import { CelebrationBurst } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';
 import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
 import { petService } from '../../services/petService';

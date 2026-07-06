@@ -1,6 +1,6 @@
 import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScale } from '../../../lib/motion';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';

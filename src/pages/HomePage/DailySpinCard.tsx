@@ -5,7 +5,7 @@ import 'firebase/compat/database';
 import { dbRef, userPath } from '../../lib/db/ref';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';
 import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';

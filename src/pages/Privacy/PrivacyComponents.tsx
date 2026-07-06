@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { FirebaseService, PrivacyData } from './usePrivacyData';
 
 /* ─── Generic Section Card ─── */

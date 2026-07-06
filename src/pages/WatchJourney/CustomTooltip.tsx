@@ -1,4 +1,4 @@
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { TooltipEntry } from './types';
 import { formatGermanNumber } from './tooltipUtils';
 

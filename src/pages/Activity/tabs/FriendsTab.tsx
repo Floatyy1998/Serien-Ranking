@@ -10,7 +10,7 @@ import SearchRounded from '@mui/icons-material/SearchRounded';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';

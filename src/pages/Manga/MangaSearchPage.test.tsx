@@ -10,7 +10,7 @@ vi.mock('../../contexts/MangaListContext', () => ({
   useMangaList: () => ({ mangaList: listState.list }),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

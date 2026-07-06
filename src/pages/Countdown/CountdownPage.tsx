@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
 import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';

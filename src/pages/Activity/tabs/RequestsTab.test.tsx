@@ -46,7 +46,7 @@ import type { FriendRequest } from '../../../types/Friend';
 
 const { showUndoToastMock } = vi.hoisted(() => ({ showUndoToastMock: vi.fn() }));
 
-vi.mock('../../../contexts/ThemeContextDef', () => {
+vi.mock('../../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

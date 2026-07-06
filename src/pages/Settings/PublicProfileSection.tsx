@@ -5,7 +5,7 @@
 import { ContentCopy, Link, Public, Refresh } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 interface PublicProfileSectionProps {

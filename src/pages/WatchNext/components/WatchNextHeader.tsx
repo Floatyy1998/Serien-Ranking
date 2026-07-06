@@ -4,7 +4,7 @@ import FilterList from '@mui/icons-material/FilterList';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { GradientText } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScale } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { ProviderFilter } from '../ProviderFilter';

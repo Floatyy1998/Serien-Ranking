@@ -5,7 +5,7 @@ import type { TasteMatchResult } from '../../services/tasteMatchService';
 import type { TasteMatchData } from './useTasteMatchData';
 import { TasteMatchPage } from './TasteMatchPage';
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

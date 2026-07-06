@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
 import { MangaCarouselSection } from './MangaCarouselSection';
 
-vi.mock('../../../contexts/ThemeContextDef', () => ({
+vi.mock('../../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: {
       primary: '#00d123',

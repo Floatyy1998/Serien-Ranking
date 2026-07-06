@@ -6,7 +6,7 @@
 import { Close, History, Search, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 
 export interface SearchSuggestionsProps {

@@ -5,7 +5,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from '@mui/icons-material';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 export interface PresetTheme {

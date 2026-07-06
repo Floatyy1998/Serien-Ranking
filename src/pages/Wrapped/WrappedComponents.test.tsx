@@ -23,7 +23,7 @@ vi.mock('../../components/wrapped', () => {
     HeatmapSlide: stub('HEATMAP'),
   };
 });
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {
       get: (_t, prop) => {

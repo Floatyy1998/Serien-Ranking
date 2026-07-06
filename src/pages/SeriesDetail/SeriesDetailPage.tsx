@@ -11,7 +11,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
 import { AnimeFillerBanner } from './AnimeFillerBanner';
 import { RecapSheet } from '../../components/ui/RecapSheet';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { useCharacterDescriptions } from '../../hooks/useCharacterDescriptions';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';

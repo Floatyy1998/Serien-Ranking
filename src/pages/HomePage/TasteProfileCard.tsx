@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import ChevronRight from '@mui/icons-material/ChevronRight';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, NavCard } from '../../components/ui';
 
 const ACCENT = '#a855f7';

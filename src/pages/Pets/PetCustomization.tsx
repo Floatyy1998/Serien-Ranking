@@ -5,7 +5,7 @@
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useMemo, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { PET_COLORS, RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import { ACCESSORIES, getAccessoryRarity } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS, getBackgroundRarity } from '../../components/pet/data/petBackgrounds';

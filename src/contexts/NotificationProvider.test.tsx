@@ -50,8 +50,8 @@ vi.mock('../AuthContext', () => ({
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-import { NotificationProvider } from './NotificationContext';
-import { useNotifications } from './NotificationContextDef';
+import { NotificationProvider } from './NotificationProvider';
+import { useNotifications } from './NotificationContext';
 
 const Consumer = () => {
   const { notifications, unreadCount } = useNotifications();

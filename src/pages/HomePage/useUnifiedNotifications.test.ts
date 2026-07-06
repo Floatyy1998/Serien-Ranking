@@ -43,7 +43,7 @@ const notif = vi.hoisted(() => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
 }));
-vi.mock('../../contexts/NotificationContextDef', () => ({
+vi.mock('../../contexts/NotificationContext', () => ({
   useNotifications: () => notif,
 }));
 

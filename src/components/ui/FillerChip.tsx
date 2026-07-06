@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Tooltip } from '@mui/material';
 import FastForwardRounded from '@mui/icons-material/FastForwardRounded';
 import HistoryRounded from '@mui/icons-material/HistoryRounded';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface FillerChipProps {
   filler?: boolean;

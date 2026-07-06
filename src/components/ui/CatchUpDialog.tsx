@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Series } from '../../types/Series';
 import { BottomSheet } from './BottomSheet';
 

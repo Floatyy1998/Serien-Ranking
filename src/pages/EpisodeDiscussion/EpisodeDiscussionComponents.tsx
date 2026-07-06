@@ -16,7 +16,7 @@ import { memo } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/FillerChip';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];

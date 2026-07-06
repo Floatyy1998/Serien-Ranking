@@ -11,7 +11,7 @@ import PauseCircleOutline from '@mui/icons-material/PauseCircleOutline';
 import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSubscriptionsData } from '../../hooks/useSubscriptionsData';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 import { tmdbLogoUrl, useProviderLogos } from '../../hooks/useProviderLogos';

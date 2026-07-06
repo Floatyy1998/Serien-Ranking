@@ -19,7 +19,7 @@ import {
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Series } from '../../types/Series';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
 import { ProactiveRecapCard } from './ProactiveRecapCard';

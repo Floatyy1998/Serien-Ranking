@@ -9,7 +9,7 @@ const { theme } = vi.hoisted(() => ({
     text: { primary: '#ffffff', secondary: '#eeeeee', muted: '#888888' },
   },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../components/ui', () => ({
   GradientText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }));

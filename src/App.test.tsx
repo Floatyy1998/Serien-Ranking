@@ -17,7 +17,7 @@ vi.mock('./AppProviders', () => ({
   AppProviders: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./hooks/useGlobalImageRetry', () => ({ useGlobalImageRetry: () => {} }));
-vi.mock('./contexts/ThemeContext', () => ({
+vi.mock('./contexts/ThemeProvider', () => ({
   DynamicThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./components/CookieConsentBanner', () => ({

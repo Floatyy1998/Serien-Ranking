@@ -24,7 +24,7 @@ import {
   HeatmapSlide,
 } from '../../components/wrapped';
 import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // === Gradient background helper ===
 

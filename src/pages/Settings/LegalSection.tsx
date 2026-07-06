@@ -5,7 +5,7 @@
 import { ChevronRight } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useCallback, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../../firebase/analytics';
 import { hapticSelect } from '../../lib/haptics';
 import { tapScaleSmall } from '../../lib/motion';

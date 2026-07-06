@@ -2,7 +2,7 @@ import { PlaylistAddCheck } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '../../../components/ui';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import type { WatchlistGap } from '../../../hooks/useSubscriptionsData';
 import { tapScale } from '../../../lib/motion';
 import { getProviderBrand } from '../providerBrands';

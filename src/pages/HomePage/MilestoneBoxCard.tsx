@@ -5,7 +5,7 @@ import 'firebase/compat/database';
 import { dbRef, userPath } from '../../lib/db/ref';
 import Inventory2 from '@mui/icons-material/Inventory2';
 import { CelebrationBurst } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import { hapticCelebrate } from '../../lib/haptics';

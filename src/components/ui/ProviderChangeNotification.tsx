@@ -12,7 +12,7 @@ import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { showUndoToast } from '../../lib/toast';
 import { snoozeNotifications, type SnoozeOption } from '../../lib/settings/notificationSettings';
 import { markProviderChangesDismissed } from '../../lib/validation/providerChangeDetection';

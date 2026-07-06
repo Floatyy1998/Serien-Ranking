@@ -87,7 +87,7 @@ const theme = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => theme }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => theme }));
 
 const firebaseMock = vi.hoisted(() => ({
   default: {

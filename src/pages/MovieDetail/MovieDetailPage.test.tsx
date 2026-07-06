@@ -54,7 +54,7 @@ vi.mock('../../components/detail', () => ({
 vi.mock('@mui/icons-material/Info', () => ({ default: () => null }));
 vi.mock('@mui/icons-material/People', () => ({ default: () => null }));
 vi.mock('@mui/icons-material/Star', () => ({ default: () => null }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

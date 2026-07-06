@@ -30,7 +30,7 @@ const { theme } = vi.hoisted(() => ({
     status: { success: '#4cd137', error: '#e74c3c' },
   },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme }),
 }));
 

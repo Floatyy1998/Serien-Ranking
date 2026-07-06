@@ -1,6 +1,6 @@
 import { ChevronRight, OpenInNew, Person } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
 import { tapScaleSmall } from '../../lib/motion';
 

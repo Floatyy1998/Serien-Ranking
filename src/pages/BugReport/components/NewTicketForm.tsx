@@ -1,7 +1,7 @@
 import { AttachFile, Close, PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useCallback, useRef, useState } from 'react';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { TicketPriority, TicketType } from '../types';
 import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';

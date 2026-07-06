@@ -7,7 +7,7 @@ import { memo, useMemo } from 'react';
 import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/providerMerge';
 import { getOptimalTextColor } from '../../theme/colorUtils';

@@ -16,7 +16,7 @@
 
 import { GridView, ViewList } from '@mui/icons-material';
 import React, { useMemo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/usePersistedState';
 import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';

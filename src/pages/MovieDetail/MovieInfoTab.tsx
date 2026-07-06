@@ -1,6 +1,6 @@
 import { Info } from '@mui/icons-material';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { Movie } from '../../types/Movie';
 
 interface MovieInfoTabProps {

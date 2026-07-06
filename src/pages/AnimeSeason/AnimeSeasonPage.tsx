@@ -66,7 +66,7 @@ import { useAuth } from '../../AuthContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../lib/backendApi';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';

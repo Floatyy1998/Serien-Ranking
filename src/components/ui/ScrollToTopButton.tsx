@@ -1,7 +1,7 @@
 import { ArrowUpward } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useCallback, useEffect } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleTight } from '../../lib/motion';
 
 interface ScrollToTopButtonProps {

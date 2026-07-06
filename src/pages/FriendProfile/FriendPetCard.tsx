@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { EvolvingPixelPet } from '../../components/pet';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { canSendGiftTo, formatCooldownRemaining, sendPetGift } from '../../services/pet/petGifts';
 import { PET_TYPE_NAMES } from '../../types/pet.types';

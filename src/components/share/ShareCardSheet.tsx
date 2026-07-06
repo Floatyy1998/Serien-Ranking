@@ -13,7 +13,7 @@ import { IosShare } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { hapticError, hapticTap } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';
 import { exportNodeAsImage, shareOrDownload } from '../../lib/share/shareCard';

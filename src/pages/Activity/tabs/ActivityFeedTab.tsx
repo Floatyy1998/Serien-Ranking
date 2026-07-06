@@ -10,7 +10,7 @@ import TimelineRounded from '@mui/icons-material/TimelineRounded';
 import { motion } from 'framer-motion';
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
 import { ActiveFriendsRow } from '../ActiveFriendsRow';
 import { ActivityEntryCard } from '../ActivityEntryCard';

@@ -22,7 +22,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { trackRegister } from '../../firebase/analytics';
 import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';

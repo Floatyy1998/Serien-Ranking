@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { logChapterRead } from '../../services/readActivityService';

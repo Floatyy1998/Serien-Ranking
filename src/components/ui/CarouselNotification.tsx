@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, userPath } from '../../lib/db/ref';
 import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
 import { useAuth } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { showUndoToast } from '../../lib/toast';
 import {

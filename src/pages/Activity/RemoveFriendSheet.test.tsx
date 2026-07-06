@@ -46,7 +46,7 @@ vi.mock('framer-motion', async () => {
 // @mui/icons-material barrel import pulls in ~11k modules → OOM in the worker; stub used icons.
 vi.mock('@mui/icons-material', () => ({ PersonRemove: () => null }));
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

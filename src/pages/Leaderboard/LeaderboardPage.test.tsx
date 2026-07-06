@@ -69,7 +69,7 @@ vi.mock('./CelebrationModal', () => ({ CelebrationModal: () => null }));
 vi.mock('./PodiumSection', () => ({ PodiumSection: () => <div data-testid="podium" /> }));
 vi.mock('./RankingList', () => ({ RankingList: () => <div data-testid="rankings" /> }));
 vi.mock('./TrophyHistory', () => ({ TrophyHistory: () => <div data-testid="trophies" /> }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

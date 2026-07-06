@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { SeriesNotificationHub } from './SeriesNotificationHub';
 import type { Series } from '../../types/Series';
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const actual = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };
 });

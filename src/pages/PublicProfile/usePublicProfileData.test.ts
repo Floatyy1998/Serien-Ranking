@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 /* ---------------------------------------------------------------------------
  * Mocks: firebase once, react-router, static catalog, useTheme (via
- * ThemeContextDef, für useResolvedTheme). Filter/Sort/Rating bleiben echt.
+ * ThemeContext, für useResolvedTheme). Filter/Sort/Rating bleiben echt.
  * ------------------------------------------------------------------------- */
 const fb = vi.hoisted(() => {
   const state = { dataByPath: {} as Record<string, unknown> };
@@ -37,7 +37,7 @@ vi.mock('../../lib/staticCatalog', () => ({
   fetchStaticCatalogMovies: () => Promise.resolve(cat.movies),
 }));
 // useResolvedTheme fängt einen throw ab → Fallback-Theme. Wir lassen es werfen.
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => {
     throw new Error('no provider');
   },

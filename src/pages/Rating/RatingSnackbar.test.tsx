@@ -7,7 +7,7 @@ vi.mock('@mui/icons-material', () => ({ Check: () => null }));
 const { theme } = vi.hoisted(() => ({
   theme: { status: { success: '#4cd137' } },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme }),
 }));
 

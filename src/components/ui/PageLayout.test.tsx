@@ -4,7 +4,7 @@ import { createRef } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PageLayout } from './PageLayout';
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({
     primaryColor: '#00d123',

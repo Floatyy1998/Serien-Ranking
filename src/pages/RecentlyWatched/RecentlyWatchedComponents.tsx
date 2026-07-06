@@ -6,7 +6,7 @@
 import { CalendarToday, ChatBubbleOutline, Check, History, PlayCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
 import { EmptyState as UiEmptyState } from '../../components/ui/EmptyState';
 import { getOptimalTextColor } from '../../theme/colorUtils';

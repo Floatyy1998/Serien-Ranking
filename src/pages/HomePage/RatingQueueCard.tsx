@@ -6,7 +6,7 @@
 import StarRate from '@mui/icons-material/StarRate';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { memo, useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useUnratedQueue } from '../../hooks/useUnratedQueue';
 import { IconContainer, NavCard } from '../../components/ui';
 import { RatingQueueSheet } from '../../components/ui/RatingQueueSheet';

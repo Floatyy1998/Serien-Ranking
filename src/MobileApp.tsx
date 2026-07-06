@@ -5,7 +5,7 @@ import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './AuthContext';
 import { ADMIN_UID } from './config/admin';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
-import { useNotifications } from './contexts/NotificationContextDef';
+import { useNotifications } from './contexts/NotificationContext';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
 import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';

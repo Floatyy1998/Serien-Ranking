@@ -20,7 +20,7 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
 const navigate = vi.fn<(to: string) => void>();
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({
     primaryColor: '#00d123',

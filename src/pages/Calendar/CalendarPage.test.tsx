@@ -53,7 +53,7 @@ vi.mock('../../components/ui', () => ({
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
   SkeletonListRow: () => <div data-testid="skeleton" />,
 }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

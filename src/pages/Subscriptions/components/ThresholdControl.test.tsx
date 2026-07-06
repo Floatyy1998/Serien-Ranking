@@ -14,7 +14,7 @@ const theme = vi.hoisted(() => ({
     status: { success: '#4caf50', warning: '#f59e0b', error: '#ef4444' },
   },
 }));
-vi.mock('../../../contexts/ThemeContextDef', () => ({ useTheme: () => theme }));
+vi.mock('../../../contexts/ThemeContext', () => ({ useTheme: () => theme }));
 
 afterEach(() => {
   cleanup();

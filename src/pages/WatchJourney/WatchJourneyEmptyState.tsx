@@ -1,6 +1,6 @@
 import { TrendingUp } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { BackButton } from '../../components/ui';
 import { WatchJourneyYearPicker } from './WatchJourneyYearPicker';

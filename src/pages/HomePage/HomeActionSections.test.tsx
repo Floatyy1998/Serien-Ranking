@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { QuickActionsSection, SecondaryActionsSection } from './HomeActionSections';
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const actual = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };
 });

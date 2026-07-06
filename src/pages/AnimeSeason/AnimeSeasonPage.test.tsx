@@ -111,7 +111,7 @@ vi.mock('../../theme/colorUtils', () => ({
 }));
 vi.mock('../../utils/episodeDate', () => ({ getEpisodeAirDate: () => null }));
 vi.mock('../../lib/providerMerge', () => ({ getProviderLogoUrl: () => '' }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

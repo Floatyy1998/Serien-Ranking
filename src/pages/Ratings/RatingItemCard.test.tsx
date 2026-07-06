@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import type { PreparedItem } from './useRatingsData';
 
 vi.mock('@mui/icons-material', () => ({ Star: () => null, WatchLater: () => null }));

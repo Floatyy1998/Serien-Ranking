@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   getProviderTitleUrl,

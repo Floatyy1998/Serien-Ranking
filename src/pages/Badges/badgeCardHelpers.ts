@@ -1,4 +1,4 @@
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
 

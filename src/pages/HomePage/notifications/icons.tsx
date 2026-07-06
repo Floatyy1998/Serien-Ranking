@@ -15,7 +15,7 @@ import {
   Tv,
 } from '@mui/icons-material';
 import type React from 'react';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 
 type Theme = ThemeContextType['currentTheme'];
 

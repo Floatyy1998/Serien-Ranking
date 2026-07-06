@@ -49,7 +49,7 @@ const theme = {
   status: { success: '#4cd137', error: '#e74c3c', warning: '#f5a623' },
 };
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     userConfig: configRef.current,
     updateTheme,

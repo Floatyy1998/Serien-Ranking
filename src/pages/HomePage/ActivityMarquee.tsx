@@ -7,7 +7,7 @@
 
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion, useMotionValue } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';

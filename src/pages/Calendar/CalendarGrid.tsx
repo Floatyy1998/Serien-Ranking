@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, forwardRef } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';

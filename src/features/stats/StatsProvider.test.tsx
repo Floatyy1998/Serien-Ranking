@@ -15,7 +15,7 @@ vi.mock('../../lib/rating/rating', () => ({ calculateOverallRating: () => '8.00'
 vi.mock('../../config/menuItems', () => ({ isSupportedProvider: () => true }));
 
 import { StatsProvider } from './StatsProvider';
-import { useStats } from './StatsContextDef';
+import { useStats } from './StatsContext';
 
 const Consumer = () => {
   const { seriesStatsData } = useStats();

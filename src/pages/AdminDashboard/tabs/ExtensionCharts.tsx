@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { SafeResponsiveContainer } from '../../../components/ui/SafeResponsiveContainer';
-import type { useTheme } from '../../../contexts/ThemeContextDef';
+import type { useTheme } from '../../../contexts/ThemeContext';
 
 interface PlatformPieItem {
   name: string;

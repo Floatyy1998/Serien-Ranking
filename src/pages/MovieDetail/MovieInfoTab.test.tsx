@@ -4,7 +4,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import type { Movie } from '../../types/Movie';
 
 vi.mock('@mui/icons-material', () => ({ Info: () => null }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

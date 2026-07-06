@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SpeakButton } from '../../components/ui/SpeakButton';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';

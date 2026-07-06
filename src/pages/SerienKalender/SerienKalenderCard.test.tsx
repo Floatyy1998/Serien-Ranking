@@ -15,7 +15,7 @@ const { theme } = vi.hoisted(() => ({
     status: { success: '#4cd137' },
   },
 }));
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../utils/themedPlaceholder', () => ({ useThemedPlaceholder: () => 'placeholder.png' }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 

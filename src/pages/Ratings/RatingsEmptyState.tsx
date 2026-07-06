@@ -8,7 +8,7 @@ import { Star } from '@mui/icons-material';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 interface RatingsEmptyStateProps {
   theme: ReturnType<typeof useTheme>['currentTheme'];

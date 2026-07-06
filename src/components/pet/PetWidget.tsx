@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { showToast } from '../../lib/toast';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import type { pickReaction } from '../../hooks/usePetReactions';
 import { usePetReactions, triggerPetReaction } from '../../hooks/usePetReactions';
 import { PET_CONFIG } from '../../services/pet/petConstants';

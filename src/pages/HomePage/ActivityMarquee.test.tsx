@@ -9,7 +9,7 @@ const { navigateMock, actsRef } = vi.hoisted(() => ({
   actsRef: { value: [] as FriendActivity[] },
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, p) =>

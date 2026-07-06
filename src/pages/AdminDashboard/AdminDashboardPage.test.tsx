@@ -15,7 +15,7 @@ const h = vi.hoisted(() => ({
 vi.mock('./useAdminGuard', () => ({ useAdminGuard: () => h.guard }));
 vi.mock('./useAdminDashboardData', () => ({ useAdminDashboardData: () => h.data }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams(''), vi.fn()],

@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;

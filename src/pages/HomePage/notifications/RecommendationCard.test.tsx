@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { RecommendationCard } from './RecommendationCard';
 import type { UnifiedNotification } from '../useUnifiedNotifications';
 
-vi.mock('../../../contexts/ThemeContextDef', async () => {
+vi.mock('../../../contexts/ThemeContext', async () => {
   const actual = await import('../../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };
 });

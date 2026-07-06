@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 
 interface Tab {

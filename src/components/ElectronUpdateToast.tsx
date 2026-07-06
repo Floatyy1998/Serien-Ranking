@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useTheme } from '../contexts/ThemeContextDef';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * Toast unten rechts, der erscheint sobald electron-updater ein Update

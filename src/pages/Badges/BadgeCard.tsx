@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import type { Badge, BadgeProgress } from '../../features/badges/badgeDefinitions';
 import { BadgeIcon } from '../../features/badges/BadgeIcons';
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 import { getRarityColor } from './badgeCardHelpers';
 import { tapScaleSmall } from '../../lib/motion';
 

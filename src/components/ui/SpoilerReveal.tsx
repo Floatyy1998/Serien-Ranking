@@ -1,7 +1,7 @@
 import { Warning } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 
 interface SpoilerRevealProps {

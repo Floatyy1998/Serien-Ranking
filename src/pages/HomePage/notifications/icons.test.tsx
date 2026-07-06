@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 
 const theme = {

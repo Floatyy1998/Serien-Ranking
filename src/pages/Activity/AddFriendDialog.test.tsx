@@ -67,7 +67,7 @@ vi.mock('../../AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => friendsValue,
 }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

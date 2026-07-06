@@ -1,6 +1,6 @@
 import { ErrorOutline } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../../contexts/ThemeContextDef';
+import { useTheme } from '../../../contexts/ThemeContext';
 import type { ProviderInsight } from '../../../types/Subscription';
 
 const formatEuro = (value: number): string =>

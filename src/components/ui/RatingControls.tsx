@@ -6,7 +6,7 @@ import {
   SentimentVerySatisfied,
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { hapticSelect } from '../../lib/haptics';
 import '../../pages/Rating/RatingPage.css';
 import { tapScaleTight } from '../../lib/motion';

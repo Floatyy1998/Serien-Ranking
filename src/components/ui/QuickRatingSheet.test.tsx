@@ -21,7 +21,7 @@ vi.mock('../../lib/haptics', () => ({
   hapticSuccess: vi.fn(),
 }));
 
-vi.mock('../../contexts/ThemeContextDef', async () => {
+vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({
     primaryColor: '#00d123',

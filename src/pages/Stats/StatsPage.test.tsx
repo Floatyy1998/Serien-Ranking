@@ -22,7 +22,7 @@ const { theme, stats } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({ useTheme: () => ({ currentTheme: theme }) }));
+vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('./useStatsData', () => ({
   useStatsData: () => stats,

@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AniListMangaSearchResult } from '../../../types/Manga';
-import type { ThemeContextType } from '../../../contexts/ThemeContextDef';
+import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { MangaDetailPreview } from './MangaDetailPreview';
 
 vi.mock('../../../components/ui', () => ({

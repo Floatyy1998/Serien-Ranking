@@ -6,7 +6,7 @@ const hookState = vi.hoisted(() => ({
   value: {} as Record<string, unknown>,
 }));
 
-vi.mock('../../contexts/ThemeContextDef', () => ({
+vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({
     currentTheme: { primary: '#00d123', background: { default: '#000' } },
   }),

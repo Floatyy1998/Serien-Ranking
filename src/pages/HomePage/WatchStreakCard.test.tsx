@@ -10,7 +10,7 @@ const { u, streakData } = vi.hoisted(() => ({
 
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: u }) }));
 
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, p) =>

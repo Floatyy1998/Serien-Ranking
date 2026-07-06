@@ -9,7 +9,7 @@ vi.mock('./EpisodeCard', () => ({
   SingleEpisodeCard: () => <div data-testid="single-ep" />,
   EpisodeGroupCard: () => <div data-testid="group-ep" />,
 }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

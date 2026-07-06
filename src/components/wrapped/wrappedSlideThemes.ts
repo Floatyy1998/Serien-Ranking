@@ -1,4 +1,4 @@
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 export const getSlideThemes = (currentTheme: ReturnType<typeof useTheme>['currentTheme']) => ({
   intro: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,

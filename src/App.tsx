@@ -7,7 +7,7 @@ import { EmailVerificationBanner } from './components/auth/EmailVerificationBann
 // BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { AppProviders } from './AppProviders';
 import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
-import { DynamicThemeProvider } from './contexts/ThemeContext';
+import { DynamicThemeProvider } from './contexts/ThemeProvider';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ElectronUpdateToast } from './components/ElectronUpdateToast';
 import { ErrorBoundary } from './components/ErrorBoundary';

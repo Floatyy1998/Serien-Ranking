@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { formatDate } from './useCalendarData';
 
 // ── Types ────────────────────────────────────────────────────────

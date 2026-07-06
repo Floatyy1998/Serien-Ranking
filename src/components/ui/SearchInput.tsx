@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { scaleButton, tapScaleTight } from '../../lib/motion';
 
 interface SearchInputProps {

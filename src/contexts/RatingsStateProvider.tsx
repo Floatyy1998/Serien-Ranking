@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useRef } from 'react';
-import { RatingsStateContext } from './RatingsStateContextDef';
-import type { RatingsState } from './RatingsStateContextDef';
+import { RatingsStateContext } from './RatingsStateContext';
+import type { RatingsState } from './RatingsStateContext';
 
 const STORAGE_KEY = 'ratingsPageState';
 const SCROLL_STORAGE_KEY = 'ratingsPageScroll';

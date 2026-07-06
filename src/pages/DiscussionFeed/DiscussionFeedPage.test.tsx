@@ -28,7 +28,7 @@ vi.mock('@mui/icons-material', () => {
   return { ChatBubbleOutline: Stub, Movie: Stub, Reply: Stub, Tv: Stub };
 });
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigateMock }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {
       get: (_t, prop) => {

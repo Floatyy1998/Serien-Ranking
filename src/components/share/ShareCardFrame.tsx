@@ -9,7 +9,7 @@
  */
 
 import React from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { GradientText } from '../ui';
 
 export const SHARE_CARD_WIDTH = 1080;

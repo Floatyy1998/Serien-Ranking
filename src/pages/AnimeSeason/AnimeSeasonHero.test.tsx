@@ -14,7 +14,7 @@ vi.mock('../../theme/colorUtils', () => ({
 vi.mock('../../utils/themedPlaceholder', () => ({ useThemedPlaceholder: () => 'ph.jpg' }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../HomePage/sections/MiniProviderBadges', () => ({ MiniProviderBadges: () => null }));
-vi.mock('../../contexts/ThemeContextDef', () => {
+vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
       get: (_t, prop) => {

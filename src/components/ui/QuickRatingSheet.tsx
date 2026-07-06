@@ -1,7 +1,7 @@
 import { Save } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { hapticSuccess } from '../../lib/haptics';
 import { BottomSheet } from './BottomSheet';
 import { RatingControls } from './RatingControls';

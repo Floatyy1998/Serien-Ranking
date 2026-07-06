@@ -1,6 +1,6 @@
 import { Search } from '@mui/icons-material';
 import React, { useMemo, useState } from 'react';
-import type { useTheme } from '../../../contexts/ThemeContextDef';
+import type { useTheme } from '../../../contexts/ThemeContext';
 
 interface Column<T> {
   key: string;

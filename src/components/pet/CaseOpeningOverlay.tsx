@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 import { petService } from '../../services/petService';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';

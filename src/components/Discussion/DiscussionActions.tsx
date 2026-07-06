@@ -1,6 +1,6 @@
 import { Delete, Edit, Flag } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { useTheme } from '../../contexts/ThemeContextDef';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface DiscussionActionsProps {
   isOwner: boolean;

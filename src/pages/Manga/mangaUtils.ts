@@ -1,4 +1,4 @@
-import type { useTheme } from '../../contexts/ThemeContextDef';
+import type { useTheme } from '../../contexts/ThemeContext';
 
 /** Theme type alias to avoid `typeof import()` in component props */
 export type AppTheme = ReturnType<typeof useTheme>['currentTheme'];
