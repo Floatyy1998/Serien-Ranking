@@ -224,13 +224,24 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   fillerLookupKey(item.nextEpisode.seasonNumber, item.nextEpisode.episodeNumber)
                 );
 
+              // Provider-Wahl: TMDB listet oft mehrere (z. B. WOW vor HBO Max).
+              // Bevorzugt wird der Provider, den der User AKTIV abonniert hat —
+              // erst dann der erste aus der Liste. Manuelle Overrides gewinnen
+              // weiterhin (resolveProviderOverlay).
+              const itemProviders = item.provider?.provider || [];
+              const subbedProvider = itemProviders.find((p) => {
+                const canonical = normalizeProviderName(p?.name);
+                return !!canonical && activeProviders.has(canonical);
+              });
+              const primaryProvider = subbedProvider || itemProviders[0];
+
               // D4 — Provider-Farbfacette: läuft die Serie auf einem AKTIVEN
               // Abo, färbt dessen Markenfarbe die Karten-Akzente (Randbalken,
               // Glow); sonst bleibt der Theme-Akzent (neutral).
               const resolved = resolveProviderOverlay(
                 getSeriesOverride(item.id),
-                item.provider?.provider?.[0]?.logo,
-                item.provider?.provider?.[0]?.name
+                primaryProvider?.logo,
+                primaryProvider?.name
               );
               const canonicalProvider = resolved ? normalizeProviderName(resolved.name) : null;
               const providerColor =
