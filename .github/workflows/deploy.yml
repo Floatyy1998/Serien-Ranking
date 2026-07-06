@@ -40,6 +40,14 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
+          # Zwei Shards in getrennten Prozessen: jsdom-Tests bauen ueber
+          # viele Dateien kumulativ Speicher auf — bei ~600 Dateien stirbt
+          # ein einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
+          # Frischer Prozess pro Shard setzt den Speicher zurueck.
+          run_shards() {
+            npx vitest run "$@" --passWithNoTests --shard=1/2
+            npx vitest run "$@" --passWithNoTests --shard=2/2
+          }
           BASE=""
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}" --depth=1 || true
@@ -49,10 +57,10 @@ jobs:
           fi
           if [ -n "$BASE" ] && git rev-parse --verify "$BASE" >/dev/null 2>&1; then
             echo "Running tests affected since $BASE"
-            npx vitest run --changed "$BASE" --passWithNoTests
+            run_shards --changed "$BASE"
           else
             echo "No usable base ref — running full suite"
-            npx vitest run --passWithNoTests
+            run_shards
           fi
 
       - name: Build
