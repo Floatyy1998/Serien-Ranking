@@ -1,6 +1,6 @@
-import firebase from 'firebase/compat/app';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import type { Series } from '../../types/Series';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
 import {
   getProviderNotificationsEnabled,
   getSnoozedUntil,
@@ -67,8 +67,7 @@ export const normalizeProviderName = (name: string): string | null => {
 
 const getKnownProviders = async (userId: string): Promise<KnownProviders> => {
   try {
-    const snapshot = await firebase.database().ref(`users/${userId}/knownProviders`).once('value');
-    return (snapshot.val() as KnownProviders | null) || {};
+    return (await dbGet<KnownProviders>(userPath(userId, 'knownProviders'))) || {};
   } catch {
     return {};
   }
@@ -78,11 +77,11 @@ const getNotificationStates = async (
   userId: string
 ): Promise<Record<string, ProviderNotificationState>> => {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/providerChangeNotifications`)
-      .once('value');
-    return (snapshot.val() as Record<string, ProviderNotificationState> | null) || {};
+    return (
+      (await dbGet<Record<string, ProviderNotificationState>>(
+        paths.notificationState(userId, 'providerChangeNotifications')
+      )) || {}
+    );
   } catch {
     return {};
   }
@@ -232,22 +231,22 @@ export const detectProviderChanges = async (
 
     for (const [key, value] of Object.entries(updatedKnown)) {
       if (watchlistIds.has(key)) {
-        updates[`users/${userId}/knownProviders/${key}`] = value;
+        updates[userPath(userId, 'knownProviders', key)] = value;
       }
     }
     for (const key of Object.keys(knownProviders)) {
       if (!watchlistIds.has(key)) {
-        updates[`users/${userId}/knownProviders/${key}`] = null;
+        updates[userPath(userId, 'knownProviders', key)] = null;
       }
     }
     for (const key of Object.keys(states)) {
       if (!watchlistIds.has(key)) {
-        updates[`users/${userId}/providerChangeNotifications/${key}`] = null;
+        updates[userPath(userId, 'providerChangeNotifications', key)] = null;
       }
     }
 
     if (Object.keys(updates).length > 0) {
-      await firebase.database().ref().update(updates);
+      await dbUpdate(updates);
     }
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to store providers:', error);
@@ -270,14 +269,14 @@ export const markProviderChangesShown = async (
   const updates: Record<string, unknown> = {};
   const now = Date.now();
   seriesIds.forEach((id) => {
-    updates[`users/${userId}/providerChangeNotifications/${id}/shownAt`] = now;
+    updates[userPath(userId, 'providerChangeNotifications', id, 'shownAt')] = now;
     // Falls noch ein Legacy-Feld liegt: explizit auf null, damit es nicht weiter
     // gemappt wird.
-    updates[`users/${userId}/providerChangeNotifications/${id}/dismissed`] = null;
-    updates[`users/${userId}/providerChangeNotifications/${id}/timestamp`] = null;
+    updates[userPath(userId, 'providerChangeNotifications', id, 'dismissed')] = null;
+    updates[userPath(userId, 'providerChangeNotifications', id, 'timestamp')] = null;
   });
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to mark shown:', error);
   }
@@ -298,17 +297,17 @@ export const markProviderChangesDismissed = async (
   changes.forEach(({ seriesId, currentProviders }) => {
     // Jitter ±2 Tage, damit Sammel-Dismiss nicht alle gleichzeitig wieder auflebt
     const jitter = (Math.random() - 0.5) * 4 * 24 * 60 * 60 * 1000;
-    updates[`users/${userId}/providerChangeNotifications/${seriesId}`] = {
+    updates[userPath(userId, 'providerChangeNotifications', seriesId)] = {
       shownAt: now,
       dismissedAt: now + jitter,
     };
-    updates[`users/${userId}/knownProviders/${seriesId}`] = {
+    updates[userPath(userId, 'knownProviders', seriesId)] = {
       providers: currentProviders,
       lastChecked: nowISO,
     };
   });
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     console.error('[ProviderChangeDetection] Failed to mark dismissed:', error);
   }

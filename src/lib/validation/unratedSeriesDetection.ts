@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
 import { normalizeSeasons, normalizeEpisodes } from '../episode/seriesMetrics';
 import { calculateOverallRating } from '../rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -84,12 +84,13 @@ function hasCurrentlyAiringSeason(series: Series): boolean {
  */
 export async function detectUnratedSeries(seriesList: Series[], userId: string): Promise<Series[]> {
   const now = Date.now();
-  const [dismissedSnap, snoozed] = await Promise.all([
-    firebase.database().ref(`users/${userId}/unratedSeriesNotifications`).once('value'),
+  const [dismissedData, snoozed] = await Promise.all([
+    dbGet<Record<string, { dismissed: boolean; timestamp: number }>>(
+      paths.notificationState(userId, 'unratedSeriesNotifications')
+    ),
     getSnoozedUntil('unrated', userId),
   ]);
-  const dismissed =
-    (dismissedSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
+  const dismissed = dismissedData || {};
 
   const unrated: Series[] = [];
 
@@ -138,12 +139,12 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
   const cleanup: Record<string, null> = {};
   for (const key of Object.keys(dismissed)) {
     if (!currentIds.has(key)) {
-      cleanup[`users/${userId}/unratedSeriesNotifications/${key}`] = null;
+      cleanup[userPath(userId, 'unratedSeriesNotifications', key)] = null;
     }
   }
   if (Object.keys(cleanup).length > 0) {
     try {
-      await firebase.database().ref().update(cleanup);
+      await dbUpdate(cleanup);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[UnratedSeriesDetection] Failed to cleanup notifications: ${message}`);

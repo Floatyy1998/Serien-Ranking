@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
 import { hasActiveRewatch } from './rewatch.utils';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
@@ -25,9 +25,10 @@ export const getStoredCompletedData = async (
   userId: string
 ): Promise<Record<string, CompletedSeriesData>> => {
   try {
-    const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
-    const snapshot = await ref.once('value');
-    return (snapshot.val() as Record<string, CompletedSeriesData> | null) || {};
+    return (
+      (await dbGet<Record<string, CompletedSeriesData>>(userPath(userId, 'completedSeriesData'))) ||
+      {}
+    );
   } catch {
     return {};
   }
@@ -38,8 +39,7 @@ export const storeCompletedData = async (
   data: Record<string, CompletedSeriesData>
 ): Promise<void> => {
   try {
-    const ref = firebase.database().ref(`users/${userId}/completedSeriesData`);
-    await ref.set(data);
+    await dbRef(userPath(userId, 'completedSeriesData')).set(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[CompletedSeriesDetection] Failed to store completed data: ${message}`);
@@ -88,11 +88,10 @@ export const detectCompletedSeries = async (
   const updatedStoredData = { ...storedData };
 
   // Lade bereits abgewiesene Benachrichtigungen
-  const notificationsRef = firebase.database().ref(`users/${userId}/completedSeriesNotifications`);
-  const notificationsSnapshot = await notificationsRef.once('value');
   const dismissedNotifications =
-    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
-    {};
+    (await dbGet<Record<string, { dismissed: boolean; timestamp: number }>>(
+      paths.notificationState(userId, 'completedSeriesNotifications')
+    )) || {};
 
   for (const series of seriesList) {
     // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
@@ -175,12 +174,12 @@ export const detectCompletedSeries = async (
   const notificationCleanup: Record<string, null> = {};
   for (const key of Object.keys(dismissedNotifications)) {
     if (!currentWatchlistIds.has(key)) {
-      notificationCleanup[`users/${userId}/completedSeriesNotifications/${key}`] = null;
+      notificationCleanup[userPath(userId, 'completedSeriesNotifications', key)] = null;
     }
   }
   if (Object.keys(notificationCleanup).length > 0) {
     try {
-      await firebase.database().ref().update(notificationCleanup);
+      await dbUpdate(notificationCleanup);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[CompletedSeriesDetection] Failed to cleanup notifications: ${message}`);
@@ -207,12 +206,12 @@ export const markCompletedSeriesAsNotified = async (
   const updates: Record<string, unknown> = {};
   const now = Date.now();
   for (const id of seriesIds) {
-    updates[`users/${userId}/completedSeriesData/${id}/notified`] = true;
-    updates[`users/${userId}/completedSeriesData/${id}/notifiedAt`] = now;
-    updates[`users/${userId}/completedSeriesData/${id}/lastChecked`] = now;
+    updates[userPath(userId, 'completedSeriesData', id, 'notified')] = true;
+    updates[userPath(userId, 'completedSeriesData', id, 'notifiedAt')] = now;
+    updates[userPath(userId, 'completedSeriesData', id, 'lastChecked')] = now;
   }
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[CompletedSeriesDetection] Failed to mark notified: ${message}`);

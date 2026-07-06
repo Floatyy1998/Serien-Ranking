@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
 import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
 // Einfache Map: seriesId → bekannte Staffelanzahl (vom User bestätigter Stand)
@@ -20,11 +20,7 @@ const SHOWN_COOLDOWN = 3 * DAY_MS;
 
 const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/meta/seasonCounts`)
-      .once('value');
-    return (snapshot.val() as SeasonCounts | null) || {};
+    return (await dbGet<SeasonCounts>(userPath(userId, 'meta', 'seasonCounts'))) || {};
   } catch {
     return {};
   }
@@ -32,7 +28,7 @@ const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
 
 const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<void> => {
   try {
-    await firebase.database().ref(`users/${userId}/meta/seasonCounts`).set(data);
+    await dbRef(userPath(userId, 'meta', 'seasonCounts')).set(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[NewSeasonDetection] Failed to store season counts: ${message}`);
@@ -41,11 +37,11 @@ const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<vo
 
 const getShownEntries = async (userId: string): Promise<Record<string, ShownEntry>> => {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/newSeasonNotifications`)
-      .once('value');
-    return (snapshot.val() as Record<string, ShownEntry> | null) || {};
+    return (
+      (await dbGet<Record<string, ShownEntry>>(
+        paths.notificationState(userId, 'newSeasonNotifications')
+      )) || {}
+    );
   } catch {
     return {};
   }
@@ -90,7 +86,7 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
   const cleanupUpdates: Record<string, null> = {};
   for (const key of Object.keys(shownEntries)) {
     if (!currentIds.has(key)) {
-      cleanupUpdates[`users/${userId}/newSeasonNotifications/${key}`] = null;
+      cleanupUpdates[userPath(userId, 'newSeasonNotifications', key)] = null;
     }
   }
   for (const key of Object.keys(storedCounts)) {
@@ -100,7 +96,7 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
   }
   if (Object.keys(cleanupUpdates).length > 0) {
     try {
-      await firebase.database().ref().update(cleanupUpdates);
+      await dbUpdate(cleanupUpdates);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[NewSeasonDetection] Failed to cleanup notifications: ${message}`);
@@ -134,14 +130,14 @@ export const markNewSeasonsAsShown = async (
   const now = Date.now();
   for (const s of seriesList) {
     if (!s.id || typeof s.seasonCount !== 'number') continue;
-    updates[`users/${userId}/newSeasonNotifications/${s.id}`] = {
+    updates[userPath(userId, 'newSeasonNotifications', s.id)] = {
       shownCount: s.seasonCount,
       shownAt: now,
     };
   }
   if (Object.keys(updates).length === 0) return;
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[NewSeasonDetection] Failed to mark shown: ${message}`);
@@ -170,15 +166,15 @@ export const markMultipleSeasonsAsNotified = async (
       storedCounts[key] = series.seasonCount;
       countsChanged = true;
     }
-    updates[`users/${userId}/newSeasonNotifications/${id}`] = null;
+    updates[userPath(userId, 'newSeasonNotifications', id)] = null;
   }
 
   if (countsChanged) {
-    updates[`users/${userId}/meta/seasonCounts`] = storedCounts;
+    updates[userPath(userId, 'meta', 'seasonCounts')] = storedCounts;
   }
 
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[NewSeasonDetection] Failed to mark notified: ${message}`);

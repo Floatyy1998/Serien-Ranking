@@ -1,4 +1,4 @@
-import firebase from 'firebase/compat/app';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
 import type { Series } from '../../types/Series';
 import { normalizeSeasons, normalizeEpisodes, isEpisodeWatched } from '../episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -54,12 +54,13 @@ export async function detectAnimeMangaHandoff(
   if (!bridge || Object.keys(bridge).length === 0) return [];
 
   const now = Date.now();
-  const [notifiedSnap, snoozed] = await Promise.all([
-    firebase.database().ref(`users/${userId}/animeMangaNotifications`).once('value'),
+  const [notifiedRaw, snoozed] = await Promise.all([
+    dbGet<Record<string, { dismissed: boolean; timestamp: number }>>(
+      paths.notificationState(userId, 'animeMangaNotifications')
+    ),
     getSnoozedUntil('animeManga', userId),
   ]);
-  const notified =
-    (notifiedSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
+  const notified = notifiedRaw || {};
 
   const out: AnimeMangaHandoff[] = [];
 
@@ -118,12 +119,12 @@ export async function detectAnimeMangaHandoff(
   for (const key of Object.keys(notified)) {
     const seriesId = key.split('-')[0];
     if (!currentIds.has(seriesId)) {
-      cleanup[`users/${userId}/animeMangaNotifications/${key}`] = null;
+      cleanup[userPath(userId, 'animeMangaNotifications', key)] = null;
     }
   }
   if (Object.keys(cleanup).length > 0) {
     try {
-      await firebase.database().ref().update(cleanup);
+      await dbUpdate(cleanup);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[AnimeMangaHandoff] Failed to cleanup notifications: ${message}`);
@@ -144,10 +145,10 @@ export async function markAnimeMangaHandoffDismissed(
   seasonNumber: number
 ): Promise<void> {
   try {
-    await firebase
-      .database()
-      .ref(`users/${userId}/animeMangaNotifications/${seriesId}-${seasonNumber}`)
-      .set({ dismissed: true, timestamp: Date.now() });
+    await dbRef(userPath(userId, 'animeMangaNotifications', `${seriesId}-${seasonNumber}`)).set({
+      dismissed: true,
+      timestamp: Date.now(),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[AnimeMangaHandoff] Failed to persist dismiss: ${message}`);

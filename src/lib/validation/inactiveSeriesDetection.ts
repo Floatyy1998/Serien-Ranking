@@ -1,5 +1,5 @@
-import firebase from 'firebase/compat/app';
 import type { Series } from '../../types/Series';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
 import { hasActiveRewatch } from './rewatch.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import {
@@ -39,9 +39,10 @@ export const getStoredInactiveData = async (
   userId: string
 ): Promise<Record<string, InactiveSeriesData>> => {
   try {
-    const ref = firebase.database().ref(`users/${userId}/inactiveSeriesData`);
-    const snapshot = await ref.once('value');
-    return (snapshot.val() as Record<string, InactiveSeriesData> | null) || {};
+    return (
+      (await dbGet<Record<string, InactiveSeriesData>>(userPath(userId, 'inactiveSeriesData'))) ||
+      {}
+    );
   } catch {
     return {};
   }
@@ -52,8 +53,7 @@ export const storeInactiveData = async (
   data: Record<string, InactiveSeriesData>
 ): Promise<void> => {
   try {
-    const ref = firebase.database().ref(`users/${userId}/inactiveSeriesData`);
-    await ref.set(data);
+    await dbRef(userPath(userId, 'inactiveSeriesData')).set(data);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[InactiveSeriesDetection] Failed to store inactive data: ${message}`);
@@ -135,11 +135,10 @@ export const detectInactiveSeries = async (
   const updatedStoredData = { ...storedData };
 
   // Lade bereits abgewiesene Benachrichtigungen
-  const notificationsRef = firebase.database().ref(`users/${userId}/inactiveSeriesNotifications`);
-  const notificationsSnapshot = await notificationsRef.once('value');
   const dismissedNotifications =
-    (notificationsSnapshot.val() as Record<string, { dismissed: boolean; timestamp: number }>) ||
-    {};
+    (await dbGet<Record<string, { dismissed: boolean; timestamp: number }>>(
+      paths.notificationState(userId, 'inactiveSeriesNotifications')
+    )) || {};
 
   for (const series of seriesList) {
     // Nur Serien auf der Watchlist prüfen, aktive Rewatches überspringen
@@ -232,17 +231,17 @@ export const detectInactiveSeries = async (
   for (const key of Object.keys(updatedStoredData)) {
     if (!currentWatchlistIds.has(key)) {
       delete updatedStoredData[key];
-      notificationCleanup[`users/${userId}/inactiveSeriesNotifications/${key}`] = null;
+      notificationCleanup[userPath(userId, 'inactiveSeriesNotifications', key)] = null;
     }
   }
   for (const key of Object.keys(dismissedNotifications)) {
     if (!currentWatchlistIds.has(key)) {
-      notificationCleanup[`users/${userId}/inactiveSeriesNotifications/${key}`] = null;
+      notificationCleanup[userPath(userId, 'inactiveSeriesNotifications', key)] = null;
     }
   }
   if (Object.keys(notificationCleanup).length > 0) {
     try {
-      await firebase.database().ref().update(notificationCleanup);
+      await dbUpdate(notificationCleanup);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[InactiveSeriesDetection] Failed to cleanup notifications: ${message}`);
@@ -267,11 +266,10 @@ const getStoredRewatchData = async (
   userId: string
 ): Promise<Record<string, InactiveRewatchData>> => {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(`users/${userId}/inactiveRewatchData`)
-      .once('value');
-    return (snapshot.val() as Record<string, InactiveRewatchData> | null) || {};
+    return (
+      (await dbGet<Record<string, InactiveRewatchData>>(userPath(userId, 'inactiveRewatchData'))) ||
+      {}
+    );
   } catch {
     return {};
   }
@@ -293,13 +291,14 @@ export const detectInactiveRewatches = async (
   const currentTime = Date.now();
   const result: Series[] = [];
 
-  const [storedData, notificationsSnap, snoozed] = await Promise.all([
+  const [storedData, dismissedNotificationsData, snoozed] = await Promise.all([
     getStoredRewatchData(userId),
-    firebase.database().ref(`users/${userId}/inactiveRewatchNotifications`).once('value'),
+    dbGet<Record<string, { dismissed: boolean; timestamp: number }>>(
+      paths.notificationState(userId, 'inactiveRewatchNotifications')
+    ),
     getSnoozedUntil('inactive-rewatch', userId),
   ]);
-  const dismissedNotifications =
-    (notificationsSnap.val() as Record<string, { dismissed: boolean; timestamp: number }>) || {};
+  const dismissedNotifications = dismissedNotificationsData || {};
 
   const updatedStoredData: Record<string, InactiveRewatchData> = { ...storedData };
 
@@ -359,19 +358,19 @@ export const detectInactiveRewatches = async (
   for (const key of Object.keys(updatedStoredData)) {
     if (!currentRewatchIds.has(key)) {
       delete updatedStoredData[key];
-      cleanupUpdates[`users/${userId}/inactiveRewatchNotifications/${key}`] = null;
+      cleanupUpdates[userPath(userId, 'inactiveRewatchNotifications', key)] = null;
     }
   }
   for (const key of Object.keys(dismissedNotifications)) {
     if (!currentRewatchIds.has(key)) {
-      cleanupUpdates[`users/${userId}/inactiveRewatchNotifications/${key}`] = null;
+      cleanupUpdates[userPath(userId, 'inactiveRewatchNotifications', key)] = null;
     }
   }
 
   try {
-    await firebase.database().ref(`users/${userId}/inactiveRewatchData`).set(updatedStoredData);
+    await dbRef(userPath(userId, 'inactiveRewatchData')).set(updatedStoredData);
     if (Object.keys(cleanupUpdates).length > 0) {
-      await firebase.database().ref().update(cleanupUpdates);
+      await dbUpdate(cleanupUpdates);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -393,11 +392,11 @@ export const markInactiveRewatchAsNotified = async (
   const updates: Record<string, unknown> = {};
   const now = Date.now();
   for (const id of seriesIds) {
-    updates[`users/${userId}/inactiveRewatchData/${id}/notified`] = true;
-    updates[`users/${userId}/inactiveRewatchData/${id}/notifiedAt`] = now;
+    updates[userPath(userId, 'inactiveRewatchData', id, 'notified')] = true;
+    updates[userPath(userId, 'inactiveRewatchData', id, 'notifiedAt')] = now;
   }
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[InactiveRewatchDetection] Failed to mark notified: ${message}`);
@@ -417,12 +416,12 @@ export const markInactiveSeriesAsNotified = async (
   const updates: Record<string, unknown> = {};
   const now = Date.now();
   for (const id of seriesIds) {
-    updates[`users/${userId}/inactiveSeriesData/${id}/notified`] = true;
-    updates[`users/${userId}/inactiveSeriesData/${id}/notifiedAt`] = now;
-    updates[`users/${userId}/inactiveSeriesData/${id}/lastChecked`] = now;
+    updates[userPath(userId, 'inactiveSeriesData', id, 'notified')] = true;
+    updates[userPath(userId, 'inactiveSeriesData', id, 'notifiedAt')] = now;
+    updates[userPath(userId, 'inactiveSeriesData', id, 'lastChecked')] = now;
   }
   try {
-    await firebase.database().ref().update(updates);
+    await dbUpdate(updates);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[InactiveSeriesDetection] Failed to mark notified: ${message}`);
