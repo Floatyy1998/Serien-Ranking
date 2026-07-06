@@ -45,6 +45,7 @@ const LS_SEASONS_PREFIX = LS_PREFIX + 'seasons:';
 const LS_SEASONS_BULK_KEY = LS_PREFIX + 'seasonsBulk';
 const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
 const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
+const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
@@ -90,6 +91,7 @@ const memorySeasons = new Map<string, Record<string, CatalogSeason>>();
 let memorySeasonsBulk: Record<string, Record<string, CatalogSeason>> | null = null;
 let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
+let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
@@ -182,6 +184,7 @@ async function invalidateLocalCaches(): Promise<void> {
     idbRemove(LS_SEASONS_BULK_KEY),
     idbRemove(LS_SEASONAL_ANIME_KEY),
     idbRemove(LS_ANIME_FILLER_KEY),
+    idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
@@ -520,6 +523,65 @@ export async function fetchStaticAnimeFiller(): Promise<Record<
 }
 
 /**
+ * Eintrag aus catalog/anime-manga.json — vom Backend-Cron (update_anime_manga)
+ * vorgerechnet: der Quell-Manga eines Anime + eine (KI-geschätzte) Kapitelmarke
+ * je Staffel, an der die Staffel im Manga endet. tmdbId ist der Key.
+ *
+ * `s` bildet die (1-basierte) Staffelnummer auf das geschätzte End-Kapitel ab.
+ * `cf` ist eine grobe Konfidenz der KI-Schätzung ('high' | 'med' | 'low').
+ * Kapitelzahlen sind bewusst **approximativ** — im UI immer als „~ca." labeln.
+ */
+export interface AnimeMangaStaticEntry {
+  /** AniList-id des Quell-Mangas. */
+  m: number;
+  /** Titel des Quell-Mangas (Anzeigename). */
+  t: string;
+  /** Gesamt-Kapitelzahl des Mangas (falls bekannt), sonst null. */
+  c: number | null;
+  /** Staffelnummer (1-basiert, als String-Key) → geschätztes End-Kapitel. */
+  s: Record<string, number>;
+  /** Grobe Konfidenz der KI-Schätzung. */
+  cf?: 'high' | 'med' | 'low';
+}
+
+/**
+ * Lädt catalog/anime-manga.json (tmdbId -> Anime→Manga-Anschluss). Gleiche
+ * Cache-Strategie wie anime-filler (IDB + Versions-Cache-Busting), 0 Firebase.
+ * Returnt null, solange das Backend die Datei noch nicht erzeugt hat (404).
+ */
+export async function fetchStaticAnimeManga(): Promise<Record<
+  string,
+  AnimeMangaStaticEntry
+> | null> {
+  if (memoryAnimeManga) return memoryAnimeManga;
+
+  const cached = await idbGetAny<Record<string, AnimeMangaStaticEntry>>(LS_ANIME_MANGA_KEY);
+  if (cached) {
+    memoryAnimeManga = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: Record<string, AnimeMangaStaticEntry> }>(
+      'anime-manga.json',
+      { version }
+    );
+    const entries = data.entries ?? {};
+    memoryAnimeManga = entries;
+    void idbSetVersioned(LS_ANIME_MANGA_KEY, version, entries);
+    return entries;
+  } catch (e) {
+    // 404 = Backend noch nicht aktuell — der Anschluss bleibt still.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] anime-manga fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
  * Ein Premieren-Eintrag aus catalog/tv-premieres.json — vom Backend-Cron
  * täglich vorgerechnet für ein rollierendes 3-Monats-Fenster (Vormonat ·
  * aktueller Monat · nächster Monat). Ganz neue Serie ODER Staffel-Premiere
@@ -616,6 +678,7 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   memorySeasonsBulk = null;
   memorySeasonalAnime = null;
   memoryAnimeFiller = null;
+  memoryAnimeManga = null;
   memoryTvPremieres = null;
   await invalidateLocalCaches();
   await setLocalVersion(remote);
@@ -782,6 +845,7 @@ export function clearStaticCatalogCache(): void {
   memorySeasonsBulk = null;
   memorySeasonalAnime = null;
   memoryAnimeFiller = null;
+  memoryAnimeManga = null;
   memoryTvPremieres = null;
   cachedVersion = null;
   localVersionCache = undefined;
@@ -791,6 +855,7 @@ export function clearStaticCatalogCache(): void {
   void idbRemove(LS_SEASONS_BULK_KEY);
   void idbRemove(LS_SEASONAL_ANIME_KEY);
   void idbRemove(LS_ANIME_FILLER_KEY);
+  void idbRemove(LS_ANIME_MANGA_KEY);
   void idbRemove(LS_TV_PREMIERES_KEY);
   void idbRemovePrefix(LS_SEASONS_PREFIX);
 }

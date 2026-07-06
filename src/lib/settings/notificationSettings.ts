@@ -88,7 +88,8 @@ export type NotificationCategory =
   | 'completed'
   | 'unrated'
   | 'new-season'
-  | 'provider';
+  | 'provider'
+  | 'animeManga';
 
 export const SNOOZE_OPTIONS = [1, 7, 30] as const;
 export type SnoozeOption = (typeof SNOOZE_OPTIONS)[number];
