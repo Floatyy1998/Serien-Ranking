@@ -420,7 +420,9 @@ export const HeroSection = memo<HeroSectionProps>(
                       ? currentTheme.status.success
                       : fullTheme.primary,
                   '--poster-radius': isMobile ? '14px' : '16px',
-                  ...(isMobile ? { marginBottom: 20 } : {}),
+                  // Mobile-Layout zentriert die Spalte — align-self aus der
+                  // Desktop-CSS (flex-start) hier wieder aufheben.
+                  ...(isMobile ? { marginBottom: 20, alignSelf: 'center' } : {}),
                 } as CSSProperties
               }
             >

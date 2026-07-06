@@ -57,6 +57,9 @@
 .hero-section__poster-wrap {
   position: relative;
   flex-shrink: 0;
+  /* Nicht auf Zeilenhöhe stretchen (Glass-Card daneben ist höher) — sonst
+     umschließt der Ring den Leerraum unter dem Poster. */
+  align-self: flex-start;
 }
 
 .hero-section__poster-wrap--ring::before,
