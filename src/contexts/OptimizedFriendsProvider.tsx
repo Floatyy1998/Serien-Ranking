@@ -415,7 +415,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const declineFriendRequest = useCallback(
     async (requestId: string): Promise<void> => {
       if (!user) return;
-      await declineFriendRequestOp(requestId, setFriendRequests);
+      await declineFriendRequestOp(user.uid, requestId, setFriendRequests);
     },
     [user]
   );
@@ -423,7 +423,7 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
   const cancelFriendRequest = useCallback(
     async (requestId: string): Promise<void> => {
       if (!user) return;
-      await cancelFriendRequestOp(requestId, setSentRequests);
+      await cancelFriendRequestOp(user.uid, requestId, setSentRequests);
     },
     [user]
   );

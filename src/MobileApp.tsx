@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout, ScrollToTop } from './components/layout';
 import { useAuth } from './AuthContext';
+import { ADMIN_UID } from './config/admin';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContextDef';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
@@ -85,7 +86,7 @@ const PageLoader = () => (
 );
 
 export const MobileApp = () => {
-  const { onboardingComplete } = useAuth() || {};
+  const { onboardingComplete, user } = useAuth() || {};
   const location = useLocation();
   const { unreadActivitiesCount, unreadRequestsCount, friendActivities, friendRequests } =
     useOptimizedFriends();
@@ -166,11 +167,16 @@ export const MobileApp = () => {
   useAdminHealthAlert();
   usePetGiftReceiver();
 
-  // Preload lazy route chunks + cleanup old tickets in the background
+  // Preload lazy route chunks + cleanup old tickets in the background.
+  // Ticket-Cleanup liest die komplette bugTickets-Liste — nach der Regel-
+  // Haertung darf das nur der Admin (sonst permission-denied). Deshalb nur
+  // fuer den Admin ausloesen.
   useEffect(() => {
     preloadRoutes();
-    import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
-  }, []);
+    if (user?.uid === ADMIN_UID) {
+      import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
+    }
+  }, [user?.uid]);
 
   // Redirect to onboarding if not complete
   if (onboardingComplete === false && location.pathname !== '/onboarding') {

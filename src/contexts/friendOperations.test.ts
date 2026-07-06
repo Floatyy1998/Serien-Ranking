@@ -158,6 +158,8 @@ describe('sendFriendRequestOp', () => {
     expect(req.fromUsername).toBe('MeName');
     expect(req.toUsername).toBe('Spixi');
     expect(req.status).toBe('pending');
+    // Consent-Marker im eigenen Baum gesetzt (BUG-SEC-0)
+    expect(fb.getByPath('users/me/sentRequestTo/target')).toBeDefined();
   });
 
   it('fällt auf den users-Root zurück, wenn der Index leer ist', async () => {
@@ -190,6 +192,8 @@ describe('acceptFriendRequestOp', () => {
       email: 'f@x.de',
     });
     fb.setByPath('users/me', { username: 'MeName', displayName: 'Me', photoURL: 'me.png' });
+    // Consent-Marker des Absenders (wird beim Annehmen verbraucht)
+    fb.setByPath('users/f1/sentRequestTo/me', 123);
 
     const setFriendRequests = vi.fn();
     const refetchFriends = vi.fn();
@@ -201,6 +205,8 @@ describe('acceptFriendRequestOp', () => {
     expect(myFriend.displayName).toBe('Friend One');
     const theirFriend = fb.getByPath('users/f1/friends/me') as Record<string, unknown>;
     expect(theirFriend.username).toBe('MeName');
+    // Verbrauchter Consent-Marker wurde entfernt
+    expect(fb.getByPath('users/f1/sentRequestTo/me')).toBeUndefined();
 
     expect((fb.getByPath('friendRequests/req1') as Record<string, unknown>).status).toBe(
       'accepted'
@@ -227,26 +233,32 @@ describe('acceptFriendRequestOp', () => {
 
 describe('declineFriendRequestOp', () => {
   it('setzt Status declined und entfernt die Anfrage aus dem State', async () => {
-    fb.setByPath('friendRequests/req1', { fromUserId: 'f1', status: 'pending' });
+    fb.setByPath('friendRequests/req1', { fromUserId: 'f1', toUserId: 'me', status: 'pending' });
+    fb.setByPath('users/f1/sentRequestTo/me', 123);
     const setFriendRequests = vi.fn();
 
-    await declineFriendRequestOp('req1', setFriendRequests);
+    await declineFriendRequestOp('me', 'req1', setFriendRequests);
 
     expect((fb.getByPath('friendRequests/req1') as Record<string, unknown>).status).toBe(
       'declined'
     );
+    // Consent-Marker des Absenders aufgeräumt
+    expect(fb.getByPath('users/f1/sentRequestTo/me')).toBeUndefined();
     expect(setFriendRequests).toHaveBeenCalled();
   });
 });
 
 describe('cancelFriendRequestOp', () => {
   it('entfernt die Anfrage komplett und aus dem sent-State', async () => {
-    fb.setByPath('friendRequests/req1', { fromUserId: 'me' });
+    fb.setByPath('friendRequests/req1', { fromUserId: 'me', toUserId: 'target' });
+    fb.setByPath('users/me/sentRequestTo/target', 123);
     const setSentRequests = vi.fn();
 
-    await cancelFriendRequestOp('req1', setSentRequests);
+    await cancelFriendRequestOp('me', 'req1', setSentRequests);
 
     expect(fb.getByPath('friendRequests/req1')).toBeUndefined();
+    // Eigener Consent-Marker aufgeräumt
+    expect(fb.getByPath('users/me/sentRequestTo/target')).toBeUndefined();
     expect(setSentRequests).toHaveBeenCalled();
   });
 });

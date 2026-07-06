@@ -57,6 +57,12 @@ export async function sendFriendRequestOp(
     sentAt: serverTimestamp(),
   });
 
+  // Consent-Marker im EIGENEN Baum: erst dadurch darf der Empfänger sich später
+  // in UNSERE friends-Liste eintragen (die Rule prüft genau diesen Marker).
+  // Ohne ihn könnte sich jeder Fremde ungefragt als Freund eintragen und damit
+  // unsere friend-gegateten Privatdaten lesen (Leseeskalation, BUG-SEC-0).
+  await dbRef(userPath(user.uid, 'sentRequestTo', targetUserId)).set(serverTimestamp());
+
   return true;
 }
 
@@ -119,6 +125,14 @@ export async function acceptFriendRequestOp(
     respondedAt: serverTimestamp(),
   });
 
+  // Verbrauchten Consent-Marker des Absenders entfernen (der Empfänger darf ihn
+  // löschen). Best-effort — schlägt es fehl, bleibt nur ein harmloser Marker.
+  try {
+    await dbRef(userPath(request.fromUserId, 'sentRequestTo', user.uid)).remove();
+  } catch {
+    // best-effort
+  }
+
   // Remove the request from local state immediately
   setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
   // Refresh friends data FIRST to ensure database is updated
@@ -141,22 +155,46 @@ export async function acceptFriendRequestOp(
 }
 
 export async function declineFriendRequestOp(
+  uid: string,
   requestId: string,
   setFriendRequests: React.Dispatch<React.SetStateAction<FriendRequest[]>>
 ): Promise<void> {
+  // fromUserId lesen, um den Consent-Marker des Absenders aufzuräumen.
+  const request = await dbGet<{ fromUserId: string }>(`friendRequests/${requestId}`);
+
   await dbRef(`friendRequests/${requestId}`).update({
     status: 'declined',
     respondedAt: serverTimestamp(),
   });
 
+  if (request?.fromUserId) {
+    try {
+      await dbRef(userPath(request.fromUserId, 'sentRequestTo', uid)).remove();
+    } catch {
+      // best-effort
+    }
+  }
+
   setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));
 }
 
 export async function cancelFriendRequestOp(
+  uid: string,
   requestId: string,
   setSentRequests: React.Dispatch<React.SetStateAction<FriendRequest[]>>
 ): Promise<void> {
+  // toUserId lesen (vor dem Löschen), um den eigenen Consent-Marker zu entfernen.
+  const request = await dbGet<{ toUserId: string }>(`friendRequests/${requestId}`);
+
   await dbRef(`friendRequests/${requestId}`).remove();
+
+  if (request?.toUserId) {
+    try {
+      await dbRef(userPath(uid, 'sentRequestTo', request.toUserId)).remove();
+    } catch {
+      // best-effort
+    }
+  }
 
   setSentRequests((prev) => prev.filter((req) => req.id !== requestId));
 }
