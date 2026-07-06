@@ -11,6 +11,7 @@ import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
 import { backendFetch } from '../../lib/backendApi';
+import { paths, updateWithSeriesVersion } from '../../lib/db/ref';
 
 /** TMDB genre object */
 interface TMDBGenre {
@@ -288,16 +289,14 @@ export const useMovieData = () => {
 
     const next = !isWatched;
     try {
-      const updates: Record<string, unknown> = {
-        [`users/${user.uid}/movies/${movie.id}/watched`]: next,
+      const base = paths.movieItem(user.uid, movie.id);
+      // updateWithSeriesVersion hängt den serienVersion-Bump atomar an.
+      await updateWithSeriesVersion(user.uid, {
+        [`${base}/watched`]: next,
         // Beim Markieren bestehendes watchedAt bewahren, sonst jetzt setzen;
         // beim Zurücknehmen entfernen (null).
-        [`users/${user.uid}/movies/${movie.id}/watchedAt`]: next
-          ? movie.watchedAt || new Date().toISOString()
-          : null,
-        [`users/${user.uid}/meta/serienVersion`]: firebase.database.ServerValue.TIMESTAMP,
-      };
-      await firebase.database().ref().update(updates);
+        [`${base}/watchedAt`]: next ? movie.watchedAt || new Date().toISOString() : null,
+      });
     } catch {
       // best-effort: bei Fehler kurz informieren, State kommt vom Listener
       setDialog({
