@@ -20,6 +20,7 @@ import { useTMDBTrending } from '../../hooks/useTMDBTrending';
 import { useTopRated } from '../../hooks/useTopRated';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import { CatchUpCard } from './CatchUpCard';
+import { RatingQueueCard } from './RatingQueueCard';
 import { CountdownBanner } from './CountdownBanner';
 import { HiddenSeriesCard } from './HiddenSeriesCard';
 import { QuickActionsSection, SecondaryActionsSection } from './HomeActionSections';
@@ -248,6 +249,7 @@ export const HomePage: React.FC = () => {
           'taste-profile': <TasteProfileCard key="taste-profile" />,
           'taste-match': <TasteMatchCard key="taste-match" />,
           'watch-journey': <WatchJourneyCard key="watch-journey" />,
+          'rating-queue': <RatingQueueCard key="rating-queue" />,
           'catch-up': <CatchUpCard key="catch-up" />,
           'streaming-reminder': <StreamingReminderCard key="streaming-reminder" />,
           'hidden-series': <HiddenSeriesCard key="hidden-series" />,

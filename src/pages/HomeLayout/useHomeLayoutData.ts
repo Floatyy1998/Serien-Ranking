@@ -31,6 +31,7 @@ export const DEFAULT_FOR_YOU_ORDER = [
   'taste-profile',
   'taste-match',
   'watch-journey',
+  'rating-queue',
   'catch-up',
   'hidden-series',
 ];
@@ -59,6 +60,7 @@ export const FOR_YOU_LABELS: Record<string, string> = {
   'taste-profile': 'KI-Empfehlungen',
   'taste-match': 'Taste Match',
   'watch-journey': 'Watch Journey',
+  'rating-queue': 'Bewertungs-Queue',
   'catch-up': 'Backlog',
   'hidden-series': 'Nicht weitergeschaut',
 };

@@ -24,6 +24,7 @@ export const DEFAULT_FOR_YOU_ORDER = [
   'taste-profile',
   'taste-match',
   'watch-journey',
+  'rating-queue',
   'catch-up',
   'streaming-reminder',
   'hidden-series',
