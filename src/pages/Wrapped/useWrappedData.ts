@@ -4,9 +4,10 @@
  * Handles: data loading, slide navigation, keyboard/touch/wheel input, sharing.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type firebase from 'firebase/compat/app';
+import { showToast } from '../../lib/toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
@@ -116,9 +117,12 @@ export const useWrappedData = (): UseWrappedDataResult => {
 
   const year = yearParam ? parseInt(yearParam) : wrappedConfig.year || DEFAULT_YEAR;
 
-  // Aktivierte Slides basierend auf Konfiguration
-  const enabledSlides = DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled).sort(
-    (a, b) => a.order - b.order
+  // Aktivierte Slides basierend auf Konfiguration. Memoisiert, sonst wechselt die
+  // Referenz bei jedem Render → goToSlide/next/prev bekommen neue Identität → die
+  // Keyboard-/Wheel-Listener-Effekte hängen sich bei jedem Render neu ein/aus.
+  const enabledSlides = useMemo(
+    () => DEFAULT_SLIDE_CONFIG.filter((s) => s.enabled).sort((a, b) => a.order - b.order),
+    []
   );
 
   // --- Data loading ---
@@ -260,8 +264,12 @@ export const useWrappedData = (): UseWrappedDataResult => {
         // User cancelled or share failed
       }
     } else {
-      await navigator.clipboard.writeText(shareText);
-      alert('In die Zwischenablage kopiert!');
+      try {
+        await navigator.clipboard.writeText(shareText);
+        showToast('In die Zwischenablage kopiert!', 2500, 'success');
+      } catch {
+        showToast('Kopieren fehlgeschlagen', 2500, 'error');
+      }
     }
   };
 

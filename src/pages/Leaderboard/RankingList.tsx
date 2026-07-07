@@ -23,72 +23,89 @@ export const RankingList = React.memo(function RankingList({
 
   return (
     <div className="lb-rankings">
-      {entries.map((entry, i) => (
-        <motion.div
-          key={entry.uid}
-          className="lb-rank-card"
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 + i * 0.05 }}
-          onClick={() => {
-            if (!entry.isCurrentUser) {
-              navigate(`/friend/${entry.uid}`);
+      {entries.map((entry, i) => {
+        const clickable = !entry.isCurrentUser;
+        const openProfile = () => {
+          if (clickable) navigate(`/friend/${entry.uid}`);
+        };
+        return (
+          <motion.div
+            key={entry.uid}
+            className="lb-rank-card"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            // Stagger deckeln, sonst bekämen bei großen (globalen) Listen die letzten
+            // Zeilen mehrere Sekunden Verzögerung und wirken blank/kaputt.
+            transition={{ delay: 0.3 + Math.min(i, 20) * 0.05 }}
+            onClick={openProfile}
+            role={clickable ? 'button' : undefined}
+            tabIndex={clickable ? 0 : undefined}
+            aria-label={clickable ? `Profil von ${entry.displayName} öffnen` : undefined}
+            onKeyDown={
+              clickable
+                ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      openProfile();
+                    }
+                  }
+                : undefined
             }
-          }}
-          style={{
-            background: entry.isCurrentUser
-              ? `${currentTheme.primary}18`
-              : currentTheme.background.surface,
-            border: entry.isCurrentUser ? `1px solid ${currentTheme.primary}40` : undefined,
-            cursor: entry.isCurrentUser ? 'default' : 'pointer',
-          }}
-        >
-          <span className="lb-rank-num" style={{ color: currentTheme.text.secondary }}>
-            {entry.rank}
-          </span>
-
-          <div className="lb-rank-avatar" style={{ background: currentTheme.background.card }}>
-            {entry.photoURL ? (
-              <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
-            ) : (
-              <span style={{ fontSize: 16, fontWeight: 700, color: currentTheme.text.secondary }}>
-                {entry.displayName.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div className="lb-rank-info">
-            <span
-              className="lb-rank-name"
-              style={{
-                fontWeight: entry.isCurrentUser ? 700 : 500,
-                color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.primary,
-              }}
-            >
-              {entry.isCurrentUser ? 'Du' : entry.displayName}
-            </span>
-            {entry.username && !entry.isCurrentUser && (
-              <span className="lb-rank-username" style={{ color: currentTheme.text.secondary }}>
-                @{entry.username}
-              </span>
-            )}
-          </div>
-
-          <span
             style={{
-              fontSize: 16,
-              fontWeight: 700,
-              color: currentTheme.text.primary,
-              whiteSpace: 'nowrap',
+              background: entry.isCurrentUser
+                ? `${currentTheme.primary}18`
+                : currentTheme.background.surface,
+              border: entry.isCurrentUser ? `1px solid ${currentTheme.primary}40` : undefined,
+              cursor: entry.isCurrentUser ? 'default' : 'pointer',
             }}
           >
-            {formatValue(entry.value, category)}{' '}
-            <span style={{ fontSize: 12, fontWeight: 400, color: currentTheme.text.secondary }}>
-              {unit}
+            <span className="lb-rank-num" style={{ color: currentTheme.text.secondary }}>
+              {entry.rank}
             </span>
-          </span>
-        </motion.div>
-      ))}
+
+            <div className="lb-rank-avatar" style={{ background: currentTheme.background.card }}>
+              {entry.photoURL ? (
+                <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
+              ) : (
+                <span style={{ fontSize: 16, fontWeight: 700, color: currentTheme.text.secondary }}>
+                  {entry.displayName.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
+
+            <div className="lb-rank-info">
+              <span
+                className="lb-rank-name"
+                style={{
+                  fontWeight: entry.isCurrentUser ? 700 : 500,
+                  color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.primary,
+                }}
+              >
+                {entry.isCurrentUser ? 'Du' : entry.displayName}
+              </span>
+              {entry.username && !entry.isCurrentUser && (
+                <span className="lb-rank-username" style={{ color: currentTheme.text.secondary }}>
+                  @{entry.username}
+                </span>
+              )}
+            </div>
+
+            <span
+              style={{
+                fontSize: 16,
+                fontWeight: 700,
+                color: currentTheme.text.primary,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {formatValue(entry.value, category)}{' '}
+              <span style={{ fontSize: 12, fontWeight: 400, color: currentTheme.text.secondary }}>
+                {unit}
+              </span>
+            </span>
+          </motion.div>
+        );
+      })}
     </div>
   );
 });

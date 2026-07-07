@@ -29,7 +29,7 @@ function formatActivity(a: FriendActivity): string | null {
     case 'movie_added_to_watchlist':
       return `${who} hat „${a.itemTitle}" auf die Watchlist gesetzt`;
     case 'episode_watched':
-      return `${who} hat eine Folge „${a.itemTitle}" gesehen`;
+      return `${who} hat eine Folge von „${a.itemTitle}" gesehen`;
     case 'episodes_watched':
       return `${who} bingt gerade „${a.itemTitle}"`;
     case 'series_rated':

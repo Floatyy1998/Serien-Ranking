@@ -115,7 +115,7 @@ export const PetCustomization = memo(function PetCustomization({
       id: 'accessories',
       label: 'Accessoires',
       count: sortedAccessories.length,
-      subline: equippedAccessoryCount > 0 ? '1 getragen' : undefined,
+      subline: equippedAccessoryCount > 0 ? `${equippedAccessoryCount} getragen` : undefined,
     },
     {
       id: 'backgrounds',

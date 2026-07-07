@@ -8,6 +8,7 @@ import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
+import { showToast } from '../../lib/toast';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { getStreakStatus, getShieldCooldown } from './watchStreakHelpers';
@@ -131,7 +132,7 @@ export const WatchStreakCard: React.FC = () => {
         hapticSuccess();
         setTimeout(() => setShieldJustUsed(false), 5000);
       } else {
-        alert(result.error || 'Fehler beim Aktivieren des Shields');
+        showToast(result.error || 'Fehler beim Aktivieren des Shields', 3000, 'error');
       }
     } finally {
       setShieldLoading(false);

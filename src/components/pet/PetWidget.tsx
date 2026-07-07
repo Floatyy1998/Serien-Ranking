@@ -322,7 +322,7 @@ export const PetWidget: React.FC = () => {
             }
             exit={{ opacity: 0, scale: 0.8 }}
             whileHover={{ scale: 1.05 }}
-            whileDrag={{ scale: 1.1, zIndex: 1000 }}
+            whileDrag={{ scale: 1.1, zIndex: 1002 }}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={(_event, info) => {
               setIsDragging(false);
