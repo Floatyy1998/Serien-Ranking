@@ -24,6 +24,7 @@ import {
   GradientText,
   LoadingSpinner,
   PageLayout,
+  PageState,
   ScrollToTopButton,
   Snackbar,
   TabSwitcher,
@@ -76,6 +77,7 @@ export const DiscoverPage = memo(() => {
   const {
     results,
     loading,
+    error,
     searchResults,
     searchLoading,
     recommendations,
@@ -481,6 +483,17 @@ export const DiscoverPage = memo(() => {
         <div style={{ height: `${headerHeight}px` }} />
 
         <div style={{ padding: '16px 20px' }}>
+          {/* Page-Level-Fehler: nur als Sackgasse (kein Inhalt) — sonst wie gehabt */}
+          {error && !loading && results.length === 0 && !showSearch && (
+            <PageState
+              mode="error"
+              error={{
+                title: 'Laden fehlgeschlagen',
+                description: error,
+                onRetry: () => fetchFromTMDB(true),
+              }}
+            />
+          )}
           <DiscoverContent
             activeCategory={activeCategory}
             showSearch={showSearch}

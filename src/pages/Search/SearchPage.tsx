@@ -12,6 +12,7 @@ import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   Dialog,
   EmptyState,
+  PageState,
   SkeletonRatingsGrid,
   PageHeader,
   ScrollToTopButton,
@@ -35,6 +36,8 @@ export const SearchPage = memo(() => {
     setSearchType,
     searchResults,
     loading,
+    error,
+    retrySearch,
     recentSearches,
     popularSearches,
     isDesktop,
@@ -251,6 +254,17 @@ export const SearchPage = memo(() => {
                   />
                 ))}
               </div>
+            </motion.div>
+          ) : searchQuery && error && !loading ? (
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <PageState
+                mode="error"
+                error={{
+                  title: 'Suche fehlgeschlagen',
+                  description: error,
+                  onRetry: retrySearch,
+                }}
+              />
             </motion.div>
           ) : searchQuery && !loading ? (
             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

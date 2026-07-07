@@ -27,6 +27,7 @@ interface UseDiscoverFetchResult {
   results: DiscoverItem[];
   setResults: React.Dispatch<React.SetStateAction<DiscoverItem[]>>;
   loading: boolean;
+  error: string | null;
   hasMore: boolean;
   searchResults: DiscoverItem[];
   setSearchResults: React.Dispatch<React.SetStateAction<DiscoverItem[]>>;
@@ -74,6 +75,9 @@ export const useDiscoverFetch = (
 
   const [results, setResults] = useState<DiscoverItem[]>([]);
   const [loading, setLoading] = useState(false);
+  // Page-Level-Fehler: nur gesetzt, wenn ein Reset-Fetch scheitert (Sackgasse
+  // ohne Inhalte). Pagination-Fehler bleiben wie bisher still (Liste steht ja).
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [searchResults, setSearchResults] = useState<DiscoverItem[]>([]);
@@ -266,6 +270,7 @@ export const useDiscoverFetch = (
       if (loadingRef.current) return;
 
       setLoading(true);
+      setError(null);
       const currentPage = reset ? 1 : pageRef.current + 1;
 
       try {
@@ -344,6 +349,9 @@ export const useDiscoverFetch = (
       } catch (error) {
         console.error('Error fetching from TMDB:', error);
         setHasMore(false);
+        if (reset) {
+          setError('Inhalte konnten nicht geladen werden.');
+        }
       } finally {
         setLoading(false);
       }
@@ -510,6 +518,7 @@ export const useDiscoverFetch = (
     results,
     setResults,
     loading,
+    error,
     hasMore,
     searchResults,
     setSearchResults,

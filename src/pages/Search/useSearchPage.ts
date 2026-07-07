@@ -46,6 +46,8 @@ export interface UseSearchPageResult {
   setSearchType: (type: SearchTypeFilter) => void;
   searchResults: SearchResult[];
   loading: boolean;
+  error: string | null;
+  retrySearch: () => void;
   recentSearches: string[];
   popularSearches: string[];
   isDesktop: boolean;
@@ -142,6 +144,7 @@ export const useSearchPage = (
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [onlyMyProviders, setOnlyMyProviders] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => {
     try {
@@ -220,6 +223,7 @@ export const useSearchPage = (
       }
 
       setLoading(true);
+      setError(null);
       saveToRecent(query);
 
       const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
@@ -306,6 +310,8 @@ export const useSearchPage = (
       } catch (error) {
         console.error('Search error:', error);
         setSearchResults([]);
+        // Page-Level-Fehler statt irreführendem „Keine Ergebnisse"
+        setError('Suche fehlgeschlagen.');
       } finally {
         setLoading(false);
       }
@@ -453,6 +459,8 @@ export const useSearchPage = (
     setSearchType,
     searchResults: enrichedResults,
     loading,
+    error,
+    retrySearch: () => searchTMDB(searchQuery),
     recentSearches,
     popularSearches,
     isDesktop,
