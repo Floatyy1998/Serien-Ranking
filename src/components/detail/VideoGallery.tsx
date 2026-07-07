@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { tmdbFetch } from '../../services/tmdbClient';
 
 interface Video {
   id: string;
@@ -38,19 +39,11 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
     const fetchVideos = async () => {
       setLoading(true);
       try {
-        const apiKey = import.meta.env.VITE_API_TMDB;
-
-        // Fetch German videos
-        const deResponse = await fetch(
-          `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=de-DE`
-        );
-        const deData = await deResponse.json();
-
-        // Fetch English videos as fallback
-        const enResponse = await fetch(
-          `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/videos?api_key=${apiKey}&language=en-US`
-        );
-        const enData = await enResponse.json();
+        // German videos + English fallback
+        const [deData, enData] = await Promise.all([
+          tmdbFetch<{ results?: Video[] }>(`${mediaType}/${tmdbId}/videos`),
+          tmdbFetch<{ results?: Video[] }>(`${mediaType}/${tmdbId}/videos`, { language: 'en-US' }),
+        ]);
 
         // Combine and deduplicate
         const allVideos = [...(deData.results || []), ...(enData.results || [])];

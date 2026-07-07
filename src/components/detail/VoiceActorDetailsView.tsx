@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { HorizontalScrollContainer } from '../ui';
 import type { CharacterMediaEdge, VoiceActorDetailsData } from './CastCrew.types';
 import { tapScale } from '../../lib/motion';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 
 interface VoiceActorDetailsViewProps {
   voiceActorDetails: VoiceActorDetailsData;
@@ -35,20 +36,14 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
       return;
     }
     try {
-      const apiKey = import.meta.env.VITE_API_TMDB;
-      if (!apiKey) {
+      if (!getTmdbApiKey()) {
         anilistFallback();
         return;
       }
       const searchType = isMovie ? 'movie' : 'tv';
-      const res = await fetch(
-        `https://api.themoviedb.org/3/search/${searchType}?api_key=${apiKey}&language=de-DE&query=${encodeURIComponent(query)}`
-      );
-      if (!res.ok) {
-        anilistFallback();
-        return;
-      }
-      const data = await res.json();
+      const data = await tmdbFetch<{ results?: Array<{ id?: number }> }>(`search/${searchType}`, {
+        query,
+      });
       const hit = data.results?.[0];
       if (hit?.id) {
         navigate(`/${isMovie ? 'movie' : 'series'}/${hit.id}`);

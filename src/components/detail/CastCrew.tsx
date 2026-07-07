@@ -12,6 +12,7 @@ import type {
 import { CastCrewListView } from './CastCrewListView';
 import { PersonDetailsView } from './PersonDetailsView';
 import { VoiceActorDetailsView } from './VoiceActorDetailsView';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 
 export const CastCrew: React.FC<CastCrewProps> = ({
   tmdbId,
@@ -160,21 +161,13 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   const fetchCredits = useCallback(async () => {
     try {
       setLoading(true);
-      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-
-      if (!TMDB_API_KEY) {
+      if (!getTmdbApiKey()) {
         return;
       }
 
-      const response = await fetch(
-        `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/credits?api_key=${TMDB_API_KEY}&language=de-DE`
+      const data = await tmdbFetch<{ cast?: CastMember[]; crew?: CastMember[] }>(
+        `${mediaType}/${tmdbId}/credits`
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch credits');
-      }
-
-      const data = await response.json();
 
       // Sort cast by order
       const sortedCast = (data.cast || [])
@@ -210,21 +203,12 @@ export const CastCrew: React.FC<CastCrewProps> = ({
 
   const fetchPersonDetails = async (personId: number) => {
     try {
-      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      const [personResponse, creditsResponse] = await Promise.all([
-        fetch(
-          `https://api.themoviedb.org/3/person/${personId}?api_key=${TMDB_API_KEY}&language=de-DE`
-        ),
-        fetch(
-          `https://api.themoviedb.org/3/person/${personId}/combined_credits?api_key=${TMDB_API_KEY}&language=de-DE`
+      const [personData, creditsData] = await Promise.all([
+        tmdbFetch<PersonDetailsData>(`person/${personId}`),
+        tmdbFetch<{ cast: CreditItem[]; crew: CreditItem[] }>(
+          `person/${personId}/combined_credits`
         ),
       ]);
-
-      if (!personResponse.ok || !creditsResponse.ok)
-        throw new Error('Failed to fetch person details');
-
-      const personData = await personResponse.json();
-      const creditsData = await creditsResponse.json();
 
       // Sort credits by popularity
       const sortedCredits = ([...creditsData.cast, ...creditsData.crew] as CreditItem[])
