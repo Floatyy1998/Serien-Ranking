@@ -20,7 +20,7 @@ export const PROVIDER_BRANDS: Record<string, ProviderBrand> = {
   'Disney Plus': { color: '#1F80E0', accent: '#0E2A6B', abbr: 'D+' },
   'Apple TV Plus': { color: '#1E1E1E', accent: '#6E6E6E', abbr: 'tv+' },
   'Paramount Plus': { color: '#0064FF', accent: '#0033A0', abbr: 'P+' },
-  'HBO Max': { color: '#B026FF', accent: '#5A1F8C', abbr: 'M' },
+  'HBO Max': { color: '#B026FF', accent: '#5A1F8C', abbr: 'MX' },
   Crunchyroll: { color: '#F47521', accent: '#D45B0F', abbr: 'CR' },
   'Joyn Plus': { color: '#FF005A', accent: '#A8003D', abbr: 'J+' },
   WOW: { color: '#00D1FF', accent: '#0080A0', abbr: 'W!' },

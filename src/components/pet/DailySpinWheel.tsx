@@ -242,6 +242,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       {/* Close button */}
       <button
         onClick={onClose}
+        aria-label="Schließen"
         style={{
           position: 'absolute',
           top: 'calc(16px + env(safe-area-inset-top, 0px))',

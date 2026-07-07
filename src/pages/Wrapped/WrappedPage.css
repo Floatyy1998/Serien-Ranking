@@ -218,7 +218,10 @@
 }
 
 .wrapped-slide {
-  height: 100vh;
+  /* 100% des Tracks (= fixed inset:0 Container), NICHT 100vh: der Track
+     translatet um -n*100% seiner eigenen Höhe; auf Mobile weicht 100vh von der
+     sichtbaren Viewport-Höhe (URL-Leiste) ab → Slides drifteten aus dem Raster. */
+  height: 100%;
 }
 
 /* === Progress indicator === */

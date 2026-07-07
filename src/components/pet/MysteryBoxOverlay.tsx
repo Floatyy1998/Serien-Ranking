@@ -92,6 +92,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
         {/* Close button */}
         <button
           onClick={onClose}
+          aria-label="Schließen"
           style={{
             position: 'absolute',
             top: 16,

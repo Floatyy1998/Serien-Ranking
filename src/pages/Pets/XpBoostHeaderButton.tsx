@@ -117,6 +117,8 @@ export const XpBoostHeaderButton: React.FC = () => {
       <motion.button
         whileTap={tapScaleTight}
         onClick={() => setOpen((v) => !v)}
+        aria-label="Streak-Shield & XP-Boost"
+        aria-expanded={open}
         style={{
           position: 'relative',
           width: 36,

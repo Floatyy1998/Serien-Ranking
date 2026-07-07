@@ -5,6 +5,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 import { tapScaleTight } from '../../../lib/motion';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 
 interface NotificationItemProps {
   item: UnifiedNotification;
@@ -23,10 +24,23 @@ export const NotificationItem = React.memo(function NotificationItem({
   onAcceptRequest,
   onDeclineRequest,
 }: NotificationItemProps) {
+  const clickable = item.kind !== 'request' && !!item.navigateTo;
   return (
     <motion.div
       whileTap={item.kind !== 'request' ? { scale: 0.98 } : undefined}
       onClick={() => onItemClick(item)}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={
+        clickable
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onItemClick(item);
+              }
+            }
+          : undefined
+      }
       style={{
         display: 'flex',
         alignItems: 'flex-start',
@@ -143,7 +157,7 @@ export const NotificationItem = React.memo(function NotificationItem({
                 background: `linear-gradient(135deg, ${theme.primary}, ${theme.accent})`,
                 border: 'none',
                 borderRadius: '12px',
-                color: theme.text.secondary,
+                color: getOptimalTextColor(theme.primary),
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
