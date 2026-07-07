@@ -97,9 +97,9 @@ export const EpisodeDiscussionPage = lazyWithRetry(() =>
     default: m.EpisodeDiscussionPage,
   }))
 );
-export const RatingPage = lazyWithRetry(() =>
-  import(/* webpackChunkName: "rating" */ './pages/Rating').then((m) => ({
-    default: m.RatingPage,
+export const RatingEditorPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "rating" */ './pages/RatingEditor').then((m) => ({
+    default: m.RatingEditorPage,
   }))
 );
 export const FriendProfilePage = lazyWithRetry(() =>

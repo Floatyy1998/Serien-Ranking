@@ -1,0 +1,1 @@
+export { RatingEditorPage } from './RatingEditorPage';

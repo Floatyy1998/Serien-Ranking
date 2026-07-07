@@ -61,7 +61,7 @@ vi.mock('./lazyRoutes', () => {
     'SettingsPage',
     'EpisodeManagementPage',
     'EpisodeDiscussionPage',
-    'RatingPage',
+    'RatingEditorPage',
     'FriendProfilePage',
     'TasteMatchPage',
     'TasteProfilePage',

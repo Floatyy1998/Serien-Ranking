@@ -31,7 +31,7 @@ export interface UseRatingDataResult {
   cancelDelete: () => void;
 }
 
-export const useRatingData = (): UseRatingDataResult => {
+export const useRatingEditorData = (): UseRatingDataResult => {
   const { id, type } = useParams<{ id: string; type: 'series' | 'movie' }>();
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();

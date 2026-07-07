@@ -35,7 +35,7 @@ import {
   SettingsPage,
   EpisodeManagementPage,
   EpisodeDiscussionPage,
-  RatingPage,
+  RatingEditorPage,
   FriendProfilePage,
   TasteMatchPage,
   TasteProfilePage,
@@ -365,7 +365,7 @@ export const MobileApp = () => {
               path="/rating/:type/:id"
               element={
                 <Layout hideNav>
-                  <RatingPage />
+                  <RatingEditorPage />
                 </Layout>
               }
             />

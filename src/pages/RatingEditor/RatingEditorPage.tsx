@@ -2,14 +2,14 @@ import { Delete, Save, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BackButton, Dialog } from '../../components/ui';
-import { useRatingData } from './useRatingData';
+import { useRatingEditorData } from './useRatingEditorData';
 import { OverallRatingSection } from './OverallRatingSection';
 import { GenreRatingSection } from './GenreRatingSection';
 import { RatingSnackbar } from './RatingSnackbar';
-import './RatingPage.css';
+import './RatingEditorPage.css';
 import { tapScale } from '../../lib/motion';
 
-export const RatingPage = () => {
+export const RatingEditorPage = () => {
   const { currentTheme } = useTheme();
   const {
     item,
@@ -26,7 +26,7 @@ export const RatingPage = () => {
     handleDelete,
     confirmDelete,
     cancelDelete,
-  } = useRatingData();
+  } = useRatingEditorData();
 
   if (!item) {
     return (

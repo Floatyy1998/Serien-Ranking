@@ -45,7 +45,7 @@ const { theme, dataRef } = vi.hoisted(() => ({
 vi.mock('../../contexts/ThemeContext', () => ({
   useTheme: () => ({ currentTheme: theme }),
 }));
-vi.mock('./useRatingData', () => ({ useRatingData: () => dataRef.current }));
+vi.mock('./useRatingEditorData', () => ({ useRatingEditorData: () => dataRef.current }));
 vi.mock('./OverallRatingSection', () => ({
   OverallRatingSection: () => <div data-testid="overall" />,
 }));
@@ -60,7 +60,7 @@ vi.mock('../../components/ui', () => ({
   Dialog: ({ open }: { open?: boolean }) => (open ? <div data-testid="delete-dialog" /> : null),
 }));
 
-import { RatingPage } from './RatingPage';
+import { RatingEditorPage } from './RatingEditorPage';
 
 beforeEach(() => {
   dataRef.current.item = { title: 'Dark' };
@@ -71,21 +71,21 @@ beforeEach(() => {
 
 afterEach(() => cleanup());
 
-describe('RatingPage', () => {
+describe('RatingEditorPage', () => {
   it('shows a not-found header when there is no item', () => {
     dataRef.current.item = null;
-    render(<RatingPage />);
+    render(<RatingEditorPage />);
     expect(screen.getByText('Nicht gefunden')).toBeInTheDocument();
   });
 
   it('renders the item title and the overall section', () => {
-    render(<RatingPage />);
+    render(<RatingEditorPage />);
     expect(screen.getByText('Dark')).toBeInTheDocument();
     expect(screen.getByTestId('overall')).toBeInTheDocument();
   });
 
   it('invokes save and delete handlers', () => {
-    render(<RatingPage />);
+    render(<RatingEditorPage />);
     fireEvent.click(screen.getByText('Speichern'));
     fireEvent.click(screen.getByText('Löschen'));
     expect(dataRef.current.handleSave).toHaveBeenCalledTimes(1);
