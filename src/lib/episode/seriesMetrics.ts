@@ -64,7 +64,10 @@ export const calculateSeriesMetrics = (series: Series): SeriesMetrics => {
     for (const ep of normalizeEpisodes(season.episodes)) {
       if (hasEpisodeAired(ep)) {
         totalAiredEpisodes++;
-        if (ep.watched) watchedEpisodes++;
+        // Multi-Format-„gesehen" (firstWatchedAt/watched/watchCount) statt nur
+        // rohem ep.watched — sonst zählen Legacy-/Rewatch-Rows mit {watched:0,
+        // watchCount>0} nicht mit und der Fortschritt wird zu niedrig gemeldet.
+        if (isEpisodeWatched(ep)) watchedEpisodes++;
       }
     }
   }
@@ -84,7 +87,7 @@ export const getSeriesLastWatchedAt = (series: Series): string => {
   let latest = '';
   for (const season of normalizeSeasons(series.seasons)) {
     for (const ep of normalizeEpisodes(season.episodes)) {
-      if (!ep.watched) continue;
+      if (!isEpisodeWatched(ep)) continue;
       const ts = ep.lastWatchedAt || ep.firstWatchedAt || '';
       if (ts && ts > latest) latest = ts;
     }

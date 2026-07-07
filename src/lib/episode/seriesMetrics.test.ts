@@ -200,19 +200,19 @@ describe('calculateSeriesMetrics', () => {
     });
   });
 
-  it("BEFUND: nutzt ep.watched-TRUTHINESS statt isEpisodeWatched — watched:'false' zählt als geschaut", () => {
+  it("watched:'false' (truthy String, aber kein echtes gesehen) zählt NICHT als geschaut", () => {
     const series = makeSeries([
       {
         seasonNumber: 1,
         episodes: [makeEp({ watched: 'false' as unknown as boolean })],
       },
     ]);
-    // 'false' ist ein truthy String → in den Metriken "geschaut",
-    // obwohl isEpisodeWatched({watched:'false'}) false liefert.
-    expect(calculateSeriesMetrics(series).watchedEpisodes).toBe(1);
+    // Metriken nutzen isEpisodeWatched → 'false' ist weder true/1/'true' noch
+    // watchCount>0 noch firstWatchedAt → nicht geschaut.
+    expect(calculateSeriesMetrics(series).watchedEpisodes).toBe(0);
   });
 
-  it('BEFUND: firstWatchedAt-only Episode (ohne watched-Flag) zählt NICHT als geschaut', () => {
+  it('firstWatchedAt-only Episode (ohne watched-Flag) zählt als geschaut', () => {
     const series = makeSeries([
       {
         seasonNumber: 1,
@@ -221,14 +221,14 @@ describe('calculateSeriesMetrics', () => {
     ]);
     const m = calculateSeriesMetrics(series);
     expect(m.totalAiredEpisodes).toBe(1);
-    expect(m.watchedEpisodes).toBe(0); // Divergenz zu isEpisodeWatched
+    expect(m.watchedEpisodes).toBe(1); // isEpisodeWatched: firstWatchedAt gesetzt
   });
 
-  it('BEFUND: watchCount-only Episode (watched false) zählt NICHT als geschaut', () => {
+  it('watchCount-only Episode (watched false) zählt als geschaut', () => {
     const series = makeSeries([
       { seasonNumber: 1, episodes: [makeEp({ watched: false, watchCount: 3 })] },
     ]);
-    expect(calculateSeriesMetrics(series).watchedEpisodes).toBe(0);
+    expect(calculateSeriesMetrics(series).watchedEpisodes).toBe(1);
   });
 
   it('watched === 1 (Legacy) zählt als geschaut (truthy)', () => {
@@ -425,14 +425,14 @@ describe('getSeriesLastWatchedAt', () => {
     expect(getSeriesLastWatchedAt(series)).toBe('2025-01-01T09:00:00.000Z');
   });
 
-  it('BEFUND: Episode mit firstWatchedAt aber watched-falsy wird übersprungen (Gate ist ep.watched)', () => {
+  it('Episode mit firstWatchedAt aber watched-falsy zählt (Gate ist isEpisodeWatched)', () => {
     const series = makeSeries([
       {
         seasonNumber: 1,
         episodes: [makeEp({ watched: false, firstWatchedAt: '2025-05-05T12:00:00.000Z' })],
       },
     ]);
-    expect(getSeriesLastWatchedAt(series)).toBe('1900-01-01');
+    expect(getSeriesLastWatchedAt(series)).toBe('2025-05-05T12:00:00.000Z');
   });
 
   it("watched true aber ohne Timestamps → '1900-01-01'", () => {
