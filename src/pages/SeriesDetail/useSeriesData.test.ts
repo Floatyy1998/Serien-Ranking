@@ -31,8 +31,8 @@ const makeSeries = (o: Partial<Series> = {}): Series =>
     ...o,
   }) as unknown as Series;
 
-type FetchResult = { json: () => Promise<unknown> };
-const jsonRes = (body: unknown): FetchResult => ({ json: async () => body });
+type FetchResult = { ok: boolean; json: () => Promise<unknown> };
+const jsonRes = (body: unknown): FetchResult => ({ ok: true, json: async () => body });
 
 function stubFetch(handler: (url: string) => unknown) {
   const fetchMock = vi.fn(async (url: string): Promise<FetchResult> => jsonRes(handler(url)));

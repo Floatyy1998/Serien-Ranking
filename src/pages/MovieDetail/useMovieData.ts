@@ -8,6 +8,8 @@ import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 import { backendFetch } from '../../services/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
 
@@ -122,12 +124,11 @@ export const useMovieData = () => {
 
   // --- TMDB + OMDB fetching ---
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_API_TMDB;
+    const apiKey = getTmdbApiKey();
 
     if (id && apiKey) {
       // Fetch backdrop and TMDB rating
-      fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE`)
-        .then((res) => res.json())
+      tmdbFetch<TmdbMediaDetail>(`movie/${id}`)
         .then((data) => {
           if (data.backdrop_path) {
             setTmdbBackdrop(data.backdrop_path);
@@ -145,8 +146,7 @@ export const useMovieData = () => {
         .catch(() => {}); // bewusst still: Backdrop/TMDB-Rating sind optionale Anreicherung
 
       // Fetch providers
-      fetch(`https://api.themoviedb.org/3/movie/${id}/watch/providers?api_key=${apiKey}`)
-        .then((res) => res.json())
+      tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
         .then((data) => {
           if (data.results?.DE?.flatrate) {
             setProviders(
@@ -164,12 +164,10 @@ export const useMovieData = () => {
       const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
       setLoading(true);
       Promise.all([
-        fetch(
-          `https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-        ).then((r) => r.json()),
-        fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${apiKey}&language=en-US`).then(
-          (r) => r.json()
-        ),
+        tmdbFetch<TmdbMediaDetail>(`movie/${id}`, {
+          append_to_response: 'credits,external_ids',
+        }),
+        tmdbFetch<TmdbMediaDetail>(`movie/${id}`, { language: 'en-US' }),
       ])
         .then(([data, dataEN]) => {
           const bestTitle =
@@ -177,17 +175,17 @@ export const useMovieData = () => {
           if (data.id) {
             const movie: Movie = {
               id: data.id,
-              title: bestTitle,
-              poster: { poster: data.poster_path },
+              title: bestTitle || '',
+              poster: { poster: data.poster_path || '' },
               genre: {
                 genres: data.genres?.map((g: TMDBGenre) => g.name) || [],
               },
               provider: { provider: [] },
               release_date: data.release_date,
-              runtime: data.runtime,
+              runtime: data.runtime ?? 0,
               beschreibung: data.overview,
               overview: data.overview,
-              backdrop: data.backdrop_path,
+              backdrop: data.backdrop_path ?? undefined,
               begründung: '',
               imdb: { imdb_id: data.external_ids?.imdb_id || '' },
               rating: {},

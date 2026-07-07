@@ -61,8 +61,8 @@ const makeMovie = (o: Partial<Movie> = {}): Movie =>
     ...o,
   }) as unknown as Movie;
 
-type FetchResult = { json: () => Promise<unknown> };
-const jsonRes = (b: unknown): FetchResult => ({ json: async () => b });
+type FetchResult = { ok: boolean; json: () => Promise<unknown> };
+const jsonRes = (b: unknown): FetchResult => ({ ok: true, json: async () => b });
 
 function stubFetch(handler: (url: string) => unknown) {
   const fetchMock = vi.fn(async (url: string): Promise<FetchResult> => jsonRes(handler(url)));

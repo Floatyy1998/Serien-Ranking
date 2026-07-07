@@ -3,7 +3,13 @@ import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 
 import type { Series } from '../../types/Series';
-import type { TMDBSeason, TMDBEpisode, TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
+import type { TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import type {
+  TmdbMediaDetail,
+  TmdbSeasonDetail,
+  TmdbWatchProvidersResponse,
+} from '../../services/tmdb.types';
 
 interface UseSeriesDataResult {
   series: Series | null;
@@ -43,13 +49,12 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
 
   // Fetch from TMDB - always for backdrop and full data if not found locally
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_API_TMDB;
+    const apiKey = getTmdbApiKey();
     if (!id || !apiKey) return;
 
     // ALWAYS fetch backdrop and providers from TMDB
     // Fetch backdrop and TMDB rating
-    fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
-      .then((res) => res.json())
+    tmdbFetch<TmdbMediaDetail>(`tv/${id}`)
       .then((data) => {
         if (data.backdrop_path) {
           setTmdbBackdrop(data.backdrop_path);
@@ -78,8 +83,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     // geladen" von `[]` = „geladen, keine DE-Flatrate" unterscheidbar bleibt.
     // Sonst blockt der AniList-Provider-Fallback (Guard `providers === null`)
     // dauerhaft bei Serien ohne DE-Flatrate.
-    fetch(`https://api.themoviedb.org/3/tv/${id}/watch/providers?api_key=${apiKey}`)
-      .then((res) => res.json())
+    tmdbFetch<TmdbWatchProvidersResponse>(`tv/${id}/watch/providers`, { language: undefined })
       .then((data) => {
         const flatrate = data.results?.DE?.flatrate;
         setProviders(
@@ -100,34 +104,28 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
       const fetchFullData = async () => {
         setLoading(true);
         try {
-          const [res, resEN] = await Promise.all([
-            fetch(
-              `https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE&append_to_response=credits,external_ids`
-            ),
-            fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=en-US`),
+          const [data, dataEN] = await Promise.all([
+            tmdbFetch<TmdbMediaDetail>(`tv/${id}`, { append_to_response: 'credits,external_ids' }),
+            tmdbFetch<TmdbMediaDetail>(`tv/${id}`, { language: 'en-US' }),
           ]);
-          const [data, dataEN] = await Promise.all([res.json(), resEN.json()]);
           const bestName =
             data.name && !hasNonLatin(data.name) ? data.name : dataEN.name || data.name;
           if (data.id) {
             // Episoden von TMDB holen (deutsche Titel)
-            const regularSeasons = (data.seasons || []).filter(
-              (s: TMDBSeason) => s.season_number > 0
-            );
+            const regularSeasons = (data.seasons || []).filter((s) => s.season_number > 0);
             const seasonsWithEpisodes: SeriesSeason[] = await Promise.all(
-              regularSeasons.map(async (season: TMDBSeason) => {
+              regularSeasons.map(async (season) => {
                 try {
-                  const seasonResponse = await fetch(
-                    `https://api.themoviedb.org/3/tv/${id}/season/${season.season_number}?api_key=${apiKey}&language=de-DE`
+                  const seasonData = await tmdbFetch<TmdbSeasonDetail>(
+                    `tv/${id}/season/${season.season_number}`
                   );
-                  const seasonData = await seasonResponse.json();
 
                   return {
                     seasonNumber: season.season_number - 1,
                     episodes:
-                      seasonData.episodes?.map((ep: TMDBEpisode) => ({
+                      seasonData.episodes?.map((ep) => ({
                         id: ep.id,
-                        name: ep.name,
+                        name: ep.name || '',
                         episode_number: ep.episode_number,
                         air_date: ep.air_date || '',
                         watched: false,
@@ -146,9 +144,9 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
             // Transform TMDB data to match our Series type
             const series: Series = {
               id: data.id,
-              title: bestName,
-              name: bestName,
-              poster: { poster: data.poster_path },
+              title: bestName || '',
+              name: bestName || '',
+              poster: { poster: data.poster_path || '' },
               genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
               provider: { provider: [] },
               seasons: seasonsWithEpisodes,
@@ -157,7 +155,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
               rating: {},
               watchlist: false,
               overview: data.overview,
-              backdrop: data.backdrop_path,
+              backdrop: data.backdrop_path ?? undefined,
               // Required fields with defaults
               begründung: '',
               beschreibung: data.overview || '',
