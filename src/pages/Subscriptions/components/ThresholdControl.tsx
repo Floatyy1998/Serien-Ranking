@@ -35,6 +35,7 @@ export const ThresholdControl = ({
         type="number"
         min={7}
         max={365}
+        aria-label="Schwellenwert in Tagen, ab denen ein Abo als ungenutzt gilt"
         value={unusedThresholdDays}
         onChange={(e) => {
           const v = parseInt(e.target.value, 10);

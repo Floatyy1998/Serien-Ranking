@@ -57,14 +57,16 @@ export const SubscriptionsPage = () => {
       />
 
       <div className="sub-content">
-        {/* Insights */}
-        <SubscriptionInsights
-          activeCount={activeInsights.length}
-          unusedInsights={unusedInsights}
-          totalMonthlySpend={totalMonthlySpend}
-          wastedMonthlySpend={wastedMonthlySpend}
-          unusedThresholdDays={unusedThresholdDays}
-        />
+        {/* Insights (erst nach dem Laden — sonst kurz irreführend "0 Abos / 0,00 €") */}
+        {!loading && (
+          <SubscriptionInsights
+            activeCount={activeInsights.length}
+            unusedInsights={unusedInsights}
+            totalMonthlySpend={totalMonthlySpend}
+            wastedMonthlySpend={wastedMonthlySpend}
+            unusedThresholdDays={unusedThresholdDays}
+          />
+        )}
 
         {/* Cost optimizer: €/Stunde-Ranking + Pausier-Vorschläge */}
         {!loading && (

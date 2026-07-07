@@ -272,6 +272,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
           height: star.size,
           top: star.top,
           left: star.left,
+          background: theme.text.primary,
         }}
       />
     ))}
@@ -289,8 +290,12 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
         <AutoAwesome style={{ color: theme.text.secondary, fontSize: '28px' }} />
       </motion.div>
       <div className="stats-actor-text">
-        <h2 className="stats-actor-title">Actor Universe</h2>
-        <p className="stats-actor-subtitle">Entdecke Verbindungen zwischen Schauspielern</p>
+        <h2 className="stats-actor-title" style={{ color: theme.text.primary }}>
+          Actor Universe
+        </h2>
+        <p className="stats-actor-subtitle" style={{ color: theme.text.secondary }}>
+          Entdecke Verbindungen zwischen Schauspielern
+        </p>
       </div>
       <div
         className="stats-actor-badge"
