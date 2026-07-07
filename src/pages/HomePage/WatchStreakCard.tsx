@@ -11,6 +11,7 @@ import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getStreakStatus, getShieldCooldown } from './watchStreakHelpers';
 import type { WatchStreakData, ActivePetInfo } from './watchStreakHelpers';
 import { StreakShieldDialog } from './StreakShieldDialog';
@@ -191,7 +192,9 @@ export const WatchStreakCard: React.FC = () => {
   };
   const flameColor = streakColors[status] || currentTheme.text.muted;
 
-  const shieldColor = '#5c6bc0';
+  // Shield = the "save your streak" action → tie it to the brand accent, not a
+  // random off-palette indigo. Status colors stay on the streak itself.
+  const shieldColor = currentTheme.primary;
 
   return (
     <>
@@ -278,8 +281,28 @@ export const WatchStreakCard: React.FC = () => {
             {showShieldButton && !shieldJustUsed && (
               <motion.button
                 initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                animate={
+                  shieldEligible
+                    ? {
+                        scale: 1,
+                        boxShadow: [
+                          `0 0 0 0 ${shieldColor}00`,
+                          `0 0 0 5px ${shieldColor}22`,
+                          `0 0 0 0 ${shieldColor}00`,
+                        ],
+                      }
+                    : { scale: 1 }
+                }
+                transition={
+                  shieldEligible
+                    ? {
+                        scale: { type: 'spring', stiffness: 300, damping: 15 },
+                        boxShadow: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
+                      }
+                    : { type: 'spring', stiffness: 300, damping: 15 }
+                }
+                whileHover={shieldEligible ? { scale: 1.08 } : undefined}
+                whileTap={shieldEligible ? { scale: 0.92 } : undefined}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (shieldEligible) setShowConfirm(true);
@@ -290,22 +313,26 @@ export const WatchStreakCard: React.FC = () => {
                   background: shieldEligible
                     ? `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`
                     : 'var(--glass-light)',
-                  border: 'none',
-                  borderRadius: 8,
-                  width: 32,
-                  height: 32,
+                  border: shieldEligible
+                    ? `1px solid ${shieldColor}`
+                    : `1px solid ${currentTheme.border.default}`,
+                  borderRadius: 10,
+                  width: 34,
+                  height: 34,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: shieldEligible ? 'pointer' : 'default',
-                  opacity: shieldEligible ? 1 : 0.4,
+                  opacity: shieldEligible ? 1 : 0.45,
                   padding: 0,
                 }}
               >
                 <Shield
                   style={{
-                    fontSize: 16,
-                    color: shieldEligible ? 'white' : currentTheme.text.muted,
+                    fontSize: 17,
+                    color: shieldEligible
+                      ? getOptimalTextColor(shieldColor)
+                      : currentTheme.text.muted,
                   }}
                 />
               </motion.button>
