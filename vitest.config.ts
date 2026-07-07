@@ -629,6 +629,7 @@ export default defineConfig({
         'src/services/petService.ts',
         'src/services/readActivityService.ts',
         'src/services/tasteMatchService.ts',
+        'src/services/tmdbClient.ts',
         'src/services/watchActivity/bingeSessionTracking.ts',
         'src/services/watchActivity/bulkMarkingDetection.ts',
         'src/services/watchActivity/compactEvent.ts',
