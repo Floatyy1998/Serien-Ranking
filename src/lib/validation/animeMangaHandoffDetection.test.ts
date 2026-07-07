@@ -34,7 +34,7 @@ vi.mock('../settings/notificationSettings', () => settings);
 const catalog = vi.hoisted(() => ({
   fetchStaticAnimeManga: vi.fn(async () => ({}) as Record<string, AnimeMangaStaticEntry> | null),
 }));
-vi.mock('../staticCatalog', () => catalog);
+vi.mock('../../services/staticCatalog', () => catalog);
 
 import { detectAnimeMangaHandoff } from './animeMangaHandoffDetection';
 

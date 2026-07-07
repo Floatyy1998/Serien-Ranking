@@ -35,8 +35,8 @@ const mocks = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: mocks.firebaseDefault }));
 vi.mock('firebase/compat/auth', () => ({}));
 vi.mock('firebase/compat/database', () => ({}));
-vi.mock('../haptics', () => ({ hapticSuccess: mocks.hapticSuccess }));
-vi.mock('../toast', () => ({ showToast: mocks.showToast }));
+vi.mock('../../lib/haptics', () => ({ hapticSuccess: mocks.hapticSuccess }));
+vi.mock('../../lib/toast', () => ({ showToast: mocks.showToast }));
 vi.mock('./pendingWriteQueue', () => ({
   isPermissionDenied: (err: unknown) => {
     if (!err || typeof err !== 'object') return false;

@@ -4,7 +4,7 @@ const h2i = vi.hoisted(() => ({ toBlob: vi.fn() }));
 const toastMod = vi.hoisted(() => ({ showToast: vi.fn() }));
 
 vi.mock('html-to-image', () => ({ toBlob: h2i.toBlob }));
-vi.mock('../toast', () => ({ showToast: toastMod.showToast }));
+vi.mock('../../lib/toast', () => ({ showToast: toastMod.showToast }));
 
 import { exportNodeAsImage, shareOrDownload } from './shareCard';
 
