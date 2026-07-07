@@ -252,6 +252,9 @@ export function useSeriesActions(
               const undoUpdates: Record<string, unknown> = {
                 [`${epPath}/c`]: prevWatchCount || null,
                 [`${epPath}/l`]: prevLast || null,
+                // Undo ist eine Watch-Daten-Änderung → serienVersion bumpen,
+                // sonst überspringt ein zweites Gerät den Delta-Reload (versionsMatch).
+                [paths.serienVersion(userId)]: serverTimestamp(),
               };
               if (!prevWatched) {
                 undoUpdates[`${epPath}/w`] = null;
@@ -316,29 +319,52 @@ export function useSeriesActions(
         const prevLast: number = val.l || 0;
         const prevWatched: number = val.w || 0;
 
-        if (episode.watchCount && episode.watchCount > 1) {
-          await dbRef(`${epPath}/c`).set(episode.watchCount - 1);
+        const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
+        const queueLabel = `${series.title} S${seasonNumber}E${episodeIndex + 1} Unwatch`;
+
+        // Über die Offline-Queue (wie Quick-Toggle): ein Offline-„Entmarkieren"
+        // ginge sonst verloren. Dekrement basiert auf dem frisch gelesenen
+        // prevWatchCount, nicht auf dem evtl. stalen episode.watchCount-Prop
+        // (ein paralleler Mark auf einem anderen Gerät würde sonst überschrieben).
+        if (prevWatchCount > 1) {
+          await applyUserUpdate(
+            userId,
+            {
+              [`${epPath}/c`]: prevWatchCount - 1,
+              [paths.serienVersion(userId)]: serverTimestamp(),
+            },
+            queueLabel
+          );
         } else {
-          await dbRef(epPath).remove();
+          await applyUserUpdate(
+            userId,
+            {
+              [epPath]: null,
+              [paths.serienVersion(userId)]: serverTimestamp(),
+            },
+            queueLabel
+          );
         }
-        bumpSeriesVersion(userId);
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
-        const seasonNumber = (series.seasons?.[seasonIndex]?.seasonNumber || 0) + 1;
         showUndoToast(
           `S${seasonNumber}E${episodeIndex + 1} als nicht gesehen markiert`,
           async () => {
             try {
+              const undoUpdates: Record<string, unknown> = {
+                // Undo ist eine Watch-Daten-Änderung → serienVersion bumpen.
+                [paths.serienVersion(userId)]: serverTimestamp(),
+              };
               if (!prevWatched && prevWatchCount === 0 && !prevFirst && !prevLast) {
-                await dbRef(epPath).remove();
+                undoUpdates[epPath] = null;
               } else {
-                await dbRef(epPath).set({
-                  ...(prevWatched ? { w: prevWatched } : {}),
-                  ...(prevWatchCount ? { c: prevWatchCount } : {}),
-                  ...(prevFirst ? { f: prevFirst } : {}),
-                  ...(prevLast ? { l: prevLast } : {}),
-                });
+                // null löscht den Teilschlüssel — entspricht dem alten Voll-.set().
+                undoUpdates[`${epPath}/w`] = prevWatched || null;
+                undoUpdates[`${epPath}/c`] = prevWatchCount || null;
+                undoUpdates[`${epPath}/f`] = prevFirst || null;
+                undoUpdates[`${epPath}/l`] = prevLast || null;
               }
+              await dbUpdate(undoUpdates);
             } catch {
               showToast('Undo fehlgeschlagen', 2000, 'error');
             }

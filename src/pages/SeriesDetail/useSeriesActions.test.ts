@@ -247,7 +247,7 @@ describe('useSeriesActions', () => {
     expect(hapticSuccess).not.toHaveBeenCalled();
   });
 
-  it('handleEpisodeUnwatch: removes the row and bumps the version (watchCount 1)', async () => {
+  it('handleEpisodeUnwatch: nullt die Row via Offline-Queue + bumpt serienVersion (watchCount 1)', async () => {
     const series = makeSeries({
       seasons: [{ seasonNumber: 0, episodes: [ep({ id: 11, watched: true, watchCount: 1 })] }],
     });
@@ -258,8 +258,37 @@ describe('useSeriesActions', () => {
       await result.current.handleEpisodeUnwatch(series.seasons[0].episodes[0]);
     });
 
-    expect(fb.removeMock).toHaveBeenCalled();
-    expect(bumpSeriesVersion).toHaveBeenCalledWith('u1');
+    // Läuft jetzt über applyUserUpdate (Offline-Queue), nicht mehr über raw
+    // dbRef.remove() + separaten bumpSeriesVersion.
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    const base = 'users/u1/seriesWatch/5/seasons/0/eps/11';
+    expect(updates[base]).toBeNull();
+    expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
+  });
+
+  it('handleEpisodeUnwatch: dekrementiert c auf den frisch gelesenen prevWatchCount (watchCount 3)', async () => {
+    const series = makeSeries({
+      // stale Prop absichtlich niedriger als DB, um den Stale-Clobber-Fix zu prüfen
+      seasons: [{ seasonNumber: 0, episodes: [ep({ id: 11, watched: true, watchCount: 2 })] }],
+    });
+    fb.onceMock.mockResolvedValue({ val: () => ({ w: 1, c: 3, f: 100, l: 200 }) });
+    const { result } = renderHook(() => useSeriesActions(series, 'u1', null));
+
+    await act(async () => {
+      await result.current.handleEpisodeUnwatch(series.seasons[0].episodes[0]);
+    });
+
+    const [, updates] = vi.mocked(applyUserUpdate).mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
+    const base = 'users/u1/seriesWatch/5/seasons/0/eps/11';
+    // 3 (DB) - 1 = 2, NICHT 2 (stale Prop) - 1 = 1.
+    expect(updates[`${base}/c`]).toBe(2);
+    expect(updates['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
   });
 
   it('handleEpisodeRewatch: writes an incremented watchCount map via applyUserUpdate', async () => {
