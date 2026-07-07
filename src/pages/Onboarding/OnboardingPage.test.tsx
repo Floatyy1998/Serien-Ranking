@@ -12,7 +12,7 @@ const authState = vi.hoisted(() => ({
 }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => authState.value }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authState.value }));
 
 vi.mock('./hooks/useOnboardingSearch', () => ({
   useOnboardingSearch: () => ({

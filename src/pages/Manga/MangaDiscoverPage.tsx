@@ -2,7 +2,7 @@ import { Add, NewReleases, Search, Star, TrendingUp, Whatshot } from '@mui/icons
 import { motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { BackButton, GradientText, ScrollToTopButton } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';

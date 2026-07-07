@@ -9,7 +9,7 @@
 
 import { dbRef, userPath } from '../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { mergeProviderNames } from '../lib/providerMerge';
 import type { ProviderSubscription } from '../types/Subscription';
 import type { Series } from '../types/Series';

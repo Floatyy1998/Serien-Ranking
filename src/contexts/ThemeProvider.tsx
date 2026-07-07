@@ -1,7 +1,7 @@
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from './AuthContext';
 import type { UserThemeConfig } from '../theme/dynamicTheme';
 import {
   createMuiTheme,

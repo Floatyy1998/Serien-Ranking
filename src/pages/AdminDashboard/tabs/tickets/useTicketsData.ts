@@ -3,7 +3,7 @@ import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../../../AuthContext';
+import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
 import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';

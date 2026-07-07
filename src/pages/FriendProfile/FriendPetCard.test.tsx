@@ -11,7 +11,7 @@ const { authValue, sendGiftMock, canSendMock } = vi.hoisted(() => ({
   })),
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => authValue }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../components/pet', () => ({
   EvolvingPixelPet: () => <div data-testid="pet-sprite" />,
 }));

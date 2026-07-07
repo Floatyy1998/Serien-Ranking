@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { formatMinutesToString } from '../../lib/date';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';

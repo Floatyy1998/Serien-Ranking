@@ -8,7 +8,7 @@ const { u, streakData } = vi.hoisted(() => ({
   streakData: { value: { currentStreak: 5, longestStreak: 5, lastWatchDate: '2026-07-04' } },
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: u }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: u }) }));
 
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>

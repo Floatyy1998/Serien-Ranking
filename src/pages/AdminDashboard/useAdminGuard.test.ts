@@ -7,7 +7,7 @@ const navSpy = vi.hoisted(() => vi.fn());
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
 
 vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 import { useAdminGuard } from './useAdminGuard';
 

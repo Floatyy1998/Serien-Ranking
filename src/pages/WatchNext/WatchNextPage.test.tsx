@@ -7,7 +7,7 @@ const { state } = vi.hoisted(() => ({ state: { episodes: [] as unknown[] } }));
 vi.mock('react-router-dom', () => ({
   useSearchParams: () => [new URLSearchParams(''), vi.fn()],
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => ({ seriesList: [] }) }));
 vi.mock('../../hooks/useActiveSubscriptions', () => ({
   useActiveSubscriptions: () => ({ activeProviders: null, hasAnySubscription: false }),

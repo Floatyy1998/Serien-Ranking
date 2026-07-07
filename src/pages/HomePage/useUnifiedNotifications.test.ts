@@ -58,7 +58,7 @@ vi.mock('../../hooks/useRecommendations', () => ({
 }));
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 import {
   useUnifiedNotifications,

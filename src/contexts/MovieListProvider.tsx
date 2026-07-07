@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Movie } from '../types/Movie';
 import type { CatalogMovie, UserMovieRef } from '../types/CatalogTypes';

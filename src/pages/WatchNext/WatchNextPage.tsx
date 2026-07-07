@@ -1,6 +1,6 @@
 import { useDeferredValue, useEffect, useMemo, useState, useTransition } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { useEpisodeDragDrop } from '../../hooks/useEpisodeDragDrop';

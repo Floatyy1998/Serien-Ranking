@@ -54,7 +54,7 @@ vi.mock('react-router-dom', () => ({
   useParams: () => ({ id: '5' }),
   useNavigate: () => navigateMock,
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => authValue }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {

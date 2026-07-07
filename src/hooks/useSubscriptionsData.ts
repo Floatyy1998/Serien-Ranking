@@ -8,7 +8,7 @@
 
 import { dbRef, userPath } from '../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { SUPPORTED_PROVIDERS } from '../config/menuItems';
 import { invalidateActiveSubscriptions } from './useActiveSubscriptions';

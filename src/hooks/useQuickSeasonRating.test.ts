@@ -12,7 +12,7 @@ vi.mock('firebase/compat/app', () => ({ default: { database: () => ({ ref: fb.re
 vi.mock('firebase/compat/database', () => ({}));
 
 const authState = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const analytics = vi.hoisted(() => ({ trackRatingSaved: vi.fn() }));
 vi.mock('../services/firebase/analytics', () => ({ trackRatingSaved: analytics.trackRatingSaved }));

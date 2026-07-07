@@ -6,7 +6,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
 import { AnimeFillerBanner } from './AnimeFillerBanner';

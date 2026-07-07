@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';

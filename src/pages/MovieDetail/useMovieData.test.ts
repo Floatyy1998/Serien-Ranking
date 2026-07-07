@@ -28,7 +28,7 @@ const ctx = vi.hoisted(() => ({
   movieList: [] as Movie[],
   user: { uid: 'u1' } as { uid: string } | null,
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));

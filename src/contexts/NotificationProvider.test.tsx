@@ -43,7 +43,7 @@ const fb = vi.hoisted(() => {
 });
 
 const authUser = vi.hoisted(() => ({ uid: 'u1' }));
-vi.mock('../AuthContext', () => ({
+vi.mock('./AuthContext', () => ({
   useAuth: () => ({ user: authUser }),
 }));
 

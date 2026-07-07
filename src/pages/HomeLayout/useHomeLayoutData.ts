@@ -5,7 +5,7 @@
 
 import { dbRef, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';
 
 // --- Constants ---

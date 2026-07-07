@@ -33,7 +33,7 @@ vi.mock('@mui/icons-material', () => ({
   EmojiEvents: () => <span />,
   Refresh: () => <span />,
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>
     new Proxy(() => '#333', {

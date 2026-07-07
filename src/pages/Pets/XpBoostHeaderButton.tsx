@@ -7,7 +7,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';
 import type { XpBoostItem } from '../../services/pet/dailySpinService';
 import { tapScaleTight } from '../../lib/motion';

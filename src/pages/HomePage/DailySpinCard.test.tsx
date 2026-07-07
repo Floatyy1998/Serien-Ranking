@@ -6,7 +6,7 @@ import { DailySpinCard } from './DailySpinCard';
 const u = vi.hoisted(() => ({ uid: 'u1' }));
 const fb = vi.hoisted(() => ({ resolve: (_path: string): unknown => null }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: u }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: u }) }));
 
 vi.mock('../../contexts/ThemeContext', async () => {
   const { defaultDynamicTheme } = await import('../../theme/dynamicTheme');

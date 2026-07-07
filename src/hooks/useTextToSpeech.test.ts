@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTextToSpeech } from './useTextToSpeech';
 import { backendFetch } from '../services/backendApi';
 
-vi.mock('../AuthContext', () => ({
+vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'user-1' } }),
 }));
 

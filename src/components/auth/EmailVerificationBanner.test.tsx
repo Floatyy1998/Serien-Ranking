@@ -16,7 +16,7 @@ const authState = vi.hoisted(() => ({
 const navigate = vi.hoisted(() => vi.fn<(path: string) => void>());
 const signOut = vi.hoisted(() => vi.fn<() => Promise<void>>(async () => {}));
 
-vi.mock('../../AuthContext', () => ({
+vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.user, authStateResolved: authState.authStateResolved }),
 }));
 

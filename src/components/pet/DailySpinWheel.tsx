@@ -9,7 +9,7 @@ import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import LocalFireDepartment from '@mui/icons-material/LocalFireDepartment';
 import Wallpaper from '@mui/icons-material/Wallpaper';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   buildSpinSegments,
   canSpinToday,

@@ -6,7 +6,7 @@ import type { useCharacterDescriptions as UseCharacterDescriptions } from './use
 
 // --- Auth ---
 const auth = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: auth.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: auth.user }) }));
 
 // --- normalizeSeasons: liefert eine kontrollierte Fortschritts-Struktur ---
 const seriesMetrics = vi.hoisted(() => ({

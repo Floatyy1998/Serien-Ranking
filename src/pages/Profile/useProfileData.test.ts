@@ -34,7 +34,7 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/auth', () => ({}));
 vi.mock('react-router-dom', () => ({ useNavigate: () => state.navigate }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: state.allSeriesList }),

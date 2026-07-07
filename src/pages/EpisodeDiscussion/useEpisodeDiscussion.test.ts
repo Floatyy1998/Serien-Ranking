@@ -18,7 +18,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const listState = vi.hoisted(() => ({ seriesList: [] as Series[], refetchSeries: vi.fn() }));
 vi.mock('../../contexts/SeriesListContext', () => ({

@@ -14,7 +14,7 @@ const seriesState = vi.hoisted(() => ({
   seriesWithNewSeasons: [] as unknown[],
 }));
 
-vi.mock('../AuthContext', () => ({
+vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.uid ? { uid: authState.uid } : null }),
 }));
 

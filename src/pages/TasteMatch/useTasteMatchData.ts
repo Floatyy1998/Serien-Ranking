@@ -5,7 +5,7 @@
 import { dbRef, paths } from '../../services/db/ref';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { calculateTasteMatch } from '../../services/tasteMatchService';

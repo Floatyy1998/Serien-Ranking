@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { dbUpdate, paths } from '../../../services/db/ref';
-import { useAuth } from '../../../AuthContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { fetchStaticCatalogSeasons } from '../../../services/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
 

@@ -60,7 +60,7 @@ vi.mock('firebase/compat/storage', () => ({}));
 const authState = vi.hoisted(() => ({
   user: null as { uid: string; displayName?: string } | null,
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const notify = vi.hoisted(() => ({ sendNotificationToUser: vi.fn(async () => {}) }));
 vi.mock('../../hooks/useDiscussionHelpers', () => ({

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DailySpinWheel } from './DailySpinWheel';
 
 const authState = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({
+vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.user }),
 }));
 

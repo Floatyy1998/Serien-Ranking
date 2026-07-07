@@ -21,7 +21,7 @@ vi.mock('@mui/icons-material', () => ({
   SwapHoriz: () => null,
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authUser }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authUser }) }));
 
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>

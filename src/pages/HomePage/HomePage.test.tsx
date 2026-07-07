@@ -23,7 +23,7 @@ vi.mock('firebase/compat/database', () => ({}));
 const navigate = vi.fn<(to: string) => void>();
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => authState.value }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authState.value }));
 vi.mock('../../contexts/ThemeContext', async () => {
   const actual = await import('../../theme/dynamicTheme');
   return { useTheme: () => ({ currentTheme: actual.defaultDynamicTheme }) };

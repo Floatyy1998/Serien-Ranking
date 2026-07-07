@@ -1,6 +1,6 @@
 import 'firebase/compat/database';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import type { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';

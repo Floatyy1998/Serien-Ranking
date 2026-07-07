@@ -71,7 +71,7 @@ vi.mock('firebase/compat/app', () => ({
   },
 }));
 vi.mock('firebase/compat/database', () => ({}));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: mocks.auth.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: mocks.auth.user }) }));
 vi.mock('../services/firebase/userDisplayData', () => ({
   getUserDisplayData: vi.fn(async () => ({ username: 'Tester', photoURL: 'photo.png' })),
 }));

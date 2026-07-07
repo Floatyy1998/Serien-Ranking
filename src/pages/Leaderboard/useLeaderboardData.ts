@@ -1,6 +1,6 @@
 import { dbGet, userPath } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import {
   checkAndArchiveMonth,

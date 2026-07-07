@@ -6,7 +6,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import Inventory2 from '@mui/icons-material/Inventory2';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
 import { hapticCelebrate } from '../../lib/haptics';
 import {

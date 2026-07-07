@@ -22,7 +22,7 @@ vi.mock('../hooks/useEnhancedFirebaseCache', () => ({
 }));
 
 const authUser = vi.hoisted(() => ({ uid: 'u1' }));
-vi.mock('../AuthContext', () => ({
+vi.mock('./AuthContext', () => ({
   useAuth: () => ({ user: authUser }),
 }));
 

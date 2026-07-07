@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { dbRef, dbUpdate, paths } from '../services/db/ref';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';

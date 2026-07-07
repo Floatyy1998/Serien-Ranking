@@ -33,7 +33,7 @@ vi.mock('./features/badges/offlineBadgeSystem', () => ({
 vi.mock('./services/firebase/userSearchIndex', () => ({ syncUserSearchIndex: vi.fn() }));
 
 import { AuthProvider } from './authProvider';
-import { useAuth } from './AuthContext';
+import { useAuth } from './contexts/AuthContext';
 
 const Consumer = () => {
   const auth = useAuth();

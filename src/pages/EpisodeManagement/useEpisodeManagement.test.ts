@@ -32,7 +32,7 @@ const ctx = vi.hoisted(() => ({
   shouldTriggerQuickRate: vi.fn<(...a: unknown[]) => boolean>(() => false),
   showQuickRating: vi.fn(),
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: ctx.allSeriesList }),
 }));

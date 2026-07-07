@@ -2,7 +2,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout, ScrollToTop } from './components/layout';
-import { useAuth } from './AuthContext';
+import { useAuth } from './contexts/AuthContext';
 import { ADMIN_UID } from './config/admin';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
 import { useNotifications } from './contexts/NotificationContext';

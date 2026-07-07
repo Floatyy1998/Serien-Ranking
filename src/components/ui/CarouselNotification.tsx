@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { bumpSeriesVersion } from '../../services/firebase/seriesVersionBump';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { showUndoToast } from '../../lib/toast';

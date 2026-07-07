@@ -22,7 +22,7 @@ const state = vi.hoisted(() => ({
   backendFetch: vi.fn<(path: string, init?: RequestInit) => Promise<Response>>(),
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: state.allSeriesList }),
 }));

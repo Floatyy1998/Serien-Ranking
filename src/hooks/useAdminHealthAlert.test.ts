@@ -18,7 +18,7 @@ const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
 vi.mock('../lib/toast', () => ({ showToast: toast.showToast }));
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 import { useAdminHealthAlert } from './useAdminHealthAlert';
 

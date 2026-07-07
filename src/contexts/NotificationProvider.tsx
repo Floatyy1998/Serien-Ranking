@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useCallback, useState, useEffect, useMemo } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from './AuthContext';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../services/db/ref';

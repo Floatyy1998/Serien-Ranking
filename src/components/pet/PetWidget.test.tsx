@@ -5,7 +5,7 @@ import type { Pet } from '../../types/pet.types';
 import { PetWidget } from './PetWidget';
 
 const authState = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({
+vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.user }),
 }));
 

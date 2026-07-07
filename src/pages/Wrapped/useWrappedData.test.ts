@@ -14,7 +14,7 @@ vi.mock('react-router-dom', () => ({
 }));
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const cfg = vi.hoisted(() => ({ value: { enabled: true, year: 2025, loading: false } }));
 vi.mock('../../hooks/useWrappedConfig', () => ({ useWrappedConfig: () => cfg.value }));

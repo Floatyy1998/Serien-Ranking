@@ -8,7 +8,7 @@ const { seriesValue, movieValue } = vi.hoisted(() => ({
 }));
 
 vi.mock('firebase/compat/database', () => ({}));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => seriesValue }));
 vi.mock('../../contexts/MovieListContext', () => ({ useMovieList: () => movieValue }));
 vi.mock('../../lib/rating/rating', () => ({ calculateOverallRating: () => '8.00' }));

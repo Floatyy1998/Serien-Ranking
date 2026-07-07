@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { useOnboardingSearch as UseOnboardingSearch } from './useOnboardingSearch';
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const refetchAfterAdd = vi.hoisted(() => vi.fn(async () => {}));
 vi.mock('../../../contexts/SeriesListContext', () => ({

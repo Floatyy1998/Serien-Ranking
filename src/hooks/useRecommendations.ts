@@ -2,7 +2,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   Recommendation,
   RecommendationMediaType,

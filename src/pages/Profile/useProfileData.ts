@@ -34,7 +34,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';

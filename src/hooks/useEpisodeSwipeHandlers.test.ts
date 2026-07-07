@@ -18,7 +18,7 @@ vi.mock('firebase/compat/database', () => ({}));
 
 // --- Auth (konfigurierbar) ---
 const auth = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: auth.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: auth.user }) }));
 
 // --- Write-/Side-effect-Mocks ---
 const mocks = vi.hoisted(() => ({

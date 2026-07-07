@@ -19,7 +19,7 @@ const haptics = vi.hoisted(() => ({ hapticSelect: vi.fn(), hapticWarning: vi.fn(
 vi.mock('../../lib/haptics', () => haptics);
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 import {
   useHomeLayoutData,

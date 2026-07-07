@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { CelebrationBurst } from '../../components/ui';
 import { hapticCelebrate } from '../../lib/haptics';
 // activityBatchManager entfernt - Badge-Callbacks jetzt direkt über minimalActivityLogger

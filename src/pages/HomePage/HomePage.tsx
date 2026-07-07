@@ -2,7 +2,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { SectionHeader } from '../../components/ui';
 import { SeriesNotificationHub } from './SeriesNotificationHub';

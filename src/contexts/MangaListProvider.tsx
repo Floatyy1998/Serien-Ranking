@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { getMangaById } from '../services/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangaUpdatesService';

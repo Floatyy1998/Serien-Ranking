@@ -62,7 +62,7 @@ import {
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../services/backendApi';

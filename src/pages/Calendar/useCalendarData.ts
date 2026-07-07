@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';

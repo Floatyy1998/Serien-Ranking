@@ -28,7 +28,7 @@ vi.mock('firebase/compat/database', () => ({}));
 
 // --- Context / hook mocks ---------------------------------------------------
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const seriesCtx = vi.hoisted(() => ({ seriesList: [] as Series[] }));
 vi.mock('../../contexts/SeriesListContext', () => ({

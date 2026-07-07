@@ -50,7 +50,7 @@ interface MockUser {
   reload: () => Promise<void>;
 }
 const authState = vi.hoisted(() => ({ user: null as MockUser | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const navSpy = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }));

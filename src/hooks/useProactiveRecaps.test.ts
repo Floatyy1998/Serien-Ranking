@@ -7,7 +7,7 @@ import type { Series } from '../types/Series';
 const authState = vi.hoisted(() => ({ uid: 'u1' as string | undefined }));
 const seriesState = vi.hoisted(() => ({ seriesList: [] as unknown[] }));
 
-vi.mock('../AuthContext', () => ({
+vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.uid ? { uid: authState.uid } : null }),
 }));
 

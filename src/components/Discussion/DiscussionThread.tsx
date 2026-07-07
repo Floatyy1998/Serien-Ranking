@@ -1,7 +1,7 @@
 import { ChatBubbleOutline, Visibility, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussions } from '../../hooks/useDiscussions';

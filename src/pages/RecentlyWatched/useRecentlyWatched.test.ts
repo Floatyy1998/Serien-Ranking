@@ -28,7 +28,7 @@ const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   user: { uid: 'u1' } as { uid: string } | null,
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: ctx.seriesList, seriesList: ctx.seriesList }),
 }));

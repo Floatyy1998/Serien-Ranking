@@ -8,7 +8,7 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';

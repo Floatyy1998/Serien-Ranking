@@ -36,7 +36,7 @@ vi.mock('react-router-dom', () => ({
 }));
 vi.mock('firebase/compat/app', () => firebaseMock);
 vi.mock('firebase/compat/database', () => ({}));
-vi.mock('../../AuthContext', () => ({
+vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'u1' } }),
 }));
 vi.mock('../../contexts/SeriesListContext', () => ({

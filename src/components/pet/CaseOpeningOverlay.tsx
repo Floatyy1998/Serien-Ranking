@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { petService } from '../../services/petService';
 import type { AccessoryRarity } from '../../types/pet.types';

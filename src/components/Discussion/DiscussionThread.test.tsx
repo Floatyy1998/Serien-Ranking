@@ -74,7 +74,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => authRef.current }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authRef.current }));
 
 vi.mock('../ui', () => ({
   LoadingSpinner: ({ text }: { text?: string }) => <div>{text}</div>,

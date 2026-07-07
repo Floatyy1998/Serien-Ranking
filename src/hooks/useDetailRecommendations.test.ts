@@ -22,7 +22,7 @@ vi.mock('../contexts/SeriesListContext', () => ({
 vi.mock('../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 
 const trackSeriesAdded = vi.fn<(...a: unknown[]) => void>();
 const trackMovieAdded = vi.fn<(...a: unknown[]) => void>();

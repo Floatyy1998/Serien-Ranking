@@ -11,7 +11,7 @@ import {
 import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { GradientText, HeaderActions, SectionHeader } from '../../components/ui';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';

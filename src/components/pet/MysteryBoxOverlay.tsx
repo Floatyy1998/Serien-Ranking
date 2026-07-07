@@ -7,7 +7,7 @@ import Bolt from '@mui/icons-material/Bolt';
 import CardGiftcard from '@mui/icons-material/CardGiftcard';
 import Diamond from '@mui/icons-material/Diamond';
 import Wallpaper from '@mui/icons-material/Wallpaper';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { openMysteryBox } from '../../services/pet/mysteryBoxService';
 import type { MysteryBoxReward } from '../../services/pet/mysteryBoxService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';

@@ -6,7 +6,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../lib/motion';

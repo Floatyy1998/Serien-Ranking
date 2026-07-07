@@ -24,7 +24,7 @@ vi.mock('./useWebWorker', () => ({
 }));
 
 const authState = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | null }));
-vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const listState = vi.hoisted(() => ({
   allSeriesList: [] as Series[],

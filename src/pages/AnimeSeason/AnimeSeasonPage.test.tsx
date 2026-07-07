@@ -83,7 +83,7 @@ vi.mock('../../services/staticCatalog', () => ({
   fetchStaticSeasonalAnime: () => Promise.resolve({}),
   subscribeCatalogChange: () => () => {},
 }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
 vi.mock('../../services/firebase/analytics', () => ({
   trackMovieAdded: vi.fn(),
   trackSeriesAdded: vi.fn(),

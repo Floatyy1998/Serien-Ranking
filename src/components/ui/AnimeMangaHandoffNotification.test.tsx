@@ -23,7 +23,7 @@ vi.mock('framer-motion', async () => {
 
 const navigate = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 const mangaState = vi.hoisted(() => ({ mangaList: [] as { anilistId: number }[] }));
 vi.mock('../../contexts/MangaListContext', () => ({ useMangaList: () => mangaState }));
 vi.mock('../../contexts/ThemeContext', () => {

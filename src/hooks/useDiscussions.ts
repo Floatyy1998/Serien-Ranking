@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { dbRef } from '../services/db/ref';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   CreateDiscussionInput,
   Discussion,

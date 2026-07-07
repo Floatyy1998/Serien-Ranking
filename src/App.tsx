@@ -15,7 +15,7 @@ import { RouteTracker } from './components/RouteTracker';
 
 import './styles/performance.css';
 import { AuthProvider } from './authProvider';
-import { AuthContext } from './AuthContext';
+import { AuthContext } from './contexts/AuthContext';
 import { loadSavedTheme } from './themeHelpers';
 import { lazy, type ComponentType } from 'react';
 

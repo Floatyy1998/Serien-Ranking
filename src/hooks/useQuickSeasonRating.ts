@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { dbRef, paths } from '../services/db/ref';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';

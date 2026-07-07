@@ -34,7 +34,7 @@ import {
   Skeleton,
   TabSwitcher,
 } from '../../components/ui';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackSeriesAdded } from '../../services/firebase/analytics';

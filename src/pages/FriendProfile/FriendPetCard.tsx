@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { EvolvingPixelPet } from '../../components/pet';
 import { useTheme } from '../../contexts/ThemeContext';
 import { petMoodService } from '../../services/pet/petMoodService';

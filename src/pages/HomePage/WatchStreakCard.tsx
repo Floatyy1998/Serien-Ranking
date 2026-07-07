@@ -6,7 +6,7 @@ import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { hapticCelebrate, hapticSuccess } from '../../lib/haptics';
 import { petService } from '../../services/petService';
 import { PET_CONFIG } from '../../services/pet/petConstants';

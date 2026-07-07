@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useDeviceType } from '../../hooks/useDeviceType';

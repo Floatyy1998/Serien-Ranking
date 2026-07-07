@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { serverTimestamp } from '../../services/db/ref';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';

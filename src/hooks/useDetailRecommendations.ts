@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useMovieList } from '../contexts/MovieListContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../services/firebase/analytics';

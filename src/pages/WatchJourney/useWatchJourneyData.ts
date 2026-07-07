@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import type { MultiYearTrendsData, WatchJourneyData } from '../../services/watchJourneyService';
 import {
   calculateMultiYearTrends,

@@ -2,7 +2,7 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { showToast } from '../../lib/toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { pickReaction } from '../../hooks/usePetReactions';

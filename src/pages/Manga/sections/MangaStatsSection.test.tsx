@@ -20,7 +20,7 @@ vi.mock('../../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
 vi.mock('../../../components/ui', () => ({
   IconContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,

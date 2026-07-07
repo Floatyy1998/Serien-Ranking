@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { EpisodeDataManager } from './EpisodeDataManager';

@@ -16,7 +16,7 @@ vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const friendsState = vi.hoisted(() => ({ friends: [] as Array<{ uid: string }> }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({

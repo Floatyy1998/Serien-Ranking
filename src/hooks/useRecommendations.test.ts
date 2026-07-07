@@ -39,7 +39,7 @@ interface FakeUser {
   photoURL?: string | null;
 }
 const authState = vi.hoisted(() => ({ user: null as FakeUser | null }));
-vi.mock('../AuthContext', () => ({
+vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({ user: authState.user }),
 }));
 

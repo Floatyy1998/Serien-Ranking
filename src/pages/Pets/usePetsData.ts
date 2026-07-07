@@ -6,7 +6,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../../services/db/ref';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';

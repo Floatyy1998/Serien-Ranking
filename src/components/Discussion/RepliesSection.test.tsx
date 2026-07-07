@@ -31,7 +31,7 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'viewer' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'viewer' } }) }));
 
 vi.mock('firebase/compat/app', () => ({ default: { storage: () => ({}) } }));
 vi.mock('firebase/compat/storage', () => ({}));

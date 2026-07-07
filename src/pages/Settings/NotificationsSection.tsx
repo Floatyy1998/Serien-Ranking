@@ -9,7 +9,7 @@
 import { NotificationsActive, SwapHoriz } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
-import { useAuth } from '../../AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
   DEFAULT_INACTIVE_THRESHOLD_DAYS,

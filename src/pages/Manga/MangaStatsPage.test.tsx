@@ -22,7 +22,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
 vi.mock('../../components/ui', () => ({
   GradientText: ({ children }: { children?: ReactNode }) => <span>{children}</span>,

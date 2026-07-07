@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
 import { dbRef, paths } from '../services/db/ref';

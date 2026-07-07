@@ -20,7 +20,7 @@ vi.mock('./components/layout', () => ({
   ScrollToTop: () => <div data-testid="scroll-top" />,
 }));
 vi.mock('./components/ui/LoadingSpinner', () => ({ LoadingSpinner: () => <div /> }));
-vi.mock('./AuthContext', () => ({ useAuth: () => authValue }));
+vi.mock('./contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('./contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({
     unreadActivitiesCount: 0,

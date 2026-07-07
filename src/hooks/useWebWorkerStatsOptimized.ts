@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useAuth } from '../AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { useMovieList } from '../contexts/MovieListContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Movie } from '../types/Movie';

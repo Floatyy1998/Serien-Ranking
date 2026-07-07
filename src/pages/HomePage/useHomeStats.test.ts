@@ -16,7 +16,7 @@ const ctx = vi.hoisted(() => ({
   } as WorkerStats,
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ allSeriesList: ctx.allSeriesList }),
 }));

@@ -9,7 +9,7 @@ const { registerBadgeCallback, removeBadgeCallback, invalidateCache } = vi.hoist
   invalidateCache: vi.fn(),
 }));
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('../../components/ui', () => ({ CelebrationBurst: () => null }));
 vi.mock('../../lib/haptics', () => ({ hapticCelebrate: vi.fn() }));

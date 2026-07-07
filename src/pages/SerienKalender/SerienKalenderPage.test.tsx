@@ -22,7 +22,7 @@ const theme = {
 };
 
 vi.mock('../../contexts/ThemeContext', () => ({ useTheme: () => ({ currentTheme: theme }) }));
-vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => ({ seriesList: [] }) }));
 vi.mock('../../services/firebase/analytics', () => ({ trackSeriesAdded: vi.fn() }));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({ logSeriesAdded: vi.fn() }));

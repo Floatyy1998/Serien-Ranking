@@ -27,7 +27,7 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 
-vi.mock('../../AuthContext', () => ({ useAuth: () => authValue }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({ friends: friendsRef.current }),
 }));
