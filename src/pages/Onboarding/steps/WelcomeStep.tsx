@@ -5,10 +5,12 @@ import { GenreTile } from '../components/GenreTile';
 import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
 import { CURATED_GENRES, type CuratedGenre } from '../genres';
+import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
 
-const API_KEY = import.meta.env.VITE_API_TMDB;
-const BASE = 'https://api.themoviedb.org/3';
 const MAX_GENRES = 4;
+
+/** Schlanke TMDB-Listen-Response (nur `poster_path` wird gelesen). */
+type TmdbPosterResponse = { results?: Array<{ poster_path?: string | null }> };
 
 interface Props {
   username: string;
@@ -19,15 +21,19 @@ interface Props {
 }
 
 async function fetchGenrePosters(g: CuratedGenre): Promise<string[]> {
-  if (!API_KEY) return [];
+  if (!getTmdbApiKey()) return [];
   try {
     const [tv, mov] = await Promise.all([
-      fetch(
-        `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${g.tvId}&sort_by=popularity.desc&page=1`
-      ).then((r) => r.json()),
-      fetch(
-        `${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${g.movieId}&sort_by=popularity.desc&page=1`
-      ).then((r) => r.json()),
+      tmdbFetch<TmdbPosterResponse>('discover/tv', {
+        with_genres: g.tvId,
+        sort_by: 'popularity.desc',
+        page: 1,
+      }),
+      tmdbFetch<TmdbPosterResponse>('discover/movie', {
+        with_genres: g.movieId,
+        sort_by: 'popularity.desc',
+        page: 1,
+      }),
     ]);
     const merged: string[] = [];
     const tvL = tv?.results || [];

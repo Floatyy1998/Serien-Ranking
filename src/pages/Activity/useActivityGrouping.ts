@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';
 import type { ActivityFilterType } from './types';
@@ -143,9 +144,8 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
   }, [filteredActivities]);
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_API_TMDB;
     const currentActivities = friendActivitiesRef.current;
-    if (!apiKey || currentActivities.length === 0) return;
+    if (!getTmdbApiKey() || currentActivities.length === 0) return;
 
     const fetchMissingPosters = async () => {
       const postersToFetch: { id: string; type: 'series' | 'movie' }[] = [];
@@ -186,17 +186,12 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
         postersToFetch.map(async ({ id, type }) => {
           try {
             const endpoint = type === 'movie' ? 'movie' : 'tv';
-            const response = await fetch(
-              `https://api.themoviedb.org/3/${endpoint}/${id}?api_key=${apiKey}&language=de-DE`
-            );
-            if (response.ok) {
-              const data = await response.json();
-              if (data.poster_path) {
-                newPosters[`${type}_${id}`] = data.poster_path;
-              }
+            const data = await tmdbFetch<{ poster_path?: string | null }>(`${endpoint}/${id}`);
+            if (data.poster_path) {
+              newPosters[`${type}_${id}`] = data.poster_path;
             }
           } catch {
-            // Silent fail
+            // Silent fail (auch HTTP-Fehler — tmdbFetch wirft bei !ok)
           }
         })
       );

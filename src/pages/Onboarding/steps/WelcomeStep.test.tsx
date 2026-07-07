@@ -10,7 +10,7 @@ beforeEach(() => {
   vi.stubGlobal(
     'fetch',
     vi.fn<() => Promise<Response>>(
-      async () => ({ json: async () => ({ results: [] }) }) as Response
+      async () => ({ ok: true, json: async () => ({ results: [] }) }) as Response
     )
   );
 });

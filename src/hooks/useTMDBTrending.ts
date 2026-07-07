@@ -4,6 +4,8 @@ import { useMovieList } from '../contexts/MovieListContext';
 import { isSupportedProvider } from '../config/menuItems';
 import { getProviderLogoUrl } from '../lib/providerMerge';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
+import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
+import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -74,20 +76,16 @@ function resolveProviders(flatrate: RawWatchProvider[] | undefined): TrendingPro
 
 // Fallback only: direct per-item TMDB providers call, used when the cached
 // backend /trending endpoint is unavailable.
-async function fetchProviders(
-  type: 'series' | 'movie',
-  id: number,
-  apiKey: string
-): Promise<TrendingProvider[]> {
+async function fetchProviders(type: 'series' | 'movie', id: number): Promise<TrendingProvider[]> {
   try {
     const path = type === 'series' ? 'tv' : 'movie';
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${path}/${id}/watch/providers?api_key=${apiKey}`
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
+    // Wie zuvor OHNE language-Param (watch/providers ist sprachneutral).
+    const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
+      language: undefined,
+    });
     return resolveProviders(data?.results?.DE?.flatrate);
   } catch {
+    // HTTP- wie Netzwerkfehler → wie bisher leere Provider-Liste.
     return [];
   }
 }
@@ -163,30 +161,21 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
           // backend unavailable → fall through to the direct-TMDB path below
         }
 
-        const apiKey = import.meta.env.VITE_API_TMDB;
-        if (!apiKey) {
+        if (!getTmdbApiKey()) {
           throw new Error('VITE_API_TMDB ist nicht konfiguriert');
         }
-        const [tvResponse, movieResponse] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/trending/tv/week?api_key=${apiKey}&language=de-DE&region=DE`
-          ),
-          fetch(
-            `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&language=de-DE&region=DE`
-          ),
+        // HTTP-Fehler werfen jetzt in tmdbFetch (statt des früheren
+        // `!res.ok`-Throws) und landen wie zuvor im äußeren catch.
+        const [tvData, movieData] = await Promise.all([
+          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/tv/week', { region: 'DE' }),
+          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/movie/week', { region: 'DE' }),
         ]);
-        if (!tvResponse.ok || !movieResponse.ok) {
-          throw new Error(
-            `TMDB API Fehler: TV=${tvResponse.status}, Movie=${movieResponse.status}`
-          );
-        }
-        const [tvData, movieData] = await Promise.all([tvResponse.json(), movieResponse.json()]);
         if (cancelled) return;
 
-        const baseSeries: TrendingItem[] = (tvData.results ?? []).map((item: TMDBTrendingItem) =>
+        const baseSeries: TrendingItem[] = (tvData.results ?? []).map((item) =>
           mapTMDBItem(item, 'series')
         );
-        const baseMovies: TrendingItem[] = (movieData.results ?? []).map((item: TMDBTrendingItem) =>
+        const baseMovies: TrendingItem[] = (movieData.results ?? []).map((item) =>
           mapTMDBItem(item, 'movie')
         );
 
@@ -194,13 +183,13 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
           Promise.all(
             baseSeries.map(async (item) => ({
               ...item,
-              providers: await fetchProviders('series', item.id, apiKey),
+              providers: await fetchProviders('series', item.id),
             }))
           ),
           Promise.all(
             baseMovies.map(async (item) => ({
               ...item,
-              providers: await fetchProviders('movie', item.id, apiKey),
+              providers: await fetchProviders('movie', item.id),
             }))
           ),
         ]);

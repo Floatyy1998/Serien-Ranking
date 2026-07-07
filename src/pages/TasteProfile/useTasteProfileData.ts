@@ -5,14 +5,15 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { backendFetch } from '../../services/backendApi';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { calculateWatchJourney } from '../../services/watchJourneyService';
 import { getWatchStreak } from '../../services/watchActivityService';
+import type { TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 import type { WatchJourneyData } from '../../services/watchJourneyTypes';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 const MIN_RATED_ITEMS = 5;
 
 // ==================== Types ====================
@@ -222,8 +223,17 @@ function analyzeHeatmap(heatmap: WatchJourneyData['heatmap']): {
 
 // ==================== TMDB Enrichment ====================
 
+/** Such-Treffer (search/tv bzw. search/movie) — nur die gelesenen Felder. */
+interface TmdbSearchHit {
+  id: number;
+  poster_path?: string | null;
+  overview?: string;
+  vote_average?: number;
+  popularity?: number;
+}
+
 async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendation[]> {
-  if (!TMDB_API_KEY || recs.length === 0) return recs;
+  if (!getTmdbApiKey() || recs.length === 0) return recs;
 
   return Promise.all(
     recs.map(async (rec) => {
@@ -234,18 +244,15 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
           .replace(/\s*Staffel\s*\d+/i, '')
           .trim();
 
-        // Suche nach Serie und Film parallel
-        const [tvRes, movieRes] = await Promise.all([
-          fetch(
-            `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(cleanTitle)}&language=de-DE`
+        // Suche nach Serie und Film parallel (HTTP-Fehler → wie zuvor leere results)
+        const [tvData, movieData] = await Promise.all([
+          tmdbFetch<{ results?: TmdbSearchHit[] }>('search/tv', { query: cleanTitle }).catch(
+            () => ({ results: [] as TmdbSearchHit[] })
           ),
-          fetch(
-            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(cleanTitle)}&language=de-DE`
+          tmdbFetch<{ results?: TmdbSearchHit[] }>('search/movie', { query: cleanTitle }).catch(
+            () => ({ results: [] as TmdbSearchHit[] })
           ),
         ]);
-
-        const tvData = tvRes.ok ? await tvRes.json() : { results: [] };
-        const movieData = movieRes.ok ? await movieRes.json() : { results: [] };
 
         // Bestes Ergebnis (TV bevorzugt, dann Movie)
         const tvHit = tvData.results?.[0];
@@ -265,26 +272,24 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
         const overview = hit.overview || undefined;
         const rating = hit.vote_average ? Math.round(hit.vote_average * 10) / 10 : undefined;
 
-        // Provider holen
+        // Provider holen (alte URL ohne language-Param → language: undefined)
         let providers: { name: string; logo: string }[] = [];
         try {
-          const provRes = await fetch(
-            `https://api.themoviedb.org/3/${mediaType}/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`
+          const provData = await tmdbFetch<TmdbWatchProvidersResponse>(
+            `${mediaType}/${tmdbId}/watch/providers`,
+            { language: undefined }
           );
-          if (provRes.ok) {
-            const provData = await provRes.json();
-            const de = provData.results?.DE;
-            const flatrate = de?.flatrate || [];
-            providers = flatrate
-              .filter((p: { provider_name: string }) => SUPPORTED_PROVIDERS.has(p.provider_name))
-              .slice(0, 3)
-              .map((p: { provider_name: string; logo_path: string }) => ({
-                name: p.provider_name,
-                logo: p.logo_path ? `https://image.tmdb.org/t/p/w45${p.logo_path}` : '',
-              }));
-          }
+          const de = provData.results?.DE;
+          const flatrate = de?.flatrate || [];
+          providers = flatrate
+            .filter((p) => SUPPORTED_PROVIDERS.has(p.provider_name))
+            .slice(0, 3)
+            .map((p) => ({
+              name: p.provider_name,
+              logo: p.logo_path ? `https://image.tmdb.org/t/p/w45${p.logo_path}` : '',
+            }));
         } catch {
-          // Provider optional
+          // Provider optional (auch HTTP-Fehler — tmdbFetch wirft bei !ok)
         }
 
         return {

@@ -2,10 +2,10 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
 import { backendFetch } from '../services/backendApi';
+import { tmdbFetch } from '../services/tmdbClient';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
 interface EpisodeContext {
   seasonNumber: number;
@@ -25,11 +25,15 @@ async function fetchEpisodeContext(
       progress.season > 1 ? [progress.season - 1, progress.season] : [progress.season];
 
     for (const seasonNum of seasonsToFetch) {
-      const res = await fetch(
-        `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=de-DE`
-      );
-      if (!res.ok) continue;
-      const data = await res.json();
+      let data: { episodes?: { episode_number: number; name?: string; overview?: string }[] };
+      try {
+        data = await tmdbFetch(`tv/${seriesId}/season/${seasonNum}`);
+      } catch (err) {
+        // HTTP-Fehler wie das frühere `if (!res.ok) continue` überspringen;
+        // Netzwerkfehler weiter ans äußere catch (Beschreibungen sind optional).
+        if (err instanceof Error && err.message.startsWith('TMDB ')) continue;
+        throw err;
+      }
       for (const ep of data.episodes || []) {
         // Nur Episoden bis zum Fortschritt
         if (seasonNum === progress.season && ep.episode_number > progress.episode) break;
@@ -98,11 +102,9 @@ async function fetchCast(
   seriesId: number
 ): Promise<{ name: string; character: string; profile_path: string | null }[]> {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=de-DE&append_to_response=credits`
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
+    const data = await tmdbFetch<{
+      credits?: { cast?: { name: string; character: string; profile_path: string | null }[] };
+    }>(`tv/${seriesId}`, { append_to_response: 'credits' });
     const cast = data.credits?.cast || [];
     return cast
       .slice(0, 12)

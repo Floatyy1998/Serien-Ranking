@@ -5,6 +5,7 @@ import { useSeriesList } from '../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { backendFetch } from '../services/backendApi';
+import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
 import type { DiscoverItem } from '../pages/Discover/discoverItemHelpers';
 
 interface UseDetailRecommendationsResult {
@@ -15,7 +16,18 @@ interface UseDetailRecommendationsResult {
   addToList: (item: DiscoverItem) => Promise<boolean>;
 }
 
-const TMDB_BASE = 'https://api.themoviedb.org/3';
+type TmdbItem = Omit<DiscoverItem, 'type' | 'inList'>;
+
+/**
+ * `tmdbFetch` wirft jetzt auch bei `!res.ok`. Wie das frühere
+ * `res.ok ? res.json() : { results: [] }` sollen HTTP-Fehler still eine leere
+ * Liste liefern; Netzwerkfehler dagegen weiterhin das äußere catch (Fehler-
+ * Banner) auslösen.
+ */
+function emptyOnHttpError(err: unknown): { results: TmdbItem[] } {
+  if (err instanceof Error && err.message.startsWith('TMDB ')) return { results: [] };
+  throw err;
+}
 
 /**
  * Lädt TMDB-Empfehlungen + ähnliche Titel für eine Serie/einen Film und filtert
@@ -47,24 +59,19 @@ export const useDetailRecommendations = (
 
   const fetchRecs = useCallback(async () => {
     if (!id || !enabled) return;
-    const apiKey = import.meta.env.VITE_API_TMDB;
-    if (!apiKey) return;
+    if (!getTmdbApiKey()) return;
 
     setLoading(true);
     setError(null);
 
     try {
-      const params = new URLSearchParams({ api_key: apiKey, language: 'de-DE' });
-      const [recRes, simRes] = await Promise.all([
-        fetch(`${TMDB_BASE}/${mediaType}/${id}/recommendations?${params}`),
-        fetch(`${TMDB_BASE}/${mediaType}/${id}/similar?${params}`),
-      ]);
       const [recData, simData] = await Promise.all([
-        recRes.ok ? recRes.json() : { results: [] },
-        simRes.ok ? simRes.json() : { results: [] },
+        tmdbFetch<{ results?: TmdbItem[] }>(`${mediaType}/${id}/recommendations`).catch(
+          emptyOnHttpError
+        ),
+        tmdbFetch<{ results?: TmdbItem[] }>(`${mediaType}/${id}/similar`).catch(emptyOnHttpError),
       ]);
 
-      type TmdbItem = Omit<DiscoverItem, 'type' | 'inList'>;
       const recommendations: TmdbItem[] = recData?.results ?? [];
       const similar: TmdbItem[] = simData?.results ?? [];
 

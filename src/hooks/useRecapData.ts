@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
 import { backendFetch } from '../services/backendApi';
+import { tmdbFetch } from '../services/tmdbClient';
 import type { Series } from '../types/Series';
 import { hasEpisodeAired } from '../utils/episodeDate';
 
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 const RECAP_THRESHOLD_DAYS = 30;
 
@@ -134,17 +134,15 @@ async function fetchEpisodeOverviews(
 ): Promise<RecapEpisode[]> {
   // Gruppiere nach Staffel um API-Calls zu minimieren
   const seasonNumbers = [...new Set(episodes.map((e) => e.seasonNumber))];
-  const seasonDataMap: Record<
-    number,
-    {
-      episodes: {
-        episode_number: number;
-        name: string;
-        overview: string;
-        still_path: string | null;
-      }[];
-    }
-  > = {};
+  interface RecapSeasonData {
+    episodes: {
+      episode_number: number;
+      name: string;
+      overview: string;
+      still_path: string | null;
+    }[];
+  }
+  const seasonDataMap: Record<number, RecapSeasonData> = {};
 
   await Promise.all(
     seasonNumbers.map(async (seasonNum) => {
@@ -156,16 +154,11 @@ async function fetchEpisodeOverviews(
       }
 
       try {
-        const res = await fetch(
-          `https://api.themoviedb.org/3/tv/${tmdbId}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=de-DE`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          seasonDataMap[seasonNum] = data;
-          sessionStorage.setItem(cacheKey, JSON.stringify(data));
-        }
+        const data = await tmdbFetch<RecapSeasonData>(`tv/${tmdbId}/season/${seasonNum}`);
+        seasonDataMap[seasonNum] = data;
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
       } catch {
-        // Graceful fail
+        // Graceful fail — HTTP- wie Netzwerkfehler lassen die Staffel einfach aus.
       }
     })
   );

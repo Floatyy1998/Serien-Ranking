@@ -8,6 +8,7 @@ import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes'
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -92,15 +93,13 @@ export const useCalendarData = () => {
   }, [schedule]);
 
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_API_TMDB;
-    if (!apiKey || seriesIdsInSchedule.length === 0) return;
+    if (!getTmdbApiKey() || seriesIdsInSchedule.length === 0) return;
 
     const toFetch = seriesIdsInSchedule.filter((id) => !backdropCache.current[id]);
     if (toFetch.length === 0) return;
 
     toFetch.forEach((id) => {
-      fetch(`https://api.themoviedb.org/3/tv/${id}?api_key=${apiKey}&language=de-DE`)
-        .then((res) => res.json())
+      tmdbFetch<{ backdrop_path?: string | null }>(`tv/${id}`)
         .then((data) => {
           if (data.backdrop_path) {
             const url = getImageUrl(data.backdrop_path, 'w780');

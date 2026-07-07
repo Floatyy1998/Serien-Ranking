@@ -1,24 +1,28 @@
 import { memo, useEffect, useState } from 'react';
-
-const API_KEY = import.meta.env.VITE_API_TMDB;
-const BASE = 'https://api.themoviedb.org/3';
+import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
 
 interface Props {
   /** Optional TMDB genre IDs (TV). If empty, trending fallback is used. */
   tvGenreIds?: number[];
 }
 
+/** Schlanke TMDB-Listen-Response (nur `poster_path` wird gelesen). */
+type TmdbPosterResponse = { results?: Array<{ poster_path?: string | null }> };
+
 async function loadPosters(tvGenreIds: number[]): Promise<string[]> {
-  if (!API_KEY) return [];
+  if (!getTmdbApiKey()) return [];
   try {
-    const urls =
+    const requests =
       tvGenreIds.length > 0
-        ? tvGenreIds.map(
-            (id) =>
-              `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${id}&sort_by=popularity.desc&page=1`
+        ? tvGenreIds.map((id) =>
+            tmdbFetch<TmdbPosterResponse>('discover/tv', {
+              with_genres: id,
+              sort_by: 'popularity.desc',
+              page: 1,
+            })
           )
-        : [`${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`];
-    const responses = await Promise.all(urls.map((u) => fetch(u).then((r) => r.json())));
+        : [tmdbFetch<TmdbPosterResponse>('trending/tv/week')];
+    const responses = await Promise.all(requests);
     const seen = new Set<string>();
     const out: string[] = [];
     for (const r of responses) {

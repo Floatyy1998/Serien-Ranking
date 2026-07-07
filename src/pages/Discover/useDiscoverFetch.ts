@@ -4,9 +4,16 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import { tmdbFetch } from '../../services/tmdbClient';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
 import { filterItemsByActiveProviders } from './watchProviderFilter';
+
+/** Schlanke TMDB-Listen-Response (nur die hier gelesenen Felder). */
+interface TmdbListResponse {
+  results?: DiscoverItem[];
+  total_pages?: number;
+}
 
 /** Bewertung des aktuellen Nutzers für ein Listen-Item (0, falls unbewertet). */
 function userRatingOf(item: Series | Movie, uid: string | undefined): number {
@@ -188,14 +195,7 @@ export const useDiscoverFetch = (
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
         for (const item of selectedItems) {
-          const endpoint = `https://api.themoviedb.org/3/${mediaType}/${item.id}/recommendations`;
-          const params = new URLSearchParams({
-            api_key: import.meta.env.VITE_API_TMDB,
-            language: 'de-DE',
-          });
-
-          const response = await fetch(`${endpoint}?${params}`);
-          const data = await response.json();
+          const data = await tmdbFetch<TmdbListResponse>(`${mediaType}/${item.id}/recommendations`);
 
           if (data.results) {
             data.results.forEach((rec: DiscoverItem) => {
@@ -273,45 +273,39 @@ export const useDiscoverFetch = (
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
         if (selectedGenre) {
-          endpoint = `https://api.themoviedb.org/3/discover/${mediaType}`;
+          endpoint = `discover/${mediaType}`;
         } else {
           switch (activeCategory) {
             case 'trending':
-              endpoint = `https://api.themoviedb.org/3/trending/${mediaType}/week`;
+              endpoint = `trending/${mediaType}/week`;
               break;
             case 'popular':
-              endpoint = `https://api.themoviedb.org/3/${mediaType}/popular`;
+              endpoint = `${mediaType}/popular`;
               break;
             case 'top_rated':
-              endpoint = `https://api.themoviedb.org/3/${mediaType}/top_rated`;
+              endpoint = `${mediaType}/top_rated`;
               break;
             case 'upcoming':
               if (activeTab === 'movies') {
-                endpoint = `https://api.themoviedb.org/3/movie/upcoming`;
+                endpoint = 'movie/upcoming';
               } else {
-                endpoint = `https://api.themoviedb.org/3/tv/on_the_air`;
+                endpoint = 'tv/on_the_air';
               }
               break;
           }
         }
 
-        const params = new URLSearchParams({
-          api_key: import.meta.env.VITE_API_TMDB,
-          language: 'de-DE',
-          page: currentPage.toString(),
+        // undefined-Params werden vom Client weggelassen (konditionale Genre-Filter).
+        const data = await tmdbFetch<TmdbListResponse>(endpoint, {
+          page: currentPage,
           region: 'DE',
+          with_genres: selectedGenre ? selectedGenre : undefined,
+          sort_by: selectedGenre
+            ? activeCategory === 'top_rated'
+              ? 'vote_average.desc'
+              : 'popularity.desc'
+            : undefined,
         });
-
-        if (selectedGenre) {
-          params.append('with_genres', selectedGenre.toString());
-          params.append(
-            'sort_by',
-            activeCategory === 'top_rated' ? 'vote_average.desc' : 'popularity.desc'
-          );
-        }
-
-        const response = await fetch(`${endpoint}?${params}`);
-        const data = await response.json();
 
         if (data.results) {
           let mappedResults: DiscoverItem[] = data.results
@@ -345,7 +339,7 @@ export const useDiscoverFetch = (
             setPage(currentPage);
           }
 
-          setHasMore(currentPage < data.total_pages);
+          setHasMore(currentPage < (data.total_pages ?? 0));
         }
       } catch (error) {
         console.error('Error fetching from TMDB:', error);
@@ -435,17 +429,10 @@ export const useDiscoverFetch = (
 
       try {
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
-        const endpoint = `https://api.themoviedb.org/3/search/${mediaType}`;
-
-        const params = new URLSearchParams({
-          api_key: import.meta.env.VITE_API_TMDB,
-          language: 'de-DE',
-          query: query,
-          page: '1',
+        const data = await tmdbFetch<TmdbListResponse>(`search/${mediaType}`, {
+          query,
+          page: 1,
         });
-
-        const response = await fetch(`${endpoint}?${params}`);
-        const data = await response.json();
 
         if (data.results) {
           let mappedResults: DiscoverItem[] = data.results

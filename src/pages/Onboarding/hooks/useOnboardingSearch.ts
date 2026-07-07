@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { backendFetch } from '../../../services/backendApi';
+import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
 import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {
@@ -16,9 +17,19 @@ export interface OnboardingItem {
   number_of_seasons?: number;
 }
 
-const API_KEY = import.meta.env.VITE_API_TMDB;
-const BASE = 'https://api.themoviedb.org/3';
 const hasNonLatin = (text: string) => /[^ -ɏḀ-ỿ]/.test(text);
+
+/** Schlanke TMDB-Listen-/Search-Shapes (nur die hier gelesenen Felder). */
+type TmdbListItem = {
+  id: number;
+  name?: string;
+  title?: string;
+  poster_path?: string | null;
+  vote_average?: number;
+  first_air_date?: string;
+  release_date?: string;
+};
+type TmdbResultsResponse = { results?: TmdbListItem[] };
 
 export function useOnboardingSearch() {
   const { user } = useAuth() || {};
@@ -30,7 +41,7 @@ export function useOnboardingSearch() {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const fetchSuggestions = useCallback(async (selectedSlugs: string[]) => {
-    if (!API_KEY) {
+    if (!getTmdbApiKey()) {
       console.error('TMDB API Key fehlt');
       setLoading(false);
       return;
@@ -47,16 +58,21 @@ export function useOnboardingSearch() {
           : [null];
 
       for (const t of targets) {
-        const tvUrl = t
-          ? `${BASE}/discover/tv?api_key=${API_KEY}&language=de-DE&with_genres=${t.tvId}&sort_by=popularity.desc&page=1`
-          : `${BASE}/trending/tv/week?api_key=${API_KEY}&language=de-DE`;
-        const movieUrl = t
-          ? `${BASE}/discover/movie?api_key=${API_KEY}&language=de-DE&with_genres=${t.movieId}&sort_by=popularity.desc&page=1`
-          : `${BASE}/trending/movie/week?api_key=${API_KEY}&language=de-DE`;
-
         const [tvRes, movieRes] = await Promise.all([
-          fetch(tvUrl).then((r) => r.json()),
-          fetch(movieUrl).then((r) => r.json()),
+          t
+            ? tmdbFetch<TmdbResultsResponse>('discover/tv', {
+                with_genres: t.tvId,
+                sort_by: 'popularity.desc',
+                page: 1,
+              })
+            : tmdbFetch<TmdbResultsResponse>('trending/tv/week'),
+          t
+            ? tmdbFetch<TmdbResultsResponse>('discover/movie', {
+                with_genres: t.movieId,
+                sort_by: 'popularity.desc',
+                page: 1,
+              })
+            : tmdbFetch<TmdbResultsResponse>('trending/movie/week'),
         ]);
 
         for (const item of tvRes.results || []) {
@@ -106,20 +122,12 @@ export function useOnboardingSearch() {
     setSearchLoading(true);
     debounceRef.current = setTimeout(async () => {
       try {
-        const encoded = encodeURIComponent(query.trim());
+        const trimmed = query.trim();
         const [tvDE, tvEN, movieDE, movieEN] = await Promise.all([
-          fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then((r) =>
-            r.json()
-          ),
-          fetch(`${BASE}/search/tv?api_key=${API_KEY}&language=en-US&query=${encoded}`).then((r) =>
-            r.json()
-          ),
-          fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=de-DE&query=${encoded}`).then(
-            (r) => r.json()
-          ),
-          fetch(`${BASE}/search/movie?api_key=${API_KEY}&language=en-US&query=${encoded}`).then(
-            (r) => r.json()
-          ),
+          tmdbFetch<TmdbResultsResponse>('search/tv', { query: trimmed }),
+          tmdbFetch<TmdbResultsResponse>('search/tv', { language: 'en-US', query: trimmed }),
+          tmdbFetch<TmdbResultsResponse>('search/movie', { query: trimmed }),
+          tmdbFetch<TmdbResultsResponse>('search/movie', { language: 'en-US', query: trimmed }),
         ]);
         const enTvMap = new Map<number, string>();
         for (const item of tvEN.results || []) enTvMap.set(item.id, item.name || item.title || '');

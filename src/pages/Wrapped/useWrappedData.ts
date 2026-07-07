@@ -12,26 +12,19 @@ import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
 import { DEFAULT_SLIDE_CONFIG } from '../../types/Wrapped';
 import { calculateWrappedStats } from '../../services/wrappedCalculator';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { WatchActivityService } from '../../services/watchActivityService';
 
 // Standard-Jahr (jedes Jahr hier ändern)
 const DEFAULT_YEAR = 2025;
 
-// TMDB API Key (aus Umgebungsvariable)
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-
 // --- Poster fetching helpers ---
 
 async function fetchPosterForSeries(seriesId: number): Promise<string | undefined> {
-  if (!TMDB_API_KEY) return undefined;
+  if (!getTmdbApiKey()) return undefined;
   try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/tv/${seriesId}?api_key=${TMDB_API_KEY}&language=de-DE`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      return data.poster_path || undefined;
-    }
+    const data = await tmdbFetch<{ poster_path?: string | null }>(`tv/${seriesId}`);
+    return data.poster_path || undefined;
   } catch (error) {
     console.error(`Failed to fetch poster for series ${seriesId}:`, error);
   }
@@ -39,15 +32,10 @@ async function fetchPosterForSeries(seriesId: number): Promise<string | undefine
 }
 
 async function fetchPosterForMovie(movieId: number): Promise<string | undefined> {
-  if (!TMDB_API_KEY) return undefined;
+  if (!getTmdbApiKey()) return undefined;
   try {
-    const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=de-DE`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      return data.poster_path || undefined;
-    }
+    const data = await tmdbFetch<{ poster_path?: string | null }>(`movie/${movieId}`);
+    return data.poster_path || undefined;
   } catch (error) {
     console.error(`Failed to fetch poster for movie ${movieId}:`, error);
   }

@@ -5,10 +5,10 @@ import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
 import { backendFetch } from '../services/backendApi';
+import { tmdbFetch } from '../services/tmdbClient';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 const MID_SEASON_GAP_DAYS = 42; // 6 Wochen
 
 export interface ProactiveRecap {
@@ -140,37 +140,38 @@ async function fetchRecapForTrigger(trigger: RecapTrigger, uid?: string): Promis
     [];
 
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/tv/${trigger.series.id}/season/${seasonNum}?api_key=${TMDB_API_KEY}&language=de-DE`
-    );
-    if (res.ok) {
-      const data = await res.json();
-      episodes = trigger.episodesToRecap.episodes
-        .map((eIdx) => {
-          const ep = season.episodes[eIdx];
-          const tmdbEp = data.episodes?.find(
-            (t: { episode_number: number }) => t.episode_number === (ep.episode_number || eIdx + 1)
-          );
-          return {
-            seasonNumber: seasonNum,
-            episodeNumber: ep.episode_number || eIdx + 1,
-            name: tmdbEp?.name || ep.name || `Episode ${eIdx + 1}`,
-            overview: tmdbEp?.overview || '',
-          };
-        })
-        .filter((ep) => ep.overview);
+    const data = await tmdbFetch<{
+      episodes?: { episode_number: number; name?: string; overview?: string }[];
+    }>(`tv/${trigger.series.id}/season/${seasonNum}`);
+    episodes = trigger.episodesToRecap.episodes
+      .map((eIdx) => {
+        const ep = season.episodes[eIdx];
+        const tmdbEp = data.episodes?.find(
+          (t) => t.episode_number === (ep.episode_number || eIdx + 1)
+        );
+        return {
+          seasonNumber: seasonNum,
+          episodeNumber: ep.episode_number || eIdx + 1,
+          name: tmdbEp?.name || ep.name || `Episode ${eIdx + 1}`,
+          overview: tmdbEp?.overview || '',
+        };
+      })
+      .filter((ep) => ep.overview);
+  } catch (err) {
+    // Wie zuvor: bei HTTP-Fehlern (früher `if (res.ok)`-Gate, jetzt Throw aus
+    // tmdbFetch) bleiben die Episoden leer → unten `return null`. Nur bei
+    // Netzwerkfehlern greift der Fallback ohne TMDB-Beschreibungen.
+    if (!(err instanceof Error && err.message.startsWith('TMDB '))) {
+      episodes = trigger.episodesToRecap.episodes.map((eIdx) => {
+        const ep = season.episodes[eIdx];
+        return {
+          seasonNumber: seasonNum,
+          episodeNumber: ep.episode_number || eIdx + 1,
+          name: ep.name || `Episode ${eIdx + 1}`,
+          overview: '',
+        };
+      });
     }
-  } catch {
-    // Fallback ohne TMDB-Beschreibungen
-    episodes = trigger.episodesToRecap.episodes.map((eIdx) => {
-      const ep = season.episodes[eIdx];
-      return {
-        seasonNumber: seasonNum,
-        episodeNumber: ep.episode_number || eIdx + 1,
-        name: ep.name || `Episode ${eIdx + 1}`,
-        overview: '',
-      };
-    });
   }
 
   if (episodes.length === 0) return null;

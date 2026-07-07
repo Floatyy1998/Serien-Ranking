@@ -6,6 +6,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import type { Series } from '../../types/Series';
 
 export interface TMDBEpisodeDetails {
@@ -33,6 +34,14 @@ export interface TMDBSeasonDetails {
     air_date: string;
     vote_average: number;
   }[];
+}
+
+/** `tv/{id}` — nur die hier gelesenen Felder. */
+interface TMDBSeriesInfo {
+  name: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  number_of_seasons?: number;
 }
 
 export interface EpisodeNavigationInfo {
@@ -95,7 +104,6 @@ export const useEpisodeDiscussion = () => {
   // ---------- Data Fetching ----------
   useEffect(() => {
     const fetchAllDetails = async () => {
-      const apiKey = import.meta.env.VITE_API_TMDB;
       if (!seriesId || !seasonNumber || !episodeNumber) {
         setLoading(false);
         return;
@@ -105,48 +113,48 @@ export const useEpisodeDiscussion = () => {
         setLoading(true);
 
         const fetchTMDBData = async () => {
-          if (!apiKey) return;
+          if (!getTmdbApiKey()) return;
 
           try {
-            const [episodeRes, seasonRes, seriesRes] = await Promise.all([
-              fetch(
-                `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}?api_key=${apiKey}&language=de-DE&append_to_response=images`
+            // Einzelne HTTP-Fehler blockieren die anderen Antworten nicht
+            // (wie zuvor die individuellen res.ok-Checks) → pro Call catch.
+            const [episodeData, seasonData, seriesData] = await Promise.all([
+              tmdbFetch<TMDBEpisodeDetails>(
+                `tv/${seriesId}/season/${seasonNumber}/episode/${episodeNumber}`,
+                { append_to_response: 'images' }
+              ).catch(() => null),
+              tmdbFetch<TMDBSeasonDetails>(`tv/${seriesId}/season/${seasonNumber}`).catch(
+                () => null
               ),
-              fetch(
-                `https://api.themoviedb.org/3/tv/${seriesId}/season/${seasonNumber}?api_key=${apiKey}&language=de-DE`
-              ),
-              fetch(`https://api.themoviedb.org/3/tv/${seriesId}?api_key=${apiKey}&language=de-DE`),
+              tmdbFetch<TMDBSeriesInfo>(`tv/${seriesId}`).catch(() => null),
             ]);
 
-            if (episodeRes.ok) {
-              const data = await episodeRes.json();
-              setTmdbDetails(data);
+            if (episodeData) {
+              setTmdbDetails(episodeData);
             }
 
-            if (seasonRes.ok) {
-              const data = await seasonRes.json();
-              setSeasonDetails(data);
+            if (seasonData) {
+              setSeasonDetails(seasonData);
             }
 
-            if (seriesRes.ok) {
-              const data = await seriesRes.json();
+            if (seriesData) {
               setSeriesInfo({
-                name: data.name,
-                poster_path: data.poster_path,
-                backdrop_path: data.backdrop_path,
+                name: seriesData.name,
+                poster_path: seriesData.poster_path,
+                backdrop_path: seriesData.backdrop_path,
               });
 
               // Alle Seasons für Navigation holen
-              const totalSeasons = data.number_of_seasons || 0;
-              const seasonPromises = [];
+              const totalSeasons = seriesData.number_of_seasons || 0;
+              const seasonPromises: Promise<TMDBSeasonDetails | null>[] = [];
               for (let s = 1; s <= totalSeasons; s++) {
                 seasonPromises.push(
-                  fetch(
-                    `https://api.themoviedb.org/3/tv/${seriesId}/season/${s}?api_key=${apiKey}&language=de-DE`
-                  ).then((r) => (r.ok ? r.json() : null))
+                  tmdbFetch<TMDBSeasonDetails>(`tv/${seriesId}/season/${s}`).catch(() => null)
                 );
               }
-              const allSeasons = (await Promise.all(seasonPromises)).filter(Boolean);
+              const allSeasons = (await Promise.all(seasonPromises)).filter(
+                (season): season is TMDBSeasonDetails => season !== null
+              );
               setTmdbAllSeasons(allSeasons);
             }
           } catch (error) {

@@ -22,7 +22,8 @@ async function loadHook(): Promise<typeof UseOnboardingSearch> {
 }
 
 function jsonRes(body: unknown) {
-  return { json: async () => body };
+  // `ok: true` ist Pflicht — der zentrale tmdbClient prüft `res.ok`.
+  return { ok: true, json: async () => body };
 }
 
 beforeEach(() => {

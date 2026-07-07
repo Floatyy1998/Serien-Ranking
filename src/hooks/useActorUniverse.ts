@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
+import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
 
 // Global cache to persist data across navigation
 const globalCache = {
@@ -141,8 +142,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   // Fetch cast data for all series
   useEffect(() => {
     const fetchAllCasts = async () => {
-      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
-      if (!TMDB_API_KEY || seriesList.length === 0) {
+      if (!getTmdbApiKey() || seriesList.length === 0) {
         setLoading(false);
         return;
       }
@@ -166,13 +166,11 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         await Promise.all(
           batch.map(async (series) => {
             try {
-              const response = await fetch(
-                `https://api.themoviedb.org/3/tv/${series.id}/credits?api_key=${TMDB_API_KEY}`
-              );
-
-              if (!response.ok) return;
-
-              const data = await response.json();
+              // Wie zuvor OHNE language-Param; HTTP-Fehler (früher `!response.ok`
+              // → return) landen jetzt als Throw im catch — gleiches Ergebnis.
+              const data = await tmdbFetch<{ cast?: TMDBCastMember[] }>(`tv/${series.id}/credits`, {
+                language: undefined,
+              });
               const cast = data.cast || [];
 
               // Include all actors (top 25 per series)
@@ -243,9 +241,8 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
   // Fetch recommendations for top actors (their other works)
   useEffect(() => {
     const fetchRecommendations = async () => {
-      const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
       const currentActorMap = actorMapRef.current;
-      if (!TMDB_API_KEY || loading || currentActorMap.size === 0) return;
+      if (!getTmdbApiKey() || loading || currentActorMap.size === 0) return;
 
       // Get top 20 actors by series count
       const topActorIds = Array.from(currentActorMap.values())
@@ -266,13 +263,11 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
         await Promise.all(
           batch.map(async (actorId) => {
             try {
-              const response = await fetch(
-                `https://api.themoviedb.org/3/person/${actorId}/tv_credits?api_key=${TMDB_API_KEY}`
+              // Wie zuvor OHNE language-Param; HTTP-Fehler → catch (wie `!response.ok`).
+              const data = await tmdbFetch<{ cast?: TMDBCredit[] }>(
+                `person/${actorId}/tv_credits`,
+                { language: undefined }
               );
-
-              if (!response.ok) return;
-
-              const data = await response.json();
               const tvCredits = data.cast || [];
 
               const actor = updatedActorMap.get(actorId);
@@ -293,7 +288,7 @@ export const useActorUniverse = (hideVoiceActors: boolean = false): ActorUnivers
                 .slice(0, 5)
                 .map((credit: TMDBCredit) => ({
                   id: credit.id,
-                  title: credit.name || credit.original_name,
+                  title: credit.name || credit.original_name || '',
                   poster: credit.poster_path,
                   character: credit.character || 'Unknown',
                   voteAverage: credit.vote_average,

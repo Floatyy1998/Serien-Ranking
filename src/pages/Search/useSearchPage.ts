@@ -11,6 +11,7 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
 import { backendFetch } from '../../services/backendApi';
+import { tmdbFetch } from '../../services/tmdbClient';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';
 import type { Movie as MovieType } from '../../types/Movie';
@@ -32,6 +33,11 @@ export interface SearchResult {
 }
 
 export type SearchTypeFilter = 'all' | 'series' | 'movies';
+
+/** Schlanke TMDB-Search-Response (nur `results` wird gelesen). */
+interface TmdbSearchResponse {
+  results?: SearchResult[];
+}
 
 export interface UseSearchPageResult {
   searchQuery: string;
@@ -216,8 +222,6 @@ export const useSearchPage = (
       setLoading(true);
       saveToRecent(query);
 
-      const apiKey = import.meta.env.VITE_API_TMDB;
-      const encoded = encodeURIComponent(query);
       const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
 
       try {
@@ -225,26 +229,19 @@ export const useSearchPage = (
         const wantSeries = searchType === 'all' || searchType === 'series';
         const wantMovies = searchType === 'all' || searchType === 'movies';
 
+        // DE + EN parallel (EN als Titel-Fallback für nicht-lateinische DE-Titel).
         const [seriesDE, seriesEN, movieDE, movieEN] = await Promise.all([
           wantSeries
-            ? fetch(
-                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=de-DE`
-              ).then((r) => r.json())
+            ? tmdbFetch<TmdbSearchResponse>('search/tv', { query })
             : Promise.resolve(null),
           wantSeries
-            ? fetch(
-                `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encoded}&language=en-US`
-              ).then((r) => r.json())
+            ? tmdbFetch<TmdbSearchResponse>('search/tv', { query, language: 'en-US' })
             : Promise.resolve(null),
           wantMovies
-            ? fetch(
-                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=de-DE`
-              ).then((r) => r.json())
+            ? tmdbFetch<TmdbSearchResponse>('search/movie', { query })
             : Promise.resolve(null),
           wantMovies
-            ? fetch(
-                `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encoded}&language=en-US`
-              ).then((r) => r.json())
+            ? tmdbFetch<TmdbSearchResponse>('search/movie', { query, language: 'en-US' })
             : Promise.resolve(null),
         ]);
 

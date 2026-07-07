@@ -18,14 +18,14 @@
  */
 
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
+import { tmdbFetch } from '../../services/tmdbClient';
+import type { TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 
 /** Minimal-Typ, den sowohl `DiscoverItem` als auch `SearchResult` erfüllen. */
 export interface ProviderFilterableItem {
   id: number;
   type: 'series' | 'movie';
 }
-
-const TMDB_BASE = 'https://api.themoviedb.org/3';
 
 /**
  * Normalisiert einen TMDB-`provider_name` auf den kanonischen Abo-Namen (die
@@ -73,14 +73,11 @@ export async function fetchItemProviders(type: 'series' | 'movie', id: number): 
   if (cached) return cached;
 
   const mediaType = type === 'series' ? 'tv' : 'movie';
-  const apiKey = import.meta.env.VITE_API_TMDB;
   try {
-    const res = await fetch(`${TMDB_BASE}/${mediaType}/${id}/watch/providers?api_key=${apiKey}`);
-    if (!res.ok) {
-      providerCache.set(key, []);
-      return [];
-    }
-    const data = await res.json();
+    // Wie zuvor OHNE language-Param (watch/providers ist sprachneutral).
+    const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${mediaType}/${id}/watch/providers`, {
+      language: undefined,
+    });
     const flatrate = data?.results?.DE?.flatrate;
     if (!Array.isArray(flatrate)) {
       providerCache.set(key, []);
@@ -99,8 +96,13 @@ export async function fetchItemProviders(type: 'series' | 'movie', id: number): 
     }
     providerCache.set(key, names);
     return names;
-  } catch {
-    // Transiente Fehler NICHT cachen — ein späterer Retry soll erneut fetchen.
+  } catch (error) {
+    // HTTP-Fehler (`tmdbFetch` wirft "TMDB <status> …") wie das frühere
+    // `!res.ok` als leere Liste cachen; transiente Netzwerkfehler NICHT
+    // cachen — ein späterer Retry soll erneut fetchen.
+    if (error instanceof Error && error.message.startsWith('TMDB ')) {
+      providerCache.set(key, []);
+    }
     return [];
   }
 }

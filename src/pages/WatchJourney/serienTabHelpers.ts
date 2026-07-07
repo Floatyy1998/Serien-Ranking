@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
-const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
 
 export const MONTH_NAMES = [
   'Jan',
@@ -34,7 +34,7 @@ export const useSeriesPosters = (seriesStats: WatchJourneyData['seriesStats']) =
 
   useEffect(() => {
     const fetchPosters = async () => {
-      if (!TMDB_API_KEY || seriesStats.length === 0) return;
+      if (!getTmdbApiKey() || seriesStats.length === 0) return;
 
       const newPosters: Record<number, string> = {};
       const seriesIds = seriesStats.map((s) => s.seriesId);
@@ -45,17 +45,12 @@ export const useSeriesPosters = (seriesStats: WatchJourneyData['seriesStats']) =
         await Promise.all(
           batch.map(async (id) => {
             try {
-              const response = await fetch(
-                `https://api.themoviedb.org/3/tv/${id}?api_key=${TMDB_API_KEY}&language=de-DE`
-              );
-              if (response.ok) {
-                const tmdbData = await response.json();
-                if (tmdbData.poster_path) {
-                  newPosters[id] = tmdbData.poster_path;
-                }
+              const tmdbData = await tmdbFetch<{ poster_path?: string | null }>(`tv/${id}`);
+              if (tmdbData.poster_path) {
+                newPosters[id] = tmdbData.poster_path;
               }
             } catch {
-              // Silent fail
+              // Silent fail (auch HTTP-Fehler — tmdbFetch wirft bei !ok)
             }
           })
         );

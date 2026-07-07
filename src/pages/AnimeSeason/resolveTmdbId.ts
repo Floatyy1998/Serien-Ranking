@@ -27,6 +27,7 @@
  */
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
+import { tmdbFetch } from '../../services/tmdbClient';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
 import { anilistLinkCountsForDe } from '../../services/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
@@ -111,33 +112,30 @@ interface TmdbTvResult {
 }
 
 async function searchTv(query: string, year?: number): Promise<TmdbTvResult[]> {
-  const apiKey = import.meta.env.VITE_API_TMDB;
-  if (!apiKey) return [];
-  const yearParam = year ? `&first_air_date_year=${year}` : '';
-  const response = await fetch(
-    `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encodeURIComponent(
-      query
-    )}&language=de-DE${yearParam}`
-  );
-  if (!response.ok) return [];
-  const json = (await response.json()) as { results?: TmdbTvResult[] };
-  return json.results ?? [];
+  try {
+    const json = await tmdbFetch<{ results?: TmdbTvResult[] }>('search/tv', {
+      query,
+      first_air_date_year: year,
+    });
+    return json.results ?? [];
+  } catch {
+    // Fehlender Key / HTTP-Fehler → wie zuvor: kein Treffer.
+    return [];
+  }
 }
 
 /** Anime-FILME laufen über die Movie-Suche — die TV-Suche findet sie nicht
  *  (bzw. fehl-matcht auf gleichnamige Serien). */
 async function searchMovie(query: string, year?: number): Promise<TmdbTvResult[]> {
-  const apiKey = import.meta.env.VITE_API_TMDB;
-  if (!apiKey) return [];
-  const yearParam = year ? `&primary_release_year=${year}` : '';
-  const response = await fetch(
-    `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(
-      query
-    )}&language=de-DE${yearParam}`
-  );
-  if (!response.ok) return [];
-  const json = (await response.json()) as { results?: TmdbTvResult[] };
-  return json.results ?? [];
+  try {
+    const json = await tmdbFetch<{ results?: TmdbTvResult[] }>('search/movie', {
+      query,
+      primary_release_year: year,
+    });
+    return json.results ?? [];
+  } catch {
+    return [];
+  }
 }
 
 /** Bestes Ergebnis: Animation (Genre 16) bevorzugt; innerhalb des Pools
@@ -187,13 +185,15 @@ async function fetchGermanDetails(
   rating: number | null;
   genres: string[];
 }> {
-  const apiKey = import.meta.env.VITE_API_TMDB;
-  if (!apiKey) return { overviewDe: null, providers: [], rating: null, genres: [] };
-  const response = await fetch(
-    `https://api.themoviedb.org/3/${mediaType}/${tmdbId}?api_key=${apiKey}&language=de-DE&append_to_response=watch%2Fproviders`
-  );
-  if (!response.ok) return { overviewDe: null, providers: [], rating: null, genres: [] };
-  const json = (await response.json()) as TmdbDetailsResponse;
+  let json: TmdbDetailsResponse;
+  try {
+    json = await tmdbFetch<TmdbDetailsResponse>(`${mediaType}/${tmdbId}`, {
+      append_to_response: 'watch/providers',
+    });
+  } catch {
+    // Fehlender Key / HTTP-Fehler → wie zuvor: leere Details.
+    return { overviewDe: null, providers: [], rating: null, genres: [] };
+  }
 
   const overviewDe = json.overview?.trim() || null;
   const rating =

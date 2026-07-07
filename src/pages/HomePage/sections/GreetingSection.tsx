@@ -8,6 +8,7 @@ import { GradientText, HeaderActions, HorizontalScrollContainer } from '../../..
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
+import { tmdbFetch } from '../../../services/tmdbClient';
 import { LiveClock } from '../LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
 
@@ -98,10 +99,10 @@ export const GreetingSection = React.memo(function GreetingSection({
             e.stopPropagation();
             if (greeting.title && greeting.type) {
               try {
-                const apiKey = import.meta.env.VITE_API_TMDB;
-                const searchUrl = `https://api.themoviedb.org/3/search/${greeting.type}?api_key=${apiKey}&query=${encodeURIComponent(greeting.title)}&language=de-DE`;
-                const response = await fetch(searchUrl);
-                const data = await response.json();
+                const data = await tmdbFetch<{ results?: Array<{ id: number }> }>(
+                  `search/${greeting.type}`,
+                  { query: greeting.title }
+                );
 
                 if (data.results && data.results.length > 0) {
                   const result = data.results[0];

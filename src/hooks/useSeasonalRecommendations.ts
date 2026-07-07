@@ -4,6 +4,8 @@ import { useMovieList } from '../contexts/MovieListContext';
 import { isSupportedProvider } from '../config/menuItems';
 import { getProviderLogoUrl } from '../lib/providerMerge';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
+import { tmdbFetch } from '../services/tmdbClient';
+import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 
@@ -167,16 +169,14 @@ const CACHE_KEY = 'seasonal_recommendations_v9';
 
 async function fetchSeasonalProviders(
   type: 'series' | 'movie',
-  id: number,
-  apiKey: string
+  id: number
 ): Promise<SeasonalProvider[]> {
   try {
     const path = type === 'series' ? 'tv' : 'movie';
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${path}/${id}/watch/providers?api_key=${apiKey}`
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
+    // Wie zuvor OHNE language-Param (watch/providers ist sprachneutral).
+    const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
+      language: undefined,
+    });
     const flatrate = data?.results?.DE?.flatrate;
     if (!Array.isArray(flatrate)) return [];
 
@@ -239,32 +239,29 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
 
     const fetchSeasonal = async () => {
       try {
-        const apiKey = import.meta.env.VITE_API_TMDB;
-        const baseUrl = `api_key=${apiKey}&language=de-DE&region=DE&sort_by=popularity.desc`;
-        const tvGenreParam = config.tvGenres ? `&with_genres=${config.tvGenres}` : '';
-        const movieGenreParam = config.movieGenres ? `&with_genres=${config.movieGenres}` : '';
-        const keywordParam = config.keywords ? `&with_keywords=${config.keywords}` : '';
-
-        const discoverUrl = (kind: 'tv' | 'movie', page: number) => {
-          const genreParam = kind === 'tv' ? tvGenreParam : movieGenreParam;
-          // TV uses vote_count.gte=50 — TV has fewer-vote shows than movies, so keeping
-          // 100 made some genres (Sommer-Action&Adventure) nearly empty.
-          const voteFilter = kind === 'tv' ? '&vote_count.gte=50' : '&vote_count.gte=100';
-          return `https://api.themoviedb.org/3/discover/${kind}?${baseUrl}${voteFilter}${genreParam}${keywordParam}&page=${page}`;
-        };
-
-        const [tv1, tv2, movie1, movie2] = await Promise.all([
-          fetch(discoverUrl('tv', 1)),
-          fetch(discoverUrl('tv', 2)),
-          fetch(discoverUrl('movie', 1)),
-          fetch(discoverUrl('movie', 2)),
-        ]);
+        const discover = (kind: 'tv' | 'movie', page: number) =>
+          tmdbFetch<{ results?: TMDBDiscoverItem[] }>(`discover/${kind}`, {
+            region: 'DE',
+            sort_by: 'popularity.desc',
+            // TV uses vote_count.gte=50 — TV has fewer-vote shows than movies, so keeping
+            // 100 made some genres (Sommer-Action&Adventure) nearly empty.
+            'vote_count.gte': kind === 'tv' ? 50 : 100,
+            with_genres: kind === 'tv' ? config.tvGenres : config.movieGenres,
+            with_keywords: config.keywords,
+            page,
+          }).catch((err) => {
+            // Wie zuvor (kein `!res.ok`-Check): eine HTTP-Fehlerseite liefert
+            // nur leere results, die anderen Seiten zählen weiter.
+            // Netzwerkfehler brechen wie bisher den gesamten Load ab.
+            if (err instanceof Error && err.message.startsWith('TMDB ')) return { results: [] };
+            throw err;
+          });
 
         const [tv1Data, tv2Data, movie1Data, movie2Data] = await Promise.all([
-          tv1.json(),
-          tv2.json(),
-          movie1.json(),
-          movie2.json(),
+          discover('tv', 1),
+          discover('tv', 2),
+          discover('movie', 1),
+          discover('movie', 2),
         ]);
         if (cancelled) return;
 
@@ -284,13 +281,13 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
           Promise.all(
             baseSeries.map(async (item) => ({
               ...item,
-              providers: await fetchSeasonalProviders('series', item.id, apiKey),
+              providers: await fetchSeasonalProviders('series', item.id),
             }))
           ),
           Promise.all(
             baseMovies.map(async (item) => ({
               ...item,
-              providers: await fetchSeasonalProviders('movie', item.id, apiKey),
+              providers: await fetchSeasonalProviders('movie', item.id),
             }))
           ),
         ]);
