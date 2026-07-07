@@ -447,7 +447,7 @@ export const PetWidget: React.FC = () => {
               </AnimatePresence>
 
               {pet.isAlive && (
-                <Tooltip title={`Hunger: ${pet.hunger}%`} arrow>
+                <Tooltip title={`Sättigung: ${hungerBarPercent}%`} arrow>
                   <div
                     style={{
                       position: 'absolute',

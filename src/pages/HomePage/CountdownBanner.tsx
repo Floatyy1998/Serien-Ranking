@@ -65,7 +65,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           inset: 0,
           background: `linear-gradient(135deg, ${countdownColor}40 0%, rgba(10, 14, 26, 0.75) 100%)`,
           border: `1px solid ${countdownColor}50`,
-          borderRadius: '16px',
+          borderRadius: '14px',
         }}
       />
       {countdown.posterUrl && (

@@ -250,6 +250,8 @@ export const PetCustomization = memo(function PetCustomization({
                       whileTap={tapScaleTight}
                       onClick={() => onChangeColor(colorKey)}
                       className="pet-color-btn"
+                      aria-label={`Farbe ${colorKey}`}
+                      aria-pressed={isSelected}
                       style={{
                         background: colorValue,
                         border: isSelected

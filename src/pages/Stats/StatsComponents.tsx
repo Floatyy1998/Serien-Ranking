@@ -94,7 +94,6 @@ export const HeroSection = memo(({ stats, timeData, theme }: HeroSectionProps) =
     style={{
       background: `linear-gradient(135deg, ${theme.background.surface}ee, ${theme.background.surface}cc)`,
       border: `1px solid ${theme.border.default}`,
-      boxShadow: `0 8px 32px ${theme.primary}15`,
     }}
   >
     {/* Main Time Stat */}

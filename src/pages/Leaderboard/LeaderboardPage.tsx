@@ -215,7 +215,7 @@ export const LeaderboardPage = () => {
                   isActive
                     ? undefined
                     : {
-                        background: 'rgba(255, 255, 255, 0.05)',
+                        background: currentTheme.background.surface,
                         color: currentTheme.text.muted,
                       }
                 }

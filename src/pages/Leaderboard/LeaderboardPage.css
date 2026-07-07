@@ -45,21 +45,6 @@
   animation: orbFloat 25s ease-in-out infinite reverse;
 }
 
-/* ── Header ── */
-.lb-header {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-dropdown);
-  padding: 16px 20px;
-  padding-top: calc(16px + env(safe-area-inset-top));
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  backdrop-filter: var(--blur-lg);
-  -webkit-backdrop-filter: var(--blur-lg);
-  border-bottom: 1px solid var(--glass-border-subtle);
-}
-
 /* ── Mode Toggle (Segmented Control) ── */
 .lb-mode-toggle {
   display: flex;

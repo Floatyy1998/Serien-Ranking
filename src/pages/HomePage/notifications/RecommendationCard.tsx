@@ -5,6 +5,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { tapScale } from '../../../lib/motion';
+import { getOptimalTextColor } from '../../../theme/colorUtils';
 
 interface RecommendationCardProps {
   item: UnifiedNotification;
@@ -205,7 +206,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
               borderRadius: 12,
               border: 'none',
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              color: currentTheme.text.secondary,
+              color: getOptimalTextColor(currentTheme.primary),
               fontSize: 14,
               fontWeight: 700,
               cursor: 'pointer',
