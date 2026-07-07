@@ -30,7 +30,7 @@ import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
 import { anilistLinkCountsForDe } from '../../services/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { franchiseTitle, stripSeasonSuffix } from './animeFormat';
 import { normalizeTitle } from './useAnimeListMatch';

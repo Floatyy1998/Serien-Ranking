@@ -21,7 +21,7 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => navigate }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../lib/toast', () => ({ showUndoToast: vi.fn() }));
 vi.mock('../../lib/settings/notificationSettings', () => ({ snoozeNotifications: vi.fn() }));
-vi.mock('../../lib/validation/providerChangeDetection', () => ({
+vi.mock('../../services/detection/providerChangeDetection', () => ({
   markProviderChangesDismissed: vi.fn(async () => {}),
 }));
 

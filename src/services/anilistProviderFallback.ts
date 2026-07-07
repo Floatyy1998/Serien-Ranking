@@ -15,7 +15,7 @@
 
 import { getProviderLogoUrl } from '../lib/providerMerge';
 import type { MergedProvider } from '../lib/providerMerge';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 
 const ANILIST_API = 'https://graphql.anilist.co';
 // v3: nur laufende/junge Titel (Klassiker-Kataloge sind fragmentiert)

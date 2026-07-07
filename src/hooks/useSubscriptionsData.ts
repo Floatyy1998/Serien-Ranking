@@ -12,7 +12,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { SUPPORTED_PROVIDERS } from '../config/menuItems';
 import { invalidateActiveSubscriptions } from './useActiveSubscriptions';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { mergeProviderNames } from '../lib/providerMerge';
 import { getYearlyActivity } from '../services/watchActivity/shared';
 import type { ActivityEvent } from '../types/WatchActivity';

@@ -96,7 +96,7 @@ vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn() }));
 vi.mock('../../hooks/useProviderLogos', () => ({ tmdbLogoUrl: () => '' }));
 vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
 vi.mock('../../hooks/useScrollRestore', () => ({ useScrollRestore: () => {} }));
-vi.mock('../../lib/validation/providerChangeDetection', () => ({
+vi.mock('../../services/detection/providerChangeDetection', () => ({
   normalizeProviderName: (n: string) => n,
 }));
 vi.mock('../../lib/haptics', () => ({

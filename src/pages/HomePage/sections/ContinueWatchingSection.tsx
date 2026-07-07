@@ -19,7 +19,7 @@ import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { calculateWatchingPace, formatPaceLine } from '../../../lib/date/paceCalculation';
 import { getProviderColor } from '../../../lib/providerColors';
 import { resolveProviderOverlay } from '../../../lib/providerMerge';
-import { normalizeProviderName } from '../../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../../services/detection/providerChangeDetection';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';

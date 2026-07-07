@@ -4,7 +4,7 @@ import {
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 
 interface ProviderLogoLinkProps {
   /** Image URL (already a full https URL, the caller resolved it). */

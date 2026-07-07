@@ -11,7 +11,7 @@ import { tapScale } from '../../lib/motion';
 import {
   markAnimeMangaHandoffDismissed,
   type AnimeMangaHandoff,
-} from '../../lib/validation/animeMangaHandoffDetection';
+} from '../../services/detection/animeMangaHandoffDetection';
 
 interface AnimeMangaHandoffNotificationProps {
   handoffs: AnimeMangaHandoff[];

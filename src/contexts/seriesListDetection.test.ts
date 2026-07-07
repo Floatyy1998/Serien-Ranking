@@ -27,20 +27,20 @@ const mocks = vi.hoisted(() => ({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   detectProviderChanges: vi.fn(async () => [] as any[]),
 }));
-vi.mock('../lib/validation/newSeasonDetection', () => ({
+vi.mock('../services/detection/newSeasonDetection', () => ({
   detectNewSeasons: mocks.detectNewSeasons,
 }));
-vi.mock('../lib/validation/inactiveSeriesDetection', () => ({
+vi.mock('../services/detection/inactiveSeriesDetection', () => ({
   detectInactiveSeries: mocks.detectInactiveSeries,
   detectInactiveRewatches: mocks.detectInactiveRewatches,
 }));
-vi.mock('../lib/validation/completedSeriesDetection', () => ({
+vi.mock('../services/detection/completedSeriesDetection', () => ({
   detectCompletedSeries: mocks.detectCompletedSeries,
 }));
-vi.mock('../lib/validation/unratedSeriesDetection', () => ({
+vi.mock('../services/detection/unratedSeriesDetection', () => ({
   detectUnratedSeries: mocks.detectUnratedSeries,
 }));
-vi.mock('../lib/validation/providerChangeDetection', () => ({
+vi.mock('../services/detection/providerChangeDetection', () => ({
   detectProviderChanges: mocks.detectProviderChanges,
 }));
 

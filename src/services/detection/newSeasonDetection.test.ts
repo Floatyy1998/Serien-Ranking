@@ -54,7 +54,7 @@ const settings = vi.hoisted(() => ({
   getSnoozedUntil: vi.fn(async () => ({}) as Record<string, number>),
   cleanupSnoozes: vi.fn(async () => {}),
 }));
-vi.mock('../settings/notificationSettings', () => settings);
+vi.mock('../../lib/settings/notificationSettings', () => settings);
 
 import {
   detectNewSeasons,

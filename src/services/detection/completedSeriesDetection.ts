@@ -1,8 +1,8 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
-import { hasActiveRewatch } from './rewatch.utils';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
+import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 export interface CompletedSeriesData {
   seriesId: number;

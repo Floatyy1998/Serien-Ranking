@@ -24,7 +24,7 @@ import {
   normalizeGenre,
 } from './watchJourneyTypes';
 import { calculateMultiYearTrends } from './watchJourneyTrends';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 
 // Re-export types used by consumers
 export type { WatchJourneyData, MultiYearTrendsData };

@@ -15,7 +15,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { showUndoToast } from '../../lib/toast';
 import { snoozeNotifications, type SnoozeOption } from '../../lib/settings/notificationSettings';
-import { markProviderChangesDismissed } from '../../lib/validation/providerChangeDetection';
+import { markProviderChangesDismissed } from '../../services/detection/providerChangeDetection';
 import './CarouselNotification.css';
 
 interface ProviderChangeInfo {

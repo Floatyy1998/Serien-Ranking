@@ -12,7 +12,7 @@
  *
  * Deshalb wird pro Ergebnis-Item die frei zugängliche `watch/providers`-Info
  * (Region DE, `flatrate`) nachgeladen — dasselbe Muster wie
- * `lib/validation/providerChangeDetection.fetchTMDBProviders` — und der
+ * `services/detection/providerChangeDetection.fetchTMDBProviders` — und der
  * normalisierte Provider-Name gegen die aktiven Abos des Nutzers geprüft.
  * Ein Modul-Cache verhindert Mehrfach-Fetches beim Paginieren/Umschalten.
  */
@@ -30,7 +30,7 @@ const TMDB_BASE = 'https://api.themoviedb.org/3';
 /**
  * Normalisiert einen TMDB-`provider_name` auf den kanonischen Abo-Namen (die
  * Werte aus `providerMenuItems`). Gespiegelt aus
- * `lib/validation/providerChangeDetection.normalizeProviderName` — bewusst hier
+ * `services/detection/providerChangeDetection.normalizeProviderName` — bewusst hier
  * inline gehalten, damit der Discover-/Search-Bundle nicht das
  * firebase-lastige Notification-Subsystem mitzieht. Bei Änderungen an der
  * kanonischen Funktion hier nachziehen.

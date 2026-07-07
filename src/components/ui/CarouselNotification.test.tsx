@@ -58,7 +58,7 @@ vi.mock('../../lib/toast', () => ({ showUndoToast: vi.fn() }));
 vi.mock('../../lib/settings/notificationSettings', () => ({
   snoozeNotifications: vi.fn(() => Promise.resolve()),
 }));
-vi.mock('../../lib/validation/newSeasonDetection', () => ({
+vi.mock('../../services/detection/newSeasonDetection', () => ({
   markMultipleSeasonsAsNotified: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('../../utils/episodeDate', () => ({ getEpisodeAirDate: () => null }));

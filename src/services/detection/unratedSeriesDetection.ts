@@ -1,9 +1,9 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbUpdate, paths, userPath } from '../../services/db/ref';
-import { normalizeSeasons, normalizeEpisodes } from '../episode/seriesMetrics';
-import { calculateOverallRating } from '../rating/rating';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
+import { normalizeSeasons, normalizeEpisodes } from '../../lib/episode/seriesMetrics';
+import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
+import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 

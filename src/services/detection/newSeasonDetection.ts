@@ -1,6 +1,6 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
-import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 // Einfache Map: seriesId → bekannte Staffelanzahl (vom User bestätigter Stand)
 type SeasonCounts = Record<string, number>;

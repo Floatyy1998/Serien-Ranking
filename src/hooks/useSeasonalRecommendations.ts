@@ -3,7 +3,7 @@ import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
 import { isSupportedProvider } from '../config/menuItems';
 import { getProviderLogoUrl } from '../lib/providerMerge';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
 

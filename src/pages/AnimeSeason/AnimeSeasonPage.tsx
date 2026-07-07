@@ -69,7 +69,7 @@ import { backendFetch } from '../../services/backendApi';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { hapticSelect, hapticSuccess, hapticTap } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { tapScaleSmall } from '../../lib/motion';

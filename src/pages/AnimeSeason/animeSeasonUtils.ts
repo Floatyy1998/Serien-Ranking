@@ -1,5 +1,5 @@
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
 import type { SeasonAnime } from '../../services/anilistSeasonService';

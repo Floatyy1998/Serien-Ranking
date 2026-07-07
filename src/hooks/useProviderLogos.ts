@@ -7,7 +7,7 @@
 import { useMemo } from 'react';
 import { useMovieList } from '../contexts/MovieListContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 
 export function useProviderLogos(): Record<string, string> {
   const { allSeriesList } = useSeriesList();

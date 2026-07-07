@@ -1,18 +1,18 @@
-import { detectNewSeasons } from '../lib/validation/newSeasonDetection';
+import { detectNewSeasons } from '../services/detection/newSeasonDetection';
 import {
   detectInactiveSeries,
   detectInactiveRewatches,
-} from '../lib/validation/inactiveSeriesDetection';
-import { detectCompletedSeries } from '../lib/validation/completedSeriesDetection';
-import { detectUnratedSeries } from '../lib/validation/unratedSeriesDetection';
+} from '../services/detection/inactiveSeriesDetection';
+import { detectCompletedSeries } from '../services/detection/completedSeriesDetection';
+import { detectUnratedSeries } from '../services/detection/unratedSeriesDetection';
 import {
   detectAnimeMangaHandoff,
   type AnimeMangaHandoff,
-} from '../lib/validation/animeMangaHandoffDetection';
+} from '../services/detection/animeMangaHandoffDetection';
 import {
   detectProviderChanges,
   type ProviderChangeInfo,
-} from '../lib/validation/providerChangeDetection';
+} from '../services/detection/providerChangeDetection';
 import type { Series } from '../types/Series';
 import { dbUpdate } from '../services/db/ref';
 

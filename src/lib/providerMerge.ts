@@ -9,7 +9,7 @@
  * statischen Map nachgereicht.
  */
 
-import { normalizeProviderName } from './validation/providerChangeDetection';
+import { normalizeProviderName } from './providerName';
 
 /**
  * Statisches Logo-Mapping (normalisierter Provider-Name → TMDB-CDN-Logo-URL).

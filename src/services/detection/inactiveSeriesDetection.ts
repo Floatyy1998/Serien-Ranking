@@ -1,17 +1,17 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
-import { hasActiveRewatch } from './rewatch.utils';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import {
   normalizeSeasons,
   normalizeEpisodes,
   getSeriesLastWatchedAt,
-} from '../episode/seriesMetrics';
+} from '../../lib/episode/seriesMetrics';
 import {
   getInactiveThresholdDays,
   getSnoozedUntil,
   cleanupSnoozes,
-} from '../settings/notificationSettings';
+} from '../../lib/settings/notificationSettings';
 
 export interface InactiveSeriesData {
   seriesId: number;

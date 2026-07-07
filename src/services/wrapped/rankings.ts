@@ -4,7 +4,7 @@
 
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import type {
   TopSeriesEntry,
   TopMovieEntry,

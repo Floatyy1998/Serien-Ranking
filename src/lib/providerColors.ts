@@ -2,12 +2,12 @@
  * D4 — Provider-Markenfarben für die Farb-Facette an Karten.
  *
  * Keyed auf die kanonischen Provider-Namen aus `normalizeProviderName`
- * (lib/validation/providerChangeDetection). Die Töne sind Marken-Approximationen,
+ * (services/detection/providerChangeDetection). Die Töne sind Marken-Approximationen,
  * teils fürs dunkle UI leicht angehoben (z. B. Disney+, dessen Brand-Navy auf
  * Schwarz absäuft). Reine Daten/Logik — kein I/O.
  */
 
-import { normalizeProviderName } from './validation/providerChangeDetection';
+import { normalizeProviderName } from './providerName';
 
 export const PROVIDER_COLORS: Record<string, string> = {
   Netflix: '#e50914',

@@ -4,7 +4,7 @@ import { useSeriesList } from '../contexts/SeriesListContext';
 import { isSupportedProvider } from '../config/menuItems';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { getProviderLogoUrl } from '../lib/providerMerge';
-import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import type { Movie } from '../types/Movie';
 import type { Series } from '../types/Series';
 import { getImageUrl } from '../utils/imageUrl';

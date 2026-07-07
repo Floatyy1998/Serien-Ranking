@@ -29,7 +29,7 @@ import {
   type NotificationCategory,
   type SnoozeOption,
 } from '../../lib/settings/notificationSettings';
-import { markMultipleSeasonsAsNotified } from '../../lib/validation/newSeasonDetection';
+import { markMultipleSeasonsAsNotified } from '../../services/detection/newSeasonDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { formatSeasonDate } from '../../lib/date';
 import type { Series } from '../../types/Series';

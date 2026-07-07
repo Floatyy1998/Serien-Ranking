@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { AnimeMangaHandoff } from '../../lib/validation/animeMangaHandoffDetection';
+import type { AnimeMangaHandoff } from '../../services/detection/animeMangaHandoffDetection';
 import { AnimeMangaHandoffNotification } from './AnimeMangaHandoffNotification';
 
 vi.mock('framer-motion', async () => {
@@ -36,7 +36,7 @@ vi.mock('../../contexts/ThemeContext', () => {
 });
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 const dismissMock = vi.hoisted(() => vi.fn());
-vi.mock('../../lib/validation/animeMangaHandoffDetection', () => ({
+vi.mock('../../services/detection/animeMangaHandoffDetection', () => ({
   markAnimeMangaHandoffDismissed: dismissMock,
 }));
 

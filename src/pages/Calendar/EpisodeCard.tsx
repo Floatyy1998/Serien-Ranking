@@ -10,7 +10,7 @@ import {
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
-import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
+import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getProviderBrand } from '../Subscriptions/providerBrands';
 import type { SeriesGroup } from './useCalendarData';

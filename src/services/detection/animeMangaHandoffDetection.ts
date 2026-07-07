@@ -1,9 +1,13 @@
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
 import type { Series } from '../../types/Series';
-import { normalizeSeasons, normalizeEpisodes, isEpisodeWatched } from '../episode/seriesMetrics';
+import {
+  normalizeSeasons,
+  normalizeEpisodes,
+  isEpisodeWatched,
+} from '../../lib/episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { fetchStaticAnimeManga } from '../../services/staticCatalog';
-import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
+import { fetchStaticAnimeManga } from '../staticCatalog';
+import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 /** Nur Staffeln melden, die in diesem Fenster fertig geschaut wurden. */
 const HANDOFF_RECENCY_MS = 7 * 24 * 60 * 60 * 1000;
