@@ -71,13 +71,13 @@ describe('getEpisodeAirDateStr', () => {
       ).toBe('2026-04-30');
     });
 
-    it('BEFUND: UTC-Datumsteil kann vom LOKALEN Kalendertag abweichen (gleicher lokaler Tag → kein Quirk)', () => {
-      // 2026-04-30T22:00Z = 01.05. 00:00 Berlin; air_date ist ebenfalls der 01.05.
-      // → Differenz 0 Tage, Quirk greift nicht → es wird der UTC-Tag 30.04. geliefert,
-      // obwohl die Episode lokal am 01.05. läuft.
+    it('liefert den LOKALEN Kalendertag des airstamp (kein UTC-Off-by-one)', () => {
+      // 2026-04-30T22:00Z = 01.05. 00:00 Berlin; air_date ebenfalls 01.05.
+      // Differenz 0 Tage → kein Quirk → lokaler Kalendertag 01.05. (konsistent
+      // mit getEpisodeAirDate, das lokal ebenfalls den 01.05. liefert).
       expect(
         getEpisodeAirDateStr({ airstamp: '2026-04-30T22:00:00Z', air_date: '2026-05-01' })
-      ).toBe('2026-04-30');
+      ).toBe('2026-05-01');
     });
 
     it('airstamp mit UTC-Mitternacht (lokal 02:00) ist KEIN Quirk → UTC-Datumsteil', () => {
@@ -90,9 +90,11 @@ describe('getEpisodeAirDateStr', () => {
       expect(getEpisodeAirDateStr({ airstamp: '', air_date: '2026-04-30' })).toBe('2026-04-30');
     });
 
-    it('BEFUND: ungültiger airstamp ohne "T" wird verbatim zurückgegeben und ÜBERDECKT ein gültiges air_date', () => {
+    it('ungültiger airstamp fällt auf ein gültiges air_date durch (statt verbatim)', () => {
+      // new Date('not-a-date') ist invalid → nicht mehr der rohe split-Wert,
+      // sondern der Fallback auf air_date.
       expect(getEpisodeAirDateStr({ airstamp: 'not-a-date', air_date: '2026-04-30' })).toBe(
-        'not-a-date'
+        '2026-04-30'
       );
     });
 
@@ -137,22 +139,23 @@ describe('getEpisodeAirDateStr', () => {
       ).toBe('2026-4-30');
     });
 
-    it('kein Quirk bei 2 Tagen Differenz → UTC-Datumsteil des airstamp', () => {
+    it('kein Quirk bei 2 Tagen Differenz → lokaler Kalendertag des airstamp', () => {
+      // 22:00Z Ende April = 00:00 Folgetag Berlin → lokal der 01.05.
       expect(
         getEpisodeAirDateStr({ airstamp: '2026-04-30T22:00:00Z', air_date: '2026-04-29' })
-      ).toBe('2026-04-30');
+      ).toBe('2026-05-01');
     });
 
-    it('kein Quirk bei air_date mit nur 2 Teilen ("2026-04") → UTC-Datumsteil', () => {
+    it('kein Quirk bei air_date mit nur 2 Teilen ("2026-04") → lokaler Kalendertag', () => {
       expect(getEpisodeAirDateStr({ airstamp: '2026-04-30T22:00:00Z', air_date: '2026-04' })).toBe(
-        '2026-04-30'
+        '2026-05-01'
       );
     });
 
-    it('01:00 lokal (23:00Z) ist keine Mitternacht → kein Quirk', () => {
+    it('01:00 lokal (23:00Z) ist keine Mitternacht → kein Quirk, lokaler Kalendertag', () => {
       expect(
         getEpisodeAirDateStr({ airstamp: '2026-04-30T23:00:00Z', air_date: '2026-04-30' })
-      ).toBe('2026-04-30');
+      ).toBe('2026-05-01');
     });
   });
 });

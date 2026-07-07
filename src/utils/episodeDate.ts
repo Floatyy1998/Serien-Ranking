@@ -49,10 +49,23 @@ export function getEpisodeAirDateStr(
 ): string | null {
   if (!ep) return null;
   const dateStr = ep.air_date || ep.airDate || ep.firstAired;
-  if (ep.airstamp && tvMazeMidnightQuirk(ep.airstamp, dateStr)) {
-    return dateStr || null;
+  if (ep.airstamp) {
+    if (tvMazeMidnightQuirk(ep.airstamp, dateStr)) {
+      return dateStr || null;
+    }
+    const d = new Date(ep.airstamp);
+    if (!isNaN(d.getTime())) {
+      // Lokales Kalenderdatum aus dem UTC-Stamp — NICHT der rohe UTC-Split
+      // (airstamp.split('T')[0]), der bei spätabendlichen Stamps um einen Tag
+      // von getEpisodeAirDate() abweicht. Der Date-only-Fallback unten bleibt
+      // roh (new Date('YYYY-MM-DD') parst als UTC → würde west of UTC brechen).
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
   }
-  return ep.airstamp?.split('T')[0] || dateStr || null;
+  return dateStr || null;
 }
 
 /**
