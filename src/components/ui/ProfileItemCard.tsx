@@ -9,7 +9,8 @@
 import { Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { PLACEHOLDER_SVG, handleImgError } from '../../lib/posterPlaceholder';
+import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
+import { PosterFrame } from './PosterFrame';
 import './ProfileItemCard.css';
 
 export interface ProfileCardProvider {
@@ -204,17 +205,19 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
 
     return (
       <div className="pic-grid-item" onClick={onClick}>
-        <div className="pic-card">
-          <img
-            src={posterUrl || PLACEHOLDER_SVG}
-            alt={title}
-            loading="lazy"
-            decoding="async"
-            className="pic-card-poster"
-            onError={handleImgError}
-            style={{ background: currentTheme.background.surface }}
-          />
-
+        {/* Kein onClick am PosterFrame: der Klick liegt (wie bisher) auf .pic-grid-item.
+            Scrim aus — der Bottom-Gradient kommt aus .pic-card-bottom. overflow bleibt
+            visible (Spiegel des iOS-Safari-Fixes der Ratings-Karte); img/Overlay clippen
+            sich selbst per border-radius. */}
+        <PosterFrame
+          className="pic-card"
+          posterUrl={posterUrl || PLACEHOLDER_SVG}
+          alt={title}
+          scrim={false}
+          imgClassName="pic-card-poster"
+          imgStyle={{ background: currentTheme.background.surface }}
+          style={{ overflow: 'visible' }}
+        >
           <div className="pic-card-overlay">
             <div className="pic-card-top">
               <div className="pic-card-top-left">
@@ -270,7 +273,7 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
               )}
             </div>
           </div>
-        </div>
+        </PosterFrame>
       </div>
     );
   }

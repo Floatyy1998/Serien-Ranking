@@ -15,10 +15,9 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
-import { handleImgError } from '../../pages/Discover/discoverItemHelpers';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
-import { getImageUrl } from '../../utils/imageUrl';
 import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
+import { PosterFrame } from '../ui/PosterFrame';
 import { tapScaleTight } from '../../lib/motion';
 
 interface RecommendationsSectionProps {
@@ -260,7 +259,6 @@ const MagneticCard = memo(
         ? new Date(item.release_date || item.first_air_date || '').getFullYear()
         : null;
     const rating = item.vote_average > 0 ? item.vote_average.toFixed(1) : null;
-    const poster = getImageUrl(item.poster_path, 'w342');
 
     const handleAdd = async (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -325,92 +323,90 @@ const MagneticCard = memo(
             boxShadow,
           }}
         >
-          <img
-            src={poster}
+          {/* Poster-Gerüst: kein onClick hier — der Klick liegt auf dem äußeren
+              motion.div (role=button); scrim aus, der Look kommt von Sheen/Vignette. */}
+          <PosterFrame
+            posterPath={item.poster_path}
+            imageSize="w342"
             alt={title}
-            loading="lazy"
-            decoding="async"
-            onError={handleImgError}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
+            scrim={false}
+            radius="16px"
+          >
+            {/* Sehr dezenter Top-Edge-Sheen für plastischen Look */}
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 14%, transparent 86%, rgba(0,0,0,0.18) 100%)',
+                pointerEvents: 'none',
+                mixBlendMode: 'soft-light',
+              }}
+            />
 
-          {/* Sehr dezenter Top-Edge-Sheen für plastischen Look */}
-          <div
-            aria-hidden
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 14%, transparent 86%, rgba(0,0,0,0.18) 100%)',
-              pointerEvents: 'none',
-              mixBlendMode: 'soft-light',
-            }}
-          />
+            {/* Hover-Vignette für Add-Button-Lesbarkeit */}
+            <motion.div
+              aria-hidden
+              initial={false}
+              animate={{ opacity: hovered ? 1 : 0 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background:
+                  'radial-gradient(ellipse at top right, rgba(0,0,0,0.45), transparent 55%)',
+                pointerEvents: 'none',
+              }}
+            />
 
-          {/* Hover-Vignette für Add-Button-Lesbarkeit */}
-          <motion.div
-            aria-hidden
-            initial={false}
-            animate={{ opacity: hovered ? 1 : 0 }}
-            transition={{ duration: 0.25 }}
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background:
-                'radial-gradient(ellipse at top right, rgba(0,0,0,0.45), transparent 55%)',
-              pointerEvents: 'none',
-            }}
-          />
-
-          <AnimatePresence>
-            {showAddButton && (
-              <motion.button
-                onClick={handleAdd}
-                disabled={isAdding || justAdded}
-                aria-label="Zur Liste hinzufügen"
-                initial={{ opacity: 0, y: -4, scale: 0.85 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.85 }}
-                transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-                whileHover={{ scale: 1.1 }}
-                whileTap={tapScaleTight}
-                style={{
-                  position: 'absolute',
-                  top: 9,
-                  right: 9,
-                  width: 44,
-                  height: 44,
-                  borderRadius: '50%',
-                  border: justAdded
-                    ? `1px solid ${currentTheme.status.success}aa`
-                    : '1px solid rgba(255, 255, 255, 0.22)',
-                  background: justAdded
-                    ? `${currentTheme.status.success}cc`
-                    : 'rgba(0, 0, 0, 0.55)',
-                  backdropFilter: 'var(--blur-md) saturate(1.6)',
-                  WebkitBackdropFilter: 'var(--blur-md) saturate(1.6)',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: isAdding ? 'wait' : 'pointer',
-                  padding: 0,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
-                  opacity: isAdding ? 0.65 : 1,
-                  zIndex: 4,
-                }}
-              >
-                {justAdded ? <Check style={{ fontSize: 16 }} /> : <Add style={{ fontSize: 17 }} />}
-              </motion.button>
-            )}
-          </AnimatePresence>
+            <AnimatePresence>
+              {showAddButton && (
+                <motion.button
+                  onClick={handleAdd}
+                  disabled={isAdding || justAdded}
+                  aria-label="Zur Liste hinzufügen"
+                  initial={{ opacity: 0, y: -4, scale: 0.85 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.85 }}
+                  transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={tapScaleTight}
+                  style={{
+                    position: 'absolute',
+                    top: 9,
+                    right: 9,
+                    width: 44,
+                    height: 44,
+                    borderRadius: '50%',
+                    border: justAdded
+                      ? `1px solid ${currentTheme.status.success}aa`
+                      : '1px solid rgba(255, 255, 255, 0.22)',
+                    background: justAdded
+                      ? `${currentTheme.status.success}cc`
+                      : 'rgba(0, 0, 0, 0.55)',
+                    backdropFilter: 'var(--blur-md) saturate(1.6)',
+                    WebkitBackdropFilter: 'var(--blur-md) saturate(1.6)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: isAdding ? 'wait' : 'pointer',
+                    padding: 0,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                    opacity: isAdding ? 0.65 : 1,
+                    zIndex: 4,
+                  }}
+                >
+                  {justAdded ? (
+                    <Check style={{ fontSize: 16 }} />
+                  ) : (
+                    <Add style={{ fontSize: 17 }} />
+                  )}
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </PosterFrame>
         </motion.div>
 
         <div style={{ paddingInline: 2, minWidth: 0 }}>

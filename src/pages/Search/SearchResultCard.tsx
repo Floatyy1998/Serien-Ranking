@@ -6,10 +6,9 @@
 import { Add, Check, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
+import { PosterFrame } from '../../components/ui/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import { getImageUrl } from '../../utils/imageUrl';
-import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { SearchResult } from './useSearchPage';
 
 export interface SearchResultCardProps {
@@ -30,19 +29,6 @@ export const SearchResultCard = memo(
     isDesktop,
     isPending = false,
   }: SearchResultCardProps) => {
-    const fallbackPoster = useMemo(
-      () =>
-        buildThemedPlaceholderDataUrl(
-          currentTheme.primary,
-          currentTheme.secondary || currentTheme.accent
-        ),
-      [currentTheme.primary, currentTheme.secondary, currentTheme.accent]
-    );
-    const imageUrl = useMemo(
-      () => getImageUrl(item.poster_path, 'w500', fallbackPoster),
-      [item.poster_path, fallbackPoster]
-    );
-
     const year = useMemo(() => {
       const date = item.release_date || item.first_air_date;
       return date ? new Date(date).getFullYear() : 'TBA';
@@ -66,43 +52,43 @@ export const SearchResultCard = memo(
             onClick={() => onItemClick(item)}
             aria-label={`${typeLabel} „${label}" öffnen`}
           >
-            <img
-              src={imageUrl}
+            {/* PosterFrame ohne onClick: der native Button bleibt das interaktive
+                Element (Add/Check ist bewusst ein Geschwister — nie interaktive
+                Elemente verschachteln). Eigener Scrim (50%, Theme-Navy) statt
+                PosterFrame-Default (60%), daher scrim={false}. */}
+            <PosterFrame
+              posterPath={item.poster_path}
               alt=""
-              loading="lazy"
-              decoding="async"
-              className="search-result-poster-img"
-              onError={(e) => {
-                const img = e.currentTarget;
-                if (img.src !== fallbackPoster) img.src = fallbackPoster;
-              }}
-            />
-
-            {/* Gradient Overlay */}
-            <div className="search-result-gradient-overlay" />
-
-            {/* Rating Badge */}
-            {item.vote_average && item.vote_average > 0 && (
-              <div
-                className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
-              >
-                <Star
-                  style={{
-                    fontSize: isDesktop ? '12px' : '10px',
-                    color: currentTheme.accent,
-                  }}
-                />
-                {item.vote_average.toFixed(1)}
-              </div>
-            )}
-
-            {/* Type Badge */}
-            <div
-              className={`search-type-badge ${isDesktop ? 'search-type-badge--desktop' : ''}`}
-              style={{ background: accentGradient, color: onAccent }}
+              imageSize="w500"
+              scrim={false}
+              imgClassName="search-result-poster-img"
             >
-              {typeLabel}
-            </div>
+              {/* Gradient Overlay */}
+              <div className="search-result-gradient-overlay" />
+
+              {/* Rating Badge */}
+              {item.vote_average && item.vote_average > 0 && (
+                <div
+                  className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
+                >
+                  <Star
+                    style={{
+                      fontSize: isDesktop ? '12px' : '10px',
+                      color: currentTheme.accent,
+                    }}
+                  />
+                  {item.vote_average.toFixed(1)}
+                </div>
+              )}
+
+              {/* Type Badge */}
+              <div
+                className={`search-type-badge ${isDesktop ? 'search-type-badge--desktop' : ''}`}
+                style={{ background: accentGradient, color: onAccent }}
+              >
+                {typeLabel}
+              </div>
+            </PosterFrame>
           </button>
 
           {/* Add/Check Button */}
