@@ -102,6 +102,7 @@ export default defineConfig({
         'src/components/ui/PageHeader.tsx',
         'src/components/ui/PageLayout.tsx',
         'src/components/ui/PageState.tsx',
+        'src/components/ui/PosterFrame.tsx',
         'src/components/ui/PosterImage.tsx',
         'src/components/ui/ProfileItemCard.tsx',
         'src/components/ui/ProgressBar.tsx',

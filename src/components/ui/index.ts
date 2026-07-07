@@ -11,6 +11,7 @@ export { BottomSheet } from './BottomSheet';
 export { GradientText } from './GradientText';
 export { LoadingSpinner } from './LoadingSpinner';
 export { PageState } from './PageState';
+export { PosterFrame } from './PosterFrame';
 export {
   Skeleton,
   SkeletonListRow,

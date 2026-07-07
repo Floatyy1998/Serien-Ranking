@@ -7,7 +7,7 @@ import { memo, useCallback, useMemo, useState } from 'react';
 
 import { getImageUrl } from '../../utils/imageUrl';
 import type { ItemCardProps } from './discoverItemHelpers';
-import { handleImgError } from './discoverItemHelpers';
+import { PosterFrame } from '../../components/ui/PosterFrame';
 import { tapScale } from '../../lib/motion';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
@@ -37,55 +37,16 @@ export const ItemCard = memo(
 
     return (
       <div className="discover-item-card" style={{ position: 'relative' }}>
-        <div
+        <PosterFrame
           className="discover-poster-wrap"
+          posterUrl={imageUrl}
+          alt={item.title || item.name || ''}
+          ariaLabel={item.title || item.name}
           onClick={handlePosterClick}
-          role="button"
-          tabIndex={0}
-          aria-label={item.title || item.name}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handlePosterClick();
-            }
-          }}
-          style={{
-            width: '100%',
-            aspectRatio: '2/3',
-            position: 'relative',
-            borderRadius: 'var(--radius-lg)',
-            overflow: 'hidden',
-            marginBottom: '10px',
-            cursor: 'pointer',
-            boxShadow: `0 6px 20px ${currentTheme.background.default}80`,
-          }}
+          scrimColor={`${currentTheme.background.default}cc`}
+          boxShadow={`0 6px 20px ${currentTheme.background.default}80`}
+          style={{ marginBottom: '10px' }}
         >
-          <img
-            src={imageUrl}
-            alt={item.title || item.name}
-            onError={handleImgError}
-            loading="lazy"
-            decoding="async"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-            }}
-          />
-
-          {/* Premium gradient overlay */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '60%',
-              background: `linear-gradient(to top, ${currentTheme.background.default}cc 0%, transparent 100%)`,
-              pointerEvents: 'none',
-            }}
-          />
-
           {item.vote_average > 0 && (
             <div
               style={{
@@ -280,7 +241,7 @@ export const ItemCard = memo(
               </button>
             </Tooltip>
           )}
-        </div>
+        </PosterFrame>
 
         <h3
           style={{
