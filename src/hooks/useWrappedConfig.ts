@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 import { FEATURES } from '../config/features';
 
 interface WrappedConfig {

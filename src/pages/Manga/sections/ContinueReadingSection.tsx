@@ -12,7 +12,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
 import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';
-import { dbRef, paths } from '../../../lib/db/ref';
+import { dbRef, paths } from '../../../services/db/ref';
 
 function formatLastRead(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();

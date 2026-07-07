@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchStaticAnimeManga, type AnimeMangaStaticEntry } from '../lib/staticCatalog';
+import { fetchStaticAnimeManga, type AnimeMangaStaticEntry } from '../services/staticCatalog';
 
 /**
  * Shared, load-once accessor for the static anime→manga bridge catalog

@@ -1,12 +1,12 @@
 import firebase from 'firebase/compat/app';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { initAnalyticsIfConsented, setAnalyticsUser } from './firebase/analytics';
+import { initAnalyticsIfConsented, setAnalyticsUser } from './services/firebase/analytics';
 import { offlineFirebaseService } from './services/offlineFirebaseService';
 import { adjustBrightness, updateThemeColorMeta } from './themeHelpers';
 import { AuthContext } from './AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
-import { syncUserSearchIndex } from './lib/firebase/userSearchIndex';
-import { dbRef, paths, serverTimestamp } from './lib/db/ref';
+import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
+import { dbRef, paths, serverTimestamp } from './services/db/ref';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let unsubscribeAuth: (() => void) | null = null;
     let cancelled = false;
 
-    import('./firebase/initFirebase')
+    import('./services/firebase/initFirebase')
       .then((module) => {
         if (cancelled) return;
         try {

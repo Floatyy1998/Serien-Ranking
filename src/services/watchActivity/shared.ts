@@ -4,7 +4,7 @@
  * Pfad-Funktionen, Event-Helfer und gemeinsame Konstanten.
  */
 
-import { dbGet, dbRef, userPath } from '../../lib/db/ref';
+import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import type { ActivityEvent } from '../../types/WatchActivity';
 import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
 import { compactifyEvent, isCompactEvent, expandCompactEvent } from './compactEvent';

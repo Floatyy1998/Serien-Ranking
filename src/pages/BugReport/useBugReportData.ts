@@ -5,7 +5,7 @@ import { useAuth } from '../../AuthContext';
 import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
-import { dbGet, dbRef, paths } from '../../lib/db/ref';
+import { dbGet, dbRef, paths } from '../../services/db/ref';
 
 const AUTO_DELETE_DAYS = 5;
 

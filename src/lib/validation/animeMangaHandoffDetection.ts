@@ -1,8 +1,8 @@
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import type { Series } from '../../types/Series';
 import { normalizeSeasons, normalizeEpisodes, isEpisodeWatched } from '../episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
-import { fetchStaticAnimeManga } from '../staticCatalog';
+import { fetchStaticAnimeManga } from '../../services/staticCatalog';
 import { getSnoozedUntil, cleanupSnoozes } from '../settings/notificationSettings';
 
 /** Nur Staffeln melden, die in diesem Fenster fertig geschaut wurden. */

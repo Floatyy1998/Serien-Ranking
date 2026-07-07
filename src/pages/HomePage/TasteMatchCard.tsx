@@ -12,7 +12,7 @@ import Close from '@mui/icons-material/Close';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
-import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
+import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import { tapScaleSmall } from '../../lib/motion';
 
 interface FriendProfile {

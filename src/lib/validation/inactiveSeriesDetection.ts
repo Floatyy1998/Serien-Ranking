@@ -1,5 +1,5 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { hasActiveRewatch } from './rewatch.utils';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import {

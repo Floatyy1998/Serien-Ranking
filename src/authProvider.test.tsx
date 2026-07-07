@@ -13,8 +13,8 @@ const { onAuthStateChangedMock, initFirebaseMock } = vi.hoisted(() => ({
 vi.mock('firebase/compat/app', () => ({
   default: { auth: () => ({ onAuthStateChanged: onAuthStateChangedMock }) },
 }));
-vi.mock('./firebase/initFirebase', () => ({ initFirebase: initFirebaseMock }));
-vi.mock('./firebase/analytics', () => ({
+vi.mock('./services/firebase/initFirebase', () => ({ initFirebase: initFirebaseMock }));
+vi.mock('./services/firebase/analytics', () => ({
   initAnalyticsIfConsented: vi.fn(),
   setAnalyticsUser: vi.fn(),
 }));
@@ -30,7 +30,7 @@ vi.mock('./features/badges/offlineBadgeSystem', () => ({
     checkForNewBadges: vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
   }),
 }));
-vi.mock('./lib/firebase/userSearchIndex', () => ({ syncUserSearchIndex: vi.fn() }));
+vi.mock('./services/firebase/userSearchIndex', () => ({ syncUserSearchIndex: vi.fn() }));
 
 import { AuthProvider } from './authProvider';
 import { useAuth } from './AuthContext';

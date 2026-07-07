@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FiberNew, CheckCircle } from '@mui/icons-material';
-import { dbRef } from '../../../lib/db/ref';
+import { dbRef } from '../../../services/db/ref';
 
 interface NewEpisode {
   season: number;

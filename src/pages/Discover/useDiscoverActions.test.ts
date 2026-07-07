@@ -10,7 +10,7 @@ vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 
 const trackSeriesAdded = vi.fn<(...a: unknown[]) => void>();
 const trackMovieAdded = vi.fn<(...a: unknown[]) => void>();
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackSeriesAdded: (...a: unknown[]) => trackSeriesAdded(...a),
   trackMovieAdded: (...a: unknown[]) => trackMovieAdded(...a),
 }));
@@ -23,7 +23,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
 }));
 
 const backendFetch = vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>();
-vi.mock('../../lib/backendApi', () => ({
+vi.mock('../../services/backendApi', () => ({
   backendFetch: (...a: unknown[]) => backendFetch(...a),
 }));
 

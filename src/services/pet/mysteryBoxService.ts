@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';

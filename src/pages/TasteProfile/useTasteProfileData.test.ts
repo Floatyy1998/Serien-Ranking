@@ -35,7 +35,7 @@ vi.mock('../../services/watchJourneyService', () => ({
 vi.mock('../../services/watchActivityService', () => ({
   getWatchStreak: () => Promise.resolve(null),
 }));
-vi.mock('../../lib/backendApi', () => ({
+vi.mock('../../services/backendApi', () => ({
   backendFetch: (path: string, init?: RequestInit) => state.backendFetch(path, init),
 }));
 

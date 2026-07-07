@@ -4,7 +4,7 @@
 
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
@@ -17,11 +17,11 @@ import {
   trackEpisodeWatched,
   trackSeriesAdded,
   trackSeriesDeleted,
-} from '../../firebase/analytics';
-import { backendFetch } from '../../lib/backendApi';
-import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
+} from '../../services/firebase/analytics';
+import { backendFetch } from '../../services/backendApi';
+import { bumpSeriesVersion } from '../../services/firebase/seriesVersionBump';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 

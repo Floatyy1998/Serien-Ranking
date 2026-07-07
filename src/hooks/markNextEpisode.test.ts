@@ -15,7 +15,7 @@ vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
 // --- Side-effect module mocks (compactWatch stays real) ---------------------
-vi.mock('../lib/offline/queuedUpdate', () => ({
+vi.mock('../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(() => Promise.resolve({ queued: false })),
 }));
 vi.mock('../lib/haptics', () => ({ hapticSuccess: vi.fn() }));
@@ -23,12 +23,12 @@ vi.mock('../lib/toast', () => ({ showToast: vi.fn(), showUndoToast: vi.fn() }));
 vi.mock('../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: vi.fn(() => Promise.resolve()),
 }));
-vi.mock('../firebase/analytics', () => ({ trackEpisodeWatched: vi.fn() }));
+vi.mock('../services/firebase/analytics', () => ({ trackEpisodeWatched: vi.fn() }));
 
-import { trackEpisodeWatched } from '../firebase/analytics';
+import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
 import { hapticSuccess } from '../lib/haptics';
-import { applyUserUpdate } from '../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
 import { findNextEpisode, markNextEpisodeWatched } from './markNextEpisode';
 

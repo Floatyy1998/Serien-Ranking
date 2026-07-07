@@ -11,7 +11,7 @@ import {
 } from '../theme/dynamicTheme';
 import { setThemedPlaceholder } from '../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../utils/themedPlaceholder';
-import { dbRef, paths } from '../lib/db/ref';
+import { dbRef, paths } from '../services/db/ref';
 import { ThemeContext } from './ThemeContext';
 import type { ThemeContextType } from './ThemeContext';
 

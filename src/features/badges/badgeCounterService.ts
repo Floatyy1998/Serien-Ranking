@@ -5,7 +5,7 @@
  * Nur für zeitkritische Badges wie Quickwatch die nicht aus Serien-Daten berechenbar sind.
  */
 
-import { dbRef, dbGet, userPath } from '../../lib/db/ref';
+import { dbRef, dbGet, userPath } from '../../services/db/ref';
 
 class BadgeCounterService {
   /**

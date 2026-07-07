@@ -46,7 +46,7 @@ vi.mock('../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../firebase/analytics', () => ({ trackLogin: trackLoginMock }));
+vi.mock('../../services/firebase/analytics', () => ({ trackLogin: trackLoginMock }));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigateMock,
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (

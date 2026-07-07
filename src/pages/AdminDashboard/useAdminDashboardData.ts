@@ -3,7 +3,7 @@
  * for the admin dashboard overview and all tabs.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 
 // ─── Types ───────────────────────────────────────────────────────────────
 

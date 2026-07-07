@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { dbRef, dbGet, userPath, paths } from '../lib/db/ref';
+import { dbRef, dbGet, userPath, paths } from '../services/db/ref';
 import { useAuth } from '../AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 
 type TtsState = 'idle' | 'loading' | 'speaking';
 

@@ -1,4 +1,4 @@
-import { dbRef, dbGet, userPath } from '../../lib/db/ref';
+import { dbRef, dbGet, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';

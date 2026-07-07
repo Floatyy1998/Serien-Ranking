@@ -42,7 +42,7 @@ vi.mock('../../lib/haptics', () => ({ hapticSelect: vi.fn() }));
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logRatingAdded: vi.fn(async () => {}),
 }));
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackRatingSaved: vi.fn(),
   trackRatingDeleted: vi.fn(),
 }));
@@ -53,7 +53,7 @@ vi.mock('../../services/watchActivityService', () => ({
 
 import { hapticSelect } from '../../lib/haptics';
 import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
-import { trackRatingSaved, trackRatingDeleted } from '../../firebase/analytics';
+import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import { useRatingData } from './useRatingData';
 
 const makeSeries = (o: Partial<Series> = {}): Series =>

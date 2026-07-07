@@ -26,7 +26,7 @@ vi.mock('../AuthContext', () => ({
   useAuth: () => ({ user: authUser }),
 }));
 
-vi.mock('../lib/staticCatalog', () => ({
+vi.mock('../services/staticCatalog', () => ({
   fetchStaticCatalogMovies: vi.fn(async () => ({})),
   fetchStaticCatalogMoviesFresh: vi.fn(async () => ({})),
   clearStaticCatalogCache: vi.fn(),

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { dbRef, userPath } from '../lib/db/ref';
+import { dbRef, userPath } from '../services/db/ref';
 import type { NextEpisode } from './useWatchNextEpisodes';
 
 interface UseEpisodeDragDropOptions {

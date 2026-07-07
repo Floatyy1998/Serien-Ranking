@@ -9,7 +9,7 @@ const analytics = vi.hoisted(() => ({
   setAnalyticsConsent: vi.fn<(accepted: boolean) => void>(),
 }));
 
-vi.mock('../firebase/analytics', () => ({
+vi.mock('../services/firebase/analytics', () => ({
   getAnalyticsConsent: analytics.getAnalyticsConsent,
   setAnalyticsConsent: analytics.setAnalyticsConsent,
 }));

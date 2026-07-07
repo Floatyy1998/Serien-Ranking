@@ -26,7 +26,7 @@ vi.mock('../lib/episode/seriesMetrics', () => ({
 
 // --- backendFetch: routet nach AI-Endpunkt ---
 const backend = vi.hoisted(() => ({ backendFetch: vi.fn() }));
-vi.mock('../lib/backendApi', () => ({ backendFetch: backend.backendFetch }));
+vi.mock('../services/backendApi', () => ({ backendFetch: backend.backendFetch }));
 
 function makeSeries(overrides: Partial<Series> = {}): Series {
   return {

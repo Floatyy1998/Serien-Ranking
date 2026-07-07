@@ -8,7 +8,7 @@ import {
   type MangaDexInfo,
 } from '../../../services/mangaUpdatesService';
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
-import { dbRef, paths } from '../../../lib/db/ref';
+import { dbRef, paths } from '../../../services/db/ref';
 
 interface UseMangaLiveDataArgs {
   user: firebase.User | null | undefined;

@@ -1,10 +1,10 @@
-import { dbRef, dbUpdate, userPath } from '../lib/db/ref';
+import { dbRef, dbUpdate, userPath } from '../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;

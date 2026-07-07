@@ -25,7 +25,7 @@ vi.mock('firebase/compat/database', () => ({}));
 
 // ── side-effect mocks ─────────────────────────────────────────────────
 const trackEpisodeWatched = vi.fn<(...a: unknown[]) => void>();
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeWatched: (...a: unknown[]) => trackEpisodeWatched(...a),
 }));
 
@@ -35,7 +35,7 @@ vi.mock('../../lib/episode/episodeWatchFanout', () => ({
 }));
 
 const applyUserUpdate = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
-vi.mock('../../lib/offline/queuedUpdate', () => ({
+vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: (...a: unknown[]) => applyUserUpdate(...a),
 }));
 

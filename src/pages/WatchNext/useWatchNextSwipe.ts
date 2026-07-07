@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 import type { PanInfo } from 'framer-motion';
 import type { Series } from '../../types/Series';
-import { trackEpisodeWatched } from '../../firebase/analytics';
+import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 

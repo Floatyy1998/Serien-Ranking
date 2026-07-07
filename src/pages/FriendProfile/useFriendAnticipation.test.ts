@@ -27,7 +27,7 @@ vi.mock('firebase/compat/database', () => ({}));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ seriesList: ctx.seriesList }),
 }));
-vi.mock('../../lib/staticCatalog', () => ({
+vi.mock('../../services/staticCatalog', () => ({
   fetchStaticCatalogSeries: () => Promise.resolve(cat.series),
   fetchStaticCatalogSeasonsBulk: () => Promise.resolve(cat.bulk),
   fetchStaticCatalogSeasons: () => Promise.resolve(null),

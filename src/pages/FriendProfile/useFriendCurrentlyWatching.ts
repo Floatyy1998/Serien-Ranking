@@ -1,7 +1,7 @@
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../lib/staticCatalog';
+import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../services/staticCatalog';
 import { readEventUniversal } from '../../services/watchActivity/compactEvent';
 import type { CatalogSeries } from '../../types/CatalogTypes';
 import type { EpisodeWatchEvent } from '../../types/WatchActivity';

@@ -11,7 +11,7 @@
  * Episode-Watching wird NICHT mehr geloggt.
  */
 
-import { dbRef, serverTimestamp, userPath } from '../../lib/db/ref';
+import { dbRef, serverTimestamp, userPath } from '../../services/db/ref';
 import { badgeCounterService } from './badgeCounterService';
 import type { EarnedBadge } from './badgeDefinitions';
 import { getOfflineBadgeSystem } from './offlineBadgeSystem';

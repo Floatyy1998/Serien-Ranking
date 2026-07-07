@@ -9,9 +9,9 @@ import { logRatingAdded } from '../../features/badges/minimalActivityLogger';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { WatchActivityService } from '../../services/watchActivityService';
 import type { Movie as MovieType } from '../../types/Movie';
-import { trackRatingSaved, trackRatingDeleted } from '../../firebase/analytics';
+import { trackRatingSaved, trackRatingDeleted } from '../../services/firebase/analytics';
 import type { Series } from '../../types/Series';
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 
 export interface UseRatingDataResult {
   item: (Series | MovieType) | undefined;

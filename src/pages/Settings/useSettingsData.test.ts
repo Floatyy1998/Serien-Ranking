@@ -56,10 +56,10 @@ const navSpy = vi.hoisted(() => vi.fn());
 vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }));
 
 const analytics = vi.hoisted(() => ({ trackLogout: vi.fn() }));
-vi.mock('../../firebase/analytics', () => ({ trackLogout: analytics.trackLogout }));
+vi.mock('../../services/firebase/analytics', () => ({ trackLogout: analytics.trackLogout }));
 
 const searchIndex = vi.hoisted(() => ({ syncUserSearchIndex: vi.fn(async () => {}) }));
-vi.mock('../../lib/firebase/userSearchIndex', () => ({
+vi.mock('../../services/firebase/userSearchIndex', () => ({
   syncUserSearchIndex: searchIndex.syncUserSearchIndex,
 }));
 

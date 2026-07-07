@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // backendFetch (MangaUpdates-Proxy) mocken.
 const backendFetchMock = vi.hoisted(() => vi.fn());
-vi.mock('../lib/backendApi', () => ({ backendFetch: backendFetchMock }));
+vi.mock('../services/backendApi', () => ({ backendFetch: backendFetchMock }));
 
 // Frisches Modul je Test → In-Memory-Caches leer.
 async function load() {

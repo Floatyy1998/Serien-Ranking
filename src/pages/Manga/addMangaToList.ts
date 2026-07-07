@@ -1,7 +1,7 @@
 import type { AniListMangaSearchResult } from '../../types/Manga';
 import { getMangaDexInfo } from '../../services/mangaUpdatesService';
 import { getDisplayFormatKey } from './mangaUtils';
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 
 /**
  * Zentrale Funktion zum Hinzufügen eines Manga zur Liste.

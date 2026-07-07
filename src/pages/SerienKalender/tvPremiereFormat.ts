@@ -12,7 +12,7 @@
  * wiederverwendet statt kopiert.
  */
 
-import type { TvPremiereStaticEntry } from '../../lib/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 
 // Reine Date-Helfer aus dem Anime-Kalender wiederverwenden (identische UI).
 export {

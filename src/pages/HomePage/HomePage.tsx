@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { dbGet, dbRef, paths } from '../../lib/db/ref';
+import { dbGet, dbRef, paths } from '../../services/db/ref';
 import { SectionHeader } from '../../components/ui';
 import { SeriesNotificationHub } from './SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';

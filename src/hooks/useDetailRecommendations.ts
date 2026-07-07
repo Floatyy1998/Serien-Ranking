@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useMovieList } from '../contexts/MovieListContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
-import { trackMovieAdded, trackSeriesAdded } from '../firebase/analytics';
+import { trackMovieAdded, trackSeriesAdded } from '../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 import type { DiscoverItem } from '../pages/Discover/discoverItemHelpers';
 
 interface UseDetailRecommendationsResult {

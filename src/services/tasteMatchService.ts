@@ -2,8 +2,8 @@
  * TasteMatchService - Berechnet Geschmacks-Match zwischen zwei Usern
  */
 
-import { dbRef, paths } from '../lib/db/ref';
-import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../lib/staticCatalog';
+import { dbRef, paths } from '../services/db/ref';
+import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../services/staticCatalog';
 
 export interface TasteMatchResult {
   overallMatch: number; // 0-100

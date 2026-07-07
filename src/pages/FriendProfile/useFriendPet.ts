@@ -1,7 +1,7 @@
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
 
 interface RawPet extends Omit<Pet, 'lastFed' | 'createdAt' | 'deathTime'> {

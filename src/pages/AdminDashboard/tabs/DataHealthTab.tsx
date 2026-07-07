@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
-import { dbRef } from '../../../lib/db/ref';
+import { dbRef } from '../../../services/db/ref';
 
 interface DataIssue {
   type?: string;

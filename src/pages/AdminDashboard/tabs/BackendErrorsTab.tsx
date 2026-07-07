@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
-import { dbRef } from '../../../lib/db/ref';
+import { dbRef } from '../../../services/db/ref';
 
 interface BackendError {
   timestamp: string;

@@ -10,7 +10,7 @@ import {
   fetchStaticCatalogMoviesFresh,
   clearStaticCatalogCache,
   subscribeCatalogChange,
-} from '../lib/staticCatalog';
+} from '../services/staticCatalog';
 
 export const MovieListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};

@@ -63,9 +63,9 @@ import {
   TabSwitcher,
 } from '../../components/ui';
 import { useAuth } from '../../AuthContext';
-import { trackMovieAdded, trackSeriesAdded } from '../../firebase/analytics';
+import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { backendFetch } from '../../lib/backendApi';
+import { backendFetch } from '../../services/backendApi';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
@@ -78,8 +78,8 @@ import {
   fetchStaticCatalogSeasonsBulk,
   fetchStaticSeasonalAnime,
   subscribeCatalogChange,
-} from '../../lib/staticCatalog';
-import type { SeasonalAnimeStaticEntry } from '../../lib/staticCatalog';
+} from '../../services/staticCatalog';
+import type { SeasonalAnimeStaticEntry } from '../../services/staticCatalog';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
 import type { CatalogSeason } from '../../types/CatalogTypes';
 import {

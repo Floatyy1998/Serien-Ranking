@@ -4,7 +4,7 @@
  * Only essential events are stored via Firebase RTDB (whitelist in analyticsService).
  * Events: page_view, login, logout, sign_up, series/movie added/deleted, episode watched/unwatched, rating saved/deleted.
  */
-import { analyticsService } from '../services/analyticsService';
+import { analyticsService } from '../analyticsService';
 
 // ─── Consent & Init ──────────────────────────────────────────────────────
 

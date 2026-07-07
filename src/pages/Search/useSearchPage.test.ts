@@ -38,7 +38,9 @@ const preloadImage = vi.fn();
 vi.mock('../../lib/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
 
 const backendFetch = vi.fn<(...a: unknown[]) => Promise<{ ok: boolean }>>();
-vi.mock('../../lib/backendApi', () => ({ backendFetch: (...a: unknown[]) => backendFetch(...a) }));
+vi.mock('../../services/backendApi', () => ({
+  backendFetch: (...a: unknown[]) => backendFetch(...a),
+}));
 
 const logSeriesAdded = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
 const logMovieAdded = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});

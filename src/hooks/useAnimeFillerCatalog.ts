@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchStaticAnimeFiller, type AnimeFillerStaticEntry } from '../lib/staticCatalog';
+import { fetchStaticAnimeFiller, type AnimeFillerStaticEntry } from '../services/staticCatalog';
 
 /**
  * Shared, load-once accessor for the static anime-filler catalog

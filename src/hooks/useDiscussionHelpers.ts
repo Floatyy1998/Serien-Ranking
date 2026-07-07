@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../lib/db/ref';
+import { dbRef, userPath } from '../services/db/ref';
 import type { DiscussionItemType } from '../types/Discussion';
 
 // Helper to generate a unique path for discussions

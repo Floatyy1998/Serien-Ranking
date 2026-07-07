@@ -1,4 +1,4 @@
-import { dbRef, dbGet, serverTimestamp, userPath, paths } from '../lib/db/ref';
+import { dbRef, dbGet, serverTimestamp, userPath, paths } from '../services/db/ref';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import type { FriendActivity, FriendRequest } from '../types/Friend';
 

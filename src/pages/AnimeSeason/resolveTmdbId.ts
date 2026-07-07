@@ -28,7 +28,7 @@
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
-import { anilistLinkCountsForDe } from '../../lib/anilistProviderFallback';
+import { anilistLinkCountsForDe } from '../../services/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
 import { normalizeProviderName } from '../../lib/validation/providerChangeDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';

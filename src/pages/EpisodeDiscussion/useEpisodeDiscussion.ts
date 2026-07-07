@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { serverTimestamp } from '../../lib/db/ref';
+import { serverTimestamp } from '../../services/db/ref';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import type { Series } from '../../types/Series';
 
 export interface TMDBEpisodeDetails {

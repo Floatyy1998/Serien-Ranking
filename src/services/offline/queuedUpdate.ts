@@ -32,8 +32,8 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import { dbRef, dbUpdate } from '../db/ref';
-import { hapticSuccess } from '../haptics';
-import { showToast } from '../toast';
+import { hapticSuccess } from '../../lib/haptics';
+import { showToast } from '../../lib/toast';
 import { isPermissionDenied, pendingWriteQueue } from './pendingWriteQueue';
 import type { PendingWriteEntry } from './pendingWriteQueue';
 

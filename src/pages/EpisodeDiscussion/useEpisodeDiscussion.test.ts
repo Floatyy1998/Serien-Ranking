@@ -41,7 +41,7 @@ const queued = vi.hoisted(() => ({
   applyUserUpdate:
     vi.fn<(uid: string, updates: Record<string, unknown>, label: string) => Promise<void>>(),
 }));
-vi.mock('../../lib/offline/queuedUpdate', () => ({ applyUserUpdate: queued.applyUserUpdate }));
+vi.mock('../../services/offline/queuedUpdate', () => ({ applyUserUpdate: queued.applyUserUpdate }));
 
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 

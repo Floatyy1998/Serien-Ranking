@@ -47,16 +47,16 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
 vi.mock('../../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: vi.fn(async () => {}),
 }));
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeUnwatched: vi.fn(),
   trackEpisodeWatched: vi.fn(),
   trackSeriesAdded: vi.fn(),
   trackSeriesDeleted: vi.fn(),
 }));
 const backendFetch = vi.hoisted(() => vi.fn());
-vi.mock('../../lib/backendApi', () => ({ backendFetch }));
-vi.mock('../../lib/firebase/seriesVersionBump', () => ({ bumpSeriesVersion: vi.fn() }));
-vi.mock('../../lib/offline/queuedUpdate', () => ({
+vi.mock('../../services/backendApi', () => ({ backendFetch }));
+vi.mock('../../services/firebase/seriesVersionBump', () => ({ bumpSeriesVersion: vi.fn() }));
+vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
 }));
 vi.mock('../../lib/toast', () => ({ showToast: vi.fn(), showUndoToast: vi.fn() }));
@@ -68,9 +68,9 @@ import {
   trackSeriesAdded,
   trackSeriesDeleted,
   trackEpisodeWatched,
-} from '../../firebase/analytics';
-import { bumpSeriesVersion } from '../../lib/firebase/seriesVersionBump';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+} from '../../services/firebase/analytics';
+import { bumpSeriesVersion } from '../../services/firebase/seriesVersionBump';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 import { useSeriesActions } from './useSeriesActions';

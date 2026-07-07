@@ -2,13 +2,13 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTextToSpeech } from './useTextToSpeech';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 
 vi.mock('../AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'user-1' } }),
 }));
 
-vi.mock('../lib/backendApi', () => ({
+vi.mock('../services/backendApi', () => ({
   backendFetch: vi.fn(),
 }));
 

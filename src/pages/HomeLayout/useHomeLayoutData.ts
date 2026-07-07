@@ -3,7 +3,7 @@
  * Manages section ordering, visibility toggles, drag-drop, and Firebase persistence
  */
 
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';

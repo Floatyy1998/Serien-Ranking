@@ -19,7 +19,7 @@ const svc = vi.hoisted(() => ({
   >(),
 }));
 
-vi.mock('../../lib/firebase/userDisplayData', () => ({
+vi.mock('../../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: (uid: string) => svc.fn(uid),
 }));
 

@@ -21,7 +21,7 @@ vi.mock('../../contexts/MovieListContext', () => ({
 }));
 
 // ── useDiscoverActions side-effect deps ───────────────────────────────
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackSeriesAdded: vi.fn(),
   trackMovieAdded: vi.fn(),
 }));
@@ -29,7 +29,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logSeriesAdded: vi.fn(async () => {}),
   logMovieAdded: vi.fn(async () => {}),
 }));
-vi.mock('../../lib/backendApi', () => ({ backendFetch: vi.fn(async () => ({ ok: true })) }));
+vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn(async () => ({ ok: true })) }));
 
 // ── fetch helper ──────────────────────────────────────────────────────
 type FetchResult = { ok: boolean; json: () => Promise<unknown> };

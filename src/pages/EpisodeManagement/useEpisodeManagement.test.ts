@@ -53,11 +53,11 @@ vi.mock('../../hooks/useQuickSeasonRating', () => ({
 vi.mock('../../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: vi.fn(async () => {}),
 }));
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeWatched: vi.fn(),
   trackEpisodeUnwatched: vi.fn(),
 }));
-vi.mock('../../lib/offline/queuedUpdate', () => ({
+vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(async () => ({ queued: false })),
 }));
 vi.mock('../../lib/toast', () => ({
@@ -68,8 +68,8 @@ vi.mock('../../lib/toast', () => ({
 vi.mock('../../lib/haptics', () => ({ hapticSuccess: vi.fn() }));
 
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
-import { trackEpisodeWatched } from '../../firebase/analytics';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { trackEpisodeWatched } from '../../services/firebase/analytics';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showActionToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 import { useEpisodeManagement } from './useEpisodeManagement';

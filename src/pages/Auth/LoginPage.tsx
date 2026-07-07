@@ -22,7 +22,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackLogin } from '../../firebase/analytics';
+import { trackLogin } from '../../services/firebase/analytics';
 
 export const LoginPage = () => {
   const navigate = useNavigate();

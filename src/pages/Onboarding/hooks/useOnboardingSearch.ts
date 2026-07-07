@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useAuth } from '../../../AuthContext';
 import { useSeriesList } from '../../../contexts/SeriesListContext';
-import { backendFetch } from '../../../lib/backendApi';
+import { backendFetch } from '../../../services/backendApi';
 import { CURATED_GENRES } from '../genres';
 
 export interface OnboardingItem {

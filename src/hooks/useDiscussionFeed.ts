@@ -1,7 +1,7 @@
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect, useState } from 'react';
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 import type { DiscussionFeedEntry, DiscussionItemType } from '../types/Discussion';
 
 export type FeedFilterType = 'all' | DiscussionItemType;

@@ -22,7 +22,7 @@ vi.mock('firebase/compat/database', () => ({}));
 
 // backendFetch mocken (refreshAnimeFillerViaBackend).
 const backendFetchMock = vi.hoisted(() => vi.fn());
-vi.mock('../lib/backendApi', () => ({ backendFetch: backendFetchMock }));
+vi.mock('../services/backendApi', () => ({ backendFetch: backendFetchMock }));
 
 // ---------------------------------------------------------------------------
 // localStorage-Stub (node-env). Unterstützt length + key(i) für clearAll.

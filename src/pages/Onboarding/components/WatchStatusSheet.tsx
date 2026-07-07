@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { fetchStaticCatalogSeasons } from '../../../lib/staticCatalog';
+import { fetchStaticCatalogSeasons } from '../../../services/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
 import type { WatchTarget } from '../hooks/useApplyWatchProgress';
 import { EpisodePicker } from './EpisodePicker';

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 import type { Series } from '../types/Series';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;

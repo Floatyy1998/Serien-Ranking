@@ -1,6 +1,6 @@
 import { Delete, Send } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
-import { dbRef } from '../../../lib/db/ref';
+import { dbRef } from '../../../services/db/ref';
 
 interface UserMessage {
   text: string;

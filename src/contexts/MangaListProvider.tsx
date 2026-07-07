@@ -4,7 +4,7 @@ import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import { getMangaById } from '../services/anilistService';
 import { getMangaDexChapterDates, getMangaDexInfo } from '../services/mangaUpdatesService';
 import type { Manga } from '../types/Manga';
-import { dbRef, paths, userPath } from '../lib/db/ref';
+import { dbRef, paths, userPath } from '../services/db/ref';
 import { MangaListContext } from './MangaListContext';
 
 const ANILIST_REFRESH_INTERVAL_MS = 24 * 60 * 60 * 1000; // 1x pro Tag

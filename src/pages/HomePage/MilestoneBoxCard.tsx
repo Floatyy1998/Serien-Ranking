@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import Inventory2 from '@mui/icons-material/Inventory2';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 
 interface DiscussionCounts {
   [key: string]: number;

@@ -17,8 +17,11 @@ import { RecommendButton } from '../../components/recommendations/RecommendButto
 import { useTheme } from '../../contexts/ThemeContext';
 import { mergeProviders } from '../../lib/providerMerge';
 import type { MergedProvider } from '../../lib/providerMerge';
-import { fetchAniListProviderFallback, isLikelyAnime } from '../../lib/anilistProviderFallback';
-import { fetchStaticCatalogSeries } from '../../lib/staticCatalog';
+import {
+  fetchAniListProviderFallback,
+  isLikelyAnime,
+} from '../../services/anilistProviderFallback';
+import { fetchStaticCatalogSeries } from '../../services/staticCatalog';
 import { showToast } from '../../lib/toast';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';

@@ -30,7 +30,7 @@ vi.mock('firebase/compat/app', () => ({
 vi.mock('firebase/compat/database', () => ({}));
 vi.mock('react-router-dom', () => ({ useParams: () => state.params }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: state.user }) }));
-vi.mock('../../lib/firebase/userDisplayData', () => ({
+vi.mock('../../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: () => Promise.resolve(state.friendFields),
 }));
 vi.mock('../../services/tasteMatchService', () => ({

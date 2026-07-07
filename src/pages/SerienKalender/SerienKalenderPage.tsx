@@ -37,9 +37,9 @@ import {
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackSeriesAdded } from '../../firebase/analytics';
+import { trackSeriesAdded } from '../../services/firebase/analytics';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
-import { backendFetch } from '../../lib/backendApi';
+import { backendFetch } from '../../services/backendApi';
 import { hapticSelect, hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
@@ -47,7 +47,7 @@ import {
   fetchStaticTvPremieres,
   subscribeCatalogChange,
   type TvPremiereStaticEntry,
-} from '../../lib/staticCatalog';
+} from '../../services/staticCatalog';
 import { SerienKalenderCard } from './SerienKalenderCard';
 import { SerienKalenderHero } from './SerienKalenderHero';
 import { SerienKalenderFilter } from './SerienKalenderFilter';

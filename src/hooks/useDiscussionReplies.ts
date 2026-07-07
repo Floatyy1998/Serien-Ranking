@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { dbRef, serverIncrement } from '../lib/db/ref';
+import { dbRef, serverIncrement } from '../services/db/ref';
 import { useAuth } from '../AuthContext';
 import type {
   DiscussionFeedMetadata,
@@ -8,7 +8,7 @@ import type {
 } from '../types/Discussion';
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
-import { getUserDisplayData } from '../lib/firebase/userDisplayData';
+import { getUserDisplayData } from '../services/firebase/userDisplayData';
 
 interface EditReplyInput {
   content?: string;

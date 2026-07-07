@@ -1,6 +1,6 @@
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import type { Series } from '../../types/Series';
-import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbUpdate, paths, userPath } from '../../services/db/ref';
 import {
   getProviderNotificationsEnabled,
   getSnoozedUntil,

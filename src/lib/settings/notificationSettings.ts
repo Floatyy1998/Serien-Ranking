@@ -1,4 +1,4 @@
-import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
+import { dbGet, dbRef, dbUpdate, userPath } from '../../services/db/ref';
 
 export const DEFAULT_INACTIVE_THRESHOLD_DAYS = 30;
 /** Erlaubte Optionen für das UI. `0` = "aus" (keine Inactive-Notifications). */

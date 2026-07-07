@@ -20,7 +20,7 @@ const cat = vi.hoisted(() => ({
   series: vi.fn(async (): Promise<unknown> => ({})),
   movies: vi.fn(async (): Promise<unknown> => ({})),
 }));
-vi.mock('../lib/staticCatalog', () => ({
+vi.mock('../services/staticCatalog', () => ({
   fetchStaticCatalogSeries: cat.series,
   fetchStaticCatalogMovies: cat.movies,
 }));

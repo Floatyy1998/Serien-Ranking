@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../lib/db/ref';
+import { dbRef, userPath } from '../services/db/ref';
 
 export type PetReactionTone =
   | 'cheer'

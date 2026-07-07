@@ -1,4 +1,4 @@
-import { dbGet, paths } from '../../lib/db/ref';
+import { dbGet, paths } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import type { Series } from '../../types/Series';

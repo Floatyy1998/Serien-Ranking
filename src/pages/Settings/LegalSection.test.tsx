@@ -32,7 +32,7 @@ vi.mock('../../contexts/ThemeContext', () => {
 
 const { setConsentMock } = vi.hoisted(() => ({ setConsentMock: vi.fn() }));
 
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   getAnalyticsConsent: () => false,
   setAnalyticsConsent: setConsentMock,
 }));

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 import { useAuth } from '../AuthContext';
 import { showToast } from '../lib/toast';
 import { ADMIN_UID } from '../config/admin';

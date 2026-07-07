@@ -7,10 +7,10 @@ import 'firebase/compat/storage';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { trackLogout } from '../../firebase/analytics';
-import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
+import { trackLogout } from '../../services/firebase/analytics';
+import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
-import { dbRef, dbUpdate, paths, userPath } from '../../lib/db/ref';
+import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();

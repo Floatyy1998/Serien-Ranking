@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -8,9 +8,9 @@ import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQui
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
-import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../firebase/analytics';
+import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../services/firebase/analytics';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showActionToast, showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 

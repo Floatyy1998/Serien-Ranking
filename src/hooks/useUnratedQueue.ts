@@ -2,10 +2,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useMovieList } from '../contexts/MovieListContext';
-import { dbRef, paths } from '../lib/db/ref';
+import { dbRef, paths } from '../services/db/ref';
 import { detectUnratedMovies } from '../lib/validation/unratedMoviesDetection';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';
-import { trackRatingSaved } from '../firebase/analytics';
+import { trackRatingSaved } from '../services/firebase/analytics';
 import type { Series } from '../types/Series';
 import type { Movie } from '../types/Movie';
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import { useAuth } from '../../AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';

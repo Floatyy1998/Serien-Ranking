@@ -30,7 +30,7 @@ import {
   parsePremiereDate,
   premiereBadge,
 } from './tvPremiereFormat';
-import type { TvPremiereStaticEntry } from '../../lib/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 
 /** Provider-Logo mit sicherer (nicht-null) Logo-URL. */
 type LogoProvider = { name: string; logo: string };

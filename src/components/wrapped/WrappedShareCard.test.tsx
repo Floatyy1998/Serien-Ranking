@@ -31,7 +31,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../lib/share/shareCard', () => ({
+vi.mock('../../services/share/shareCard', () => ({
   exportNodeAsImage: vi.fn<() => Promise<Blob>>(() => Promise.resolve(new Blob(['x']))),
   shareOrDownload: vi.fn<() => Promise<void>>(() => Promise.resolve()),
 }));

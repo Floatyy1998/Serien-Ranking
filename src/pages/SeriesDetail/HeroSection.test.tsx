@@ -78,7 +78,7 @@ vi.mock('../../components/recommendations/RecommendButton', () => ({
 vi.mock('./RatingsCard', () => ({ RatingsCard: () => <div data-testid="ratings" /> }));
 vi.mock('./StatusBadge', () => ({ StatusBadge: () => <span />, NextEpisodeChip: () => <span /> }));
 vi.mock('../../lib/providerMerge', () => ({ mergeProviders: () => [] }));
-vi.mock('../../lib/anilistProviderFallback', () => ({
+vi.mock('../../services/anilistProviderFallback', () => ({
   fetchAniListProviderFallback: () => Promise.resolve([]),
   isLikelyAnime: () => false,
 }));

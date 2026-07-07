@@ -1,11 +1,11 @@
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
   subscribeCatalogChange,
-} from '../../lib/staticCatalog';
+} from '../../services/staticCatalog';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { CatalogSeason, CatalogSeries } from '../../types/CatalogTypes';
 

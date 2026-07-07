@@ -12,7 +12,7 @@ import {
   GradientText,
   LoadingSpinner,
 } from '../../components/ui';
-import { db, dbRef } from '../../lib/db/ref';
+import { db, dbRef } from '../../services/db/ref';
 import { tapScaleSmall } from '../../lib/motion';
 
 interface UserSearchResult {

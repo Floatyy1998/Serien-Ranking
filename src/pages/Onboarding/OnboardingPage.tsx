@@ -14,7 +14,7 @@ import { DiscoveryStep } from './steps/DiscoveryStep';
 import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];

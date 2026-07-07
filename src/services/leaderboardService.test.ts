@@ -160,7 +160,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: fb.firebaseDefault }));
 vi.mock('firebase/compat/database', () => ({}));
 
-vi.mock('../lib/firebase/userDisplayData', () => ({
+vi.mock('../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: vi.fn(async (uid: string) => ({
     username: `user_${uid}`,
     displayName: `Name ${uid}`,
@@ -168,7 +168,7 @@ vi.mock('../lib/firebase/userDisplayData', () => ({
   })),
 }));
 
-import { fetchPublicUserFields } from '../lib/firebase/userDisplayData';
+import { fetchPublicUserFields } from '../services/firebase/userDisplayData';
 import {
   checkAndArchiveMonth,
   fetchGlobalLeaderboard,

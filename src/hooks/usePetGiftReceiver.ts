@@ -2,7 +2,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useEffect } from 'react';
 import { useAuth } from '../AuthContext';
-import { dbRef, dbGet, userPath } from '../lib/db/ref';
+import { dbRef, dbGet, userPath } from '../services/db/ref';
 
 /**
  * Listens for incoming pet_gift notifications and applies their effects

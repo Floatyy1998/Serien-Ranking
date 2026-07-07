@@ -13,9 +13,9 @@
  * AniList-Request pro Session.
  */
 
-import { getProviderLogoUrl } from './providerMerge';
-import type { MergedProvider } from './providerMerge';
-import { normalizeProviderName } from './validation/providerChangeDetection';
+import { getProviderLogoUrl } from '../lib/providerMerge';
+import type { MergedProvider } from '../lib/providerMerge';
+import { normalizeProviderName } from '../lib/validation/providerChangeDetection';
 
 const ANILIST_API = 'https://graphql.anilist.co';
 // v3: nur laufende/junge Titel (Klassiker-Kataloge sind fragmentiert)

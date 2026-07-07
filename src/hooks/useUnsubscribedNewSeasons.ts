@@ -7,7 +7,7 @@
  * hat — sonst wäre die Warnung sinnlos.
  */
 
-import { dbRef, dbUpdate, userPath } from '../lib/db/ref';
+import { dbRef, dbUpdate, userPath } from '../services/db/ref';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { normalizeProviderName } from '../lib/validation/providerChangeDetection';

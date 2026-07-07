@@ -1,5 +1,5 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { normalizeSeasons, normalizeEpisodes } from '../episode/seriesMetrics';
 import { calculateOverallRating } from '../rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';

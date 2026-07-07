@@ -78,13 +78,13 @@ vi.mock('../../services/anilistSeasonService', () => ({
   seasonKey: (ref: { season: string; year: number }) => `${ref.season}-${ref.year}`,
   seasonLabel: (ref: { season: string; year: number }) => `${ref.season} ${ref.year}`,
 }));
-vi.mock('../../lib/staticCatalog', () => ({
+vi.mock('../../services/staticCatalog', () => ({
   fetchStaticCatalogSeasonsBulk: () => Promise.resolve({}),
   fetchStaticSeasonalAnime: () => Promise.resolve({}),
   subscribeCatalogChange: () => () => {},
 }));
 vi.mock('../../AuthContext', () => ({ useAuth: () => ({ user: { uid: 'me' } }) }));
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackMovieAdded: vi.fn(),
   trackSeriesAdded: vi.fn(),
 }));
@@ -92,7 +92,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: vi.fn(),
   logSeriesAdded: vi.fn(),
 }));
-vi.mock('../../lib/backendApi', () => ({ backendFetch: vi.fn() }));
+vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn() }));
 vi.mock('../../hooks/useProviderLogos', () => ({ tmdbLogoUrl: () => '' }));
 vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
 vi.mock('../../hooks/useScrollRestore', () => ({ useScrollRestore: () => {} }));

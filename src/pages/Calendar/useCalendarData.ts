@@ -1,13 +1,13 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { trackEpisodeWatched } from '../../firebase/analytics';
+import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import { applyUserUpdate } from '../../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 

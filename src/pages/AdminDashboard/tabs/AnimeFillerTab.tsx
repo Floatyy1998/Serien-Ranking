@@ -9,7 +9,7 @@ import {
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { dbRef } from '../../../lib/db/ref';
+import { dbRef } from '../../../services/db/ref';
 
 interface Counts {
   ok?: number;

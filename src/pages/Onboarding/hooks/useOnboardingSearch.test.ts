@@ -14,7 +14,7 @@ vi.mock('../../../contexts/SeriesListContext', () => ({
 const backend = vi.hoisted(() => ({
   backendFetch: vi.fn<(path: string, init?: unknown) => Promise<{ ok: boolean }>>(),
 }));
-vi.mock('../../../lib/backendApi', () => ({ backendFetch: backend.backendFetch }));
+vi.mock('../../../services/backendApi', () => ({ backendFetch: backend.backendFetch }));
 
 async function loadHook(): Promise<typeof UseOnboardingSearch> {
   vi.resetModules();

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import Whatshot from '@mui/icons-material/Whatshot';
 import { useTheme } from '../../contexts/ThemeContext';

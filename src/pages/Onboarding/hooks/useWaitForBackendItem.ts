@@ -2,7 +2,7 @@ import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { useCallback } from 'react';
 import { useAuth } from '../../../AuthContext';
-import { dbRef, paths } from '../../../lib/db/ref';
+import { dbRef, paths } from '../../../services/db/ref';
 
 /**
  * Wartet bis das Backend einen Eintrag fuer eine TMDB-Id unter

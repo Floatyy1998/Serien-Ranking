@@ -14,7 +14,7 @@ import {
   type ProviderChangeInfo,
 } from '../lib/validation/providerChangeDetection';
 import type { Series } from '../types/Series';
-import { dbUpdate } from '../lib/db/ref';
+import { dbUpdate } from '../services/db/ref';
 
 // ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
 export async function fixMissingFirstWatchedAt(

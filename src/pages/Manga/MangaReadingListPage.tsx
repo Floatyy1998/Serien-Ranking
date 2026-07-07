@@ -28,7 +28,7 @@ import {
 } from './mangaUtils';
 import type { Manga } from '../../types/Manga';
 import { tapScale } from '../../lib/motion';
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
 

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
-import type { AnimeMangaStaticEntry } from '../staticCatalog';
+import type { AnimeMangaStaticEntry } from '../../services/staticCatalog';
 
 const fb = vi.hoisted(() => {
   const store = new Map<string, unknown>();

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { TvPremiereStaticEntry } from '../../lib/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 
 vi.mock('@mui/icons-material', () => ({ Add: () => null, CheckCircle: () => null }));
 

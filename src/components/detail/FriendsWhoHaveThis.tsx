@@ -1,6 +1,6 @@
 import { Person, Star } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
-import { dbGet, userPath } from '../../lib/db/ref';
+import { dbGet, userPath } from '../../services/db/ref';
 import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';

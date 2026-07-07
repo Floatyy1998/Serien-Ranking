@@ -5,7 +5,7 @@ import { bumpSeriesVersion as bumpViaDb } from '../db/ref';
  * Wird bei jedem Serien-Write aufgerufen, damit andere Geräte wissen
  * dass sich die Daten geändert haben und ein Full-Load nötig ist.
  *
- * Dünner Fire-and-forget-Wrapper um `lib/db/ref.bumpSeriesVersion` (S1):
+ * Dünner Fire-and-forget-Wrapper um `services/db/ref.bumpSeriesVersion` (S1):
  * behält die `void`-Signatur, damit die ~vielen bestehenden Aufrufer ohne
  * `await` unverändert weiterlaufen.
  */

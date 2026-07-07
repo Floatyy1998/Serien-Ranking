@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
-import { dbRef, dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';

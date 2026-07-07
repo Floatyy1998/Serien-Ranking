@@ -33,12 +33,14 @@ const mocks = vi.hoisted(() => ({
   shouldTriggerQuickRate: vi.fn(() => false),
 }));
 
-vi.mock('../lib/offline/queuedUpdate', () => ({ applyUserUpdate: mocks.applyUserUpdate }));
+vi.mock('../services/offline/queuedUpdate', () => ({ applyUserUpdate: mocks.applyUserUpdate }));
 vi.mock('../lib/compactWatch', () => ({
   buildEpisodeWatchedUpdates: mocks.buildEpisodeWatchedUpdates,
   buildEpisodeUnwatchUpdates: mocks.buildEpisodeUnwatchUpdates,
 }));
-vi.mock('../firebase/analytics', () => ({ trackEpisodeWatched: mocks.trackEpisodeWatched }));
+vi.mock('../services/firebase/analytics', () => ({
+  trackEpisodeWatched: mocks.trackEpisodeWatched,
+}));
 vi.mock('../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: mocks.runEpisodeWatchFanout,
 }));

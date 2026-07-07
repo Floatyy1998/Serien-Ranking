@@ -5,7 +5,7 @@
  * No API key needed. Requests go through backend proxy to avoid CORS.
  */
 
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 
 // Simple in-memory cache
 const cache = new Map<string, { data: MangaDexInfo; timestamp: number }>();

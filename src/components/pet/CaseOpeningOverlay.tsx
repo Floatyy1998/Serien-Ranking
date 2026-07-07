@@ -9,7 +9,7 @@ import { ACCESSORIES } from './data/accessories';
 import { seededRandom } from '../../utils/seededRandom';
 import './CaseOpeningOverlay.css';
 import { tapScale } from '../../lib/motion';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 
 interface CaseOpeningOverlayProps {
   dropData: { dropId: string; accessoryId: string; rarity: string } | null;

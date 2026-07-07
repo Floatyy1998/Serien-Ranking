@@ -15,7 +15,7 @@ const authState = vi.hoisted(() => ({ user: { uid: 'u1' } as { uid: string } | n
 vi.mock('../AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 
 const analytics = vi.hoisted(() => ({ trackRatingSaved: vi.fn() }));
-vi.mock('../firebase/analytics', () => ({ trackRatingSaved: analytics.trackRatingSaved }));
+vi.mock('../services/firebase/analytics', () => ({ trackRatingSaved: analytics.trackRatingSaved }));
 
 const logger = vi.hoisted(() => ({ logRatingAdded: vi.fn(() => Promise.resolve()) }));
 vi.mock('../features/badges/minimalActivityLogger', () => ({

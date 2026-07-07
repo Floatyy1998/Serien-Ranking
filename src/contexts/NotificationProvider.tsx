@@ -3,7 +3,7 @@ import { useCallback, useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../AuthContext';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../lib/db/ref';
+import { dbRef, userPath } from '../services/db/ref';
 import { NotificationContext } from './NotificationContext';
 import type { AppNotification, NotificationContextType } from './NotificationContext';
 

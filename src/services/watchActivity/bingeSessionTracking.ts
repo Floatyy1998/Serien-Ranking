@@ -5,7 +5,7 @@
  * dem zeitlichen Abstand zwischen Episoden.
  */
 
-import { dbGet, dbRef } from '../../lib/db/ref';
+import { dbGet, dbRef } from '../../services/db/ref';
 import type { BingeSession } from '../../types/WatchActivity';
 import { generateEventId, getBingeSessionsPath } from './shared';
 

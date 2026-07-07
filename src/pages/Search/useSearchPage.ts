@@ -10,7 +10,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
-import { backendFetch } from '../../lib/backendApi';
+import { backendFetch } from '../../services/backendApi';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';
 import type { Movie as MovieType } from '../../types/Movie';

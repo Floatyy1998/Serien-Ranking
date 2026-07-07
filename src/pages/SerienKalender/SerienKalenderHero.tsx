@@ -22,7 +22,7 @@ import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import { formatStartLong, isSameDay, parsePremiereDate } from './tvPremiereFormat';
-import type { TvPremiereStaticEntry } from '../../lib/staticCatalog';
+import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 
 interface SerienKalenderHeroProps {
   entry: TvPremiereStaticEntry;

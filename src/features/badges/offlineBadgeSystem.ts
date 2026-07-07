@@ -5,7 +5,7 @@
  * Reduziert Firebase-Belastung drastisch und funktioniert offline.
  */
 
-import { dbRef, serverTimestamp, userPath, paths } from '../../lib/db/ref';
+import { dbRef, serverTimestamp, userPath, paths } from '../../services/db/ref';
 import {
   BADGE_DEFINITIONS,
   type Badge,

@@ -2,7 +2,7 @@
  * IndexedDB-Storage für die persistente Offline-Write-Queue.
  *
  * Eigene kleine DB (`PendingWritesDB`), getrennt vom Catalog-Cache
- * (`CatalogStaticDB`, siehe `lib/catalogIDB.ts` — gleiches defensives Muster:
+ * (`CatalogStaticDB`, siehe `services/catalogIDB.ts` — gleiches defensives Muster:
  * jede Operation resolved auch bei Fehlern, damit ein kaputtes/fehlendes
  * IndexedDB nie einen Mark-Flow blockiert). Ohne IndexedDB (sehr alte
  * Browser, manche Private-Modes) degradiert die Queue zum No-op — dann gilt

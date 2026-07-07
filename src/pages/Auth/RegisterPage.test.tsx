@@ -50,8 +50,8 @@ vi.mock('../../contexts/ThemeContext', () => {
     });
   return { useTheme: () => ({ currentTheme: make() }) };
 });
-vi.mock('../../firebase/analytics', () => ({ trackRegister: trackRegisterMock }));
-vi.mock('../../lib/firebase/userSearchIndex', () => ({ syncUserSearchIndex: syncIndexMock }));
+vi.mock('../../services/firebase/analytics', () => ({ trackRegister: trackRegisterMock }));
+vi.mock('../../services/firebase/userSearchIndex', () => ({ syncUserSearchIndex: syncIndexMock }));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigateMock,
   Link: ({ to, children }: { to: string; children: React.ReactNode }) => (

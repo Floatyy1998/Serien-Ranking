@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 import { useAuth } from '../AuthContext';
 import type {
   CreateDiscussionInput,
@@ -12,7 +12,7 @@ import {
   deleteDiscussionFeedEntries,
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
-import { getUserDisplayData } from '../lib/firebase/userDisplayData';
+import { getUserDisplayData } from '../services/firebase/userDisplayData';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';

@@ -2,11 +2,11 @@
  * useTasteMatchData - Custom Hook fuer TasteMatch Daten-Loading und State
  */
 
-import { dbRef, paths } from '../../lib/db/ref';
+import { dbRef, paths } from '../../services/db/ref';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
-import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
+import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { calculateTasteMatch } from '../../services/tasteMatchService';
 

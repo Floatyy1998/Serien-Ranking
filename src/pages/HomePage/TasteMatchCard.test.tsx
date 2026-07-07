@@ -53,7 +53,7 @@ vi.mock('../../contexts/OptimizedFriendsContext', () => ({
   useOptimizedFriends: () => ({ friends: friendsRef.value }),
 }));
 
-vi.mock('../../lib/firebase/userDisplayData', () => ({
+vi.mock('../../services/firebase/userDisplayData', () => ({
   fetchPublicUserFields: vi.fn(() => Promise.resolve({})),
 }));
 

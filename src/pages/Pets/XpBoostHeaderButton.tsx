@@ -5,7 +5,7 @@ import PlayArrow from '@mui/icons-material/PlayArrow';
 import Check from '@mui/icons-material/Check';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';

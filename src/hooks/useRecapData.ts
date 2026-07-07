@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 import type { Series } from '../types/Series';
 import { hasEpisodeAired } from '../utils/episodeDate';
 

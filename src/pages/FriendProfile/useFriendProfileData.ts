@@ -1,5 +1,5 @@
-import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../lib/staticCatalog';
-import { dbRef, dbGet, paths } from '../../lib/db/ref';
+import { fetchStaticCatalogSeries, fetchStaticCatalogMovies } from '../../services/staticCatalog';
+import { dbRef, dbGet, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { calculateOverallRating } from '../../lib/rating/rating';

@@ -1,7 +1,7 @@
-import { dbRef, dbGet, dbUpdate, userPath, paths } from '../lib/db/ref';
+import { dbRef, dbGet, dbUpdate, userPath, paths } from '../services/db/ref';
 import type { GlobalLeaderboardEntry, LeaderboardStats, MonthlyTrophy } from '../types/Leaderboard';
 import { toLocalDateString } from '../lib/date/date.utils';
-import { fetchPublicUserFields } from '../lib/firebase/userDisplayData';
+import { fetchPublicUserFields } from '../services/firebase/userDisplayData';
 
 function getCurrentMonthKey(): string {
   const now = new Date();

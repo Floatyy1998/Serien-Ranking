@@ -15,10 +15,10 @@ import {
   fetchStaticCatalogSeasonsBulk,
   clearStaticCatalogCache,
   subscribeCatalogChange,
-} from '../lib/staticCatalog';
+} from '../services/staticCatalog';
 
-import { dbRef, paths } from '../lib/db/ref';
-import { bumpSeriesVersion } from '../lib/firebase/seriesVersionBump';
+import { dbRef, paths } from '../services/db/ref';
+import { bumpSeriesVersion } from '../services/firebase/seriesVersionBump';
 import {
   fixMissingFirstWatchedAt,
   runSequentialDetections,

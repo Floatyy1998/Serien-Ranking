@@ -6,10 +6,10 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
 import type { Movie } from '../../types/Movie';
-import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
+import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
-import { backendFetch } from '../../lib/backendApi';
-import { dbRef, paths, updateWithSeriesVersion } from '../../lib/db/ref';
+import { backendFetch } from '../../services/backendApi';
+import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
 
 /** TMDB genre object */
 interface TMDBGenre {

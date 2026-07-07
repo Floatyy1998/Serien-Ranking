@@ -2,7 +2,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ShareCardSheet } from './ShareCardSheet';
-import { exportNodeAsImage } from '../../lib/share/shareCard';
+import { exportNodeAsImage } from '../../services/share/shareCard';
 
 // jsdom lacks matchMedia; BottomSheet -> useReducedMotion needs it.
 beforeAll(() => {
@@ -31,7 +31,7 @@ vi.mock('../../contexts/ThemeContext', () => ({
   }),
 }));
 
-vi.mock('../../lib/share/shareCard', () => ({
+vi.mock('../../services/share/shareCard', () => ({
   exportNodeAsImage: vi.fn<() => Promise<Blob>>(() => Promise.resolve(new Blob(['x']))),
   shareOrDownload: vi.fn<() => Promise<void>>(() => Promise.resolve()),
 }));

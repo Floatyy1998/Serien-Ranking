@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 
 export type PetGiftType = 'snack' | 'toy';
 

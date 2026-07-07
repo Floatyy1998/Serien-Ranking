@@ -16,7 +16,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticError, hapticTap } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';
-import { exportNodeAsImage, shareOrDownload } from '../../lib/share/shareCard';
+import { exportNodeAsImage, shareOrDownload } from '../../services/share/shareCard';
 import { showToast } from '../../lib/toast';
 import { BottomSheet } from '../ui';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from './ShareCardFrame';

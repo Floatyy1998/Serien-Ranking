@@ -11,14 +11,14 @@
  */
 
 import type { Series } from '../types/Series';
-import { dbRef, dbUpdate, paths } from '../lib/db/ref';
+import { dbRef, dbUpdate, paths } from '../services/db/ref';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { buildEpisodeWatchedUpdates, buildEpisodeUnwatchUpdates } from '../lib/compactWatch';
 import { hapticSuccess } from '../lib/haptics';
-import { applyUserUpdate } from '../lib/offline/queuedUpdate';
+import { applyUserUpdate } from '../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
-import { trackEpisodeWatched } from '../firebase/analytics';
+import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
 
 interface NextEpisodeInfo {

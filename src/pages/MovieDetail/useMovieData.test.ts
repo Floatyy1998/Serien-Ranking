@@ -36,15 +36,15 @@ vi.mock('../../hooks/useDeviceType', () => ({ useDeviceType: () => ({ isMobile: 
 vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: vi.fn(async () => {}),
 }));
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackMovieAdded: vi.fn(),
   trackMovieDeleted: vi.fn(),
 }));
 const backendFetch = vi.hoisted(() => vi.fn());
-vi.mock('../../lib/backendApi', () => ({ backendFetch }));
+vi.mock('../../services/backendApi', () => ({ backendFetch }));
 
 import { logMovieAdded } from '../../features/badges/minimalActivityLogger';
-import { trackMovieAdded, trackMovieDeleted } from '../../firebase/analytics';
+import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';
 import { useMovieData } from './useMovieData';
 
 const makeMovie = (o: Partial<Movie> = {}): Movie =>

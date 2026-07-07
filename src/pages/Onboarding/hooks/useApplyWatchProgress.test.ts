@@ -22,7 +22,7 @@ vi.mock('../../../AuthContext', () => ({ useAuth: () => ({ user: authState.user 
 const catalog = vi.hoisted(() => ({
   fetchStaticCatalogSeasons: vi.fn<(id: number) => Promise<Record<string, CatalogSeason> | null>>(),
 }));
-vi.mock('../../../lib/staticCatalog', () => ({
+vi.mock('../../../services/staticCatalog', () => ({
   fetchStaticCatalogSeasons: catalog.fetchStaticCatalogSeasons,
 }));
 

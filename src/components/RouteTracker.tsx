@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { logPageView } from '../firebase/analytics';
+import { logPageView } from '../services/firebase/analytics';
 
 const ROUTE_NAMES: Record<string, string> = {
   '/': 'home',

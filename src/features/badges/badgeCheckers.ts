@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import type { Badge } from './badgeDefinitions';
 import type {
   BadgeCounters,

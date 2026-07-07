@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Whatshot, Shield } from '@mui/icons-material';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../../lib/db/ref';
+import { dbRef, userPath } from '../../services/db/ref';
 import { CelebrationBurst } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAuth } from '../../AuthContext';

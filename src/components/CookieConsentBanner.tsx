@@ -1,7 +1,7 @@
 import { Cookie } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useState } from 'react';
-import { getAnalyticsConsent, setAnalyticsConsent } from '../firebase/analytics';
+import { getAnalyticsConsent, setAnalyticsConsent } from '../services/firebase/analytics';
 
 // Standalone colors - no theme dependency so it works before login / without ThemeProvider
 const COLORS = {

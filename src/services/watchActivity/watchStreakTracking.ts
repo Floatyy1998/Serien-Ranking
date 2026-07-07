@@ -4,7 +4,7 @@
  * Berechnet und verwaltet die tägliche Watch-Streak des Nutzers.
  */
 
-import { dbGet, dbRef } from '../../lib/db/ref';
+import { dbGet, dbRef } from '../../services/db/ref';
 import type { WatchStreak } from '../../types/WatchActivity';
 import { toLocalDateString } from '../../lib/date/date.utils';
 import { getStreakPath } from './shared';

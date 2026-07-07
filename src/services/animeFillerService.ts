@@ -14,8 +14,8 @@
  *   3. On reload-button: POST to backend, then re-read Firebase
  */
 
-import { dbGet } from '../lib/db/ref';
-import { backendFetch } from '../lib/backendApi';
+import { dbGet } from '../services/db/ref';
+import { backendFetch } from '../services/backendApi';
 
 const CACHE_PREFIX = 'animeFiller_v4:';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;

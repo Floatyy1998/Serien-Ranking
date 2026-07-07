@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const routerState = vi.hoisted(() => ({ pathname: '/' }));
 const analyticsMock = vi.hoisted(() => ({ logPageView: vi.fn<(page: string) => void>() }));
 
-vi.mock('../firebase/analytics', () => ({
+vi.mock('../services/firebase/analytics', () => ({
   logPageView: analyticsMock.logPageView,
 }));
 

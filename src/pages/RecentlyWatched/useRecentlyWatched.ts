@@ -3,7 +3,7 @@
  * Manages state, data loading, scroll persistence, search debounce, and episode actions.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { dbUpdate, paths, serverTimestamp } from '../../lib/db/ref';
+import { dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';

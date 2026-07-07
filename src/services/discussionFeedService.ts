@@ -1,4 +1,4 @@
-import { dbRef } from '../lib/db/ref';
+import { dbRef } from '../services/db/ref';
 import type { DiscussionFeedEntry } from '../types/Discussion';
 
 const FEED_PATH = 'discussionFeed';

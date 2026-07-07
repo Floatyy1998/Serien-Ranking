@@ -7,7 +7,7 @@ const fetchSeasons = vi.hoisted(() =>
   vi.fn<() => Promise<Record<string, unknown> | null>>(async () => null)
 );
 
-vi.mock('../../../lib/staticCatalog', () => ({
+vi.mock('../../../services/staticCatalog', () => ({
   fetchStaticCatalogSeasons: fetchSeasons,
 }));
 

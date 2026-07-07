@@ -4,7 +4,7 @@ import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { backendFetch } from '../../lib/backendApi';
+import { backendFetch } from '../../services/backendApi';
 import { calculateWatchJourney } from '../../services/watchJourneyService';
 import { getWatchStreak } from '../../services/watchActivityService';
 import type { WatchJourneyData } from '../../services/watchJourneyTypes';

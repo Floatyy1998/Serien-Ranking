@@ -32,7 +32,7 @@ vi.mock('../../contexts/SeriesListContext', () => ({
 }));
 
 const trackEpisodeWatched = vi.fn<(...a: unknown[]) => void>();
-vi.mock('../../firebase/analytics', () => ({
+vi.mock('../../services/firebase/analytics', () => ({
   trackEpisodeWatched: (...a: unknown[]) => trackEpisodeWatched(...a),
 }));
 const runEpisodeWatchFanout = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
@@ -40,7 +40,7 @@ vi.mock('../../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: (...a: unknown[]) => runEpisodeWatchFanout(...a),
 }));
 const applyUserUpdate = vi.fn<(...a: unknown[]) => Promise<void>>(async () => {});
-vi.mock('../../lib/offline/queuedUpdate', () => ({
+vi.mock('../../services/offline/queuedUpdate', () => ({
   applyUserUpdate: (...a: unknown[]) => applyUserUpdate(...a),
 }));
 const showToast = vi.fn<(...a: unknown[]) => void>();

@@ -6,7 +6,7 @@
  * Lücken in der Watchlist (neue Staffeln auf nicht-abonnierten Providern).
  */
 
-import { dbRef, userPath } from '../lib/db/ref';
+import { dbRef, userPath } from '../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';

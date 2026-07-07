@@ -23,9 +23,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
-import { trackRegister } from '../../firebase/analytics';
-import { syncUserSearchIndex } from '../../lib/firebase/userSearchIndex';
-import { dbRef, paths, serverTimestamp } from '../../lib/db/ref';
+import { trackRegister } from '../../services/firebase/analytics';
+import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
+import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 
 export const RegisterPage = () => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchPublicUserFields } from '../../lib/firebase/userDisplayData';
+import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { FirebaseUserProfile } from './types';
 import type { Friend, FriendRequest } from '../../types/Friend';
 

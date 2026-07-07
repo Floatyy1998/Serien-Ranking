@@ -15,7 +15,7 @@ import { MangaDetailPreview } from './detail/MangaDetailPreview';
 import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
-import { dbRef, paths, userPath } from '../../lib/db/ref';
+import { dbRef, paths, userPath } from '../../services/db/ref';
 
 export const MangaDetailPage = () => {
   const { id } = useParams<{ id: string }>();

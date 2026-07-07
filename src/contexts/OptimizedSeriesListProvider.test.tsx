@@ -26,7 +26,7 @@ vi.mock('../AuthContext', () => ({
   useAuth: () => ({ user: authUser }),
 }));
 
-vi.mock('../lib/staticCatalog', () => ({
+vi.mock('../services/staticCatalog', () => ({
   fetchStaticCatalogSeries: vi.fn(async () => ({})),
   fetchStaticCatalogSeriesFresh: vi.fn(async () => ({})),
   fetchStaticCatalogSeasonsBulk: vi.fn(async () => ({})),
@@ -39,7 +39,7 @@ vi.mock('./seriesListDetection', () => ({
   fixMissingFirstWatchedAt: vi.fn(),
 }));
 
-vi.mock('../lib/firebase/seriesVersionBump', () => ({
+vi.mock('../services/firebase/seriesVersionBump', () => ({
   bumpSeriesVersion: vi.fn(),
 }));
 

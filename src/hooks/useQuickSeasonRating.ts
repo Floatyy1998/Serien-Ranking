@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { dbRef, paths } from '../lib/db/ref';
+import { dbRef, paths } from '../services/db/ref';
 import { calculateOverallRating } from '../lib/rating/rating';
 import { logRatingAdded } from '../features/badges/minimalActivityLogger';
-import { trackRatingSaved } from '../firebase/analytics';
+import { trackRatingSaved } from '../services/firebase/analytics';
 import type { Series } from '../types/Series';
 
 interface QuickRatingState {

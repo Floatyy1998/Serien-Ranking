@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { backendFetch } from '../lib/backendApi';
+import { backendFetch } from '../services/backendApi';
 import type { Series } from '../types/Series';
 
 const authState = vi.hoisted(() => ({ uid: 'u1' as string | undefined }));
@@ -10,7 +10,7 @@ vi.mock('../AuthContext', () => ({
   useAuth: () => ({ user: authState.uid ? { uid: authState.uid } : null }),
 }));
 
-vi.mock('../lib/backendApi', () => ({
+vi.mock('../services/backendApi', () => ({
   backendFetch: vi.fn(),
 }));
 
