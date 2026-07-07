@@ -247,6 +247,7 @@ export default defineConfig({
         'src/services/offline/pendingWriteQueue.ts',
         'src/services/offline/pendingWritesIDB.ts',
         'src/services/offline/queuedUpdate.ts',
+        'src/lib/posterPlaceholder.ts',
         'src/lib/preloadImage.ts',
         'src/lib/providerLinks.ts',
         'src/lib/providerName.ts',
