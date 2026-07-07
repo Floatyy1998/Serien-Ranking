@@ -33,13 +33,7 @@ export interface ItemCardProps {
   isDesktop: boolean;
 }
 
-export const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(
-  '<svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">' +
-    '<rect width="100%" height="100%" fill="#1a1a2e"/>' +
-    '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" ' +
-    'fill="#666" font-family="Arial" font-size="14">Kein Poster</text></svg>'
-)}`;
-
-export const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-  (e.target as HTMLImageElement).src = PLACEHOLDER_SVG;
-};
+// PLACEHOLDER_SVG + handleImgError leben jetzt zentral in lib/posterPlaceholder
+// (drei zuvor identische Kopien konsolidiert); hier re-exportiert für die
+// bestehenden Importer dieser Datei.
+export { PLACEHOLDER_SVG, handleImgError } from '../../lib/posterPlaceholder';

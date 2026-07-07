@@ -17,22 +17,9 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
 import type { PreparedItem } from './useRatingsData';
-
-// ─── Constants ──────────────────────────────────────────────────────────
-
-export const PLACEHOLDER_SVG = `data:image/svg+xml,${encodeURIComponent(
-  '<svg width="300" height="450" xmlns="http://www.w3.org/2000/svg">' +
-    '<rect width="100%" height="100%" fill="#1a1a2e"/>' +
-    '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" ' +
-    'fill="#666" font-family="Arial" font-size="14">Kein Poster</text></svg>'
-)}`;
-
-function handleImgError(e: React.SyntheticEvent<HTMLImageElement>) {
-  const target = e.target as HTMLImageElement;
-  if (!target.src.includes('data:image/svg')) {
-    target.src = PLACEHOLDER_SVG;
-  }
-}
+// Aus lib/ importieren + fuer bestehende Importer (RatingCompactRow) re-exportieren.
+import { PLACEHOLDER_SVG, handleImgError } from '../../lib/posterPlaceholder';
+export { PLACEHOLDER_SVG };
 
 // ─── Provider Badge with Popup ──────────────────────────────────────────
 // Auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
