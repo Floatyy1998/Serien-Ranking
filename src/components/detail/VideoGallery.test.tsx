@@ -80,10 +80,14 @@ const trailerResults = {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
 
 describe('VideoGallery', () => {
   beforeEach(() => {
+    // tmdbFetch wirft ohne Key — auf dem CI-Runner gibt es keine .env,
+    // deshalb deterministisch stubben (lokal wuerde die echte .env greifen).
+    vi.stubEnv('VITE_API_TMDB', 'testkey');
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => ({ ok: true, json: async () => trailerResults }) as unknown as Response)
