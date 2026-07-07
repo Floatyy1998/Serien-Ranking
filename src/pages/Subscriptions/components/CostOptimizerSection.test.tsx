@@ -6,7 +6,9 @@ import type { ProviderInsight } from '../../../types/Subscription';
 
 vi.mock('@mui/icons-material', () => {
   const stub = () => null;
-  return Object.fromEntries(['TrendingDown', 'TrendingUp', 'Bolt'].map((n) => [n, stub]));
+  return Object.fromEntries(
+    ['TrendingDown', 'TrendingUp', 'Bolt', 'ExpandMore'].map((n) => [n, stub])
+  );
 });
 
 vi.mock('../../../hooks/useProviderLogos', () => ({
@@ -124,5 +126,22 @@ describe('CostOptimizerSection', () => {
     // Ungenutzt wird oben gerankt → erster Pausieren-Button gehört zu Disney Plus.
     fireEvent.click(screen.getAllByRole('button', { name: 'Pausieren' })[0]);
     expect(updateProvider).toHaveBeenCalledWith('Disney Plus', { active: false });
+  });
+
+  it('collapses and expands via the header toggle', () => {
+    render(
+      <CostOptimizerSection
+        activeInsights={[greatValue, expensive]}
+        unusedThresholdDays={60}
+        providerLogos={{}}
+        updateProvider={vi.fn()}
+      />
+    );
+    const toggle = screen.getByRole('button', { name: /Kosten-Optimizer/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
   });
 });
