@@ -33,6 +33,9 @@ const makeInsight = (name: string): ProviderInsight => ({
   isUnused: true,
   lastWatchTitle: null,
   recentWatches: [],
+  recentWatchMinutes: 0,
+  monthlyWatchHours: 0,
+  costPerHour: null,
 });
 
 afterEach(() => {

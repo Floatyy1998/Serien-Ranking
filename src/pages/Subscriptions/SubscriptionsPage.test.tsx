@@ -12,6 +12,9 @@ vi.mock('@mui/icons-material', () => {
       'AccessTime',
       'Add',
       'Analytics',
+      'Bolt',
+      'TrendingDown',
+      'TrendingUp',
       'ArrowBack',
       'ArrowUpward',
       'AutoAwesome',
@@ -120,6 +123,9 @@ const netflix: ProviderInsight = {
   isUnused: false,
   lastWatchTitle: 'Stranger Things',
   recentWatches: [],
+  recentWatchMinutes: 0,
+  monthlyWatchHours: 0,
+  costPerHour: null,
 };
 
 vi.mock('../../hooks/useSubscriptionsData', () => ({
@@ -155,7 +161,8 @@ describe('SubscriptionsPage', () => {
     expect(screen.getByText('Streaming-Abos')).toBeInTheDocument();
     expect(screen.getByText('Deine Abos')).toBeInTheDocument();
     expect(screen.getByText('1 aktiv')).toBeInTheDocument();
-    expect(screen.getByText('Netflix')).toBeInTheDocument();
+    // Netflix erscheint jetzt mehrfach (Abo-Liste + Kosten-Optimizer-Ranking).
+    expect(screen.getAllByText('Netflix').length).toBeGreaterThan(0);
   });
 
   it('shows the empty state when there are no active subscriptions', () => {

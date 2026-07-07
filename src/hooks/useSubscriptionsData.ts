@@ -15,6 +15,7 @@ import { invalidateActiveSubscriptions } from './useActiveSubscriptions';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { mergeProviderNames } from '../lib/providerMerge';
 import { getYearlyActivity } from '../services/watchActivity/shared';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import type { ActivityEvent } from '../types/WatchActivity';
 import type { Series } from '../types/Series';
 import type {
@@ -180,6 +181,8 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
     const lastWatchByProvider: Record<string, number> = {};
     const lastTitleByProvider: Record<string, string> = {};
     const recentByProvider: Record<string, number> = {};
+    // Zugeordnete Watch-Minuten im Unused-Fenster (Basis für €/Stunde-Optimizer).
+    const recentMinutesByProvider: Record<string, number> = {};
     const watchesByProvider: Record<
       string,
       { title: string; timestamp: number; seriesId: number | null }[]
@@ -196,6 +199,8 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
         movieTitle?: string;
         seriesId?: number;
         movieId?: number;
+        episodeRuntime?: number;
+        runtime?: number;
       };
       const title = eAny.seriesTitle ?? eAny.movieTitle ?? '';
       const seriesId = eAny.seriesId ?? null;
@@ -205,6 +210,11 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
       }
       if (now - ts <= thresholdMs) {
         recentByProvider[attributed] = (recentByProvider[attributed] ?? 0) + 1;
+        // Runtime aus dem Event (rt); Fallback auf eine typische Episodenlänge,
+        // damit alte Events ohne rt nicht mit 0 Minuten unterschlagen werden.
+        const minutes = eAny.episodeRuntime ?? eAny.runtime ?? DEFAULT_EPISODE_RUNTIME_MINUTES;
+        recentMinutesByProvider[attributed] =
+          (recentMinutesByProvider[attributed] ?? 0) + (minutes > 0 ? minutes : 0);
       }
       if (!watchesByProvider[attributed]) watchesByProvider[attributed] = [];
       watchesByProvider[attributed].push({ title, timestamp: ts, seriesId });
@@ -222,6 +232,14 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
       const recentWatches = (watchesByProvider[name] ?? [])
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, 5);
+
+      // Kosten-Optimizer: Watch-Minuten im Fenster → auf 30-Tage-Monat normierte
+      // Stunden → Kosten pro geschauter Stunde.
+      const recentWatchMinutes = recentMinutesByProvider[name] ?? 0;
+      const monthlyWatchHours =
+        recentWatchMinutes > 0 ? (recentWatchMinutes / 60) * (30 / unusedThresholdDays) : 0;
+      const costPerHour =
+        monthlyPrice > 0 && monthlyWatchHours > 0 ? monthlyPrice / monthlyWatchHours : null;
 
       // Kalendertag-basiert: "heute" = same Kalender-Day, "gestern" = Vortag, ...
       // (vs. simpler 24h-Fenster-Vergleich, der gestern Abend → heute morgen
@@ -246,6 +264,9 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
         isUnused,
         lastWatchTitle,
         recentWatches,
+        recentWatchMinutes,
+        monthlyWatchHours,
+        costPerHour,
       };
     });
   }, [config, activity, unusedThresholdDays, allSeriesList, now, startOfToday]);

@@ -33,4 +33,14 @@ export interface ProviderInsight {
   lastWatchTitle: string | null;
   /** Letzte 5 zugeordnete Watches absteigend nach Zeit */
   recentWatches: { title: string; timestamp: number; seriesId: number | null }[];
+  /** Zugeordnete Watch-Minuten innerhalb des Unused-Fensters (Kosten-Optimizer). */
+  recentWatchMinutes: number;
+  /** Auf einen 30-Tage-Monat normierte Watch-Stunden (aus recentWatchMinutes). */
+  monthlyWatchHours: number;
+  /**
+   * Kosten pro geschauter Stunde (monthlyPrice / monthlyWatchHours). `null`, wenn
+   * kein Preis gepflegt ist oder im Fenster nichts geschaut wurde (dann greift
+   * stattdessen `isUnused`).
+   */
+  costPerHour: number | null;
 }

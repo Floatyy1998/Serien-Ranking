@@ -552,6 +552,7 @@ export default defineConfig({
         'src/pages/Stats/useStatsData.ts',
         'src/pages/Subscriptions/SubscriptionsPage.tsx',
         'src/pages/Subscriptions/components/ActiveSubscriptionCard.tsx',
+        'src/pages/Subscriptions/components/CostOptimizerSection.tsx',
         'src/pages/Subscriptions/components/InactiveProvidersSection.tsx',
         'src/pages/Subscriptions/components/ProviderLogo.tsx',
         'src/pages/Subscriptions/components/SubscriptionInsights.tsx',

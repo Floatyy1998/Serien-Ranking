@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useProviderLogos } from '../../hooks/useProviderLogos';
 import { useSubscriptionsData } from '../../hooks/useSubscriptionsData';
 import { ActiveSubscriptionCard } from './components/ActiveSubscriptionCard';
+import { CostOptimizerSection } from './components/CostOptimizerSection';
 import { InactiveProvidersSection } from './components/InactiveProvidersSection';
 import { SubscriptionInsights } from './components/SubscriptionInsights';
 import { ThresholdControl } from './components/ThresholdControl';
@@ -64,6 +65,16 @@ export const SubscriptionsPage = () => {
           wastedMonthlySpend={wastedMonthlySpend}
           unusedThresholdDays={unusedThresholdDays}
         />
+
+        {/* Cost optimizer: €/Stunde-Ranking + Pausier-Vorschläge */}
+        {!loading && (
+          <CostOptimizerSection
+            activeInsights={activeInsights}
+            unusedThresholdDays={unusedThresholdDays}
+            providerLogos={providerLogos}
+            updateProvider={updateProvider}
+          />
+        )}
 
         {/* Threshold */}
         <ThresholdControl

@@ -47,6 +47,9 @@ const makeInsight = (over: Partial<ProviderInsight> = {}): ProviderInsight => ({
   isUnused: false,
   lastWatchTitle: 'Stranger Things',
   recentWatches: [{ title: 'Stranger Things', timestamp: 1700000000000, seriesId: 55 }],
+  recentWatchMinutes: 0,
+  monthlyWatchHours: 0,
+  costPerHour: null,
   ...over,
 });
 
