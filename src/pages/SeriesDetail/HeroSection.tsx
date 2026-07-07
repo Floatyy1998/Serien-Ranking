@@ -15,6 +15,7 @@ import { BackButton } from '../../components/ui';
 import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { mergeProviders } from '../../lib/providerMerge';
 import type { MergedProvider } from '../../lib/providerMerge';
 import {
@@ -386,6 +387,7 @@ export const HeroSection = memo<HeroSectionProps>(
                 background: isAdding
                   ? `${currentTheme.status.success}88`
                   : `${currentTheme.status.success}CC`,
+                color: getOptimalTextColor(currentTheme.status.success),
                 cursor: isAdding ? 'not-allowed' : 'pointer',
               }}
             >

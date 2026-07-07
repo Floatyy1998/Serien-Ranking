@@ -14,6 +14,7 @@ import {
 } from '../../lib/validation/rewatch.utils';
 import { fillerLookupKey, type FillerEpisode } from '../../services/animeFillerService';
 import type { DynamicTheme } from '../../theme/dynamicTheme';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Series } from '../../types/Series';
 import { RewatchBanner } from './RewatchBanner';
 import { SeasonTabs } from './SeasonTabs';
@@ -313,6 +314,10 @@ export function SeasonsSection({
                     seasonProgress === 100
                       ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
                       : 'rgba(255,255,255,0.1)',
+                  color:
+                    seasonProgress === 100
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.secondary,
                 }}
               >
                 {seasonProgress}%
@@ -557,6 +562,10 @@ export function SeasonsSection({
                             ? `2px solid ${warningColor}`
                             : 'none'
                           : '1px solid rgba(255,255,255,0.2)',
+                        color:
+                          episode.watched && !isRewatched
+                            ? getOptimalTextColor(currentTheme.primary)
+                            : undefined,
                       }}
                     >
                       {episodeIndex + 1}

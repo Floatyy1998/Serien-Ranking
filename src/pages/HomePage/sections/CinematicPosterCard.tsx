@@ -118,9 +118,11 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
                 alignItems: 'center',
                 gap: '3px',
                 flexShrink: 0,
-                color: item.type === 'movie' ? 'rgba(255, 193, 7, 1)' : currentTheme.primary,
+                color: item.type === 'movie' ? currentTheme.status.warning : currentTheme.primary,
                 border: `1px solid ${
-                  item.type === 'movie' ? 'rgba(255, 193, 7, 0.3)' : `${currentTheme.primary}50`
+                  item.type === 'movie'
+                    ? `${currentTheme.status.warning}4d`
+                    : `${currentTheme.primary}50`
                 }`,
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',

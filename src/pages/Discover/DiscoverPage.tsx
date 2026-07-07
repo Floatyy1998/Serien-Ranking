@@ -233,7 +233,7 @@ export const DiscoverPage = memo(() => {
                       border: selectedGenre ? 'none' : `1px solid ${currentTheme.border.default}`,
                       borderRadius: '12px',
                       color: selectedGenre
-                        ? currentTheme.text.secondary
+                        ? getOptimalTextColor(currentTheme.primary)
                         : currentTheme.text.primary,
                       cursor: 'pointer',
                       display: 'flex',
@@ -269,7 +269,9 @@ export const DiscoverPage = memo(() => {
                       : currentTheme.background.surface,
                     border: showSearch ? 'none' : `1px solid ${currentTheme.border.default}`,
                     borderRadius: '12px',
-                    color: showSearch ? currentTheme.text.secondary : currentTheme.text.primary,
+                    color: showSearch
+                      ? getOptimalTextColor(currentTheme.primary)
+                      : currentTheme.text.primary,
                     cursor: 'pointer',
                     boxShadow: showSearch ? `0 4px 12px ${currentTheme.primary}40` : 'none',
                   }}

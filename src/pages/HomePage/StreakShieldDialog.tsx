@@ -102,6 +102,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
               <button
                 onClick={onClose}
                 disabled={shieldLoading}
+                aria-label="Schließen"
                 style={{
                   background: 'none',
                   border: 'none',

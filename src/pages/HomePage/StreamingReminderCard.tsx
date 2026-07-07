@@ -80,6 +80,14 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
           if ((e.target as HTMLElement).closest('[data-stop-nav]')) return;
           navigate('/subscriptions');
         }}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            (e.currentTarget as HTMLElement).click();
+          }
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div

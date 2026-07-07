@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;
@@ -29,7 +30,7 @@ export const MovieActionButtons = memo(
               ? `${currentTheme.primary}80`
               : `linear-gradient(135deg, ${currentTheme.primary}CC 0%, ${currentTheme.primary}CC 100%)`,
             border: `1px solid ${currentTheme.primary}80`,
-            color: currentTheme.text.secondary,
+            color: getOptimalTextColor(currentTheme.primary),
             boxShadow: isAdding
               ? 'none'
               : `var(--glow-primary), 0 4px 16px -4px ${currentTheme.primary}55`,

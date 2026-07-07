@@ -95,6 +95,14 @@ export const GreetingSection = React.memo(function GreetingSection({
       {greetingInfo && (
         <div
           className="greeting-tooltip"
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              (e.currentTarget as HTMLElement).click();
+            }
+          }}
           onClick={async (e) => {
             e.stopPropagation();
             if (greeting.title && greeting.type) {

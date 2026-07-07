@@ -10,6 +10,7 @@ import Person from '@mui/icons-material/Person';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Close from '@mui/icons-material/Close';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
@@ -120,7 +121,7 @@ export const TasteMatchCard: React.FC = () => {
                 justifyContent: 'center',
                 fontSize: 12,
                 fontWeight: 600,
-                color: 'white',
+                color: getOptimalTextColor(currentTheme.primary),
                 overflow: 'hidden',
               }}
             >

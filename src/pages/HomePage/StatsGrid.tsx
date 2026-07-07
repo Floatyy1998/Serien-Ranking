@@ -69,6 +69,7 @@ export const StatsGrid = () => {
           <IconButton
             onClick={() => setExpanded(!expanded)}
             size="small"
+            aria-label={expanded ? 'Statistiken einklappen' : 'Statistiken ausklappen'}
             sx={{ color: currentTheme.text.muted, padding: '4px' }}
           >
             {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
