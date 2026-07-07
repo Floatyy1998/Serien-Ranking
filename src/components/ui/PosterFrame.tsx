@@ -19,6 +19,9 @@ interface PosterFrameProps {
   ariaLabel?: string;
   className?: string;
   style?: React.CSSProperties;
+  /** Klasse/Style fürs <img> — für Karten, deren CSS das Bild über Klassen stylt. */
+  imgClassName?: string;
+  imgStyle?: React.CSSProperties;
   /** Overlays (Badges, Buttons, Rang, Ring, Info-Panel) — card-spezifisch. */
   children?: React.ReactNode;
 }
@@ -45,6 +48,8 @@ export const PosterFrame: React.FC<PosterFrameProps> = ({
   ariaLabel,
   className,
   style,
+  imgClassName,
+  imgStyle,
   children,
 }) => {
   const src = posterUrl ?? getImageUrl(posterPath ?? null, imageSize);
@@ -88,7 +93,8 @@ export const PosterFrame: React.FC<PosterFrameProps> = ({
         onError={handleImgError}
         loading="lazy"
         decoding="async"
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        className={imgClassName}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', ...imgStyle }}
       />
       {scrim && (
         <div
