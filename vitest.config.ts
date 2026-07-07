@@ -152,7 +152,7 @@ export default defineConfig({
         'src/contexts/MovieListProvider.tsx',
         'src/contexts/NotificationProvider.tsx',
         'src/contexts/OptimizedFriendsProvider.tsx',
-        'src/contexts/OptimizedSeriesListProvider.tsx',
+        'src/contexts/SeriesListProvider.tsx',
         'src/contexts/RatingsStateProvider.tsx',
         'src/contexts/ThemeProvider.tsx',
         'src/contexts/friendOperations.ts',

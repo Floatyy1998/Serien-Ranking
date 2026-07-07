@@ -14,7 +14,7 @@ vi.mock('./contexts/NotificationProvider', () => ({
 vi.mock('./contexts/OptimizedFriendsProvider', () => ({
   OptimizedFriendsProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
-vi.mock('./contexts/OptimizedSeriesListProvider', () => ({
+vi.mock('./contexts/SeriesListProvider', () => ({
   SeriesListProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 vi.mock('./contexts/RatingsStateProvider', () => ({

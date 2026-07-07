@@ -108,7 +108,7 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
   // Auto-Refresh: silent refetch, getrieben vom zentralen Versions-Watcher in
   // staticCatalog (subscribeCatalogChange). Ein tab-globaler Poll fuer alle
   // Consumer; userRefs via Ref gelesen, damit RTDB-Deltas das Abo nicht neu
-  // aufsetzen. Parallel zum gleichen Mechanismus im OptimizedSeriesListProvider.
+  // aufsetzen. Parallel zum gleichen Mechanismus im SeriesListProvider.
   const userMovieRefsRef = useRef(userMovieRefs);
   useEffect(() => {
     userMovieRefsRef.current = userMovieRefs;

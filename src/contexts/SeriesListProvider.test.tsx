@@ -52,7 +52,7 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/database', () => ({}));
 
-import { SeriesListProvider } from './OptimizedSeriesListProvider';
+import { SeriesListProvider } from './SeriesListProvider';
 import { useSeriesList } from './SeriesListContext';
 
 const Consumer = () => {
