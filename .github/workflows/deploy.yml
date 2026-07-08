@@ -40,13 +40,16 @@ jobs:
         env:
           NODE_OPTIONS: --max-old-space-size=6144
         run: |
-          # Zwei Shards in getrennten Prozessen: jsdom-Tests bauen ueber
-          # viele Dateien kumulativ Speicher auf — bei ~600 Dateien stirbt
-          # ein einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
-          # Frischer Prozess pro Shard setzt den Speicher zurueck.
+          # Shards in getrennten Prozessen: jsdom-Tests bauen ueber viele
+          # Dateien kumulativ Speicher auf — bei ~300 Dateien stirbt ein
+          # einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
+          # Frischer Prozess pro Shard setzt den Speicher zurueck. 4 Shards
+          # (statt 2), damit auch ein Hub-Modul-Change (rating/adapter -> fast
+          # die ganze Suite affected) pro Prozess unter der OOM-Grenze bleibt.
           run_shards() {
-            npx vitest run "$@" --passWithNoTests --shard=1/2
-            npx vitest run "$@" --passWithNoTests --shard=2/2
+            for i in 1 2 3 4; do
+              npx vitest run "$@" --passWithNoTests --shard="$i/4"
+            done
           }
           BASE=""
           if [ "${{ github.event_name }}" = "pull_request" ]; then
