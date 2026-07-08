@@ -58,3 +58,18 @@ export const calculateOverallRating = (series: Series | Movie) => {
     return '0.00';
   }
 };
+
+/**
+ * Ein Film gilt als „gesehen", wenn er explizit als `watched` markiert ist
+ * (F1: Gesehen-Toggle ohne Rating-Umweg) ODER ein Overall-Rating > 0 hat.
+ * Zentral, damit Detail-Ansicht und alle Aggregat-Zähler (Home/Stats/Worker)
+ * dieselbe Definition benutzen — sonst zählt ein ohne Bewertung als gesehen
+ * markierter Film in den Statistik-Kacheln nicht mit. Movie-`rating` ist
+ * genre-keyed, daher NIE `rating[uid]` lesen, immer über das Overall-Rating.
+ */
+export const isMovieWatched = (movie: Movie): boolean => {
+  if (!movie) return false;
+  if (movie.watched === true) return true;
+  const overall = parseFloat(calculateOverallRating(movie));
+  return !isNaN(overall) && overall > 0;
+};

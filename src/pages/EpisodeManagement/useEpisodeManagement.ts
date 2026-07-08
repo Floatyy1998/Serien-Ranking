@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
+import { dbUpdate, paths, serverTimestamp, updateWithSeriesVersion } from '../../services/db/ref';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -148,7 +148,11 @@ export const useEpisodeManagement = () => {
     const episode = season.episodes[episodeIndex];
 
     try {
-      const currentWatchCount = episode.watchCount || 0;
+      // `|| 1`, nicht `|| 0`: currentWatchCount wird nur in den isWatched-Zweigen
+      // benutzt. Ein Legacy-`{w:1}`-Row liefert vom Adapter watchCount:0 — ohne
+      // den Default würde ein Rewatch auf c:1 statt c:2 zählen (zählt die frühere
+      // Ansicht nicht). Deckungsgleich zu useRewatchHandler/handleSeasonToggle/useSeriesActions.
+      const currentWatchCount = episode.watchCount || 1;
       const isWatched = episode.watched;
       const prevSeasons = JSON.parse(JSON.stringify(series.seasons));
 
@@ -240,18 +244,23 @@ export const useEpisodeManagement = () => {
               firstWatchedAt?: string;
               lastWatchedAt?: string;
             };
+            // Bump mitschreiben — sonst überspringt ein zweites Gerät den
+            // Delta-Reload (versionMatch) und zeigt den zurückgenommenen Stand
+            // weiter an. Konsistent zu useSeriesActions-Undo (das bumpt).
             if (!prevEp.watched && !(prevEp.watchCount && prevEp.watchCount > 0)) {
-              await dbRef(epPath).remove();
+              await updateWithSeriesVersion(user.uid, { [epPath]: null });
             } else {
-              await dbRef(epPath).set({
-                w: prevEp.watched ? 1 : 0,
-                c: prevEp.watchCount || 0,
-                ...(prevEp.firstWatchedAt
-                  ? { f: Math.floor(new Date(prevEp.firstWatchedAt).getTime() / 1000) }
-                  : {}),
-                ...(prevEp.lastWatchedAt
-                  ? { l: Math.floor(new Date(prevEp.lastWatchedAt).getTime() / 1000) }
-                  : {}),
+              await updateWithSeriesVersion(user.uid, {
+                [epPath]: {
+                  w: prevEp.watched ? 1 : 0,
+                  c: prevEp.watchCount || 0,
+                  ...(prevEp.firstWatchedAt
+                    ? { f: Math.floor(new Date(prevEp.firstWatchedAt).getTime() / 1000) }
+                    : {}),
+                  ...(prevEp.lastWatchedAt
+                    ? { l: Math.floor(new Date(prevEp.lastWatchedAt).getTime() / 1000) }
+                    : {}),
+                },
               });
             }
           } catch {
@@ -503,7 +512,9 @@ export const useEpisodeManagement = () => {
               undoUpdates[`${epBase}/l`] = ep.lastUnix;
             }
           });
-          await dbUpdate(undoUpdates);
+          // Bump mitschreiben — sonst überspringt ein zweites Gerät den
+          // Delta-Reload (versionMatch) und zeigt den zurückgenommenen Stand weiter.
+          await updateWithSeriesVersion(user.uid, undoUpdates);
         } catch {
           showToast('Undo fehlgeschlagen', 2000, 'error');
         }

@@ -237,4 +237,16 @@ describe('logMovieWatch', () => {
     expect(Object.keys(events)).toEqual(['legacy1']); // kein zweites Event
     expect(triggerPetReaction).not.toHaveBeenCalled();
   });
+
+  it('Duplikat (Compact-Format): dedupt gegen {t:"mv", s} und patcht rat statt zu duplizieren', async () => {
+    // Regressionsschutz: Events werden compact gespeichert (t/s), die frühere
+    // Dedupe-Query orderByChild('movieId') traf das nie → jedes Re-Log duplizierte.
+    fb.setAt(`${EVENTS}/compact1`, { ts: Math.floor(Date.now() / 1000), t: 'mv', s: 100 });
+    await logMovieWatch('u', 100, 'Inception', 148, 8);
+
+    expect(fb.getAt(`${EVENTS}/compact1/rat`)).toBe(8); // Compact patcht `rat`, nicht `rating`
+    const events = fb.getAt(EVENTS) as Record<string, unknown>;
+    expect(Object.keys(events)).toEqual(['compact1']); // kein zweites Event
+    expect(triggerPetReaction).not.toHaveBeenCalled();
+  });
 });

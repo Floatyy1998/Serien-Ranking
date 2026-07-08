@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { Movie } from '../../types/Movie';
 import type { Series } from '../../types/Series';
-import { calculateCorrectAverageRating, calculateOverallRating } from './rating';
+import { calculateCorrectAverageRating, calculateOverallRating, isMovieWatched } from './rating';
 
 /** Baut ein minimales Series-Objekt mit beliebiger rating-Form (bewusst untypisiert). */
 const mk = (rating: unknown): Series => ({ rating }) as unknown as Series;
@@ -199,5 +199,27 @@ describe('calculateCorrectAverageRating', () => {
     it('exaktes Ergebnis bleibt unverändert: (8+9)/2 → 8.5', () => {
       expect(calculateCorrectAverageRating(items({ u1: 8 }, { u1: 9 }))).toBe(8.5);
     });
+  });
+});
+
+describe('isMovieWatched', () => {
+  const movie = (m: unknown) => m as unknown as Movie;
+
+  it('true bei explizitem watched-Flag (F1: gesehen ohne Rating)', () => {
+    expect(isMovieWatched(movie({ watched: true, rating: {} }))).toBe(true);
+  });
+
+  it('true bei genre-keyed Rating > 0 (auch ohne watched-Flag)', () => {
+    expect(isMovieWatched(movie({ rating: { Action: 8, Drama: 6 } }))).toBe(true);
+  });
+
+  it('false bei weder watched noch positivem Rating', () => {
+    expect(isMovieWatched(movie({ rating: {} }))).toBe(false);
+    expect(isMovieWatched(movie({ watched: false, rating: { Action: 0 } }))).toBe(false);
+  });
+
+  it('liest NICHT rating[uid] (Movie-rating ist genre-keyed, nicht uid-keyed)', () => {
+    // Eine uid als Key mit 0 (typisch für „nur angelegt") darf nicht als gesehen zählen.
+    expect(isMovieWatched(movie({ rating: { someUid: 0 } }))).toBe(false);
   });
 });

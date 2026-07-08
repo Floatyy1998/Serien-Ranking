@@ -1,5 +1,7 @@
 // Web Worker for heavy statistics calculations
 import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
+import { isMovieWatched } from '../lib/rating/rating';
+import type { Movie } from '../types/Movie';
 interface WorkerEpisode {
   air_date?: string;
   airstamp?: string;
@@ -75,6 +77,7 @@ interface WorkerSeries {
 
 interface WorkerMovie {
   id: number;
+  watched?: boolean;
   rating?: Record<string, number>;
 }
 
@@ -120,7 +123,7 @@ function calculateStats(data: {
   movieList: WorkerMovie[];
   userId: string;
 }) {
-  const { seriesList, movieList, userId } = data;
+  const { seriesList, movieList } = data;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayTime = today.getTime();
@@ -205,11 +208,10 @@ function calculateStats(data: {
 
     totalMovies++;
 
-    if (movie.rating && userId) {
-      const userRating = movie.rating[userId];
-      if (userRating && userRating > 0) {
-        watchedMovies++;
-      }
+    // Movie-`rating` ist genre-keyed, NICHT uid-keyed — `rating[uid]` war immer
+    // undefined (Zähler blieb 0). Zentrale Definition: watched-Flag ODER Overall > 0.
+    if (isMovieWatched(movie as unknown as Movie)) {
+      watchedMovies++;
     }
   }
 

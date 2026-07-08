@@ -128,8 +128,10 @@ describe('updateWatchStreak', () => {
     const s = fb.getAt(P2026) as WatchStreak;
     expect(s.currentStreak).toBe(1);
     expect(s.streaks).toHaveLength(1);
+    // Streak endete an lastWatchDate (2026-06-10), Länge 5 → startDate = 06-10 − 4 = 06-06.
+    // (Früher fälschlich von heute zurückgerechnet → startDate === endDate für eine 5-Tage-Streak.)
     expect(s.streaks[0]).toEqual({
-      startDate: '2026-06-10', // heute - 5 Tage
+      startDate: '2026-06-06',
       endDate: '2026-06-10',
       length: 5,
     });

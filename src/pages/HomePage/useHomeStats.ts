@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -45,13 +45,9 @@ export function useHomeStats() {
     const watchedEpisodes = workerStats.watchedEpisodesActive;
     const totalEpisodes = workerStats.totalEpisodes;
 
-    // Movies stats - only count movies with ratings
+    // Movies stats — gesehen = explizit als watched markiert (F1) ODER Rating > 0.
     const totalMovies = movieList.length;
-    const watchedMovies = movieList.filter((movie: MovieType) => {
-      if (!movie) return false;
-      const rating = parseFloat(calculateOverallRating(movie));
-      return !isNaN(rating) && rating > 0;
-    }).length;
+    const watchedMovies = movieList.filter((movie: MovieType) => isMovieWatched(movie)).length;
 
     // Time stats - all series including hidden (you did watch those episodes)
     let seriesMinutesWatched = 0;
@@ -76,9 +72,7 @@ export function useHomeStats() {
     // Movie watch time
     movieList.forEach((movie: MovieType) => {
       if (!movie) return;
-      const rating = parseFloat(calculateOverallRating(movie));
-      const isWatched = !isNaN(rating) && rating > 0;
-      if (isWatched) {
+      if (isMovieWatched(movie)) {
         moviesMinutesWatched += movie.runtime || 120;
       }
     });

@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
-import { calculateOverallRating } from '../../lib/rating/rating';
+import { calculateOverallRating, isMovieWatched } from '../../lib/rating/rating';
 import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
@@ -217,8 +217,8 @@ export const useStatsData = (): StatsData => {
 
     movieList.forEach((movie: MovieType) => {
       if (!movie) return;
-      const rating = parseFloat(calculateOverallRating(movie));
-      if (!isNaN(rating) && rating > 0) {
+      // Gesehen = explizit als watched markiert (F1) ODER Rating > 0.
+      if (isMovieWatched(movie)) {
         watchedMovies++;
         movieMinutes += movie.runtime || 120;
       }

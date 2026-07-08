@@ -5,7 +5,7 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
-import type { ActivityEvent, EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
+import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { updateLeaderboardStats } from '../leaderboardService';
 import { createBaseEventData, createEpisodeEventData, getEventsPath, saveEvent } from './shared';
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';
@@ -116,13 +116,15 @@ export async function logMovieWatch(
 
   try {
     // Check for duplicate
-    const existingEventId = await findExistingMovieEvent(userId, movieId, year);
+    const existing = await findExistingMovieEvent(userId, movieId, year);
 
-    if (existingEventId) {
+    if (existing) {
       if (rating !== undefined) {
+        // Compact-Events speichern das Rating unter `rat`, Legacy unter `rating`.
+        const ratingKey = existing.isCompact ? 'rat' : 'rating';
         await firebase
           .database()
-          .ref(`${getEventsPath(userId, year)}/${existingEventId}/rating`)
+          .ref(`${getEventsPath(userId, year)}/${existing.eventId}/${ratingKey}`)
           .set(rating);
       }
       return;
@@ -166,22 +168,25 @@ async function findExistingMovieEvent(
   userId: string,
   movieId: number,
   year: number
-): Promise<string | null> {
+): Promise<{ eventId: string; isCompact: boolean } | null> {
   try {
-    const snapshot = await firebase
-      .database()
-      .ref(getEventsPath(userId, year))
-      .orderByChild('movieId')
-      .equalTo(movieId)
-      .once('value');
+    // Kein orderByChild('movieId') mehr: Events werden im Compact-Format
+    // gespeichert (t:'mv', s:movieId) — ein movieId-Child existiert dort nicht,
+    // die alte Query traf also nie und jedes Re-Log/Re-Rating erzeugte ein
+    // Duplikat (Wrapped zählte Filme + Laufzeit doppelt). Wir lesen den Knoten
+    // einmal und erkennen beide Formate.
+    const snapshot = await firebase.database().ref(getEventsPath(userId, year)).once('value');
 
-    const events = snapshot.val() as Record<string, ActivityEvent> | null;
+    const events = snapshot.val() as Record<string, Record<string, unknown>> | null;
     if (!events) return null;
 
-    for (const [eventId, event] of Object.entries(events)) {
-      if (event.type === 'movie_watch' || event.type === 'movie_rating') {
-        return eventId;
-      }
+    for (const [eventId, raw] of Object.entries(events)) {
+      // Compact: {t:'mv'|'mr', s:movieId}. Legacy: {type:'movie_*', movieId}.
+      const isCompactMovie = (raw.t === 'mv' || raw.t === 'mr') && raw.s === movieId;
+      const isLegacyMovie =
+        (raw.type === 'movie_watch' || raw.type === 'movie_rating') && raw.movieId === movieId;
+      if (isCompactMovie) return { eventId, isCompact: true };
+      if (isLegacyMovie) return { eventId, isCompact: false };
     }
     return null;
   } catch (error) {

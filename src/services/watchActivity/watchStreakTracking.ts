@@ -48,8 +48,12 @@ export async function updateWatchStreak(userId: string): Promise<void> {
       }
     } else if (lastDate) {
       if (currentStreak.currentStreak > 1) {
-        const streakStart = new Date();
-        streakStart.setDate(streakStart.getDate() - currentStreak.currentStreak);
+        // Die abgeschlossene Streak endete an lastDate (nicht heute) — bei einer
+        // Lücke liegt lastDate in der Vergangenheit. startDate muss von lastDate
+        // rückwärts gerechnet werden, sonst entsteht startDate > endDate.
+        // 'T00:00:00' erzwingt lokale Mitternacht (sonst UTC-Parsing → Tagesversatz).
+        const streakStart = new Date(`${lastDate}T00:00:00`);
+        streakStart.setDate(streakStart.getDate() - (currentStreak.currentStreak - 1));
         currentStreak.streaks.push({
           startDate: toLocalDateString(streakStart),
           endDate: lastDate,
