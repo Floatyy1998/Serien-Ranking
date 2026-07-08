@@ -66,7 +66,10 @@ export const useDiscoverFetch = (
   searchQuery: string,
   isRestoring: boolean,
   onlyMyProviders = false,
-  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS
+  activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS,
+  /** Wird bei jeder ausgelösten Suche (ab 2 Zeichen) mit dem Query aufgerufen —
+   *  z. B. um den Suchverlauf zu pflegen (siehe useRecentSearches). */
+  onSearchCommitted?: (query: string) => void
 ): UseDiscoverFetchResult => {
   const { allSeriesList: seriesList } = useSeriesList();
   const { movieList } = useMovieList();
@@ -433,6 +436,8 @@ export const useDiscoverFetch = (
         return;
       }
 
+      if (query.trim().length >= 2) onSearchCommitted?.(query);
+
       setSearchLoading(true);
 
       try {
@@ -467,7 +472,7 @@ export const useDiscoverFetch = (
         setSearchLoading(false);
       }
     },
-    [activeTab, isInList, onlyMyProviders, activeProviders]
+    [activeTab, isInList, onlyMyProviders, activeProviders, onSearchCommitted]
   );
 
   useEffect(() => {

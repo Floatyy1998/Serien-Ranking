@@ -17,7 +17,6 @@ import { HomePage } from './pages/HomePage';
 import { WatchNextPage } from './pages/WatchNext';
 import { RatingsPage } from './pages/Ratings';
 import { ProfilePage } from './pages/Profile';
-import { SearchPage } from './pages/Search';
 
 import {
   SeriesDetailPage,
@@ -260,14 +259,9 @@ export const MobileApp = () => {
                 </Layout>
               }
             />
-            <Route
-              path="/search"
-              element={
-                <Layout>
-                  <SearchPage />
-                </Layout>
-              }
-            />
+            {/* Die frühere Standalone-Suche ist in Discover aufgegangen; alte
+                Links/Lesezeichen auf /search öffnen dort direkt die Suche. */}
+            <Route path="/search" element={<Navigate to="/discover?search=1" replace />} />
             <Route
               path="/badges"
               element={

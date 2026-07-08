@@ -40,7 +40,15 @@ export const useDiscoverFilters = (): UseDiscoverFiltersResult => {
   >('trending');
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  // Der Home-Suchbalken navigiert mit `?search=1` hierher und öffnet die Suche
+  // direkt (die frühere Standalone-/search-Seite ist in Discover aufgegangen).
+  const [showSearch, setShowSearch] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('search') === '1';
+    } catch {
+      return false;
+    }
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [onlyMyProviders, setOnlyMyProviders] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);

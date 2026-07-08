@@ -4,6 +4,7 @@ import { memo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../../components/ui';
 import { ItemCard } from './DiscoverItemCard';
+import { SearchSuggestions } from './SearchSuggestions';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface DiscoverContentProps {
@@ -19,6 +20,11 @@ interface DiscoverContentProps {
   onlyMyProviders?: boolean;
   searchResults: DiscoverItem[];
   searchLoading: boolean;
+  /** Beliebte + zuletzt gesuchte Begriffe (Suchvorschläge bei leerer Eingabe). */
+  popularSearches: string[];
+  recentSearches: string[];
+  onSelectTerm: (term: string) => void;
+  onRemoveRecent: (term: string) => void;
   recommendations: DiscoverItem[];
   recommendationsLoading: boolean;
   addingItem: string | null;
@@ -45,6 +51,10 @@ export const DiscoverContent = memo(
     onlyMyProviders,
     searchResults,
     searchLoading,
+    popularSearches,
+    recentSearches,
+    onSelectTerm,
+    onRemoveRecent,
     recommendations,
     recommendationsLoading,
     addingItem,
@@ -140,86 +150,84 @@ export const DiscoverContent = memo(
     }
 
     if (showSearch) {
+      // Leere Eingabe → Suchvorschläge (beliebte + zuletzt gesucht) statt Grid.
+      if (!searchQuery.trim() && !searchLoading) {
+        return (
+          <SearchSuggestions
+            popularSearches={popularSearches}
+            recentSearches={recentSearches}
+            onSelectTerm={onSelectTerm}
+            onRemoveRecent={onRemoveRecent}
+            currentTheme={currentTheme}
+          />
+        );
+      }
+
+      if (searchLoading) {
+        return (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <LoadingSpinner size={50} text="Suche läuft..." />
+          </motion.div>
+        );
+      }
+
+      if (searchResults.length === 0) {
+        return (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              background: currentTheme.background.surface,
+              borderRadius: 'var(--radius-xl)',
+              border: `1px solid ${currentTheme.border.default}`,
+            }}
+          >
+            <Search
+              style={{ fontSize: '56px', marginBottom: '16px', color: currentTheme.text.muted }}
+            />
+            <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
+              Keine Ergebnisse für "{searchQuery}"
+            </p>
+            {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
+          </motion.div>
+        );
+      }
+
       return (
         <div>
-          {searchLoading ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <LoadingSpinner size={50} text="Suche läuft..." />
-            </motion.div>
-          ) : searchResults.length === 0 && searchQuery.trim() ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: currentTheme.background.surface,
-                borderRadius: 'var(--radius-xl)',
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <Search
-                style={{
-                  fontSize: '56px',
-                  marginBottom: '16px',
-                  color: currentTheme.text.muted,
-                }}
-              />
-              <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                Keine Ergebnisse für "{searchQuery}"
-              </p>
-              {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
-            </motion.div>
-          ) : searchResults.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                textAlign: 'center',
-                padding: '60px 20px',
-                background: currentTheme.background.surface,
-                borderRadius: 'var(--radius-xl)',
-                border: `1px solid ${currentTheme.border.default}`,
-              }}
-            >
-              <Search
-                style={{
-                  fontSize: '56px',
-                  marginBottom: '16px',
-                  color: currentTheme.text.muted,
-                }}
-              />
-              <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                Gib einen Suchbegriff ein...
-              </p>
-            </motion.div>
-          ) : (
-            <div
-              className="discover-grid"
-              style={{
-                display: 'grid',
-                gridTemplateColumns: isDesktop
-                  ? 'repeat(auto-fill, minmax(200px, 1fr))'
-                  : 'repeat(2, 1fr)',
-                gap: isDesktop ? '24px' : '16px',
-                maxWidth: '100%',
-                margin: '0',
-              }}
-            >
-              {searchResults.map((item) => (
-                <div key={`search-${item.type}-${item.id}`} className="discover-grid-item">
-                  <ItemCard
-                    item={item}
-                    onItemClick={handleItemClick}
-                    onAddToList={addToList}
-                    addingItem={addingItem}
-                    currentTheme={currentTheme}
-                    isDesktop={isDesktop}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="discover-search-count" style={{ color: currentTheme.text.muted }}>
+            <span className="discover-search-count-number" style={{ color: currentTheme.primary }}>
+              {searchResults.length}
+            </span>{' '}
+            {searchResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
+          </p>
+          <div
+            className="discover-grid"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: isDesktop
+                ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                : 'repeat(2, 1fr)',
+              gap: isDesktop ? '24px' : '16px',
+              maxWidth: '100%',
+              margin: '0',
+            }}
+          >
+            {searchResults.map((item) => (
+              <div key={`search-${item.type}-${item.id}`} className="discover-grid-item">
+                <ItemCard
+                  item={item}
+                  onItemClick={handleItemClick}
+                  onAddToList={addToList}
+                  addingItem={addingItem}
+                  currentTheme={currentTheme}
+                  isDesktop={isDesktop}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
