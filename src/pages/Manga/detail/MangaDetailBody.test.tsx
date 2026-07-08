@@ -42,10 +42,8 @@ function baseProps(overrides: Partial<BodyProps> = {}): BodyProps {
     displayData: null,
     cleanDescription: '',
     userRating: 0,
-    editingNotes: false,
-    setEditingNotes: vi.fn(),
     notesValue: '',
-    setNotesValue: vi.fn(),
+    notesStatus: 'idle',
     showCustomPlatform: false,
     setShowCustomPlatform: vi.fn(),
     customPlatform: '',
@@ -56,7 +54,9 @@ function baseProps(overrides: Partial<BodyProps> = {}): BodyProps {
     onChapterChange: vi.fn(),
     onRating: vi.fn(),
     onPlatformSelect: vi.fn(),
-    onSaveNotes: vi.fn(),
+    onNotesChange: vi.fn(),
+    onNotesFocus: vi.fn(),
+    onNotesBlur: vi.fn(),
     onToggleHide: vi.fn(),
     onDelete: vi.fn(),
     ...overrides,
@@ -71,7 +71,21 @@ describe('MangaDetailBody', () => {
     expect(screen.getByText('Status')).toBeInTheDocument();
     expect(screen.getByText('Bewertung')).toBeInTheDocument();
     expect(screen.getByText('Notizen')).toBeInTheDocument();
-    expect(screen.getByText('Keine Notizen vorhanden.')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Deine Notizen zu diesem Manga…')).toBeInTheDocument();
+  });
+
+  it('F13: Tippen ruft onNotesChange, Blur ruft onNotesBlur (Autosave, kein Speichern-Button)', () => {
+    const onNotesChange = vi.fn();
+    const onNotesBlur = vi.fn();
+    render(<MangaDetailBody {...baseProps({ onNotesChange, onNotesBlur })} />);
+    // Kein Edit-Modus-Umweg mehr.
+    expect(screen.queryByText('Bearbeiten')).not.toBeInTheDocument();
+    expect(screen.queryByText('Speichern')).not.toBeInTheDocument();
+    const textarea = screen.getByPlaceholderText('Deine Notizen zu diesem Manga…');
+    fireEvent.change(textarea, { target: { value: 'Neue Notiz' } });
+    expect(onNotesChange).toHaveBeenCalledWith('Neue Notiz');
+    fireEvent.blur(textarea);
+    expect(onNotesBlur).toHaveBeenCalledTimes(1);
   });
 
   it('ruft onStatusChange beim Klick auf einen Status-Button auf', () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
@@ -30,8 +30,10 @@ export const MangaDetailPage = () => {
 
   const [editChapter, setEditChapter] = useState(manga?.currentChapter || 0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(manga?.notes || '');
+  const [notesStatus, setNotesStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const notesFocusedRef = useRef(false);
+  const notesSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [customPlatform, setCustomPlatform] = useState('');
   const [showCustomPlatform, setShowCustomPlatform] = useState(false);
 
@@ -46,7 +48,9 @@ export const MangaDetailPage = () => {
     if (mangaChapter !== undefined) setEditChapter(mangaChapter);
   }, [mangaChapter]);
   useEffect(() => {
-    setNotesValue(mangaNotes || '');
+    // Fremd-Updates (z.B. anderes Gerät) übernehmen — aber nicht, während der
+    // Nutzer gerade tippt, sonst würde die Eingabe überschrieben (F13 Autosave).
+    if (!notesFocusedRef.current) setNotesValue(mangaNotes || '');
   }, [mangaNotes]);
 
   const updateField = useCallback(
@@ -142,10 +146,58 @@ export const MangaDetailPage = () => {
     [updateField]
   );
 
-  const handleSaveNotes = useCallback(async () => {
-    await updateField('notes', notesValue);
-    setEditingNotes(false);
-  }, [updateField, notesValue]);
+  // F13: Notizen speichern sich selbst (debounced) — kein Edit-Modus mehr.
+  const saveNotes = useCallback(
+    async (value: string) => {
+      if (!user || !manga) return;
+      if ((manga.notes || '') === value) {
+        setNotesStatus('idle');
+        return;
+      }
+      setNotesStatus('saving');
+      try {
+        await updateField('notes', value);
+        setNotesStatus('saved');
+      } catch {
+        setNotesStatus('idle');
+      }
+    },
+    [user, manga, updateField]
+  );
+
+  const handleNotesChange = useCallback(
+    (value: string) => {
+      setNotesValue(value);
+      setNotesStatus('saving');
+      if (notesSaveTimer.current) clearTimeout(notesSaveTimer.current);
+      notesSaveTimer.current = setTimeout(() => void saveNotes(value), 800);
+    },
+    [saveNotes]
+  );
+
+  const handleNotesFocus = useCallback(() => {
+    notesFocusedRef.current = true;
+  }, []);
+
+  const handleNotesBlur = useCallback(() => {
+    notesFocusedRef.current = false;
+    if (notesSaveTimer.current) clearTimeout(notesSaveTimer.current);
+    void saveNotes(notesValue);
+  }, [saveNotes, notesValue]);
+
+  // "Gespeichert"-Hinweis nach kurzer Zeit ausblenden.
+  useEffect(() => {
+    if (notesStatus !== 'saved') return;
+    const t = setTimeout(() => setNotesStatus('idle'), 2000);
+    return () => clearTimeout(t);
+  }, [notesStatus]);
+
+  // Ausstehenden Debounce beim Unmount aufräumen.
+  useEffect(() => {
+    return () => {
+      if (notesSaveTimer.current) clearTimeout(notesSaveTimer.current);
+    };
+  }, []);
 
   const handleDelete = useCallback(async () => {
     if (!user) return;
@@ -222,10 +274,8 @@ export const MangaDetailPage = () => {
         displayData={displayData}
         cleanDescription={cleanDescription}
         userRating={userRating}
-        editingNotes={editingNotes}
-        setEditingNotes={setEditingNotes}
         notesValue={notesValue}
-        setNotesValue={setNotesValue}
+        notesStatus={notesStatus}
         showCustomPlatform={showCustomPlatform}
         setShowCustomPlatform={setShowCustomPlatform}
         customPlatform={customPlatform}
@@ -236,7 +286,9 @@ export const MangaDetailPage = () => {
         onChapterChange={handleChapterChange}
         onRating={handleRating}
         onPlatformSelect={handlePlatformSelect}
-        onSaveNotes={handleSaveNotes}
+        onNotesChange={handleNotesChange}
+        onNotesFocus={handleNotesFocus}
+        onNotesBlur={handleNotesBlur}
         onToggleHide={() => toggleHideManga(anilistId, !manga.hidden)}
         onDelete={handleDelete}
       />

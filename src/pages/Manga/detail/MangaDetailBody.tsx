@@ -2,14 +2,13 @@ import {
   Check,
   CheckCircle,
   Delete,
-  Edit,
   Link,
   OpenInNew,
   Star,
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { MangaDexChapterInfo } from '../../../services/mangaUpdatesService';
@@ -49,10 +48,8 @@ interface MangaDetailBodyProps {
   cleanDescription: string;
   userRating: number;
   // UI state lifted from parent so MangaDetailPage keeps full control of edit modes
-  editingNotes: boolean;
-  setEditingNotes: (v: boolean) => void;
   notesValue: string;
-  setNotesValue: (v: string) => void;
+  notesStatus: 'idle' | 'saving' | 'saved';
   showCustomPlatform: boolean;
   setShowCustomPlatform: (v: boolean) => void;
   customPlatform: string;
@@ -64,7 +61,9 @@ interface MangaDetailBodyProps {
   onChapterChange: (chapter: number) => void;
   onRating: (rating: number) => void;
   onPlatformSelect: (platform: string) => void;
-  onSaveNotes: () => void;
+  onNotesChange: (value: string) => void;
+  onNotesFocus: () => void;
+  onNotesBlur: () => void;
   onToggleHide: () => void;
   onDelete: () => void;
 }
@@ -77,10 +76,8 @@ export const MangaDetailBody = ({
   displayData,
   cleanDescription,
   userRating,
-  editingNotes,
-  setEditingNotes,
   notesValue,
-  setNotesValue,
+  notesStatus,
   showCustomPlatform,
   setShowCustomPlatform,
   customPlatform,
@@ -91,12 +88,13 @@ export const MangaDetailBody = ({
   onChapterChange,
   onRating,
   onPlatformSelect,
-  onSaveNotes,
+  onNotesChange,
+  onNotesFocus,
+  onNotesBlur,
   onToggleHide,
   onDelete,
 }: MangaDetailBodyProps) => {
   const navigate = useNavigate();
-  const notesRef = useRef<HTMLTextAreaElement>(null);
 
   // Chapter for which a *backward* progress reset is awaiting confirmation.
   const [confirmChapter, setConfirmChapter] = useState<number | null>(null);
@@ -397,59 +395,41 @@ export const MangaDetailBody = ({
       <Section bg={`${currentTheme.text.primary}08`} delay={0.3}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <SectionTitle color={currentTheme.text.primary}>Notizen</SectionTitle>
-          <button
-            onClick={() => {
-              if (editingNotes) onSaveNotes();
-              else setEditingNotes(true);
-            }}
+          {/* F13: Autosave — kein Bearbeiten/Speichern-Umweg, nur ein dezenter Status. */}
+          <span
+            aria-live="polite"
             style={{
-              background: 'none',
-              border: 'none',
-              color: currentTheme.primary,
-              cursor: 'pointer',
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
+              fontSize: 12,
+              color:
+                notesStatus === 'saved' ? currentTheme.status.success : currentTheme.text.muted,
+              opacity: notesStatus === 'idle' ? 0 : 1,
+              transition: 'opacity 0.2s',
             }}
           >
-            <Edit style={{ fontSize: 14 }} />
-            {editingNotes ? 'Speichern' : 'Bearbeiten'}
-          </button>
+            {notesStatus === 'saving' ? 'Speichert…' : notesStatus === 'saved' ? 'Gespeichert' : ''}
+          </span>
         </div>
-        {editingNotes ? (
-          <textarea
-            ref={notesRef}
-            value={notesValue}
-            onChange={(e) => setNotesValue(e.target.value)}
-            placeholder="Deine Notizen zu diesem Manga..."
-            style={{
-              width: '100%',
-              minHeight: 80,
-              padding: 12,
-              borderRadius: 10,
-              border: `1px solid ${currentTheme.primary}30`,
-              background: 'rgba(255,255,255,0.03)',
-              color: currentTheme.text.primary,
-              fontSize: 14,
-              resize: 'vertical',
-              outline: 'none',
-              fontFamily: 'var(--font-body)',
-            }}
-          />
-        ) : (
-          <p
-            style={{
-              fontSize: 14,
-              color: currentTheme.text.secondary,
-              opacity: manga.notes ? 1 : 0.4,
-              margin: 0,
-              lineHeight: 1.6,
-            }}
-          >
-            {manga.notes || 'Keine Notizen vorhanden.'}
-          </p>
-        )}
+        <textarea
+          value={notesValue}
+          onChange={(e) => onNotesChange(e.target.value)}
+          onFocus={onNotesFocus}
+          onBlur={onNotesBlur}
+          placeholder="Deine Notizen zu diesem Manga…"
+          style={{
+            width: '100%',
+            minHeight: 80,
+            marginTop: 8,
+            padding: 12,
+            borderRadius: 10,
+            border: `1px solid ${currentTheme.primary}30`,
+            background: 'rgba(255,255,255,0.03)',
+            color: currentTheme.text.primary,
+            fontSize: 14,
+            resize: 'vertical',
+            outline: 'none',
+            fontFamily: 'var(--font-body)',
+          }}
+        />
       </Section>
 
       {cleanDescription && (
