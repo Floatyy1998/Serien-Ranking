@@ -41,6 +41,7 @@ vi.mock('./pages/HomePage', () => ({ HomePage: () => <div /> }));
 vi.mock('./pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));
 vi.mock('./pages/Ratings', () => ({ RatingsPage: () => <div /> }));
 vi.mock('./pages/Profile', () => ({ ProfilePage: () => <div /> }));
+vi.mock('./pages/Search', () => ({ SearchPage: () => <div /> }));
 
 vi.mock('./lazyRoutes', () => {
   const Stub = () => <div />;

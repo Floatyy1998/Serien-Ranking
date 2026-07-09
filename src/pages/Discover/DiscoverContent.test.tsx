@@ -44,10 +44,6 @@ vi.mock('./DiscoverItemCard', () => ({
   ItemCard: ({ item }: { item: DiscoverItem }) => <div data-testid="item-card">{item.id}</div>,
 }));
 
-vi.mock('./SearchSuggestions', () => ({
-  SearchSuggestions: () => <div data-testid="suggestions" />,
-}));
-
 const makeTheme = (): Theme => {
   const make = (): unknown =>
     new Proxy(() => '#3355ff', {
@@ -80,10 +76,6 @@ const baseProps = {
   results: [] as DiscoverItem[],
   searchResults: [] as DiscoverItem[],
   searchLoading: false,
-  popularSearches: ['Breaking Bad'],
-  recentSearches: [] as string[],
-  onSelectTerm: vi.fn(),
-  onRemoveRecent: vi.fn(),
   recommendations: [] as DiscoverItem[],
   recommendationsLoading: false,
   addingItem: null,
@@ -111,23 +103,8 @@ describe('DiscoverContent', () => {
     expect(screen.getByText('Keine Empfehlungen verfügbar')).toBeInTheDocument();
   });
 
-  it('shows search suggestions when searching with an empty query', () => {
+  it('prompts for a search term when searching with an empty query', () => {
     render(<DiscoverContent {...baseProps} showSearch />);
-    expect(screen.getByTestId('suggestions')).toBeInTheDocument();
-  });
-
-  it('shows a result count line when search results are present', () => {
-    render(
-      <DiscoverContent
-        {...baseProps}
-        showSearch
-        searchQuery="dune"
-        searchResults={[item(5), item(7)]}
-      />
-    );
-    // Zähler steht in eigener Zeile; ids 5/7 kollidieren nicht mit der Anzahl „2".
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('Ergebnisse')).toBeInTheDocument();
-    expect(screen.getAllByTestId('item-card')).toHaveLength(2);
+    expect(screen.getByText('Gib einen Suchbegriff ein...')).toBeInTheDocument();
   });
 });

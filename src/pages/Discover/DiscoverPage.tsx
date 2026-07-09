@@ -1,6 +1,5 @@
 import {
   CalendarToday,
-  Close,
   FilterList,
   Movie as MovieIcon,
   NewReleases,
@@ -18,7 +17,6 @@ import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
-import { useRecentSearches } from './useRecentSearches';
 import { DiscoverContent } from './DiscoverContent';
 import {
   BackButton,
@@ -65,8 +63,6 @@ export const DiscoverPage = memo(() => {
     fetchFromTMDBOnRestoreRef,
   } = useDiscoverFilters();
 
-  const { recentSearches, popularSearches, saveToRecent, removeRecentSearch } = useRecentSearches();
-
   const { activeProviders } = useActiveSubscriptions();
   // Der Toggle greift nur, wenn der Nutzer mindestens ein AKTIVES Abo gepflegt
   // hat — sonst gäbe es keine Grundlage zum Filtern (leer + verwirrend).
@@ -102,8 +98,7 @@ export const DiscoverPage = memo(() => {
     searchQuery,
     isRestoring,
     providerFilterActive,
-    providerFilterActive ? activeProviders : EMPTY_PROVIDERS,
-    saveToRecent
+    providerFilterActive ? activeProviders : EMPTY_PROVIDERS
   );
 
   // Wire up restore callbacks
@@ -142,13 +137,7 @@ export const DiscoverPage = memo(() => {
   ] as const;
 
   return (
-    <PageLayout
-      style={{
-        height: '100vh',
-        overflow: 'hidden',
-        animation: 'discoverPageFade 0.35s var(--ease-default) both',
-      }}
-    >
+    <PageLayout style={{ height: '100vh', overflow: 'hidden' }}>
       {/* Fixed Header and Controls */}
       <div
         data-header="discover-header"
@@ -300,36 +289,32 @@ export const DiscoverPage = memo(() => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                style={{ padding: '4px 20px 12px 20px', overflow: 'hidden' }}
+                style={{ padding: '0 20px 12px 20px', overflow: 'hidden' }}
               >
-                <div className="discover-search-field">
-                  <Search
-                    style={{ fontSize: '20px', color: currentTheme.text.muted, flexShrink: 0 }}
-                  />
-                  <input
-                    type="text"
-                    className="discover-search-input"
-                    aria-label={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen`}
-                    placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    autoFocus
-                    // inline `outline` triggert die globale Ausnahme in global.css
-                    // (input[style*='outline']) → keine erzwungene Neon-Outline.
-                    style={{ outline: 'none', color: currentTheme.text.primary }}
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      className="discover-search-clear"
-                      onClick={() => setSearchQuery('')}
-                      aria-label="Suche leeren"
-                      style={{ color: currentTheme.text.muted }}
-                    >
-                      <Close style={{ fontSize: '18px' }} />
-                    </button>
-                  )}
-                </div>
+                <input
+                  type="text"
+                  className="discover-search-input"
+                  aria-label={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen`}
+                  placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                  }}
+                  autoFocus
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px',
+                    background:
+                      'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
+                    border: '1px solid var(--glass-border-subtle)',
+                    borderRadius: '14px',
+                    color: currentTheme.text.primary,
+                    fontSize: '15px',
+                    transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                    backdropFilter: 'var(--blur-md)',
+                    WebkitBackdropFilter: 'var(--blur-md)',
+                  }}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -342,10 +327,8 @@ export const DiscoverPage = memo(() => {
             ]}
             activeTab={activeTab}
             onTabChange={(id) => {
-              // Beim Suchen bleibt die Suche offen: der Tab wirkt dann als
-              // Scope-Umschalter (Serien/Filme) und die Suche läuft neu — sonst
-              // schließt der Tab-Wechsel die Suche und kehrt zum Browsen zurück.
               setActiveTab(id as 'series' | 'movies');
+              setShowSearch(false);
             }}
             style={{ margin: '8px 20px 0 20px' }}
           />
@@ -524,10 +507,6 @@ export const DiscoverPage = memo(() => {
             onlyMyProviders={providerFilterActive}
             searchResults={searchResults}
             searchLoading={searchLoading}
-            popularSearches={popularSearches}
-            recentSearches={recentSearches}
-            onSelectTerm={setSearchQuery}
-            onRemoveRecent={removeRecentSearch}
             recommendations={recommendations}
             recommendationsLoading={recommendationsLoading}
             addingItem={addingItem}

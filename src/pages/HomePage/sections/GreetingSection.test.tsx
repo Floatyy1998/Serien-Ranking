@@ -93,9 +93,9 @@ describe('GreetingSection', () => {
     expect(screen.queryByText(/Heute/)).not.toBeInTheDocument();
   });
 
-  it('navigates to the Discover search when the search bar is clicked', () => {
+  it('navigates to /search when the search bar is clicked', () => {
     renderT();
     fireEvent.click(screen.getByText('Suche nach Serien oder Filmen'));
-    expect(navigateMock).toHaveBeenCalledWith('/discover?search=1');
+    expect(navigateMock).toHaveBeenCalledWith('/search');
   });
 });

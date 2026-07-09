@@ -228,7 +228,7 @@ export const GreetingSection = React.memo(function GreetingSection({
         <motion.button
           type="button"
           whileTap={tapScaleSmall}
-          onClick={() => navigate('/discover?search=1')}
+          onClick={() => navigate('/search')}
           aria-label="Suche öffnen"
           style={{
             width: '100%',

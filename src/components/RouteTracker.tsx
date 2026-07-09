@@ -8,6 +8,7 @@ const ROUTE_NAMES: Record<string, string> = {
   '/ratings': 'ratings',
   '/profile': 'profile',
   '/discover': 'discover',
+  '/search': 'search',
   '/activity': 'activity',
   '/calendar': 'calendar',
   '/countdown': 'countdown',

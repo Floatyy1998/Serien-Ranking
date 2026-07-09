@@ -4,7 +4,7 @@
  *
  * Schritte pro Eintrag (progressiv nach dem Season-Fetch, throttled;
  * bzw. beim Klick, falls noch nicht aufgelöst):
- *   1. TMDB-Suche (search/tv, VITE_API_TMDB):
+ *   1. TMDB-Suche (Muster wie pages/Search/useSearchPage.ts, VITE_API_TMDB):
  *      Titel (english || romaji) mit first_air_date_year der Season, dann
  *      ohne Jahr, dann der Alternativtitel, zuletzt die BASISTITEL ohne
  *      Season-/Part-Suffix („Saga of Tanya the Evil Season 2" → „Saga of
