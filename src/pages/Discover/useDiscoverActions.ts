@@ -18,6 +18,7 @@ interface UseDiscoverActionsResult {
   >;
   addToList: (item: DiscoverItem, event?: React.MouseEvent) => Promise<void>;
   removeFromResults: (itemId: number) => void;
+  markInList: (item: DiscoverItem) => void;
 }
 
 export const useDiscoverActions = (
@@ -43,6 +44,21 @@ export const useDiscoverActions = (
       setResults((prev) => prev.filter((r) => r.id !== itemId));
       setSearchResults((prev) => prev.filter((r) => r.id !== itemId));
       setRecommendations((prev) => prev.filter((r) => r.id !== itemId));
+    },
+    [setResults, setSearchResults, setRecommendations]
+  );
+
+  // Nach dem Hinzufügen das Item NICHT entfernen, sondern als „in Liste" markieren:
+  // Die Karte bleibt sichtbar (nur der +-Button verschwindet) und antippbar, damit
+  // man weiterhin auf die Detailseite kommt. (id+type, da TMDB-IDs zwischen tv/movie
+  // kollidieren können.)
+  const markInList = useCallback(
+    (item: DiscoverItem) => {
+      const mark = (r: DiscoverItem) =>
+        r.id === item.id && r.type === item.type ? { ...r, inList: true } : r;
+      setResults((prev) => prev.map(mark));
+      setSearchResults((prev) => prev.map(mark));
+      setRecommendations((prev) => prev.map(mark));
     },
     [setResults, setSearchResults, setRecommendations]
   );
@@ -77,7 +93,7 @@ export const useDiscoverActions = (
         });
 
         if (response.ok) {
-          removeFromResults(item.id);
+          markInList(item);
 
           const addedTitle = item.title || item.name;
           setSnackbar({
@@ -113,7 +129,7 @@ export const useDiscoverActions = (
         setAddingItem(null);
       }
     },
-    [user, removeFromResults]
+    [user, markInList]
   );
 
   return {
@@ -123,5 +139,6 @@ export const useDiscoverActions = (
     setDialog,
     addToList,
     removeFromResults,
+    markInList,
   };
 };

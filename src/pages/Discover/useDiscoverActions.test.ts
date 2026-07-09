@@ -75,7 +75,7 @@ describe('useDiscoverActions', () => {
     expect(backendFetch).not.toHaveBeenCalled();
   });
 
-  it('adds a series: /add, tracking, logger, snackbar, removal, clears addingItem', async () => {
+  it('adds a series: /add, tracking, logger, snackbar, markInList, clears addingItem', async () => {
     const { result, setResults, setSearchResults, setRecommendations } = setup();
     await act(async () => {
       await result.current.addToList(item({ id: 42, type: 'series', name: 'Serie' }));
@@ -85,10 +85,17 @@ describe('useDiscoverActions', () => {
     expect(logSeriesAdded).toHaveBeenCalled();
     expect(result.current.snackbar.open).toBe(true);
     expect(result.current.snackbar.message).toContain('Title');
-    // removeFromResults filters all three collections
+    // markInList markiert statt zu entfernen: die Karte BLEIBT (inList:true), damit
+    // man nach dem Add weiterhin auf die Detailseite kommt.
     expect(setResults).toHaveBeenCalled();
     expect(setSearchResults).toHaveBeenCalled();
     expect(setRecommendations).toHaveBeenCalled();
+    const applied = (
+      setResults.mock.calls[0][0] as unknown as (p: DiscoverItem[]) => DiscoverItem[]
+    )([item({ id: 42, type: 'series' }), item({ id: 1, type: 'series' })]);
+    expect(applied.map((r) => r.id)).toEqual([42, 1]); // nichts entfernt
+    expect(applied.find((r) => r.id === 42)?.inList).toBe(true);
+    expect(applied.find((r) => r.id === 1)?.inList).toBe(false);
     expect(result.current.addingItem).toBeNull();
   });
 
