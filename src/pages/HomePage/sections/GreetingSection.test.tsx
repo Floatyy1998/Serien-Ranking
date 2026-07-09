@@ -20,6 +20,10 @@ vi.mock('../../../lib/text/greetings', () => ({
   getGreeting: () => ({ text: 'Guten Morgen', lang: 'Deutsch', title: '', type: '' }),
 }));
 vi.mock('../LiveClock', () => ({ LiveClock: () => <span data-testid="clock" /> }));
+vi.mock('./HomeSearchOverlay', () => ({
+  HomeSearchOverlay: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="home-search-overlay" /> : null,
+}));
 vi.mock('../../../components/ui', () => ({
   GradientText: ({ children }: { children?: React.ReactNode }) => <h1>{children}</h1>,
   HeaderActions: () => <div data-testid="header-actions" />,
@@ -93,9 +97,11 @@ describe('GreetingSection', () => {
     expect(screen.queryByText(/Heute/)).not.toBeInTheDocument();
   });
 
-  it('navigates to /search when the search bar is clicked', () => {
+  it('öffnet das Such-Overlay beim Klick auf den Suchbalken (kein Sprung zu /search)', () => {
     renderT();
+    expect(screen.queryByTestId('home-search-overlay')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Suche nach Serien oder Filmen'));
-    expect(navigateMock).toHaveBeenCalledWith('/search');
+    expect(screen.getByTestId('home-search-overlay')).toBeInTheDocument();
+    expect(navigateMock).not.toHaveBeenCalled();
   });
 });

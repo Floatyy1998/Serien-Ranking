@@ -1,6 +1,11 @@
-import { Search } from '@mui/icons-material';
 import { Chip } from '@mui/material';
-import { Movie as MovieIcon, NewReleases, PlayCircle, TrendingUp } from '@mui/icons-material';
+import {
+  Movie as MovieIcon,
+  NewReleases,
+  PlayCircle,
+  Search,
+  TrendingUp,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +16,7 @@ import { getGreeting } from '../../../lib/text/greetings';
 import { tmdbFetch } from '../../../services/tmdbClient';
 import { LiveClock } from '../LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
+import { HomeSearchOverlay } from './HomeSearchOverlay';
 
 interface GreetingSectionProps {
   displayName: string | undefined;
@@ -37,6 +43,7 @@ export const GreetingSection = React.memo(function GreetingSection({
   const { currentTheme } = useTheme();
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
 
@@ -223,18 +230,18 @@ export const GreetingSection = React.memo(function GreetingSection({
         </div>
       </header>
 
-      {/* Search Bar */}
+      {/* Search — öffnet das Frosted-Glass-Overlay über Home (kein Seitenwechsel). */}
       <div style={{ padding: '0 20px', marginBottom: '20px' }}>
         <motion.button
           type="button"
           whileTap={tapScaleSmall}
-          onClick={() => navigate('/search')}
+          onClick={() => setSearchOpen(true)}
           aria-label="Suche öffnen"
           style={{
             width: '100%',
             font: 'inherit',
             textAlign: 'left',
-            background: `${currentTheme.background.surface}`,
+            background: currentTheme.background.surface,
             border: `1px solid ${currentTheme.border.default}`,
             borderRadius: '16px',
             padding: '14px 16px',
@@ -253,6 +260,8 @@ export const GreetingSection = React.memo(function GreetingSection({
           </span>
         </motion.button>
       </div>
+
+      <HomeSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Quick Stats */}
       <HorizontalScrollContainer
