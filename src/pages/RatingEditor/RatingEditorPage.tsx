@@ -133,7 +133,7 @@ export const RatingEditorPage = () => {
         type="warning"
         actions={[
           { label: 'Abbrechen', onClick: cancelDelete, variant: 'secondary' },
-          { label: 'Löschen', onClick: confirmDelete },
+          { label: 'Löschen', onClick: confirmDelete, variant: 'danger' },
         ]}
       />
     </div>

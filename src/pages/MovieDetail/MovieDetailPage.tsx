@@ -161,7 +161,7 @@ export const MovieDetailPage = memo(() => {
           {
             label: 'Löschen',
             onClick: handleDeleteMovie,
-            variant: 'primary',
+            variant: 'danger',
           },
         ]}
       />

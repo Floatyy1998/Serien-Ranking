@@ -1,9 +1,17 @@
-import { Close } from '@mui/icons-material';
+import {
+  CheckCircleRounded,
+  Close,
+  ErrorOutlineRounded,
+  InfoRounded,
+  WarningAmberRounded,
+} from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { scaleIn, tapScale } from '../../lib/motion';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { IconButton } from './IconButton';
 
 interface MobileDialogProps {
@@ -15,7 +23,8 @@ interface MobileDialogProps {
   actions?: Array<{
     label: string;
     onClick: () => void;
-    variant?: 'primary' | 'secondary';
+    /** `danger` = destruktiv (roter Button), z. B. „Löschen". */
+    variant?: 'primary' | 'secondary' | 'danger';
   }>;
 }
 
@@ -33,37 +42,51 @@ export const Dialog = memo(
         case 'error':
           return currentTheme.status.error;
         case 'warning':
-          return currentTheme.status.warning;
+          return currentTheme.status.warning || currentTheme.status.error;
         default:
           return currentTheme.primary;
       }
     };
+    const typeColor = getTypeColor() || currentTheme.primary;
 
-    return (
+    const TypeIcon =
+      type === 'success'
+        ? CheckCircleRounded
+        : type === 'error'
+          ? ErrorOutlineRounded
+          : type === 'warning'
+            ? WarningAmberRounded
+            : InfoRounded;
+
+    // Portal an document.body: sonst macht ein transformierter Vorfahre (framer-
+    // Page-Wrapper) aus position:fixed einen Bezug auf den Container statt aufs
+    // Viewport → der Dialog wäre nicht zentriert / halb abgeschnitten.
+    return createPortal(
       <AnimatePresence>
         {open && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={onClose}
-              aria-hidden="true"
-              style={{
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: 'var(--overlay-backdrop)',
-                backdropFilter: 'var(--blur-sm)',
-                WebkitBackdropFilter: 'var(--blur-sm)',
-                zIndex: 'var(--z-modal-backdrop)' as string,
-              }}
-            />
-
+          // Backdrop = fixed Flex-Container, der den Dialog zentriert (Flexbox
+          // statt translate(-50%,-50%), weil framer/scaleIn das transform des
+          // Dialogs steuert und ein inline-translate überschreiben würde →
+          // Dialog landete sonst unten-rechts).
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px',
+              background: 'var(--overlay-backdrop)',
+              backdropFilter: 'var(--blur-sm)',
+              WebkitBackdropFilter: 'var(--blur-sm)',
+              zIndex: 'var(--z-modal)' as string,
+            }}
+          >
             {/* Dialog */}
             <motion.div
               ref={dialogRef}
@@ -76,130 +99,128 @@ export const Dialog = memo(
               aria-labelledby={title ? 'dialog-title' : undefined}
               aria-label={!title ? message.substring(0, 80) : undefined}
               aria-describedby="dialog-message"
+              onClick={(e) => e.stopPropagation()}
               style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
+                position: 'relative',
+                width: '100%',
+                maxWidth: '400px',
+                maxHeight: '85vh',
+                overflowY: 'auto',
                 background: currentTheme.background.paper,
                 border: '1px solid var(--glass-border-light)',
                 borderRadius: 'var(--radius-xl)',
                 padding: '24px',
-                minWidth: '280px',
-                maxWidth: '90%',
-                maxHeight: '80vh',
-                overflow: 'auto',
                 boxShadow: 'var(--shadow-cinematic)',
-                zIndex: 'var(--z-modal)' as string,
               }}
             >
-              {/* Header */}
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '16px',
-                }}
-              >
-                {title && (
-                  <h3
-                    id="dialog-title"
-                    style={{
-                      margin: 0,
-                      fontSize: '18px',
-                      fontWeight: 600,
-                      color: currentTheme.text.primary,
-                      flex: 1,
-                    }}
-                  >
-                    {title}
-                  </h3>
-                )}
-                <IconButton
-                  icon={<Close style={{ fontSize: '20px' }} />}
-                  onClick={onClose}
-                  variant="transparent"
-                  size={32}
-                  tooltip="Schließen"
-                  style={{ marginLeft: 'auto', marginTop: '-4px', marginRight: '-4px' }}
-                />
-              </div>
+              {/* Close */}
+              <IconButton
+                icon={<Close style={{ fontSize: '20px' }} />}
+                onClick={onClose}
+                variant="transparent"
+                size={32}
+                tooltip="Schließen"
+                style={{ position: 'absolute', top: '14px', right: '14px' }}
+              />
 
-              {/* Type indicator bar - only show for errors */}
-              {type === 'error' && (
+              {/* Header: Typ-Icon + Titel + Nachricht */}
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                 <div
                   aria-hidden="true"
                   style={{
-                    height: '3px',
-                    background: getTypeColor(),
-                    borderRadius: '2px',
-                    marginBottom: '16px',
-                    marginLeft: '-24px',
-                    marginRight: '-24px',
+                    width: '46px',
+                    height: '46px',
+                    flexShrink: 0,
+                    borderRadius: '14px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: `${typeColor}22`,
+                    color: typeColor,
+                    boxShadow: `inset 0 0 0 1px ${typeColor}33`,
                   }}
-                />
-              )}
-
-              {/* Message */}
-              <p
-                id="dialog-message"
-                style={{
-                  margin: '0 0 20px 0',
-                  fontSize: '15px',
-                  lineHeight: 1.5,
-                  color: currentTheme.text.primary,
-                }}
-              >
-                {message}
-              </p>
+                >
+                  <TypeIcon style={{ fontSize: '26px' }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0, paddingRight: '24px' }}>
+                  {title && (
+                    <h3
+                      id="dialog-title"
+                      style={{
+                        margin: '3px 0 0',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        lineHeight: 1.25,
+                        color: currentTheme.text.primary,
+                      }}
+                    >
+                      {title}
+                    </h3>
+                  )}
+                  <p
+                    id="dialog-message"
+                    style={{
+                      margin: title ? '8px 0 0' : '3px 0 0',
+                      fontSize: '15px',
+                      lineHeight: 1.55,
+                      color: currentTheme.text.secondary,
+                    }}
+                  >
+                    {message}
+                  </p>
+                </div>
+              </div>
 
               {/* Actions */}
               {actions && actions.length > 0 && (
                 <div
                   style={{
                     display: 'flex',
-                    gap: '12px',
+                    gap: '10px',
                     justifyContent: 'flex-end',
+                    marginTop: '24px',
                   }}
                 >
-                  {actions.map((action, index) => (
-                    <motion.button
-                      key={index}
-                      whileTap={tapScale}
-                      onClick={() => {
-                        action.onClick();
-                        onClose();
-                      }}
-                      style={{
-                        padding: '10px 20px',
-                        borderRadius: 'var(--radius-sm)',
-                        border:
-                          action.variant === 'secondary'
-                            ? `1px solid ${currentTheme.border.default}`
-                            : 'none',
-                        background:
-                          action.variant === 'secondary'
-                            ? 'transparent'
-                            : type === 'error'
-                              ? currentTheme.status.error
-                              : currentTheme.primary,
-                        color: action.variant === 'secondary' ? currentTheme.text.primary : 'white',
-                        fontSize: '15px',
-                        fontWeight: 500,
-                        cursor: 'pointer',
-                        transition: 'background 0.2s ease',
-                      }}
-                    >
-                      {action.label}
-                    </motion.button>
-                  ))}
+                  {actions.map((action, index) => {
+                    const isSecondary = action.variant === 'secondary';
+                    const useDanger = action.variant === 'danger' || type === 'error';
+                    const solidBg = useDanger ? currentTheme.status.error : currentTheme.primary;
+                    return (
+                      <motion.button
+                        key={index}
+                        whileTap={tapScale}
+                        onClick={() => {
+                          action.onClick();
+                          onClose();
+                        }}
+                        style={{
+                          minHeight: '44px',
+                          padding: '0 22px',
+                          borderRadius: 'var(--radius-md)',
+                          border: isSecondary ? `1px solid ${currentTheme.border.default}` : 'none',
+                          background: isSecondary ? 'transparent' : solidBg,
+                          color: isSecondary
+                            ? currentTheme.text.primary
+                            : useDanger
+                              ? '#fff'
+                              : getOptimalTextColor(currentTheme.primary),
+                          fontSize: '15px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          transition: 'transform 0.12s ease, opacity 0.2s ease',
+                        }}
+                      >
+                        {action.label}
+                      </motion.button>
+                    );
+                  })}
                 </div>
               )}
             </motion.div>
-          </>
+          </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
     );
   }
 );
