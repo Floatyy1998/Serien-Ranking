@@ -161,7 +161,8 @@ export const detectProviderChanges = async (
           return null;
         }
 
-        const knownFiltered = known.providers
+        // `known.providers` kann bei Legacy-/Teil-State fehlen → gegen undefined absichern.
+        const knownFiltered = (known.providers ?? [])
           .map((p) => normalizeProviderName(p))
           .filter((p): p is string => p !== null);
         const addedProviders = currentProviders.filter((p) => !knownFiltered.includes(p));
