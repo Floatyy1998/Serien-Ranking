@@ -47,8 +47,8 @@
   top: 0;
   z-index: var(--z-dropdown);
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
   display: flex;
   align-items: center;
@@ -112,8 +112,8 @@
   display: flex;
   align-items: center;
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
   border-bottom: 1px solid var(--glass-border-subtle);
@@ -555,8 +555,8 @@
   left: 0;
   right: 0;
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.85));
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
@@ -607,8 +607,8 @@
   right: 0;
   bottom: 0;
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -773,8 +773,8 @@
   display: flex;
   align-items: center;
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
   gap: 10px;
   border-bottom: 1px solid var(--glass-border-subtle);

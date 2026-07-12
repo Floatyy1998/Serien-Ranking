@@ -130,8 +130,8 @@
   gap: 8px;
   padding: 10px 18px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(20, 20, 40, 0.5));
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-lg);
   color: #fff;
@@ -275,8 +275,8 @@
   cursor: pointer;
   font-size: 15px;
   font-weight: 600;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   transition:
     background 0.2s ease,
     transform 0.2s ease;
@@ -309,8 +309,8 @@
   padding: 10px;
   border-radius: var(--radius-md);
   text-align: left;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border: 1px solid var(--glass-border-subtle);
   transition: transform 0.2s ease;
 }
@@ -375,8 +375,8 @@
   border-radius: var(--radius-xl);
   position: relative;
   overflow: hidden;
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   border: 1px solid var(--glass-border-subtle);
 }
 
@@ -429,8 +429,8 @@
 .ed-crew-card {
   padding: 18px;
   border-radius: var(--radius-lg);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border: 1px solid var(--glass-border-subtle);
   transition:
     transform 0.2s ease,

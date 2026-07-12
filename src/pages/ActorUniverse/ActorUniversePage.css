@@ -25,8 +25,8 @@
 .au-header {
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   position: relative;
   z-index: 10;
 }
@@ -211,8 +211,8 @@
   position: fixed;
   inset: 0;
   background: rgba(10, 14, 26, 0.75);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   z-index: 200;
   display: flex;
   align-items: flex-end;

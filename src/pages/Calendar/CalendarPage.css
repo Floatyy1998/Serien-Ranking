@@ -250,8 +250,8 @@
   padding: 10px 12px;
   border-radius: var(--radius-md);
   background: var(--glass-light);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border: 1px solid var(--glass-border-light);
   border-left: 4px solid transparent;
   cursor: pointer;
@@ -563,8 +563,8 @@
     color-mix(in srgb, var(--theme-primary, #00d123) 12%, transparent),
     var(--glass-light)
   );
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   color: var(--color-text-secondary);
   cursor: pointer;
   text-align: left;
@@ -775,8 +775,8 @@
     padding: 8px;
     z-index: 2;
     background: rgba(10, 14, 26, 0.75);
-    backdrop-filter: var(--blur-sm);
     -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
   }
 
   /* Reserve space when provider badge is present */
@@ -888,8 +888,8 @@
     border-radius: 50%;
     border: 2px solid;
     background: rgba(10, 14, 26, 0.4);
-    backdrop-filter: var(--blur-sm);
     -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-sm);
     cursor: pointer;
     padding: 0;
     margin: 0;

@@ -5,8 +5,8 @@
   margin: 0 20px 24px;
   padding: 28px;
   border-radius: var(--radius-2xl);
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   border: 1px solid color-mix(in srgb, var(--color-primary, #00d123) 15%, transparent);
   box-shadow:
     0 8px 32px rgba(0, 0, 0, 0.3),

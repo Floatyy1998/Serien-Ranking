@@ -49,8 +49,8 @@
   position: sticky;
   top: 0;
   z-index: var(--z-dropdown);
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
 }
 
 .activity-header__row {

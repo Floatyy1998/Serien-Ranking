@@ -351,8 +351,8 @@
   cursor: pointer;
   color: rgba(255, 255, 255, 0.7);
   z-index: var(--z-skip-nav);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 .lb-confetti {
   position: fixed;

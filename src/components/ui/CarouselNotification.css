@@ -37,8 +37,8 @@
 .series-notification-inner {
   position: relative;
   padding: 12px 14px 10px;
-  backdrop-filter: var(--glass-filter-md);
   -webkit-backdrop-filter: var(--glass-filter-md);
+  backdrop-filter: var(--glass-filter-md);
 }
 
 /* Hintergrund-Aura im Header */
@@ -276,8 +276,8 @@
   flex: 1;
   background: var(--glass-medium);
   border: 1px solid var(--glass-border-light);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 
 .series-notification-btn--secondary:hover:not(:disabled) {
@@ -310,8 +310,8 @@
   bottom: calc(100% + 8px);
   right: 0;
   background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
   border-radius: 14px;
   padding: 6px;
@@ -614,8 +614,8 @@
   gap: 4px;
   padding: 3px;
   background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   border-radius: 12px;
   margin-bottom: 6px;
   overflow-x: auto;
@@ -690,8 +690,8 @@
   padding: 10px 14px;
   border-radius: 14px;
   background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   border: 1px solid var(--glass-border-subtle);
   cursor: pointer;
   transition: all 0.2s var(--ease-default);

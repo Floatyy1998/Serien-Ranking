@@ -123,6 +123,11 @@ export default defineConfig(({ command }) => ({
     minify: 'oxc',
     modulePreload: { polyfill: false },
     cssMinify: 'lightningcss',
+    // Ohne Targets verschmilzt Lightning CSS `-webkit-backdrop-filter` +
+    // `backdrop-filter` zu EINER Deklaration (die letzte gewinnt) — das hat
+    // live den Blur in Firefox gekillt. Mit Targets generiert er die nötigen
+    // Prefixe selbst (Safari < 18 braucht -webkit-backdrop-filter).
+    cssTarget: ['chrome100', 'safari16', 'firefox115'],
     cssCodeSplit: true,
     sourcemap: false,
     reportCompressedSize: false,

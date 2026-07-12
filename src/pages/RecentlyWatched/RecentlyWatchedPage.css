@@ -8,8 +8,8 @@
   left: 0;
   right: 0;
   z-index: var(--z-sticky);
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
 }
 
 /* ── Search bar ───────────────────────────────────────────────────────────── */

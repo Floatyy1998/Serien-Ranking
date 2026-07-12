@@ -330,8 +330,8 @@ export const ProgressWrapper = styled(Box)`
   padding: 20px;
   background: var(--glass-subtle);
   border-radius: var(--radius-xl, 20px);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border: 1px solid color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
 

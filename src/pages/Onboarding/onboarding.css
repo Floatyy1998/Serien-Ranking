@@ -550,8 +550,8 @@
   border-radius: 8px;
   color: var(--ob-text);
   z-index: 2;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 .ob-card__action {
   position: absolute;
@@ -569,8 +569,8 @@
   cursor: pointer;
   z-index: 2;
   transition: all 0.25s;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 .ob-card--added .ob-card__action {
   background: linear-gradient(135deg, var(--ob-paper), var(--ob-paper-2));
@@ -583,8 +583,8 @@
   align-items: center;
   justify-content: center;
   background: rgba(6, 7, 11, 0.55);
-  backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
   z-index: 3;
 }
 .ob-card__spinner {
@@ -649,8 +649,8 @@
   position: fixed;
   inset: 0;
   background: rgba(6, 7, 11, 0.72);
-  backdrop-filter: var(--blur-md) saturate(0.7);
   -webkit-backdrop-filter: var(--blur-md) saturate(0.7);
+  backdrop-filter: var(--blur-md) saturate(0.7);
   z-index: 9998;
 }
 .ob-sheet {

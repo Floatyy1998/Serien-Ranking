@@ -102,8 +102,8 @@
   z-index: var(--z-dropdown);
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   border-bottom: 1px solid var(--glass-border-light);
 }
 
@@ -256,8 +256,8 @@
 }
 
 .pp-card__provider-badge {
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border-radius: var(--radius-sm);
   padding: 2px;
   width: 28px;
@@ -275,8 +275,8 @@
 }
 
 .pp-card__provider-more {
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   border: 1px solid var(--glass-border-light);
   border-radius: var(--radius-sm);
   width: 28px;

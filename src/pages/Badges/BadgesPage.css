@@ -10,8 +10,8 @@
   justify-content: space-between;
   padding: calc(20px + env(safe-area-inset-top)) 20px 20px;
   /* background wird inline in der Komponente gesetzt */
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   position: relative;
   z-index: var(--z-dropdown);
 }
@@ -66,8 +66,8 @@
   background: var(--color-background-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-default);
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
 }
 
 .progress-header {

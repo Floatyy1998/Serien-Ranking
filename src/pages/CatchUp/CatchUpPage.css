@@ -40,8 +40,8 @@
   margin: 8px 20px 24px;
   padding: 24px;
   border-radius: var(--radius-2xl);
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
 }
 
 .cu-hero-grid {
@@ -178,8 +178,8 @@
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   box-shadow: var(--shadow-md);
   content-visibility: auto;
   contain-intrinsic-block-size: auto 130px;

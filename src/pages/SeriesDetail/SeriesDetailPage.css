@@ -113,8 +113,8 @@
   flex: 1;
   min-width: 0;
   background: rgba(10, 14, 26, 0.55);
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   border-radius: 20px;
   padding: 24px 28px;
   border: 1px solid var(--glass-border-medium);
@@ -131,8 +131,8 @@
 .hero-section__add-btn {
   position: absolute;
   z-index: 10;
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
   border: 1px solid var(--glass-border-light);
   color: white;
   font-size: 24px;

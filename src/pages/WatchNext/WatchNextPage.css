@@ -2,8 +2,8 @@
 .watch-next-header {
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   border-bottom: 1px solid var(--glass-border-subtle);
   flex-shrink: 0;
   position: relative;
@@ -151,8 +151,8 @@
   text-align: left;
   -webkit-appearance: none;
   appearance: none;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
@@ -272,8 +272,8 @@
   align-items: center;
   gap: 4px;
   background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
 }

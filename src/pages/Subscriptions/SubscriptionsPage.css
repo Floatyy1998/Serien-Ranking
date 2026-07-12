@@ -36,8 +36,8 @@
   border-style: solid;
   position: relative;
   overflow: hidden;
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
 }
 
 .sub-insight-card--full {
@@ -821,8 +821,8 @@
   border-radius: var(--radius-xl);
   border-width: 1px;
   border-style: solid;
-  backdrop-filter: var(--blur-md);
   -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
 }
 
 .sub-opt-tile-label {

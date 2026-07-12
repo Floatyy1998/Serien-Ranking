@@ -34,8 +34,8 @@
   font-size: 15px;
   outline: none;
   transition: all 0.2s;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
   font-family: var(--font-body);
 }
 
@@ -71,8 +71,8 @@
   max-height: 400px;
   overflow-y: auto;
   z-index: 100;
-  backdrop-filter: var(--blur-lg);
   -webkit-backdrop-filter: var(--blur-lg);
+  backdrop-filter: var(--blur-lg);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
@@ -320,8 +320,8 @@
   border-radius: 6px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 
 /* ─── Bottom Section ─────────────────────────────────────── */

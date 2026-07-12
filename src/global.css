@@ -159,22 +159,22 @@
  * =========================================================================== */
 .glass-card-light {
   background: var(--glass-light);
-  backdrop-filter: var(--glass-filter-md);
   -webkit-backdrop-filter: var(--glass-filter-md);
+  backdrop-filter: var(--glass-filter-md);
   border: 1px solid var(--glass-border-light);
   box-shadow: var(--glass-specular);
 }
 .glass-card-medium {
   background: var(--glass-medium);
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-medium);
   box-shadow: var(--glass-specular);
 }
 .glass-card-heavy {
   background: var(--glass-heavy);
-  backdrop-filter: var(--glass-filter-xl);
   -webkit-backdrop-filter: var(--glass-filter-xl);
+  backdrop-filter: var(--glass-filter-xl);
   border: 1px solid var(--glass-border-medium);
   box-shadow: var(--glass-specular);
 }
@@ -187,8 +187,8 @@
   background:
     radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.015) 60%),
     var(--glass-light);
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
   border-top-color: rgba(255, 255, 255, 0.22);
   box-shadow: var(--shadow-lg), var(--glass-specular);
@@ -588,8 +588,8 @@ button:active:not(:disabled),
 /* Frosted surface - Premium Glassmorphism (token-driven, gradient flavor). */
 .frosted-surface {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: var(--glass-filter-lg);
   -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
   box-shadow: var(--glass-specular);
 }

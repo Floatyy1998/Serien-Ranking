@@ -124,8 +124,8 @@
   /* Frosted-Glass wie die Countdown-Kacheln im Hero: Glas-Fläche +
      dezente Primary-getönte Border (statt animierter Gradient-Rahmen). */
   background: var(--glass-medium);
-  backdrop-filter: var(--glass-filter-sm);
   -webkit-backdrop-filter: var(--glass-filter-sm);
+  backdrop-filter: var(--glass-filter-sm);
   border: 1px solid color-mix(in srgb, var(--theme-primary) 22%, transparent);
   box-shadow: var(--shadow-lg);
   transition:
@@ -272,8 +272,8 @@
   min-width: 38px;
   min-height: 38px;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: var(--blur-sm);
   -webkit-backdrop-filter: var(--blur-sm);
+  backdrop-filter: var(--blur-sm);
 }
 
 .as-card-title {
@@ -763,8 +763,8 @@
   border-radius: var(--radius-md);
   background: var(--glass-medium);
   border: 1px solid;
-  backdrop-filter: var(--glass-filter-sm);
   -webkit-backdrop-filter: var(--glass-filter-sm);
+  backdrop-filter: var(--glass-filter-sm);
   font-family: var(--font-display);
   font-size: clamp(20px, 2.2vw, 30px);
   font-weight: 800;
