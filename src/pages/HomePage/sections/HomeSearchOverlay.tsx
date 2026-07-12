@@ -130,6 +130,18 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
 
   const hasQuery = query.trim().length >= 2;
 
+  // Klick auf freie Fläche schließt. Interaktive Elemente (Suchfeld, Karten,
+  // Chips, Buttons) sind ausgenommen — deren Klicks bubbeln zwar hierher,
+  // treffen aber per closest() auf ein interaktives Ziel.
+  const onBackdropClick = useCallback(
+    (e: React.MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('button, input, [role="button"], .hso__field')) return;
+      onClose();
+    },
+    [onClose]
+  );
+
   const goTo = (item: QuickResult) => {
     if (query.trim()) saveRecent(query);
     // KEIN onClose() vor navigate: das würde die Exit-Animation abspielen und
@@ -148,8 +160,8 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
-          onClick={onClose}
-          style={{ background: `${currentTheme.background.default}a6` }}
+          onClick={onBackdropClick}
+          style={{ background: `${currentTheme.background.default}d9` }}
         >
           {/* Ambient-Glows */}
           <motion.div
@@ -180,7 +192,6 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -18, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 440, damping: 34 }}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="hso__bar-row">
               <div
@@ -259,208 +270,209 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
           </motion.div>
 
           {/* Inhalt */}
-          <div className="hso__content" onClick={(e) => e.stopPropagation()}>
-            <AnimatePresence mode="wait">
-              {hasQuery ? (
-                loading && shown.length === 0 ? (
-                  <motion.div
-                    key="loading"
-                    className="hso__grid"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="hso__skeleton"
-                        style={{ background: `${currentTheme.text.muted}18` }}
-                      />
-                    ))}
-                  </motion.div>
-                ) : shown.length === 0 ? (
-                  <motion.div
-                    key="empty"
-                    className="hso__msg"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    style={{ color: currentTheme.text.muted }}
-                  >
-                    <Search style={{ fontSize: '40px', opacity: 0.5 }} />
-                    <p>Keine Treffer für &bdquo;{query}&ldquo;</p>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="results"
-                    className="hso__grid"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                  >
-                    {shown.map((item, idx) => {
-                      const added = isInList(item);
-                      const pending = pendingKey === keyOf(item);
-                      return (
-                        <motion.div
-                          key={`${item.type}-${item.id}`}
-                          className="hso__card"
-                          role="button"
-                          tabIndex={0}
-                          whileTap={tapScale}
-                          initial={{ opacity: 0, y: 18 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: Math.min(idx * 0.03, 0.35), duration: 0.28 }}
-                          onClick={() => goTo(item)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              goTo(item);
-                            }
-                          }}
-                        >
-                          <div className="hso__poster-wrap">
-                            {item.poster_path ? (
-                              <img
-                                className="hso__poster"
-                                src={getImageUrl(item.poster_path, 'w342')}
-                                alt=""
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div
-                                className="hso__poster hso__poster--empty"
-                                style={{ background: `${currentTheme.text.muted}22` }}
-                              >
-                                <Search style={{ fontSize: '28px', opacity: 0.4 }} />
-                              </div>
-                            )}
-                            {item.vote_average ? (
-                              <span
-                                className="hso__rating"
-                                style={{ background: `${currentTheme.background.default}d9` }}
-                              >
-                                <Star style={{ fontSize: '12px', color: currentTheme.accent }} />
-                                {item.vote_average.toFixed(1)}
-                              </span>
-                            ) : null}
-                            <span
-                              className="hso__type"
-                              style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}
-                            >
-                              {item.type === 'series' ? 'Serie' : 'Film'}
-                            </span>
-
-                            {added ? (
-                              <span
-                                className="hso__added"
-                                aria-label="In deiner Liste"
-                                style={{ background: currentTheme.status.success, color: '#fff' }}
-                              >
-                                <Check style={{ fontSize: '18px' }} />
-                              </span>
-                            ) : (
-                              <button
-                                type="button"
-                                className="hso__add"
-                                aria-label={`„${item.title}" zur Liste hinzufügen`}
-                                disabled={pending}
-                                onClick={(e) => addToList(item, e)}
-                                style={{
-                                  background: pending
-                                    ? 'var(--glass-heavy)'
-                                    : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                                  color: onPrimary,
-                                  cursor: pending ? 'wait' : 'pointer',
-                                  opacity: pending ? 0.7 : 1,
-                                }}
-                              >
-                                <Add style={{ fontSize: '20px' }} />
-                              </button>
-                            )}
-                          </div>
-                          <span
-                            className="hso__card-title"
-                            style={{ color: currentTheme.text.primary }}
-                          >
-                            {item.title}
-                          </span>
-                          {item.year && (
-                            <span
-                              className="hso__card-year"
-                              style={{ color: currentTheme.text.muted }}
-                            >
-                              {item.year}
-                            </span>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-                )
+          <div className="hso__content">
+            {/* Bewusst KEIN AnimatePresence mode="wait" hier: die Keys wechseln bei
+                jedem Tastendruck (loading/empty/results), und mode="wait" kann bei
+                schnellem Tippen im Exit hängen bleiben — dann klebt eine veraltete
+                „Keine Treffer"-Meldung fest. Einblenden reicht. */}
+            {hasQuery ? (
+              loading && shown.length === 0 ? (
+                <motion.div
+                  key="loading"
+                  className="hso__grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="hso__skeleton"
+                      style={{ background: `${currentTheme.text.muted}18` }}
+                    />
+                  ))}
+                </motion.div>
+              ) : shown.length === 0 ? (
+                <motion.div
+                  key="empty"
+                  className="hso__msg"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  style={{ color: currentTheme.text.muted }}
+                >
+                  <Search style={{ fontSize: '40px', opacity: 0.5 }} />
+                  <p>Keine Treffer für &bdquo;{query}&ldquo;</p>
+                </motion.div>
               ) : (
                 <motion.div
-                  key="suggest"
-                  className="hso__suggest"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  key="results"
+                  className="hso__grid"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                 >
-                  {recent.length > 0 && (
-                    <div className="hso__group">
-                      <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                        Zuletzt gesucht
-                      </div>
-                      {recent.map((term) => (
-                        <div key={term} className="hso__recent-row">
-                          <button
-                            type="button"
-                            className="hso__recent"
-                            onClick={() => setQuery(term)}
-                            style={{ color: currentTheme.text.secondary }}
+                  {shown.map((item, idx) => {
+                    const added = isInList(item);
+                    const pending = pendingKey === keyOf(item);
+                    return (
+                      <motion.div
+                        key={`${item.type}-${item.id}`}
+                        className="hso__card"
+                        role="button"
+                        tabIndex={0}
+                        whileTap={tapScale}
+                        initial={{ opacity: 0, y: 18 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(idx * 0.03, 0.35), duration: 0.28 }}
+                        onClick={() => goTo(item)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            goTo(item);
+                          }
+                        }}
+                      >
+                        <div className="hso__poster-wrap">
+                          {item.poster_path ? (
+                            <img
+                              className="hso__poster"
+                              src={getImageUrl(item.poster_path, 'w342')}
+                              alt=""
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div
+                              className="hso__poster hso__poster--empty"
+                              style={{ background: `${currentTheme.text.muted}22` }}
+                            >
+                              <Search style={{ fontSize: '28px', opacity: 0.4 }} />
+                            </div>
+                          )}
+                          {item.vote_average ? (
+                            <span
+                              className="hso__rating"
+                              style={{ background: `${currentTheme.background.default}d9` }}
+                            >
+                              <Star style={{ fontSize: '12px', color: currentTheme.accent }} />
+                              {item.vote_average.toFixed(1)}
+                            </span>
+                          ) : null}
+                          <span
+                            className="hso__type"
+                            style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}
                           >
-                            <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
-                            {term}
-                          </button>
-                          <button
-                            type="button"
-                            className="hso__recent-remove"
-                            aria-label={`„${term}" entfernen`}
-                            onClick={() => removeRecent(term)}
+                            {item.type === 'series' ? 'Serie' : 'Film'}
+                          </span>
+
+                          {added ? (
+                            <span
+                              className="hso__added"
+                              aria-label="In deiner Liste"
+                              style={{ background: currentTheme.status.success, color: '#fff' }}
+                            >
+                              <Check style={{ fontSize: '18px' }} />
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="hso__add"
+                              aria-label={`„${item.title}" zur Liste hinzufügen`}
+                              disabled={pending}
+                              onClick={(e) => addToList(item, e)}
+                              style={{
+                                background: pending
+                                  ? 'var(--glass-heavy)'
+                                  : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                                color: onPrimary,
+                                cursor: pending ? 'wait' : 'pointer',
+                                opacity: pending ? 0.7 : 1,
+                              }}
+                            >
+                              <Add style={{ fontSize: '20px' }} />
+                            </button>
+                          )}
+                        </div>
+                        <span
+                          className="hso__card-title"
+                          style={{ color: currentTheme.text.primary }}
+                        >
+                          {item.title}
+                        </span>
+                        {item.year && (
+                          <span
+                            className="hso__card-year"
                             style={{ color: currentTheme.text.muted }}
                           >
-                            <Close style={{ fontSize: '15px' }} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                            {item.year}
+                          </span>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )
+            ) : (
+              <motion.div
+                key="suggest"
+                className="hso__suggest"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {recent.length > 0 && (
                   <div className="hso__group">
                     <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                      Beliebt
+                      Zuletzt gesucht
                     </div>
-                    <div className="hso__chips">
-                      {popular.map((term, i) => (
-                        <motion.button
-                          key={term}
+                    {recent.map((term) => (
+                      <div key={term} className="hso__recent-row">
+                        <button
                           type="button"
-                          className="hso__chip"
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.05 + i * 0.04 }}
-                          whileTap={tapScale}
+                          className="hso__recent"
                           onClick={() => setQuery(term)}
-                          style={{
-                            color: currentTheme.text.secondary,
-                            background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
-                            border: `1px solid ${currentTheme.primary}33`,
-                          }}
+                          style={{ color: currentTheme.text.secondary }}
                         >
+                          <Search style={{ fontSize: '18px', color: currentTheme.text.muted }} />
                           {term}
-                        </motion.button>
-                      ))}
-                    </div>
+                        </button>
+                        <button
+                          type="button"
+                          className="hso__recent-remove"
+                          aria-label={`„${term}" entfernen`}
+                          onClick={() => removeRecent(term)}
+                          style={{ color: currentTheme.text.muted }}
+                        >
+                          <Close style={{ fontSize: '15px' }} />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                )}
+                <div className="hso__group">
+                  <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
+                    Beliebt
+                  </div>
+                  <div className="hso__chips">
+                    {popular.map((term, i) => (
+                      <motion.button
+                        key={term}
+                        type="button"
+                        className="hso__chip"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.05 + i * 0.04 }}
+                        whileTap={tapScale}
+                        onClick={() => setQuery(term)}
+                        style={{
+                          color: currentTheme.text.secondary,
+                          background: `linear-gradient(135deg, ${currentTheme.primary}18, ${currentTheme.accent}14)`,
+                          border: `1px solid ${currentTheme.primary}33`,
+                        }}
+                      >
+                        {term}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           <div onClick={(e) => e.stopPropagation()}>
