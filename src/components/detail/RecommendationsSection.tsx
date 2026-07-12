@@ -86,8 +86,8 @@ const SectionHeader = memo(
           marginBottom: isMobile ? 16 : 22,
           padding: isMobile ? '10px 12px' : '12px 16px',
           background: 'var(--glass-light)',
-          backdropFilter: 'var(--blur-lg) saturate(1.4)',
-          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
+          backdropFilter: 'var(--glass-filter-lg)',
+          WebkitBackdropFilter: 'var(--glass-filter-lg)',
           border: '1px solid var(--glass-border-light)',
           borderRadius: 14,
         }}
@@ -385,8 +385,8 @@ const MagneticCard = memo(
                     background: justAdded
                       ? `${currentTheme.status.success}cc`
                       : 'rgba(0, 0, 0, 0.55)',
-                    backdropFilter: 'var(--blur-md) saturate(1.6)',
-                    WebkitBackdropFilter: 'var(--blur-md) saturate(1.6)',
+                    backdropFilter: 'var(--glass-filter-md)',
+                    WebkitBackdropFilter: 'var(--glass-filter-md)',
                     color: '#fff',
                     display: 'flex',
                     alignItems: 'center',

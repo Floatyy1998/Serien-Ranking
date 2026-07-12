@@ -66,6 +66,15 @@
   --blur-lg: blur(24px);
   --blur-xl: blur(40px);
 
+  /* Design Tokens - Liquid-Glass-Filter (Blur + Refraktion).
+     Die eine Quelle für alle backdrop-filter: kräftige Sättigung + leichte
+     Brightness lassen Inhalte hinter dem Glas farbig „durchglühen" statt nur
+     matschig zu verschwimmen. Immer diese Tokens statt blur+saturate-Kombis. */
+  --glass-filter-sm: var(--blur-sm) saturate(1.7) brightness(1.05);
+  --glass-filter-md: var(--blur-md) saturate(1.75) brightness(1.06);
+  --glass-filter-lg: var(--blur-lg) saturate(1.8) brightness(1.07);
+  --glass-filter-xl: var(--blur-xl) saturate(1.85) brightness(1.08);
+
   /* Design Tokens - Overlay / Modal Backdrop (single source for dialog scrims) */
   --overlay-backdrop: rgba(0, 0, 0, 0.6);
 
@@ -107,14 +116,21 @@
     0 0 80px color-mix(in srgb, var(--theme-primary) 10%, transparent),
     0 0 120px color-mix(in srgb, var(--theme-secondary-gradient) 8%, transparent);
 
-  /* Glass-Stufen - tiefere Kontraste */
-  --glass-subtle: rgba(255, 255, 255, 0.02);
-  --glass-light: rgba(255, 255, 255, 0.04);
-  --glass-medium: rgba(255, 255, 255, 0.07);
-  --glass-heavy: rgba(255, 255, 255, 0.11);
-  --glass-border-subtle: rgba(255, 255, 255, 0.05);
-  --glass-border-light: rgba(255, 255, 255, 0.08);
-  --glass-border-medium: rgba(255, 255, 255, 0.13);
+  /* Glass-Stufen — chromatisch: minimal mit der Theme-Primary getönt statt
+     neutralweiß. Das Glas nimmt dadurch die Identität des User-Themes an
+     (kaskadiert automatisch bei Theme-Wechsel). */
+  --glass-subtle: color-mix(in srgb, var(--theme-primary) 2%, rgba(255, 255, 255, 0.02));
+  --glass-light: color-mix(in srgb, var(--theme-primary) 3%, rgba(255, 255, 255, 0.04));
+  --glass-medium: color-mix(in srgb, var(--theme-primary) 4%, rgba(255, 255, 255, 0.07));
+  --glass-heavy: color-mix(in srgb, var(--theme-primary) 5%, rgba(255, 255, 255, 0.11));
+  --glass-border-subtle: color-mix(in srgb, var(--theme-primary) 6%, rgba(255, 255, 255, 0.05));
+  --glass-border-light: color-mix(in srgb, var(--theme-primary) 8%, rgba(255, 255, 255, 0.08));
+  --glass-border-medium: color-mix(in srgb, var(--theme-primary) 10%, rgba(255, 255, 255, 0.13));
+
+  /* Specular-Kanten: heller Lichtfang oben, feine Ablösung unten — der
+     „geschliffene" Rand, der Glas von einem grauen Overlay unterscheidet. */
+  --glass-specular:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 
   /* Gradient-Tokens */
   --gradient-primary: linear-gradient(
@@ -143,21 +159,39 @@
  * =========================================================================== */
 .glass-card-light {
   background: var(--glass-light);
-  backdrop-filter: var(--blur-md) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-md) saturate(1.4);
+  backdrop-filter: var(--glass-filter-md);
+  -webkit-backdrop-filter: var(--glass-filter-md);
   border: 1px solid var(--glass-border-light);
+  box-shadow: var(--glass-specular);
 }
 .glass-card-medium {
   background: var(--glass-medium);
-  backdrop-filter: var(--blur-lg) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-medium);
+  box-shadow: var(--glass-specular);
 }
 .glass-card-heavy {
   background: var(--glass-heavy);
-  backdrop-filter: var(--blur-xl) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-xl) saturate(1.4);
+  backdrop-filter: var(--glass-filter-xl);
+  -webkit-backdrop-filter: var(--glass-filter-xl);
   border: 1px solid var(--glass-border-medium);
+  box-shadow: var(--glass-specular);
+}
+
+/* Liquid Glass — die Vollausbaustufe: chromatischer Tint + Licht von oben
+   (radialer Sheen) + Specular-Kanten + Tiefe. Für prominente Flächen
+   (Docks, Overlays, Sheets); für einfache Karten reichen .glass-card-*. */
+.liquid-glass {
+  position: relative;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.015) 60%),
+    var(--glass-light);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
+  border: 1px solid var(--glass-border-light);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  box-shadow: var(--shadow-lg), var(--glass-specular);
 }
 
 /* Scrollbars: the styled custom scrollbar lives in index.css (single source of
@@ -554,9 +588,10 @@ button:active:not(:disabled),
 /* Frosted surface - Premium Glassmorphism (token-driven, gradient flavor). */
 .frosted-surface {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: var(--blur-lg) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
+  box-shadow: var(--glass-specular);
 }
 
 /* Inner light - subtiler Lichtschein am oberen Rand */

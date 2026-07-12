@@ -25,8 +25,8 @@ export const SendRecommendationBar: React.FC<SendRecommendationBarProps> = ({
         padding: isMobile ? '14px 20px 6px' : '18px 30px 8px',
         borderTop: `1px solid ${currentTheme.border.default}40`,
         background: `linear-gradient(180deg, ${currentTheme.background.surface}cc 0%, ${currentTheme.background.default} 60%)`,
-        backdropFilter: 'var(--blur-md) saturate(1.4)',
-        WebkitBackdropFilter: 'var(--blur-md) saturate(1.4)',
+        backdropFilter: 'var(--glass-filter-md)',
+        WebkitBackdropFilter: 'var(--glass-filter-md)',
       }}
     >
       <motion.button

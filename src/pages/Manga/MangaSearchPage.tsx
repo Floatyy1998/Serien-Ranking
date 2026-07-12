@@ -112,8 +112,8 @@ export const MangaSearchPage = () => {
           top: 0,
           zIndex: 100,
           background: `${currentTheme.background.default}e8`,
-          backdropFilter: 'var(--blur-lg) saturate(1.4)',
-          WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
+          backdropFilter: 'var(--glass-filter-lg)',
+          WebkitBackdropFilter: 'var(--glass-filter-lg)',
         }}
       >
         <div

@@ -27,12 +27,31 @@ interface TmdbListResponse {
     release_date?: string;
     first_air_date?: string;
     popularity?: number;
+    media_type?: string;
   }>;
 }
 
 const RECENT_KEY = 'recentSearches';
 const MAX_RECENT = 6;
-const POPULAR_SEARCHES = ['Breaking Bad', 'The Last of Us', 'Dune', 'Oppenheimer', 'Wednesday'];
+// 12 Titel, damit die „Beliebt"-Reihe auch auf 2K-Screens die Breite füllt.
+const POPULAR_SEARCHES = [
+  'Breaking Bad',
+  'The Last of Us',
+  'Dune',
+  'Oppenheimer',
+  'Wednesday',
+  'Stranger Things',
+  'House of the Dragon',
+  'Arcane',
+  'Interstellar',
+  'Severance',
+  'The Bear',
+  'One Piece',
+];
+
+// Session-Cache für die „Beliebt"-Poster: einmal auflösen, dann für jedes
+// erneute Öffnen des Overlays wiederverwenden (spart TMDB-Requests).
+let popularCache: QuickResult[] | null = null;
 
 export interface UseHomeQuickSearchResult {
   query: string;
@@ -41,11 +60,17 @@ export interface UseHomeQuickSearchResult {
   loading: boolean;
   recent: string[];
   popular: string[];
+  /** „Beliebt" als konkrete Titel mit Postern (leer, bis TMDB aufgelöst hat). */
+  popularItems: QuickResult[];
   saveRecent: (q: string) => void;
   removeRecent: (term: string) => void;
 }
 
-export function useHomeQuickSearch(): UseHomeQuickSearchResult {
+/**
+ * @param active Erst wenn true (Overlay offen), werden die „Beliebt"-Poster
+ *               aufgelöst — Nutzer, die die Suche nie öffnen, kosten keine Requests.
+ */
+export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<QuickResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,8 +82,50 @@ export function useHomeQuickSearch(): UseHomeQuickSearchResult {
       return [];
     }
   });
+  const [popularItems, setPopularItems] = useState<QuickResult[]>(() => popularCache ?? []);
   // Monoton steigende Request-ID: verwirft veraltete Antworten (Race bei schnellem Tippen).
   const reqId = useRef(0);
+
+  // „Beliebt" = TMDB-Trending der Woche (2 Seiten ≈ 40 Titel, 2 Requests).
+  // Füllt auch große Screens mit mehreren Poster-Reihen statt einer einzelnen.
+  useEffect(() => {
+    if (!active || popularCache) return;
+    let alive = true;
+    (async () => {
+      try {
+        const [p1, p2] = await Promise.all([
+          tmdbFetch<TmdbListResponse>('trending/all/week', { page: 1 }),
+          tmdbFetch<TmdbListResponse>('trending/all/week', { page: 2 }),
+        ]);
+        const items: QuickResult[] = [...(p1.results || []), ...(p2.results || [])]
+          .filter((r) => r.poster_path && (r.media_type === 'tv' || r.media_type === 'movie'))
+          .map((r) => ({
+            id: r.id,
+            type: r.media_type === 'tv' ? ('series' as const) : ('movie' as const),
+            title: (r.media_type === 'tv' ? r.name || r.title : r.title || r.name) || '',
+            poster_path: r.poster_path || undefined,
+            vote_average: r.vote_average,
+            year: (r.first_air_date || r.release_date || '').slice(0, 4),
+          }))
+          .filter((r) => r.title);
+        // Seiten können sich überlappen — nach type+id deduplizieren.
+        const seen = new Set<string>();
+        const deduped = items.filter((r) => {
+          const key = `${r.type}-${r.id}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        if (deduped.length > 0) popularCache = deduped;
+        if (alive) setPopularItems(deduped);
+      } catch {
+        // best-effort — Fallback bleiben die Text-Chips
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [active]);
 
   const saveRecent = useCallback((q: string) => {
     const term = q.trim();
@@ -138,6 +205,7 @@ export function useHomeQuickSearch(): UseHomeQuickSearchResult {
     loading,
     recent,
     popular: POPULAR_SEARCHES,
+    popularItems,
     saveRecent,
     removeRecent,
   };

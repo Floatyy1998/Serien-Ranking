@@ -131,8 +131,8 @@ export const MangaDetailHero = ({
                   flexDirection: 'column' as const,
                   // Dunkel getönte Glass-Card (analog .md-hero__glass-card) — Tint bleibt, nur Tokens
                   background: 'rgba(10, 14, 26, 0.55)',
-                  backdropFilter: 'var(--blur-lg) saturate(1.4)',
-                  WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
+                  backdropFilter: 'var(--glass-filter-lg)',
+                  WebkitBackdropFilter: 'var(--glass-filter-lg)',
                   borderRadius: 20,
                   padding: '24px 28px',
                   border: '1px solid var(--glass-border-light)',

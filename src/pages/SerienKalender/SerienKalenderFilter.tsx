@@ -152,8 +152,8 @@ export const SerienKalenderFilter: React.FC<SerienKalenderFilterProps> = ({
               overflow: 'hidden',
               background: `linear-gradient(160deg, ${currentTheme.background.surface}f2, ${currentTheme.background.default}f2)`,
               border: `1px solid color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
-              backdropFilter: 'var(--blur-xl) saturate(1.4)',
-              WebkitBackdropFilter: 'var(--blur-xl) saturate(1.4)',
+              backdropFilter: 'var(--glass-filter-xl)',
+              WebkitBackdropFilter: 'var(--glass-filter-xl)',
               boxShadow: `var(--shadow-cinematic), 0 0 40px ${currentTheme.primary}22`,
             }}
           >

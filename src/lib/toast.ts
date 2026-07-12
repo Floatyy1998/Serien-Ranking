@@ -76,8 +76,8 @@ function ensureToastStyles(): void {
         rgba(20, 20, 30, 0.92) 0%,
         rgba(30, 30, 45, 0.92) 100%
       );
-      backdrop-filter: blur(24px) saturate(1.6);
-      -webkit-backdrop-filter: blur(24px) saturate(1.6);
+      backdrop-filter: var(--glass-filter-lg);
+      -webkit-backdrop-filter: var(--glass-filter-lg);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 16px;
       color: rgba(255, 255, 255, 0.95);

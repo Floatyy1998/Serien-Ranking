@@ -555,8 +555,8 @@
   left: 0;
   right: 0;
   background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.85));
-  backdrop-filter: var(--blur-lg) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
   padding: 16px;
   padding-bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;

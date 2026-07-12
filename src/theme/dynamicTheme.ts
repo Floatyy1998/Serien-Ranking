@@ -289,10 +289,15 @@ export function createMuiTheme(dynamicTheme: ReturnType<typeof generateDynamicTh
       MuiDialog: {
         styleOverrides: {
           paper: {
-            backgroundColor: backgroundColor,
-            backgroundImage: 'none',
+            // Liquid Glass: leicht transluzent + Backdrop-Refraktion + Sheen von
+            // oben, statt der früheren soliden Fläche.
+            backgroundColor: withOpacity(backgroundColor, 0.84),
+            backgroundImage:
+              'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01))',
+            backdropFilter: 'var(--glass-filter-lg)',
+            WebkitBackdropFilter: 'var(--glass-filter-lg)',
             maxWidth: '50%',
-            boxShadow: `0 25px 50px -12px ${withOpacity(primaryColor, 0.15)}`,
+            boxShadow: `0 25px 50px -12px ${withOpacity(primaryColor, 0.15)}, inset 0 1px 0 rgba(255,255,255,0.12)`,
             border: `1px solid ${border.lighter}`,
             '@media (max-width: 600px)': {
               maxWidth: '100%',

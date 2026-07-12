@@ -37,8 +37,8 @@
 .series-notification-inner {
   position: relative;
   padding: 12px 14px 10px;
-  backdrop-filter: var(--blur-md) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-md) saturate(1.4);
+  backdrop-filter: var(--glass-filter-md);
+  -webkit-backdrop-filter: var(--glass-filter-md);
 }
 
 /* Hintergrund-Aura im Header */
@@ -310,8 +310,8 @@
   bottom: calc(100% + 8px);
   right: 0;
   background: rgba(20, 20, 22, 0.95);
-  backdrop-filter: var(--blur-lg) saturate(1.6);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(1.6);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
   border-radius: 14px;
   padding: 6px;

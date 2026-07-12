@@ -56,8 +56,8 @@
   flex: 1;
   min-width: 0;
   background: rgba(10, 14, 26, 0.55);
-  backdrop-filter: var(--blur-lg) saturate(1.4);
-  -webkit-backdrop-filter: var(--blur-lg) saturate(1.4);
+  backdrop-filter: var(--glass-filter-lg);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
   border-radius: 20px;
   padding: 24px 28px;
   border: 1px solid var(--glass-border-medium);

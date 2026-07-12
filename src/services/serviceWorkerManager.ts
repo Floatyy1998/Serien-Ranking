@@ -347,8 +347,8 @@ class ServiceWorkerManager {
         gap: 10px;
         padding: 12px 20px;
         background: rgba(30, 30, 40, 0.85);
-        backdrop-filter: blur(20px) saturate(1.4);
-        -webkit-backdrop-filter: blur(20px) saturate(1.4);
+        backdrop-filter: var(--glass-filter-lg);
+        -webkit-backdrop-filter: var(--glass-filter-lg);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 14px;
         color: rgba(255, 255, 255, 0.9);

@@ -181,8 +181,8 @@ export const MangaReadingListPage = () => {
             padding: '20px',
             paddingTop: 'calc(20px + env(safe-area-inset-top))',
             background: `${currentTheme.background.default}90`,
-            backdropFilter: 'var(--blur-lg) saturate(1.4)',
-            WebkitBackdropFilter: 'var(--blur-lg) saturate(1.4)',
+            backdropFilter: 'var(--glass-filter-lg)',
+            WebkitBackdropFilter: 'var(--glass-filter-lg)',
             position: 'relative',
             zIndex: 10,
           }}

@@ -9,15 +9,15 @@
   width: 90%;
   z-index: var(--z-nav);
 
-  /* Liquid Glass: sehr transparent mit leichtem Tint */
+  /* Liquid Glass: sehr transparent, chromatisch mit der Theme-Primary getönt */
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(255, 255, 255, 0.06) 40%,
-    rgba(255, 255, 255, 0.1) 100%
+    color-mix(in srgb, var(--theme-primary) 6%, rgba(255, 255, 255, 0.12)) 0%,
+    color-mix(in srgb, var(--theme-primary) 3%, rgba(255, 255, 255, 0.06)) 40%,
+    color-mix(in srgb, var(--theme-primary) 5%, rgba(255, 255, 255, 0.1)) 100%
   );
-  -webkit-backdrop-filter: var(--blur-xl);
-  backdrop-filter: var(--blur-xl);
+  -webkit-backdrop-filter: var(--glass-filter-xl);
+  backdrop-filter: var(--glass-filter-xl);
 
   /* Doppelte Borders für Lichtbrechungs-Effekt */
   border: 1px solid rgba(255, 255, 255, 0.25);
