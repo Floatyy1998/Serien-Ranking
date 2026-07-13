@@ -70,7 +70,11 @@ export const ANNOUNCEMENTS: Announcement[] = [
     title: 'TV-Rank in neuem Gewand ✨',
     message:
       'Das größte Update aller Zeiten: komplettes Redesign mit Kino-Look auf jeder Seite, neues Profil mit Backdrop-Hero deiner Top-Serien, Desktop nutzt endlich die volle Breite, neue Startseite — und Updates installieren sich ab jetzt unsichtbar im Hintergrund, ohne dich je zu unterbrechen. Alle Details in den Patch Notes.',
-    timestamp: new Date('2026-07-13T21:30:00+02:00').getTime(),
+    // WICHTIG: Announcement-Timestamps immer NACH dem Deploy datieren
+    // (leicht in der Zukunft). Die Read-Logik ist eine Zeit-Wasserlinie —
+    // jede Bell-Öffnung zwischen Timestamp und Bundle-Ankunft würde die
+    // Announcement sonst als "gelesen" ankommen lassen (kein Badge).
+    timestamp: new Date('2026-07-13T22:45:00+02:00').getTime(),
     navigateTo: '/patch-notes',
   },
   {
@@ -436,13 +440,15 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     markAllAsRead();
     if (!user) return;
     const uid = user.uid;
-    // Mark only what is actually visible right now as read. The previous
-    // max(now, latestAnnTs) trick pre-dismissed future-dated announcements
-    // and – critically – also poisoned the read state for any announcement
-    // that gets shipped later with a past timestamp (deploy-time < bell-open).
-    // Plain `Date.now()` keeps the bell honest: future-dated entries stay
-    // unread until they actually surface.
-    const newReadTime = Date.now();
+    // "Alles gelesen" = alles, was JETZT im Hub sichtbar ist. Announcements
+    // werden per Konvention leicht in der ZUKUNFT datiert (Deploy-Watermark-
+    // Guard: sonst kaeme der Eintrag bei jedem, der die Glocke zwischen
+    // Timestamp und Bundle-Ankunft geoeffnet hat, bereits "gelesen" an).
+    // Sichtbar sind sie trotzdem sofort — deshalb max(now, neueste
+    // Announcement), sonst bliebe der Badge nach "Alles gelesen" bis zum
+    // Timestamp haengen. Announcements NIE als Zukunfts-Scheduler nutzen.
+    const latestAnnTs = ANNOUNCEMENTS.reduce((max, a) => Math.max(max, a.timestamp), 0);
+    const newReadTime = Math.max(Date.now(), latestAnnTs);
     setStoredReadTime({ uid, ts: newReadTime });
     dbRef(userPath(uid, 'readTimes', 'announcements'))
       .set(newReadTime)
