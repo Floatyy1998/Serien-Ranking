@@ -66,6 +66,14 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_redesign-2050-2026-07',
+    title: 'TV-Rank in neuem Gewand ✨',
+    message:
+      'Das größte Update aller Zeiten: komplettes Redesign mit Kino-Look auf jeder Seite, neues Profil mit Backdrop-Hero deiner Top-Serien, Desktop nutzt endlich die volle Breite, neue Startseite — und Updates installieren sich ab jetzt unsichtbar im Hintergrund, ohne dich je zu unterbrechen. Alle Details in den Patch Notes.',
+    timestamp: new Date('2026-07-13T21:30:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_anime-season-2026-07',
     title: 'Neu: Anime-Season-Kalender',
     message:

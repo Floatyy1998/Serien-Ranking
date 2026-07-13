@@ -21,6 +21,7 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => {
   const Stub = () => null;
   const names = [
+    'AccountCircle',
     'ArrowForward',
     'AutoAwesome',
     'AutoFixHigh',
@@ -42,13 +43,17 @@ vi.mock('@mui/icons-material', () => {
     'PeopleAlt',
     'Pets',
     'PlaylistAddCheck',
+    'PhoneIphone',
     'Recommend',
     'Replay',
+    'RocketLaunch',
     'Search',
     'SmartDisplay',
     'Sort',
+    'Speed',
     'Subscriptions',
     'SwapHoriz',
+    'SystemUpdateAlt',
     'Today',
     'TransferWithinAStation',
     'TrendingUp',

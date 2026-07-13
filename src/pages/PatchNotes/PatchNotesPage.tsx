@@ -1,4 +1,5 @@
 import {
+  AccountCircle,
   ArrowForward,
   AutoAwesome,
   AutoFixHigh,
@@ -20,13 +21,17 @@ import {
   PeopleAlt,
   Pets,
   PlaylistAddCheck,
+  PhoneIphone,
   Recommend,
   Replay,
+  RocketLaunch,
   Search,
   SmartDisplay,
   Sort,
+  Speed,
   Subscriptions,
   SwapHoriz,
+  SystemUpdateAlt,
   Today,
   TransferWithinAStation,
   TrendingUp,
@@ -69,6 +74,62 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: 'Juli 2026 – Das große Redesign',
+      date: '2026-07-13',
+      features: [
+        {
+          icon: <AutoAwesome />,
+          color: currentTheme.primary,
+          title: 'Komplettes Redesign — jede Seite neu',
+          description:
+            'TV-Rank sieht überall neu aus: Liquid-Glass-Flächen, Kino-Backdrops, getönte Schalter statt greller Neon-Balken und einheitliche Karten-Grids. Über 30 Seiten wurden von Grund auf überarbeitet — von den Stats über den Backlog bis zu Taste Match, Manga und der Episoden-Verwaltung.',
+        },
+        {
+          icon: <AccountCircle />,
+          color: currentTheme.accent,
+          title: 'Neues Profil: dein Kino auf einem Screen',
+          description:
+            'Das Profil ist jetzt eine Kommandozentrale ohne Scrollen: Oben ein Kino-Hero aus den Backdrops deiner bestbewerteten Serien mit Watchtime und Stats, darunter alle Bereiche als übersichtliche Spalten. Alles auf einen Blick, nichts mehr suchen.',
+          link: { label: 'Zum Profil', path: '/profile' },
+        },
+        {
+          icon: <ViewQuilt />,
+          color: currentTheme.secondary,
+          title: 'Desktop nutzt endlich die volle Breite',
+          description:
+            'Keine gestreckten Endlos-Listen mehr: Episoden, Freunde, Empfehlungen, Countdowns, Diskussionen und Manga-Listen liegen am Desktop jetzt als Karten-Grids nebeneinander. Statistiken sind ein dichtes Bento-Dashboard statt einer Einspalten-Wurst.',
+        },
+        {
+          icon: <RocketLaunch />,
+          color: currentTheme.status.warning,
+          title: 'Neue Startseite, Login & Registrierung',
+          description:
+            'Wer nicht eingeloggt ist, sieht jetzt eine echte Bühne: eine animierte Poster-Wand aus den Trending-Serien der Woche, eine Live-Vorschau der App und Anmelden/Registrieren im Kino-Split. Perfekt, um TV-Rank Freunden zu zeigen.',
+        },
+        {
+          icon: <SystemUpdateAlt />,
+          color: currentTheme.status.purple,
+          title: 'Sanfte Updates — nie wieder Zwangs-Reload',
+          description:
+            'Neue Versionen laden sich komplett im Hintergrund vor und werden nur noch angewendet, wenn du es nicht merkst (beim Tab-Wechsel) oder wenn du selbst auf „Aktualisieren" tippst. Der „Update wird installiert"-Reload mitten in der Session ist Geschichte.',
+        },
+        {
+          icon: <Speed />,
+          color: currentTheme.primary,
+          title: 'Schnellerer Start',
+          description:
+            'Die Startseite lädt für Besucher jetzt in rund einer Sekunde — der Ladebildschirm erscheint nur noch dort, wo er wirklich gebraucht wird.',
+        },
+        {
+          icon: <PhoneIphone />,
+          color: currentTheme.accent,
+          title: 'Mobile-Feinschliff',
+          description:
+            'Die Begrüßung auf der Startseite bricht jetzt sauber um statt abgeschnitten zu werden, und der Bug, bei dem Text beim Antippen kurz unsichtbar wurde, ist behoben.',
+        },
+      ],
+    },
     {
       version: 'Juli 2026 – Anime-Season-Kalender',
       date: '2026-07-02',
