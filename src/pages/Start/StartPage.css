@@ -11,10 +11,344 @@
   z-index: 1;
 }
 
-/* Hero Section */
+/* Hero Section — mobil gestapelt (Copy → App-Mock), Desktop Split */
 .start-hero {
+  position: relative;
   text-align: center;
-  margin-bottom: 80px;
+  margin-bottom: 64px;
+}
+
+/* Poster-Atmosphäre läuft auch mobil hinter dem Hero */
+.start-hero-atmo {
+  display: block;
+  position: absolute;
+  inset: -10% -8%;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.35;
+  mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+}
+
+.start-hero-copy {
+  position: relative;
+  z-index: 1;
+}
+
+/* App-Mock: mobil unter der Copy, leicht gekippt */
+.start-hero-visual {
+  display: block;
+  position: relative;
+  z-index: 1;
+  margin-top: 44px;
+  perspective: 1600px;
+}
+
+@media (max-width: 700px) {
+  .sm-window {
+    padding: 14px 14px 16px;
+    border-radius: 20px;
+    transform: rotateY(-4deg) rotateX(2deg);
+  }
+
+  .sm-banner {
+    height: 72px;
+  }
+
+  .sm-banner-poster {
+    width: 36px;
+    height: 54px;
+  }
+
+  .sm-banner-title {
+    font-size: 13px;
+    max-width: 170px;
+  }
+
+  .sm-progress {
+    width: 110px;
+  }
+
+  .sm-posters {
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1100px) {
+  .start-hero {
+    display: grid;
+    grid-template-columns: minmax(480px, 1fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: 72px;
+    text-align: left;
+    min-height: min(78vh, 860px);
+    margin-bottom: 24px;
+  }
+
+  /* Gedimmte Poster-Marquee als Atmosphäre hinter dem ganzen Hero */
+  .start-hero-atmo {
+    display: block;
+    position: absolute;
+    inset: -8% -6%;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0.5;
+    mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+  }
+
+  .start-hero-copy {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .start-hero-copy .start-hero-description,
+  .start-hero-copy .start-hero-body {
+    max-width: 640px;
+    margin: 0 0 16px;
+    text-align: left;
+  }
+
+  .start-hero-copy .start-hero-body {
+    margin-bottom: 40px;
+  }
+
+  .start-cta-group {
+    justify-content: flex-start;
+  }
+
+  /* Produkt-Schaufenster rechts: perspektivischer Hero-Shot */
+  .start-hero-visual {
+    display: block;
+    position: relative;
+    z-index: 1;
+    margin-top: 0;
+    perspective: 2400px;
+  }
+}
+
+/* ── App-Mock (sm- = start mock) ─────────────────────────── */
+.sm-float {
+  animation: sm-drift 9s ease-in-out infinite;
+}
+
+@keyframes sm-drift {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+}
+
+.sm-window {
+  position: relative;
+  text-align: left;
+  transform: rotateY(-9deg) rotateX(3deg);
+  transform-style: preserve-3d;
+  border-radius: 26px;
+  padding: 22px 24px 26px;
+  background: linear-gradient(160deg, rgba(24, 28, 36, 0.92) 0%, rgba(12, 14, 19, 0.94) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 60px 140px rgba(0, 0, 0, 0.65),
+    0 0 120px rgba(168, 85, 247, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Glow-Sockel unter dem Fenster */
+.sm-window::after {
+  content: '';
+  position: absolute;
+  inset: auto 8% -60px 8%;
+  height: 80px;
+  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.35), transparent 70%);
+  filter: blur(28px);
+  pointer-events: none;
+}
+
+.sm-topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.sm-brand-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+  flex-shrink: 0;
+}
+
+.sm-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12.5px;
+}
+
+.sm-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #38bdf8, #a855f7);
+  flex-shrink: 0;
+}
+
+.sm-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin: 14px 2px 10px;
+}
+
+.sm-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Kino-Zeile wie in der echten App: Poster + Titel/Meta links,
+   Backdrop-Art läuft rechts mit weicher Maske ein */
+.sm-banner {
+  position: relative;
+  height: 84px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sm-banner-art {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 68%;
+  background-size: cover;
+  background-position: center 25%;
+  filter: saturate(1.08) brightness(0.92);
+  mask-image: linear-gradient(to left, black 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to left, black 55%, transparent 100%);
+}
+
+.sm-banner-left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  padding: 0 16px;
+}
+
+.sm-banner-poster {
+  width: 42px;
+  height: 62px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  flex-shrink: 0;
+}
+
+.sm-banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sm-banner-title {
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sm-banner-meta {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 11.5px;
+  font-weight: 500;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+.sm-progress {
+  width: 150px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  display: block;
+  margin-top: 2px;
+}
+
+.sm-progress i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #a855f7, #ec4899);
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+}
+
+.sm-posters {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.sm-poster {
+  aspect-ratio: 2 / 3;
+  border-radius: 10px;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.3s var(--ease-default);
+}
+
+.sm-window:hover .sm-poster:hover {
+  transform: translateY(-4px) scale(1.04);
+}
+
+.sm-skeleton {
+  background:
+    linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%),
+    rgba(255, 255, 255, 0.04);
+  background-size: 200% 100%;
+  animation: sm-shimmer 1.6s linear infinite;
+}
+
+@keyframes sm-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
 }
 
 .start-hero-subtitle {
@@ -91,6 +425,19 @@
   }
 }
 
+/* Desktop-Bento: 4 Spalten volle Breite, erste Karte doppelt breit —
+   7 Karten füllen exakt 2 Reihen (2+1+1 / 1+1+1+1) */
+@media (min-width: 1400px) {
+  .start-features-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+  }
+
+  .start-features-grid > :first-child {
+    grid-column: span 2;
+  }
+}
+
 /* Feature Card */
 .start-feature-card {
   height: 100%;
@@ -157,6 +504,12 @@
 @media (min-width: 600px) {
   .start-highlights-grid {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 1400px) {
+  .start-highlights-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

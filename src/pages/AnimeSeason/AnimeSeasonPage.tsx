@@ -975,7 +975,8 @@ export const AnimeSeasonPage: React.FC = () => {
         tabs={seasonTabs.map((tab) => ({ id: seasonKey(tab), label: seasonLabel(tab) }))}
         activeTab={seasonKey(selected)}
         onTabChange={handleSeasonChange}
-        style={{ maxWidth: '560px', width: 'calc(100% - 40px)', margin: '0 auto 12px' }}
+        className="ui-tabs--center"
+        style={{ marginBottom: '12px' }}
       />
 
       {/* Filterleiste: Format-Auswahl als Segmented-Control (App-Signature-
@@ -987,7 +988,7 @@ export const AnimeSeasonPage: React.FC = () => {
           tabs={FORMAT_TABS}
           activeTab={filter.mode}
           onTabChange={handleFormatMode}
-          style={{ width: '280px', flexShrink: 0, margin: 0 }}
+          style={{ flexShrink: 0, margin: 0 }}
         />
         {/* Baugleich zum TabSwitcher (Gehäuse + Active-Pill-Gradient), damit
             der Toggle zur Leiste gehört und an/aus sofort erkennbar ist. */}

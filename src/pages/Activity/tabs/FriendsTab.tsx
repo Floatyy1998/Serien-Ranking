@@ -91,6 +91,7 @@ export const FriendsTab = ({
           gap: '10px',
           padding: '11px 14px',
           marginBottom: '16px',
+          maxWidth: 720,
           borderRadius: '14px',
           background: currentTheme.background.surface,
           border: `1px solid ${currentTheme.border.default}`,
@@ -124,7 +125,13 @@ export const FriendsTab = ({
           Keine Treffer für „{query}“
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))',
+            gap: '10px',
+          }}
+        >
           {filtered.map(({ friend, displayName, username, photoURL, isOnline }, index) => (
             <motion.div
               key={friend.uid}

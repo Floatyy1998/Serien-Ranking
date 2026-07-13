@@ -1,10 +1,10 @@
 import { AutoStories, CheckCircle, CollectionsBookmark, Star } from '@mui/icons-material';
-import { motion } from 'framer-motion';
 import React, { useMemo, useState } from 'react';
 import { IconContainer, SectionHeader } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { Manga } from '../../../types/Manga';
 import { getEffectiveChapterCount } from '../mangaUtils';
 
@@ -12,7 +12,10 @@ export const MangaStatsSection: React.FC = React.memo(() => {
   const { mangaList } = useMangaList();
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const { isDesktop } = useDeviceType();
   const [expanded, setExpanded] = useState(false);
+  // Desktop hat Platz: alle Kacheln direkt zeigen, Toggle nur mobil.
+  const showAll = expanded || isDesktop;
 
   const stats = useMemo(() => {
     const total = mangaList.length;
@@ -87,26 +90,17 @@ export const MangaStatsSection: React.FC = React.memo(() => {
         icon={<CollectionsBookmark />}
         iconColor={currentTheme.primary}
         title="Statistiken"
-        onSeeAll={() => setExpanded((p) => !p)}
+        onSeeAll={isDesktop ? undefined : () => setExpanded((p) => !p)}
         seeAllLabel={expanded ? 'Weniger' : 'Mehr'}
       />
 
-      {/* Bento Grid */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: stats.progressPct > 0 ? '1fr 1fr' : 'repeat(3, 1fr)',
-          gridTemplateRows: stats.progressPct > 0 ? 'auto auto' : 'auto',
-          gap: 10,
-          padding: '0 20px',
-        }}
-      >
+      {/* Bento Grid — Layout in MangaPage.css (.manga-stats-grid) */}
+      <div className={`manga-stats-grid ${stats.progressPct > 0 ? 'manga-stats-grid--ring' : ''}`}>
         {/* Progress Ring - only if we have meaningful progress */}
         {stats.progressPct > 0 && (
           <div
+            className="manga-stats-ring liquid-glass"
             style={{
-              gridRow: '1 / 3',
-              background: `${currentTheme.text.primary}06`,
               borderRadius: 16,
               padding: 16,
               display: 'flex',
@@ -202,71 +196,61 @@ export const MangaStatsSection: React.FC = React.memo(() => {
             theme={currentTheme}
           />
         )}
-      </div>
 
-      {/* Expanded stats */}
-      {expanded && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 10,
-            padding: '10px 20px 0',
-          }}
-        >
-          <StatTile
-            icon={<Star style={{ fontSize: 18 }} />}
-            iconColor="#f59e0b"
-            label="Ø Bewertung"
-            value={stats.avgRating}
-            theme={currentTheme}
-          />
-          <StatTile
-            icon={<CheckCircle style={{ fontSize: 18 }} />}
-            iconColor="#22c55e"
-            label="Abgeschlossen"
-            value={stats.completed}
-            theme={currentTheme}
-          />
-          {stats.manga > 0 && (
+        {/* Erweiterte Kacheln — Desktop immer, mobil per „Mehr"-Toggle */}
+        {showAll && (
+          <>
             <StatTile
-              icon={<AutoStories style={{ fontSize: 18 }} />}
-              iconColor="#e879f9"
-              label="Manga (JP)"
-              value={stats.manga}
+              icon={<Star style={{ fontSize: 18 }} />}
+              iconColor="#f59e0b"
+              label="Ø Bewertung"
+              value={stats.avgRating}
               theme={currentTheme}
             />
-          )}
-          {stats.manhwa > 0 && (
             <StatTile
-              icon={<AutoStories style={{ fontSize: 18 }} />}
-              iconColor="#38bdf8"
-              label="Manhwa (KR)"
-              value={stats.manhwa}
+              icon={<CheckCircle style={{ fontSize: 18 }} />}
+              iconColor="#22c55e"
+              label="Abgeschlossen"
+              value={stats.completed}
               theme={currentTheme}
             />
-          )}
-          {stats.manhua > 0 && (
+            {stats.manga > 0 && (
+              <StatTile
+                icon={<AutoStories style={{ fontSize: 18 }} />}
+                iconColor="#e879f9"
+                label="Manga (JP)"
+                value={stats.manga}
+                theme={currentTheme}
+              />
+            )}
+            {stats.manhwa > 0 && (
+              <StatTile
+                icon={<AutoStories style={{ fontSize: 18 }} />}
+                iconColor="#38bdf8"
+                label="Manhwa (KR)"
+                value={stats.manhwa}
+                theme={currentTheme}
+              />
+            )}
+            {stats.manhua > 0 && (
+              <StatTile
+                icon={<AutoStories style={{ fontSize: 18 }} />}
+                iconColor="#fb923c"
+                label="Manhua (CN)"
+                value={stats.manhua}
+                theme={currentTheme}
+              />
+            )}
             <StatTile
-              icon={<AutoStories style={{ fontSize: 18 }} />}
-              iconColor="#fb923c"
-              label="Manhua (CN)"
-              value={stats.manhua}
+              icon={<CollectionsBookmark style={{ fontSize: 18 }} />}
+              iconColor={currentTheme.primary}
+              label="Lieblingsgenre"
+              value={stats.topGenre}
               theme={currentTheme}
             />
-          )}
-          <StatTile
-            icon={<CollectionsBookmark style={{ fontSize: 18 }} />}
-            iconColor={currentTheme.primary}
-            label="Lieblingsgenre"
-            value={stats.topGenre}
-            theme={currentTheme}
-          />
-        </motion.div>
-      )}
+          </>
+        )}
+      </div>
     </section>
   );
 });
@@ -285,12 +269,13 @@ const StatTile = ({
   theme: Record<string, unknown>;
 }) => (
   <div
+    className="liquid-glass"
     style={{
-      background: `${(theme as { text: { primary: string } }).text.primary}06`,
       borderRadius: 14,
       padding: '14px 12px',
       display: 'flex',
       flexDirection: 'column',
+      justifyContent: 'space-between',
       gap: 8,
     }}
   >

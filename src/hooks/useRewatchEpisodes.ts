@@ -16,6 +16,8 @@ export interface RewatchItem {
   id: number;
   title: string;
   poster: string;
+  /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork. */
+  backdrop?: string;
   seasonIndex: number;
   episodeIndex: number;
   seasonNumber: number;
@@ -65,6 +67,7 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
         id: series.id,
         title: series.title,
         poster: getImageUrl(series.poster),
+        backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
         seasonIndex,
         episodeIndex: nextEp.episodeIndex,
         seasonNumber: nextEp.seasonNumber + 1,

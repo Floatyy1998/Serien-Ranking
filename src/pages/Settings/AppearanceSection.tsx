@@ -27,11 +27,7 @@ export const AppearanceSection = memo(
           whileTap={tapScaleSmall}
           onClick={onNavigateTheme}
           className="settings-nav-btn"
-          style={{
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-            color: currentTheme.text.primary,
-          }}
+          style={{ color: currentTheme.text.primary }}
         >
           <div
             className="settings-nav-btn-icon"
@@ -58,11 +54,7 @@ export const AppearanceSection = memo(
           whileTap={tapScaleSmall}
           onClick={onNavigateLayout}
           className="settings-nav-btn"
-          style={{
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-            color: currentTheme.text.primary,
-          }}
+          style={{ color: currentTheme.text.primary }}
         >
           <div
             className="settings-nav-btn-icon"

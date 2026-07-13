@@ -193,15 +193,10 @@
 }
 
 .season-tab.active {
-  background: linear-gradient(
-    135deg,
-    var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
-  );
+  background: color-mix(in srgb, var(--color-primary) 18%, rgba(255, 255, 255, 0.04));
   border-color: transparent;
-  transform: scale(1.05);
-  color: white;
-  box-shadow: 0 4px 20px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
+  color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 33%, transparent);
 }
 
 .season-label {
@@ -786,4 +781,62 @@
 .em-episode-list-animated {
   padding: 16px;
   padding-bottom: 120px;
+}
+
+/* ============================================
+   2050-Desktop: Episoden-Grid + kompakte Staffel-Karte
+   ============================================ */
+@media (min-width: 768px) {
+  /* Episoden als Karten-Grid statt gestreckter Vollbreite-Zeilen */
+  .episodes-list,
+  .em-episode-list-animated {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+    gap: 12px;
+    padding: 20px;
+    padding-bottom: 120px;
+    align-items: start;
+  }
+
+  .episode-item {
+    margin-bottom: 0;
+  }
+
+  /* Staffel-Karte: Header + Bar links, Aktionen rechts statt 2000px-Buttons */
+  .season-progress {
+    display: grid;
+    grid-template-columns: minmax(320px, 1fr) auto;
+    grid-template-areas:
+      'header actions'
+      'bar actions';
+    column-gap: 32px;
+    row-gap: 12px;
+    align-items: center;
+    margin: 16px 20px 0;
+  }
+
+  .season-progress .progress-header {
+    grid-area: header;
+    margin-bottom: 0;
+  }
+
+  .season-progress .progress-bar {
+    grid-area: bar;
+    margin-bottom: 0;
+  }
+
+  .em-bulk-buttons-column,
+  .em-bulk-buttons-row {
+    grid-area: actions;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .mark-all-button,
+  .catch-up-button {
+    width: auto;
+    padding: 12px 22px;
+    white-space: nowrap;
+  }
 }

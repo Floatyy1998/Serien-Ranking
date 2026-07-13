@@ -8,6 +8,8 @@ interface TodayEpisode {
   seriesId: number;
   seriesTitle: string;
   poster: string;
+  /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork. */
+  backdrop?: string;
   seasonNumber: number;
   episodeNumber: number;
   seasonIndex: number;
@@ -105,6 +107,7 @@ export const useTodayEpisodes = () => {
               seriesId: series.id,
               seriesTitle: series.title,
               poster: getImageUrl(series.poster),
+              backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
               seasonNumber: season.seasonNumber || 1,
               episodeNumber: k + 1,
               seasonIndex: actualSeasonIndex,

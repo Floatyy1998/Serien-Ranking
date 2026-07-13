@@ -2,7 +2,6 @@ import Send from '@mui/icons-material/Send';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { RecommendSheet } from './RecommendSheet';
 import { tapScale } from '../../lib/motion';
@@ -26,7 +25,6 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
   className,
   style,
 }) => {
-  const { currentTheme } = useTheme();
   const [open, setOpen] = useState(false);
 
   return (
@@ -37,12 +35,9 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
           onClick={() => setOpen(true)}
           className={className}
           aria-label="An Freund empfehlen"
-          style={{
-            color: currentTheme.primary,
-            borderColor: `${currentTheme.primary}33`,
-            background: `${currentTheme.primary}10`,
-            ...style,
-          }}
+          // Bewusst NEUTRAL wie die anderen Sekundär-Buttons — Farbe ist in
+          // der Toolbar Zustands-Signal (aktiv/destruktiv), kein Dauer-Akzent.
+          style={{ ...style }}
         >
           <Send style={{ fontSize: iconSize }} />
         </motion.button>

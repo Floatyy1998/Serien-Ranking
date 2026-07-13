@@ -1,15 +1,9 @@
-import { Chip } from '@mui/material';
-import {
-  Movie as MovieIcon,
-  NewReleases,
-  PlayCircle,
-  Search,
-  TrendingUp,
-} from '@mui/icons-material';
+import { Search } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GradientText, HeaderActions, HorizontalScrollContainer } from '../../../components/ui';
+import { GradientText, HeaderActions } from '../../../components/ui';
+import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
@@ -41,11 +35,31 @@ export const GreetingSection = React.memo(function GreetingSection({
 }: GreetingSectionProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { isMobile } = useDeviceType();
   const [currentHour, setCurrentHour] = useState(() => new Date().getHours());
   const [greetingInfo, setGreetingInfo] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
 
   const greeting = useMemo(() => getGreeting(currentHour), [currentHour]);
+
+  // Daten-Pods im Deck: einheitliches Glas statt vierfarbiger Chips.
+  const statPods = useMemo(
+    () => [
+      { key: 'eps', value: watchedEpisodes, label: 'Episoden', to: '/stats', highlight: false },
+      {
+        key: 'movies',
+        value: totalMovies,
+        label: 'Filme',
+        to: '/ratings?tab=movies',
+        highlight: false,
+      },
+      { key: 'active', value: `${progress}%`, label: 'Aktiv', to: '/stats', highlight: false },
+      ...(todayEpisodes > 0
+        ? [{ key: 'today', value: todayEpisodes, label: 'Heute', to: '/calendar', highlight: true }]
+        : []),
+    ],
+    [watchedEpisodes, totalMovies, progress, todayEpisodes]
+  );
 
   // Update greeting only when hour changes — paused while tab is hidden
   // (a midnight transition will be picked up by the visibility-change check).
@@ -156,164 +170,219 @@ export const GreetingSection = React.memo(function GreetingSection({
         </div>
       )}
 
-      {/* Premium Header */}
+      {/* Kommando-Deck: EIN zusammenhängendes Glas-Panel statt gestapelter
+          Einzelteile — Begrüßung/Uhr/Actions oben, Suche + Daten-Pods darunter. */}
       <header
         style={{
-          background: `linear-gradient(180deg, ${currentTheme.primary}40 0%, ${currentTheme.primary}10 50%, transparent 100%)`,
-          padding: '20px',
-          paddingTop: 'calc(30px + env(safe-area-inset-top))',
+          padding: `calc(${isMobile ? '10px' : '16px'} + env(safe-area-inset-top)) ${isMobile ? '14px' : '20px'} 0`,
+          marginBottom: isMobile ? '16px' : '24px',
         }}
       >
         <div
+          className="liquid-glass"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: isMobile ? '20px' : '24px',
+            padding: isMobile ? '12px 14px 14px' : '20px 24px',
           }}
         >
-          <div>
-            <GradientText
-              as="h1"
-              from={currentTheme.primary}
-              to={currentTheme.accent}
-              style={{
-                fontSize: '22px',
-                fontWeight: 800,
-                letterSpacing: '-0.01em',
-                lineHeight: 1.25,
-                margin: '0 0 4px 0',
-              }}
-            >
-              <span
-                className="greeting-text"
-                role="button"
-                tabIndex={0}
-                aria-label="Sprache des Grußes anzeigen"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setGreetingInfo(greetingInfo ? null : greeting.lang);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setGreetingInfo(greetingInfo ? null : greeting.lang);
-                  }
-                }}
+          {/* Ambient-Glow im Deck */}
+          <div
+            aria-hidden
+            style={{
+              position: 'absolute',
+              top: '-160px',
+              left: '-100px',
+              width: '480px',
+              height: '340px',
+              background: `radial-gradient(ellipse, ${currentTheme.primary}30, transparent 70%)`,
+              filter: 'blur(40px)',
+              pointerEvents: 'none',
+            }}
+          />
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              gap: '12px',
+            }}
+          >
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <GradientText
+                as="h1"
+                from={currentTheme.primary}
+                to={currentTheme.accent}
                 style={{
-                  cursor: 'pointer',
-                  textDecoration: greeting.title ? 'underline dotted' : 'none',
-                  textDecorationColor: currentTheme.primary,
-                  textUnderlineOffset: '3px',
+                  fontSize: isMobile ? '19px' : 'clamp(21px, 0.7vw + 17px, 26px)',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1.25,
+                  margin: '0 0 2px 0',
+                  // Desktop einzeilig (Gruß schrumpft per Ellipsis, Name bleibt
+                  // sichtbar); Mobile darf umbrechen — abgeschnittene Grüße
+                  // sind dort nicht lesbar.
+                  display: isMobile ? 'block' : 'flex',
+                  alignItems: 'baseline',
+                  whiteSpace: isMobile ? 'normal' : 'nowrap',
+                  overflow: 'hidden',
+                  WebkitTapHighlightColor: 'transparent',
                 }}
               >
-                {greeting.text}
-              </span>
-              , {displayName?.split(' ')[0] || 'User'}!
-            </GradientText>
-            <p
-              style={{
-                color: currentTheme.text.secondary,
-                fontSize: '15px',
-                margin: 0,
-              }}
-            >
-              <LiveClock />
-            </p>
+                <span
+                  className="greeting-text"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Sprache des Grußes anzeigen"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setGreetingInfo(greetingInfo ? null : greeting.lang);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setGreetingInfo(greetingInfo ? null : greeting.lang);
+                    }
+                  }}
+                  style={{
+                    cursor: 'pointer',
+                    textDecoration: greeting.title ? 'underline dotted' : 'none',
+                    textDecorationColor: currentTheme.primary,
+                    textUnderlineOffset: '3px',
+                    overflow: isMobile ? 'visible' : 'hidden',
+                    textOverflow: isMobile ? 'clip' : 'ellipsis',
+                    flexShrink: 1,
+                    minWidth: 0,
+                    // Tap-Highlight/Selektion übermalen den geclippten Gradient
+                    // (text-fill transparent) — Text wäre beim Tippen unsichtbar
+                    WebkitTapHighlightColor: 'transparent',
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                  }}
+                >
+                  {greeting.text}
+                </span>
+                <span style={{ flexShrink: 0 }}>, {displayName?.split(' ')[0] || 'User'}!</span>
+              </GradientText>
+              <p
+                style={{
+                  color: currentTheme.text.secondary,
+                  fontSize: isMobile ? '12.5px' : '15px',
+                  margin: 0,
+                }}
+              >
+                <LiveClock />
+              </p>
+            </div>
+
+            <HeaderActions
+              totalUnreadBadge={totalUnreadBadge}
+              onNotificationsOpen={onNotificationsOpen}
+              photoURL={photoURL}
+            />
           </div>
 
-          <HeaderActions
-            totalUnreadBadge={totalUnreadBadge}
-            onNotificationsOpen={onNotificationsOpen}
-            photoURL={photoURL}
-          />
+          {/* Suche + Daten-Pods — eine Zeile auf Desktop, gestapelt auf Mobile. */}
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexWrap: isMobile ? 'wrap' : 'nowrap',
+              gap: isMobile ? '8px' : '10px',
+              marginTop: isMobile ? '10px' : '16px',
+              alignItems: 'stretch',
+            }}
+          >
+            <motion.button
+              type="button"
+              whileTap={tapScaleSmall}
+              onClick={() => setSearchOpen(true)}
+              aria-label="Suche öffnen"
+              style={{
+                flex: isMobile ? '1 1 100%' : '1 1 auto',
+                minWidth: 0,
+                font: 'inherit',
+                textAlign: 'left',
+                background: `linear-gradient(135deg, ${currentTheme.primary}14, transparent 45%), var(--glass-light)`,
+                border: `1px solid ${currentTheme.primary}33`,
+                borderRadius: '16px',
+                padding: isMobile ? '11px 14px' : '14px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                gap: '12px',
+                cursor: 'pointer',
+                boxShadow: 'var(--glass-specular)',
+              }}
+            >
+              <Search style={{ fontSize: '20px', color: currentTheme.primary }} />
+              <span style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
+                Suche nach Serien oder Filmen
+              </span>
+            </motion.button>
+
+            {statPods.map((pod) => (
+              <motion.button
+                key={pod.key}
+                type="button"
+                whileTap={tapScaleSmall}
+                onClick={() => navigate(pod.to)}
+                aria-label={`${pod.value} ${pod.label}`}
+                style={{
+                  flex: isMobile ? '1 1 0' : '0 0 auto',
+                  minWidth: isMobile ? 0 : '86px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '2px',
+                  padding: isMobile ? '7px 8px' : '9px 14px',
+                  borderRadius: '14px',
+                  background: 'var(--glass-light)',
+                  border: pod.highlight
+                    ? `1px solid ${currentTheme.primary}59`
+                    : '1px solid var(--glass-border-light)',
+                  boxShadow: pod.highlight
+                    ? `var(--glass-specular), 0 0 18px -6px ${currentTheme.primary}66`
+                    : 'var(--glass-specular)',
+                  cursor: 'pointer',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: isMobile ? '15px' : '17px',
+                    fontWeight: 800,
+                    letterSpacing: '-0.01em',
+                    fontFamily: 'var(--font-display)',
+                    color: pod.highlight ? currentTheme.primary : currentTheme.text.primary,
+                    lineHeight: 1.1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {pod.value}
+                </span>
+                <span
+                  style={{
+                    fontSize: isMobile ? '9px' : '10px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: currentTheme.text.muted,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {pod.label}
+                </span>
+              </motion.button>
+            ))}
+          </div>
         </div>
       </header>
 
-      {/* Search — öffnet das Frosted-Glass-Overlay über Home (kein Seitenwechsel). */}
-      <div style={{ padding: '0 20px', marginBottom: '20px' }}>
-        <motion.button
-          type="button"
-          whileTap={tapScaleSmall}
-          onClick={() => setSearchOpen(true)}
-          aria-label="Suche öffnen"
-          style={{
-            width: '100%',
-            font: 'inherit',
-            textAlign: 'left',
-            background: currentTheme.background.surface,
-            border: `1px solid ${currentTheme.border.default}`,
-            borderRadius: '16px',
-            padding: '14px 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: '12px',
-            cursor: 'pointer',
-            backdropFilter: 'var(--blur-sm)',
-            WebkitBackdropFilter: 'var(--blur-sm)',
-          }}
-        >
-          <Search style={{ fontSize: '20px', color: currentTheme.text.muted }} />
-          <span style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
-            Suche nach Serien oder Filmen
-          </span>
-        </motion.button>
-      </div>
-
       <HomeSearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
-
-      {/* Quick Stats */}
-      <HorizontalScrollContainer
-        gap={8}
-        style={{
-          padding: '0 20px',
-          marginBottom: '20px',
-        }}
-      >
-        <Chip
-          icon={<PlayCircle />}
-          label={`${watchedEpisodes} Eps. gesamt`}
-          onClick={() => navigate('/stats')}
-          style={{
-            background: `${currentTheme.status.success}1A`,
-            border: `1px solid ${currentTheme.status.success}4D`,
-            color: currentTheme.status.success,
-          }}
-        />
-        <Chip
-          icon={<MovieIcon />}
-          label={`${totalMovies} Filme`}
-          onClick={() => navigate('/ratings?tab=movies')}
-          style={{
-            background: `${currentTheme.status.error}1A`,
-            border: `1px solid ${currentTheme.status.error}4D`,
-            color: currentTheme.status.error,
-          }}
-        />
-        <Chip
-          icon={<TrendingUp />}
-          label={`${progress}% aktive Serien`}
-          onClick={() => navigate('/stats')}
-          style={{
-            background: `${currentTheme.primary}1A`,
-            border: `1px solid ${currentTheme.primary}4D`,
-            color: currentTheme.primary,
-          }}
-        />
-        {todayEpisodes > 0 && (
-          <Chip
-            icon={<NewReleases />}
-            label={`${todayEpisodes} Heute`}
-            onClick={() => navigate('/calendar')}
-            style={{
-              background: `${currentTheme.status.warning}1A`,
-              border: `1px solid ${currentTheme.status.warning}4D`,
-              color: currentTheme.status.warning,
-            }}
-          />
-        )}
-      </HorizontalScrollContainer>
     </>
   );
 });

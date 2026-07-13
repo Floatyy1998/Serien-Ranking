@@ -49,9 +49,11 @@ export const SeriesTab: React.FC<SeriesTabProps> = React.memo(({ result, cardBg 
               </span>
             )}
           </div>
-          {sharedSeries.map((item, i) => (
-            <SharedItemCard key={item.id} item={item} index={i} type="series" bgColor={cardBg} />
-          ))}
+          <div className="tm-shared-list">
+            {sharedSeries.map((item, i) => (
+              <SharedItemCard key={item.id} item={item} index={i} type="series" bgColor={cardBg} />
+            ))}
+          </div>
         </>
       ) : (
         <motion.div

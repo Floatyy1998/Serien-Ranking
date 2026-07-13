@@ -22,6 +22,11 @@ vi.mock('../../../contexts/ThemeContext', () => ({
 
 vi.mock('../../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 
+const deviceState = vi.hoisted(() => ({ isDesktop: false }));
+vi.mock('../../../hooks/useDeviceType', () => ({
+  useDeviceType: () => ({ isDesktop: deviceState.isDesktop }),
+}));
+
 vi.mock('../../../components/ui', () => ({
   IconContainer: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   SectionHeader: ({
@@ -62,6 +67,7 @@ function makeManga(overrides: Partial<Manga> = {}): Manga {
 afterEach(() => {
   cleanup();
   listState.list = [];
+  deviceState.isDesktop = false;
 });
 
 describe('MangaStatsSection', () => {
@@ -83,5 +89,16 @@ describe('MangaStatsSection', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Mehr' }));
     expect(screen.getByText('Ø Bewertung')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Weniger' })).toBeInTheDocument();
+  });
+
+  it('zeigt auf Desktop alle Kacheln ohne Toggle', () => {
+    deviceState.isDesktop = true;
+    listState.list = [
+      makeManga({ anilistId: 1, currentChapter: 20, chapters: 40, readStatus: 'reading' }),
+      makeManga({ anilistId: 2, currentChapter: 40, chapters: 40, readStatus: 'completed' }),
+    ];
+    render(<MangaStatsSection />);
+    expect(screen.getByText('Ø Bewertung')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Mehr' })).not.toBeInTheDocument();
   });
 });

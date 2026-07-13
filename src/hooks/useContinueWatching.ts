@@ -14,6 +14,8 @@ export const useContinueWatching = () => {
     id: number;
     title: string;
     poster: string;
+    /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork; fehlt bei alten Einträgen. */
+    backdrop?: string;
     progress: number;
     nextEpisode: {
       seasonNumber: number;
@@ -71,6 +73,7 @@ export const useContinueWatching = () => {
                 id: series.id,
                 title: series.title,
                 poster: getImageUrl(series.poster),
+                backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
                 progress,
                 nextEpisode: {
                   seasonNumber: (season.seasonNumber ?? 0) + 1,

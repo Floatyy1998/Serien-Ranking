@@ -295,6 +295,28 @@
   outline-offset: -2px;
 }
 
+.wj-tab-label {
+  display: none;
+}
+
+/* Desktop: kompakte Tab-Leiste mit Labels statt Vollbreite-Icon-Balken */
+@media (min-width: 768px) {
+  .wj-tabs-bar {
+    width: max-content;
+    border-radius: var(--radius-lg);
+  }
+
+  .wj-tab-btn {
+    flex: none;
+    padding: 12px 20px;
+    border-radius: var(--radius-lg);
+  }
+
+  .wj-tab-label {
+    display: inline;
+  }
+}
+
 /* ===== Active Tab Title ===== */
 .wj-tab-title {
   padding: 0 16px 16px;

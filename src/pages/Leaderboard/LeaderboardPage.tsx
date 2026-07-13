@@ -268,10 +268,10 @@ const ModeToggle = React.memo(function ModeToggle({
             className="lb-mode-btn"
             style={{
               background: isActive
-                ? `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`
+                ? `color-mix(in srgb, ${currentTheme.accent} 20%, rgba(255, 255, 255, 0.04))`
                 : 'transparent',
-              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
-              boxShadow: isActive ? `0 2px 8px ${currentTheme.accent}66` : 'none',
+              color: isActive ? currentTheme.accent : currentTheme.text.muted,
+              boxShadow: isActive ? `inset 0 0 0 1px ${currentTheme.accent}55` : 'none',
             }}
           >
             {opt.icon}

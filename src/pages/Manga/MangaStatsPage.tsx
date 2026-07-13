@@ -12,12 +12,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { getDisplayFormat, getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 
 export const MangaStatsPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { mangaList } = useMangaList();
+  const { isDesktop } = useDeviceType();
   const [mountTime] = useState(() => Date.now());
 
   const stats = useMemo(() => {
@@ -131,304 +133,344 @@ export const MangaStatsPage = () => {
       />
 
       <div style={{ padding: '0 20px', paddingBottom: 100 }}>
-        {/* ─── Hero Section ──────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            display: 'flex',
-            gap: 20,
-            alignItems: 'center',
-            marginBottom: 24,
-            padding: 20,
-            borderRadius: 20,
-            background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
-            border: '1px solid rgba(255,255,255,0.06)',
-          }}
-        >
-          {/* Left: Main stat */}
-          <div style={{ flex: 1 }}>
-            <GradientText
-              from={currentTheme.primary}
-              to={currentTheme.accent}
-              style={{
-                fontSize: 36,
-                fontWeight: 800,
-                fontFamily: 'var(--font-display)',
-                margin: 0,
-                lineHeight: 1,
-              }}
-            >
-              {stats.totalChapters.toLocaleString()}
-            </GradientText>
-            <div style={{ fontSize: 14, color: currentTheme.text.secondary, marginTop: 4 }}>
-              Kapitel gelesen
-            </div>
-            {stats.totalVolumes > 0 && (
-              <div
-                style={{
-                  fontSize: 12,
-                  color: currentTheme.text.secondary,
-                  opacity: 0.6,
-                  marginTop: 2,
-                }}
-              >
-                {stats.totalVolumes} Bände
-              </div>
-            )}
-          </div>
-
-          {/* Right: Progress ring */}
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{ position: 'relative', width: ringSize, height: ringSize, margin: '0 auto' }}
-            >
-              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
-                <circle
-                  cx={ringSize / 2}
-                  cy={ringSize / 2}
-                  r={radius}
-                  fill="none"
-                  stroke={`${currentTheme.text.primary}10`}
-                  strokeWidth={strokeWidth}
-                />
-                <motion.circle
-                  cx={ringSize / 2}
-                  cy={ringSize / 2}
-                  r={radius}
-                  fill="none"
-                  stroke="url(#statsGrad)"
-                  strokeWidth={strokeWidth}
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  initial={{ strokeDashoffset: circumference }}
-                  animate={{ strokeDashoffset: ringOffset }}
-                  transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
-                />
-                <defs>
-                  <linearGradient id="statsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={currentTheme.primary} />
-                    <stop offset="50%" stopColor={currentTheme.accent} />
-                    <stop offset="100%" stopColor={currentTheme.status?.success || '#22c55e'} />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontSize: 18,
-                  fontWeight: 800,
-                  color: currentTheme.text.primary,
-                }}
-              >
-                {stats.progressPct}%
-              </div>
-            </div>
-            <div
-              style={{
-                fontSize: 10,
-                color: currentTheme.text.secondary,
-                opacity: 0.5,
-                marginTop: 4,
-              }}
-            >
-              {stats.readInKnown}/{stats.totalKnown}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* ─── Quick Stats Grid ──────────────────────── */}
+        {/* Desktop: Hero + Quick-Stats in EINER Reihe statt Einspalten-Stack */}
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 10,
-            marginBottom: 24,
-          }}
+          style={
+            isDesktop
+              ? {
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(380px, 1.6fr) repeat(3, 1fr)',
+                  gap: 12,
+                  alignItems: 'stretch',
+                  marginBottom: 24,
+                }
+              : undefined
+          }
         >
-          <QuickStat
-            icon={<AutoStories style={{ fontSize: 16 }} />}
-            label="Manga"
-            value={stats.total}
-            color={currentTheme.primary}
-            theme={currentTheme}
-          />
-          <QuickStat
-            icon={<CheckCircle style={{ fontSize: 16 }} />}
-            label="Fertig"
-            value={stats.completed}
-            color="#22c55e"
-            theme={currentTheme}
-          />
-          <QuickStat
-            icon={<Star style={{ fontSize: 16 }} />}
-            label="Ø Rating"
-            value={stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—'}
-            color="#f59e0b"
-            theme={currentTheme}
-          />
+          {/* ─── Hero Section ──────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              display: 'flex',
+              gap: 20,
+              alignItems: 'center',
+              marginBottom: isDesktop ? 0 : 24,
+              padding: 20,
+              borderRadius: 20,
+              background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            {/* Left: Main stat */}
+            <div style={{ flex: 1 }}>
+              <GradientText
+                from={currentTheme.primary}
+                to={currentTheme.accent}
+                style={{
+                  fontSize: 36,
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-display)',
+                  margin: 0,
+                  lineHeight: 1,
+                }}
+              >
+                {stats.totalChapters.toLocaleString()}
+              </GradientText>
+              <div style={{ fontSize: 14, color: currentTheme.text.secondary, marginTop: 4 }}>
+                Kapitel gelesen
+              </div>
+              {stats.totalVolumes > 0 && (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: currentTheme.text.secondary,
+                    opacity: 0.6,
+                    marginTop: 2,
+                  }}
+                >
+                  {stats.totalVolumes} Bände
+                </div>
+              )}
+            </div>
+
+            {/* Right: Progress ring */}
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  position: 'relative',
+                  width: ringSize,
+                  height: ringSize,
+                  margin: '0 auto',
+                }}
+              >
+                <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+                  <circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={radius}
+                    fill="none"
+                    stroke={`${currentTheme.text.primary}10`}
+                    strokeWidth={strokeWidth}
+                  />
+                  <motion.circle
+                    cx={ringSize / 2}
+                    cy={ringSize / 2}
+                    r={radius}
+                    fill="none"
+                    stroke="url(#statsGrad)"
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                    strokeDasharray={circumference}
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: ringOffset }}
+                    transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+                  />
+                  <defs>
+                    <linearGradient id="statsGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor={currentTheme.primary} />
+                      <stop offset="50%" stopColor={currentTheme.accent} />
+                      <stop offset="100%" stopColor={currentTheme.status?.success || '#22c55e'} />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'grid',
+                    placeItems: 'center',
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: currentTheme.text.primary,
+                  }}
+                >
+                  {stats.progressPct}%
+                </div>
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: currentTheme.text.secondary,
+                  opacity: 0.5,
+                  marginTop: 4,
+                }}
+              >
+                {stats.readInKnown}/{stats.totalKnown}
+              </div>
+            </div>
+          </motion.div>
+
+          {/* ─── Quick Stats ───────────────────────────── */}
+          <div
+            style={
+              isDesktop
+                ? { display: 'contents' }
+                : {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: 10,
+                    marginBottom: 24,
+                  }
+            }
+          >
+            <QuickStat
+              icon={<AutoStories style={{ fontSize: 16 }} />}
+              label="Manga"
+              value={stats.total}
+              color={currentTheme.primary}
+              theme={currentTheme}
+            />
+            <QuickStat
+              icon={<CheckCircle style={{ fontSize: 16 }} />}
+              label="Fertig"
+              value={stats.completed}
+              color="#22c55e"
+              theme={currentTheme}
+            />
+            <QuickStat
+              icon={<Star style={{ fontSize: 16 }} />}
+              label="Ø Rating"
+              value={stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—'}
+              color="#f59e0b"
+              theme={currentTheme}
+            />
+          </div>
         </div>
 
-        {/* ─── Status Breakdown ──────────────────────── */}
-        <StatSection
-          title="Status-Verteilung"
-          icon={<CollectionsBookmark />}
-          theme={currentTheme}
-          delay={0.1}
+        {/* Desktop: Sektionen als Karten-Grid statt gestreckter Zeilen */}
+        <div
+          style={
+            isDesktop
+              ? {
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))',
+                  gap: 14,
+                  alignItems: 'start',
+                }
+              : undefined
+          }
         >
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[
-              { label: 'Lese ich', value: stats.reading, color: '#3b82f6' },
-              { label: 'Abgeschlossen', value: stats.completed, color: '#22c55e' },
-              { label: 'Geplant', value: stats.planned, color: currentTheme.secondary },
-              { label: 'Pausiert', value: stats.paused, color: '#f59e0b' },
-              { label: 'Abgebrochen', value: stats.dropped, color: '#ef4444' },
-            ]
-              .filter((s) => s.value > 0)
-              .map((s) => (
-                <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div
-                    style={{
-                      width: 10,
-                      height: 10,
-                      borderRadius: 3,
-                      background: s.color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ flex: 1, fontSize: 13, color: currentTheme.text.primary }}>
-                    {s.label}
-                  </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: currentTheme.text.primary }}>
-                    {s.value}
-                  </span>
-                  <div style={{ width: 60 }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(s.value / stats.total) * 100}%` }}
-                      transition={{ duration: 0.8, delay: 0.2 }}
-                      style={{ height: 4, borderRadius: 2, background: s.color }}
-                    />
-                  </div>
-                </div>
-              ))}
-          </div>
-        </StatSection>
-
-        {/* ─── Format Distribution ───────────────────── */}
-        {stats.formats.length > 1 && (
-          <StatSection title="Formate" icon={<AutoStories />} theme={currentTheme} delay={0.15}>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {stats.formats.map(([name, count]) => (
-                <div
-                  key={name}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: 10,
-                    background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    fontSize: 13,
-                    color: currentTheme.text.primary,
-                  }}
-                >
-                  <span style={{ fontWeight: 700 }}>{count}</span> {name}
-                </div>
-              ))}
-            </div>
-          </StatSection>
-        )}
-
-        {/* ─── Top Genres ────────────────────────────── */}
-        {stats.topGenres.length > 0 && (
-          <StatSection title="Top Genres" icon={<Category />} theme={currentTheme} delay={0.2}>
+          {/* ─── Status Breakdown ──────────────────────── */}
+          <StatSection
+            title="Status-Verteilung"
+            icon={<CollectionsBookmark />}
+            theme={currentTheme}
+            delay={0.1}
+          >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {stats.topGenres.map(([name, count], i) => (
-                <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 800,
-                      color: i < 3 ? currentTheme.primary : currentTheme.text.secondary,
-                      width: 20,
-                      textAlign: 'right',
-                      opacity: i < 3 ? 1 : 0.5,
-                    }}
-                  >
-                    #{i + 1}
-                  </span>
-                  <span style={{ flex: 1, fontSize: 13, color: currentTheme.text.primary }}>
-                    {name}
-                  </span>
-                  <span
-                    style={{ fontSize: 12, color: currentTheme.text.secondary, fontWeight: 600 }}
-                  >
-                    {count}
-                  </span>
-                  <div style={{ width: 80 }}>
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(count / stats.maxGenreCount) * 100}%` }}
-                      transition={{ duration: 0.8, delay: 0.1 * i }}
+              {[
+                { label: 'Lese ich', value: stats.reading, color: '#3b82f6' },
+                { label: 'Abgeschlossen', value: stats.completed, color: '#22c55e' },
+                { label: 'Geplant', value: stats.planned, color: currentTheme.secondary },
+                { label: 'Pausiert', value: stats.paused, color: '#f59e0b' },
+                { label: 'Abgebrochen', value: stats.dropped, color: '#ef4444' },
+              ]
+                .filter((s) => s.value > 0)
+                .map((s) => (
+                  <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div
                       style={{
-                        height: 6,
+                        width: 10,
+                        height: 10,
                         borderRadius: 3,
-                        background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                        background: s.color,
+                        flexShrink: 0,
                       }}
                     />
+                    <span style={{ flex: 1, fontSize: 13, color: currentTheme.text.primary }}>
+                      {s.label}
+                    </span>
+                    <span
+                      style={{ fontSize: 13, fontWeight: 700, color: currentTheme.text.primary }}
+                    >
+                      {s.value}
+                    </span>
+                    <div style={{ width: 60 }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(s.value / stats.total) * 100}%` }}
+                        transition={{ duration: 0.8, delay: 0.2 }}
+                        style={{ height: 4, borderRadius: 2, background: s.color }}
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </StatSection>
-        )}
 
-        {/* ─── Platforms ─────────────────────────────── */}
-        {stats.topPlatforms.length > 0 && (
-          <StatSection
-            title="Lese-Plattformen"
-            icon={<AutoStories />}
-            theme={currentTheme}
-            delay={0.25}
-          >
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {stats.topPlatforms.map(([name, count]) => (
-                <div
-                  key={name}
-                  style={{
-                    padding: '8px 14px',
-                    borderRadius: 10,
-                    background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
-                    border: '1px solid rgba(255,255,255,0.06)',
-                    fontSize: 13,
-                    color: currentTheme.text.primary,
-                  }}
-                >
-                  <span style={{ fontWeight: 700 }}>{count}</span> × {name}
-                </div>
-              ))}
-            </div>
-          </StatSection>
-        )}
+          {/* ─── Format Distribution ───────────────────── */}
+          {stats.formats.length > 1 && (
+            <StatSection title="Formate" icon={<AutoStories />} theme={currentTheme} delay={0.15}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {stats.formats.map(([name, count]) => (
+                  <div
+                    key={name}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      fontSize: 13,
+                      color: currentTheme.text.primary,
+                    }}
+                  >
+                    <span style={{ fontWeight: 700 }}>{count}</span> {name}
+                  </div>
+                ))}
+              </div>
+            </StatSection>
+          )}
 
-        {/* ─── This Week ─────────────────────────────── */}
-        <StatSection title="Diese Woche" icon={<TrendingUp />} theme={currentTheme} delay={0.3}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                fontSize: 28,
-                fontWeight: 800,
-                color: currentTheme.primary,
-                fontFamily: 'var(--font-display)',
-              }}
+          {/* ─── Top Genres ────────────────────────────── */}
+          {stats.topGenres.length > 0 && (
+            <StatSection title="Top Genres" icon={<Category />} theme={currentTheme} delay={0.2}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {stats.topGenres.map(([name, count], i) => (
+                  <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        color: i < 3 ? currentTheme.primary : currentTheme.text.secondary,
+                        width: 20,
+                        textAlign: 'right',
+                        opacity: i < 3 ? 1 : 0.5,
+                      }}
+                    >
+                      #{i + 1}
+                    </span>
+                    <span style={{ flex: 1, fontSize: 13, color: currentTheme.text.primary }}>
+                      {name}
+                    </span>
+                    <span
+                      style={{ fontSize: 12, color: currentTheme.text.secondary, fontWeight: 600 }}
+                    >
+                      {count}
+                    </span>
+                    <div style={{ width: 80 }}>
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(count / stats.maxGenreCount) * 100}%` }}
+                        transition={{ duration: 0.8, delay: 0.1 * i }}
+                        style={{
+                          height: 6,
+                          borderRadius: 3,
+                          background: `linear-gradient(90deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </StatSection>
+          )}
+
+          {/* ─── Platforms ─────────────────────────────── */}
+          {stats.topPlatforms.length > 0 && (
+            <StatSection
+              title="Lese-Plattformen"
+              icon={<AutoStories />}
+              theme={currentTheme}
+              delay={0.25}
             >
-              {stats.activeThisWeek}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {stats.topPlatforms.map(([name, count]) => (
+                  <div
+                    key={name}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 10,
+                      background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)`,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                      fontSize: 13,
+                      color: currentTheme.text.primary,
+                    }}
+                  >
+                    <span style={{ fontWeight: 700 }}>{count}</span> × {name}
+                  </div>
+                ))}
+              </div>
+            </StatSection>
+          )}
+
+          {/* ─── This Week ─────────────────────────────── */}
+          <StatSection title="Diese Woche" icon={<TrendingUp />} theme={currentTheme} delay={0.3}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  color: currentTheme.primary,
+                  fontFamily: 'var(--font-display)',
+                }}
+              >
+                {stats.activeThisWeek}
+              </div>
+              <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>Manga gelesen</div>
             </div>
-            <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>Manga gelesen</div>
-          </div>
-        </StatSection>
+          </StatSection>
+        </div>
       </div>
     </PageLayout>
   );

@@ -18,8 +18,8 @@ import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { useRecapData } from '../../hooks/useRecapData';
 import { CharacterGuide } from './CharacterGuide';
 import { calculateOverallRating } from '../../lib/rating/rating';
-import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { hasEpisodeAired } from '../../utils/episodeDate';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { calculateWatchingPace, formatPaceLine } from '../../lib/date/paceCalculation';
 import { getNextRewatchEpisode, hasActiveRewatch } from '../../lib/validation/rewatch.utils';
@@ -278,6 +278,7 @@ export const SeriesDetailPage = memo(() => {
         overallRating={overallRating}
         progressStats={progressStats}
         paceInfo={paceInfo}
+        overview={series.beschreibung || series.overview || tmdbOverview || undefined}
         isReadOnlyTmdbSeries={isReadOnlyTmdbSeries}
         isAdding={isAdding}
         isDeleting={isDeleting}
@@ -300,21 +301,24 @@ export const SeriesDetailPage = memo(() => {
             disabled={markingNext}
             aria-label={`Nächste Folge S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber} als gesehen markieren`}
             style={{
-              width: '100%',
+              // Kompakter Pill-CTA statt 2500px-Streifen — DIE eine laute
+              // Aktion der Seite, links verankert. Mobile darf voll wachsen.
+              width: isMobile ? '100%' : 'auto',
               minHeight: 48,
-              padding: '12px 18px',
-              borderRadius: 14,
+              padding: '12px 26px',
+              borderRadius: 999,
               border: 'none',
               cursor: markingNext ? 'default' : 'pointer',
               fontSize: 15,
               fontWeight: 700,
               opacity: markingNext ? 0.6 : 1,
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 8,
               background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
               color: getOptimalTextColor(currentTheme.primary),
+              boxShadow: `0 10px 30px -10px ${currentTheme.primary}80`,
             }}
           >
             ▶ Weiter: S{nextEpisode.seasonNumber} E{nextEpisode.episodeNumber}
@@ -391,11 +395,14 @@ export const SeriesDetailPage = memo(() => {
             style={{
               background:
                 activeTab === tab.key
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
                   : undefined,
-              color: activeTab === tab.key ? getOptimalTextColor(currentTheme.primary) : undefined,
+              color: activeTab === tab.key ? currentTheme.primary : undefined,
+              boxShadow: activeTab === tab.key ? 'var(--glass-specular)' : undefined,
+              outline: activeTab === tab.key ? `1px solid ${currentTheme.primary}40` : undefined,
+              outlineOffset: -1,
               fontSize: isMobile ? '12px' : '13px',
-              fontWeight: activeTab === tab.key ? 600 : 500,
+              fontWeight: activeTab === tab.key ? 700 : 500,
             }}
           >
             {tab.icon}
@@ -430,14 +437,16 @@ export const SeriesDetailPage = memo(() => {
                 whileHover={{ y: -1 }}
                 disabled={recap.loading}
                 style={{
-                  width: '100%',
-                  display: 'flex',
+                  // Kompakter Inline-Button statt Vollbreite-Streifen.
+                  width: isMobile ? '100%' : 'auto',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: isMobile ? '10px 14px' : '12px 18px',
-                  background: `linear-gradient(135deg, color-mix(in srgb, ${currentTheme.primary} 12%, transparent), color-mix(in srgb, ${currentTheme.accent} 8%, transparent))`,
+                  padding: isMobile ? '10px 14px' : '12px 22px',
+                  background: `linear-gradient(135deg, color-mix(in srgb, ${currentTheme.primary} 12%, transparent), color-mix(in srgb, ${currentTheme.accent} 8%, transparent)), var(--glass-light)`,
                   border: `1px solid color-mix(in srgb, ${currentTheme.primary} 28%, transparent)`,
-                  borderRadius: '12px',
+                  boxShadow: 'var(--glass-specular)',
+                  borderRadius: '999px',
                   color: currentTheme.text.primary,
                   fontSize: isMobile ? '13px' : '14px',
                   fontWeight: 600,
@@ -471,8 +480,8 @@ export const SeriesDetailPage = memo(() => {
             </div>
           )}
 
-          {/* Description */}
-          {(series.beschreibung || series.overview || tmdbOverview) && (
+          {/* Description — Desktop zeigt sie bereits im Hero */}
+          {isMobile && (series.beschreibung || series.overview || tmdbOverview) && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
               <h3
                 style={{

@@ -35,6 +35,7 @@ export const StatCard = memo(
         borderRadius: 3,
         position: 'relative',
         overflow: 'hidden',
+        boxShadow: 'var(--glass-specular)',
         transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         cursor: onClick ? 'pointer' : 'default',
         '&:active': {

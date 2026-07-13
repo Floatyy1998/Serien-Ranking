@@ -7,6 +7,8 @@ export interface ContinueReadingItem {
   anilistId: number;
   title: string;
   poster: string;
+  /** AniList-Bannerbild — Kino-Banner in den Weiterlesen-Zeilen. */
+  bannerImage?: string;
   progress: number;
   currentChapter: number;
   totalChapters: number | null;
@@ -30,6 +32,7 @@ function mangaToContinueReading(manga: Manga): ContinueReadingItem {
     anilistId: manga.anilistId,
     title: manga.title,
     poster: manga.poster,
+    bannerImage: manga.bannerImage,
     progress,
     currentChapter: manga.currentChapter,
     totalChapters: effectiveTotal,

@@ -386,7 +386,8 @@ export const SerienKalenderPage: React.FC = () => {
         tabs={quarterTabs.map((tab) => ({ id: quarterKey(tab), label: quarterRangeShort(tab) }))}
         activeTab={selected}
         onTabChange={handleQuarterChange}
-        style={{ maxWidth: '560px', width: 'calc(100% - 40px)', margin: '0 auto 12px' }}
+        className="ui-tabs--center"
+        style={{ marginBottom: '12px' }}
       />
 
       {/* Filterleiste: Modus-Segmented + Genre-Dropdown. (Kein „Mit Provider"-
@@ -400,7 +401,7 @@ export const SerienKalenderPage: React.FC = () => {
             hapticSelect();
             setFilter((f) => ({ ...f, mode: id as FilterMode }));
           }}
-          style={{ width: '280px', flexShrink: 0, margin: 0 }}
+          style={{ flexShrink: 0, margin: 0 }}
         />
 
         {genreOptions.length > 0 && (

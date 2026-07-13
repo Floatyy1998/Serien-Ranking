@@ -545,3 +545,16 @@
   text-overflow: ellipsis;
   font-weight: 600;
 }
+
+/* 2050-Desktop: Gesehen-Toggle kompakt statt 2400px-Streifen */
+@media (min-width: 768px) {
+  .ed-quick-actions {
+    justify-content: center;
+  }
+
+  .ed-watch-btn {
+    flex: none;
+    min-width: 320px;
+    padding: 14px 32px;
+  }
+}

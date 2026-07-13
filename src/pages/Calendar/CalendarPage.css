@@ -955,3 +955,203 @@
     border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
 }
+
+/* ===========================================================================
+ * Desktop 2050-Pass: volle Flächennutzung — Einstiegskarten nebeneinander,
+ * Wochen-Grid füllt die Seitenhöhe, leere Tage bleiben sichtbare Zonen.
+ * =========================================================================== */
+@media (min-width: 768px) {
+  .cal-entry-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 4px 20px 12px;
+  }
+  .cal-entry-row .cal-entry-btn {
+    width: 100%;
+    margin: 0;
+    box-shadow: var(--glass-specular);
+  }
+
+  .cal-content {
+    grid-auto-rows: 1fr;
+    min-height: calc(100vh - 380px);
+    align-items: stretch;
+  }
+
+  .cal-day.is-empty {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.07);
+  }
+  /* Leerer Tag: der Gedankenstrich wandert als ruhiges Zeichen in die Mitte. */
+  .cal-day.is-empty .cal-day-none {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    opacity: 0.35;
+  }
+  .cal-day.is-empty {
+    position: relative;
+  }
+}
+
+/* ===========================================================================
+ * Mobile Tagesansicht: Tages-Chips oben, EIN Tag füllt den Screen,
+ * horizontales Swipen wechselt den Tag (über Wochengrenzen hinweg).
+ * =========================================================================== */
+@media (max-width: 767px) {
+  .cal-day-selector {
+    display: flex;
+    gap: 6px;
+    padding: 4px 12px 12px;
+  }
+
+  .cal-day-chip {
+    flex: 1;
+    min-width: 0;
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-radius: 12px;
+    background: var(--glass-subtle);
+    border: 1px solid var(--glass-border-subtle);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cal-day-chip__wd {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .cal-day-chip__num {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: var(--font-display);
+    color: var(--color-text-primary);
+  }
+
+  .cal-day-chip__dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    box-shadow: 0 0 6px var(--theme-primary);
+  }
+
+  .cal-day-chip.is-active {
+    background: color-mix(in srgb, var(--theme-primary) 16%, transparent);
+    border-color: color-mix(in srgb, var(--theme-primary) 45%, transparent);
+    box-shadow: var(--glass-specular);
+  }
+  .cal-day-chip.is-active .cal-day-chip__wd,
+  .cal-day-chip.is-active .cal-day-chip__num {
+    color: var(--theme-primary);
+  }
+
+  .cal-mobile-day {
+    padding: 0 12px calc(24px + env(safe-area-inset-bottom));
+    touch-action: pan-y;
+    min-height: 50vh;
+  }
+
+  .cal-mobile-day .cal-day-episodes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .cal-mobile-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 72px 20px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 14px;
+  }
+
+  .cal-mobile-empty__dash {
+    font-size: 28px;
+    opacity: 0.4;
+  }
+}
+
+/* Mobile: kompakter Kopf — eine Zeile Nav+Toggle, halbbreite Einstiege. */
+@media (max-width: 767px) {
+  .cal-mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 10px;
+  }
+  .cal-mobile-header .cal-week-switcher {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cal-wl-toggle {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--glass-subtle);
+    border: 1px solid var(--glass-border-subtle);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .cal-entry-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 12px 10px;
+  }
+  .cal-entry-row .cal-entry-btn {
+    width: 100%;
+    margin: 0;
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+  .cal-entry-row .cal-entry-btn__sub,
+  .cal-entry-row .cal-entry-btn__chevron {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .cal-mobile-header .cal-week-chip {
+    white-space: nowrap;
+    font-size: 12.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Sehr große Screens: Episode-Cards deutlich größer (Poster > zu klein) */
+@media (min-width: 1600px) {
+  .cal-ep-poster {
+    height: 210px;
+  }
+
+  .cal-ep-title {
+    font-size: 16px;
+  }
+
+  .cal-ep-poster-info {
+    padding: 10px;
+  }
+}

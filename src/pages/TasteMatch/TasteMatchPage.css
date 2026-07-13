@@ -577,3 +577,63 @@
   font-size: 13px;
   color: rgba(255, 255, 255, 0.4);
 }
+
+/* Inaktive Tabs: Label mobil ausblenden (nur Icon) */
+.tm-tab-btn--inactive .tm-tab-label {
+  display: none;
+}
+
+/* ============================================
+   2050-Desktop: kompakte Ringe/Stats statt Riesen-Leerboxen
+   ============================================ */
+@media (min-width: 768px) {
+  .tm-stat-rings {
+    grid-template-columns: repeat(4, minmax(200px, 280px));
+    justify-content: center;
+    gap: 14px;
+    padding: 0 20px 28px;
+  }
+
+  .tm-tabs-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+
+  .tm-tabs {
+    width: max-content;
+  }
+
+  .tm-tab-btn--inactive {
+    flex: none;
+    padding: 10px 16px;
+  }
+
+  .tm-tab-btn--inactive .tm-tab-label {
+    display: inline;
+  }
+
+  .tm-tab-content {
+    padding: 0 20px;
+  }
+
+  .tm-quick-stats {
+    grid-template-columns: repeat(4, minmax(200px, 280px));
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .tm-genre-legend {
+    width: max-content;
+    margin: 0 auto 20px;
+    gap: 40px;
+  }
+
+  /* Gemeinsame Serien/Filme + Genre-Balken als Karten-Grid */
+  .tm-shared-list,
+  .tm-genre-bars {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    column-gap: 12px;
+    align-items: start;
+  }
+}

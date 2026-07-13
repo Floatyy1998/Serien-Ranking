@@ -194,6 +194,119 @@
   box-shadow: var(--shadow-lg), var(--glass-specular);
 }
 
+/* Geteilter TabSwitcher (components/ui): mobil volle Breite,
+   ab Desktop kompakte Segmented-Control statt Vollbreite-Balken. */
+.ui-tabs {
+  display: flex;
+  gap: 6px;
+  margin: 0 20px 20px;
+  position: relative;
+  z-index: 5;
+  border-radius: var(--radius-2xl);
+  padding: 4px;
+  -webkit-backdrop-filter: var(--blur-md);
+  backdrop-filter: var(--blur-md);
+}
+
+.ui-tabs__tab {
+  flex: 1;
+  padding: 11px 16px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+  transition: color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 768px) {
+  .ui-tabs {
+    width: max-content;
+    max-width: calc(100% - 40px);
+  }
+
+  .ui-tabs__tab {
+    flex: none;
+    padding: 10px 26px;
+  }
+
+  /* Variante: auf Desktop horizontal zentriert (Season-/Quartals-Switcher). */
+  .ui-tabs--center {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Geteiltes BottomSheet (components/ui): mobil angedockt, ab Desktop ein
+   schwebendes, voll gerundetes Glas-Panel über dem Dock. */
+.ui-sheet {
+  width: 100%;
+  max-height: var(--sheet-max-h, 85vh);
+  border-radius: 28px 28px 0 0;
+  border: 1px solid var(--glass-border-light);
+  border-bottom: none;
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
+}
+
+@media (min-width: 768px) {
+  .ui-sheet {
+    width: min(1600px, calc(100vw - 96px));
+    /* Sheet liegt über dem Dock — Platz nutzen statt drüber schweben */
+    max-height: calc(100vh - 48px);
+    border-radius: 28px;
+    border-bottom: 1px solid var(--glass-border-light);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+  }
+}
+
+/* Sheet-Inhalt: Listen nutzen die Desktop-Breite als mehrspaltiges Grid
+   statt gestreckter Einzelzeilen. */
+.sheet-grid {
+  padding: 0 12px;
+}
+
+@media (min-width: 768px) {
+  .sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    column-gap: 36px;
+    align-items: start;
+    padding: 0 24px;
+  }
+}
+
+/* Thematische Zone im Sheet (Desktop): Überschrift + eigene Spalte */
+.sheet-group {
+  min-width: 0;
+}
+
+.sheet-group__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sheet-group__count {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
 /* Scrollbars: the styled custom scrollbar lives in index.css (single source of
    truth). The former global `display:none !important` hard-hide was removed so it
    no longer overrides that styling. To hide a scrollbar on a specific container,
@@ -592,6 +705,25 @@ button:active:not(:disabled),
   backdrop-filter: var(--glass-filter-lg);
   border: 1px solid var(--glass-border-light);
   box-shadow: var(--glass-specular);
+}
+
+/* Kino-Zeilen-Artwork: standardmäßig hinter „Milchglas" (glasmorpher Blur —
+   ruhige, farbige Textur statt sechs schreiender Plakate), auf Hover wischt
+   die Zeile das Glas weg und das Artwork wird scharf. Der leichte Scale
+   kaschiert das Blur-Edge-Bleeding an der Maskenkante. Touch-Geräte ohne
+   Hover bleiben beim ruhigen Frosted-Default. */
+.cine-art {
+  filter: blur(16px) saturate(1.35) brightness(0.55);
+  transform: scale(1.08);
+  transition:
+    filter 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (hover: hover) {
+  .cine-host:hover .cine-art {
+    filter: blur(0px) saturate(1.15) brightness(0.88);
+    transform: scale(1);
+  }
 }
 
 /* Inner light - subtiler Lichtschein am oberen Rand */

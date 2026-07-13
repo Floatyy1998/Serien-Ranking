@@ -18,7 +18,6 @@ import { ActivitySpotlight } from '../ActivitySpotlight';
 import { CountUp } from '../CountUp';
 import { getDateGroup, isMovieActivity } from '../activityMeta';
 import { useActivityGrouping } from '../useActivityGrouping';
-import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { ActivityFilterType, FirebaseUserProfile } from '../types';
 import type { Friend, FriendActivity } from '../../../types/Friend';
 
@@ -45,7 +44,6 @@ export const ActivityFeedTab = ({
 }: ActivityFeedTabProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
-  const onPrimary = getOptimalTextColor(currentTheme.primary);
 
   const {
     filteredActivities,
@@ -230,7 +228,7 @@ export const ActivityFeedTab = ({
               key={filter.key}
               onClick={() => setFilterType(filter.key)}
               className="activity-filter-btn activity-segmented__btn"
-              style={{ color: active ? onPrimary : currentTheme.text.muted }}
+              style={{ color: active ? currentTheme.primary : currentTheme.text.muted }}
             >
               {active && (
                 <motion.span
@@ -238,8 +236,8 @@ export const ActivityFeedTab = ({
                   transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                   className="activity-segmented__pill"
                   style={{
-                    background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                    boxShadow: `0 4px 14px ${currentTheme.primary}44`,
+                    background: `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`,
+                    boxShadow: `inset 0 0 0 1px ${currentTheme.primary}45, 0 4px 14px ${currentTheme.primary}22`,
                   }}
                 />
               )}

@@ -193,11 +193,11 @@ export const ActivityPage = () => {
               className={`activity-nav__tab${active ? ' is-active' : ''}`}
               style={{
                 background: active
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
                   : currentTheme.background.surface,
-                border: `1px solid ${active ? 'transparent' : currentTheme.border.default}`,
-                color: active ? onPrimary : currentTheme.text.muted,
-                boxShadow: active ? `0 6px 20px ${currentTheme.primary}45` : 'none',
+                border: `1px solid ${active ? `${currentTheme.primary}55` : currentTheme.border.default}`,
+                color: active ? currentTheme.primary : currentTheme.text.muted,
+                boxShadow: active ? `0 4px 18px ${currentTheme.primary}22` : 'none',
               }}
             >
               <span className="activity-nav__icon">
@@ -207,7 +207,7 @@ export const ActivityPage = () => {
                     className="activity-nav__dot"
                     style={{
                       background: currentTheme.status.error,
-                      boxShadow: `0 0 0 2px ${active ? currentTheme.primary : currentTheme.background.default}`,
+                      boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
                     }}
                   />
                 )}
@@ -217,7 +217,7 @@ export const ActivityPage = () => {
                     style={{
                       background: currentTheme.status.error,
                       color: '#fff',
-                      boxShadow: `0 0 0 2px ${active ? currentTheme.primary : currentTheme.background.default}`,
+                      boxShadow: `0 0 0 2px ${currentTheme.background.default}`,
                     }}
                   >
                     {tab.badgeCount > 9 ? '9+' : tab.badgeCount}

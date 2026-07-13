@@ -77,6 +77,14 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Desktop: kompakte Tabs statt Vollbreite-Streifen */
+@media (min-width: 768px) {
+  .au-tab-btn {
+    flex: none;
+    padding: 12px 26px;
+  }
+}
+
 .au-voice-toggle {
   padding: 12px;
   border-radius: 14px;

@@ -17,17 +17,11 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => ({
   Category: () => null,
-  LocalFireDepartment: () => null,
   Star: () => null,
   Stream: () => null,
 }));
 
-import {
-  RatingsSection,
-  TopGenresSection,
-  TopProvidersSection,
-  WeekActivitySection,
-} from './StatsDetailSections';
+import { RatingsSection, TopGenresSection, TopProvidersSection } from './StatsDetailSections';
 
 const theme = {
   primary: '#3355ff',
@@ -67,9 +61,18 @@ describe('StatsDetailSections', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders the weekly activity count', () => {
-    render(<WeekActivitySection lastWeekWatched={17} theme={theme} />);
-    expect(screen.getByText('17')).toBeInTheDocument();
-    expect(screen.getByText('Episoden diese Woche')).toBeInTheDocument();
+  it('renders provider rows with counts', () => {
+    render(
+      <TopProvidersSection
+        providers={[
+          { name: 'Netflix', count: 14 },
+          { name: 'Disney Plus', count: 6 },
+        ]}
+        theme={theme}
+      />
+    );
+    expect(screen.getByText('Streaming-Dienste')).toBeInTheDocument();
+    expect(screen.getByText('Netflix')).toBeInTheDocument();
+    expect(screen.getByText('6')).toBeInTheDocument();
   });
 });

@@ -34,6 +34,7 @@ export const BugReportPage = memo(() => {
             onClick={() => setShowForm(true)}
             style={{
               width: '100%',
+              maxWidth: 860,
               padding: '14px',
               borderRadius: '12px',
               border: `2px dashed ${currentTheme.primary}40`,

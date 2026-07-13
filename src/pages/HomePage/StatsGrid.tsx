@@ -16,6 +16,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTheme } from '../../contexts/ThemeContext';
 import { colors } from '../../theme';
 import { StatCard } from './StatCard';
@@ -25,6 +26,7 @@ export const StatsGrid = () => {
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { isMobile } = useDeviceType();
   const stats = useHomeStats();
 
   // Navigation handlers
@@ -85,14 +87,15 @@ export const StatsGrid = () => {
         animate="visible"
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gridTemplateRows: 'auto auto',
+          // Desktop: Ring + 4 Kacheln in EINER Reihe statt gestrecktem 50/50-Bento.
+          gridTemplateColumns: isMobile ? '1fr 1fr' : '280px repeat(4, 1fr)',
+          gridTemplateRows: isMobile ? 'auto auto' : 'auto',
           gap: '12px',
           marginBottom: expanded ? '12px' : 0,
         }}
       >
-        {/* Progress Ring - spans 2 rows on left */}
-        <motion.div variants={staggerItem} style={{ gridRow: '1 / 3' }}>
+        {/* Progress Ring - mobil links über 2 Reihen, Desktop erste Spalte */}
+        <motion.div variants={staggerItem} style={{ gridRow: isMobile ? '1 / 3' : '1' }}>
           <Paper
             sx={{
               p: 2,
@@ -232,6 +235,30 @@ export const StatsGrid = () => {
             onClick={handleMoviesClick}
           />
         </motion.div>
+
+        {/* Desktop: zwei weitere Kacheln füllen die Hauptreihe. */}
+        {!isMobile && (
+          <>
+            <motion.div variants={staggerItem}>
+              <StatCard
+                icon={<Timer sx={{ fontSize: 20 }} />}
+                label="Gesamte Watchzeit"
+                value={stats.timeString}
+                iconColor={currentTheme.primary}
+              />
+            </motion.div>
+            <motion.div variants={staggerItem}>
+              <StatCard
+                icon={<TrendingUp sx={{ fontSize: 20 }} />}
+                label="Diese Woche"
+                value={`${stats.lastWeekWatched} Ep.`}
+                iconColor={currentTheme.primary}
+                subValue="neu geschaut"
+                onClick={handleWeeklyEpisodesClick}
+              />
+            </motion.div>
+          </>
+        )}
       </motion.div>
 
       {/* Extended Stats (Collapsible) */}
@@ -240,27 +267,38 @@ export const StatsGrid = () => {
           variants={staggerContainer}
           initial="hidden"
           animate={expanded ? 'visible' : 'hidden'}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile
+              ? 'repeat(2, 1fr)'
+              : 'repeat(auto-fill, minmax(240px, 1fr))',
+            gap: '12px',
+          }}
         >
-          <motion.div variants={staggerItem}>
-            <StatCard
-              icon={<Timer sx={{ fontSize: 20 }} />}
-              label="Gesamte Watchzeit"
-              value={stats.timeString}
-              iconColor={currentTheme.primary}
-            />
-          </motion.div>
+          {/* Mobil bleiben diese zwei im Collapse — Desktop zeigt sie oben. */}
+          {isMobile && (
+            <>
+              <motion.div variants={staggerItem}>
+                <StatCard
+                  icon={<Timer sx={{ fontSize: 20 }} />}
+                  label="Gesamte Watchzeit"
+                  value={stats.timeString}
+                  iconColor={currentTheme.primary}
+                />
+              </motion.div>
 
-          <motion.div variants={staggerItem}>
-            <StatCard
-              icon={<TrendingUp sx={{ fontSize: 20 }} />}
-              label="Diese Woche"
-              value={`${stats.lastWeekWatched} Ep.`}
-              iconColor={currentTheme.primary}
-              subValue="neu geschaut"
-              onClick={handleWeeklyEpisodesClick}
-            />
-          </motion.div>
+              <motion.div variants={staggerItem}>
+                <StatCard
+                  icon={<TrendingUp sx={{ fontSize: 20 }} />}
+                  label="Diese Woche"
+                  value={`${stats.lastWeekWatched} Ep.`}
+                  iconColor={currentTheme.primary}
+                  subValue="neu geschaut"
+                  onClick={handleWeeklyEpisodesClick}
+                />
+              </motion.div>
+            </>
+          )}
 
           <motion.div variants={staggerItem}>
             <StatCard

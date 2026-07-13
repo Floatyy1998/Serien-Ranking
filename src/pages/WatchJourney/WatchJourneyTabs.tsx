@@ -56,13 +56,16 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
                 className="wj-tab-btn"
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${primaryColor}, ${currentTheme.accent})`
+                    ? `color-mix(in srgb, ${primaryColor} 18%, rgba(255, 255, 255, 0.04))`
                     : 'transparent',
-                  color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
-                  boxShadow: isActive ? `0 2px 8px ${primaryColor}40` : 'none',
+                  color: isActive ? primaryColor : currentTheme.text.muted,
+                  boxShadow: isActive
+                    ? `inset 0 0 0 1px ${primaryColor}50, 0 2px 10px ${primaryColor}22`
+                    : 'none',
                 }}
               >
                 {tab.icon}
+                <span className="wj-tab-label">{tab.label}</span>
               </motion.button>
             );
           })}

@@ -15,8 +15,8 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
 
   return (
     <div className={`md-info ${isMobile ? 'md-info--mobile' : ''}`}>
-      {/* Overview */}
-      {(movie.beschreibung || movie.overview || tmdbOverview) && (
+      {/* Overview — Desktop zeigt die Handlung bereits im Hero */}
+      {isMobile && (movie.beschreibung || movie.overview || tmdbOverview) && (
         <div className={`md-info__section md-info__section${mobileClass}`}>
           <h3
             className={`md-info__heading md-info__heading${mobileClass}`}

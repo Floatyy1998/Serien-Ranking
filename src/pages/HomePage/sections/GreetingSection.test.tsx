@@ -82,16 +82,20 @@ describe('GreetingSection', () => {
   it('renders the greeting text and the quick-stats chips', () => {
     renderT();
     expect(screen.getByText('Guten Morgen')).toBeInTheDocument();
-    expect(screen.getByText('42 Eps. gesamt')).toBeInTheDocument();
-    expect(screen.getByText('7 Filme')).toBeInTheDocument();
-    expect(screen.getByText('85% aktive Serien')).toBeInTheDocument();
+    // Stat-Pods rendern Wert und Label seit dem Redesign getrennt
+    expect(screen.getByText('42')).toBeInTheDocument();
+    expect(screen.getByText('Episoden')).toBeInTheDocument();
+    expect(screen.getByText('7')).toBeInTheDocument();
+    expect(screen.getByText('Filme')).toBeInTheDocument();
+    expect(screen.getByText('85%')).toBeInTheDocument();
+    expect(screen.getByText('Aktiv')).toBeInTheDocument();
     expect(screen.getByTestId('header-actions')).toBeInTheDocument();
     expect(screen.getByTestId('clock')).toBeInTheDocument();
   });
 
   it('shows the "Heute" chip only when there are episodes today', () => {
     renderT();
-    expect(screen.getByText('3 Heute')).toBeInTheDocument();
+    expect(screen.getByText('Heute')).toBeInTheDocument();
     cleanup();
     renderT({ ...baseProps, todayEpisodes: 0 });
     expect(screen.queryByText(/Heute/)).not.toBeInTheDocument();

@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getOptimalTextColor } from '../../theme/colorUtils';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
 import { tapScale } from '../../lib/motion';
 
@@ -36,6 +36,7 @@ export const MangaReadJourneyPage = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const { mangaList } = useMangaList();
+  const { isDesktop } = useDeviceType();
   const [activeTab, setActiveTab] = useState<TabType>('activity');
 
   // Compute journey data from manga list
@@ -155,21 +156,21 @@ export const MangaReadJourneyPage = () => {
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  padding: '10px 16px',
+                  padding: '10px 20px',
                   borderRadius: 12,
                   border: 'none',
                   background: active
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                    ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
                     : `${currentTheme.text.primary}08`,
-                  color: active
-                    ? getOptimalTextColor(currentTheme.primary)
-                    : currentTheme.text.secondary,
+                  color: active ? currentTheme.primary : currentTheme.text.secondary,
                   fontSize: 13,
                   fontWeight: active ? 700 : 500,
                   cursor: 'pointer',
                   fontFamily: 'var(--font-body)',
                   whiteSpace: 'nowrap',
-                  boxShadow: active ? `0 4px 16px ${currentTheme.primary}40` : 'none',
+                  boxShadow: active
+                    ? `inset 0 0 0 1px ${currentTheme.primary}50, 0 2px 10px ${currentTheme.primary}22`
+                    : 'none',
                 }}
               >
                 {tab.icon}
@@ -182,14 +183,27 @@ export const MangaReadJourneyPage = () => {
         {/* Tab Content */}
         <div style={{ paddingBottom: 100 }}>
           {activeTab === 'activity' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={
+                isDesktop
+                  ? {
+                      display: 'grid',
+                      gridTemplateColumns: '1.5fr 1fr',
+                      gap: 14,
+                      alignItems: 'start',
+                    }
+                  : undefined
+              }
+            >
               {/* Monthly Bar Chart */}
               <div
                 style={{
                   padding: 16,
                   borderRadius: 16,
                   background: `${currentTheme.text.primary}06`,
-                  marginBottom: 14,
+                  marginBottom: isDesktop ? 0 : 14,
                 }}
               >
                 <div
@@ -203,7 +217,14 @@ export const MangaReadJourneyPage = () => {
                 >
                   Kapitel pro Monat
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 120 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    gap: isDesktop ? 10 : 4,
+                    height: isDesktop ? 220 : 120,
+                  }}
+                >
                   {journeyData.monthlyActivity.map((m, i) => {
                     const height =
                       journeyData.maxMonthChapters > 0
@@ -218,6 +239,10 @@ export const MangaReadJourneyPage = () => {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
+                          /* volle Spaltenhöhe + unten andocken — sonst lösen
+                             die %-Höhen der Balken gegen auto auf (2px-Striche) */
+                          height: '100%',
+                          justifyContent: 'flex-end',
                           gap: 4,
                         }}
                       >
@@ -329,7 +354,20 @@ export const MangaReadJourneyPage = () => {
           )}
 
           {activeTab === 'genres' && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={
+                isDesktop
+                  ? {
+                      display: 'grid',
+                      gridTemplateColumns: '1.4fr 1fr',
+                      gap: 14,
+                      alignItems: 'start',
+                    }
+                  : undefined
+              }
+            >
               <div
                 style={{
                   padding: 16,
@@ -395,7 +433,7 @@ export const MangaReadJourneyPage = () => {
                     padding: 16,
                     borderRadius: 16,
                     background: `${currentTheme.text.primary}06`,
-                    marginTop: 14,
+                    marginTop: isDesktop ? 0 : 14,
                   }}
                 >
                   <div
@@ -448,7 +486,11 @@ export const MangaReadJourneyPage = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 12 }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: isDesktop ? 'repeat(auto-fit, minmax(300px, 1fr))' : '1fr',
+                gap: 12,
+              }}
             >
               <InsightCard
                 label="Lese-Streak"

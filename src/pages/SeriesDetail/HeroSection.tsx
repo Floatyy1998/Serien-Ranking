@@ -24,6 +24,7 @@ import {
 } from '../../services/anilistProviderFallback';
 import { fetchStaticCatalogSeries } from '../../services/staticCatalog';
 import { showToast } from '../../lib/toast';
+import type { WatchingPace } from '../../lib/date/paceCalculation';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
@@ -41,9 +42,11 @@ interface HeroSectionProps {
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
   providers: TMDBWatchProvider[] | null;
+  /** Beschreibungstext — Desktop zeigt ihn IM Hero (2050-Streaming-Layout). */
+  overview?: string;
   overallRating: string;
   progressStats: { watched: number; total: number; percentage: number };
-  paceInfo: { text: string } | null;
+  paceInfo: { text: string; pace?: WatchingPace } | null;
   isReadOnlyTmdbSeries: boolean;
   isAdding: boolean;
   isDeleting: boolean;
@@ -79,6 +82,7 @@ export const HeroSection = memo<HeroSectionProps>(
     tmdbRating,
     imdbRating,
     providers,
+    overview,
     overallRating,
     progressStats,
     paceInfo,
@@ -101,7 +105,8 @@ export const HeroSection = memo<HeroSectionProps>(
     const genres = (series.genre?.genres || tmdbSeries?.genre?.genres || []).filter(
       (g) => g && g.trim() !== '' && g !== 'All'
     );
-    const maxGenres = isMobile ? 3 : 4;
+    // Desktop: max. 2 Genres in der Meta-Zeile — vier Stück machen sie zur Wurst.
+    const maxGenres = isMobile ? 3 : 2;
     const themedPlaceholder = useMemo(
       () =>
         buildThemedPlaceholderDataUrl(fullTheme.primary, fullTheme.secondary || fullTheme.accent),
@@ -335,23 +340,35 @@ export const HeroSection = memo<HeroSectionProps>(
             className="hero-section__backdrop-bg"
             style={{
               backgroundImage: backdropUrl ? `url(${backdropUrl})` : undefined,
-              filter: 'brightness(0.35)',
+              filter: 'brightness(0.7) saturate(1.08)',
             }}
           />
         )}
 
-        {/* Gradient */}
+        {/* Lesbarkeits-Verläufe: unten in den Seiten-Hintergrund, links (Desktop)
+            eine dunkle Zone unter Titel/Meta — statt einer Glas-Box davor. */}
         <div
           style={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
-            height: isMobile ? '60%' : '80%',
+            height: isMobile ? '60%' : '70%',
             zIndex: 1,
             background: `linear-gradient(transparent, ${fullTheme.background.default})`,
           }}
         />
+        {!isMobile && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 1,
+              background: `linear-gradient(90deg, ${fullTheme.background.default}d9 0%, ${fullTheme.background.default}73 26%, transparent 48%)`,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
 
         {/* Vignette on desktop */}
         {!isMobile && <div className="hero-section__vignette" />}
@@ -456,23 +473,22 @@ export const HeroSection = memo<HeroSectionProps>(
             className={isMobile ? undefined : 'hero-section__glass-card'}
             style={isMobile ? { width: '100%' } : { position: 'relative' }}
           >
-            {/* Friends - top right corner on desktop */}
-            {!isMobile && (
-              <div style={{ position: 'absolute', top: 20, right: 24 }}>
-                <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
-              </div>
-            )}
             <h1
               className="hero-section__title"
               tabIndex={0}
               title="Titel kopieren"
               style={{
-                fontSize: isMobile ? '24px' : '28px',
+                // Kino-Titel: groß, WEISS über dem Artwork (Poster-Logik) mit
+                // Theme-Glow — kein Fließtext-Grün in Link-Größe.
+                fontSize: isMobile ? '26px' : 'clamp(40px, 2.6vw + 18px, 68px)',
+                lineHeight: 1.1,
+                color: '#fff',
                 cursor: 'pointer',
                 textAlign: isMobile ? 'center' : 'left',
-                margin: isMobile ? '0 20px 4px' : undefined,
+                margin: isMobile ? '0 20px 4px' : '0 0 8px',
                 paddingRight: isMobile ? undefined : 80,
-                letterSpacing: '-0.02em',
+                letterSpacing: '-0.025em',
+                textShadow: `0 2px 28px rgba(0,0,0,0.7), 0 0 80px ${fullTheme.primary}40`,
               }}
               onClick={copyTitle}
               onKeyDown={(e) => {
@@ -489,11 +505,11 @@ export const HeroSection = memo<HeroSectionProps>(
               className="hero-section__meta"
               style={{
                 gap: isMobile ? '3px 8px' : '12px',
-                fontSize: isMobile ? '13px' : '14px',
+                fontSize: isMobile ? '13px' : '16px',
                 justifyContent: isMobile ? 'center' : 'flex-start',
                 padding: isMobile ? '0 20px' : undefined,
-                marginTop: isMobile ? 8 : undefined,
-                color: isMobile ? fullTheme.text.muted : undefined,
+                marginTop: isMobile ? 8 : 12,
+                color: isMobile ? fullTheme.text.muted : fullTheme.text.secondary,
               }}
             >
               {(tmdbFirstAirDate || series.first_air_date || series.release_date) && (
@@ -517,32 +533,59 @@ export const HeroSection = memo<HeroSectionProps>(
               {parseFloat(overallRating) > 0 && (
                 <span style={{ color: currentTheme.accent }}>&bull; &#11088; {overallRating}</span>
               )}
+              {/* Desktop: Genres als ruhiger Text in der Meta-Zeile — Chips
+                  derselben Form wie Status-Badges erzeugten nur Rauschen. */}
+              {!isMobile && genres.length > 0 && (
+                <span style={{ color: fullTheme.text.muted }}>
+                  &bull; {genres.slice(0, maxGenres).join(', ')}
+                </span>
+              )}
             </div>
 
-            {/* Status Badges */}
+            {/* Ein einziger Akzent-Chip (nächste Folge); der Status steht als
+                Text in der Meta-Zeile — Desktop braucht keinen Doppel-Chip. */}
             <div
               className="hero-section__badges"
               style={{
                 gap: isMobile ? '6px' : '8px',
                 justifyContent: isMobile ? 'center' : 'flex-start',
                 padding: isMobile ? '0 20px' : undefined,
-                marginTop: isMobile ? 12 : undefined,
+                marginTop: isMobile ? 12 : 18,
               }}
             >
-              <StatusBadge series={series} />
+              {isMobile && <StatusBadge series={series} />}
               <NextEpisodeChip series={series} />
             </div>
 
-            {/* Genre Tags */}
-            {genres.length > 0 && (
+            {/* Desktop: Beschreibung gehört IN den Hero (Streaming-Layout) —
+                3 Zeilen, Inhaltsbreite, statt einsamer Sektion darunter. */}
+            {!isMobile && overview && (
+              <p
+                style={{
+                  // Desktop zeigt den KOMPLETTEN Text (kein Clamp, kein „…") —
+                  // der Hero wächst mit; Platz ist genug da.
+                  margin: '16px 0 0',
+                  maxWidth: 1100,
+                  fontSize: 15.5,
+                  lineHeight: 1.65,
+                  color: fullTheme.text.secondary,
+                  textShadow: '0 1px 12px rgba(0,0,0,0.6)',
+                }}
+              >
+                {overview}
+              </p>
+            )}
+
+            {/* Genre Tags — nur Mobile (Desktop: in der Meta-Zeile) */}
+            {isMobile && genres.length > 0 && (
               <div
                 className="hero-section__badges"
                 style={{
-                  gap: isMobile ? '6px' : '8px',
+                  gap: '6px',
                   marginTop: 6,
-                  marginBottom: isMobile ? 10 : 12,
-                  justifyContent: isMobile ? 'center' : 'flex-start',
-                  padding: isMobile ? '0 20px' : undefined,
+                  marginBottom: 10,
+                  justifyContent: 'center',
+                  padding: '0 20px',
                 }}
               >
                 {genres.slice(0, maxGenres).map((genre, i) => (
@@ -605,49 +648,195 @@ export const HeroSection = memo<HeroSectionProps>(
                   <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
               </>
-            ) : (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  flexWrap: 'wrap',
-                }}
-              >
-                <RatingsCard
-                  series={series}
-                  localSeries={localSeries}
-                  tmdbRating={tmdbRating}
-                  imdbRating={imdbRating}
-                  seriesId={String(seriesId)}
-                  isMobile={false}
-                  noMargin
-                />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {displayProviders.length > 0 && (
-                    <ProviderBadges
-                      providers={displayProviders}
-                      size="large"
-                      maxDisplay={6}
-                      showNames={false}
-                      searchTitle={series.title || series.name}
-                      tmdbId={seriesId}
-                      mediaType="tv"
-                    />
-                  )}
-                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
-                </div>
-              </div>
-            )}
+            ) : null}
 
             {/* Bottom section: Progress + Actions (pushed to bottom on desktop) */}
             <div style={{ marginTop: isMobile ? 0 : 'auto' }}>
-              {/* Progress Bar */}
-              {progressStats.total > 0 && (
+              {/* Desktop: Stats-Band — Fortschritts-Ring + Glas-Pods füllen die
+                  Hero-Mitte mit echten Komponenten statt gequetschter Textzeilen. */}
+              {!isMobile && progressStats.total > 0 && (
                 <div
                   style={{
-                    marginTop: 14,
+                    display: 'flex',
+                    alignItems: 'stretch',
+                    flexWrap: 'wrap',
+                    gap: 10,
+                    marginTop: 22,
+                  }}
+                >
+                  {/* Ring-Pod */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '10px 18px 10px 12px',
+                      borderRadius: 16,
+                      background: 'var(--glass-light)',
+                      border: '1px solid var(--glass-border-light)',
+                      boxShadow: 'var(--glass-specular)',
+                      WebkitBackdropFilter: 'var(--glass-filter-sm)',
+                      backdropFilter: 'var(--glass-filter-sm)',
+                    }}
+                  >
+                    <div style={{ position: 'relative', width: 52, height: 52 }}>
+                      <svg width={52} height={52}>
+                        <defs>
+                          <linearGradient id="hero-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor={fullTheme.primary} />
+                            <stop offset="100%" stopColor={fullTheme.accent} />
+                          </linearGradient>
+                        </defs>
+                        <circle
+                          cx={26}
+                          cy={26}
+                          r={22}
+                          fill="none"
+                          strokeWidth={4}
+                          style={{ stroke: 'var(--glass-border-light)' }}
+                        />
+                        <circle
+                          cx={26}
+                          cy={26}
+                          r={22}
+                          fill="none"
+                          stroke="url(#hero-ring-grad)"
+                          strokeWidth={4}
+                          strokeLinecap="round"
+                          strokeDasharray={2 * Math.PI * 22}
+                          strokeDashoffset={2 * Math.PI * 22 * (1 - progressStats.percentage / 100)}
+                          style={{ transform: 'rotate(-90deg)', transformOrigin: 'center' }}
+                        />
+                      </svg>
+                      <span
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: 13,
+                          fontWeight: 800,
+                          fontFamily: 'var(--font-display)',
+                          color: fullTheme.text.primary,
+                        }}
+                      >
+                        {progressStats.percentage}%
+                      </span>
+                    </div>
+                    <div>
+                      <div
+                        style={{
+                          fontSize: 17,
+                          fontWeight: 800,
+                          fontFamily: 'var(--font-display)',
+                          color: fullTheme.text.primary,
+                          lineHeight: 1.15,
+                        }}
+                      >
+                        {progressStats.watched} / {progressStats.total}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.06em',
+                          color: fullTheme.text.muted,
+                        }}
+                      >
+                        Episoden
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pace-Pods */}
+                  {(() => {
+                    const pace = paceInfo?.pace;
+                    if (!pace) return null;
+                    const fmt = (d: Date | null) =>
+                      d
+                        ? d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })
+                        : null;
+                    const pods: { value: string; label: string }[] = pace.isPaused
+                      ? [
+                          { value: 'Pausiert', label: 'Status' },
+                          { value: String(pace.remainingEpisodes), label: 'Ep. offen' },
+                        ]
+                      : [
+                          { value: String(pace.remainingEpisodes), label: 'Ep. offen' },
+                          { value: `~${Math.round(pace.remainingHours)} Std.`, label: 'übrig' },
+                          {
+                            value: `~${(pace.episodesPerWeek / 7).toFixed(1).replace('.', ',')}`,
+                            label: 'Ep. / Tag',
+                          },
+                          ...(fmt(pace.estimatedCompletionDate)
+                            ? [
+                                {
+                                  value: fmt(pace.estimatedCompletionDate) as string,
+                                  label: 'Fertig ca.',
+                                },
+                              ]
+                            : []),
+                        ];
+                    return pods.map((pod) => (
+                      <div
+                        key={pod.label}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 3,
+                          minWidth: 92,
+                          padding: '10px 18px',
+                          borderRadius: 16,
+                          background: 'var(--glass-light)',
+                          border: '1px solid var(--glass-border-light)',
+                          boxShadow: 'var(--glass-specular)',
+                          WebkitBackdropFilter: 'var(--glass-filter-sm)',
+                          backdropFilter: 'var(--glass-filter-sm)',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: 17,
+                            fontWeight: 800,
+                            fontFamily: 'var(--font-display)',
+                            color: fullTheme.text.primary,
+                            lineHeight: 1.15,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {pod.value}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 10,
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.06em',
+                            color: fullTheme.text.muted,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {pod.label}
+                        </span>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
+
+              {/* Progress Bar (Mobile) */}
+              {isMobile && progressStats.total > 0 && (
+                <div
+                  style={{
+                    marginTop: isMobile ? 14 : 20,
                     padding: isMobile ? '0 20px' : undefined,
+                    // Desktop: Balken gehört zur Inhaltsspalte, nicht bis zum
+                    // rechten Bildschirmrand.
+                    maxWidth: isMobile ? undefined : 560,
                   }}
                 >
                   <div className="hero-section__progress-track">
@@ -659,19 +848,23 @@ export const HeroSection = memo<HeroSectionProps>(
                   <p
                     className="hero-section__progress-text"
                     style={{
-                      fontSize: isMobile ? '11px' : '12px',
+                      fontSize: isMobile ? '11px' : '12.5px',
                       textAlign: isMobile ? 'center' : undefined,
+                      color: fullTheme.text.secondary,
+                      marginTop: 6,
                     }}
                   >
-                    {progressStats.watched} von {progressStats.total} Episoden (
-                    {progressStats.percentage}%)
+                    {progressStats.watched} von {progressStats.total} Episoden &middot;{' '}
+                    {progressStats.percentage}&thinsp;%
                   </p>
                   {paceInfo && (
                     <p
                       className="hero-section__pace-text"
                       style={{
-                        fontSize: isMobile ? '10px' : '11px',
+                        fontSize: isMobile ? '10px' : '11.5px',
                         textAlign: isMobile ? 'center' : undefined,
+                        color: fullTheme.text.muted,
+                        marginTop: 3,
                       }}
                     >
                       {paceInfo.text}
@@ -682,12 +875,62 @@ export const HeroSection = memo<HeroSectionProps>(
 
               {/* Action Buttons */}
               {actionButtons && (
-                <div style={{ marginTop: 14, padding: isMobile ? '0 16px' : undefined }}>
+                <div
+                  style={{
+                    marginTop: isMobile ? 14 : 18,
+                    padding: isMobile ? '0 16px' : undefined,
+                  }}
+                >
                   {actionButtons}
                 </div>
               )}
             </div>
           </div>
+
+          {/* Desktop: Signal-Zone unten rechts — Ratings, Provider, Trailer,
+              Freunde. Balanciert den Hero, statt alles links zu klumpen. */}
+          {!isMobile && (
+            <div
+              className="liquid-glass"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-end',
+                gap: 12,
+                alignSelf: 'flex-end',
+                flexShrink: 0,
+                position: 'relative',
+                zIndex: 2,
+                borderRadius: 18,
+                padding: '16px 18px',
+              }}
+            >
+              <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
+              <RatingsCard
+                series={series}
+                localSeries={localSeries}
+                tmdbRating={tmdbRating}
+                imdbRating={imdbRating}
+                seriesId={String(seriesId)}
+                isMobile={false}
+                noMargin
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {displayProviders.length > 0 && (
+                  <ProviderBadges
+                    providers={displayProviders}
+                    size="large"
+                    maxDisplay={6}
+                    showNames={false}
+                    searchTitle={series.title || series.name}
+                    tmdbId={seriesId}
+                    mediaType="tv"
+                  />
+                )}
+                <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

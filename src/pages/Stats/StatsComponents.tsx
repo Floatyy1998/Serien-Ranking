@@ -1,10 +1,17 @@
 /**
- * StatsComponents - Memoized subcomponents for StatsPage
- * Extracted JSX sections: AnimatedRing, HeroSection, ActorUniverseBanner,
- * TimeBreakdown, RatingsSection, TopGenres, TopProviders, WeekActivity
+ * StatsComponents - Memoized Bento-Pods für die StatsPage
+ * AnimatedRing, WatchtimePod, ProgressPod, QuickPods, ActorUniverseBanner.
+ * Ratings/Genres/Provider-Panels liegen in StatsDetailSections.
  */
 
-import { AutoAwesome, EmojiEvents, Movie, Timer, Tv } from '@mui/icons-material';
+import {
+  AutoAwesome,
+  EmojiEvents,
+  LocalFireDepartment,
+  Movie,
+  Timer,
+  Tv,
+} from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React, { memo } from 'react';
 import { GradientText } from '../../components/ui';
@@ -12,12 +19,7 @@ import type { StatsData, FormattedTime } from './useStatsData';
 import { formatTimeDetailed } from './useStatsData';
 import { tapScaleSmall } from '../../lib/motion';
 
-export {
-  RatingsSection,
-  TopGenresSection,
-  TopProvidersSection,
-  WeekActivitySection,
-} from './StatsDetailSections';
+export { RatingsSection, TopGenresSection, TopProvidersSection } from './StatsDetailSections';
 
 /* ------------------------------------------------------------------ */
 /*  Theme color type (minimal surface needed by subcomponents)         */
@@ -30,6 +32,11 @@ interface ThemeColors {
   border: { default: string };
   status: { success: string; error: string; warning: string };
 }
+
+const podIn = {
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0 },
+};
 
 /* ------------------------------------------------------------------ */
 /*  AnimatedRing                                                       */
@@ -78,78 +85,120 @@ export const AnimatedRing: React.FC<AnimatedRingProps> = memo(
 AnimatedRing.displayName = 'AnimatedRing';
 
 /* ------------------------------------------------------------------ */
-/*  HeroSection                                                        */
+/*  WatchtimePod — großer Zeit-Pod inkl. Serien/Filme-Split            */
 /* ------------------------------------------------------------------ */
-interface HeroSectionProps {
+interface WatchtimePodProps {
   stats: StatsData;
   timeData: FormattedTime;
   theme: ThemeColors;
 }
 
-export const HeroSection = memo(({ stats, timeData, theme }: HeroSectionProps) => (
-  <motion.div
-    className="stats-hero"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    style={{
-      background: `linear-gradient(135deg, ${theme.background.surface}ee, ${theme.background.surface}cc)`,
-      border: `1px solid ${theme.border.default}`,
-    }}
-  >
-    {/* Main Time Stat */}
-    <div className="stats-hero-time">
-      <motion.div
-        className="stats-hero-icon"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
+export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps) => {
+  const totalMin = Math.max(stats.seriesMinutes + stats.movieMinutes, 1);
+  const seriesShare = (stats.seriesMinutes / totalMin) * 100;
+  const accent = theme.accent || theme.primary;
+
+  return (
+    <motion.div className="stats-pod stats-pod--time liquid-glass" {...podIn}>
+      <div
+        className="stats-pod__orb"
         style={{
-          background: `linear-gradient(135deg, ${theme.primary}20, ${theme.accent || theme.primary}10)`,
-          border: `3px solid ${theme.primary}40`,
+          background: `radial-gradient(circle, color-mix(in srgb, ${theme.primary} 22%, transparent) 0%, transparent 70%)`,
         }}
-      >
-        <Timer style={{ fontSize: 48, color: theme.accent || theme.primary }} />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <GradientText
-          as="span"
-          to={theme.primary}
-          style={{ fontSize: '52px', fontWeight: 800, letterSpacing: '-2px' }}
-        >
-          {timeData.value}
-        </GradientText>
-        <span className="stats-hero-unit" style={{ color: theme.text.secondary }}>
-          {timeData.unit}
+        aria-hidden
+      />
+      <div className="stats-pod__label" style={{ color: theme.text.muted }}>
+        <Timer style={{ fontSize: 16, color: accent }} />
+        Gesamte Watchtime
+      </div>
+
+      <div className="stats-time-display">
+        <span className="stats-time-value">
+          <GradientText as="span" to={theme.primary}>
+            {timeData.value}
+          </GradientText>
         </span>
+        <span className="stats-time-unit">{timeData.unit}</span>
         {timeData.details && (
-          <span className="stats-hero-details" style={{ color: theme.text.muted }}>
-            , {timeData.details}
+          <span className="stats-time-details" style={{ color: theme.text.muted }}>
+            + {timeData.details}
           </span>
         )}
-      </motion.div>
-      <p className="stats-hero-subtitle" style={{ color: theme.text.muted }}>
-        Gesamte Watchtime
-      </p>
-    </div>
+      </div>
 
-    {/* Progress Ring */}
-    <div className="stats-progress-area">
-      <div className="stats-ring-wrapper">
-        <AnimatedRing progress={stats.progress} size={90} strokeWidth={8} color={theme.primary} />
-        <div className="stats-ring-label">
-          <span className="stats-ring-percent">{Math.min(100, Math.round(stats.progress))}%</span>
-          <span className="stats-ring-text" style={{ color: theme.text.muted }}>
-            Fortschritt
+      <p className="stats-time-sub" style={{ color: theme.text.muted }}>
+        ≙ {stats.watchedEpisodes.toLocaleString('de-DE')} Episoden &amp;{' '}
+        {stats.watchedMovies.toLocaleString('de-DE')} Filme gesehen
+      </p>
+
+      <div className="stats-time-medias">
+        <div
+          className="stats-time-chip"
+          style={{ boxShadow: `inset 0 0 0 1px ${theme.primary}2a` }}
+        >
+          <Tv style={{ fontSize: 18, color: theme.primary }} />
+          <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
+            Serien
           </span>
+          <span className="stats-time-chip__value">{formatTimeDetailed(stats.seriesMinutes)}</span>
+        </div>
+        <div className="stats-time-chip" style={{ boxShadow: `inset 0 0 0 1px ${accent}2a` }}>
+          <Movie style={{ fontSize: 18, color: accent }} />
+          <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
+            Filme
+          </span>
+          <span className="stats-time-chip__value">{formatTimeDetailed(stats.movieMinutes)}</span>
         </div>
       </div>
 
-      <div className="stats-progress-info">
-        <div className="stats-progress-count">
+      <div
+        className="stats-split-bar"
+        style={{ background: `${theme.text.muted}2b` }}
+        role="img"
+        aria-label={`Serien ${Math.round(seriesShare)} Prozent der Watchtime`}
+      >
+        <motion.div
+          className="stats-split-fill"
+          initial={{ width: 0 }}
+          animate={{ width: `${seriesShare}%` }}
+          transition={{ duration: 1, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          style={{ background: `linear-gradient(90deg, ${theme.primary}, ${accent})` }}
+        />
+      </div>
+    </motion.div>
+  );
+});
+WatchtimePod.displayName = 'WatchtimePod';
+
+/* ------------------------------------------------------------------ */
+/*  ProgressPod — Ring + Episoden-Zähler                               */
+/* ------------------------------------------------------------------ */
+interface ProgressPodProps {
+  stats: StatsData;
+  theme: ThemeColors;
+}
+
+export const ProgressPod = memo(({ stats, theme }: ProgressPodProps) => (
+  <motion.div
+    className="stats-pod stats-pod--progress liquid-glass"
+    {...podIn}
+    transition={{ delay: 0.08 }}
+  >
+    <div className="stats-pod__label" style={{ color: theme.text.muted }}>
+      Fortschritt
+    </div>
+    <div className="stats-progress-body">
+      <div className="stats-ring-wrapper">
+        <AnimatedRing progress={stats.progress} size={128} strokeWidth={11} color={theme.primary} />
+        <div className="stats-ring-label">
+          <span className="stats-ring-percent">{Math.min(100, Math.round(stats.progress))}%</span>
+          <span className="stats-ring-text" style={{ color: theme.text.muted }}>
+            geschaut
+          </span>
+        </div>
+      </div>
+      <div className="stats-progress-count">
+        <div>
           <span className="stats-progress-value">
             {stats.watchedEpisodes.toLocaleString('de-DE')}
           </span>
@@ -163,22 +212,19 @@ export const HeroSection = memo(({ stats, timeData, theme }: HeroSectionProps) =
         </p>
       </div>
     </div>
-
-    {/* Quick Stats Row */}
-    <QuickStatsGrid stats={stats} theme={theme} />
   </motion.div>
 ));
-HeroSection.displayName = 'HeroSection';
+ProgressPod.displayName = 'ProgressPod';
 
 /* ------------------------------------------------------------------ */
-/*  QuickStatsGrid                                                     */
+/*  QuickPods — Serien / Filme / Fertig / Diese Woche                  */
 /* ------------------------------------------------------------------ */
-interface QuickStatsGridProps {
+interface QuickPodsProps {
   stats: StatsData;
   theme: ThemeColors;
 }
 
-const QuickStatsGrid = memo(({ stats, theme }: QuickStatsGridProps) => {
+export const QuickPods = memo(({ stats, theme }: QuickPodsProps) => {
   const items = [
     {
       icon: <Tv style={{ fontSize: 20 }} />,
@@ -195,38 +241,49 @@ const QuickStatsGrid = memo(({ stats, theme }: QuickStatsGridProps) => {
     {
       icon: <EmojiEvents style={{ fontSize: 20 }} />,
       value: stats.completedSeries,
-      label: 'Fertig',
+      label: 'Serien fertig',
       color: theme.status.success,
+    },
+    {
+      icon: <LocalFireDepartment style={{ fontSize: 20 }} />,
+      value: stats.lastWeekWatched,
+      label: 'Episoden diese Woche',
+      color: theme.status.warning,
     },
   ];
 
   return (
-    <div className="stats-quick-grid">
+    <>
       {items.map((stat, i) => (
         <motion.div
-          key={i}
-          className="stats-quick-card"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 + i * 0.1 }}
-          style={{
-            background: theme.background.surface,
-            border: `1px solid ${theme.border.default}`,
-          }}
+          key={stat.label}
+          className="stats-pod stats-pod--quick liquid-glass"
+          {...podIn}
+          transition={{ delay: 0.12 + i * 0.05 }}
         >
-          <div className="stats-quick-icon" style={{ color: stat.color }}>
+          <span className="stats-quick-ghost" style={{ color: stat.color }} aria-hidden>
+            {React.cloneElement(stat.icon, { style: { fontSize: 128 } })}
+          </span>
+          <div
+            className="stats-quick-icon"
+            style={{
+              color: stat.color,
+              background: `${stat.color}16`,
+              boxShadow: `inset 0 0 0 1px ${stat.color}2e`,
+            }}
+          >
             {stat.icon}
           </div>
-          <div className="stats-quick-value">{stat.value}</div>
+          <div className="stats-quick-value">{stat.value.toLocaleString('de-DE')}</div>
           <div className="stats-quick-label" style={{ color: theme.text.muted }}>
             {stat.label}
           </div>
         </motion.div>
       ))}
-    </div>
+    </>
   );
 });
-QuickStatsGrid.displayName = 'QuickStatsGrid';
+QuickPods.displayName = 'QuickPods';
 
 /* ------------------------------------------------------------------ */
 /*  ActorUniverseBanner                                                */
@@ -239,21 +296,13 @@ interface ActorUniverseBannerProps {
 export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBannerProps) => (
   <motion.button
     type="button"
-    className="stats-actor-banner"
+    className="stats-actor-banner liquid-glass"
     aria-label="Actor Universe entdecken – Verbindungen zwischen Schauspielern"
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay: 0.5 }}
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.3 }}
     whileTap={tapScaleSmall}
     onClick={onNavigate}
-    style={{
-      display: 'block',
-      width: '100%',
-      textAlign: 'left',
-      font: 'inherit',
-      background: `linear-gradient(135deg, ${theme.background.default} 0%, ${theme.background.surface} 50%, ${theme.background.surface} 100%)`,
-      border: `1px solid ${theme.primary}30`,
-    }}
   >
     {/* Animated stars */}
     {STARS.map((star, i) => (
@@ -299,8 +348,9 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
       <div
         className="stats-actor-badge"
         style={{
-          background: `${theme.primary}30`,
-          color: `${theme.primary}cc`,
+          background: `${theme.primary}26`,
+          color: theme.primary,
+          boxShadow: `inset 0 0 0 1px ${theme.primary}40`,
         }}
       >
         Erkunden
@@ -318,63 +368,3 @@ const STARS = Array.from({ length: 12 }, () => ({
   duration: 2 + Math.random() * 2,
   delay: Math.random() * 2,
 }));
-
-/* ------------------------------------------------------------------ */
-/*  TimeBreakdownSection                                               */
-/* ------------------------------------------------------------------ */
-interface TimeBreakdownProps {
-  seriesMinutes: number;
-  movieMinutes: number;
-  theme: ThemeColors;
-}
-
-export const TimeBreakdownSection = memo(
-  ({ seriesMinutes, movieMinutes, theme }: TimeBreakdownProps) => (
-    <motion.div
-      className="stats-section"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.6 }}
-      style={{
-        background: theme.background.surface,
-        border: `1px solid ${theme.border.default}`,
-      }}
-    >
-      <h2 className="stats-section-title">
-        <Timer style={{ fontSize: 20, color: theme.accent || theme.primary }} />
-        Zeit-Aufteilung
-      </h2>
-      <div className="stats-time-row">
-        <div
-          className="stats-time-card"
-          style={{
-            background: theme.background.surface,
-            border: `1px solid ${theme.border.default}`,
-          }}
-        >
-          <Tv style={{ fontSize: 24, color: theme.primary, marginBottom: '8px' }} />
-          <div className="stats-time-value">{formatTimeDetailed(seriesMinutes)}</div>
-          <div className="stats-time-label" style={{ color: theme.text.muted }}>
-            Serien
-          </div>
-        </div>
-        <div
-          className="stats-time-card"
-          style={{
-            background: theme.background.surface,
-            border: `1px solid ${theme.border.default}`,
-          }}
-        >
-          <Movie
-            style={{ fontSize: 24, color: theme.accent || theme.primary, marginBottom: '8px' }}
-          />
-          <div className="stats-time-value">{formatTimeDetailed(movieMinutes)}</div>
-          <div className="stats-time-label" style={{ color: theme.text.muted }}>
-            Filme
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  )
-);
-TimeBreakdownSection.displayName = 'TimeBreakdownSection';

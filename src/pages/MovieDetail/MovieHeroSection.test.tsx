@@ -120,7 +120,8 @@ describe('MovieHeroSection', () => {
     render(<MovieHeroSection {...baseProps} />);
     expect(screen.getByRole('heading', { name: 'Dune' })).toBeInTheDocument();
     expect(screen.getByText('2021')).toBeInTheDocument();
-    expect(screen.getByText('Sci-Fi')).toBeInTheDocument();
+    // Genres werden seit dem Redesign gemeinsam in einem Span gerendert
+    expect(screen.getByText(/Sci-Fi, Drama/)).toBeInTheDocument();
   });
 
   it('shows the add button for a read-only tmdb movie and invokes onAddMovie', () => {

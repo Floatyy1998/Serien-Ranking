@@ -34,6 +34,7 @@ const baseReturn = () => ({
   secondaryMenuItems: [],
   mangaMenuItems: [],
   settingsItems: [],
+  heroBackdrops: [] as string[],
   goTo: vi.fn(),
   handleLogout: vi.fn(),
 });

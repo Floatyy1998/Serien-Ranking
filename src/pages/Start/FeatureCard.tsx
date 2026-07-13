@@ -35,15 +35,24 @@ export const FeatureCard = ({
       elevation={0}
       className="start-feature-card-paper"
       sx={{
-        background: 'rgba(255, 255, 255, 0.03)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        /* Getöntes Glas in der Akzentfarbe statt grauem Einheitskasten */
+        background: `linear-gradient(135deg, color-mix(in srgb, ${color} 10%, rgba(255, 255, 255, 0.03)) 0%, color-mix(in srgb, ${color} 4%, rgba(255, 255, 255, 0.02)) 100%)`,
+        border: `1px solid ${color}30`,
         '&:hover': {
-          background: 'rgba(255, 255, 255, 0.06)',
-          border: `1px solid ${color}40`,
+          background: `linear-gradient(135deg, color-mix(in srgb, ${color} 16%, rgba(255, 255, 255, 0.04)) 0%, color-mix(in srgb, ${color} 7%, rgba(255, 255, 255, 0.03)) 100%)`,
+          border: `1px solid ${color}55`,
+          transform: 'translateY(-3px)',
+          boxShadow: `0 10px 32px ${color}25`,
         },
       }}
     >
-      <div className="start-feature-icon-box" style={{ background: `${color}12`, color }}>
+      <div
+        className="start-feature-icon-box"
+        style={{
+          background: `linear-gradient(135deg, ${color}, color-mix(in srgb, ${color} 72%, #000))`,
+          color: '#fff',
+        }}
+      >
         {icon}
       </div>
       <div className="start-feature-title" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>

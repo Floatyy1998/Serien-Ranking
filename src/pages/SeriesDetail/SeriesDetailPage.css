@@ -27,21 +27,29 @@
   pointer-events: none;
 }
 
-/* Desktop: Poster + Glass Card row */
+/* Desktop: Kino-Hero — volle Breite, Inhalt unten links AUF dem Backdrop
+   (kein zentrierter max-width-Kasten mehr; Owner-Regel volle Flächennutzung). */
 .hero-section__content-row {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: stretch;
-  gap: 32px;
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: calc(64px + env(safe-area-inset-top)) 48px 36px;
+  align-items: flex-end;
+  gap: 40px;
+  /* Oben nur so viel Luft wie der Back-Button braucht + etwas Atem —
+     der Inhalt zieht nach oben, das Artwork bleibt trotzdem präsent. */
+  padding: calc(110px + env(safe-area-inset-top)) 48px 40px;
+}
+
+@media (min-width: 1600px) {
+  .hero-section__content-row {
+    padding-left: 64px;
+    padding-right: 64px;
+  }
 }
 
 .hero-section__poster {
-  width: 220px;
-  height: 325px;
+  width: 264px;
+  height: 396px;
   border-radius: 16px;
   object-fit: cover;
   flex-shrink: 0;
@@ -57,9 +65,8 @@
 .hero-section__poster-wrap {
   position: relative;
   flex-shrink: 0;
-  /* Nicht auf Zeilenhöhe stretchen (Glass-Card daneben ist höher) — sonst
-     umschließt der Ring den Leerraum unter dem Poster. */
-  align-self: flex-start;
+  /* Kino-Hero: Poster sitzt unten auf der Grundlinie des Inhalts. */
+  align-self: flex-end;
 }
 
 .hero-section__poster-wrap--ring::before,
@@ -107,18 +114,15 @@
   );
 }
 
-/* Composes design-token glassmorphism (background + blur + border) with the
- * page-specific layout + slight tint shift toward the dark surface tone. */
+/* Kino-Hero: KEINE Box mehr — die Info liegt direkt auf dem Backdrop, die
+   Lesbarkeit kommt aus den Verläufen der Hero-Ebene (unten + links). */
 .hero-section__glass-card {
   flex: 1;
   min-width: 0;
-  background: rgba(10, 14, 26, 0.55);
-  -webkit-backdrop-filter: var(--glass-filter-lg);
-  backdrop-filter: var(--glass-filter-lg);
-  border-radius: 20px;
-  padding: 24px 28px;
-  border: 1px solid var(--glass-border-medium);
-  box-shadow: var(--shadow-lg);
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0 0 4px;
   display: flex;
   flex-direction: column;
 }
@@ -164,11 +168,8 @@
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
   word-break: break-word;
   line-height: 1.2;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* KEIN line-clamp/overflow mehr: der alte 2-Zeilen-Clamp hat bei großer
+     Type die Unterlängen (y, g, j) abgeschnitten. Lange Titel brechen um. */
 }
 
 .hero-section__meta {
@@ -317,10 +318,23 @@
 }
 
 .hero-actions__btn--primary {
-  flex: 1;
+  /* Kompakter CTA statt Vollbreite-Neonbalken — auf Mobile darf er wachsen. */
+  flex: 0 0 auto;
+  min-width: 180px;
+  padding: 0 26px;
+  height: 44px;
+  border-radius: 12px;
   color: #fff;
   font-weight: 700;
   border: none;
+  box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--theme-primary) 60%, transparent);
+}
+
+@media (max-width: 767px) {
+  .hero-actions__btn--primary {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
 .hero-actions__btn--primary:hover {
@@ -421,9 +435,12 @@
 
 /* Episode List - readable list mode */
 .episode-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  /* Breite Screens: Episoden kacheln mehrspaltig statt 2500px-Leerzeilen;
+     Mobile kollabiert automatisch auf 1 Spalte. */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+  gap: 6px 12px;
+  align-items: stretch;
 }
 
 .episode-list-item {
@@ -552,6 +569,18 @@ button.episode-list-number:focus-visible {
   border: 1px solid var(--glass-border-subtle);
   border-radius: 14px;
   padding: 3px;
+}
+
+/* Desktop: kompakte Segmented-Control statt 2500px-Streifen. */
+@media (min-width: 768px) {
+  .detail-tab-switcher {
+    width: max-content;
+    max-width: 100%;
+  }
+  .detail-tab-btn {
+    flex: 0 0 auto;
+    padding: 10px 22px;
+  }
 }
 
 .detail-tab-btn {

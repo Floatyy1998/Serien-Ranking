@@ -400,3 +400,47 @@
 .manga-detail-link-btn:hover {
   background: rgba(255, 255, 255, 0.05);
 }
+
+/* Kapitel-Release-Liste (mobil: einfache Spalte) */
+.manga-chapter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ============================================
+   2050-Desktop: Sektionen zonen statt endlos stapeln
+   ============================================ */
+@media (min-width: 1100px) {
+  .manga-detail-content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 14px;
+    align-items: start;
+  }
+
+  .manga-detail-section--wide {
+    grid-column: 1 / -1;
+  }
+
+  /* Release-Zeilen mehrspaltig statt 2500px-Edge-Split */
+  .manga-chapter-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
+    column-gap: 32px;
+    row-gap: 0;
+  }
+}
+
+@media (min-width: 1800px) {
+  .manga-detail-content {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Beschreibung füllt neben Notizen die restlichen Spalten (kein Leer-Void) */
+@media (min-width: 1800px) {
+  .manga-detail-section--desc {
+    grid-column: span 2;
+  }
+}

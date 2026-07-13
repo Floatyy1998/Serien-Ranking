@@ -86,18 +86,25 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.3 }}
             onDragEnd={handleDragEnd}
+            className="ui-sheet"
             style={{
-              background: `linear-gradient(145deg, ${currentTheme.background.surface} 0%, ${currentTheme.background.default} 100%)`,
-              borderRadius: '28px 28px 0 0',
-              width: '100%',
+              /* transluzent + Glass-Filter: der Seiteninhalt schimmert durch */
+              background: `
+                radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.06), transparent 60%),
+                linear-gradient(145deg,
+                  color-mix(in srgb, ${currentTheme.background.surface} 88%, transparent) 0%,
+                  color-mix(in srgb, ${currentTheme.background.default} 93%, transparent) 100%)`,
+              WebkitBackdropFilter: 'var(--glass-filter-xl)',
+              backdropFilter: 'var(--glass-filter-xl)',
               maxWidth,
-              maxHeight,
+              /* max-height lebt in der Klasse (.ui-sheet) — Desktop darf
+                 den Prop-Wert überstimmen und fast die volle Höhe nutzen */
+              ['--sheet-max-h' as string]: maxHeight,
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
               boxShadow:
-                '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3)',
-              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+                '0 -16px 48px -12px rgba(0, 0, 0, 0.5), 0 -4px 16px -4px rgba(0, 0, 0, 0.3), var(--glass-specular)',
             }}
             onClick={(e) => e.stopPropagation()}
           >

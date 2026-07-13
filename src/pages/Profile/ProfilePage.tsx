@@ -26,6 +26,7 @@ export const ProfilePage = memo(() => {
     secondaryMenuItems,
     mangaMenuItems,
     settingsItems,
+    heroBackdrops,
     goTo,
     handleLogout,
   } = useProfileData();
@@ -51,14 +52,38 @@ export const ProfilePage = memo(() => {
         <BackButton />
       </div>
 
-      <ProfileHeader
-        displayName={displayName}
-        email={user?.email}
-        photoURL={photoURL}
-        currentTheme={currentTheme}
-      />
+      {/* Kino-Hero: mobil ein neutraler Wrapper, Desktop eine Backdrop-Collage
+          der Top-Serien mit Identität + Stats als Glas-Ebene darüber */}
+      <div className="profile-hero">
+        <div className="profile-hero-collage" aria-hidden="true">
+          {heroBackdrops.map((url) => (
+            <div
+              key={url}
+              className="profile-hero-tile"
+              style={{ backgroundImage: `url(${url})` }}
+            />
+          ))}
+        </div>
+        <div
+          className="profile-hero-scrim"
+          aria-hidden="true"
+          style={{
+            /* Detail-Hero-Rezept: links dunkler Lesebereich, unten Fade in die Seite */
+            background: `linear-gradient(90deg, ${currentTheme.background.default}e6 0%, ${currentTheme.background.default}59 24%, transparent 48%),
+              linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.45) 55%, ${currentTheme.background.default} 100%)`,
+          }}
+        />
+        <div className="profile-hero-content">
+          <ProfileHeader
+            displayName={displayName}
+            email={user?.email}
+            photoURL={photoURL}
+            currentTheme={currentTheme}
+          />
 
-      <ProfileStats stats={stats} currentTheme={currentTheme} />
+          <ProfileStats stats={stats} currentTheme={currentTheme} />
+        </div>
+      </div>
 
       <ProfileFeaturedNav
         title="Schnellzugriff"
@@ -68,23 +93,23 @@ export const ProfilePage = memo(() => {
         animationDelay={0.3}
       />
 
+      <ProfileMenuGroup
+        title="Deine Aktivitäten"
+        items={secondaryMenuItems}
+        currentTheme={currentTheme}
+        onNavigate={goTo}
+        animationDelay={0.35}
+      />
+
       {mangaMenuItems.length > 0 && (
         <ProfileMenuGroup
           title="Manga"
           items={mangaMenuItems}
           currentTheme={currentTheme}
           onNavigate={goTo}
-          animationDelay={0.35}
+          animationDelay={0.4}
         />
       )}
-
-      <ProfileMenuGroup
-        title="Deine Aktivitäten"
-        items={secondaryMenuItems}
-        currentTheme={currentTheme}
-        onNavigate={goTo}
-        animationDelay={0.4}
-      />
 
       <ProfileMenuGroup
         title="Einstellungen"

@@ -121,7 +121,11 @@ export const MangaDetailBody = ({
       {chapterInfo &&
         chapterInfo.recentChapters.length > 0 &&
         (inferStatus(manga) === 'RELEASING' || inferStatus(manga) === 'HIATUS') && (
-          <Section bg={`${currentTheme.text.primary}08`} delay={0.12}>
+          <Section
+            bg={`${currentTheme.text.primary}08`}
+            delay={0.12}
+            className="manga-detail-section--wide"
+          >
             <SectionTitle color={currentTheme.text.primary}>Kapitel-Releases</SectionTitle>
 
             {/* Estimated next release — nur bei echt laufenden Manga, nicht bei
@@ -162,7 +166,7 @@ export const MangaDetailBody = ({
                 </div>
               )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="manga-chapter-list">
               {chapterInfo.recentChapters.map((ch) => {
                 const isRead = currentChapter >= ch.chapter;
                 const isConfirming = confirmChapter === ch.chapter;
@@ -433,7 +437,11 @@ export const MangaDetailBody = ({
       </Section>
 
       {cleanDescription && (
-        <Section bg={`${currentTheme.text.primary}08`} delay={0.35}>
+        <Section
+          bg={`${currentTheme.text.primary}08`}
+          delay={0.35}
+          className="manga-detail-section--desc"
+        >
           <SectionTitle color={currentTheme.text.primary}>Beschreibung</SectionTitle>
           <p className="manga-detail-description" style={{ color: currentTheme.text.secondary }}>
             {cleanDescription}
@@ -588,7 +596,7 @@ export const MangaDetailBody = ({
         </Section>
       )}
 
-      <Section delay={0.55}>
+      <Section delay={0.55} className="manga-detail-section--wide">
         <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
           <button
             className="manga-detail-action-btn"

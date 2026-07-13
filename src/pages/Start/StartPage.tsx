@@ -14,7 +14,11 @@ export const StartPage = () => (
         'linear-gradient(180deg, var(--bg-default, #0a0a0f) 0%, var(--bg-surface, #111118) 50%, var(--bg-default, #0a0a0f) 100%)',
     }}
   >
-    <Container maxWidth="lg" className="start-container" sx={{ py: { xs: 6, sm: 8, md: 12 } }}>
+    <Container
+      maxWidth={false}
+      className="start-container"
+      sx={{ py: { xs: 6, sm: 8, md: 10 }, px: { xs: 2, sm: 4, md: 6 }, maxWidth: '2200px' }}
+    >
       <HeroSection />
       <FeaturesGrid />
       <AdditionalFeatures />

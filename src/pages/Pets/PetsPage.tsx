@@ -115,22 +115,6 @@ export const PetsPage: React.FC = () => {
       {/* Action Buttons */}
       <PetActions pet={pet} onFeed={feedPet} onPlay={playWithPet} onRevive={openReviveConfirm} />
 
-      {/* Release Confirmation Modal */}
-      <PetReleaseConfirm
-        pet={pet}
-        show={showReleaseConfirm}
-        onClose={closeReleaseConfirm}
-        onConfirm={releasePet}
-      />
-
-      {/* Revive Confirmation Modal (zeigt die Level-Kosten vorher an) */}
-      <PetReviveConfirm
-        pet={pet}
-        show={showReviveConfirm}
-        onClose={closeReviveConfirm}
-        onConfirm={revivePet}
-      />
-
       {/* Customization: Colors, Accessories, Backgrounds */}
       <PetCustomization
         pet={pet}
@@ -150,6 +134,22 @@ export const PetsPage: React.FC = () => {
           Zur Adoption freigeben
         </button>
       </div>
+
+      {/* Release Confirmation Modal */}
+      <PetReleaseConfirm
+        pet={pet}
+        show={showReleaseConfirm}
+        onClose={closeReleaseConfirm}
+        onConfirm={releasePet}
+      />
+
+      {/* Revive Confirmation Modal (zeigt die Level-Kosten vorher an) */}
+      <PetReviveConfirm
+        pet={pet}
+        show={showReviveConfirm}
+        onClose={closeReviveConfirm}
+        onConfirm={revivePet}
+      />
     </div>
   );
 };

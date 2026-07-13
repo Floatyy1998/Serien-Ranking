@@ -30,12 +30,12 @@ vi.mock('./useStatsData', () => ({
 }));
 vi.mock('./StatsComponents', () => ({
   ActorUniverseBanner: () => <div data-testid="actor-banner" />,
-  HeroSection: () => <div data-testid="hero" />,
+  WatchtimePod: () => <div data-testid="watchtime" />,
+  ProgressPod: () => null,
+  QuickPods: () => null,
   RatingsSection: () => null,
-  TimeBreakdownSection: () => null,
   TopGenresSection: () => null,
   TopProvidersSection: () => null,
-  WeekActivitySection: () => null,
 }));
 vi.mock('./StatsShareCard', () => ({
   StatsShareSheet: ({ isOpen }: { isOpen: boolean }) =>
@@ -60,10 +60,10 @@ import { StatsPage } from './StatsPage';
 afterEach(() => cleanup());
 
 describe('StatsPage', () => {
-  it('renders the header and the hero section', () => {
+  it('renders the header and the watchtime pod', () => {
     render(<StatsPage />);
     expect(screen.getByText('Statistiken')).toBeInTheDocument();
-    expect(screen.getByTestId('hero')).toBeInTheDocument();
+    expect(screen.getByTestId('watchtime')).toBeInTheDocument();
   });
 
   it('opens the share sheet when the share button is clicked', () => {

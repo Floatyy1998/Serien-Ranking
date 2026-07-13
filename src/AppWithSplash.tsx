@@ -102,8 +102,18 @@ export const AppWithSplash: React.FC = () => {
   const isAuthPage =
     currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
 
-  // Skip splash screen for auth pages
-  if (isAuthPage) {
+  // Ausgeloggte Besucher (kein gecachter User) bekommen KEINEN Splash:
+  // initialData/homeConfig werden ohne Login nie ready → sie säßen sonst
+  // bis zum 8s-Fallback vor dem Splash. Die Landing rendert sofort.
+  let hasCachedUser = false;
+  try {
+    hasCachedUser = !!localStorage.getItem('cachedUser');
+  } catch {
+    // localStorage gesperrt (Private Mode) → lieber ohne Splash starten
+  }
+
+  // Skip splash screen for auth pages and logged-out visitors
+  if (isAuthPage || !hasCachedUser) {
     return <App />;
   }
 

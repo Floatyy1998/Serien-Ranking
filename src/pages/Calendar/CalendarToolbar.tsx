@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Bookmark, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formatDate } from './useCalendarData';
 
@@ -92,6 +92,32 @@ const FilterChips = memo(({ watchlistOnly, onToggle }: FilterChipsProps) => {
 });
 FilterChips.displayName = 'FilterChips';
 
+/** Mobile: kompakter Icon-Toggle statt eigener Filter-Zeile. */
+const MobileWatchlistToggle = memo(({ watchlistOnly, onToggle }: FilterChipsProps) => {
+  const { currentTheme } = useTheme();
+  return (
+    <button
+      type="button"
+      className="cal-wl-toggle"
+      aria-pressed={watchlistOnly}
+      aria-label={watchlistOnly ? 'Alle Serien anzeigen' : 'Nur Watchlist anzeigen'}
+      onClick={() => onToggle(!watchlistOnly)}
+      style={
+        watchlistOnly
+          ? {
+              background: `${currentTheme.primary}20`,
+              color: currentTheme.primary,
+              borderColor: `${currentTheme.primary}50`,
+            }
+          : undefined
+      }
+    >
+      <Bookmark style={{ fontSize: 18 }} />
+    </button>
+  );
+});
+MobileWatchlistToggle.displayName = 'MobileWatchlistToggle';
+
 const StatItems = memo(({ totalEpisodes, watchedCount }: StatsProps) => {
   const { currentTheme } = useTheme();
   if (totalEpisodes <= 0) return null;
@@ -152,17 +178,11 @@ export const CalendarToolbar = memo(
           </div>
         </div>
 
-        {/* Mobile header */}
+        {/* Mobile header — EINE Zeile: Wochen-Nav + Watchlist-Toggle.
+            Stats entfallen (der Zähler steht bereits im PageHeader). */}
         <div className="cal-mobile-header">
           <WeekNav {...weekNavProps} />
-          <div className="cal-filter-row">
-            <FilterChips watchlistOnly={watchlistOnly} onToggle={onToggle} />
-          </div>
-          {totalEpisodes > 0 && (
-            <div className="cal-stats">
-              <StatItems totalEpisodes={totalEpisodes} watchedCount={watchedCount} />
-            </div>
-          )}
+          <MobileWatchlistToggle watchlistOnly={watchlistOnly} onToggle={onToggle} />
         </div>
       </>
     );

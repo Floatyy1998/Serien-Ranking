@@ -56,6 +56,7 @@ interface ContinueWatchingItem {
   id: number;
   title: string;
   poster: string;
+  backdrop?: string;
   progress: number;
   seasons: Series['seasons'];
   episodeRuntime: number;
@@ -200,7 +201,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '10px',
           padding: '0 20px',
           position: 'relative',
         }}
@@ -255,6 +256,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   key={episodeKey}
                   itemKey={episodeKey}
                   poster={item.poster}
+                  backdrop={item.backdrop}
                   posterAlt={item.title}
                   accentColor={cardAccent}
                   posterOverlay={(() => {

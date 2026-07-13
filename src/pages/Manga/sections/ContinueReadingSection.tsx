@@ -127,6 +127,7 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
                 itemKey={key}
                 poster={item.poster}
                 posterAlt={item.title}
+                backdrop={item.bannerImage}
                 accentColor={accentColor}
                 isCompleting={completingEpisodes.has(key)}
                 isSwiping={swipingEpisodes.has(key)}

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUrl';
-import { getOptimalTextColor } from '../../theme/colorUtils';
 import { markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import type { Series } from '../../types/Series';
@@ -215,8 +214,9 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
             cursor: 'pointer',
             fontSize: 13,
             fontWeight: 700,
-            background: currentTheme.primary,
-            color: getOptimalTextColor(currentTheme.primary),
+            background: `color-mix(in srgb, ${currentTheme.primary} 16%, rgba(255, 255, 255, 0.04))`,
+            color: currentTheme.primary,
+            boxShadow: `inset 0 0 0 1px ${currentTheme.primary}45`,
           }}
         >
           ✓ S{view.currentSeason} E{view.currentEpisode} gesehen

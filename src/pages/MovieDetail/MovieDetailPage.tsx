@@ -88,6 +88,7 @@ export const MovieDetailPage = memo(() => {
         id={id}
         isMobile={isMobile}
         tmdbBackdrop={tmdbBackdrop}
+        overview={movie.beschreibung || movie.overview || tmdbOverview || undefined}
         tmdbRating={tmdbRating}
         imdbRating={imdbRating}
         providers={providers}
@@ -212,11 +213,15 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       onClick={() => onTabChange('info')}
       className={`md-tab-btn ${isMobile ? 'md-tab-btn--mobile' : ''} ${activeTab === 'info' ? 'md-tab-btn--active' : ''}`}
       style={{
+        // Getöntes Glas statt Neon-Vollfüllung (Serien-Muster).
         background:
           activeTab === 'info'
-            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
+            ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
             : 'rgba(255, 255, 255, 0.05)',
-        color: activeTab === 'info' ? currentTheme.text.secondary : currentTheme.text.muted,
+        color: activeTab === 'info' ? currentTheme.primary : currentTheme.text.muted,
+        boxShadow: activeTab === 'info' ? 'var(--glass-specular)' : undefined,
+        outline: activeTab === 'info' ? `1px solid ${currentTheme.primary}40` : undefined,
+        outlineOffset: -1,
       }}
     >
       <Info aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
@@ -235,9 +240,12 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       style={{
         background:
           activeTab === 'cast'
-            ? `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`
+            ? `linear-gradient(135deg, ${currentTheme.primary}2e, ${currentTheme.accent}24), var(--glass-light)`
             : 'rgba(255, 255, 255, 0.05)',
-        color: activeTab === 'cast' ? currentTheme.text.secondary : currentTheme.text.muted,
+        color: activeTab === 'cast' ? currentTheme.primary : currentTheme.text.muted,
+        boxShadow: activeTab === 'cast' ? 'var(--glass-specular)' : undefined,
+        outline: activeTab === 'cast' ? `1px solid ${currentTheme.primary}40` : undefined,
+        outlineOffset: -1,
       }}
     >
       <People aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />

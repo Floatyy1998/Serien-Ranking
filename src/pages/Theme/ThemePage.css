@@ -182,3 +182,31 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* 44px-Regel-Fix: Inhalt der Preset-Buttons links verankern */
+.theme-content .theme-preset-btn {
+  justify-content: flex-start;
+}
+
+/* Desktop: kompakte Preset-Kacheln + Farb-Editoren als Karten-Grid */
+@media (min-width: 768px) {
+  .theme-preset-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+
+  .theme-color-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 10px;
+    align-items: start;
+  }
+}
+
+/* Reset-Button kompakt zentriert statt 2000px-Streifen */
+@media (min-width: 768px) {
+  .theme-content .theme-reset-btn,
+  .theme-content .theme-confirm-actions {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+}

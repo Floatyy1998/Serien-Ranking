@@ -16,13 +16,20 @@ interface TabSwitcherProps {
   activeTab: string;
   onTabChange: (id: string) => void;
   style?: React.CSSProperties;
+  /** Zusätzliche Klassen, z. B. "ui-tabs--center" (Desktop zentriert). */
+  className?: string;
 }
 
+/**
+ * Segmented-Control mit gleitender Glas-Pille. Layout lebt in global.css
+ * (.ui-tabs) — mobil volle Breite, ab 768px kompakt (max-content).
+ */
 export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   tabs,
   activeTab,
   onTabChange,
   style,
+  className,
 }) => {
   const { currentTheme } = useTheme();
 
@@ -44,19 +51,11 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
   return (
     <div
       role="tablist"
+      className={className ? `ui-tabs ${className}` : 'ui-tabs'}
       onKeyDown={handleTabKeyDown}
       style={{
-        display: 'flex',
-        margin: '0 20px 20px 20px',
-        gap: '6px',
-        position: 'relative',
-        zIndex: 5,
         background: `${currentTheme.text.muted}08`,
-        borderRadius: 'var(--radius-2xl)',
-        padding: '4px',
         border: `1px solid ${currentTheme.border.default}`,
-        backdropFilter: 'var(--blur-md)',
-        WebkitBackdropFilter: 'var(--blur-md)',
         ...style,
       }}
     >
@@ -71,27 +70,14 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
             tabIndex={isActive ? 0 : -1}
             whileTap={tapScale}
             onClick={() => onTabChange(tab.id)}
+            className="ui-tabs__tab"
             style={{
-              flex: 1,
-              padding: '11px 16px',
-              background: 'transparent',
-              border: 'none',
-              borderRadius: 'var(--radius-xl)',
-              color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
-              fontSize: 'var(--text-sm)',
+              color: isActive ? currentTheme.primary : currentTheme.text.muted,
               fontWeight: isActive ? 700 : 600,
               letterSpacing: isActive ? '-0.01em' : '0',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              position: 'relative',
-              zIndex: 2,
-              transition: 'color 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
-            {/* Morphing background indicator */}
+            {/* Morphing background indicator — getöntes Glas statt Neon */}
             {isActive && (
               <motion.div
                 layoutId={indicatorLayoutId}
@@ -99,8 +85,8 @@ export const TabSwitcher: React.FC<TabSwitcherProps> = ({
                   position: 'absolute',
                   inset: 0,
                   borderRadius: 'var(--radius-xl)',
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, color-mix(in srgb, ${currentTheme.primary} 55%, ${currentTheme.accent}))`,
-                  boxShadow: `0 4px 24px ${currentTheme.primary}35, 0 0 40px ${currentTheme.accent || currentTheme.primary}12, inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                  background: `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`,
+                  boxShadow: `inset 0 0 0 1px color-mix(in srgb, ${currentTheme.primary} 45%, transparent), 0 4px 18px ${currentTheme.primary}22`,
                   zIndex: -1,
                 }}
                 transition={{

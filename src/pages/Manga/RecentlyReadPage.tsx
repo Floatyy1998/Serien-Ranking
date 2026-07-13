@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { tapScaleSmall } from '../../lib/motion';
@@ -41,6 +42,7 @@ export const RecentlyReadPage = () => {
   const { currentTheme } = useTheme();
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
+  const { isDesktop } = useDeviceType();
   const [rangeDays, setRangeDays] = useState(30);
   const [mountTime] = useState(() => Date.now());
 
@@ -131,8 +133,17 @@ export const RecentlyReadPage = () => {
                 <span style={{ opacity: 0.4, fontSize: 11 }}>({group.manga.length})</span>
               </div>
 
-              {/* Manga Cards */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* Manga Cards: Desktop als Karten-Grid statt 2500px-Zeilen */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: isDesktop
+                    ? 'repeat(auto-fill, minmax(min(100%, 420px), 1fr))'
+                    : '1fr',
+                  gap: 8,
+                  alignItems: 'start',
+                }}
+              >
                 {group.manga.map((manga) => (
                   <motion.div
                     key={manga.anilistId}

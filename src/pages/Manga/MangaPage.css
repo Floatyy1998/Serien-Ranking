@@ -133,6 +133,33 @@
   font-weight: 500;
 }
 
+/* Statistiken-Bento: mobil 2 Spalten (Ring spannt 2 Reihen),
+   ab Desktop eine Reihe aus Ring + allen Kacheln. */
+.manga-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 0 20px;
+}
+
+.manga-stats-grid--ring .manga-stats-ring {
+  grid-row: span 2;
+}
+
+@media (min-width: 768px) {
+  .manga-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .manga-stats-grid--ring {
+    grid-template-columns: 240px repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .manga-stats-grid--ring .manga-stats-ring {
+    grid-row: auto;
+  }
+}
+
 /* Quick Actions - horizontal scroll */
 .manga-quick-grid {
   display: flex;

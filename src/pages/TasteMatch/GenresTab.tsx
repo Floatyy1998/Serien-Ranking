@@ -84,16 +84,18 @@ export const GenresTab: React.FC<GenresTabProps> = React.memo(
           <span className="tm-genre-section-header__count">{activeGenres.length} Genres</span>
         </div>
 
-        {activeGenres.slice(0, 12).map((genre, i) => (
-          <GenreBar
-            key={genre.genre}
-            genre={genre}
-            index={i}
-            userName={userName}
-            friendName={friendName}
-            bgColor={cardBg}
-          />
-        ))}
+        <div className="tm-genre-bars">
+          {activeGenres.slice(0, 12).map((genre, i) => (
+            <GenreBar
+              key={genre.genre}
+              genre={genre}
+              index={i}
+              userName={userName}
+              friendName={friendName}
+              bgColor={cardBg}
+            />
+          ))}
+        </div>
       </motion.div>
     );
   }

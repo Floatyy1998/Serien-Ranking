@@ -16,8 +16,10 @@
     color-mix(in srgb, var(--theme-primary) 3%, rgba(255, 255, 255, 0.06)) 40%,
     color-mix(in srgb, var(--theme-primary) 5%, rgba(255, 255, 255, 0.1)) 100%
   );
-  -webkit-backdrop-filter: var(--glass-filter-xl);
-  backdrop-filter: var(--glass-filter-xl);
+  /* Bewusst NICHT --glass-filter-xl: dessen saturate(1.85) macht das Dock über
+     bunten Postern zum Regenbogen. Ruhigere Sättigung, gleicher Blur. */
+  -webkit-backdrop-filter: var(--blur-xl) saturate(1.3);
+  backdrop-filter: var(--blur-xl) saturate(1.3);
 
   /* Doppelte Borders für Lichtbrechungs-Effekt */
   border: 1px solid rgba(255, 255, 255, 0.25);

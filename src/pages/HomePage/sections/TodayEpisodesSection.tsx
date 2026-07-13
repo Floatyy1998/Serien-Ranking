@@ -24,6 +24,7 @@ interface TodayEpisode {
   seriesId: string;
   seriesTitle: string;
   poster: string;
+  backdrop?: string;
   seasonNumber: number;
   episodeNumber: number;
   seasonIndex: number;
@@ -106,7 +107,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '10px',
           padding: '0 20px',
           position: 'relative',
         }}
@@ -128,6 +129,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   key={episodeKey}
                   itemKey={episodeKey}
                   poster={episode.poster}
+                  backdrop={episode.backdrop}
                   posterAlt={episode.seriesTitle}
                   accentColor={accentColor}
                   posterOverlay={(() => {

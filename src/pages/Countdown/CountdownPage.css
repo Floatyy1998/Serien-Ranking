@@ -16,6 +16,30 @@
   gap: 12px;
 }
 
+/* Desktop: Countdown-Karten im Grid statt gestreckter Vollbreite-Zeilen.
+   Hero (erstes Kind) + Sektions-Label spannen die volle Reihe. */
+@media (min-width: 768px) {
+  .cd-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  }
+
+  .cd-list > :first-child,
+  .cd-section-label {
+    grid-column: 1 / -1;
+  }
+
+  .cd-hero {
+    height: 240px;
+  }
+
+  .cd-hero-poster,
+  .cd-hero-poster-placeholder {
+    width: 110px;
+    height: 165px;
+  }
+}
+
 .cd-section-label {
   margin: 8px 0 0;
   font-size: var(--text-base);
@@ -58,6 +82,9 @@
 .cd-hero-body {
   position: relative;
   height: 100%;
+  /* width 100%: die globale .mobile-app-button-Regel zentriert den
+     Hero-Button-Inhalt sonst als Klumpen in der Mitte */
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 20px;

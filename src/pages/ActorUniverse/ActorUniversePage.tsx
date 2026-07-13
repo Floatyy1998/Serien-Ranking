@@ -117,12 +117,14 @@ export const ActorUniversePage = () => {
                 className="au-tab-btn"
                 style={{
                   background: isActive
-                    ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                    ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
                     : `rgba(255,255,255,0.05)`,
-                  border: isActive ? 'none' : `1px solid ${currentTheme.border.default}`,
-                  color: isActive ? currentTheme.text.secondary : currentTheme.text.muted,
+                  border: isActive
+                    ? `1px solid ${currentTheme.primary}55`
+                    : `1px solid ${currentTheme.border.default}`,
+                  color: isActive ? currentTheme.primary : currentTheme.text.muted,
                   fontWeight: isActive ? 700 : 500,
-                  boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+                  boxShadow: isActive ? `0 4px 15px ${currentTheme.primary}22` : 'none',
                 }}
               >
                 <Icon style={{ fontSize: '16px' }} />

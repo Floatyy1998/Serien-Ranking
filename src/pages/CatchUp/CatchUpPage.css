@@ -132,6 +132,52 @@
   outline-offset: 2px;
 }
 
+.cu-sort-label {
+  display: none;
+}
+
+/* Desktop: kompakte Sortier-Leiste mit Labels statt Vollbreite-Icon-Balken;
+   Hero-Stats horizontal und kräftiger. */
+@media (min-width: 768px) {
+  .cu-sort-track {
+    width: max-content;
+  }
+
+  .cu-sort-btn {
+    flex: none;
+    padding: 12px 22px;
+    gap: 8px;
+  }
+
+  .cu-sort-label {
+    display: inline;
+  }
+
+  .cu-hero-grid {
+    grid-template-columns: repeat(3, minmax(200px, 300px));
+    justify-content: center;
+    gap: 56px;
+  }
+
+  .cu-hero-stat {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    align-items: center;
+    column-gap: 14px;
+    text-align: left;
+  }
+
+  .cu-hero-icon {
+    grid-row: 1 / 3;
+    margin: 0;
+  }
+
+  .cu-hero-value {
+    font-size: 34px;
+  }
+}
+
 .cu-sort-title {
   padding: 0 16px 16px;
 }

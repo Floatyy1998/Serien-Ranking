@@ -174,16 +174,19 @@ export function SeasonsSection({
           whileTap={tapScale}
           onClick={() => handleStartRewatch()}
           style={{
-            width: '100%',
-            padding: '12px',
+            // Kompakter Pill statt Vollbreite-Streifen (mind. 44px Touch-Höhe).
+            width: 'auto',
+            minHeight: 44,
+            padding: '10px 22px',
             background: `${warningColor}20`,
             border: `1px solid ${warningColor}50`,
-            borderRadius: '10px',
+            borderRadius: '999px',
+            boxShadow: 'var(--glass-specular)',
             color: warningColor,
             fontSize: '15px',
             fontWeight: 600,
             cursor: 'pointer',
-            display: 'flex',
+            display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
@@ -204,16 +207,18 @@ export function SeasonsSection({
             whileTap={tapScale}
             onClick={() => handleStartRewatch(true)}
             style={{
-              width: '100%',
-              padding: '12px',
+              width: 'auto',
+              minHeight: 44,
+              padding: '10px 22px',
               background: `${warningColor}20`,
               border: `1px solid ${warningColor}50`,
-              borderRadius: '10px',
+              borderRadius: '999px',
+              boxShadow: 'var(--glass-specular)',
               color: warningColor,
               fontSize: '15px',
               fontWeight: 600,
               cursor: 'pointer',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',

@@ -7,6 +7,8 @@ vi.mock('@mui/icons-material', () => {
   const stub = () => null;
   return Object.fromEntries(
     [
+      'PlayArrow',
+      'Whatshot',
       'AccessTime',
       'Add',
       'Analytics',

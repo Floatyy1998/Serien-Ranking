@@ -1,7 +1,7 @@
 /**
  * StatsPage - Premium Statistics Dashboard
- * Slim composition component (~50 lines). Business logic in useStatsData,
- * subcomponents in StatsComponents, layout in StatsPage.css.
+ * Bento-Grid-Komposition. Business logic in useStatsData,
+ * Pods in StatsComponents/StatsDetailSections, Layout in StatsPage.css.
  */
 
 import { InsightsRounded, IosShare } from '@mui/icons-material';
@@ -12,12 +12,12 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
 import {
   ActorUniverseBanner,
-  HeroSection,
+  ProgressPod,
+  QuickPods,
   RatingsSection,
-  TimeBreakdownSection,
   TopGenresSection,
   TopProvidersSection,
-  WeekActivitySection,
+  WatchtimePod,
 } from './StatsComponents';
 import { StatsShareSheet } from './StatsShareCard';
 import { formatTime, useStatsData } from './useStatsData';
@@ -82,27 +82,27 @@ export const StatsPage = () => {
         }
       />
 
-      <HeroSection stats={stats} timeData={timeData} theme={currentTheme} />
-
-      <ActorUniverseBanner theme={currentTheme} onNavigate={navigateToActors} />
-
-      <TimeBreakdownSection
-        seriesMinutes={stats.seriesMinutes}
-        movieMinutes={stats.movieMinutes}
-        theme={currentTheme}
-      />
-
-      <RatingsSection
-        avgSeriesRating={stats.avgSeriesRating}
-        avgMovieRating={stats.avgMovieRating}
-        theme={currentTheme}
-      />
-
-      <TopGenresSection genres={stats.topGenres} theme={currentTheme} />
-
-      <TopProvidersSection providers={stats.topProviders} theme={currentTheme} />
-
-      <WeekActivitySection lastWeekWatched={stats.lastWeekWatched} theme={currentTheme} />
+      <div className="stats-bento">
+        <WatchtimePod stats={stats} timeData={timeData} theme={currentTheme} />
+        <ProgressPod stats={stats} theme={currentTheme} />
+        <QuickPods stats={stats} theme={currentTheme} />
+        <RatingsSection
+          avgSeriesRating={stats.avgSeriesRating}
+          avgMovieRating={stats.avgMovieRating}
+          theme={currentTheme}
+        />
+        <TopGenresSection
+          genres={stats.topGenres}
+          theme={currentTheme}
+          wide={stats.topProviders.length === 0}
+        />
+        <TopProvidersSection
+          providers={stats.topProviders}
+          theme={currentTheme}
+          wide={stats.topGenres.length === 0}
+        />
+        <ActorUniverseBanner theme={currentTheme} onNavigate={navigateToActors} />
+      </div>
 
       <StatsShareSheet
         isOpen={shareOpen}

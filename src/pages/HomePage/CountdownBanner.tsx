@@ -36,14 +36,15 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
       }}
       style={{
         margin: '0 20px 16px',
-        borderRadius: '14px',
-        padding: isDesktop ? '14px 18px' : '12px 14px',
+        borderRadius: '18px',
+        padding: isDesktop ? '16px 20px' : '12px 14px',
         cursor: 'pointer',
         position: 'relative',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px',
+        gap: isDesktop ? '16px' : '12px',
+        boxShadow: 'var(--shadow-lg), var(--glass-specular)',
       }}
     >
       {countdown.posterUrl && (
@@ -54,7 +55,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             backgroundImage: `url(${countdown.posterUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'blur(20px) brightness(0.3)',
+            filter: 'blur(26px) saturate(1.5) brightness(0.45)',
             transform: 'scale(1.2)',
           }}
         />
@@ -63,9 +64,10 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
         style={{
           position: 'absolute',
           inset: 0,
-          background: `linear-gradient(135deg, ${countdownColor}40 0%, rgba(10, 14, 26, 0.75) 100%)`,
+          background: `radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,0.07), transparent 55%), linear-gradient(135deg, ${countdownColor}38 0%, rgba(10, 14, 26, 0.72) 100%)`,
           border: `1px solid ${countdownColor}50`,
-          borderRadius: '14px',
+          borderTopColor: 'rgba(255,255,255,0.22)',
+          borderRadius: '18px',
         }}
       />
       {countdown.posterUrl && (
@@ -74,8 +76,8 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
           alt=""
           style={{
             position: 'relative',
-            width: isDesktop ? 50 : 44,
-            height: isDesktop ? 75 : 66,
+            width: isDesktop ? 58 : 44,
+            height: isDesktop ? 87 : 66,
             borderRadius: '8px',
             objectFit: 'cover',
             flexShrink: 0,

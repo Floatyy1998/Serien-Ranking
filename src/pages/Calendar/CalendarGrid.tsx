@@ -1,6 +1,8 @@
-import { memo, useEffect, useRef, forwardRef } from 'react';
+import { memo, useEffect, useRef, useState, forwardRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { hapticTap } from '../../lib/haptics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';
 import { WEEKDAYS_SHORT } from './useCalendarData';
@@ -8,15 +10,17 @@ import { SingleEpisodeCard, EpisodeGroupCard } from './EpisodeCard';
 
 // ── Types ────────────────────────────────────────────────────────
 
+interface DayGroup {
+  seriesId: number;
+  seriesTitle: string;
+  episodes: WeeklyEpisode[];
+}
+
 interface DayCellProps {
   dateKey: string;
   dayIndex: number;
   todayKey: string;
-  groups: {
-    seriesId: number;
-    seriesTitle: string;
-    episodes: WeeklyEpisode[];
-  }[];
+  groups: DayGroup[];
   backdrops: Record<number, string>;
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
@@ -30,9 +34,49 @@ interface CalendarGridProps {
   expandedGroups: Set<string>;
   onToggleGroup: (groupKey: string) => void;
   onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void;
+  /** Mobile-Tagesansicht: Swipe über die Wochengrenze hinaus. */
+  onPrevWeek?: () => void;
+  onNextWeek?: () => void;
+  /** Ändert sich mit der geladenen Woche — setzt den gewählten Tag zurück. */
+  weekStamp?: string;
 }
 
-// ── DayCell ──────────────────────────────────────────────────────
+// ── Gemeinsames Episoden-Rendering (Desktop-Zelle + Mobile-Tag) ──
+
+function renderGroups(
+  dateKey: string,
+  groups: DayGroup[],
+  backdrops: Record<number, string>,
+  expandedGroups: Set<string>,
+  onToggleGroup: (groupKey: string) => void,
+  onMarkWatched: (seriesId: number, seasonIndex: number, episodeIndex: number) => void
+) {
+  return groups.map((group) => {
+    const groupKey = `${dateKey}-${group.seriesId}`;
+    if (group.episodes.length === 1) {
+      return (
+        <SingleEpisodeCard
+          key={groupKey}
+          ep={group.episodes[0]}
+          backdropSrc={backdrops[group.seriesId]}
+          onMarkWatched={onMarkWatched}
+        />
+      );
+    }
+    return (
+      <EpisodeGroupCard
+        key={groupKey}
+        group={group}
+        backdropSrc={backdrops[group.seriesId]}
+        isExpanded={expandedGroups.has(groupKey)}
+        onToggle={() => onToggleGroup(groupKey)}
+        onMarkWatched={onMarkWatched}
+      />
+    );
+  });
+}
+
+// ── DayCell (Desktop-Wochen-Grid) ────────────────────────────────
 
 const DayCell = memo(
   forwardRef<HTMLDivElement, DayCellProps>(
@@ -83,32 +127,14 @@ const DayCell = memo(
           {/* Episodes */}
           {hasEpisodes && (
             <div className="cal-day-episodes">
-              {groups.map((group) => {
-                const groupKey = `${dateKey}-${group.seriesId}`;
-                const isSingle = group.episodes.length === 1;
-
-                if (isSingle) {
-                  return (
-                    <SingleEpisodeCard
-                      key={groupKey}
-                      ep={group.episodes[0]}
-                      backdropSrc={backdrops[group.seriesId]}
-                      onMarkWatched={onMarkWatched}
-                    />
-                  );
-                }
-
-                return (
-                  <EpisodeGroupCard
-                    key={groupKey}
-                    group={group}
-                    backdropSrc={backdrops[group.seriesId]}
-                    isExpanded={expandedGroups.has(groupKey)}
-                    onToggle={() => onToggleGroup(groupKey)}
-                    onMarkWatched={onMarkWatched}
-                  />
-                );
-              })}
+              {renderGroups(
+                dateKey,
+                groups,
+                backdrops,
+                expandedGroups,
+                onToggleGroup,
+                onMarkWatched
+              )}
             </div>
           )}
         </div>
@@ -128,40 +154,151 @@ export const CalendarGrid = memo(
     expandedGroups,
     onToggleGroup,
     onMarkWatched,
+    onPrevWeek,
+    onNextWeek,
+    weekStamp,
   }: CalendarGridProps) => {
-    const todayRef = useRef<HTMLDivElement>(null);
-    const hasScrolled = useRef(false);
     const { isDesktop } = useDeviceType();
+    const { currentTheme } = useTheme();
 
-    // Auto-scroll to today on mobile (< 768px)
+    const entries = Array.from(groupedSchedule.entries());
+    const todayIdx = entries.findIndex(([k]) => k === todayKey);
+
+    // Mobile-Tagesansicht: gewählter Tag + Swipe-Richtung für die Animation.
+    const [dayIdx, setDayIdx] = useState(() => (todayIdx >= 0 ? todayIdx : 0));
+    const [dir, setDir] = useState(0);
+    // Beim Wochenwechsel per Swipe: auf Mo (vorwärts) bzw. So (rückwärts) landen.
+    const pendingEdge = useRef<null | 'start' | 'end'>(null);
+
     useEffect(() => {
-      if (hasScrolled.current || isDesktop) return;
-      // Small delay to ensure DOM has rendered
-      const timer = setTimeout(() => {
-        if (todayRef.current) {
-          todayRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          hasScrolled.current = true;
+      if (pendingEdge.current === 'end') setDayIdx(0);
+      else if (pendingEdge.current === 'start') setDayIdx(6);
+      else setDayIdx(todayIdx >= 0 ? todayIdx : 0);
+      pendingEdge.current = null;
+      // Nur beim Wochenwechsel zurücksetzen — todayIdx ist dabei stabil.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [weekStamp]);
+
+    const goToDay = (next: number) => {
+      if (next === dayIdx) return;
+      hapticTap();
+      setDir(next > dayIdx ? 1 : -1);
+      if (next < 0) {
+        if (onPrevWeek) {
+          pendingEdge.current = 'start';
+          onPrevWeek();
         }
-      }, 100);
-      return () => clearTimeout(timer);
-    }, [groupedSchedule, todayKey, isDesktop]);
+        return;
+      }
+      if (next > entries.length - 1) {
+        if (onNextWeek) {
+          pendingEdge.current = 'end';
+          onNextWeek();
+        }
+        return;
+      }
+      setDayIdx(next);
+    };
+
+    // ── Desktop: Wochen-Grid ──
+    if (isDesktop) {
+      return (
+        <div className="cal-content">
+          {entries.map(([dateKey, groups], dayIndex) => (
+            <DayCell
+              key={dateKey}
+              dateKey={dateKey}
+              dayIndex={dayIndex}
+              todayKey={todayKey}
+              groups={groups}
+              backdrops={backdrops}
+              expandedGroups={expandedGroups}
+              onToggleGroup={onToggleGroup}
+              onMarkWatched={onMarkWatched}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    // ── Mobile: Tagesansicht mit Swipe ──
+    const clampedIdx = Math.min(dayIdx, Math.max(entries.length - 1, 0));
+    const current = entries[clampedIdx];
+    const currentKey = current?.[0] ?? 'none';
+    const currentGroups = current?.[1] ?? [];
 
     return (
-      <div className="cal-content">
-        {Array.from(groupedSchedule.entries()).map(([dateKey, groups], dayIndex) => (
-          <DayCell
-            key={dateKey}
-            ref={dateKey === todayKey ? todayRef : undefined}
-            dateKey={dateKey}
-            dayIndex={dayIndex}
-            todayKey={todayKey}
-            groups={groups}
-            backdrops={backdrops}
-            expandedGroups={expandedGroups}
-            onToggleGroup={onToggleGroup}
-            onMarkWatched={onMarkWatched}
-          />
-        ))}
+      <div className="cal-mobile-view">
+        {/* Tages-Selector */}
+        <div className="cal-day-selector" role="tablist" aria-label="Tag wählen">
+          {entries.map(([k, g], i) => {
+            const d = new Date(k + 'T00:00:00');
+            const active = i === clampedIdx;
+            const isToday = k === todayKey;
+            return (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${g.length > 0 ? ` — ${g.length} Serien` : ''}`}
+                className={`cal-day-chip ${active ? 'is-active' : ''}`}
+                onClick={() => goToDay(i)}
+              >
+                <span className="cal-day-chip__wd">{WEEKDAYS_SHORT[i]}</span>
+                <span
+                  className="cal-day-chip__num"
+                  style={isToday && !active ? { color: currentTheme.primary } : undefined}
+                >
+                  {d.getDate()}
+                </span>
+                <span
+                  className="cal-day-chip__dot"
+                  style={{ opacity: g.length > 0 ? 1 : 0 }}
+                  aria-hidden
+                />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Tag — horizontal swipebar (auch über die Wochengrenze) */}
+        <AnimatePresence mode="popLayout" initial={false}>
+          <motion.div
+            key={currentKey}
+            className="cal-mobile-day"
+            initial={{ opacity: 0, x: dir * 72 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: dir * -72 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.18}
+            dragSnapToOrigin
+            onDragEnd={(_, info) => {
+              if (info.offset.x < -70) goToDay(clampedIdx + 1);
+              else if (info.offset.x > 70) goToDay(clampedIdx - 1);
+            }}
+          >
+            {currentGroups.length > 0 ? (
+              <div className="cal-day-episodes">
+                {renderGroups(
+                  currentKey,
+                  currentGroups,
+                  backdrops,
+                  expandedGroups,
+                  onToggleGroup,
+                  onMarkWatched
+                )}
+              </div>
+            ) : (
+              <div className="cal-mobile-empty">
+                <span className="cal-mobile-empty__dash">&mdash;</span>
+                Keine Folgen an diesem Tag
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     );
   }

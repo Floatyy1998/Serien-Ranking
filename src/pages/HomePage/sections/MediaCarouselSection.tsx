@@ -31,7 +31,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
 }: MediaCarouselSectionProps) {
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
-  const cardWidth = isMobile ? '155px' : '240px';
+  const cardWidth = isMobile ? '155px' : '280px';
 
   if (loading && items.length === 0) {
     const sectionIcon =
@@ -49,7 +49,7 @@ export const MediaCarouselSection = React.memo(function MediaCarouselSection({
           iconColor={iconColor || currentTheme.accent}
           title={title}
         />
-        <SkeletonPosterRow posterWidth={isMobile ? 155 : 240} count={6} />
+        <SkeletonPosterRow posterWidth={isMobile ? 155 : 280} count={6} />
       </section>
     );
   }

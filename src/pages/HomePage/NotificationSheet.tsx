@@ -1,9 +1,10 @@
 import { DoneAll, Group, Notifications } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { NotificationItem } from './notifications/NotificationItem';
 import { RecommendationCard } from './notifications/RecommendationCard';
@@ -39,6 +40,28 @@ export const NotificationSheet = React.memo(function NotificationSheet({
 }: NotificationSheetProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { isDesktop } = useDeviceType();
+
+  // Desktop: nach Themen zoniert statt chronologischem Spalten-Chaos.
+  const groups = useMemo(() => {
+    const friends: UnifiedNotification[] = [];
+    const news: UnifiedNotification[] = [];
+    const personal: UnifiedNotification[] = [];
+    for (const n of notifications) {
+      if (n.kind === 'activity' || n.kind === 'request' || n.kind === 'recommendation') {
+        friends.push(n);
+      } else if (n.kind === 'announcement') {
+        news.push(n);
+      } else {
+        personal.push(n);
+      }
+    }
+    return [
+      { label: 'Freunde', items: friends },
+      { label: 'Neues in TV-Rank', items: news },
+      { label: 'Für dich', items: personal },
+    ].filter((g) => g.items.length > 0);
+  }, [notifications]);
 
   const handleItemClick = (item: UnifiedNotification) => {
     if (item.kind === 'request') return;
@@ -62,6 +85,37 @@ export const NotificationSheet = React.memo(function NotificationSheet({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const hasUnread = unreadCount > 0;
+
+  const renderItem = (item: UnifiedNotification, isLast: boolean) => {
+    if (item.kind === 'recommendation' && item.recommendationData) {
+      return (
+        <RecommendationCard
+          key={item.id}
+          item={item}
+          isLast={isLast}
+          onAccept={(recId) => {
+            onAcceptRecommendation(recId);
+            if (item.navigateTo) {
+              onClose();
+              navigate(item.navigateTo);
+            }
+          }}
+          onDecline={onDeclineRecommendation}
+        />
+      );
+    }
+    return (
+      <NotificationItem
+        key={item.id}
+        item={item}
+        isLast={isLast}
+        theme={currentTheme}
+        onItemClick={handleItemClick}
+        onAcceptRequest={onAcceptRequest}
+        onDeclineRequest={onDeclineRequest}
+      />
+    );
+  };
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} maxHeight="75vh" ariaLabel="Benachrichtigungen">
@@ -133,8 +187,11 @@ export const NotificationSheet = React.memo(function NotificationSheet({
           </div>
         </div>
 
-        {/* List */}
-        <div style={{ overflowY: 'auto', flex: 1, WebkitOverflowScrolling: 'touch' }}>
+        {/* List — hide-scrollbar: Scrollbars sind hier tabu */}
+        <div
+          className="hide-scrollbar"
+          style={{ overflowY: 'auto', flex: 1, WebkitOverflowScrolling: 'touch' }}
+        >
           {notifications.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 20px' }}>
               <div
@@ -166,39 +223,35 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                 Keine neuen Benachrichtigungen
               </p>
             </div>
-          ) : (
-            <div style={{ padding: '0 12px' }}>
-              {notifications.map((item, index) => {
-                const isLast = index === notifications.length - 1;
-                if (item.kind === 'recommendation' && item.recommendationData) {
-                  return (
-                    <RecommendationCard
-                      key={item.id}
-                      item={item}
-                      isLast={isLast}
-                      onAccept={(recId) => {
-                        onAcceptRecommendation(recId);
-                        if (item.navigateTo) {
-                          onClose();
-                          navigate(item.navigateTo);
-                        }
+          ) : isDesktop ? (
+            /* Desktop: thematische Zonen mit Überschrift, je eine Spalte */
+            <div className="sheet-grid">
+              {groups.map((group) => (
+                <div key={group.label} className="sheet-group">
+                  <h3 className="sheet-group__title" style={{ color: currentTheme.text.muted }}>
+                    {group.label}
+                    <span
+                      className="sheet-group__count"
+                      style={{
+                        background: `${currentTheme.primary}1a`,
+                        color: currentTheme.primary,
                       }}
-                      onDecline={onDeclineRecommendation}
-                    />
-                  );
-                }
-                return (
-                  <NotificationItem
-                    key={item.id}
-                    item={item}
-                    isLast={isLast}
-                    theme={currentTheme}
-                    onItemClick={handleItemClick}
-                    onAcceptRequest={onAcceptRequest}
-                    onDeclineRequest={onDeclineRequest}
-                  />
-                );
-              })}
+                    >
+                      {group.items.length}
+                    </span>
+                  </h3>
+                  {group.items.map((item, index) =>
+                    renderItem(item, index === group.items.length - 1)
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Mobile: chronologische Liste */
+            <div style={{ padding: '0 12px' }}>
+              {notifications.map((item, index) =>
+                renderItem(item, index === notifications.length - 1)
+              )}
             </div>
           )}
 
@@ -212,6 +265,8 @@ export const NotificationSheet = React.memo(function NotificationSheet({
               }}
               style={{
                 width: '100%',
+                maxWidth: 480,
+                margin: '0 auto',
                 padding: '14px',
                 background: currentTheme.background.surface,
                 border: `1px solid ${currentTheme.border.default}`,

@@ -335,14 +335,7 @@ export const DiscoverPage = memo(() => {
 
           {/* Premium Categories */}
           {!showSearch && (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(5, 1fr)',
-                gap: '8px',
-                padding: '8px 20px 14px 20px',
-              }}
-            >
+            <div className="discover-cats">
               {categories.map((cat) => {
                 const isActive = activeCategory === cat.id;
                 const Icon = cat.icon;

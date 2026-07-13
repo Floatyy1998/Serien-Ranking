@@ -30,7 +30,7 @@ export const MangaCatchUpCard: React.FC = React.memo(() => {
 
   return (
     <NavCard onClick={() => navigate('/manga/catch-up')} accentColor={currentTheme.accent}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%' }}>
         <IconContainer color={currentTheme.accent} size={40} borderRadius={12}>
           <Schedule style={{ fontSize: 20 }} />
         </IconContainer>

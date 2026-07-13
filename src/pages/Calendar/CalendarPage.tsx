@@ -64,43 +64,44 @@ export const CalendarPage = () => {
           watchedCount={watchedCount}
         />
 
-        {/* Prominenter Einstieg in den Anime-Season-Kalender */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            hapticTap();
-            navigate('/anime-season');
-          }}
-          aria-label="Anime-Season-Kalender öffnen"
-          className="cal-entry-btn cal-entry-btn--first"
-        >
-          <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
-          <span className="cal-entry-btn__body">
-            <span className="cal-entry-btn__title">Anime-Season</span>
-            <span className="cal-entry-btn__sub">
-              Was läuft diese Season? Airing-Tage & Countdown
+        {/* Einstiege in Anime-Season + Serien-Kalender — Desktop nebeneinander */}
+        <div className="cal-entry-row">
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              hapticTap();
+              navigate('/anime-season');
+            }}
+            aria-label="Anime-Season-Kalender öffnen"
+            className="cal-entry-btn cal-entry-btn--first"
+          >
+            <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+            <span className="cal-entry-btn__body">
+              <span className="cal-entry-btn__title">Anime-Season</span>
+              <span className="cal-entry-btn__sub">
+                Was läuft diese Season? Airing-Tage & Countdown
+              </span>
             </span>
-          </span>
-          <ChevronRight className="cal-entry-btn__chevron" />
-        </motion.button>
+            <ChevronRight className="cal-entry-btn__chevron" />
+          </motion.button>
 
-        {/* Prominenter Einstieg in den Serien-Kalender (Premieren-Discovery) */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={() => {
-            hapticTap();
-            navigate('/serien-kalender');
-          }}
-          aria-label="Serien-Kalender öffnen"
-          className="cal-entry-btn"
-        >
-          <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
-          <span className="cal-entry-btn__body">
-            <span className="cal-entry-btn__title">Serien-Kalender</span>
-            <span className="cal-entry-btn__sub">Neue Serien & Staffeln entdecken</span>
-          </span>
-          <ChevronRight className="cal-entry-btn__chevron" />
-        </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              hapticTap();
+              navigate('/serien-kalender');
+            }}
+            aria-label="Serien-Kalender öffnen"
+            className="cal-entry-btn"
+          >
+            <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+            <span className="cal-entry-btn__body">
+              <span className="cal-entry-btn__title">Serien-Kalender</span>
+              <span className="cal-entry-btn__sub">Neue Serien & Staffeln entdecken</span>
+            </span>
+            <ChevronRight className="cal-entry-btn__chevron" />
+          </motion.button>
+        </div>
 
         {loading ? (
           <div
@@ -133,6 +134,9 @@ export const CalendarPage = () => {
             expandedGroups={expandedGroups}
             onToggleGroup={toggleGroup}
             onMarkWatched={handleMarkWatched}
+            onPrevWeek={goToPrevWeek}
+            onNextWeek={goToNextWeek}
+            weekStamp={`${weekOffset}`}
           />
         )}
       </div>

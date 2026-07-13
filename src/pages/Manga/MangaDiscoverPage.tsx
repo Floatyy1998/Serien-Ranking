@@ -233,7 +233,8 @@ export const MangaDiscoverPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
+              /* Desktop: kompakte Kacheln statt vollbreiter Streifen */
+              gridTemplateColumns: isMobile ? 'repeat(4, 1fr)' : 'repeat(4, minmax(110px, 150px))',
               gap: 8,
               marginBottom: 12,
             }}
@@ -253,16 +254,17 @@ export const MangaDiscoverPage = () => {
                     gap: 4,
                     padding: '10px 4px',
                     borderRadius: 12,
-                    border: 'none',
+                    border: active
+                      ? `1px solid ${color}40`
+                      : '1px solid var(--glass-border-subtle)',
                     background: active
                       ? `linear-gradient(135deg, ${color}25, ${color}10)`
-                      : 'transparent',
+                      : 'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
                     color: active ? color : currentTheme.text.secondary,
                     cursor: 'pointer',
                     fontFamily: 'var(--font-body)',
                     fontSize: 11,
                     fontWeight: active ? 700 : 500,
-                    opacity: active ? 1 : 0.6,
                   }}
                 >
                   {cat.icon}

@@ -1302,3 +1302,22 @@
   align-items: center;
   justify-content: center;
 }
+
+/* Desktop: eine fokussierte Bühne in der Mitte — Pet groß, Stats/Aktionen
+   kompakt darunter; die Anpassungs-Grids füllen weiter die volle Breite.
+   (Muss NACH den Basis-Regeln stehen, sonst verliert es die Kaskade.) */
+@media (min-width: 1100px) {
+  /* Bühne größer: das Pet ist der Star */
+  .pet-card-display {
+    min-width: 400px;
+    min-height: 400px;
+  }
+
+  .pet-card-stats-grid,
+  .pet-card-xp-bonus-wrapper,
+  .pet-actions {
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

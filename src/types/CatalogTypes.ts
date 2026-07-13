@@ -8,6 +8,8 @@
 export interface CatalogSeries {
   title: string;
   poster: string;
+  /** Roher TMDB-backdrop_path (z.B. "/abc.jpg") — URL via getImageUrl bauen. */
+  backdrop?: string;
   genres: string[];
   providers: { id: number; logo: string; name: string }[];
   imdbId: string | null;
@@ -47,6 +49,8 @@ export interface CatalogEpisode {
 export interface CatalogMovie {
   title: string;
   poster: string;
+  /** Roher TMDB-backdrop_path (z.B. "/abc.jpg") — URL via getImageUrl bauen. */
+  backdrop?: string;
   genres: string[];
   providers: { id: number; logo: string; name: string }[];
   imdbId: string | null;

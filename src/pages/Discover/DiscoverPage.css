@@ -17,6 +17,21 @@
   animation: fadeInUp 0.3s ease-out both;
 }
 
+/* Kategorie-Kacheln: mobil 5 gleiche Spalten, ab Desktop kompakt statt
+   vollbreiter Streifen. */
+.discover-cats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  padding: 8px 20px 14px;
+}
+
+@media (min-width: 768px) {
+  .discover-cats {
+    grid-template-columns: repeat(5, minmax(110px, 150px));
+  }
+}
+
 .discover-poster-wrap {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

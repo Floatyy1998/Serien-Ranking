@@ -1,4 +1,4 @@
-import { Category, LocalFireDepartment, Star, Stream } from '@mui/icons-material';
+import { Category, Star, Stream } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 
@@ -12,7 +12,7 @@ interface ThemeColors {
 }
 
 /* ------------------------------------------------------------------ */
-/*  RatingsSection                                                     */
+/*  RatingsSection — zwei Ø-Rating-Pods (Serien / Filme)               */
 /* ------------------------------------------------------------------ */
 interface RatingsSectionProps {
   avgSeriesRating: number;
@@ -21,37 +21,51 @@ interface RatingsSectionProps {
 }
 
 export const RatingsSection = memo(
-  ({ avgSeriesRating, avgMovieRating, theme }: RatingsSectionProps) => (
-    <motion.div
-      className="stats-section"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.7 }}
-      style={{
-        background: theme.background.surface,
-        border: `1px solid ${theme.border.default}`,
-      }}
-    >
-      <h2 className="stats-section-title">
-        <Star style={{ fontSize: 20, color: theme.accent || theme.primary }} />
-        Deine Bewertungen
-      </h2>
-      <div className="stats-ratings-row">
-        <div className="stats-rating-card" style={{ background: theme.background.surface }}>
-          <div className="stats-rating-value">{avgSeriesRating.toFixed(1)}</div>
-          <div className="stats-rating-label" style={{ color: theme.text.muted }}>
-            &Oslash; Serien
-          </div>
-        </div>
-        <div className="stats-rating-card" style={{ background: theme.background.surface }}>
-          <div className="stats-rating-value">{avgMovieRating.toFixed(1)}</div>
-          <div className="stats-rating-label" style={{ color: theme.text.muted }}>
-            &Oslash; Filme
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  )
+  ({ avgSeriesRating, avgMovieRating, theme }: RatingsSectionProps) => {
+    const accent = theme.accent || theme.primary;
+    const items = [
+      { value: avgSeriesRating, label: 'Ø Serien-Rating' },
+      { value: avgMovieRating, label: 'Ø Film-Rating' },
+    ];
+
+    return (
+      <>
+        {items.map((item, i) => (
+          <motion.div
+            key={item.label}
+            className="stats-pod stats-pod--rating liquid-glass"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + i * 0.05 }}
+          >
+            <div
+              className="stats-quick-icon"
+              style={{
+                color: accent,
+                background: `${accent}16`,
+                boxShadow: `inset 0 0 0 1px ${accent}2e`,
+              }}
+            >
+              <Star style={{ fontSize: 20 }} />
+            </div>
+            <div className="stats-quick-value">{item.value.toFixed(1)}</div>
+            <div className="stats-rating-bar" style={{ background: `${theme.text.muted}1c` }}>
+              <motion.div
+                className="stats-rating-bar-fill"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(item.value, 10) * 10}%` }}
+                transition={{ duration: 0.8, delay: 0.4 + i * 0.1 }}
+                style={{ background: `linear-gradient(90deg, ${theme.primary}, ${accent})` }}
+              />
+            </div>
+            <div className="stats-quick-label" style={{ color: theme.text.muted }}>
+              {item.label}
+            </div>
+          </motion.div>
+        ))}
+      </>
+    );
+  }
 );
 RatingsSection.displayName = 'RatingsSection';
 
@@ -61,25 +75,24 @@ RatingsSection.displayName = 'RatingsSection';
 interface TopGenresProps {
   genres: { name: string; count: number }[];
   theme: ThemeColors;
+  /** Volle Breite, wenn das Provider-Panel fehlt */
+  wide?: boolean;
 }
 
-export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
+export const TopGenresSection = memo(({ genres, theme, wide }: TopGenresProps) => {
   if (genres.length === 0) return null;
   const maxCount = genres[0]?.count || 1;
+  const accent = theme.accent || theme.primary;
 
   return (
     <motion.div
-      className="stats-section"
-      initial={{ opacity: 0, y: 20 }}
+      className={`stats-pod stats-panel stats-panel--genres liquid-glass ${wide ? 'stats-panel--wide' : ''}`}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.8 }}
-      style={{
-        background: theme.background.surface,
-        border: `1px solid ${theme.border.default}`,
-      }}
+      transition={{ delay: 0.25 }}
     >
-      <h2 className="stats-section-title">
-        <Category style={{ fontSize: 20, color: theme.accent || theme.primary }} />
+      <h2 className="stats-pod__label stats-panel__title" style={{ color: theme.text.muted }}>
+        <Category style={{ fontSize: 16, color: accent }} />
         Top Genres
       </h2>
       <div className="stats-genre-list">
@@ -89,13 +102,21 @@ export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
             className="stats-genre-item"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.9 + i * 0.1 }}
+            transition={{ delay: 0.35 + i * 0.07 }}
           >
             <span
               className="stats-genre-rank"
-              style={{ color: i === 0 ? theme.accent || theme.primary : theme.text.muted }}
+              style={
+                i === 0
+                  ? {
+                      color: accent,
+                      background: `${accent}18`,
+                      boxShadow: `inset 0 0 0 1px ${accent}30`,
+                    }
+                  : { color: theme.text.muted, background: `${theme.text.muted}14` }
+              }
             >
-              #{i + 1}
+              {i + 1}
             </span>
             <div className="stats-genre-info">
               <div className="stats-genre-header">
@@ -106,15 +127,15 @@ export const TopGenresSection = memo(({ genres, theme }: TopGenresProps) => {
               </div>
               <div
                 className="stats-genre-bar-track"
-                style={{ background: `${theme.text.muted}20` }}
+                style={{ background: `${theme.text.muted}1c` }}
               >
                 <motion.div
                   className="stats-genre-bar-fill"
                   initial={{ width: 0 }}
                   animate={{ width: `${(genre.count / maxCount) * 100}%` }}
-                  transition={{ duration: 0.8, delay: 1 + i * 0.1 }}
+                  transition={{ duration: 0.8, delay: 0.45 + i * 0.07 }}
                   style={{
-                    background: `linear-gradient(90deg, ${theme.primary}, ${theme.accent || theme.primary}cc)`,
+                    background: `linear-gradient(90deg, ${theme.primary}, ${accent}cc)`,
                   }}
                 />
               </div>
@@ -133,49 +154,52 @@ TopGenresSection.displayName = 'TopGenresSection';
 interface TopProvidersProps {
   providers: { name: string; count: number }[];
   theme: ThemeColors;
+  /** Volle Breite, wenn das Genre-Panel fehlt */
+  wide?: boolean;
 }
 
-export const TopProvidersSection = memo(({ providers, theme }: TopProvidersProps) => {
+export const TopProvidersSection = memo(({ providers, theme, wide }: TopProvidersProps) => {
   if (providers.length === 0) return null;
+  const accent = theme.accent || theme.primary;
+  const maxCount = providers[0]?.count || 1;
 
   return (
     <motion.div
-      className="stats-section"
-      initial={{ opacity: 0, y: 20 }}
+      className={`stats-pod stats-panel stats-panel--providers liquid-glass ${wide ? 'stats-panel--wide' : ''}`}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 1 }}
-      style={{
-        background: theme.background.surface,
-        border: `1px solid ${theme.border.default}`,
-      }}
+      transition={{ delay: 0.3 }}
     >
-      <h2 className="stats-section-title">
-        <Stream style={{ fontSize: 20, color: theme.accent || theme.primary }} />
+      <h2 className="stats-pod__label stats-panel__title" style={{ color: theme.text.muted }}>
+        <Stream style={{ fontSize: 16, color: accent }} />
         Streaming-Dienste
       </h2>
       <div className="stats-provider-list">
         {providers.map((provider, i) => (
           <motion.div
             key={provider.name}
-            className="stats-provider-chip"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 1.1 + i * 0.1 }}
-            style={{
-              background: theme.background.surface,
-              border: `1px solid ${theme.border.default}`,
-            }}
+            className="stats-provider-row"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 + i * 0.07 }}
           >
-            <span className="stats-provider-name">{provider.name}</span>
-            <span
-              className="stats-provider-count"
-              style={{
-                background: `${theme.text.muted}20`,
-                color: theme.text.muted,
-              }}
-            >
-              {provider.count}
-            </span>
+            <div className="stats-genre-header">
+              <span className="stats-provider-name">{provider.name}</span>
+              <span className="stats-genre-count" style={{ color: theme.text.muted }}>
+                {provider.count}
+              </span>
+            </div>
+            <div className="stats-genre-bar-track" style={{ background: `${theme.text.muted}1c` }}>
+              <motion.div
+                className="stats-genre-bar-fill"
+                initial={{ width: 0 }}
+                animate={{ width: `${(provider.count / maxCount) * 100}%` }}
+                transition={{ duration: 0.8, delay: 0.5 + i * 0.07 }}
+                style={{
+                  background: `linear-gradient(90deg, ${accent}, ${theme.primary}cc)`,
+                }}
+              />
+            </div>
           </motion.div>
         ))}
       </div>
@@ -183,42 +207,3 @@ export const TopProvidersSection = memo(({ providers, theme }: TopProvidersProps
   );
 });
 TopProvidersSection.displayName = 'TopProvidersSection';
-
-/* ------------------------------------------------------------------ */
-/*  WeekActivitySection                                                */
-/* ------------------------------------------------------------------ */
-interface WeekActivityProps {
-  lastWeekWatched: number;
-  theme: ThemeColors;
-}
-
-export const WeekActivitySection = memo(({ lastWeekWatched, theme }: WeekActivityProps) => (
-  <motion.div
-    className="stats-week"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 1.2 }}
-    style={{
-      background: theme.background.surface,
-      border: `1px solid ${theme.border.default}`,
-    }}
-  >
-    <div className="stats-week-content">
-      <div
-        className="stats-week-icon"
-        style={{
-          background: `linear-gradient(135deg, ${theme.status.success}, ${theme.accent || theme.primary})`,
-        }}
-      >
-        <LocalFireDepartment style={{ fontSize: 28, color: theme.text.secondary }} />
-      </div>
-      <div>
-        <div className="stats-week-value">{lastWeekWatched}</div>
-        <div className="stats-week-label" style={{ color: theme.text.muted }}>
-          Episoden diese Woche
-        </div>
-      </div>
-    </div>
-  </motion.div>
-));
-WeekActivitySection.displayName = 'WeekActivitySection';

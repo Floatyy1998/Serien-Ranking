@@ -183,7 +183,13 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             style={cardStyle}
           >
             <h3 style={headingStyle}>Dein Jahr in Zahlen</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 12,
+              }}
+            >
               {[
                 {
                   label: 'Ø pro Monat',

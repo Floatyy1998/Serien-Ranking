@@ -24,7 +24,8 @@ afterEach(() => cleanup());
 
 describe('MovieInfoTab', () => {
   it('renders the overview heading and the description text', () => {
-    render(<MovieInfoTab movie={movie} isMobile={false} tmdbOverview={null} />);
+    // Handlung wird nur mobil gerendert — Desktop zeigt sie bereits im Hero
+    render(<MovieInfoTab movie={movie} isMobile={true} tmdbOverview={null} />);
     expect(screen.getByText('Handlung')).toBeInTheDocument();
     expect(screen.getByText('Wüstenplanet Arrakis')).toBeInTheDocument();
   });

@@ -91,10 +91,48 @@ export const SettingsPage = () => {
           onEditDisplayName={() => setDisplayNameEditable(true)}
         />
 
-        <AppearanceSection
-          onNavigateTheme={() => navigate('/theme')}
-          onNavigateLayout={() => navigate('/home-layout')}
-        />
+        {/* Stack = eine Grid-Zelle: Theme/Layout/Desktop-Buttons gebündelt,
+            damit sie im Desktop-Grid nicht einzeln auf Reihenhöhe aufblasen */}
+        <div className="settings-stack">
+          <AppearanceSection
+            onNavigateTheme={() => navigate('/theme')}
+            onNavigateLayout={() => navigate('/home-layout')}
+          />
+
+          {/* Desktop App: Download (Web) or Autostart Toggle (Electron) */}
+          {window.electronAPI?.isElectron ? (
+            <AutoStartToggle currentTheme={currentTheme} />
+          ) : (
+            <motion.a
+              href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank-Setup.exe"
+              download
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              whileTap={tapScaleSmall}
+              className="settings-nav-btn"
+              style={{
+                color: currentTheme.text.primary,
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                className="settings-nav-btn-icon"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                }}
+              >
+                <DesktopWindows style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+              </div>
+              <div className="settings-nav-btn-text">
+                <h2 className="settings-nav-btn-title">Desktop App</h2>
+                <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+                  TV-Rank für Windows herunterladen
+                </p>
+              </div>
+            </motion.a>
+          )}
+        </div>
 
         <PublicProfileSection
           isPublicProfile={isPublicProfile}
@@ -111,42 +149,6 @@ export const SettingsPage = () => {
           onNavigatePrivacy={() => navigate('/privacy')}
           onNavigateImpressum={() => navigate('/impressum')}
         />
-
-        {/* Desktop App: Download (Web) or Autostart Toggle (Electron) */}
-        {window.electronAPI?.isElectron ? (
-          <AutoStartToggle currentTheme={currentTheme} />
-        ) : (
-          <motion.a
-            href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank-Setup.exe"
-            download
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            whileTap={tapScaleSmall}
-            className="settings-nav-btn"
-            style={{
-              background: currentTheme.background.surface,
-              border: `1px solid ${currentTheme.border.default}`,
-              color: currentTheme.text.primary,
-              textDecoration: 'none',
-            }}
-          >
-            <div
-              className="settings-nav-btn-icon"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              }}
-            >
-              <DesktopWindows style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
-            </div>
-            <div className="settings-nav-btn-text">
-              <h2 className="settings-nav-btn-title">Desktop App</h2>
-              <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-                TV-Rank für Windows herunterladen
-              </p>
-            </div>
-          </motion.a>
-        )}
 
         {/* Logout */}
         <motion.button
@@ -216,8 +218,6 @@ const AutoStartToggle = ({ currentTheme }: { currentTheme: ThemeContextType['cur
       transition={{ delay: 0.25 }}
       className="settings-nav-btn"
       style={{
-        background: currentTheme.background.surface,
-        border: `1px solid ${currentTheme.border.default}`,
         color: currentTheme.text.primary,
         cursor: 'pointer',
       }}

@@ -38,6 +38,8 @@ export const NavCard: React.FC<NavCardProps> = ({
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
+        /* explizit: die globale .mobile-app-button-Regel würde sonst zentrieren */
+        justifyContent: 'flex-start',
         gap: '12px',
         width: 'calc(100% - 40px)',
         textAlign: 'left',

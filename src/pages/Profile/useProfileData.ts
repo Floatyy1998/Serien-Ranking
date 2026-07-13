@@ -79,6 +79,8 @@ export interface UseProfileDataResult {
   secondaryMenuItems: ProfileMenuItem[];
   mangaMenuItems: ProfileMenuItem[];
   settingsItems: ProfileMenuItem[];
+  /** Backdrop-URLs der bestbewerteten Serien für den Desktop-Kino-Hero */
+  heroBackdrops: string[];
   goTo: (path: string) => void;
   handleLogout: () => Promise<void>;
 }
@@ -178,6 +180,21 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const stats = useMemo(() => computeStats(seriesList, movieList), [seriesList, movieList]);
 
+  // Kino-Hero: Backdrops der bestbewerteten Serien (Desktop-Collage)
+  const heroBackdrops = useMemo(
+    () =>
+      seriesList
+        .filter((s) => s?.backdrop)
+        .map((s) => ({
+          backdrop: s.backdrop as string,
+          rating: parseFloat(calculateOverallRating(s)) || 0,
+        }))
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 6)
+        .map((s) => `https://image.tmdb.org/t/p/w780${s.backdrop}`),
+    [seriesList]
+  );
+
   const handleLogout = async () => {
     try {
       await firebase.auth().signOut();
@@ -233,19 +250,19 @@ export const useProfileData = (): UseProfileDataResult => {
               path: '/manga/reading-list',
             },
             {
-              label: 'Bewertungen',
+              label: 'Manga-Bewertungen',
               icon: BarChart,
               color: currentTheme.status.warning,
               path: '/manga/ratings',
             },
             {
-              label: 'Statistiken',
+              label: 'Manga-Statistiken',
               icon: TrendingUp,
               color: currentTheme.accent,
               path: '/manga/stats',
             },
             {
-              label: 'Verlauf',
+              label: 'Zuletzt gelesen',
               icon: History,
               color: currentTheme.status.success,
               path: '/manga/recently-read',
@@ -351,6 +368,7 @@ export const useProfileData = (): UseProfileDataResult => {
     secondaryMenuItems,
     mangaMenuItems,
     settingsItems,
+    heroBackdrops,
     goTo,
     handleLogout,
   };

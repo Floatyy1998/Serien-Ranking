@@ -272,7 +272,7 @@ export const useStatsData = (): StatsData => {
 
     const topGenres = Object.entries(genreCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 8)
       .map(([name, count]) => ({ name, count }));
 
     // Providers
@@ -292,7 +292,7 @@ export const useStatsData = (): StatsData => {
 
     const topProviders = Object.entries(providerCounts)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
+      .slice(0, 8)
       .map(([name, count]) => ({ name, count }));
 
     // Last week. Date.now() in useMemo durch deps stabilisiert.

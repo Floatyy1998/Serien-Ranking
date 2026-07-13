@@ -165,9 +165,20 @@ export const NextEpisodeChip = memo<StatusBadgeProps>(({ series }) => {
   const color = isUpcoming ? currentTheme.accent : currentTheme.primary;
 
   return (
-    <span className="status-badge" style={{ borderColor: `${color}66`, color }}>
+    <span
+      className="status-badge"
+      // Dunkler Glas-Scrim: der Chip liegt im Hero direkt auf dem Artwork —
+      // ohne eigenen Hintergrund säuft jede Theme-Farbe auf hellen Bildern ab.
+      style={{
+        borderColor: `${color}80`,
+        color,
+        background: 'rgba(0, 0, 0, 0.45)',
+        WebkitBackdropFilter: 'var(--blur-sm)',
+        backdropFilter: 'var(--blur-sm)',
+      }}
+    >
       {isUpcoming ? 'Nächste' : 'Dran'}
-      <span style={{ opacity: 0.7, marginLeft: 2 }}>{nextEp.label}</span>
+      <span style={{ opacity: 0.85, marginLeft: 2 }}>{nextEp.label}</span>
     </span>
   );
 });

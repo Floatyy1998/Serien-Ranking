@@ -19,11 +19,11 @@ vi.mock('framer-motion', async () => {
 vi.mock('@mui/icons-material', () => ({
   AutoAwesome: () => null,
   EmojiEvents: () => null,
+  LocalFireDepartment: () => null,
   Movie: () => null,
   Timer: () => null,
   Tv: () => null,
   Category: () => null,
-  LocalFireDepartment: () => null,
   Star: () => null,
   Stream: () => null,
 }));
@@ -36,12 +36,8 @@ vi.mock('./useStatsData', () => ({
   formatTimeDetailed: (m: number) => `${m} Min`,
 }));
 
-import {
-  ActorUniverseBanner,
-  AnimatedRing,
-  HeroSection,
-  TimeBreakdownSection,
-} from './StatsComponents';
+import { AnimatedRing, ProgressPod, QuickPods, WatchtimePod } from './StatsComponents';
+import { ActorUniverseBanner } from './StatsComponents';
 
 const theme = {
   primary: '#3355ff',
@@ -58,7 +54,11 @@ const stats = {
   totalEpisodes: 2000,
   totalSeries: 40,
   totalMovies: 12,
+  watchedMovies: 9,
   completedSeries: 8,
+  lastWeekWatched: 17,
+  seriesMinutes: 120,
+  movieMinutes: 45,
 } as unknown as StatsData;
 
 const timeData: FormattedTime = {
@@ -78,11 +78,28 @@ describe('StatsComponents', () => {
     expect(container.querySelector('svg')).toBeTruthy();
   });
 
-  it('renders the hero time value and episode counts', () => {
-    render(<HeroSection stats={stats} timeData={timeData} theme={theme} />);
+  it('renders the watchtime value and the series/movie split', () => {
+    render(<WatchtimePod stats={stats} timeData={timeData} theme={theme} />);
     expect(screen.getByText('42')).toBeInTheDocument();
     expect(screen.getByText('Gesamte Watchtime')).toBeInTheDocument();
+    expect(screen.getByText('120 Min')).toBeInTheDocument();
+    expect(screen.getByText('45 Min')).toBeInTheDocument();
+  });
+
+  it('renders the progress ring with episode counts', () => {
+    render(<ProgressPod stats={stats} theme={theme} />);
+    expect(screen.getByText('60%')).toBeInTheDocument();
     expect(screen.getByText('1.200')).toBeInTheDocument();
+    expect(screen.getByText('Episoden geschaut')).toBeInTheDocument();
+  });
+
+  it('renders the quick pods including the weekly count', () => {
+    render(<QuickPods stats={stats} theme={theme} />);
+    expect(screen.getByText('40')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Serien fertig')).toBeInTheDocument();
+    expect(screen.getByText('17')).toBeInTheDocument();
+    expect(screen.getByText('Episoden diese Woche')).toBeInTheDocument();
   });
 
   it('fires onNavigate when the Actor Universe banner is clicked', () => {
@@ -90,12 +107,5 @@ describe('StatsComponents', () => {
     render(<ActorUniverseBanner theme={theme} onNavigate={onNavigate} />);
     fireEvent.click(screen.getByText('Actor Universe'));
     expect(onNavigate).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders the time breakdown with formatted durations', () => {
-    render(<TimeBreakdownSection seriesMinutes={120} movieMinutes={45} theme={theme} />);
-    expect(screen.getByText('Zeit-Aufteilung')).toBeInTheDocument();
-    expect(screen.getByText('120 Min')).toBeInTheDocument();
-    expect(screen.getByText('45 Min')).toBeInTheDocument();
   });
 });

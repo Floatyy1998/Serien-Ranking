@@ -404,3 +404,44 @@
 .lb-bottom-pad {
   height: calc(120px + env(safe-area-inset-bottom));
 }
+
+/* ── Desktop: kompakte Controls, zentrierte Bühne, Grids statt Streifen ── */
+@media (min-width: 768px) {
+  .lb-mode-toggle {
+    width: max-content;
+  }
+
+  .lb-mode-btn {
+    flex: none;
+    padding: 10px 28px;
+  }
+
+  .lb-category-scroll {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  /* Podium = zentrierte Bühne statt 3 Vollbreite-Blöcke */
+  .lb-podium {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* Ranking als Karten-Grid statt gestreckter Zeilen */
+  .lb-rankings {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+    gap: 10px;
+  }
+
+  /* Trophäen: Wrap-Grid statt Horizontal-Scroll */
+  .lb-trophy-scroll {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    overflow: visible;
+  }
+
+  .lb-trophy-card {
+    min-width: 0;
+  }
+}

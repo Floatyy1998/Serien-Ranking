@@ -289,14 +289,15 @@ export const TasteMatchPage: React.FC = () => {
                   style={
                     isActive
                       ? {
-                          background: `linear-gradient(135deg, ${tab.color}, ${tab.color}cc)`,
-                          boxShadow: `0 4px 12px ${tab.color}35`,
+                          background: `color-mix(in srgb, ${tab.color} 18%, rgba(255, 255, 255, 0.04))`,
+                          boxShadow: `inset 0 0 0 1px ${tab.color}50`,
+                          color: tab.color,
                         }
                       : undefined
                   }
                 >
                   {tab.icon}
-                  {isActive && <span>{tab.label}</span>}
+                  <span className="tm-tab-label">{tab.label}</span>
                 </motion.button>
               );
             })}

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import { PageLayout, PageHeader, SkeletonListRow, EmptyState } from '../../components/ui';
 import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
@@ -176,6 +177,7 @@ const FeedCard: React.FC<{
 export const DiscussionFeedPage = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const { isDesktop } = useDeviceType();
   const [filter, setFilter] = useState<FeedFilterType>('all');
   const { entries, loading, error } = useDiscussionFeed(filter);
 
@@ -211,20 +213,24 @@ export const DiscussionFeedPage = () => {
               setFilter(tab.id);
             }}
             style={{
-              flex: 1,
-              padding: '12px',
+              /* Desktop: kompakte Pills statt Vollbreite-Streifen */
+              flex: isDesktop ? 'none' : 1,
+              padding: isDesktop ? '12px 28px' : '12px',
               background:
                 filter === tab.id
-                  ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`
+                  ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
                   : currentTheme.background.card,
-              border: filter === tab.id ? 'none' : `1px solid ${currentTheme.border.default}`,
+              border:
+                filter === tab.id
+                  ? `1px solid ${currentTheme.primary}55`
+                  : `1px solid ${currentTheme.border.default}`,
               borderRadius: '14px',
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              color: filter === tab.id ? currentTheme.text.secondary : currentTheme.text.muted,
+              color: filter === tab.id ? currentTheme.primary : currentTheme.text.muted,
               fontSize: '15px',
               fontWeight: 700,
               cursor: 'pointer',
-              boxShadow: filter === tab.id ? `0 4px 15px ${currentTheme.primary}40` : 'none',
+              boxShadow: filter === tab.id ? `0 4px 15px ${currentTheme.primary}22` : 'none',
             }}
           >
             {tab.label}
@@ -271,9 +277,13 @@ export const DiscussionFeedPage = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               style={{
-                display: 'flex',
-                flexDirection: 'column',
+                /* Desktop: Karten-Grid statt gestreckter Vollbreite-Zeilen */
+                display: 'grid',
+                gridTemplateColumns: isDesktop
+                  ? 'repeat(auto-fill, minmax(min(100%, 560px), 1fr))'
+                  : '1fr',
                 gap: '12px',
+                alignItems: 'start',
                 paddingBottom: '100px',
               }}
             >

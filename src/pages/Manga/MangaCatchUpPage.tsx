@@ -6,6 +6,7 @@ import { PageHeader, PageLayout } from '../../components/ui';
 import { getEffectiveChapterCount, type AppTheme } from './mangaUtils';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -22,6 +23,7 @@ export const MangaCatchUpPage = () => {
   const { currentTheme } = useTheme();
   const { mangaList } = useMangaList();
   const navigate = useNavigate();
+  const { isDesktop } = useDeviceType();
   const [sortBy, setSortBy] = useState<SortKey>('chapters');
 
   const catchUpData = useMemo(() => {
@@ -90,8 +92,10 @@ export const MangaCatchUpPage = () => {
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              gap: 10,
+              /* Desktop: kompakte zentrierte Stat-Karten statt 800px-Leerboxen */
+              gridTemplateColumns: isDesktop ? 'repeat(3, minmax(220px, 320px))' : '1fr 1fr 1fr',
+              justifyContent: 'center',
+              gap: isDesktop ? 14 : 10,
               marginBottom: 20,
             }}
           >
@@ -132,8 +136,18 @@ export const MangaCatchUpPage = () => {
           ))}
         </div>
 
-        {/* List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 100 }}>
+        {/* List: Desktop als Karten-Grid statt gestreckter Vollbreite-Zeilen */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: isDesktop
+              ? 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))'
+              : '1fr',
+            gap: 10,
+            alignItems: 'start',
+            paddingBottom: 100,
+          }}
+        >
           {sorted.map((item) => (
             <motion.div
               key={item.manga.anilistId}

@@ -21,6 +21,8 @@ interface MovieHeroSectionProps {
   id: string | undefined;
   isMobile: boolean;
   tmdbBackdrop: string | null;
+  /** Handlungstext — Desktop zeigt ihn IM Hero (Serien-Muster). */
+  overview?: string;
   tmdbRating: { vote_average: number; vote_count: number } | null;
   imdbRating: { rating: number; votes: string } | null;
   providers: TMDBWatchProvider[] | null;
@@ -48,6 +50,7 @@ export const MovieHeroSection = memo(
     id,
     isMobile,
     tmdbBackdrop,
+    overview,
     tmdbRating,
     imdbRating,
     providers,
@@ -118,7 +121,7 @@ export const MovieHeroSection = memo(
               className="md-hero__backdrop-bg"
               style={{
                 backgroundImage: `url(${backdropUrl})`,
-                filter: 'brightness(0.35)',
+                filter: 'brightness(0.7) saturate(1.08)',
               }}
             />
           ) : (
@@ -130,18 +133,29 @@ export const MovieHeroSection = memo(
             />
           )}
 
-          {/* Gradient Overlay */}
+          {/* Lesbarkeits-Verläufe: unten + links (Desktop) — statt Glas-Box. */}
           <div
             style={{
               position: 'absolute',
               bottom: 0,
               left: 0,
               right: 0,
-              height: isMobile ? '60%' : 200,
+              height: isMobile ? '60%' : '70%',
               zIndex: 1,
               background: `linear-gradient(to top, ${currentTheme.background.default} 0%, transparent 100%)`,
             }}
           />
+          {!isMobile && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                zIndex: 1,
+                background: `linear-gradient(90deg, ${currentTheme.background.default}d9 0%, ${currentTheme.background.default}73 26%, transparent 48%)`,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
 
           {/* Vignette on desktop */}
           {!isMobile && <div className="md-hero__vignette" />}
@@ -213,20 +227,18 @@ export const MovieHeroSection = memo(
               className={isMobile ? undefined : 'md-hero__glass-card'}
               style={isMobile ? { width: '100%' } : { position: 'relative' }}
             >
-              {/* Friends - top right corner on desktop */}
-              {!isMobile && (
-                <div style={{ position: 'absolute', top: 20, right: 24 }}>
-                  <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
-                </div>
-              )}
               <h1
                 className="md-hero__title"
                 style={{
-                  fontSize: isMobile ? 24 : 28,
+                  // Kino-Titel: groß + WEISS über dem Artwork mit Theme-Glow.
+                  fontSize: isMobile ? 26 : 'clamp(40px, 2.6vw + 18px, 68px)',
+                  lineHeight: 1.1,
+                  color: '#fff',
                   textAlign: isMobile ? 'center' : 'left',
-                  margin: isMobile ? '0 20px 4px' : undefined,
+                  margin: isMobile ? '0 20px 4px' : '0 0 8px',
                   paddingRight: isMobile ? undefined : 80,
-                  letterSpacing: '-0.02em',
+                  letterSpacing: '-0.025em',
+                  textShadow: `0 2px 28px rgba(0,0,0,0.7), 0 0 80px ${currentTheme.primary}40`,
                 }}
               >
                 {movie.title}
@@ -260,26 +272,50 @@ export const MovieHeroSection = memo(
                     &bull; &#11088; {averageRating}
                   </span>
                 )}
+                {/* Desktop: Genres als Text in der Meta-Zeile (Serien-Muster). */}
+                {!isMobile && allGenres.length > 0 && (
+                  <span style={{ color: currentTheme.text.muted }}>
+                    &bull; {allGenres.slice(0, 2).join(', ')}
+                  </span>
+                )}
               </div>
 
-              {/* Genre Tags + Friends */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: 6,
-                  marginTop: 10,
-                  alignItems: 'center',
-                  justifyContent: isMobile ? 'center' : 'flex-start',
-                  padding: isMobile ? '0 20px' : undefined,
-                }}
-              >
-                {allGenres.slice(0, 4).map((genre, i) => (
-                  <span key={i} className="md-genre-tag">
-                    {genre}
-                  </span>
-                ))}
-              </div>
+              {/* Genre Tags — nur Mobile */}
+              {isMobile && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 6,
+                    marginTop: 10,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '0 20px',
+                  }}
+                >
+                  {allGenres.slice(0, 4).map((genre, i) => (
+                    <span key={i} className="md-genre-tag">
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Desktop: Handlung IM Hero — voller Text, keine „…" */}
+              {!isMobile && overview && (
+                <p
+                  style={{
+                    margin: '16px 0 0',
+                    maxWidth: 1100,
+                    fontSize: 15.5,
+                    lineHeight: 1.65,
+                    color: currentTheme.text.secondary,
+                    textShadow: '0 1px 12px rgba(0,0,0,0.6)',
+                  }}
+                >
+                  {overview}
+                </p>
+              )}
 
               {/* Ratings + Provider */}
               {isMobile ? (
@@ -332,62 +368,7 @@ export const MovieHeroSection = memo(
                     />
                   )}
                 </div>
-              ) : (
-                /* Desktop: Ratings, then Provider below */
-                <>
-                  <div className="md-hero__ratings" style={{ marginTop: 14, marginBottom: 0 }}>
-                    <a
-                      href={`https://www.themoviedb.org/movie/${id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="md-rating-badge md-rating-badge--tmdb"
-                    >
-                      <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
-                      <span className="md-rating-value">
-                        {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
-                      </span>
-                      <span className="md-rating-count">
-                        ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
-                      </span>
-                    </a>
-                    <a
-                      href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="md-rating-badge md-rating-badge--imdb"
-                      style={{
-                        opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
-                        pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
-                      }}
-                    >
-                      <span className="md-rating-label md-rating-label--imdb">IMDb</span>
-                      <span className="md-rating-value">
-                        {imdbRating?.rating?.toFixed(1) || '0.0'}/10
-                      </span>
-                      <span className="md-rating-count">
-                        (
-                        {imdbRating
-                          ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
-                          : '0.0'}
-                        k)
-                      </span>
-                    </a>
-                  </div>
-                  {mergedDisplayProviders.length > 0 && (
-                    <div style={{ marginTop: 10 }}>
-                      <ProviderBadges
-                        providers={mergedDisplayProviders}
-                        size="large"
-                        maxDisplay={6}
-                        showNames={false}
-                        searchTitle={movie.title}
-                        tmdbId={movie.id}
-                        mediaType="movie"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
+              ) : null}
 
               {/* Actions: Bewerten + Empfehlen (nur fuer eigene Filme) */}
               {!isReadOnlyTmdbMovie && (
@@ -492,16 +473,81 @@ export const MovieHeroSection = memo(
                   </Tooltip>
                 </div>
               )}
-
-              {/* Video Gallery - pushed to bottom on desktop */}
-              <div style={{ marginTop: isMobile ? 0 : 'auto' }}>
-                {!isMobile && (
-                  <div style={{ marginTop: 16 }}>
-                    <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="compact" />
-                  </div>
-                )}
-              </div>
             </div>
+
+            {/* Desktop: Signal-Zone unten rechts — Freunde, Ratings, Provider,
+                Videos in EINEM Glas-Panel (Serien-Muster). */}
+            {!isMobile && (
+              <div
+                className="liquid-glass"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  gap: 12,
+                  alignSelf: 'flex-end',
+                  flexShrink: 0,
+                  position: 'relative',
+                  zIndex: 2,
+                  borderRadius: 18,
+                  padding: '16px 18px',
+                }}
+              >
+                <FriendsWhoHaveThis itemId={movie.id} mediaType="movie" />
+                <div className="md-hero__ratings" style={{ margin: 0 }}>
+                  <a
+                    href={`https://www.themoviedb.org/movie/${id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="md-rating-badge md-rating-badge--tmdb"
+                  >
+                    <span className="md-rating-label md-rating-label--tmdb">TMDB</span>
+                    <span className="md-rating-value">
+                      {tmdbRating?.vote_average?.toFixed(1) || '0.0'}/10
+                    </span>
+                    <span className="md-rating-count">
+                      ({tmdbRating ? (tmdbRating.vote_count / 1000).toFixed(1) : '0.0'}k)
+                    </span>
+                  </a>
+                  <a
+                    href={`https://www.imdb.com/title/${movie?.imdb?.imdb_id || ''}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="md-rating-badge md-rating-badge--imdb"
+                    style={{
+                      opacity: movie?.imdb?.imdb_id ? 1 : 0.5,
+                      pointerEvents: movie?.imdb?.imdb_id ? 'auto' : 'none',
+                    }}
+                  >
+                    <span className="md-rating-label md-rating-label--imdb">IMDb</span>
+                    <span className="md-rating-value">
+                      {imdbRating?.rating?.toFixed(1) || '0.0'}/10
+                    </span>
+                    <span className="md-rating-count">
+                      (
+                      {imdbRating
+                        ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1)
+                        : '0.0'}
+                      k)
+                    </span>
+                  </a>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {mergedDisplayProviders.length > 0 && (
+                    <ProviderBadges
+                      providers={mergedDisplayProviders}
+                      size="large"
+                      maxDisplay={6}
+                      showNames={false}
+                      searchTitle={movie.title}
+                      tmdbId={movie.id}
+                      mediaType="movie"
+                    />
+                  )}
+                  <VideoGallery tmdbId={movie.id} mediaType="movie" buttonStyle="compact" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

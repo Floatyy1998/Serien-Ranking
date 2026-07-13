@@ -65,7 +65,7 @@ const WrappedNotificationImpl: React.FC = () => {
         marginBottom: '8px',
         padding: '16px 20px',
         borderRadius: '16px',
-        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, #f093fb 100%)`,
+        background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, var(--theme-secondary-gradient, #f093fb) 100%)`,
         position: 'relative',
         overflow: 'hidden',
         cursor: 'pointer',

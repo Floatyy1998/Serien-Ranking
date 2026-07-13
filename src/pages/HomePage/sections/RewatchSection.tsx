@@ -23,6 +23,7 @@ interface RewatchEpisode {
   id: number;
   title: string;
   poster: string;
+  backdrop?: string;
   seasonIndex: number;
   episodeIndex: number;
   seasonNumber: number;
@@ -104,7 +105,7 @@ export const RewatchSection = React.memo(function RewatchSection({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px',
+          gap: '10px',
           padding: '0 20px',
           position: 'relative',
         }}
@@ -129,6 +130,7 @@ export const RewatchSection = React.memo(function RewatchSection({
                   key={key}
                   itemKey={key}
                   poster={item.poster}
+                  backdrop={item.backdrop}
                   posterAlt={item.title}
                   accentColor={accentColor}
                   posterOverlay={(() => {

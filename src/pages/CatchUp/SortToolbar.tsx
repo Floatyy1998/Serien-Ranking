@@ -8,7 +8,6 @@ import {
 } from '@mui/icons-material';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
-import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SortOption, SortDirection } from './useCatchUpData';
 
 interface SortToolbarProps {
@@ -18,26 +17,35 @@ interface SortToolbarProps {
   onSortClick: (value: SortOption) => void;
 }
 
-const SORT_OPTIONS: { value: SortOption; icon: React.ReactNode; label: string }[] = [
+const SORT_OPTIONS: {
+  value: SortOption;
+  icon: React.ReactNode;
+  label: string;
+  short: string;
+}[] = [
   {
     value: 'episodes',
     icon: <MovieFilter style={{ fontSize: 18 }} />,
     label: 'Nach Episoden sortieren',
+    short: 'Episoden',
   },
   {
     value: 'time',
     icon: <Timer style={{ fontSize: 18 }} />,
     label: 'Nach verbleibender Zeit sortieren',
+    short: 'Zeit',
   },
   {
     value: 'progress',
     icon: <TrendingUp style={{ fontSize: 18 }} />,
     label: 'Nach Fortschritt sortieren',
+    short: 'Fortschritt',
   },
   {
     value: 'recent',
     icon: <Bolt style={{ fontSize: 18 }} />,
     label: 'Nach zuletzt geschaut sortieren',
+    short: 'Zuletzt',
   },
 ];
 
@@ -61,15 +69,16 @@ export const SortToolbar = memo<SortToolbarProps>(
                   aria-pressed={isActive}
                   style={{
                     background: isActive
-                      ? `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.primary}cc)`
+                      ? `color-mix(in srgb, ${currentTheme.primary} 18%, rgba(255, 255, 255, 0.04))`
                       : 'transparent',
-                    color: isActive
-                      ? getOptimalTextColor(currentTheme.primary)
-                      : currentTheme.text.muted,
-                    boxShadow: isActive ? `0 2px 8px ${currentTheme.primary}40` : 'none',
+                    color: isActive ? currentTheme.primary : currentTheme.text.muted,
+                    boxShadow: isActive
+                      ? `inset 0 0 0 1px ${currentTheme.primary}50, 0 2px 10px ${currentTheme.primary}22`
+                      : 'none',
                   }}
                 >
                   {option.icon}
+                  <span className="cu-sort-label">{option.short}</span>
                   {isActive &&
                     (sortDirection === 'desc' ? (
                       <ArrowDownward style={{ fontSize: 14 }} />

@@ -611,3 +611,18 @@
   transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
 }
+
+/* 2050-Desktop: Insight-Platzhalter als schlanke Zeile statt Riesen-Leerbox */
+@media (min-width: 1100px) {
+  .fp-insights-placeholder {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    text-align: left;
+  }
+
+  .fp-insights-placeholder-text {
+    max-width: none;
+  }
+}

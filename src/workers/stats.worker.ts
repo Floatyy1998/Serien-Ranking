@@ -70,6 +70,7 @@ interface WorkerSeries {
   episodeRuntime?: number;
   seasons?: WorkerSeason[];
   poster?: string | { poster?: string };
+  backdrop?: string;
   genre?: { genres?: string[] };
   provider?: { provider?: { id: number; name: string; logo: string }[] };
   production?: { production?: boolean };
@@ -85,6 +86,8 @@ interface WorkerProcessedEpisode {
   seriesId: number;
   seriesTitle: string;
   poster: string;
+  /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork. */
+  backdrop?: string;
   seasonNumber: number;
   episodeNumber: number;
   seasonIndex: number;
@@ -320,6 +323,9 @@ function processEpisodes(data: { seriesList: WorkerSeries[] }) {
             seriesId: series.id,
             seriesTitle: series.title,
             poster: getImageUrl(series.poster),
+            backdrop: series.backdrop
+              ? `https://image.tmdb.org/t/p/w1280${series.backdrop}`
+              : undefined,
             seasonNumber: seasonNum,
             episodeNumber: epNum,
             seasonIndex: actualSeasonIndex,

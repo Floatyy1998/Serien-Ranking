@@ -591,3 +591,37 @@
     animation: none;
   }
 }
+
+/* Desktop: kompakte Controls statt Vollbreite-Streifen */
+@media (min-width: 768px) {
+  .activity-nav {
+    width: max-content;
+  }
+
+  .activity-nav__tab {
+    flex: 0 0 auto;
+  }
+
+  .activity-nav__tab.is-active {
+    flex-grow: 0;
+  }
+
+  .activity-nav__label {
+    max-width: 140px;
+    opacity: 1;
+    margin-left: 9px;
+  }
+
+  .activity-segmented {
+    width: max-content;
+  }
+
+  .activity-segmented__btn {
+    flex: none;
+    padding: 9px 26px;
+  }
+
+  .activity-banner {
+    max-width: 720px;
+  }
+}

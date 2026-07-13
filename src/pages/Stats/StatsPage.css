@@ -1,79 +1,174 @@
-/* StatsPage - Layout styles with stats- prefix */
+/* StatsPage — Bento-Dashboard (stats- prefix) */
 
-/* Hero section */
-.stats-hero {
-  margin: 0 20px 24px;
-  padding: 28px;
-  border-radius: var(--radius-2xl);
-  -webkit-backdrop-filter: var(--blur-lg);
-  backdrop-filter: var(--blur-lg);
-  border: 1px solid color-mix(in srgb, var(--color-primary, #00d123) 15%, transparent);
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.3),
-    0 0 0 1px color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent);
-  position: relative;
-  overflow: hidden;
+/* ── Bento-Grid ──────────────────────────────────────────────── */
+.stats-bento {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 0 16px 120px;
 }
 
-.stats-hero::before {
-  content: '';
+.stats-pod {
+  border-radius: var(--radius-xl);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Mobile: große Pods über beide Spalten */
+.stats-pod--time,
+.stats-pod--progress,
+.stats-panel,
+.stats-actor-banner {
+  grid-column: 1 / -1;
+}
+
+/* ── Gemeinsame Typo ─────────────────────────────────────────── */
+.stats-pod__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.stats-panel__title {
+  margin-bottom: 16px;
+}
+
+/* ── Watchtime-Pod ───────────────────────────────────────────── */
+.stats-pod--time {
+  padding: 22px 24px;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.stats-pod__orb {
   position: absolute;
-  top: -50%;
-  left: -25%;
-  width: 150%;
-  height: 100%;
-  background: radial-gradient(
-    ellipse,
-    color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent) 0%,
-    transparent 60%
-  );
+  top: -40%;
+  right: -12%;
+  width: 60%;
+  aspect-ratio: 1;
+  border-radius: 50%;
   animation: breathe 4s ease-in-out infinite;
   pointer-events: none;
 }
 
-.stats-hero-time {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.stats-hero-icon {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 16px;
-  border-radius: 50%;
+.stats-time-display {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 12px;
 }
 
-.stats-hero-unit {
-  font-size: 20px;
-  font-weight: 600;
-  margin-left: 8px;
+.stats-time-value {
+  font-size: clamp(56px, 5vw, 108px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-family: var(--font-display);
 }
 
-.stats-hero-details {
+.stats-time-unit {
+  font-size: clamp(20px, 1.2vw, 26px);
+  font-weight: 700;
+}
+
+.stats-time-details {
   font-size: 15px;
   font-weight: 500;
-  margin-left: 4px;
 }
 
-.stats-hero-subtitle {
+.stats-time-sub {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.stats-time-medias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stats-time-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.04);
+  flex: 1;
+  min-width: 150px;
+}
+
+.stats-time-chip__label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.stats-time-chip__value {
   font-size: 15px;
-  margin: 4px 0 0;
+  font-weight: 700;
+  margin-left: auto;
+  white-space: nowrap;
 }
 
-/* Progress ring area */
-.stats-progress-area {
+.stats-split-bar {
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.stats-split-fill {
+  height: 100%;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--theme-primary) 35%, transparent);
+}
+
+.stats-split-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: progressShimmer 2.5s ease-in-out infinite;
+}
+
+/* ── Progress-Pod ────────────────────────────────────────────── */
+.stats-pod--progress {
+  align-items: center;
+  gap: 14px;
+}
+
+.stats-pod--progress .stats-pod__label {
+  align-self: flex-start;
+}
+
+.stats-progress-body {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 24px;
-  margin-bottom: 24px;
+  width: 100%;
 }
 
 .stats-ring-wrapper {
   position: relative;
+  flex-shrink: 0;
 }
 
 .stats-ring-label {
@@ -86,77 +181,182 @@
 }
 
 .stats-ring-percent {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .stats-ring-text {
   font-size: 11px;
 }
 
-.stats-progress-info {
+.stats-progress-count {
   text-align: left;
 }
 
-.stats-progress-count {
-  margin-bottom: 8px;
-}
-
 .stats-progress-value {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 .stats-progress-total {
   font-size: 15px;
+  font-weight: 600;
 }
 
 .stats-progress-label {
-  font-size: 14px;
-  margin: 0;
+  font-size: 13px;
+  margin: 4px 0 0;
 }
 
-/* Quick stats grid */
-.stats-quick-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.stats-quick-card {
-  text-align: center;
-  padding: 12px 8px;
-  border-radius: var(--radius-lg);
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.stats-quick-card:active {
-  transform: scale(0.95);
+/* ── Quick-/Rating-Pods ──────────────────────────────────────── */
+.stats-pod--quick,
+.stats-pod--rating {
+  gap: 10px;
+  justify-content: space-between;
 }
 
 .stats-quick-icon {
-  margin-bottom: 6px;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stats-quick-ghost {
+  position: absolute;
+  right: -18px;
+  bottom: -24px;
+  opacity: 0.07;
+  pointer-events: none;
+  line-height: 0;
 }
 
 .stats-quick-value {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: clamp(26px, 1.6vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 .stats-quick-label {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* Actor Universe banner */
+.stats-rating-bar {
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.stats-rating-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+/* ── Genre-/Provider-Panels ──────────────────────────────────── */
+.stats-genre-list,
+.stats-provider-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stats-genre-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-genre-rank {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stats-genre-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-genre-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 5px;
+}
+
+.stats-genre-name,
+.stats-provider-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stats-genre-count {
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.stats-genre-bar-track {
+  height: 7px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.stats-genre-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-primary) 30%, transparent);
+}
+
+.stats-genre-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+  animation: progressShimmer 2.5s ease-in-out infinite;
+}
+
+.stats-provider-row {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Actor-Universe-Banner ───────────────────────────────────── */
 .stats-actor-banner {
-  margin: 0 20px 24px;
-  padding: 20px;
   border-radius: var(--radius-xl);
+  padding: 20px 22px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
 }
 
 .stats-actor-banner:focus-visible {
@@ -171,11 +371,14 @@
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
 }
 
+/* width:100%, weil die globale .mobile-app-button-Regel den Banner-Button
+   zentriert — der Content soll trotzdem die volle Breite spannen. */
 .stats-actor-content {
   display: flex;
   align-items: center;
   gap: 16px;
   position: relative;
+  width: 100%;
   z-index: var(--z-base);
 }
 
@@ -186,10 +389,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .stats-actor-text {
   flex: 1;
+  min-width: 0;
 }
 
 .stats-actor-title {
@@ -197,203 +402,145 @@
   font-size: 18px;
   font-family: var(--font-display);
   font-weight: 700;
-  color: white;
 }
 
 .stats-actor-subtitle {
   margin: 4px 0 0;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .stats-actor-badge {
-  padding: 8px 14px;
-  border-radius: var(--radius-xl);
+  padding: 8px 16px;
+  border-radius: 999px;
   font-size: 13px;
-  font-weight: 600;
-}
-
-/* Section cards (shared) */
-.stats-section {
-  margin: 0 20px 24px;
-  padding: 20px;
-  border-radius: var(--radius-xl);
-}
-
-.stats-section:last-child {
-  margin-bottom: 120px;
-}
-
-.stats-section-title {
-  margin: 0 0 16px;
-  font-size: 16px;
-  font-family: var(--font-display);
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-shrink: 0;
 }
 
-/* Time breakdown */
-.stats-time-row {
-  display: flex;
-  gap: 12px;
+/* ── Tablet / kleine Desktops (768–1099) ─────────────────────── */
+@media (min-width: 768px) {
+  .stats-bento {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin: 0 20px 120px;
+  }
+
+  .stats-pod--time,
+  .stats-pod--progress {
+    grid-column: span 6;
+  }
+
+  .stats-pod--quick,
+  .stats-pod--rating {
+    grid-column: span 2;
+  }
+
+  .stats-panel,
+  .stats-actor-banner {
+    grid-column: span 6;
+  }
 }
 
-.stats-time-card {
-  flex: 1;
-  padding: 16px;
-  border-radius: var(--radius-lg);
+/* ── Große Desktops (≥1100): volles 12-Spalten-Bento ─────────── */
+@media (min-width: 1100px) {
+  .stats-bento {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .stats-pod--time {
+    grid-column: span 8;
+    padding: 26px 30px;
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-areas:
+      'tlabel tlabel'
+      'tdisplay tmedias'
+      'tsub tmedias'
+      'tbar tbar';
+    align-items: center;
+    row-gap: 16px;
+    column-gap: 48px;
+  }
+
+  .stats-pod--time > .stats-pod__label {
+    grid-area: tlabel;
+  }
+
+  .stats-time-display {
+    grid-area: tdisplay;
+  }
+
+  .stats-time-sub {
+    grid-area: tsub;
+    align-self: start;
+  }
+
+  .stats-time-medias {
+    grid-area: tmedias;
+    flex-direction: column;
+    align-self: center;
+  }
+
+  .stats-time-chip {
+    flex: none;
+    width: 100%;
+  }
+
+  .stats-pod--time > .stats-split-bar {
+    grid-area: tbar;
+    align-self: end;
+  }
+
+  .stats-pod--progress {
+    grid-column: span 4;
+  }
+
+  .stats-pod--quick,
+  .stats-pod--rating {
+    grid-column: span 2;
+  }
+
+  .stats-panel--genres {
+    grid-column: span 7;
+  }
+
+  .stats-panel--providers {
+    grid-column: span 5;
+  }
+
+  .stats-panel--wide {
+    grid-column: span 12;
+  }
+
+  .stats-actor-banner {
+    grid-column: span 12;
+  }
 }
 
-.stats-time-value {
-  font-size: 18px;
-  font-weight: 700;
-}
+/* ── Sehr große Screens (≥1600): großzügiger skalieren ───────── */
+@media (min-width: 1600px) {
+  .stats-bento {
+    gap: 16px;
+  }
 
-.stats-time-label {
-  font-size: 13px;
-}
+  .stats-pod {
+    padding: 22px;
+  }
 
-/* Ratings */
-.stats-ratings-row {
-  display: flex;
-  gap: 12px;
-}
+  .stats-pod--time {
+    padding: 30px 36px;
+  }
 
-.stats-rating-card {
-  flex: 1;
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  text-align: center;
-}
+  .stats-quick-value {
+    font-size: 38px;
+  }
 
-.stats-rating-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--theme-accent);
-}
+  .stats-panel {
+    padding: 26px 28px;
+  }
 
-.stats-rating-label {
-  font-size: 13px;
-}
-
-/* Genres */
-.stats-genre-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.stats-genre-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.stats-genre-rank {
-  width: 24px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.stats-genre-info {
-  flex: 1;
-}
-
-.stats-genre-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.stats-genre-name {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.stats-genre-count {
-  font-size: 14px;
-}
-
-.stats-genre-bar-track {
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.stats-genre-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 6px color-mix(in srgb, var(--color-primary, #00d123) 30%, transparent);
-}
-
-.stats-genre-bar-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -50%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-  animation: progressShimmer 2.5s ease-in-out infinite;
-}
-
-/* Providers */
-.stats-provider-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.stats-provider-chip {
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.stats-provider-name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.stats-provider-count {
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: var(--radius-xs);
-}
-
-/* This Week */
-.stats-week {
-  margin: 0 20px 120px;
-  padding: 20px;
-  border-radius: var(--radius-xl);
-}
-
-.stats-week-content {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.stats-week-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stats-week-value {
-  font-size: 28px;
-  font-weight: 800;
-}
-
-.stats-week-label {
-  font-size: 14px;
+  .stats-genre-list,
+  .stats-provider-list {
+    gap: 17px;
+  }
 }

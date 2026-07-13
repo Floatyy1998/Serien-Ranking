@@ -166,13 +166,15 @@ export const MangaPage = () => {
           aria-label="Manga suchen"
           style={{
             width: '100%',
+            maxWidth: 860,
+            display: 'flex',
             textAlign: 'left',
             background: currentTheme.background.surface,
             border: '1px solid var(--glass-border-subtle)',
             borderRadius: 'var(--radius-lg)',
             padding: '14px 16px',
-            display: 'flex',
             alignItems: 'center',
+            justifyContent: 'flex-start',
             gap: 12,
             cursor: 'pointer',
             fontFamily: 'var(--font-body)',
@@ -278,7 +280,15 @@ export const MangaPage = () => {
             iconColor={currentTheme.status?.warning || '#f59e0b'}
             title="Für dich"
           />
-          <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* wie Home „Für dich": auto-fill-Grid, die NavCard-Eigenmargins (20px)
+              dienen als Gutter — Karten bleiben bei wenigen Einträgen kompakt */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))',
+              gap: '10px 0',
+            }}
+          >
             <MangaCatchUpCard />
             <HiddenMangaCard />
           </div>

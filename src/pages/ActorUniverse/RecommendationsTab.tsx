@@ -94,7 +94,15 @@ export const RecommendationsTab = ({
           </p>
         </motion.div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div
+          style={{
+            /* Desktop: Karten-Grid statt gestreckter Vollbreite-Zeilen */
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))',
+            gap: '14px',
+            alignItems: 'start',
+          }}
+        >
           {recommendations.map((rec, index) => (
             <motion.div
               key={rec.series.id}

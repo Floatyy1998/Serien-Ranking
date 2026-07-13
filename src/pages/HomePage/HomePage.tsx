@@ -261,7 +261,16 @@ export const HomePage: React.FC = () => {
               iconColor={currentTheme.primary}
               title="Für dich"
             />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div
+              style={{
+                // Breite Screens: Karten kacheln statt endlos zu stapeln. Die
+                // 20px-Eigenmargins der Karten dienen als Spalten-Gutter.
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 460px), 1fr))',
+                gap: '12px 0',
+                alignItems: 'stretch',
+              }}
+            >
               {visible.map((id) => comps[id])}
             </div>
           </section>

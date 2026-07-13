@@ -26,7 +26,15 @@ export const isPlaceholderUrl = (url: string | undefined | null): boolean => {
   return url.startsWith('data:image/svg+xml');
 };
 
-export type TmdbImageSize = 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original';
+export type TmdbImageSize =
+  | 'w92'
+  | 'w154'
+  | 'w185'
+  | 'w342'
+  | 'w500'
+  | 'w780'
+  | 'w1280'
+  | 'original';
 
 export const getImageUrl = (
   posterObj: PosterInput,

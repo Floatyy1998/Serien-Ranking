@@ -329,3 +329,282 @@
 .profile-logout-btn:active {
   transform: scale(0.98);
 }
+
+/* 44px-Regel-Fix: .mobile-app button (0,1,1) schlaegt sonst die Klassen
+   (0,1,0) und zentriert die Menue-Inhalte als Klumpen. */
+.profile-page .profile-featured-item,
+.profile-page .profile-menu-item {
+  justify-content: space-between;
+}
+
+/* Watermark ist ein reines Desktop-Detail */
+.profile-tile-ghost {
+  display: none;
+}
+
+/* Hero-Wrapper: mobil neutral (Collage aus), Desktop Kino-Band */
+.profile-hero-collage,
+.profile-hero-scrim {
+  display: none;
+}
+
+/* ============================================================
+   2050-Desktop: Cinematisches Ein-Screen-Profil (kein Scrollen).
+   Oben Kino-Hero aus den Backdrops der Top-Serien mit Identität
+   + Watchtime-Panel, darunter vier editoriale Link-Spalten,
+   Abmelden fix am Fuß. Alles passt in einen Viewport.
+   ============================================================ */
+@media (min-width: 1100px) {
+  .profile-page {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    /* .mobile-content.with-nav reserviert 90px fürs Dock und erzwingt
+       min-height:100% — beides ausgleichen, sonst scrollt die Seite um 90px */
+    height: calc(100vh - 90px);
+    min-height: calc(100vh - 90px);
+    overflow: hidden;
+    padding: 0;
+  }
+
+  /* --- Kino-Hero (Reihe 1, volle Breite) --- */
+  .profile-hero {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: 96px 36px 30px;
+  }
+
+  .profile-hero-collage {
+    display: grid;
+    position: absolute;
+    inset: 0;
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .profile-hero-tile {
+    background-size: cover;
+    background-position: center;
+    /* einheitlicher Grade wie die Detail-Heros — keine 6 wild belichteten Streifen */
+    filter: saturate(1.05) brightness(0.7);
+    /* Nähte weich verblenden */
+    box-shadow:
+      inset 56px 0 64px -42px rgba(0, 0, 0, 0.9),
+      inset -56px 0 64px -42px rgba(0, 0, 0, 0.9);
+  }
+
+  .profile-hero-scrim {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .profile-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px;
+    width: 100%;
+  }
+
+  /* Identität: frei auf dem Backdrop, kein Karten-Rahmen */
+  .profile-header {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 22px;
+    align-items: center;
+    text-align: left;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  /* Pulsierender Glow wirkt auf dem Backdrop billig — weg damit */
+  .profile-avatar-glow {
+    display: none;
+  }
+
+  .profile-avatar-ring {
+    inset: -2px;
+    padding: 2px;
+  }
+
+  .profile-avatar-container {
+    grid-row: 1 / 3;
+    width: 96px;
+    height: 96px;
+    margin: 0;
+  }
+
+  .profile-header > div:nth-child(2) {
+    align-self: end;
+  }
+
+  .profile-header h1 {
+    font-size: 32px !important;
+  }
+
+  .profile-email {
+    align-self: start;
+    margin: 0;
+  }
+
+  /* Watchtime + Stats: ein Glas-Panel auf dem Backdrop */
+  .profile-stats-card {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+    padding: 20px 26px;
+    margin: 0;
+    background: rgba(8, 10, 12, 0.55) !important;
+    -webkit-backdrop-filter: var(--glass-filter-lg);
+    backdrop-filter: var(--glass-filter-lg);
+    border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  }
+
+  .profile-stats-time {
+    flex-shrink: 0;
+    text-align: left;
+    margin-bottom: 0;
+  }
+
+  .profile-stats-grid {
+    min-width: 0;
+    grid-template-columns: repeat(3, minmax(140px, 220px));
+    gap: 12px;
+  }
+
+  /* Stat-Pod: neutrales Glas, Farbe kommt nur vom Icon */
+  .profile-stat-item {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    align-items: center;
+    text-align: left;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  }
+
+  .profile-stat-icon {
+    grid-row: 1 / 3;
+    font-size: 26px;
+    margin-bottom: 0;
+  }
+
+  /* --- Navigation: vier editoriale Link-Spalten (Reihe 2) --- */
+  .profile-menu-section {
+    grid-row: 2;
+    padding: 22px 36px 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .profile-section-title {
+    margin: 0 0 10px 10px;
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    opacity: 0.6;
+  }
+
+  .profile-featured-list,
+  .profile-menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: transparent !important;
+    border: none !important;
+    overflow: visible;
+    border-radius: 0;
+  }
+
+  /* Zeile: kleiner Farb-Chip + Text — ruhig, kein Bubble-Look */
+  .profile-page .profile-featured-item,
+  .profile-page .profile-menu-item {
+    width: 100%;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .profile-page .profile-featured-item:hover,
+  .profile-page .profile-menu-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    transform: translateX(4px);
+    box-shadow: none;
+  }
+
+  .profile-featured-item-left,
+  .profile-menu-item-left {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .profile-featured-icon-wrap,
+  .profile-menu-icon-wrap {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    flex-shrink: 0;
+  }
+
+  .profile-menu-icon-wrap {
+    background: linear-gradient(
+      135deg,
+      var(--tile-color),
+      color-mix(in srgb, var(--tile-color) 72%, #000)
+    ) !important;
+  }
+
+  .profile-featured-icon-wrap svg,
+  .profile-menu-icon-wrap svg {
+    font-size: 17px !important;
+    color: #fff !important;
+  }
+
+  .profile-featured-label,
+  .profile-menu-label {
+    font-size: 14.5px;
+    font-weight: 550;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Chevron raus, Badge bleibt */
+  .profile-featured-item-right > svg,
+  .profile-menu-item-right > svg {
+    display: none;
+  }
+
+  /* --- Abmelden: schmale Zeile am Fuß (Reihe 3) --- */
+  .profile-logout-section {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    /* Dock-Reserve steckt schon in der Seitenhöhe — nur kleiner Abstand */
+    padding: 14px 0 18px;
+  }
+
+  .profile-logout-btn {
+    max-width: 320px;
+    margin: 0 auto;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}

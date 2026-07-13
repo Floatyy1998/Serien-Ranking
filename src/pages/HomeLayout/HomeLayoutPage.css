@@ -206,3 +206,23 @@
 .hl-toggle-thumb--off {
   left: 3px;
 }
+
+/* Desktop: Reorder-Liste kompakt — 2520px-Zeilen mit Toggle am anderen
+   Ende sind unlesbar; Drag&Drop bleibt eine vertikale Liste. */
+@media (min-width: 900px) {
+  .hl-section-list {
+    max-width: 960px;
+  }
+}
+
+/* Toolbar + Liste als eine zentrierte Zone (kein Reset-Button am 2500px-Rand) */
+@media (min-width: 900px) {
+  .hl-content {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .hl-section-list {
+    max-width: none;
+  }
+}

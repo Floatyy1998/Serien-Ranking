@@ -49,9 +49,11 @@ export const MoviesTab: React.FC<MoviesTabProps> = React.memo(({ result, cardBg 
               </span>
             )}
           </div>
-          {sharedMovies.map((item, i) => (
-            <SharedItemCard key={item.id} item={item} index={i} type="movie" bgColor={cardBg} />
-          ))}
+          <div className="tm-shared-list">
+            {sharedMovies.map((item, i) => (
+              <SharedItemCard key={item.id} item={item} index={i} type="movie" bgColor={cardBg} />
+            ))}
+          </div>
         </>
       ) : (
         <motion.div

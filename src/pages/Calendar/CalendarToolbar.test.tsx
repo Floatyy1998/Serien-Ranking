@@ -2,7 +2,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 
-vi.mock('@mui/icons-material', () => ({ ChevronLeft: () => null, ChevronRight: () => null }));
+vi.mock('@mui/icons-material', () => ({
+  Bookmark: () => null,
+  ChevronLeft: () => null,
+  ChevronRight: () => null,
+}));
 vi.mock('./useCalendarData', () => ({ formatDate: (d: Date) => `D${d.getDate()}` }));
 vi.mock('../../contexts/ThemeContext', () => {
   const make = (): unknown =>

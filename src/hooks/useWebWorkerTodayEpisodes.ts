@@ -8,6 +8,8 @@ export interface TodayEpisode {
   seriesId: string;
   seriesTitle: string;
   poster: string;
+  /** Volle Backdrop-URL (w1280) fürs Zeilen-Artwork. */
+  backdrop?: string;
   seasonNumber: number;
   episodeNumber: number;
   seasonIndex: number;

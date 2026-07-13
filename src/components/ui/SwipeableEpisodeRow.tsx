@@ -12,6 +12,8 @@ import { memo } from 'react';
 interface SwipeableEpisodeRowProps {
   itemKey: string;
   poster: string;
+  /** Volle Backdrop-URL — füllt auf Desktop die Zeile als Artwork von rechts. */
+  backdrop?: string;
   posterAlt: string;
   accentColor: string;
 
@@ -58,6 +60,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
   ({
     itemKey,
     poster,
+    backdrop,
     posterAlt,
     accentColor,
     isCompleting,
@@ -105,6 +108,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
     return (
       <motion.div
         key={itemKey}
+        className="cine-host"
         data-block-swipe
         data-index={index}
         layout={isEditMode ? true : undefined}
@@ -200,39 +204,74 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 bottom: 0,
                 width: '3px',
                 background: color,
+                boxShadow: `0 0 14px ${color}aa`,
                 zIndex: 3,
                 borderRadius: `${isMobile ? '14px' : '18px'} 0 0 ${isMobile ? '14px' : '18px'}`,
               }}
             />
           )}
 
-          {/* ── Ambient poster background ── */}
+          {/* ── Artwork-/Ambient-Hintergrund ──
+              Desktop mit Backdrop: scharfes Serien-Artwork läuft von rechts in
+              die Zeile (Maske blendet zum Text hin aus) — die Zeile wird zum
+              Kino-Banner statt rechts ins Leere zu faden. Mobile/ohne Backdrop:
+              geblurter Poster-Ambient über die VOLLE Breite. */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
-            <img
-              src={poster}
-              alt=""
-              aria-hidden
-              decoding="async"
-              style={{
-                position: 'absolute',
-                top: '-30%',
-                left: '-15%',
-                width: '75%',
-                height: '160%',
-                objectFit: 'cover',
-                filter: 'blur(32px) saturate(1.8) brightness(0.5)',
-                opacity: staticBackground ? 0.25 : 0.7,
-                transform: 'scale(1.15)',
-              }}
-              loading="lazy"
-            />
+            {!isMobile && backdrop && !staticBackground ? (
+              <img
+                src={backdrop}
+                alt=""
+                aria-hidden
+                decoding="async"
+                // Dimm-/Hover-Filter kommt aus global.css (.cine-art) — inline
+                // würde er die Hover-Regel überstimmen.
+                className="cine-art"
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  height: '100%',
+                  width: '68%',
+                  objectFit: 'cover',
+                  objectPosition: 'center 25%',
+                  WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 45%)',
+                  maskImage: 'linear-gradient(90deg, transparent, #000 45%)',
+                }}
+                loading="lazy"
+              />
+            ) : (
+              <img
+                src={poster}
+                alt=""
+                aria-hidden
+                decoding="async"
+                style={{
+                  position: 'absolute',
+                  top: '-30%',
+                  left: '-10%',
+                  width: '120%',
+                  height: '160%',
+                  objectFit: 'cover',
+                  filter: isMobile
+                    ? 'blur(32px) saturate(1.8) brightness(0.5)'
+                    : 'blur(48px) saturate(2) brightness(0.62)',
+                  opacity: staticBackground ? 0.25 : 0.85,
+                  transform: 'scale(1.15)',
+                }}
+                loading="lazy"
+              />
+            )}
             <div
               style={{
                 position: 'absolute',
                 inset: 0,
                 background:
                   staticBackground ||
-                  'linear-gradient(105deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 40%, rgba(0,0,0,0.93) 70%, rgba(0,0,0,0.97) 100%)',
+                  (!isMobile
+                    ? backdrop
+                      ? 'linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.86) 30%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.12) 78%, rgba(0,0,0,0.5) 100%)'
+                      : 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.72) 35%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.68) 100%)'
+                    : 'linear-gradient(105deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.72) 40%, rgba(0,0,0,0.88) 70%, rgba(0,0,0,0.92) 100%)'),
               }}
             />
             <div
@@ -271,7 +310,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               alignItems: 'center',
               gap: isMobile ? '12px' : '16px',
               padding: isMobile ? '8px 12px 8px 8px' : '12px 16px 12px 12px',
-              minHeight: isMobile ? undefined : '96px',
+              minHeight: isMobile ? undefined : '112px',
             }}
           >
             {/* ── Poster ── */}
@@ -286,8 +325,8 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             >
               <div
                 style={{
-                  width: isMobile ? '52px' : '76px',
-                  height: isMobile ? '76px' : '110px',
+                  width: isMobile ? '52px' : '92px',
+                  height: isMobile ? '76px' : '134px',
                   borderRadius: isMobile ? '10px' : '12px',
                   overflow: 'hidden',
                   boxShadow:
