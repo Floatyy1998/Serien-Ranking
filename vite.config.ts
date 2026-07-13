@@ -16,7 +16,11 @@ export default defineConfig(({ command }) => ({
     react(),
     criticalCSSPlugin(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': der neue Worker WARTET nach der Installation, statt sofort
+      // zu uebernehmen. Aktiviert wird er vom serviceWorkerManager nur zu
+      // unsichtbaren Momenten (Tab im Hintergrund) oder per User-Klick —
+      // nie als aufgezwungener Mid-Session-Reload.
+      registerType: 'prompt',
       includeAssets: ['favicon.ico'],
       manifest: {
         name: 'Serien Tracker',
@@ -32,15 +36,16 @@ export default defineConfig(({ command }) => ({
       },
       workbox: {
         // index.html mitprecachen + als Navigation-Fallback: PWA muss auch
-        // bei schlechter/keiner Verbindung laden koennen. Stale-Chunks nach
-        // Deploy sind ok: skipWaiting + clientsClaim + controllerchange-
-        // Reload (serviceWorkerManager.ts) holen den neuen Stand.
+        // bei schlechter/keiner Verbindung laden koennen. Update-Fluss:
+        // neuer Worker wird im Hintergrund vorinstalliert und WARTET;
+        // serviceWorkerManager.ts aktiviert ihn unsichtbar (Tab hidden)
+        // oder per Klick auf die Update-Pille — kein Zwangs-Reload mehr.
         globPatterns: ['**/*.{js,css,svg,png,jpg,jpeg,webp,html}'],
         // stats.html ist der Bundle-Visualizer-Report — nicht ausliefern,
         // ist mehrere MB gross und nur fuer lokales Debugging gedacht.
         globIgnores: ['**/stats.html'],
         navigateFallback: 'index.html',
-        skipWaiting: true, // Auto-update: neuer Worker übernimmt sofort
+        skipWaiting: false, // Neuer Worker wartet, bis wir ihn gezielt aktivieren
         clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
         // Disable verbose logging

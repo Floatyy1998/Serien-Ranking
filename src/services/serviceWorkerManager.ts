@@ -29,6 +29,10 @@ class ServiceWorkerManager {
   private updateCheckTimeout: ReturnType<typeof setTimeout> | null = null;
   private visibilityHandler: (() => void) | null = null;
   private eventListenersAttached = false;
+  // Update-Fluss: neuer Worker wartet; wir aktivieren ihn nur gezielt
+  private updateReadyHandled = false;
+  private intentionalActivation = false;
+  private hiddenApplyHandler: (() => void) | null = null;
 
   constructor() {
     this.isSupported = 'serviceWorker' in navigator;
@@ -78,24 +82,65 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Waiting worker on page load → direkt aktivieren
+    // Wartender Worker schon beim Seitenstart da → Update ist bereit,
+    // aber KEIN Reload: unsichtbar anwenden sobald der Tab in den
+    // Hintergrund geht, oder sofort per Klick auf die Pille.
     if (registration.waiting && navigator.serviceWorker.controller) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      this.onUpdateReady(registration);
     }
 
-    // Mid-session update → show banner, then auto-reload
+    // Mid-session update: warten bis der neue Worker fertig installiert
+    // ist ("installed" + bestehender Controller = Update, kein Erstbesuch).
     registration.addEventListener('updatefound', () => {
-      this.showUpdateBanner();
-      const poll = setInterval(() => {
-        if (registration.waiting) {
-          clearInterval(poll);
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      const installing = registration.installing;
+      if (!installing) return;
+      installing.addEventListener('statechange', () => {
+        if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+          this.onUpdateReady(registration);
         }
-      }, 500);
-      setTimeout(() => clearInterval(poll), 120_000);
+      });
     });
 
     return registration;
+  }
+
+  /**
+   * 🆕 Update liegt bereit (neuer Worker wartet).
+   * Kein Zwangs-Reload: (a) dezente, klickbare Pille anbieten und
+   * (b) automatisch anwenden, sobald der Tab unsichtbar ist — der Reload
+   * passiert dann, ohne dass der User ihn sieht.
+   */
+  private onUpdateReady(registration: ServiceWorkerRegistration): void {
+    if (this.updateReadyHandled) return;
+    this.updateReadyHandled = true;
+
+    this.showUpdatePill(() => this.applyUpdate(registration));
+
+    if (!this.hiddenApplyHandler) {
+      this.hiddenApplyHandler = () => {
+        if (document.visibilityState === 'hidden') {
+          this.applyUpdate(registration);
+        }
+      };
+      document.addEventListener('visibilitychange', this.hiddenApplyHandler);
+      // pagehide fängt den App-Wechsel auf iOS zuverlässiger als visibilitychange
+      window.addEventListener('pagehide', this.hiddenApplyHandler);
+    }
+  }
+
+  /**
+   * ✅ Wartenden Worker aktivieren. Der Reload folgt im
+   * controllerchange-Handler — und nur weil WIR ihn ausgelöst haben.
+   */
+  private applyUpdate(registration: ServiceWorkerRegistration): void {
+    if (!registration.waiting) return;
+    this.intentionalActivation = true;
+    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    if (this.hiddenApplyHandler) {
+      document.removeEventListener('visibilitychange', this.hiddenApplyHandler);
+      window.removeEventListener('pagehide', this.hiddenApplyHandler);
+      this.hiddenApplyHandler = null;
+    }
   }
 
   /**
@@ -109,8 +154,11 @@ class ServiceWorkerManager {
     // Flag vom letzten Reload sofort entfernen (damit der nächste Update-Reload funktioniert)
     sessionStorage.removeItem('sw-reloaded');
 
-    // Bei Controller-Wechsel neu laden
+    // Reload NUR wenn wir die Aktivierung selbst ausgelöst haben (Pille
+    // oder Hidden-Apply). Erstinstallation/clientsClaim lösen sonst keinen
+    // Zwangs-Reload mehr aus.
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!this.intentionalActivation) return;
       const reloadFlag = sessionStorage.getItem('sw-reloaded');
       if (!reloadFlag) {
         sessionStorage.setItem('sw-reloaded', 'true');
@@ -137,9 +185,9 @@ class ServiceWorkerManager {
         this.notifyOfflineReady();
         break;
       case 'UPDATE_AVAILABLE':
-        // Auto-update: direkt aktivieren
+        // Update bereit → Pille + Hidden-Apply statt Zwangs-Aktivierung
         navigator.serviceWorker.getRegistration().then((reg) => {
-          if (reg?.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          if (reg?.waiting) this.onUpdateReady(reg);
         });
         break;
     }
@@ -157,8 +205,9 @@ class ServiceWorkerManager {
       await registration.update();
 
       if (registration.waiting) {
-        // Aktiviere wartenden Worker
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // Explizit angefordertes Update (z. B. aus den Einstellungen):
+        // gezielt aktivieren — der controllerchange-Reload ist hier gewollt.
+        this.applyUpdate(registration);
 
         // Warte auf Aktivierung
         await new Promise<void>((resolve) => {
@@ -185,9 +234,9 @@ class ServiceWorkerManager {
       const registration = await this.registrationPromise;
       if (!registration) return;
 
-      // Wartender Worker da? → direkt aktivieren
-      if (registration.waiting) {
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // Wartender Worker da? → Update bereitstellen (Pille + Hidden-Apply)
+      if (registration.waiting && navigator.serviceWorker.controller) {
+        this.onUpdateReady(registration);
         return;
       }
 
@@ -325,7 +374,12 @@ class ServiceWorkerManager {
   /**
    * 🔔 UI Notifications
    */
-  private showUpdateBanner(): void {
+  /**
+   * Dezente, klickbare Update-Pille. Kein Spinner, kein Zwang: ein Tap
+   * wendet das Update sofort an, das X blendet sie aus (das Update kommt
+   * dann unsichtbar beim nächsten Tab-Wechsel bzw. App-Start).
+   */
+  private showUpdatePill(onApply: () => void): void {
     if (document.getElementById('sw-update-banner')) return;
     const style = document.createElement('style');
     style.textContent = `
@@ -333,24 +387,21 @@ class ServiceWorkerManager {
         from { transform: translateY(100%); opacity: 0 }
         to { transform: translateY(0); opacity: 1 }
       }
-      @keyframes sw-spinner {
-        to { transform: rotate(360deg) }
-      }
       #sw-update-banner {
         position: fixed;
-        bottom: 80px;
+        bottom: 96px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 99999;
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 12px 20px;
-        background: rgba(30, 30, 40, 0.85);
+        gap: 12px;
+        padding: 10px 12px 10px 18px;
+        background: rgba(20, 22, 28, 0.88);
         -webkit-backdrop-filter: var(--glass-filter-lg);
         backdrop-filter: var(--glass-filter-lg);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 999px;
         color: rgba(255, 255, 255, 0.9);
         font-size: 13px;
         font-weight: 500;
@@ -359,22 +410,39 @@ class ServiceWorkerManager {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
         -webkit-font-smoothing: antialiased;
         white-space: nowrap;
-        pointer-events: none;
       }
-      #sw-update-banner .sw-spinner {
-        width: 16px;
-        height: 16px;
-        border: 2px solid rgba(255, 255, 255, 0.15);
-        border-top-color: rgba(255, 255, 255, 0.8);
-        border-radius: 50%;
-        animation: sw-spinner 0.8s linear infinite;
-        flex-shrink: 0;
+      #sw-update-banner .sw-apply {
+        border: none;
+        border-radius: 999px;
+        padding: 7px 14px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        color: #000;
+        background: var(--theme-primary, #00d123);
+      }
+      #sw-update-banner .sw-close {
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 15px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 6px;
       }
     `;
     document.head.appendChild(style);
     const banner = document.createElement('div');
     banner.id = 'sw-update-banner';
-    banner.innerHTML = '<span class="sw-spinner"></span> Update wird installiert…';
+    banner.innerHTML =
+      '<span>Neue Version verfügbar</span>' +
+      '<button class="sw-apply" type="button">Aktualisieren</button>' +
+      '<button class="sw-close" type="button" aria-label="Später">✕</button>';
+    banner.querySelector('.sw-apply')?.addEventListener('click', () => {
+      banner.remove();
+      onApply();
+    });
+    banner.querySelector('.sw-close')?.addEventListener('click', () => banner.remove());
     document.body.appendChild(banner);
   }
 
