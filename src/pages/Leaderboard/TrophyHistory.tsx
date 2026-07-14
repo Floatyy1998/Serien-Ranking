@@ -60,7 +60,13 @@ export const TrophyHistory = React.memo(function TrophyHistory({
           <EmojiEvents style={{ fontSize: '18px', color: currentTheme.background.default }} />
         </div>
         <h2
-          style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: currentTheme.text.primary }}
+          style={{
+            margin: 0,
+            fontSize: '18px',
+            fontWeight: 800,
+            fontFamily: 'var(--font-display)',
+            color: currentTheme.text.secondary,
+          }}
         >
           Trophäen
         </h2>
@@ -75,24 +81,22 @@ export const TrophyHistory = React.memo(function TrophyHistory({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: trophyIdx * 0.1 }}
             style={{
-              background: currentTheme.background.card,
-              border: `1px solid ${currentTheme.border.default}`,
+              background: 'var(--glass-light)',
+              border: '1px solid var(--glass-border-light)',
             }}
           >
             <div className="lb-trophy-card-header">
               <div>
                 <div
-                  style={{ fontSize: '16px', fontWeight: 800, color: currentTheme.text.primary }}
+                  style={{ fontSize: '16px', fontWeight: 800, color: currentTheme.text.secondary }}
                 >
                   {formatMonthLabel(trophy.monthKey)}
                 </div>
-                <div
-                  style={{ fontSize: '12px', color: currentTheme.text.secondary, marginTop: '2px' }}
-                >
+                <div style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '2px' }}>
                   Watchtime Rangliste
                 </div>
               </div>
-              <EmojiEvents style={{ fontSize: '24px', color: currentTheme.text.muted }} />
+              <EmojiEvents style={{ fontSize: '24px', color: 'rgba(255, 215, 0, 0.55)' }} />
             </div>
 
             <div className="lb-trophy-entries">
@@ -167,7 +171,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         flex: 1,
                         fontSize: isFirst ? '14px' : '13px',
                         fontWeight: isFirst ? 700 : 600,
-                        color: currentTheme.text.primary,
+                        color: currentTheme.text.secondary,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',

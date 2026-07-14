@@ -52,14 +52,12 @@ export const RankingList = React.memo(function RankingList({
                 : undefined
             }
             style={{
-              background: entry.isCurrentUser
-                ? `${currentTheme.primary}18`
-                : currentTheme.background.surface,
-              border: entry.isCurrentUser ? `1px solid ${currentTheme.primary}40` : undefined,
+              background: entry.isCurrentUser ? 'var(--theme-primary-12)' : 'var(--glass-subtle)',
+              border: entry.isCurrentUser ? '1px solid var(--theme-primary-30)' : undefined,
               cursor: entry.isCurrentUser ? 'default' : 'pointer',
             }}
           >
-            <span className="lb-rank-num" style={{ color: currentTheme.text.secondary }}>
+            <span className="lb-rank-num" style={{ color: currentTheme.text.muted }}>
               {entry.rank}
             </span>
 
@@ -77,14 +75,14 @@ export const RankingList = React.memo(function RankingList({
               <span
                 className="lb-rank-name"
                 style={{
-                  fontWeight: entry.isCurrentUser ? 700 : 500,
-                  color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.primary,
+                  fontWeight: entry.isCurrentUser ? 800 : 600,
+                  color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
                 }}
               >
                 {entry.isCurrentUser ? 'Du' : entry.displayName}
               </span>
               {entry.username && !entry.isCurrentUser && (
-                <span className="lb-rank-username" style={{ color: currentTheme.text.secondary }}>
+                <span className="lb-rank-username" style={{ color: currentTheme.text.muted }}>
                   @{entry.username}
                 </span>
               )}
@@ -94,12 +92,13 @@ export const RankingList = React.memo(function RankingList({
               style={{
                 fontSize: 16,
                 fontWeight: 700,
-                color: currentTheme.text.primary,
+                color: currentTheme.text.secondary,
                 whiteSpace: 'nowrap',
+                opacity: entry.value > 0 ? 1 : 0.4,
               }}
             >
               {formatValue(entry.value, category)}{' '}
-              <span style={{ fontSize: 12, fontWeight: 400, color: currentTheme.text.secondary }}>
+              <span style={{ fontSize: 12, fontWeight: 400, color: currentTheme.text.muted }}>
                 {unit}
               </span>
             </span>

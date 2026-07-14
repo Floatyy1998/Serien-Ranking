@@ -123,11 +123,7 @@ export const LeaderboardPage = () => {
           flexDirection: 'column',
         }}
       >
-        <PageHeader
-          title="Rangliste"
-          gradientFrom={currentTheme.accent}
-          gradientTo={currentTheme.status?.error || '#ef4444'}
-        />
+        <PageHeader title="Rangliste" />
 
         <ModeToggle mode={mode} onModeChange={setMode} />
 
@@ -156,14 +152,15 @@ export const LeaderboardPage = () => {
             onClick={() => navigate('/activity')}
             style={{
               marginTop: 24,
-              padding: '12px 24px',
-              borderRadius: 12,
+              padding: '13px 28px',
+              borderRadius: 'var(--radius-full)',
               border: 'none',
-              background: `linear-gradient(135deg, ${currentTheme.accent}, ${currentTheme.status?.error || '#ef4444'})`,
-              color: currentTheme.text.secondary,
+              background: currentTheme.primary,
+              color: currentTheme.background.default,
               fontSize: 14,
               fontWeight: 700,
               cursor: 'pointer',
+              boxShadow: 'var(--glow-soft)',
             }}
           >
             Freunde finden
@@ -186,45 +183,41 @@ export const LeaderboardPage = () => {
         userName={user?.displayName || 'Du'}
       />
 
-      {/* Ambient background */}
-      <div className="lb-bg-orbs" />
-
       <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
         {/* Sticky Header */}
         <PageHeader
           title="Rangliste"
-          gradientFrom={currentTheme.accent}
-          gradientTo={currentTheme.status?.error || '#ef4444'}
           subtitle={`${activeCat?.label}${activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}${mode === 'global' ? ' · Alle Nutzer' : ''}`}
         />
 
-        {/* Mode Toggle */}
-        <ModeToggle mode={mode} onModeChange={setMode} />
+        {/* Controls: Mode Toggle + Category Pills in einer Zeile (Desktop) */}
+        <div className="lb-controls">
+          <ModeToggle mode={mode} onModeChange={setMode} />
 
-        {/* Category Pills */}
-        <div className="lb-category-scroll">
-          {CATEGORIES.map((cat) => {
-            const isActive = cat.id === activeCategory;
-            return (
-              <motion.button
-                key={cat.id}
-                whileTap={tapScale}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`lb-cat-pill ${isActive ? 'lb-cat-pill--active' : ''}`}
-                style={
-                  isActive
-                    ? undefined
-                    : {
-                        background: currentTheme.background.surface,
-                        color: currentTheme.text.muted,
-                      }
-                }
-              >
-                {cat.icon}
-                {cat.label}
-              </motion.button>
-            );
-          })}
+          <div className="lb-category-scroll">
+            {CATEGORIES.map((cat) => {
+              const isActive = cat.id === activeCategory;
+              return (
+                <motion.button
+                  key={cat.id}
+                  whileTap={tapScale}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`lb-cat-pill ${isActive ? 'lb-cat-pill--active' : ''}`}
+                  style={
+                    isActive
+                      ? undefined
+                      : {
+                          background: 'var(--glass-subtle)',
+                          color: currentTheme.text.muted,
+                        }
+                  }
+                >
+                  {cat.icon}
+                  {cat.label}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Podium */}

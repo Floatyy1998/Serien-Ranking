@@ -6,7 +6,7 @@ import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderbo
 import { formatValue } from './leaderboardUtils';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
-const PODIUM_HEIGHTS = [150, 115, 95];
+const PODIUM_HEIGHTS = [190, 148, 122];
 const PODIUM_ORDER = [1, 0, 2]; // 2nd, 1st, 3rd
 
 interface PodiumSectionProps {
@@ -34,7 +34,7 @@ export const PodiumSection = React.memo(function PodiumSection({
         const medal = MEDAL_COLORS[podiumIndex];
         const height = PODIUM_HEIGHTS[podiumIndex];
         const isFirst = podiumIndex === 0;
-        const avatarSize = isFirst ? 68 : 52;
+        const avatarSize = isFirst ? 96 : 72;
 
         return (
           <motion.div
@@ -48,41 +48,61 @@ export const PodiumSection = React.memo(function PodiumSection({
             }}
             style={{ cursor: entry.isCurrentUser ? 'default' : 'pointer' }}
           >
-            {/* Avatar with glow ring */}
-            <div
-              className="lb-podium-avatar"
-              style={{
-                width: avatarSize,
-                height: avatarSize,
-                border: `3px solid ${medal}`,
-                background: currentTheme.background.card,
-                boxShadow: isFirst
-                  ? `0 0 20px ${medal}50, 0 0 40px ${medal}25`
-                  : `0 4px 16px ${medal}30`,
-              }}
-            >
+            {/* Avatar with glow ring + rank badge */}
+            <div style={{ position: 'relative', marginBottom: 10 }}>
               {isFirst && <span className="lb-podium-crown">👑</span>}
-              {entry.photoURL ? (
-                <img src={entry.photoURL} alt={entry.displayName} loading="lazy" decoding="async" />
-              ) : (
-                <span
-                  style={{
-                    fontSize: isFirst ? 26 : 20,
-                    fontWeight: 700,
-                    color: currentTheme.text.secondary,
-                  }}
-                >
-                  {entry.displayName.charAt(0).toUpperCase()}
-                </span>
-              )}
+              <div
+                className="lb-podium-avatar"
+                style={{
+                  width: avatarSize,
+                  height: avatarSize,
+                  border: `3px solid ${medal}`,
+                  background: currentTheme.background.card,
+                  boxShadow: isFirst
+                    ? `0 0 28px ${medal}55, 0 0 64px ${medal}25`
+                    : `0 6px 20px ${medal}35`,
+                  marginBottom: 0,
+                }}
+              >
+                {entry.photoURL ? (
+                  <img
+                    src={entry.photoURL}
+                    alt={entry.displayName}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span
+                    style={{
+                      fontSize: isFirst ? 34 : 26,
+                      fontWeight: 700,
+                      color: currentTheme.text.secondary,
+                    }}
+                  >
+                    {entry.displayName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <span
+                className="lb-podium-rankbadge"
+                style={{
+                  width: isFirst ? 28 : 24,
+                  height: isFirst ? 28 : 24,
+                  fontSize: isFirst ? 14 : 12,
+                  background: `linear-gradient(135deg, ${medal}, color-mix(in srgb, ${medal} 70%, #fff))`,
+                  boxShadow: `0 2px 10px ${medal}60`,
+                }}
+              >
+                {entry.rank}
+              </span>
             </div>
 
             {/* Name */}
             <span
               className="lb-podium-name"
               style={{
-                fontWeight: entry.isCurrentUser ? 700 : 500,
-                color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.primary,
+                fontWeight: entry.isCurrentUser ? 800 : 600,
+                color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
               }}
             >
               {entry.isCurrentUser ? 'Du' : entry.displayName.split(' ')[0]}
@@ -93,24 +113,40 @@ export const PodiumSection = React.memo(function PodiumSection({
               className="lb-podium-block"
               style={{
                 height: `${height}px`,
-                background: `linear-gradient(180deg, ${medal}25, ${medal}08)`,
-                border: `1px solid ${medal}30`,
+                background:
+                  'linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
+                borderTop: `2px solid ${medal}`,
+                borderLeft: '1px solid rgba(255,255,255,0.08)',
+                borderRight: '1px solid rgba(255,255,255,0.08)',
                 borderBottom: 'none',
+                boxShadow: `inset 0 22px 44px -26px ${medal}70, var(--shadow-lg)`,
               }}
             >
-              <span style={{ fontSize: isFirst ? 28 : 22, fontWeight: 800, color: medal }}>
-                #{entry.rank}
-              </span>
               <span
                 style={{
-                  fontSize: isFirst ? 20 : 16,
-                  fontWeight: 700,
-                  color: currentTheme.text.primary,
+                  fontSize: isFirst ? 40 : 28,
+                  fontWeight: 900,
+                  letterSpacing: '-0.02em',
+                  lineHeight: 1,
+                  color: currentTheme.text.secondary,
+                  textShadow: `0 0 24px ${medal}40`,
                 }}
               >
                 {formatValue(entry.value, category)}
               </span>
-              <span style={{ fontSize: 11, color: currentTheme.text.secondary }}>{unit}</span>
+              {unit && (
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                    color: `${medal}cc`,
+                  }}
+                >
+                  {unit}
+                </span>
+              )}
             </div>
           </motion.div>
         );

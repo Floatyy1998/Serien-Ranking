@@ -61,7 +61,7 @@ describe('PodiumSection', () => {
     render(<PodiumSection topThree={top} category="episodesThisMonth" unit="Ep." />);
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Bob')).toBeInTheDocument();
-    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('42')).toBeInTheDocument();
   });
 
