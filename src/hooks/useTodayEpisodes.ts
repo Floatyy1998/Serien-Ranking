@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
 import { getEpisodeAirDate } from '../utils/episodeDate';
-import { getImageUrl } from '../utils/imageUrl';
+import { getBackdropSize, getImageUrl } from '../utils/imageUrl';
 
 interface TodayEpisode {
   seriesId: number;
@@ -107,7 +107,9 @@ export const useTodayEpisodes = () => {
               seriesId: series.id,
               seriesTitle: series.title,
               poster: getImageUrl(series.poster),
-              backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
+              backdrop: series.backdrop
+                ? getImageUrl(series.backdrop, getBackdropSize())
+                : undefined,
               seasonNumber: season.seasonNumber || 1,
               episodeNumber: k + 1,
               seasonIndex: actualSeasonIndex,

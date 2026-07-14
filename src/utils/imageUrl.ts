@@ -56,6 +56,22 @@ export const getImageUrl = (
 };
 
 /**
+ * Backdrop-Größe für Kino-Zeilen/Heros/Collagen: auf großen bzw. Retina-Screens
+ * (effektiv ≥ 2200px) reicht w1280 nicht mehr — dann original laden.
+ */
+export const getBackdropSize = (): TmdbImageSize => {
+  if (typeof window === 'undefined') return 'w1280';
+  const effectivePx = window.innerWidth * (window.devicePixelRatio || 1);
+  return effectivePx >= 2200 ? 'original' : 'w1280';
+};
+
+/** Hebt eine fertige w1280-Backdrop-URL auf die zum Screen passende Größe an. */
+export const upgradeBackdropUrl = <T extends string | undefined>(url: T): T => {
+  if (!url || getBackdropSize() !== 'original') return url;
+  return url.replace('/t/p/w1280/', '/t/p/original/') as T;
+};
+
+/**
  * Build a TMDB `srcset` for responsive loading. Returns an empty string for
  * placeholder URLs / external URLs that we cannot resize. Pair with a single
  * default `src` from `getImageUrl(..., 'w342')` and an appropriate `sizes`

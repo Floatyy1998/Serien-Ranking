@@ -186,7 +186,7 @@ export const useProfileData = (): UseProfileDataResult => {
         }))
         .sort((a, b) => b.rating - a.rating)
         .slice(0, 6)
-        .map((s) => `https://image.tmdb.org/t/p/w780${s.backdrop}`),
+        .map((s) => `https://image.tmdb.org/t/p/w1280${s.backdrop}`),
     [seriesList]
   );
 

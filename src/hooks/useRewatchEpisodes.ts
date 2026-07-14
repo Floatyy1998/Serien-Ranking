@@ -5,7 +5,7 @@ import {
   getNextRewatchEpisode,
   getRewatchProgress,
 } from '../lib/validation/rewatch.utils';
-import { getImageUrl } from '../utils/imageUrl';
+import { getBackdropSize, getImageUrl } from '../utils/imageUrl';
 import {
   DEFAULT_EPISODE_RUNTIME_MINUTES,
   getSeriesLastWatchedAt,
@@ -67,7 +67,7 @@ export const useRewatchEpisodes = (): RewatchItem[] => {
         id: series.id,
         title: series.title,
         poster: getImageUrl(series.poster),
-        backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
+        backdrop: series.backdrop ? getImageUrl(series.backdrop, getBackdropSize()) : undefined,
         seasonIndex,
         episodeIndex: nextEp.episodeIndex,
         seasonNumber: nextEp.seasonNumber + 1,

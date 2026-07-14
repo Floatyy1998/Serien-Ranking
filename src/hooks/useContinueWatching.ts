@@ -5,7 +5,7 @@ import { calculateSeriesMetrics, getSeriesLastWatchedAt } from '../lib/episode/s
 import type { Series } from '../types/Series';
 import { detectEpisodeChip, type EpisodeChipType } from '../utils/episodeChips';
 import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
-import { getImageUrl } from '../utils/imageUrl';
+import { getBackdropSize, getImageUrl } from '../utils/imageUrl';
 
 export const useContinueWatching = () => {
   const { seriesList } = useSeriesList();
@@ -73,7 +73,9 @@ export const useContinueWatching = () => {
                 id: series.id,
                 title: series.title,
                 poster: getImageUrl(series.poster),
-                backdrop: series.backdrop ? getImageUrl(series.backdrop, 'w1280') : undefined,
+                backdrop: series.backdrop
+                  ? getImageUrl(series.backdrop, getBackdropSize())
+                  : undefined,
                 progress,
                 nextEpisode: {
                   seasonNumber: (season.seasonNumber ?? 0) + 1,
