@@ -12,8 +12,6 @@ import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
-// ── Utility helpers ──────────────────────────────────────────────
-
 export function formatDate(date: Date): string {
   return date.toLocaleDateString('de-DE', {
     day: 'numeric',
@@ -31,8 +29,6 @@ export function toDateKey(date: Date): string {
 
 export const WEEKDAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-// ── Types ────────────────────────────────────────────────────────
-
 export interface SeriesGroup {
   seriesId: number;
   seriesTitle: string;
@@ -40,8 +36,6 @@ export interface SeriesGroup {
 }
 
 export type GroupedSchedule = Map<string, SeriesGroup[]>;
-
-// ── Hook ─────────────────────────────────────────────────────────
 
 export const useCalendarData = () => {
   const { user } = useAuth() || {};
@@ -79,7 +73,7 @@ export const useCalendarData = () => {
     });
   }, []);
 
-  // ── Backdrops ────────────────────────────────────────────────
+  // Backdrops
 
   const [backdrops, setBackdrops] = useState<Record<number, string>>({});
   const backdropCache = useRef<Record<number, string>>({});
@@ -111,7 +105,7 @@ export const useCalendarData = () => {
     });
   }, [seriesIdsInSchedule]);
 
-  // ── Grouped schedule ─────────────────────────────────────────
+  // Grouped schedule
 
   const todayKey = toDateKey(new Date());
   const kwNumber = getWeekNumber(monday);
@@ -135,7 +129,7 @@ export const useCalendarData = () => {
     return result;
   }, [schedule]);
 
-  // ── Mark watched ─────────────────────────────────────────────
+  // Mark watched
 
   const handleMarkWatched = useCallback(
     async (seriesId: number, seasonIndex: number, episodeIndex: number) => {
@@ -234,7 +228,7 @@ export const useCalendarData = () => {
     [user, seriesList]
   );
 
-  // ── Week navigation helpers ──────────────────────────────────
+  // Week navigation helpers
 
   const goToPrevWeek = useCallback(() => {
     setWeekOffset((o) => o - 1);

@@ -1,8 +1,3 @@
-/**
- * useCatchUpData - Business logic hook for CatchUpPage
- * Handles series calculation, sorting, scroll persistence, and URL params.
- */
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -42,7 +37,6 @@ export const useCatchUpData = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollRestoredRef = useRef(false);
 
-  // Initialize sortBy and direction from URL params
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const sortParam = searchParams.get('sort') as SortOption;
     return sortParam && VALID_SORT_OPTIONS.includes(sortParam) ? sortParam : 'episodes';
@@ -53,7 +47,6 @@ export const useCatchUpData = () => {
     return dirParam && ['asc', 'desc'].includes(dirParam) ? dirParam : 'desc';
   });
 
-  // Handle tab click - toggle direction if same tab, otherwise switch tab
   const handleSortClick = useCallback(
     (value: SortOption) => {
       if (sortBy === value) {
@@ -62,14 +55,12 @@ export const useCatchUpData = () => {
         setSortBy(value);
         setSortDirection('desc');
       }
-      // Scroll to top when sort changes
       scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
       sessionStorage.removeItem(SCROLL_STORAGE_KEY);
     },
     [sortBy]
   );
 
-  // Update URL params when sort changes
   useEffect(() => {
     setSearchParams({ sort: sortBy, dir: sortDirection }, { replace: true });
   }, [sortBy, sortDirection, setSearchParams]);
@@ -111,7 +102,6 @@ export const useCatchUpData = () => {
     }
   }, []);
 
-  // Calculate catch-up data for each series
   const catchUpData = useMemo(() => {
     const data: CatchUpSeries[] = [];
 
@@ -174,7 +164,6 @@ export const useCatchUpData = () => {
     return data;
   }, [seriesList]);
 
-  // Sort the data
   const sortedData = useMemo(() => {
     const sorted = [...catchUpData];
     const dir = sortDirection === 'desc' ? 1 : -1;
@@ -204,7 +193,6 @@ export const useCatchUpData = () => {
     return sorted;
   }, [catchUpData, sortBy, sortDirection]);
 
-  // Calculate totals
   const totals = useMemo(() => {
     const totalEpisodes = catchUpData.reduce((sum, item) => sum + item.remainingEpisodes, 0);
     const totalMinutes = catchUpData.reduce((sum, item) => sum + item.remainingMinutes, 0);
@@ -215,7 +203,6 @@ export const useCatchUpData = () => {
     return { totalEpisodes, totalMinutes, avgProgress };
   }, [catchUpData]);
 
-  // Derive active label
   const currentLabel = useMemo(() => {
     const labels: Record<SortOption, { desc: string; asc: string }> = {
       episodes: { desc: 'Meiste Episoden', asc: 'Wenigste Episoden' },
@@ -238,8 +225,6 @@ export const useCatchUpData = () => {
     loading,
   };
 };
-
-// --- Utility helpers ---
 
 /**
  * Optimistischer Vorlauf für eine CatchUp-Karte.

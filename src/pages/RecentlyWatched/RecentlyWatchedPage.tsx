@@ -1,9 +1,7 @@
 /**
- * RecentlyWatchedPage - Premium Watch History
- * Shows recently watched episodes with timeline view.
- *
- * Composition-only: business logic lives in useRecentlyWatched,
- * data management in EpisodeDataManager, UI blocks in RecentlyWatchedComponents.
+ * Timeline der zuletzt gesehenen Episoden. Kompositions-Komponente:
+ * Logik in useRecentlyWatched, Daten in EpisodeDataManager,
+ * UI-Blöcke in RecentlyWatchedComponents.
  */
 
 import { AnimatePresence, motion } from 'framer-motion';

@@ -1,13 +1,13 @@
 /* EpisodeDiscussionPage - Layout styles with ed- prefix */
 
-/* ---------- Page Container ---------- */
+/* Page Container */
 .ed-page {
   min-height: 100vh;
   padding-bottom: 40px;
   position: relative;
 }
 
-/* ---------- Loading State ---------- */
+/* Loading State */
 .ed-loading {
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
   pointer-events: none;
 }
 
-/* ---------- Not Found State ---------- */
+/* Not Found State */
 .ed-not-found {
   display: flex;
   flex-direction: column;
@@ -79,7 +79,7 @@
   font-size: 15px;
 }
 
-/* ---------- Hero Section ---------- */
+/* Hero Section */
 .ed-hero {
   position: relative;
   width: 100%;
@@ -230,7 +230,7 @@
   font-size: 18px !important;
 }
 
-/* ---------- Quick Actions ---------- */
+/* Quick Actions */
 .ed-quick-actions {
   display: flex;
   gap: 12px;
@@ -294,7 +294,7 @@
   font-size: 20px !important;
 }
 
-/* ---------- Episode Navigation ---------- */
+/* Episode Navigation */
 .ed-nav {
   display: flex;
   gap: 8px;
@@ -363,12 +363,12 @@
   text-overflow: ellipsis;
 }
 
-/* ---------- Content Area ---------- */
+/* Content Area */
 .ed-content {
   padding: 20px;
 }
 
-/* ---------- Overview Section ---------- */
+/* Overview Section */
 .ed-overview {
   margin-bottom: 24px;
   padding: 20px;
@@ -418,7 +418,7 @@
   margin: 0;
 }
 
-/* ---------- Crew Section ---------- */
+/* Crew Section */
 .ed-crew {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -459,7 +459,7 @@
   margin-top: 6px;
 }
 
-/* ---------- Guest Stars Section ---------- */
+/* Guest Stars Section */
 .ed-guest-stars {
   margin-bottom: 24px;
   padding: 20px;

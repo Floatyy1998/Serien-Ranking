@@ -1,7 +1,3 @@
-/**
- * TopGenresSlide - Zeigt die Top-Genres des Jahres mit Animationen
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopGenreEntry } from '../../types/Wrapped';
@@ -11,7 +7,6 @@ interface TopGenresSlideProps {
   maxItems?: number;
 }
 
-// Genre-Icons für visuelle Darstellung
 const GENRE_ICONS: Record<string, string> = {
   Action: '💥',
   Adventure: '🗺️',

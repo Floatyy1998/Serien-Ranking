@@ -21,8 +21,6 @@ import {
 } from './constants';
 import { getScoreMessage } from './useTasteMatchData';
 
-// ==================== Karten-Bausteine ====================
-
 interface AvatarProps {
   name: string;
   photo: string | null;
@@ -105,8 +103,6 @@ const CountTile: React.FC<CountTileProps> = ({ value, label }) => {
     </div>
   );
 };
-
-// ==================== Karte ====================
 
 interface TasteMatchShareCardProps {
   result: TasteMatchResult;
@@ -210,7 +206,6 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
         <CountTile value={result.genreMatch.sharedGenres.length} label="Genres" />
       </div>
 
-      {/* Gemeinsame Genres */}
       {sharedGenres.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <span
@@ -245,7 +240,6 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
         </div>
       )}
 
-      {/* Gemeinsame Serien */}
       {sharedSeries.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <span
@@ -322,8 +316,6 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
     </ShareCardFrame>
   );
 };
-
-// ==================== Sheet ====================
 
 interface TasteMatchShareSheetProps {
   isOpen: boolean;

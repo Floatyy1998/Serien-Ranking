@@ -17,7 +17,6 @@ export function useHomeStats() {
   const { movieList } = useMovieList();
   const workerStats = useWebWorkerStatsOptimized();
 
-  // Calculate statistics
   const stats = useMemo(() => {
     if (!user?.uid) {
       return {
@@ -38,7 +37,7 @@ export function useHomeStats() {
         completedSeries: 0,
       };
     }
-    // Series stats - total series count includes hidden (you own them all)
+    // total series count includes hidden (you own them all)
     const totalSeries = allSeriesList.length;
 
     // Episode progress ring: vom Worker (non-hidden, mind. 1 Folge gesehen = begonnen)
@@ -53,7 +52,6 @@ export function useHomeStats() {
     let seriesMinutesWatched = 0;
     let moviesMinutesWatched = 0;
 
-    // Series watch time
     allSeriesList.forEach((series) => {
       if (!series) return;
       const seriesRuntime = series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
@@ -69,7 +67,6 @@ export function useHomeStats() {
       });
     });
 
-    // Movie watch time
     movieList.forEach((movie: MovieType) => {
       if (!movie) return;
       if (isMovieWatched(movie)) {
@@ -81,11 +78,10 @@ export function useHomeStats() {
 
     const timeString = formatMinutesToString(totalMinutesWatched);
 
-    // Format series and movie times separately
     const seriesTimeString = formatMinutesToString(seriesMinutesWatched);
     const movieTimeString = formatMinutesToString(moviesMinutesWatched);
 
-    // Ratings - calculate average ratings using calculateOverallRating (same as MobileRatingsPage)
+    // Gleiche Rating-Berechnung wie MobileRatingsPage (calculateOverallRating).
     const seriesWithRating = allSeriesList.filter((s: Series) => {
       if (!s) return false;
       const rating = parseFloat(calculateOverallRating(s));
@@ -110,13 +106,12 @@ export function useHomeStats() {
           moviesWithRating.length
         : 0;
 
-    // Genres - fix genre detection and exclude "All"
     const genreCounts: Record<string, number> = {};
     ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
         if (!item) return;
 
-        // Handle different genre structures
+        // Genre hat mehrere Shapes (Wrapper vs. raw TMDB)
         let genres: string[] = [];
 
         if (item.genre?.genres && Array.isArray(item.genre.genres)) {
@@ -128,7 +123,6 @@ export function useHomeStats() {
         }
 
         genres.forEach((genre: string) => {
-          // Exclude "All" and other invalid genres
           if (
             genre &&
             typeof genre === 'string' &&
@@ -143,16 +137,13 @@ export function useHomeStats() {
     );
     const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
-    // Providers - fix provider detection with the correct data structure
     const providerCounts: Record<string, number> = {};
     ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
       (item: Series | MovieType) => {
         if (!item) return;
 
-        // Check the actual provider structure used in the app
         let providers: { id: number; logo: string; name: string }[] = [];
 
-        // Main provider structure: item.provider.provider[]
         if (item.provider?.provider && Array.isArray(item.provider.provider)) {
           providers = item.provider.provider;
         }
@@ -168,8 +159,7 @@ export function useHomeStats() {
     const topProvider =
       Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
 
-    // Activity - fix date handling and add safety checks. Date.now() ist in
-    // useMemo() durch die Deps stabilisiert (laeuft nur bei Daten-Change neu),
+    // Date.now() ist in useMemo() durch die Deps stabilisiert (laeuft nur bei Daten-Change neu),
     // wird aber von der purity-Rule trotzdem geflaggt — pragmatisch disabled.
     // eslint-disable-next-line react-hooks/purity
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);

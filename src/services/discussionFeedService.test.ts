@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock für den discussionFeed-Knoten: push + orderByChild-Query +
 // update. Verhalten je Test über `state` konfigurierbar.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const state = {
     push: vi.fn(async (_entry: unknown) => ({ key: 'generated-id' })),

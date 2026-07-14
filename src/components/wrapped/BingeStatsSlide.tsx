@@ -1,7 +1,3 @@
-/**
- * BingeStatsSlide - Zeigt Binge-Watching Statistiken
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { BingeSessionStats } from '../../types/Wrapped';

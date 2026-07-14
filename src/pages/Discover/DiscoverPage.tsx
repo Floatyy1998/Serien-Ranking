@@ -101,7 +101,6 @@ export const DiscoverPage = memo(() => {
     providerFilterActive ? activeProviders : EMPTY_PROVIDERS
   );
 
-  // Wire up restore callbacks
   useEffect(() => {
     fetchRecommendationsOnRestoreRef.current = () => fetchRecommendations(true);
     fetchFromTMDBOnRestoreRef.current = () => fetchFromTMDB(true);
@@ -112,12 +111,10 @@ export const DiscoverPage = memo(() => {
     fetchFromTMDBOnRestoreRef,
   ]);
 
-  // Setup scroll listener
   useEffect(() => {
     return setupScrollListener(activeCategory);
   }, [setupScrollListener, activeCategory]);
 
-  // Category configuration for premium styling
   const categories = [
     { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
     { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
@@ -157,7 +154,7 @@ export const DiscoverPage = memo(() => {
             background: `linear-gradient(180deg, ${currentTheme.primary}15 0%, transparent 100%)`,
           }}
         >
-          {/* Premium Header */}
+          {/* Header */}
           <header
             style={{
               padding: '14px 20px',
@@ -282,7 +279,7 @@ export const DiscoverPage = memo(() => {
             </div>
           </header>
 
-          {/* Premium Search Input */}
+          {/* Search input */}
           <AnimatePresence>
             {showSearch && (
               <motion.div
@@ -319,7 +316,7 @@ export const DiscoverPage = memo(() => {
             )}
           </AnimatePresence>
 
-          {/* Premium Tab Switcher */}
+          {/* Tab switcher */}
           <TabSwitcher
             tabs={[
               { id: 'series', label: 'Serien', icon: CalendarToday },
@@ -333,7 +330,7 @@ export const DiscoverPage = memo(() => {
             style={{ margin: '8px 20px 0 20px' }}
           />
 
-          {/* Premium Categories */}
+          {/* Categories */}
           {!showSearch && (
             <div className="discover-cats">
               {categories.map((cat) => {
@@ -373,7 +370,7 @@ export const DiscoverPage = memo(() => {
             </div>
           )}
 
-          {/* Premium Genre Filter Dropdown */}
+          {/* Genre filter dropdown */}
           <AnimatePresence>
             {showFilters && !showSearch && activeCategory !== 'recommendations' && (
               <motion.div
@@ -507,7 +504,7 @@ export const DiscoverPage = memo(() => {
             addToList={addToList}
           />
 
-          {/* Premium Loading indicator */}
+          {/* Loading indicator */}
           {((loading && !showSearch && activeCategory !== 'recommendations') ||
             (recommendationsLoading &&
               activeCategory === 'recommendations' &&
@@ -522,7 +519,7 @@ export const DiscoverPage = memo(() => {
         </div>
       </div>
 
-      {/* Premium Snackbar for success feedback */}
+      {/* Snackbar for success feedback */}
       <Snackbar open={snackbar.open} message={snackbar.message} />
 
       {/* Dialog for alerts */}

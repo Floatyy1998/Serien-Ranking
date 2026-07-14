@@ -1,7 +1,3 @@
-/**
- * useTasteMatchData - Custom Hook fuer TasteMatch Daten-Loading und State
- */
-
 import { dbRef, paths } from '../../services/db/ref';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';

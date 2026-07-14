@@ -1,4 +1,4 @@
-/* === Floating Dock Navigation – Liquid Glass === */
+/* Floating Dock Navigation – Liquid Glass */
 .mobile-bottom-navigation {
   position: fixed;
   /* iOS Home-Indicator: Safe-Area berücksichtigen, damit die Dock nicht hinter
@@ -41,7 +41,7 @@
   position: relative;
 }
 
-/* --- Nav Item (all equal) --- */
+/* Nav Item (alle gleich breit) */
 .nav-item {
   flex: 1;
   background: none;
@@ -66,7 +66,7 @@
   color: var(--color-primary);
 }
 
-/* --- Nav Icon --- */
+/* Nav Icon */
 .nav-icon-container {
   position: relative;
   display: flex;
@@ -86,7 +86,7 @@
   font-size: 24px !important;
 }
 
-/* --- Animated Pill (slides to hovered/active tab) --- */
+/* Animierte Pill (gleitet zum gehoverten/aktiven Tab) */
 .nav-pill {
   position: absolute;
   top: 10px;
@@ -100,7 +100,7 @@
   z-index: 0;
 }
 
-/* --- Active Dot Indicator --- */
+/* Aktiv-Punkt */
 .nav-active-dot {
   width: 4px;
   height: 4px;
@@ -110,7 +110,7 @@
   margin: -2px auto 0;
 }
 
-/* --- Nav Label --- */
+/* Nav Label */
 .nav-label {
   font-size: 10px;
   font-weight: 500;

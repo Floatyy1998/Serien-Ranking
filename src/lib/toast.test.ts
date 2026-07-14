@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Minimal fake DOM (node env has no document). Records elements, class lists,
 // children, attributes and event listeners so we can drive/inspect toasts.
-// ---------------------------------------------------------------------------
 interface FakeEl {
   tagName: string;
   id: string;
@@ -137,7 +135,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-// ===========================================================================
 describe('showToast', () => {
   it('mounts a toast in a lazily-created container + injects the style once', async () => {
     const { showToast } = await loadToast();
@@ -204,7 +201,6 @@ describe('showToast', () => {
   });
 });
 
-// ===========================================================================
 describe('showUndoToast', () => {
   it('renders an interactive toast with an Undo button (function form)', async () => {
     const { showUndoToast } = await loadToast();
@@ -298,7 +294,6 @@ describe('showUndoToast', () => {
   });
 });
 
-// ===========================================================================
 describe('showActionToast', () => {
   it('renders a wipeable interactive toast with a custom action button (info by default)', async () => {
     const { showActionToast } = await loadToast();

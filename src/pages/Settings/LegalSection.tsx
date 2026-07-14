@@ -1,7 +1,3 @@
-/**
- * LegalSection - Privacy, impressum links and data source attributions
- */
-
 import { ChevronRight } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useCallback, useState } from 'react';

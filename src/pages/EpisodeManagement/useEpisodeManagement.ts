@@ -39,7 +39,7 @@ export const useEpisodeManagement = () => {
   const { user } = useAuth() || {};
   const { allSeriesList: seriesList } = useSeriesList();
 
-  // --- Quick Rating ---
+  // Quick Rating
   const {
     quickRatingOpen,
     quickRatingSeries,
@@ -49,18 +49,18 @@ export const useEpisodeManagement = () => {
     saveQuickRating,
   } = useQuickSeasonRating();
 
-  // --- State ---
+  // State
   const [selectedSeason, setSelectedSeason] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showWatchDialog, setShowWatchDialog] = useState(false);
   const [showCatchUpDialog, setShowCatchUpDialog] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<SelectedEpisode | null>(null);
 
-  // --- Pull-to-refresh refs ---
+  // Pull-to-refresh refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
 
-  // --- Derived data ---
+  // Derived data
   const series = seriesList.find((s: Series) => s.id === Number(id));
 
   const currentSeason = series?.seasons?.[selectedSeason];
@@ -85,7 +85,7 @@ export const useEpisodeManagement = () => {
     return { watchedCount, totalCount, allWatched, seasonMinWatchCount, progress };
   })();
 
-  // --- Effects ---
+  // Effects
 
   // Auto-select first unwatched season
   useEffect(() => {
@@ -99,7 +99,7 @@ export const useEpisodeManagement = () => {
     }
   }, [series]);
 
-  // --- Pull-to-refresh handlers ---
+  // Pull-to-refresh handlers
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startY.current = e.touches[0].clientY;
@@ -121,7 +121,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Season navigation ---
+  // Season navigation
 
   const handleSwipeLeft = () => {
     if (series && selectedSeason < series.seasons.length - 1) {
@@ -135,7 +135,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Episode toggle logic ---
+  // Episode toggle logic
 
   const handleEpisodeToggle = async (
     seasonIndex: number,
@@ -323,7 +323,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Episode click (show dialog or toggle) ---
+  // Episode click (show dialog or toggle)
 
   const handleEpisodeClick = (seasonIndex: number, episodeIndex: number) => {
     const episode = series?.seasons[seasonIndex]?.episodes?.[episodeIndex];
@@ -337,7 +337,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Catch-up logic ---
+  // Catch-up logic
 
   const handleCatchUp = async (targetSeasonIndex: number, targetEpisodeIndex: number) => {
     if (!series || !user) return;
@@ -400,7 +400,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Season bulk toggle ---
+  // Season bulk toggle
 
   const handleSeasonToggle = async (
     seasonIndex: number,
@@ -530,7 +530,7 @@ export const useEpisodeManagement = () => {
     }
   };
 
-  // --- Watch dialog actions ---
+  // Watch dialog actions
 
   const handleWatchDialogIncrease = () => {
     if (selectedEpisode) {

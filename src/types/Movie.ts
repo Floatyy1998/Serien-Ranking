@@ -31,8 +31,8 @@ export interface Movie {
   release_date?: string;
   collection_id?: number;
   media_type?: string;
-  // Note: userRating is stored in rating[userId], not as separate field
-  // watched status is derived from rating[userId] > 0
+  // rating ist genre-keyed ({Genre: Wert}), nicht user-keyed.
+  // "Gesehen" wird über calculateOverallRating abgeleitet, nie über rating[uid].
 
   // Additional optional fields from TMDB API
   overview?: string;
@@ -40,9 +40,7 @@ export interface Movie {
   watched?: boolean;
   genres?: { id: number; name: string }[]; // TMDB genre format
 
-  // ========================================
   // Wrapped 2026 - Zeitliche Metadaten
-  // ========================================
   addedAt?: string; // Wann zur Sammlung hinzugefügt (ISO-Datum)
   watchedAt?: string; // Wann angeschaut (ISO-Datum)
   ratedAt?: string; // Wann bewertet (ISO-Datum)

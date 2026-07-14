@@ -7,10 +7,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // In-Memory-Firebase (Baum-Store). Unterstützt once/set/update/remove/push und
 // orderByChild(..).equalTo(..).once(..) (server-seitiger Filter nachgebildet).
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const root: Record<string, unknown> = {};
   const state = { fail: false };

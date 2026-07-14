@@ -1,5 +1,5 @@
 /**
- * 📦 Offline-Cache-IO (IndexedDB via offlineFirebaseService + Service Worker).
+ * Offline-Cache-IO (IndexedDB via offlineFirebaseService + Service Worker).
  *
  * Alle Funktionen sind bewusst fehler-tolerant: Cache-Misses und
  * Schreibfehler sind still — die Daten leben weiterhin im Memory-State,
@@ -23,13 +23,10 @@ export async function loadFromCache<T>(
 ): Promise<T | null> {
   if (!enableOfflineSupport) return null;
   try {
-    // 1. Versuche IndexedDB Cache
     const cachedData = await offlineFirebaseService.getCachedData(path);
     if (cachedData) {
       return cachedData as T;
     }
-    // 2. Fallback: Memory Cache (falls implementiert)
-    // Hier könnte ein Memory-Cache implementiert werden
     return null;
   } catch {
     return null; // cache miss is silent — caller falls back to network
@@ -47,9 +44,7 @@ export async function saveToCache<T>(
   const { ttl, version, enableOfflineSupport, cacheInServiceWorker } = options;
   if (!enableOfflineSupport) return;
   try {
-    // IndexedDB Cache (mit Version falls vorhanden)
     await offlineFirebaseService.cacheData(path, newData, ttl, version);
-    // Service Worker Cache (falls aktiviert)
     if (cacheInServiceWorker && 'serviceWorker' in navigator) {
       if (navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage({

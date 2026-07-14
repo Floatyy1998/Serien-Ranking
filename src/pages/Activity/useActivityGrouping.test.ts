@@ -3,10 +3,8 @@ import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FriendActivity } from '../../types/Friend';
 
-/* ---------------------------------------------------------------------------
- * useSeriesList/useMovieList gemockt. VITE_API_TMDB leer → Poster-Fetch-Effekt
- * bricht ab (kein globaler fetch nötig). getImageUrl bleibt echt.
- * ------------------------------------------------------------------------- */
+/* useSeriesList/useMovieList gemockt. VITE_API_TMDB leer → Poster-Fetch-Effekt
+ * bricht ab (kein globaler fetch nötig). getImageUrl bleibt echt. */
 const ctx = vi.hoisted(() => ({
   seriesList: [] as unknown[],
   movieList: [] as unknown[],

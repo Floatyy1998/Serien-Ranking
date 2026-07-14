@@ -5,7 +5,7 @@ import type { Series } from '../../types/Series';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import { useRecentlyWatched } from './useRecentlyWatched';
 
-// ── firebase compat mock ──────────────────────────────────────────────
+// firebase compat mock
 const fb = vi.hoisted(() => {
   const setSpy = vi.fn(async () => {});
   const updateSpy = vi.fn(async () => {});
@@ -20,7 +20,7 @@ vi.mock('firebase/compat/app', () => {
 });
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── contexts / side-effects ───────────────────────────────────────────
+// contexts / side-effects
 const router = vi.hoisted(() => ({ navigate: vi.fn() }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => router.navigate }));
 
@@ -38,7 +38,7 @@ vi.mock('../../lib/episode/episodeWatchFanout', () => ({
   runEpisodeWatchFanout: (...a: unknown[]) => runEpisodeWatchFanout(...a),
 }));
 
-// ── fixtures ──────────────────────────────────────────────────────────
+// fixtures
 const nowISO = new Date().toISOString();
 const mkSeries = (): Series =>
   ({

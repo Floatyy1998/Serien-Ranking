@@ -1,7 +1,3 @@
-/**
- * ScoreHeader - Premium Score Display mit Avataren, Verbindungslinie, Namen und Score
- */
-
 import { Favorite, LocalFireDepartment } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -49,7 +45,6 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           }}
         />
 
-        {/* Premium Avatars with connecting line */}
         <div className="tm-avatars">
           {/* Connecting gradient line */}
           <div
@@ -125,7 +120,6 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           </motion.div>
         </div>
 
-        {/* Names with gradient pills */}
         <div className="tm-names">
           <motion.span
             initial={{ opacity: 0, y: 10 }}
@@ -156,7 +150,6 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           </motion.span>
         </div>
 
-        {/* Premium Score Display */}
         <motion.div
           initial={{ scale: 0.7, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -180,7 +173,6 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
           <span className="tm-score-percent">%</span>
         </motion.div>
 
-        {/* Score message with badge */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}

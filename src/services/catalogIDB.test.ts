@@ -1,11 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Minimales In-Memory-IndexedDB (kein fake-indexeddb installiert). Deckt genau
 // die von catalogIDB genutzten Operationen ab: open/onupgradeneeded,
 // transaction → objectStore → get/put/delete/openCursor. Requests feuern ihre
 // onsuccess-Callbacks per Microtask, damit der Code sie erst zuweisen kann.
-// ---------------------------------------------------------------------------
 function createFakeIndexedDB() {
   const databases = new Map<string, ReturnType<typeof makeDB>>();
 

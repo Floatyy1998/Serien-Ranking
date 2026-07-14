@@ -4,10 +4,6 @@ import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { getUserPets } from './petCore';
 
-// ============================================================
-// Daily Spin Reward Types
-// ============================================================
-
 export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing' | 'background';
 
 export interface XpBoostItem {
@@ -43,10 +39,6 @@ export interface SpinHistoryEntry {
   reward: SpinReward;
   timestamp: number;
 }
-
-// ============================================================
-// Spin Wheel Segments
-// ============================================================
 
 /** IDs of accessories exclusive to the daily spin (not dropped from episodes) */
 const SPIN_EXCLUSIVE_ACCESSORIES = [
@@ -170,10 +162,6 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
   return segments;
 }
 
-// ============================================================
-// Weighted spin logic
-// ============================================================
-
 /** Weights per segment index, scaled by streak tier.
  *  Segments: EpicBoost(3x5), 2xXP2Ep, LegendaryBoost(3x10), 2xXP5Ep, Acc,
  *            2xXP10Ep, RareAcc, EpicAcc, LegendaryAcc
@@ -198,10 +186,6 @@ function weightedRandomIndex(weights: number[]): number {
   }
   return weights.length - 1;
 }
-
-// ============================================================
-// Core spin functions
-// ============================================================
 
 /** Check if the user can spin today */
 export async function canSpinToday(userId: string): Promise<boolean> {
@@ -246,7 +230,6 @@ export async function performDailySpin(
     }
   }
 
-  // If it's an accessory reward, pick a specific one
   if (reward.type === 'accessory') {
     const picked = await pickAccessoryReward(userId, reward.rarity);
     if (picked) {
@@ -272,7 +255,6 @@ export async function performDailySpin(
     }
   }
 
-  // Save spin result
   const today = toLocalDateString(new Date());
   const spinRef = dbRef(userPath(userId, 'dailySpin'));
   const snap = await spinRef.once('value');
@@ -284,7 +266,6 @@ export async function performDailySpin(
     timestamp: Date.now(),
   };
 
-  // Keep last 30 history entries
   const history = [...(current.history || []), historyEntry].slice(-30);
 
   await spinRef.set({
@@ -293,15 +274,10 @@ export async function performDailySpin(
     history,
   });
 
-  // Apply the reward
   await applySpinReward(userId, reward);
 
   return { reward, segmentIndex };
 }
-
-// ============================================================
-// Reward application
-// ============================================================
 
 async function pickAccessoryReward(
   userId: string,
@@ -418,9 +394,7 @@ async function applySpinReward(userId: string, reward: SpinReward): Promise<void
   }
 }
 
-// ============================================================
 // XP Boost check (used by petProgressManager)
-// ============================================================
 
 export async function getActiveXpBoost(
   userId: string
@@ -458,10 +432,6 @@ export async function consumeXpBoostEpisode(userId: string): Promise<void> {
     await ref.update({ remainingEpisodes: remaining });
   }
 }
-
-// ============================================================
-// XP Boost Inventory
-// ============================================================
 
 /** Konvertiert alte zeitbasierte Minuten in Episoden-Anzahl */
 function migrateMinutesToEpisodes(minutes: number): number {
@@ -508,7 +478,7 @@ export async function activateXpBoost(userId: string, index: number): Promise<bo
 
   if (index < 0 || index >= inventory.length) return false;
 
-  // Check if a boost is already active
+  // Nur ein Boost gleichzeitig aktiv
   const activeRef = dbRef(userPath(userId, 'activeXpBoost'));
   const activeSnap = await activeRef.once('value');
   const active = activeSnap.val();
@@ -516,7 +486,6 @@ export async function activateXpBoost(userId: string, index: number): Promise<bo
 
   const boost = inventory[index];
 
-  // Activate
   await activeRef.set({
     multiplier: boost.multiplier,
     remainingEpisodes: boost.episodeCount,
@@ -524,7 +493,6 @@ export async function activateXpBoost(userId: string, index: number): Promise<bo
     source: boost.source,
   });
 
-  // Remove from inventory
   inventory.splice(index, 1);
   await ref.set(inventory.length > 0 ? inventory : null);
 

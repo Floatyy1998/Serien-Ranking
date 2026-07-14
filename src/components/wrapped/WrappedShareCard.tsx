@@ -13,7 +13,7 @@ import type { WrappedStats } from '../../types/Wrapped';
 import { ShareCardFrame } from '../share/ShareCardFrame';
 import { ShareCardSheet } from '../share/ShareCardSheet';
 
-// ==================== Karten-Bausteine ====================
+// Karten-Bausteine
 
 interface StatTileProps {
   value: string;
@@ -59,7 +59,7 @@ const StatTile: React.FC<StatTileProps> = ({ value, label }) => {
   );
 };
 
-// ==================== Karte ====================
+// Karte
 
 interface WrappedShareCardProps {
   stats: WrappedStats;
@@ -202,7 +202,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
   );
 };
 
-// ==================== Sheet ====================
+// Sheet
 
 interface WrappedShareSheetProps {
   isOpen: boolean;

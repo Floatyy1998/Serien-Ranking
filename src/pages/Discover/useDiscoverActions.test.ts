@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useDiscoverActions } from './useDiscoverActions';
 import type { DiscoverItem } from './discoverItemHelpers';
 
-// ── mocks ─────────────────────────────────────────────────────────────
+// mocks
 const ctx = vi.hoisted(() => ({ user: null as { uid: string } | null }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 

@@ -1,7 +1,3 @@
-/**
- * OverviewTab - Providers Card + Quick Stats Grid
- */
-
 import { Category, Movie, Star, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -54,7 +50,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
     >
-      {/* Shared Providers - Premium Card */}
       {result.providerMatch.sharedProviders.length > 0 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
@@ -96,7 +91,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
         </motion.div>
       )}
 
-      {/* Premium Quick Stats Grid */}
       <div className="tm-quick-stats">
         {stats.map((stat) => (
           <motion.div

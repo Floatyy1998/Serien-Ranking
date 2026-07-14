@@ -736,9 +736,7 @@
   transform: scale(0.98);
 }
 
-/* ============================================
-   em- prefixed layout classes (restructured)
-   ============================================ */
+/* em- prefixed layout classes */
 
 /* Bulk action button rows */
 .em-bulk-buttons-row {
@@ -783,9 +781,7 @@
   padding-bottom: 120px;
 }
 
-/* ============================================
-   2050-Desktop: Episoden-Grid + kompakte Staffel-Karte
-   ============================================ */
+/* 2050-Desktop: Episoden-Grid + kompakte Staffel-Karte */
 @media (min-width: 768px) {
   /* Episoden als Karten-Grid statt gestreckter Vollbreite-Zeilen */
   .episodes-list,

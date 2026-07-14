@@ -1,10 +1,3 @@
-/**
- * WrappedComponents - Memoized subcomponents for WrappedPage
- *
- * Extracted: loading state, error state, progress bar, close button,
- * navigation hint, and slide renderer.
- */
-
 import { memo } from 'react';
 import {
   IntroSlide,
@@ -26,14 +19,10 @@ import {
 import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
 
-// === Gradient background helper ===
-
 const useWrappedGradient = () => {
   const { currentTheme } = useTheme();
   return `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, #f093fb 100%)`;
 };
-
-// === Loading State ===
 
 interface WrappedLoadingStateProps {
   year: number;
@@ -63,8 +52,6 @@ export const WrappedLoadingState = memo<WrappedLoadingStateProps>(({ year }) => 
 });
 
 WrappedLoadingState.displayName = 'WrappedLoadingState';
-
-// === Error State ===
 
 interface WrappedErrorStateProps {
   error: string;
@@ -108,8 +95,6 @@ export const WrappedErrorState = memo<WrappedErrorStateProps>(({ error, onBack }
 
 WrappedErrorState.displayName = 'WrappedErrorState';
 
-// === Progress Indicator ===
-
 interface WrappedProgressBarProps {
   currentSlide: number;
   totalSlides: number;
@@ -135,8 +120,6 @@ export const WrappedProgressBar = memo<WrappedProgressBarProps>(({ currentSlide,
 
 WrappedProgressBar.displayName = 'WrappedProgressBar';
 
-// === Close Button ===
-
 interface WrappedCloseButtonProps {
   onClick: () => void;
 }
@@ -148,8 +131,6 @@ export const WrappedCloseButton = memo<WrappedCloseButtonProps>(({ onClick }) =>
 ));
 
 WrappedCloseButton.displayName = 'WrappedCloseButton';
-
-// === Navigation Hint (visible only on first slide) ===
 
 export const WrappedNavigationHint = memo(() => (
   <div className="wrapped-nav-hint">
@@ -171,8 +152,6 @@ export const WrappedNavigationHint = memo(() => (
 ));
 
 WrappedNavigationHint.displayName = 'WrappedNavigationHint';
-
-// === Slide Renderer ===
 
 interface WrappedSlideRendererProps {
   slideType: WrappedSlideType;

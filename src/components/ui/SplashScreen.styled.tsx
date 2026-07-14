@@ -6,9 +6,8 @@ import { Box, keyframes, styled } from '@mui/material';
 // konsequent var(--theme-*, <Grün/Schwarz-Fallback>) — der Splash färbt sich live um,
 // sobald die User-Vars gesetzt sind. Deko-Zweitfarbe ist --theme-secondary-gradient.
 
-// ============= MODERN ANIMATIONS =============
+// Animations
 
-// Smooth fade in
 export const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -20,7 +19,6 @@ export const fadeIn = keyframes`
   }
 `;
 
-// Logo entrance animation
 const logoEntrance = keyframes`
   0% {
     opacity: 0;
@@ -36,7 +34,6 @@ const logoEntrance = keyframes`
   }
 `;
 
-// Subtle breathing effect
 const breathe = keyframes`
   0%, 100% {
     transform: scale(1) rotate(180deg);
@@ -48,7 +45,6 @@ const breathe = keyframes`
   }
 `;
 
-// Fade out animation
 const fadeOut = keyframes`
   from {
     opacity: 1;
@@ -58,7 +54,6 @@ const fadeOut = keyframes`
   }
 `;
 
-// Glow pulse animation
 const glowPulse = keyframes`
   0%, 100% {
     box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent),
@@ -70,7 +65,6 @@ const glowPulse = keyframes`
   }
 `;
 
-// Text reveal animation
 const textReveal = keyframes`
   0% {
     opacity: 0;
@@ -88,7 +82,6 @@ const textReveal = keyframes`
   }
 `;
 
-// Progress bar shine
 const progressShine = keyframes`
   0% {
     left: -100%;
@@ -98,7 +91,6 @@ const progressShine = keyframes`
   }
 `;
 
-// Particle animation
 const particleFloat = keyframes`
   0% {
     transform: translateY(100vh) rotate(0deg);
@@ -116,7 +108,7 @@ const particleFloat = keyframes`
   }
 `;
 
-// ============= STYLED COMPONENTS =============
+// Styled components
 
 export const SplashContainer = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'isHiding',
@@ -144,7 +136,7 @@ export const SplashContainer = styled(Box, {
   overflow: hidden;
 `;
 
-// Static background with gradient mesh - no animation to prevent flickering
+// Bewusst ohne Animation - verhindert Flickern
 export const BackgroundMesh = styled(Box)`
   position: absolute;
   top: 0;
@@ -175,7 +167,6 @@ export const BackgroundMesh = styled(Box)`
   pointer-events: none;
 `;
 
-// Floating particles
 export const Particle = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'delay' && prop !== 'left',
 })<{ delay: number; left: string }>`
@@ -194,7 +185,6 @@ export const Particle = styled(Box, {
   box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent);
 `;
 
-// Modern logo container with glow
 export const LogoContainer = styled(Box)`
   position: relative;
   width: 200px;
@@ -210,7 +200,6 @@ export const LogoContainer = styled(Box)`
   }
 `;
 
-// Glowing orb behind logo
 export const LogoGlow = styled(Box)`
   position: absolute;
   width: 100%;
@@ -225,7 +214,6 @@ export const LogoGlow = styled(Box)`
   animation: ${glowPulse} 3s ease-in-out infinite;
 `;
 
-// SVG Logo with animation
 export const LogoSVG = styled('svg')`
   width: 80%;
   height: 80%;
@@ -260,7 +248,7 @@ export const LogoSVG = styled('svg')`
   }
 `;
 
-// Modern title with static gradient - no animation to prevent flickering
+// Statischer Gradient ohne Animation - verhindert Flickern
 export const Title = styled('h1')`
   font-size: 4rem;
   font-weight: 800;
@@ -289,7 +277,6 @@ export const Title = styled('h1')`
   }
 `;
 
-// Stylish subtitle
 export const Subtitle = styled('p')`
   font-size: 1rem;
   color: color-mix(in srgb, var(--theme-text-secondary, #ffffff) 55%, transparent);
@@ -323,7 +310,6 @@ export const Subtitle = styled('p')`
   }
 `;
 
-// Modern progress container with glass effect
 export const ProgressWrapper = styled(Box)`
   position: relative;
   width: 350px;
@@ -380,7 +366,6 @@ export const ProgressBar = styled(Box, {
   }
 `;
 
-// Loading status with percentage
 export const LoadingStatus = styled(Box)`
   display: flex;
   justify-content: space-between;
@@ -411,7 +396,6 @@ export const LoadingPercentage = styled('p')`
   font-variant-numeric: tabular-nums;
 `;
 
-// Modern corner accents
 export const CornerAccent = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'cornerPos',
 })<{ cornerPos: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }>`

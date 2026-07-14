@@ -12,7 +12,6 @@ export const WatchJourneyLoadingState: React.FC = () => {
 
   return (
     <div className="wj-loading" style={{ background: bgDefault }}>
-      {/* Decorative background for loading */}
       <div
         className="wj-loading-blob wj-loading-blob--primary"
         style={{
@@ -26,7 +25,6 @@ export const WatchJourneyLoadingState: React.FC = () => {
         }}
       />
 
-      {/* Animated loading icon */}
       <div className="wj-loading-icon-wrap">
         <motion.div
           animate={{ rotate: 360 }}

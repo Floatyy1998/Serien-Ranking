@@ -1,11 +1,5 @@
-/**
- * useAdminDashboardData - Fetches analytics data from Firebase RTDB
- * for the admin dashboard overview and all tabs.
- */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { dbRef, paths } from '../../services/db/ref';
-
-// ─── Types ───────────────────────────────────────────────────────────────
 
 export interface DailyStats {
   date: string;
@@ -49,8 +43,6 @@ export interface ExtensionSession {
   bingeDetected: boolean;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────
-
 function dateKey(daysAgo: number): string {
   const d = new Date();
   d.setDate(d.getDate() - daysAgo);
@@ -62,8 +54,6 @@ export function monthKey(monthsAgo = 0): string {
   d.setMonth(d.getMonth() - monthsAgo);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
-
-// ─── Hook ────────────────────────────────────────────────────────────────
 
 export function useAdminDashboardData(daysRange = 30) {
   const [loading, setLoading] = useState(true);
@@ -222,7 +212,7 @@ export function useAdminDashboardData(daysRange = 30) {
     return () => ref.off('value', handler);
   }, []);
 
-  // ─── Computed Metrics ────────────────────────────────────────────────
+  // Computed metrics
 
   const today = dailyStats[0];
   const yesterday = dailyStats[1];
@@ -238,7 +228,6 @@ export function useAdminDashboardData(daysRange = 30) {
 
   const totalUsers = Object.keys(userMetas).length;
 
-  // Extension users (users with platform = 'both' or any extension events)
   const extensionUserCount = Object.values(userMetas).filter(
     (m) => m.platform === 'extension' || m.platform === 'both'
   ).length;
@@ -256,7 +245,6 @@ export function useAdminDashboardData(daysRange = 30) {
     [dailyStats]
   );
 
-  // Events sparkline
   const eventsSparkline = useMemo(
     () =>
       dailyStats
@@ -269,7 +257,6 @@ export function useAdminDashboardData(daysRange = 30) {
     [dailyStats]
   );
 
-  // Top events today
   const topEvents = useMemo(() => {
     if (!today?.events) return [];
     return Object.entries(today.events)
@@ -278,7 +265,6 @@ export function useAdminDashboardData(daysRange = 30) {
       .map(([name, count]) => ({ name, count: count as number }));
   }, [today]);
 
-  // Top pages today
   const topPages = useMemo(() => {
     if (!today?.pageViews) return [];
     return Object.entries(today.pageViews)
@@ -287,7 +273,6 @@ export function useAdminDashboardData(daysRange = 30) {
       .map(([name, count]) => ({ name, count: count as number }));
   }, [today]);
 
-  // Activity chart data (30 days reversed)
   const activityChartData = useMemo(
     () =>
       dailyStats
@@ -301,9 +286,6 @@ export function useAdminDashboardData(daysRange = 30) {
         .reverse(),
     [dailyStats, daysRange]
   );
-
-  // Hourly heatmap (aggregated from events)
-  // We'll derive this from raw events later; for now use page_view counts
 
   // Users list for UsersTab
   const usersList = useMemo(() => {
@@ -324,7 +306,6 @@ export function useAdminDashboardData(daysRange = 30) {
       .sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
   }, [userMetas, userProfiles, realtimeUsers]);
 
-  // Per-user daily stats loader
   const loadUserDailyStats = useCallback(
     async (uid: string, days = 7): Promise<UserDailyStats[]> => {
       const stats: UserDailyStats[] = [];
@@ -350,7 +331,6 @@ export function useAdminDashboardData(daysRange = 30) {
     []
   );
 
-  // Per-user raw events loader
   const loadUserEvents = useCallback(async (uid: string, date: string) => {
     try {
       const snap = await dbRef(`analytics/users/${uid}/events/${date}`).once('value');
@@ -370,7 +350,6 @@ export function useAdminDashboardData(daysRange = 30) {
     }
   }, []);
 
-  // Load all raw events for today across all users
   const loadAllRawEvents = useCallback(async (date?: string) => {
     const targetDate = date || dateKey(0);
     try {

@@ -62,16 +62,14 @@ export const RegisterPage = () => {
     setLoading(true);
 
     try {
-      // Create user account
       const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
       if (userCredential.user) {
-        // Update display name
         await userCredential.user.updateProfile({
           displayName: username,
         });
 
-        // Save user data to database. onboardingComplete muss hier gesetzt werden,
+        // onboardingComplete muss hier gesetzt werden,
         // sonst rennt authProvider in eine Race: trifft die snapshot.once('value')
         // diesen set()-Write bereits an, geht es in den "bestehender User"-Branch
         // mit `existingData?.onboardingComplete !== false` → undefined !== false →
@@ -96,7 +94,6 @@ export const RegisterPage = () => {
           displayName: username,
         });
 
-        // Send verification email
         await userCredential.user.sendEmailVerification();
         trackRegister('email');
         navigate('/');

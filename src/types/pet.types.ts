@@ -84,9 +84,7 @@ export const PET_TYPE_NAMES = {
   panda: 'Panda',
 };
 
-// ============================================================
 // Accessory System
-// ============================================================
 
 export type AccessorySlot = 'head' | 'face' | 'neck';
 export type AccessoryRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
@@ -135,9 +133,7 @@ export interface AccessoryDefinition {
   color?: string;
 }
 
-// ============================================================
-// Special Colors & Patterns (unchanged)
-// ============================================================
+// Special Colors & Patterns
 
 export const SPECIAL_COLORS: Record<
   string,
@@ -159,9 +155,7 @@ export const SPECIAL_PATTERNS = {
   dots: { name: 'Punkte', unlockCondition: 'Anfaenger' },
 };
 
-// ============================================================
 // Pet Display Backgrounds — obtainable via mystery box & daily spin
-// ============================================================
 
 export interface PetBackgroundDefinition {
   id: string;

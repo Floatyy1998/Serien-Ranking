@@ -1,7 +1,3 @@
-/**
- * ThemePage - Theme Customization (composition only)
- */
-
 import { useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Palette, ColorLens, Brightness6, Wallpaper, FormatColorText } from '@mui/icons-material';
@@ -153,7 +149,6 @@ export const ThemePage = () => {
       />
 
       <div className="theme-content">
-        {/* Preset Themes */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -181,7 +176,6 @@ export const ThemePage = () => {
           </div>
         </motion.div>
 
-        {/* Color Editors */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -229,7 +223,6 @@ export const ThemePage = () => {
           </div>
         </motion.div>
 
-        {/* Reset */}
         <ResetSection currentTheme={currentTheme} onReset={resetTheme} />
       </div>
     </PageLayout>

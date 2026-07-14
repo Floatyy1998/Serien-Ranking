@@ -1,6 +1,6 @@
 /* ActorUniversePage - Layout styles with au- prefix */
 
-/* ===== Page Shell ===== */
+/* Page Shell */
 .au-page {
   min-height: 100vh;
   position: relative;
@@ -21,7 +21,7 @@
   z-index: 0;
 }
 
-/* ===== Header ===== */
+/* Header */
 .au-header {
   padding: 16px 20px;
   padding-top: calc(16px + env(safe-area-inset-top));
@@ -58,7 +58,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ===== Tabs ===== */
+/* Tabs */
 .au-tabs {
   display: flex;
   gap: 8px;
@@ -94,7 +94,7 @@
   justify-content: center;
 }
 
-/* ===== Loading Screen ===== */
+/* Loading Screen */
 .au-loading-content {
   display: flex;
   flex-direction: column;
@@ -157,7 +157,7 @@
   border-radius: 10px;
 }
 
-/* ===== Stats Banner ===== */
+/* Stats Banner */
 .au-stats-banner {
   margin: 16px 20px;
   padding: 18px;
@@ -214,7 +214,7 @@
   font-weight: 500;
 }
 
-/* ===== Modal ===== */
+/* Modal */
 .au-modal-overlay {
   position: fixed;
   inset: 0;

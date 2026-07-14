@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import { useCalendarData, toDateKey, formatDate, WEEKDAYS_SHORT } from './useCalendarData';
 
-// ── firebase compat mock ──────────────────────────────────────────────
+// firebase compat mock
 const fb = vi.hoisted(() => {
   const state = { snapshot: null as unknown };
   const setSpy = vi.fn(async () => {});
@@ -21,7 +21,7 @@ vi.mock('firebase/compat/app', () => {
 });
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── contexts / side-effects ───────────────────────────────────────────
+// contexts / side-effects
 const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   user: { uid: 'u1' } as { uid: string } | null,
@@ -50,7 +50,7 @@ vi.mock('../../lib/toast', () => ({
   showUndoToast: (...a: unknown[]) => showUndoToast(...a),
 }));
 
-// ── fixtures ──────────────────────────────────────────────────────────
+// fixtures
 // System time pinned to Wed 01 Jul 2026 12:00 local. Episode air_date lands
 // in that ISO week regardless of the host timezone.
 const AIR = '2026-07-01';

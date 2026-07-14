@@ -10,7 +10,6 @@ import {
   ACCENT_COLORS,
 } from './constants';
 
-// Genre Bar - Premium Version
 export const GenreBar: React.FC<{
   genre: GenreComparison;
   index: number;

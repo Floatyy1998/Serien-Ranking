@@ -1,6 +1,6 @@
 /**
- * useSearchPage - Business logic hook for SearchPage
- * Manages search state, TMDB API calls, session persistence, and list operations.
+ * Business-Logik der SearchPage: Suchzustand, TMDB-Suche,
+ * Session-Persistenz und Listen-Aktionen.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -73,13 +73,13 @@ export interface UseSearchPageResult {
   setOnlyMyProviders: (value: boolean) => void;
 }
 
+// Stabile Default-Referenz (Inline `new Set()` pro Render destabilisiert Callbacks).
+const EMPTY_ACTIVE_PROVIDERS = new Set<string>();
+
 /**
  * @param activeProviders Set der aktiven Abo-Provider-Namen (aus
  *   `useActiveSubscriptions`). Leer = kein Provider-Filter möglich (No-Op).
  */
-// Stabile Default-Referenz (Inline `new Set()` pro Render destabilisiert Callbacks).
-const EMPTY_ACTIVE_PROVIDERS = new Set<string>();
-
 export const useSearchPage = (
   activeProviders: Set<string> = EMPTY_ACTIVE_PROVIDERS
 ): UseSearchPageResult => {

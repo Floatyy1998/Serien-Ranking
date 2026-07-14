@@ -10,7 +10,7 @@ import {
   type CatchUpSeries,
 } from './useCatchUpData';
 
-// ── react-router-dom mock ─────────────────────────────────────────────
+// react-router-dom mock
 const router = vi.hoisted(() => ({
   params: new URLSearchParams(),
   setParams: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock('react-router-dom', () => ({
   useSearchParams: () => [router.params, router.setParams] as const,
 }));
 
-// ── SeriesList context mock ───────────────────────────────────────────
+// SeriesList context mock
 const ctx = vi.hoisted(() => ({ seriesList: [] as Series[] }));
 vi.mock('../../contexts/SeriesListContext', () => ({
   useSeriesList: () => ({ seriesList: ctx.seriesList, allSeriesList: ctx.seriesList }),

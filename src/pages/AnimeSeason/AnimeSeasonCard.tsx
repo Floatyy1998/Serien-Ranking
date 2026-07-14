@@ -195,7 +195,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   const isMovie = anime.format === 'MOVIE';
   const formatBadge = formatBadgeDe(anime.format);
 
-  // ── Datum-Pill ─────────────────────────────────────────────────────────────
+  // Datum-Pill
   const startDate = startDateToDate(anime.startDate);
   // Ohne Tages-Angabe fällt startDateToDate auf den Monatsersten — dann kein
   // Datums-Band zeigen (die Timeline führt den Eintrag unter „Start noch offen").
@@ -274,7 +274,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
           />
         )}
 
-        {/* ── Poster links, volle Kartenhöhe (themed Placeholder als Fallback) ── */}
+        {/* Poster links, volle Kartenhöhe (themed Placeholder als Fallback) */}
         <img
           src={cover || placeholder}
           alt={`Cover von ${title}`}
@@ -284,7 +284,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
           style={{ background: tint || currentTheme.background.surfaceElevated }}
         />
 
-        {/* ── Text-Block rechts ── */}
+        {/* Text-Block rechts */}
         <div className="as-card-body">
           <div className="as-card-toprow">
             <span className="as-card-chips">

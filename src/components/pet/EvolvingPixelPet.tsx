@@ -28,7 +28,6 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
   const frameRef = useRef(0);
   const [currentMood] = useState(() => petMoodService.calculateCurrentMood(pet));
 
-  // Detect if mobile device - slower on desktop, normal on mobile
   const isMobile =
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
     window.innerWidth < 768;
@@ -56,11 +55,10 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
     // Imagesmoothing aus für scharfe Pixel
     ctx.imageSmoothingEnabled = false;
 
-    const gridSize = 32; // 32x32 Grid
-    const pixelSize = Math.floor(size / gridSize); // Dynamische Pixelgröße basierend auf Canvas-Größe
+    const gridSize = 32;
+    const pixelSize = Math.floor(size / gridSize);
     const color = PET_COLORS[pet.color as keyof typeof PET_COLORS] || PET_COLORS.blau;
 
-    // Farben für verschiedene Teile
     const darkColor = adjustColor(color, -40);
     const lightColor = adjustColor(color, 40);
 
@@ -97,7 +95,6 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.fillRect(0, 0, size, size);
       }
 
-      // Einfache Bounce-Animation
       const bounceOffset = animated
         ? Math.sin(frameRef.current * 0.05 * animationSpeed * moodSpeedMultiplier) * 2
         : 0;
@@ -112,13 +109,11 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
               ? bounceOffset * 0.5
               : bounceOffset;
 
-      // Bestimme welcher Slot durch ein equipped Accessory belegt ist
       const equippedAcc = pet.accessories?.find((a) => a.equipped);
       const equippedSlot: AccessorySlot | null = equippedAcc
         ? (ACCESSORIES[equippedAcc.id]?.slot ?? null)
         : null;
 
-      // Zeichne zuerst das Pet
       if (pet.type === 'cat') {
         drawCat(
           ctx,
@@ -361,7 +356,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         }
       }
 
-      // === STUFE 7 (Lv40+): Energie-Ring ===
+      // STUFE 7 (Lv40+): Energie-Ring
       if (pet.level >= 40 && animated) {
         const ringPhase = frameRef.current * 0.03 * animationSpeed;
         const ringAlpha = 0.15 + Math.sin(ringPhase) * 0.1;
@@ -388,7 +383,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         ctx.stroke();
       }
 
-      // === STUFE 8 (Lv50+): Elementar-Aura / Flammen-Partikel ===
+      // STUFE 8 (Lv50+): Elementar-Aura / Flammen-Partikel
       if (pet.level >= 50 && animated) {
         const particlePhase = frameRef.current * 0.04 * animationSpeed;
         for (let i = 0; i < 6; i++) {
@@ -413,7 +408,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         }
       }
 
-      // === STUFE 9 (Lv60+): Doppelte Orbits + Trail-Effekte ===
+      // STUFE 9 (Lv60+): Doppelte Orbits + Trail-Effekte
       if (pet.level >= 60 && animated) {
         // Zweiter Orbit-Ring (gegenläufig)
         const orbit2Phase = frameRef.current * -0.03 * animationSpeed;
@@ -451,7 +446,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         }
       }
 
-      // === STUFE 10 (Lv75+): Halo + Partikel-Explosion ===
+      // STUFE 10 (Lv75+): Halo + Partikel-Explosion
       if (pet.level >= 75 && animated) {
         // Heiligenschein oben
         const haloPhase = frameRef.current * 0.02 * animationSpeed;
@@ -489,7 +484,7 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         }
       }
 
-      // === STUFE 11 (Lv100): Regenbogen-Schimmer + Shockwave-Pulse ===
+      // STUFE 11 (Lv100): Regenbogen-Schimmer + Shockwave-Pulse
       if (pet.level >= 100 && animated) {
         // Regenbogen-Schimmer (rotierende Farben)
         const rainbowPhase = frameRef.current * 0.015 * animationSpeed;

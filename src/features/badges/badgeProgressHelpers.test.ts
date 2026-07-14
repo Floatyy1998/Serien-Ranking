@@ -72,8 +72,6 @@ function makeBadge(over: Partial<Badge> = {}): Badge {
 
 const BASE = new Date('2026-07-04T12:00:00Z').getTime();
 
-// ---------- getBingeProgress ----------
-
 describe('getBingeProgress', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -125,8 +123,6 @@ describe('getBingeProgress', () => {
   });
 });
 
-// ---------- getQuickwatchProgress ----------
-
 describe('getQuickwatchProgress', () => {
   it('null ohne episodes-Requirement', () => {
     expect(getQuickwatchProgress(makeBadge({ requirements: {} }), {})).toBeNull();
@@ -143,8 +139,6 @@ describe('getQuickwatchProgress', () => {
     );
   });
 });
-
-// ---------- getMarathonProgress ----------
 
 describe('getMarathonProgress', () => {
   beforeEach(() => {
@@ -177,7 +171,7 @@ describe('getMarathonProgress', () => {
   });
 });
 
-// ---------- getTimeRemainingInWeek / getCurrentWeekKey ----------
+// getTimeRemainingInWeek / getCurrentWeekKey
 
 describe('getTimeRemainingInWeek', () => {
   afterEach(() => vi.useRealTimers());
@@ -210,8 +204,6 @@ describe('getCurrentWeekKey', () => {
   });
 });
 
-// ---------- getStreakProgress ----------
-
 describe('getStreakProgress', () => {
   it('null ohne days-Requirement', () => {
     expect(getStreakProgress(makeBadge({ requirements: {} }), {})).toBeNull();
@@ -224,8 +216,6 @@ describe('getStreakProgress', () => {
     expect(getStreakProgress(makeBadge({ requirements: { days: 7 } }), {})?.current).toBe(0);
   });
 });
-
-// ---------- getRewatchProgress ----------
 
 describe('getRewatchProgress', () => {
   it('null ohne episodes-Requirement', () => {
@@ -257,8 +247,6 @@ describe('getRewatchProgress', () => {
   });
 });
 
-// ---------- getExplorerProgress ----------
-
 describe('getExplorerProgress', () => {
   it('null ohne series-Requirement', () => {
     expect(getExplorerProgress(makeBadge({ requirements: {} }), [])).toBeNull();
@@ -270,8 +258,6 @@ describe('getExplorerProgress', () => {
     expect(p).toMatchObject({ current: 3, total: 50 });
   });
 });
-
-// ---------- getCollectorProgress ----------
 
 describe('getCollectorProgress', () => {
   it('null ohne ratings-Requirement', () => {
@@ -289,7 +275,7 @@ describe('getCollectorProgress', () => {
   });
 });
 
-// ---------- getSocialProgress (Firebase) ----------
+// getSocialProgress (Firebase)
 
 describe('getSocialProgress', () => {
   beforeEach(() => fb.reset());

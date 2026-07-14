@@ -91,9 +91,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: fb.firebaseDefault }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// ---------------------------------------------------------------------------
 // Browser-Globals (node-env): localStorage, document, window, navigator.
-// ---------------------------------------------------------------------------
 function makeLocalStorage() {
   const m = new Map<string, string>();
   return {

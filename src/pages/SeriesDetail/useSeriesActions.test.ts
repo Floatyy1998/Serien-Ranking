@@ -4,11 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode } from './types';
 
-// ── react-router-dom ──────────────────────────────────────────────────
+// react-router-dom
 const rr = vi.hoisted(() => ({ navigate: vi.fn() }));
 vi.mock('react-router-dom', () => ({ useNavigate: () => rr.navigate }));
 
-// ── firebase compat ───────────────────────────────────────────────────
+// firebase compat
 const fb = vi.hoisted(() => {
   const onceMock = vi.fn(() => Promise.resolve({ val: () => null as unknown }));
   const setMock = vi.fn(() => Promise.resolve());
@@ -28,7 +28,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── context + service mocks ───────────────────────────────────────────
+// context + service mocks
 const ctx = vi.hoisted(() => ({
   toggleHideSeries: vi.fn(async () => {}),
   refetchAfterAdd: vi.fn(async () => {}),

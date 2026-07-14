@@ -8,7 +8,7 @@ import type {
   SeriesWatchData,
 } from '../types/CatalogTypes';
 
-// ---------- Fixtures ----------
+// Fixtures
 
 function makeCatalog(overrides: Record<string, unknown> = {}): CatalogSeries {
   return {
@@ -90,7 +90,7 @@ const UNIX_L = 1710000000;
 const ISO_F = new Date(UNIX_F * 1000).toISOString();
 const ISO_L = new Date(UNIX_L * 1000).toISOString();
 
-// ---------- mergeToSeriesView ----------
+// mergeToSeriesView
 
 describe('mergeToSeriesView', () => {
   describe('Wrapper-Shapes & Basisfelder', () => {
@@ -577,7 +577,7 @@ describe('mergeToSeriesView', () => {
   });
 });
 
-// ---------- mergeToMovieView ----------
+// mergeToMovieView
 
 describe('mergeToMovieView', () => {
   it('verpackt Catalog-Felder in Wrapper-Shapes und übernimmt runtime', () => {

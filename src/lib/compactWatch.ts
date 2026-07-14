@@ -20,7 +20,7 @@
  *   l: lastWatchedAt als Unix-Seconds (0/fehlend = nicht gesetzt)
  */
 
-// ---------- Types ----------
+// Types
 
 export interface EpisodeWatchEntry {
   w?: number; // 0 or 1
@@ -48,7 +48,7 @@ export interface EpisodeWatch {
   lastWatchedAt?: string;
 }
 
-// ---------- Format Detection ----------
+// Format Detection
 
 /** Prueft ob Season-Daten im ID-basierten Format sind (hat `eps` Map). */
 export function isEpidSeason(season: unknown): season is EpidSeason {
@@ -70,7 +70,7 @@ export function isLegacyArraySeason(season: unknown): season is LegacyArraySeaso
   );
 }
 
-// ---------- Read Helpers ----------
+// Read Helpers
 
 /** Liest Episode-Watch-Daten aus einer ID-basierten Season. */
 export function readEpisodeById(
@@ -99,7 +99,7 @@ export function readEpisodeFromLegacyArray(
   };
 }
 
-// ---------- Write Helpers ----------
+// Write Helpers
 
 /**
  * Erzeugt Firebase Multi-Path-Updates fuer einen Episode-Watched-Event.
@@ -160,7 +160,7 @@ export function buildEpisodeUnwatchUpdates(
   };
 }
 
-// ---------- Conversion Helpers ----------
+// Conversion Helpers
 
 export function isoToUnix(iso: string | undefined | null): number {
   if (!iso) return 0;

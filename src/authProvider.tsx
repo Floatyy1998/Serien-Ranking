@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [_isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
-    // Online/Offline Status überwachen
     const handleOnline = () => setIsOffline(false);
     const handleOffline = () => setIsOffline(true);
 
@@ -41,8 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           module.initFirebase();
           initAnalyticsIfConsented();
-          // Remove compat analytics import (GA4 replaced by RTDB)
-          // firebase/compat/analytics is no longer needed
           setFirebaseInitialized(true);
           window.setAppReady?.('firebase', true);
 
@@ -73,10 +70,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           ); // Kürzerer Timeout wenn offline
 
           unsubscribeAuth = firebase.auth().onAuthStateChanged(async (user) => {
-            if (authTimeout) clearTimeout(authTimeout); // Timeout löschen wenn Auth State sich ändert
+            if (authTimeout) clearTimeout(authTimeout);
             setUser(user);
             setAuthStateResolved(true);
-            // Set analytics user for RTDB analytics
             setAnalyticsUser(user?.uid ?? null);
             window.setAppReady?.('auth', true);
             window.setAppReady?.('emailVerification', true); // Email verification check happens elsewhere if needed
@@ -111,7 +107,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     const newBadges = await badgeSystem.checkForNewBadges();
 
                     if (newBadges.length > 0) {
-                      // Event für neue Badges auslösen
                       window.dispatchEvent(
                         new CustomEvent('badgeProgressUpdate', {
                           detail: { newBadges },
@@ -119,7 +114,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                       );
                     }
 
-                    // Zeitstempel für letzten Check speichern
                     localStorage.setItem(lastCheckKey, now.toString());
                   }
                 } catch (error) {
@@ -196,7 +190,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
                 void syncUserSearchIndex(user.uid, userData);
 
-                // 🚀 Cache User-Daten für Offline-Zugriff
+                // Cache User-Daten für Offline-Zugriff
                 await offlineFirebaseService.cacheData(
                   `users/${user.uid}`,
                   userData,
@@ -224,7 +218,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   bio: existingData?.bio,
                 });
 
-                // 🚀 Cache aktualisierte User-Daten
+                // Cache aktualisierte User-Daten für Offline-Zugriff
                 const userData = snapshot.val();
                 await offlineFirebaseService.cacheData(
                   `users/${user.uid}`,

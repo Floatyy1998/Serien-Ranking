@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: verschachtelter In-Memory-Baum. Pfade werden an '/' zerlegt;
 // Parent-Reads aggregieren Children automatisch. Nur checkSocialBadgeFromCounters
 // braucht Firebase (friends-Node) — der Rest der Datei ist pure Logik.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const root: Record<string, unknown> = {};
   const segs = (p: string) => p.split('/').filter(Boolean);
@@ -77,7 +75,7 @@ import {
   isSeasonCompleted,
 } from './badgeCheckers';
 
-// ---------- Fixtures ----------
+// Fixtures
 
 function makeBadge(over: Partial<Badge> = {}): Badge {
   return {
@@ -98,8 +96,6 @@ function season(over: Partial<BadgeSeason> = {}): BadgeSeason {
 }
 
 const BASE = new Date('2026-07-04T12:00:00Z').getTime();
-
-// ---------- hasValidRating ----------
 
 describe('hasValidRating', () => {
   it('Zahl > 0 ist gültig, <= 0 nicht', () => {
@@ -127,8 +123,6 @@ describe('hasValidRating', () => {
   });
 });
 
-// ---------- checkExplorerBadge ----------
-
 describe('checkExplorerBadge', () => {
   const series = (n: number): BadgeSeriesItem[] => Array.from({ length: n }, () => ({}));
 
@@ -146,8 +140,6 @@ describe('checkExplorerBadge', () => {
     expect(r?.earned).toBe(true);
   });
 });
-
-// ---------- checkCollectorBadge ----------
 
 describe('checkCollectorBadge', () => {
   it('zählt gültige Ratings aus Serien UND Filmen', () => {
@@ -169,7 +161,7 @@ describe('checkCollectorBadge', () => {
   });
 });
 
-// ---------- checkSocialBadgeFromCounters (Firebase) ----------
+// checkSocialBadgeFromCounters (Firebase)
 
 describe('checkSocialBadgeFromCounters', () => {
   const empty: BadgeCounters = {};
@@ -211,8 +203,6 @@ describe('checkSocialBadgeFromCounters', () => {
   });
 });
 
-// ---------- getTimeframeDescription ----------
-
 describe('getTimeframeDescription', () => {
   it('bekannte Zeitfenster', () => {
     expect(getTimeframeDescription('10hours')).toBe('10 Stunden');
@@ -225,8 +215,6 @@ describe('getTimeframeDescription', () => {
     expect(getTimeframeDescription('')).toBe('einer Session');
   });
 });
-
-// ---------- getTimeWindowMs ----------
 
 describe('getTimeWindowMs', () => {
   it('mappt bekannte Zeitfenster auf Millisekunden', () => {
@@ -243,8 +231,6 @@ describe('getTimeWindowMs', () => {
     expect(getTimeWindowMs('nope')).toBeNull();
   });
 });
-
-// ---------- isSeasonCompleted ----------
 
 describe('isSeasonCompleted', () => {
   it('alle Episoden watched=true → completed', () => {
@@ -267,8 +253,6 @@ describe('isSeasonCompleted', () => {
     expect(isSeasonCompleted({ seasonNumber: 0 } as unknown as BadgeSeason)).toBe(false);
   });
 });
-
-// ---------- getSeasonCompletionTime ----------
 
 describe('getSeasonCompletionTime', () => {
   beforeEach(() => {
@@ -297,8 +281,6 @@ describe('getSeasonCompletionTime', () => {
     expect(getSeasonCompletionTime({ seasonNumber: 0 } as unknown as BadgeSeason)).toBeNull();
   });
 });
-
-// ---------- checkSeasonBadgeFromRealData ----------
 
 describe('checkSeasonBadgeFromRealData', () => {
   beforeEach(() => {
@@ -360,8 +342,6 @@ describe('checkSeasonBadgeFromRealData', () => {
   });
 });
 
-// ---------- getCounterValue ----------
-
 describe('getCounterValue', () => {
   const data = (counters: BadgeCounters): BadgeUserData => ({
     series: [],
@@ -383,8 +363,6 @@ describe('getCounterValue', () => {
     expect(getCounterValue(null, 'x')).toBe(0);
   });
 });
-
-// ---------- checkBingeBadgeFromSeries ----------
 
 describe('checkBingeBadgeFromSeries', () => {
   beforeEach(() => {
@@ -451,8 +429,6 @@ describe('checkBingeBadgeFromSeries', () => {
   });
 });
 
-// ---------- checkMarathonBadgeFromSeries ----------
-
 describe('checkMarathonBadgeFromSeries', () => {
   const cache = (marathonWeeks: Record<string, number>): BadgeUserData => ({
     series: [],
@@ -493,8 +469,6 @@ describe('checkMarathonBadgeFromSeries', () => {
   });
 });
 
-// ---------- checkStreakBadgeFromCounters ----------
-
 describe('checkStreakBadgeFromCounters', () => {
   it('currentStreak >= days → erreicht', () => {
     const r = checkStreakBadgeFromCounters(makeBadge({ requirements: { days: 7 } }), {
@@ -514,8 +488,6 @@ describe('checkStreakBadgeFromCounters', () => {
   });
 });
 
-// ---------- checkQuickwatchBadgeFromCounters ----------
-
 describe('checkQuickwatchBadgeFromCounters', () => {
   it('quickwatchEpisodes >= episodes → erreicht', () => {
     const r = checkQuickwatchBadgeFromCounters(makeBadge({ requirements: { episodes: 3 } }), {
@@ -532,8 +504,6 @@ describe('checkQuickwatchBadgeFromCounters', () => {
     ).toBeNull();
   });
 });
-
-// ---------- checkRewatchBadgeFromSeries ----------
 
 describe('checkRewatchBadgeFromSeries', () => {
   it('summiert (watchCount - 1) über gesehene Episoden', () => {
@@ -571,7 +541,7 @@ describe('checkRewatchBadgeFromSeries', () => {
   });
 });
 
-// ---------- checkBadgeRequirement (Dispatch) ----------
+// checkBadgeRequirement (Dispatch)
 
 describe('checkBadgeRequirement', () => {
   beforeEach(() => fb.reset());

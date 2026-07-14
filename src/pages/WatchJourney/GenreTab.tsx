@@ -19,7 +19,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
 
-  // Prepare data for stacked area chart (absolute hours)
+  // Stacked-area chart data in absolute hours
   const chartData = useMemo(() => {
     return data.genreMonths.map((month) => {
       const hoursValues: Record<string, number> = {};
@@ -33,7 +33,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
     });
   }, [data]);
 
-  // Prepare data for pie chart
   const pieData = useMemo(() => {
     const totals: Record<string, number> = {};
     data.genreMonths.forEach((month) => {
@@ -48,7 +47,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
     }));
   }, [data]);
 
-  // Calculate genre stats
   const genreStats = useMemo(() => {
     const totals: Record<string, number> = {};
     data.genreMonths.forEach((month) => {
@@ -82,7 +80,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
 
   return (
     <div>
-      {/* Hero Section - Top Genre */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -143,7 +140,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Pie Chart - Genre Distribution */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -208,7 +204,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
           </SafeResponsiveContainer>
         </div>
 
-        {/* Legend */}
         <div
           style={{
             display: 'flex',
@@ -227,7 +222,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Stacked Area Chart - Genre over time */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -292,7 +286,6 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Genre Stats Grid */}
       <div style={{ padding: '0 20px' }}>
         <h3
           style={{

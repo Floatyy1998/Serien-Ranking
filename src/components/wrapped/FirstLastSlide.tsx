@@ -1,7 +1,3 @@
-/**
- * FirstLastSlide - Zeigt das erste und letzte geschaute des Jahres
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { FirstLastWatch } from '../../types/Wrapped';

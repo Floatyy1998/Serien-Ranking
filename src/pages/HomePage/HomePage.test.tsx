@@ -46,7 +46,7 @@ vi.mock('../../contexts/SeriesListContext', () => ({
   }),
 }));
 
-// --- data hooks ---
+// data hooks
 vi.mock('../../hooks/useEpisodeSwipeHandlers', () => ({
   useEpisodeSwipeHandlers: () => ({
     continueWatching: [],
@@ -141,7 +141,7 @@ vi.mock('./useUnifiedNotifications', () => ({
   }),
 }));
 
-// --- child components: shallow stubs so nothing heavy mounts ---
+// child components: shallow stubs so nothing heavy mounts
 vi.mock('../../components/ui', () => ({ SectionHeader: () => null }));
 vi.mock('../../components/ui/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
 vi.mock('../../components/pet/CaseOpeningOverlay', () => ({ CaseOpeningOverlay: () => null }));

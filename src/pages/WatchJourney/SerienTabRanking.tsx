@@ -82,7 +82,6 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
               cursor: 'pointer',
             }}
           >
-            {/* Poster thumbnail */}
             <div
               style={{
                 width: 50,
@@ -100,7 +99,6 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
               {!posters[series.seriesId] && <Tv style={{ color: textSecondary, fontSize: 20 }} />}
             </div>
 
-            {/* Rank */}
             <div
               style={{
                 width: 28,
@@ -120,7 +118,6 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
               {index + 1}
             </div>
 
-            {/* Info */}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
@@ -145,7 +142,6 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
               </div>
             </div>
 
-            {/* Stats */}
             <div style={{ textAlign: 'right' }}>
               <div style={{ color: primaryColor, fontSize: 16, fontWeight: 700 }}>
                 {series.episodes}

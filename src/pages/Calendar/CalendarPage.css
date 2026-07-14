@@ -351,7 +351,7 @@
   line-height: 1.3;
 }
 
-/* ── Provider badge ── */
+/* Provider badge */
 
 /* Desktop badge — hidden on mobile, shown in poster-info on desktop */
 .cal-ep-provider-badge {
@@ -519,14 +519,14 @@
   text-overflow: ellipsis;
 }
 
-/* ── Mobile status wrapper (replaces inline-styled mobile status/mark) ── */
+/* Mobile status wrapper (replaces inline-styled mobile status/mark) */
 .cal-ep-mobile-status {
   display: flex;
   align-items: center;
   flex-shrink: 0;
 }
 
-/* ── Expand button area (mobile groups) ── */
+/* Expand button area (mobile groups) */
 .cal-ep-expand-mobile {
   display: flex;
   align-items: center;
@@ -542,12 +542,12 @@
   transform: rotate(180deg);
 }
 
-/* ── Desktop toolbar center — remove padding from nested week-switcher ── */
+/* Desktop toolbar center — remove padding from nested week-switcher */
 .cal-toolbar-center .cal-week-switcher {
   padding: 0;
 }
 
-/* ── Entry buttons (Anime-Season / Serien-Kalender) ── */
+/* Entry buttons (Anime-Season / Serien-Kalender) */
 .cal-entry-btn {
   display: flex;
   align-items: center;
@@ -615,9 +615,7 @@
   padding: 0 16px;
 }
 
-/* =========================================
-   Desktop: Poster-Card Layout
-   ========================================= */
+/* Desktop: Poster-Card Layout */
 @media (min-width: 768px) {
   /* Show desktop toolbar, hide mobile header */
   .cal-toolbar-desktop {
@@ -956,10 +954,8 @@
   }
 }
 
-/* ===========================================================================
- * Desktop 2050-Pass: volle Flächennutzung — Einstiegskarten nebeneinander,
- * Wochen-Grid füllt die Seitenhöhe, leere Tage bleiben sichtbare Zonen.
- * =========================================================================== */
+/* Desktop 2050-Pass: volle Flächennutzung — Einstiegskarten nebeneinander,
+   Wochen-Grid füllt die Seitenhöhe, leere Tage bleiben sichtbare Zonen. */
 @media (min-width: 768px) {
   .cal-entry-row {
     display: grid;
@@ -997,10 +993,8 @@
   }
 }
 
-/* ===========================================================================
- * Mobile Tagesansicht: Tages-Chips oben, EIN Tag füllt den Screen,
- * horizontales Swipen wechselt den Tag (über Wochengrenzen hinweg).
- * =========================================================================== */
+/* Mobile Tagesansicht: Tages-Chips oben, EIN Tag füllt den Screen,
+   horizontales Swipen wechselt den Tag (über Wochengrenzen hinweg). */
 @media (max-width: 767px) {
   .cal-day-selector {
     display: flex;

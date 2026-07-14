@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-// Animierter Counter
 export const AnimatedCounter: React.FC<{ value: number }> = ({ value }) => {
   const [count, setCount] = useState(0);
 

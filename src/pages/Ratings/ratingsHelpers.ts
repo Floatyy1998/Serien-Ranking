@@ -5,8 +5,6 @@ import type { Movie } from '../../types/Movie';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
 
-// ─── Types ──────────────────────────────────────────────────────────────
-
 export interface PreparedItem {
   id: number;
   title: string;
@@ -64,8 +62,7 @@ export interface UseRatingsDataResult {
   quickFilter: string | null;
 }
 
-// ─── Helpers (pure functions, created once) ─────────────────────────────
-
+// Helpers (pure functions, created once)
 export function getRating(item: Series | Movie): number {
   const r = parseFloat(calculateOverallRating(item));
   return isNaN(r) ? 0 : r;

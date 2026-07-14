@@ -1,5 +1,5 @@
 /**
- * 🧹 Minimal Activity Logger v1.0
+ * Minimal Activity Logger
  *
  * NUR NOCH 4 Friend-Activities:
  * - Serie hinzugefügt
@@ -32,7 +32,6 @@ interface BatchEpisodeEntry {
 // Badge-Callback System (ersetzt activityBatchManager)
 const badgeCallbacks = new Map<string, (badges: EarnedBadge[]) => void>();
 
-// Badge-Callback Management
 export const registerBadgeCallback = (
   userId: string,
   callback: (badges: EarnedBadge[]) => void
@@ -45,7 +44,7 @@ export const removeBadgeCallback = (userId: string) => {
 };
 
 /**
- * 🏠 Friend-Activity Logger (nur für Freunde-Feed)
+ * Friend-Activity Logger (nur für Freunde-Feed)
  */
 const logFriendActivity = async (
   userId: string,
@@ -54,7 +53,6 @@ const logFriendActivity = async (
   try {
     const activitiesRef = dbRef(userPath(userId, 'activities'));
 
-    // Add new activity
     const newActivityRef = activitiesRef.push();
     await newActivityRef.set({
       ...activityData,
@@ -68,14 +66,12 @@ const logFriendActivity = async (
     if (activities) {
       const activityKeys = Object.keys(activities);
       if (activityKeys.length > 30) {
-        // Sort by timestamp and remove oldest entries
         const sortedKeys = activityKeys.sort((a, b) => {
           const timestampA = activities[a].timestamp || 0;
           const timestampB = activities[b].timestamp || 0;
           return timestampA - timestampB;
         });
 
-        // Remove excess activities (keep only newest 30)
         const toRemove = sortedKeys.slice(0, activityKeys.length - 30);
         const updates: { [key: string]: null } = {};
         toRemove.forEach((key) => {
@@ -110,7 +106,6 @@ const triggerBadgeCallback = async (userId: string, newBadges: EarnedBadge[]): P
     return;
   }
 
-  // Merke getriggerte Badges
   filteredBadges.forEach((badge) => {
     const badgeKey = `${badge.id}-${Math.floor(now / 5000)}`;
     userRecentBadges.add(badgeKey);
@@ -139,9 +134,7 @@ const triggerBadgeCallback = async (userId: string, newBadges: EarnedBadge[]): P
   // else: no callback registered yet — the badge will be picked up on next mount
 };
 
-// =============================================================================
-// 📺 EPISODE COUNTER UPDATES (KEINE Activities, NUR Counter für Badges)
-// =============================================================================
+// Episode-Counter-Updates: KEINE Activities, NUR Counter für Badges
 
 /**
  * Episode geschaut - NUR Counter-Updates für Badge-System
@@ -152,10 +145,9 @@ export const updateEpisodeCounters = async (
   airDate?: string
 ): Promise<EarnedBadge[]> => {
   try {
-    // 1. Streak-Counter aktualisieren
     await badgeCounterService.updateStreakCounter(userId);
 
-    // 2. Quickwatch-Counter (falls heute erschienen)
+    // Quickwatch-Counter nur, wenn die Folge heute erschienen ist
     if (airDate && !isRewatch) {
       const today = new Date().toDateString();
       const episodeDate = new Date(airDate).toDateString();
@@ -164,26 +156,21 @@ export const updateEpisodeCounters = async (
       }
     }
 
-    // 3. Rewatch-Counter
     if (isRewatch) {
       await badgeCounterService.incrementRewatchCounter(userId);
     }
 
-    // 4. Marathon-Counter (wöchentlich)
     await badgeCounterService.recordMarathonEpisode(userId);
 
-    // 5. Zeitbasierte Binge-Session-Erkennung (48h-Window)
+    // Zeitbasierte Binge-Session-Erkennung (48h-Window)
     await badgeCounterService.recordBingeEpisode(userId);
 
-    // 5. Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
     badgeSystem.invalidateCache(); // WICHTIG: Frische Daten nach Counter-Updates!
     const newBadges = await badgeSystem.checkForNewBadges();
 
-    // 6. Badge-Callback triggern
     await triggerBadgeCallback(userId, newBadges);
 
-    // Progress Update Event für UI
     window.dispatchEvent(
       new CustomEvent('badgeProgressUpdate', {
         detail: { userId, type: 'episode', newBadges },
@@ -196,13 +183,7 @@ export const updateEpisodeCounters = async (
   }
 };
 
-/**
- * Binge-Session für mehrere schnell geschaute Episoden
- */
-
-// =============================================================================
-// 📋 FRIEND-ACTIVITIES (NUR diese 4 werden noch geloggt)
-// =============================================================================
+// Friend-Activities: NUR diese 4 werden noch geloggt
 
 /**
  * Serie hinzugefügt
@@ -214,7 +195,6 @@ export const logSeriesAdded = async (
   posterPath?: string
 ): Promise<EarnedBadge[]> => {
   try {
-    // Friend-Activity
     await logFriendActivity(userId, {
       type: 'series_added',
       itemTitle: seriesTitle,
@@ -223,10 +203,8 @@ export const logSeriesAdded = async (
       ...(posterPath && { posterPath }),
     });
 
-    // Social-Counter für Badge-System
     await badgeCounterService.incrementSocialCounter(userId, 'series');
 
-    // Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
     badgeSystem.invalidateCache(); // WICHTIG: Frische Daten nach Counter-Updates!
     const newBadges = await badgeSystem.checkForNewBadges();
@@ -248,7 +226,6 @@ export const logMovieAdded = async (
   posterPath?: string
 ): Promise<EarnedBadge[]> => {
   try {
-    // Friend-Activity
     await logFriendActivity(userId, {
       type: 'movie_added',
       itemTitle: movieTitle,
@@ -257,10 +234,8 @@ export const logMovieAdded = async (
       ...(posterPath && { posterPath }),
     });
 
-    // Social-Counter für Badge-System
     await badgeCounterService.incrementSocialCounter(userId, 'movie');
 
-    // Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
     badgeSystem.invalidateCache(); // WICHTIG: Frische Daten nach Counter-Updates!
     const newBadges = await badgeSystem.checkForNewBadges();
@@ -281,7 +256,6 @@ export const logWatchlistAdded = async (
   tmdbId: number
 ): Promise<EarnedBadge[]> => {
   try {
-    // Friend-Activity
     await logFriendActivity(userId, {
       type: 'series_added_to_watchlist',
       itemTitle: seriesTitle,
@@ -301,7 +275,7 @@ export const logWatchlistAdded = async (
 };
 
 /**
- * 👁️ Episode gesehen – Friend-Feed-Aktivität (NICHT für Notifications/Badge).
+ * Episode gesehen – Friend-Feed-Aktivität (NICHT für Notifications/Badge).
  *
  * Koalesziert pro Serie innerhalb von 12h: statt einer Zeile pro Folge wird eine
  * bestehende „gesehen"-Aktivität derselben Serie aktualisiert (Zähler + letzte
@@ -407,7 +381,6 @@ export const logRatingAdded = async (
   tmdbId: number
 ): Promise<EarnedBadge[]> => {
   try {
-    // Friend-Activity (unterscheide zwischen Serie und Film)
     const activityType = itemType === 'movie' ? 'rating_updated_movie' : 'rating_updated';
     await logFriendActivity(userId, {
       type: activityType,
@@ -451,7 +424,6 @@ export const logBatchEpisodesWatchedClean = async (
       allNewBadges.push(...newBadges);
     }
 
-    // Entferne Duplikate
     const uniqueBadges = allNewBadges.filter(
       (badge, index, self) => index === self.findIndex((b) => b.id === badge.id)
     );
@@ -475,12 +447,10 @@ export const logSeasonWatchedClean = async (
     await badgeCounterService.updateStreakCounter(userId);
     await badgeCounterService.recordMarathonProgress(userId, seasonEpisodeCount);
 
-    // Badge-Check (Cache invalidieren für frische Counter-Daten)
     const badgeSystem = getOfflineBadgeSystem(userId);
     badgeSystem.invalidateCache();
     const newBadges = await badgeSystem.checkForNewBadges();
 
-    // Badge-Callback triggern
     await triggerBadgeCallback(userId, newBadges);
 
     return newBadges;

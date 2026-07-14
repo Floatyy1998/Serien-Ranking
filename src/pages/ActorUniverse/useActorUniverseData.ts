@@ -5,7 +5,6 @@ import { useActorUniverse } from '../../hooks/useActorUniverse';
 export type TabId = 'map' | 'recommendations' | 'top';
 
 export const useActorUniverseData = () => {
-  // Voice actor toggle - persisted in localStorage
   const [hideVoiceActors, setHideVoiceActors] = useState(() => {
     const saved = localStorage.getItem('actorUniverse_hideVoiceActors');
     return saved === 'true';
@@ -34,7 +33,6 @@ export const useActorUniverseData = () => {
   const [hoveredActor, setHoveredActor] = useState<Actor | null>(null);
   const [activeTab, setActiveTab] = useState<TabId>('recommendations');
 
-  // Get actor connections
   const getActorConnections = useCallback(
     (actorId: number): ActorConnection[] => {
       return connections.filter((c) => c.actor1Id === actorId || c.actor2Id === actorId);

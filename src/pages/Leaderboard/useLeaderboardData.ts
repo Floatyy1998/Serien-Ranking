@@ -57,7 +57,6 @@ export function useLeaderboardData() {
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll position management
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;

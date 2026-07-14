@@ -14,13 +14,13 @@ export const drawCat = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): SÄBELZAHN-FORM ===
+  // STUFE 8+ (Lv50): SÄBELZAHN-FORM
   if (level >= 50) {
     drawSabertooth(ctx, level, ps, color, dark, light, offset, equippedSlot);
     return;
   }
 
-  // === STUFEN 1-7: NORMALE KATZE (Lv1-49) ===
+  // STUFEN 1-7: NORMALE KATZE (Lv1-49)
 
   // Evolution: Körpergröße wächst mit Level
   const headSize =
@@ -325,7 +325,7 @@ export const drawCat = (
     }
   }
 
-  // === STUFE 6 (Lv30-39): VETERAN — Narben/Streifen, markanter ===
+  // STUFE 6 (Lv30-39): VETERAN — Narben/Streifen, markanter
   if (level >= 30) {
     // Kampfnarben über dem Auge
     ctx.strokeStyle = light + 'AA';
@@ -353,7 +353,7 @@ export const drawCat = (
     ctx.fillRect((centerX + 2.9) * ps, (centerY + 3) * ps + offset, ps * 0.6, ps * 5);
   }
 
-  // === STUFE 7 (Lv40-49): ELITE — Rüstungs-artige Muster ===
+  // STUFE 7 (Lv40-49): ELITE — Rüstungs-artige Muster
   if (level >= 40) {
     // Rüstungsmuster auf dem Rücken (geometrische Linien)
     ctx.strokeStyle = eyeColor + '88';
@@ -382,7 +382,7 @@ export const drawCat = (
   }
 };
 
-// === SÄBELZAHN-FORM (Level 50+) ===
+// SÄBELZAHN-FORM (Level 50+)
 function drawSabertooth(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -435,7 +435,7 @@ function drawSabertooth(
   ctx.fillRect((centerX - 3) * ps, (centerY - 8) * ps + offset, ps, ps);
   ctx.fillRect((centerX + 2) * ps, (centerY - 8) * ps + offset, ps, ps);
 
-  // === SÄBELZÄHNE (das Hauptmerkmal!) ===
+  // SÄBELZÄHNE (das Hauptmerkmal!)
   const fangLength = isLegend ? 4 : isChampion ? 3.5 : 3;
   ctx.fillStyle = '#FFFFF0';
   // Linker Fang
@@ -587,7 +587,7 @@ function drawSabertooth(
     }
   }
 
-  // === CHAMPION (Lv60+): Extra Features ===
+  // CHAMPION (Lv60+): Extra Features
   if (isChampion) {
     // Nackenrüstung/Mähne
     ctx.fillStyle = dark + bodyAlpha;
@@ -613,7 +613,7 @@ function drawSabertooth(
     ctx.stroke();
   }
 
-  // === LEGENDE (Lv75+): Majestätische Form ===
+  // LEGENDE (Lv75+): Majestätische Form
   if (isLegend) {
     // Leuchtende Augen intensiver
     ctx.shadowColor = eyeColor;
@@ -657,7 +657,7 @@ function drawSabertooth(
     ctx.stroke();
   }
 
-  // === MYTHISCH (Lv100): Ätherisch, göttlich ===
+  // MYTHISCH (Lv100): Ätherisch, göttlich
   if (isMythical) {
     // Ätherisches Leuchten um den ganzen Körper
     ctx.shadowColor = '#FFD700';

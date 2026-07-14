@@ -181,7 +181,6 @@ export function useCharacterDescriptions(series: Series | undefined) {
   const generate = useCallback(async () => {
     if (!series || !userProgress || !BACKEND_URL) return;
 
-    // Check cache
     const cacheKey = `char-desc-${series.id}-S${userProgress.season}E${userProgress.episode}`;
     const cached = sessionStorage.getItem(cacheKey);
     if (cached) {
@@ -197,7 +196,6 @@ export function useCharacterDescriptions(series: Series | undefined) {
     setError(null);
 
     try {
-      // Get cast from series data or fetch from TMDB
       let cast: { name: string; character?: string; profile_path?: string | null }[] =
         series.cast?.slice(0, 12) || [];
       if (cast.length === 0) {

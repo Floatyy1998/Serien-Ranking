@@ -1,9 +1,4 @@
-/**
- * AdminDashboardPage - Clean analytics dashboard.
- * Only accessible by hardcoded admin UID.
- *
- * Tabs: Overview, Live, Users, Events, Extension
- */
+/** Analytics-Dashboard — nur für die hartkodierte Admin-UID zugänglich. */
 import {
   Assessment,
   BugReport,

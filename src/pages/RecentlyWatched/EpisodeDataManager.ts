@@ -1,7 +1,4 @@
-/**
- * EpisodeDataManager - Intelligent episode data manager
- * Handles caching, date grouping, and episode extraction from series data.
- */
+/** Caching, Datums-Gruppierung und Episoden-Extraktion aus den Seriendaten. */
 import {
   isEpisodeWatched,
   normalizeSeasons,

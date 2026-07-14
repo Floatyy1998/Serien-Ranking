@@ -25,7 +25,6 @@ export const WatchNextPage = () => {
 
   const [, startTransition] = useTransition();
 
-  // UI State
   const [showFilter, setShowFilter] = useState(false);
   const [filterInput, setFilterInput] = useState('');
   // React 19: useDeferredValue ersetzt den vorigen setTimeout-Debounce. Tippt
@@ -47,10 +46,8 @@ export const WatchNextPage = () => {
   const [onlyMySubs, setOnlyMySubs] = usePersistedState('watchNextOnlyMySubs', false);
   const { activeProviders, hasAnySubscription } = useActiveSubscriptions();
 
-  // Swipe hook
   const swipe = useWatchNextSwipe({ user, seriesList });
 
-  // Extract unique providers from watchlist series
   const availableProviders = useMemo(() => {
     const providerSet = new Map<string, string>();
     seriesList
@@ -120,12 +117,10 @@ export const WatchNextPage = () => {
     localStorage.setItem('watchNextHideRewatches', (!showRewatches).toString());
   }, [showRewatches]);
 
-  // Count active rewatches
   const activeRewatchCount = useMemo(() => {
     return seriesList.filter((s) => s.watchlist && hasActiveRewatch(s)).length;
   }, [seriesList]);
 
-  // Sort toggle
   const toggleSort = (field: string) => {
     let newOption: string;
     if (customOrderActive) {
@@ -168,7 +163,6 @@ export const WatchNextPage = () => {
         ref={containerRef}
         style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
       >
-        {/* Header */}
         <WatchNextHeader
           episodeCount={actualNextEpisodes.length}
           customOrderActive={customOrderActive}
@@ -192,14 +186,12 @@ export const WatchNextPage = () => {
           onToggleOnlyMySubs={() => startTransition(() => setOnlyMySubs((v) => !v))}
         />
 
-        {/* Scrollable Content */}
         <div
           className="episodes-scroll-container watch-next-scroll hide-scrollbar"
           style={{
             touchAction: draggedIndex !== null && editModeActive ? 'none' : 'auto',
           }}
         >
-          {/* Rewatch Toggle */}
           {activeRewatchCount > 0 && (
             <RewatchToggle
               activeRewatchCount={activeRewatchCount}

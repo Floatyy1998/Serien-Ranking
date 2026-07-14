@@ -3,7 +3,7 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Manga } from '../../../types/Manga';
 
-// ── firebase compat ───────────────────────────────────────────────────
+// firebase compat
 const fb = vi.hoisted(() => {
   const updateMock = vi.fn((_u?: Record<string, unknown>) => Promise.resolve());
   const refMock = vi.fn((_p?: string) => ({ update: updateMock }));
@@ -12,7 +12,7 @@ const fb = vi.hoisted(() => {
 });
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 
-// ── services ──────────────────────────────────────────────────────────
+// services
 const svc = vi.hoisted(() => ({
   getMangaById: vi.fn(async () => null as unknown),
   getMangaDexInfo: vi.fn(async () => null as unknown),

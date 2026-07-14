@@ -111,7 +111,6 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         // Build results — series/movies counts kommen aus shallow Reads (nur Keys zaehlen)
         const userPromises = (Object.entries(users) as [string, Record<string, unknown>][]).map(
           async ([uid, userData]) => {
-            // Skip current user
             if (uid === user?.uid) return null;
 
             // Shallow REST-Reads fuer counts (nur Keys, kein Inhalt)

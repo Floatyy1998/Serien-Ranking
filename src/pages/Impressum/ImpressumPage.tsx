@@ -51,7 +51,6 @@ export const ImpressumPage = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Premium loading state
   if (loading) {
     return (
       <div
@@ -68,7 +67,6 @@ export const ImpressumPage = () => {
     );
   }
 
-  // Premium error state
   if (!data) {
     return (
       <div

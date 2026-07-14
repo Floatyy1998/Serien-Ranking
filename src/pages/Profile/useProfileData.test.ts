@@ -3,11 +3,9 @@ import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ADMIN_UID } from '../../config/admin';
 
-/* ---------------------------------------------------------------------------
- * useProfileData bündelt viele Contexts. Alle Context-Hooks + Firebase-Auth
+/* useProfileData bündelt viele Contexts. Alle Context-Hooks + Firebase-Auth
  * + useEnhancedFirebaseCache werden gemockt; computeStats (echt) läuft über
- * die echten Serien-/Film-Daten.
- * ------------------------------------------------------------------------- */
+ * die echten Serien-/Film-Daten. */
 const state = vi.hoisted(() => ({
   user: null as { uid: string; displayName?: string; photoURL?: string } | null,
   userData: undefined as unknown,

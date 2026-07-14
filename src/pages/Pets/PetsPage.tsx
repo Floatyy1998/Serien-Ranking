@@ -1,7 +1,4 @@
-/**
- * PetsPage - Premium Virtual Pet Experience
- * Slim composition component - business logic in usePetsData, JSX in subcomponents
- */
+/** Kompositions-Komponente — Logik in usePetsData, UI in Subkomponenten. */
 
 import React from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';

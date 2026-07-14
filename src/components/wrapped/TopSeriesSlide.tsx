@@ -1,7 +1,3 @@
-/**
- * TopSeriesSlide - Zeigt die Top-Serien des Jahres
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopSeriesEntry } from '../../types/Wrapped';

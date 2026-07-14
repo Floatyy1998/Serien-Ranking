@@ -101,7 +101,7 @@ export const useEpisodeDiscussion = () => {
   const localSeason = series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber) - 1);
   const localEpisode = localSeason?.episodes?.find((_, idx) => idx === Number(episodeNumber) - 1);
 
-  // ---------- Data Fetching ----------
+  // Data fetching
   useEffect(() => {
     const fetchAllDetails = async () => {
       if (!seriesId || !seasonNumber || !episodeNumber) {
@@ -173,7 +173,7 @@ export const useEpisodeDiscussion = () => {
     fetchAllDetails();
   }, [seriesId, seasonNumber, episodeNumber]);
 
-  // ---------- Image Helpers ----------
+  // Image helpers
   const getStillUrl = (path: string | null, size: string = 'w780'): string => {
     if (!path) return '';
     return `https://image.tmdb.org/t/p/${size}${path}`;
@@ -184,7 +184,7 @@ export const useEpisodeDiscussion = () => {
     return `https://image.tmdb.org/t/p/w185${path}`;
   };
 
-  // ---------- Episode Navigation ----------
+  // Episode navigation
   const currentEpNum = Number(episodeNumber);
   const currentSeasonNum = Number(seasonNumber);
 
@@ -264,7 +264,7 @@ export const useEpisodeDiscussion = () => {
       ? `S${currentSeasonNum + 1} E1`
       : '';
 
-  // ---------- Toggle Watched ----------
+  // Toggle watched
   const handleToggleWatched = useCallback(async () => {
     if (!user?.uid || !series || !localSeason || !localEpisode) return;
 
@@ -329,7 +329,7 @@ export const useEpisodeDiscussion = () => {
         let nextEpNum = 0;
         let nextEpName = '';
 
-        // 1. Remaining episodes in current season
+        // Remaining episodes in current season
         const currentSeasonEps = seasons[sIdx]?.episodes || [];
         for (let i = epIdx + 1; i < currentSeasonEps.length; i++) {
           if (!currentSeasonEps[i]?.watched) {
@@ -340,7 +340,7 @@ export const useEpisodeDiscussion = () => {
             break;
           }
         }
-        // 2. Next seasons
+        // Next seasons
         if (!nextPath) {
           for (let s = sIdx + 1; s < seasons.length; s++) {
             const eps = seasons[s]?.episodes || [];
@@ -404,7 +404,7 @@ export const useEpisodeDiscussion = () => {
     tmdbDetails,
   ]);
 
-  // ---------- Derived Episode Details ----------
+  // Derived episode details
   const episodeName = localEpisode?.name || tmdbDetails?.name || `Episode ${episodeNumber}`;
   const episodeOverview = tmdbDetails?.overview || '';
   const episodeAirDate =
@@ -455,7 +455,7 @@ export const useEpisodeDiscussion = () => {
     setNextEpisodeTransition(null);
   }, [seriesId, seasonNumber, episodeNumber]);
 
-  // ---------- Status Flags ----------
+  // Status flags
   const isNotFound = !series && !tmdbDetails && !seriesInfo;
   const hasUser = !!user;
   const hasSeries = !!series;

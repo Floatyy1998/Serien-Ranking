@@ -8,8 +8,6 @@ import type { GroupedSchedule } from './useCalendarData';
 import { WEEKDAYS_SHORT } from './useCalendarData';
 import { SingleEpisodeCard, EpisodeGroupCard } from './EpisodeCard';
 
-// ── Types ────────────────────────────────────────────────────────
-
 interface DayGroup {
   seriesId: number;
   seriesTitle: string;
@@ -41,7 +39,7 @@ interface CalendarGridProps {
   weekStamp?: string;
 }
 
-// ── Gemeinsames Episoden-Rendering (Desktop-Zelle + Mobile-Tag) ──
+// Gemeinsames Episoden-Rendering (Desktop-Zelle + Mobile-Tag)
 
 function renderGroups(
   dateKey: string,
@@ -76,8 +74,7 @@ function renderGroups(
   });
 }
 
-// ── DayCell (Desktop-Wochen-Grid) ────────────────────────────────
-
+// DayCell (Desktop-Wochen-Grid)
 const DayCell = memo(
   forwardRef<HTMLDivElement, DayCellProps>(
     (
@@ -144,8 +141,6 @@ const DayCell = memo(
 );
 DayCell.displayName = 'DayCell';
 
-// ── CalendarGrid ─────────────────────────────────────────────────
-
 export const CalendarGrid = memo(
   ({
     groupedSchedule,
@@ -200,7 +195,7 @@ export const CalendarGrid = memo(
       setDayIdx(next);
     };
 
-    // ── Desktop: Wochen-Grid ──
+    // Desktop: Wochen-Grid
     if (isDesktop) {
       return (
         <div className="cal-content">
@@ -221,7 +216,7 @@ export const CalendarGrid = memo(
       );
     }
 
-    // ── Mobile: Tagesansicht mit Swipe ──
+    // Mobile: Tagesansicht mit Swipe
     const clampedIdx = Math.min(dayIdx, Math.max(entries.length - 1, 0));
     const current = entries[clampedIdx];
     const currentKey = current?.[0] ?? 'none';

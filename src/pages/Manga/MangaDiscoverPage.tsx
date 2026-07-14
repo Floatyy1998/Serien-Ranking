@@ -84,8 +84,6 @@ export const MangaDiscoverPage = () => {
     countryFilterRef.current = countryFilter;
   });
 
-  // Fetch initial data
-
   useEffect(() => {
     let cancelled = false;
     setLoading(true);

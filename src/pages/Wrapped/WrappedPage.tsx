@@ -1,11 +1,6 @@
 /**
- * WrappedPage - Hauptseite für den Jahresrückblick
- *
- * Diese Seite ist Jahr-agnostisch und kann jedes Jahr recycelt werden.
- * Einfach das Jahr im URL-Parameter oder als Default ändern.
- *
- * Composition-only component. Business logic lives in useWrappedData.
- * Repeated UI blocks live in WrappedComponents.
+ * Jahresrückblick-Seite — Jahr-agnostisch, kann jedes Jahr recycelt werden:
+ * einfach das Jahr im URL-Parameter oder als Default ändern.
  */
 
 import React from 'react';
@@ -38,17 +33,14 @@ export const WrappedPage: React.FC = () => {
     handleShare,
   } = useWrappedData();
 
-  // Wrapped deaktiviert - "Noch nicht verfügbar" Seite
   if (!wrappedConfig.loading && !wrappedConfig.enabled) {
     return <WrappedNotAvailablePage year={wrappedConfig.year} onBack={() => navigate('/')} />;
   }
 
-  // Premium Loading State
   if (loading) {
     return <WrappedLoadingState year={year} />;
   }
 
-  // Premium Error State
   if (error) {
     return <WrappedErrorState error={error} onBack={() => navigate('/')} />;
   }
@@ -60,7 +52,6 @@ export const WrappedPage: React.FC = () => {
       onTouchEnd={handleTouchEnd}
       className="wrapped-container"
     >
-      {/* Slide Container */}
       <div
         className="wrapped-slide-track"
         style={{ transform: `translateY(-${currentSlide * 100}%)` }}
@@ -80,13 +71,10 @@ export const WrappedPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Progress Indicator */}
       <WrappedProgressBar currentSlide={currentSlide} totalSlides={enabledSlides.length} />
 
-      {/* Close Button */}
       <WrappedCloseButton onClick={() => navigate(-1)} />
 
-      {/* Navigation Hint (nur auf erstem Slide) */}
       {currentSlide === 0 && <WrappedNavigationHint />}
     </div>
   );

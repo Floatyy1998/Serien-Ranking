@@ -2,13 +2,11 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock. Deckt beide Listener-Wege ab:
 //  - Realtime:  ref.on('value', cb, errCb)  / ref.off('value', listener)
 //  - Delta:     ref.on('child_changed'|'child_added'|'child_removed', cb)
 //  - once('value') für Full-Load + Version-Reads (val()/exists()).
 // `dataByPath` steuert once()-Rückgaben; Listener-Callbacks werden erfasst.
-// ---------------------------------------------------------------------------
 type AnyCb = (snap: FbSnapshot) => void;
 type ErrCb = (err: { message?: string }) => void;
 interface FbSnapshot {

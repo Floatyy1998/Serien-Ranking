@@ -1,13 +1,7 @@
 /**
- * useRatingsData - Business logic hook for RatingsPage
- *
- * Handles:
- * - State management (tab, sort, genre, provider, quickFilter, search)
- * - URL synchronization (searchParams <-> state)
- * - Data preparation: rate -> filter -> sort -> prepare (single pass)
- * - Progressive rendering (initial batch + rAF batches)
- * - Scroll position save/restore
- * - Stats computation
+ * Business-Logik der RatingsPage: URL-Sync (searchParams <-> State),
+ * Datenaufbereitung in einem Pass (rate -> filter -> sort -> prepare),
+ * progressives Rendern (Initial-Batch + rAF-Batches) und Scroll-Restore.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
@@ -30,8 +24,6 @@ import type { UseRatingsDataResult } from './ratingsHelpers';
 export type { PreparedItem, RatingsStats, UseRatingsDataResult } from './ratingsHelpers';
 export { extractProviders } from './ratingsHelpers';
 
-// ─── Hook ───────────────────────────────────────────────────────────────
-
 export const useRatingsData = (): UseRatingsDataResult => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,7 +33,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const { movieList } = useMovieList();
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // ─── State (initialized from URL) ───────────────────
+  // State (initialized from URL)
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>(() =>
     searchParams.get('tab') === 'movies' ? 'movies' : 'series'
   );
@@ -63,7 +55,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     searchParamsRef.current = searchParams;
   }, [searchParams]);
 
-  // ─── URL Sync ───────────────────────────────────────
+  // URL Sync
   const updateURL = useCallback(
     (updates: Record<string, string | null | undefined>) => {
       const newParams = new URLSearchParams(searchParamsRef.current);
@@ -101,7 +93,6 @@ export const useRatingsData = (): UseRatingsDataResult => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // ─── Tab Change Handler ────────────────────────────
   const handleTabChange = useCallback(
     (id: string) => {
       startTransition(() => {
@@ -112,7 +103,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     [updateURL, startTransition]
   );
 
-  // ─── QuickFilter Integration ────────────────────────
+  // QuickFilter Integration
   const filters = useMemo(
     () => ({
       sortBy: sortOption,
@@ -171,7 +162,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     [setSearchParams, startTransition]
   );
 
-  // ─── Scroll Position Management ─────────────────────
+  // Scroll Position Management
   const saveScrollPosition = useCallback(() => {
     let position = 0;
     let scrollSource = '';
@@ -234,8 +225,7 @@ export const useRatingsData = (): UseRatingsDataResult => {
     [navigate, saveScrollPosition]
   );
 
-  // ─── Data Preparation (single pass: rate -> filter -> sort -> prepare) ──
-
+  // Data Preparation (single pass: rate -> filter -> sort -> prepare)
   const effectiveSortBy = useMemo(
     () =>
       quickFilter === 'ongoing'
@@ -404,14 +394,14 @@ export const useRatingsData = (): UseRatingsDataResult => {
   const itemsToRender =
     renderCount >= currentItems.length ? currentItems : currentItems.slice(0, renderCount);
 
-  // ─── Stats (cheap: ratings are pre-computed) ────────
+  // Stats (cheap: ratings are pre-computed)
   const stats = useMemo(() => {
     const rated = currentItems.filter((i) => i.rating > 0);
     const avg = rated.length > 0 ? rated.reduce((sum, i) => sum + i.rating, 0) / rated.length : 0;
     return { count: rated.length, average: avg };
   }, [currentItems]);
 
-  // ─── Scroll Restoration ─────────────────────────────
+  // Scroll Restoration
   useEffect(() => {
     const shouldRestore = sessionStorage.getItem('shouldRestoreRatingsScroll');
     if (shouldRestore !== 'true' || currentItems.length === 0) return;

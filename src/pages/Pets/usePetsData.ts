@@ -1,7 +1,3 @@
-/**
- * usePetsData - Custom hook for all PetsPage state & business logic
- */
-
 import { useCallback, useEffect, useState } from 'react';
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
@@ -30,7 +26,7 @@ export function usePetsData() {
 
   const pet = pets[selectedPetIndex] ?? null;
 
-  // --- Derived values ---
+  // Derived values
   const currentMood = pet ? petMoodService.calculateCurrentMood(pet) : null;
   const hungerPercentage = pet ? Math.max(0, 100 - pet.hunger) : 0;
   const happinessPercentage = pet ? pet.happiness : 0;
@@ -48,7 +44,7 @@ export function usePetsData() {
       : 'Spiele mit deinem Pet um den +50% XP-Bonus zu aktivieren!'
     : '';
 
-  // --- Load pets on mount ---
+  // Pets beim Mount laden
   const loadPets = useCallback(async () => {
     if (!user) return;
     try {

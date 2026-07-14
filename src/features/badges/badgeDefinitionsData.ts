@@ -8,7 +8,7 @@ const RARITY_COLORS = {
 };
 
 export const BADGE_DEFINITIONS: Badge[] = [
-  // 🍿 BINGE BADGES
+  // BINGE BADGES
   {
     id: 'binge_bronze',
     category: 'binge',

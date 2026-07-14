@@ -4,11 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 
-// ── react-router-dom ──────────────────────────────────────────────────
+// react-router-dom
 const rr = vi.hoisted(() => ({ id: '123', type: 'series' as 'series' | 'movie' }));
 vi.mock('react-router-dom', () => ({ useParams: () => ({ id: rr.id, type: rr.type }) }));
 
-// ── firebase compat ───────────────────────────────────────────────────
+// firebase compat
 const fb = vi.hoisted(() => {
   const setMock = vi.fn(() => Promise.resolve());
   const removeMock = vi.fn(() => Promise.resolve());
@@ -25,7 +25,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── contexts + services ───────────────────────────────────────────────
+// contexts + services
 const ctx = vi.hoisted(() => ({
   allSeriesList: [] as Series[],
   movieList: [] as Movie[],

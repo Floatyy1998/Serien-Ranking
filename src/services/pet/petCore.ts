@@ -4,10 +4,6 @@ import { PET_COLORS, GENRE_FAVORITES } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { generateStarterAccessories } from './petAccessoryManager';
 
-// ============================================================================
-// TYPE GUARDS
-// ============================================================================
-
 /** Erkennt das alte Single-Pet-Format (direkt name/type/id auf Root-Ebene) */
 function isLegacySinglePet(data: unknown): data is { name: string; type: string; id: string } {
   return (
@@ -26,10 +22,6 @@ function isLegacySinglePet(data: unknown): data is { name: string; type: string;
 function isRawPetData(data: unknown): data is Record<string, unknown> {
   return typeof data === 'object' && data !== null && 'type' in data;
 }
-
-// ============================================================================
-// MIGRATION
-// ============================================================================
 
 const migrationDone: Set<string> = new Set();
 
@@ -59,10 +51,6 @@ async function migrateIfNeeded(userId: string): Promise<void> {
 
   migrationDone.add(userId);
 }
-
-// ============================================================================
-// CRUD OPERATIONS
-// ============================================================================
 
 export async function getUserPets(userId: string): Promise<Pet[]> {
   await migrateIfNeeded(userId);
@@ -276,7 +264,6 @@ export async function deletePet(userId: string, petId: string): Promise<void> {
   await dbRef(userPath(userId, 'pets', petId)).remove();
 }
 
-// Pet Widget Position Management
 export async function getPetWidgetPosition(userId: string): Promise<
   | {
       edge: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';

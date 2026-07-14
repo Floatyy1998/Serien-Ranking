@@ -23,7 +23,7 @@ export function useAdminHealthAlert() {
       }, 0);
 
       if (totalIssues > 0) {
-        showToast(`⚠ ${totalIssues} Data Health Probleme`, 3000);
+        showToast(`${totalIssues} Data Health Probleme`, 3000);
       }
     });
   }, [user]);

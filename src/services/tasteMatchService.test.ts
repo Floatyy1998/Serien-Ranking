@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase: users/{id}/series + users/{id}/movies aus einem Pfad-Store.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const store = new Map<string, unknown>();
   return {

@@ -55,7 +55,6 @@ export const CastCrew: React.FC<CastCrewProps> = ({
     (hasAnimationGenre &&
       (isFromAsianCountry || isAsianLanguage || !seriesData?.origin_country?.length));
 
-  // Set initial tab based on whether it's anime
   const [activeTab, setActiveTab] = useState<'cast' | 'crew' | 'characters'>(
     isAnime ? 'characters' : 'cast'
   );

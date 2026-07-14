@@ -130,7 +130,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
 }) => {
   const { currentTheme } = useTheme();
 
-  // Welche Kategorien haben Inhalt?
   const categoryCounts = useMemo<Partial<Record<CategoryKey, number>>>(
     () => ({
       recap: proactiveRecaps.recaps.length,
@@ -173,7 +172,6 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
       ? activeKey
       : activeCategories[0].key;
 
-  // Render der aktiven Kategorie
   const renderActive = () => {
     switch (currentKey) {
       case 'recap':

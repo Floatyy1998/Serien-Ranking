@@ -131,7 +131,7 @@
   }
 }
 
-/* ── App-Mock (sm- = start mock) ─────────────────────────── */
+/* App-Mock (sm- = start mock) */
 .sm-float {
   animation: sm-drift 9s ease-in-out infinite;
 }

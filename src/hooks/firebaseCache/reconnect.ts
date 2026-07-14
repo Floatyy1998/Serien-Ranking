@@ -1,5 +1,5 @@
 /**
- * 🎧 Online/Offline-Event-Handling (Reconnect-Sync).
+ * Online/Offline-Event-Handling (Reconnect-Sync).
  * Der State (isStale, data, isOffline) bleibt im Haupt-Hook — hier lebt nur
  * der Event-Wiring-Effect plus die pure Refetch-Entscheidung.
  */

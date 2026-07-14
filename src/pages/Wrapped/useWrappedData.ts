@@ -1,9 +1,3 @@
-/**
- * useWrappedData - Custom Hook for Wrapped page business logic
- *
- * Handles: data loading, slide navigation, keyboard/touch/wheel input, sharing.
- */
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type firebase from 'firebase/compat/app';
@@ -18,8 +12,6 @@ import { WatchActivityService } from '../../services/watchActivityService';
 
 // Standard-Jahr (jedes Jahr hier ändern)
 const DEFAULT_YEAR = 2025;
-
-// --- Poster fetching helpers ---
 
 async function fetchPosterForSeries(seriesId: number): Promise<string | undefined> {
   if (!getTmdbApiKey()) return undefined;
@@ -70,8 +62,6 @@ async function enrichStatsWithPosters(stats: WrappedStats): Promise<WrappedStats
     topMovies: enrichedMovies,
   };
 }
-
-// --- Hook return type ---
 
 export interface UseWrappedDataResult {
   // Config
@@ -125,8 +115,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
     []
   );
 
-  // --- Data loading ---
-
   useEffect(() => {
     const loadData = async () => {
       if (!user) {
@@ -163,8 +151,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
     loadData();
   }, [user, year]);
 
-  // --- Slide navigation ---
-
   const goToSlide = useCallback(
     (index: number) => {
       const maxIndex = enabledSlides.length - 1;
@@ -181,8 +167,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
   const prevSlide = useCallback(() => {
     goToSlide(currentSlide - 1);
   }, [currentSlide, goToSlide]);
-
-  // --- Keyboard navigation ---
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -201,8 +185,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [nextSlide, prevSlide, navigate]);
 
-  // --- Touch/Swipe navigation ---
-
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
   };
@@ -219,8 +201,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
       }
     }
   };
-
-  // --- Wheel navigation ---
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -241,8 +221,6 @@ export const useWrappedData = (): UseWrappedDataResult => {
       return () => container.removeEventListener('wheel', handleWheel);
     }
   }, [handleWheel]);
-
-  // --- Share ---
 
   const handleShare = async () => {
     if (!stats) return;

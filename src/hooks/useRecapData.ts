@@ -234,7 +234,6 @@ export const useRecapData = (series: Series | undefined): RecapData => {
     if (daysSince >= RECAP_THRESHOLD_DAYS && hasUnwatched) {
       setShouldShowRecap(true);
 
-      // Lade Episode-Overviews
       setLoading(true);
       const lastEpisodes = getLastWatchedEpisodes(series, 5);
       if (lastEpisodes.length > 0) {

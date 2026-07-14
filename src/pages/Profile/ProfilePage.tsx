@@ -1,8 +1,4 @@
-/**
- * ProfilePage - Premium User Profile
- * Slim composition component - delegates logic to useProfileData,
- * renders via memoized subcomponents.
- */
+/** Kompositions-Komponente — Logik in useProfileData, memoized Subkomponenten. */
 
 import { memo } from 'react';
 import { BackButton } from '../../components/ui/BackButton';

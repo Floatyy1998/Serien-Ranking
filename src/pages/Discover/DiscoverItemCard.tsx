@@ -11,7 +11,6 @@ import { PosterFrame } from '../../components/ui/PosterFrame';
 import { tapScale } from '../../lib/motion';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
-// Premium memoized item card
 export const ItemCard = memo(
   ({ item, onItemClick, onAddToList, addingItem, currentTheme, isDesktop }: ItemCardProps) => {
     const [showInfo, setShowInfo] = useState(false);

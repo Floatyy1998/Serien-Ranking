@@ -29,7 +29,6 @@ export const useActorPanZoom = (): UseActorPanZoomReturn => {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [, setDimensions] = useState({ width: 800, height: 600 });
 
-  // Update dimensions
   useEffect(() => {
     const updateDimensions = () => {
       if (canvasRef.current) {
@@ -44,7 +43,6 @@ export const useActorPanZoom = (): UseActorPanZoomReturn => {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Pan handlers
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (e.button !== 0) return;
@@ -70,7 +68,6 @@ export const useActorPanZoom = (): UseActorPanZoomReturn => {
     setIsDragging(false);
   }, []);
 
-  // Touch handlers for mobile
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
       if (e.touches.length === 1) {
@@ -100,7 +97,6 @@ export const useActorPanZoom = (): UseActorPanZoomReturn => {
     setIsDragging(false);
   }, []);
 
-  // Zoom handlers
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;

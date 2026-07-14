@@ -20,7 +20,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
   const textMuted = currentTheme.text.muted;
   const bgSurface = currentTheme.background.surface;
 
-  // Prepare data for stacked area chart (absolute hours)
+  // Stacked-area chart data in absolute hours
   const chartData = useMemo(() => {
     return data.providerMonths.map((month) => {
       const hoursValues: Record<string, number> = {};
@@ -34,7 +34,6 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
     });
   }, [data]);
 
-  // Prepare data for horizontal bar chart
   const barData = useMemo(() => {
     const totals: Record<string, number> = {};
     data.providerMonths.forEach((month) => {
@@ -80,7 +79,6 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
 
   return (
     <div>
-      {/* Hero Section - Top Provider */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -141,7 +139,6 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Horizontal Bar Chart - Provider Hours */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -228,7 +225,6 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Stacked Area Chart - Provider over time */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -296,7 +292,6 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
           </SafeResponsiveContainer>
         </div>
 
-        {/* Legend */}
         <div
           style={{
             display: 'flex',

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { FirebaseService, PrivacyData } from './usePrivacyData';
 
-/* ─── Generic Section Card ─── */
+/* Generic Section Card */
 
 interface PrivacySectionProps {
   title: string;
@@ -24,7 +24,7 @@ export const PrivacySection = memo(({ title, children }: PrivacySectionProps) =>
 
 PrivacySection.displayName = 'PrivacySection';
 
-/* ─── Simple text section (deletion, security, changes) ─── */
+/* Simple text section (deletion, security, changes) */
 
 interface TextSectionProps {
   title: string;
@@ -45,7 +45,7 @@ export const TextSection = memo(({ title, text }: TextSectionProps) => {
 
 TextSection.displayName = 'TextSection';
 
-/* ─── Responsible Section ─── */
+/* Responsible Section */
 
 interface ResponsibleSectionProps {
   data: PrivacyData['sections']['responsible'];
@@ -77,7 +77,7 @@ export const ResponsibleSection = memo(({ data }: ResponsibleSectionProps) => {
 
 ResponsibleSection.displayName = 'ResponsibleSection';
 
-/* ─── Data Collection Section ─── */
+/* Data Collection Section */
 
 interface DataCollectionSectionProps {
   data: PrivacyData['sections']['dataCollection'];
@@ -124,7 +124,7 @@ export const DataCollectionSection = memo(({ data }: DataCollectionSectionProps)
 
 DataCollectionSection.displayName = 'DataCollectionSection';
 
-/* ─── Single Firebase Service Block ─── */
+/* Single Firebase Service Block */
 
 interface FirebaseServiceBlockProps {
   service: FirebaseService;
@@ -180,7 +180,7 @@ export const FirebaseServiceBlock = memo(({ service }: FirebaseServiceBlockProps
 
 FirebaseServiceBlock.displayName = 'FirebaseServiceBlock';
 
-/* ─── Firebase Section (composed from blocks) ─── */
+/* Firebase Section (composed from blocks) */
 
 interface FirebaseSectionProps {
   data: PrivacyData['sections']['firebase'];
@@ -221,7 +221,7 @@ export const FirebaseSection = memo(({ data }: FirebaseSectionProps) => {
 
 FirebaseSection.displayName = 'FirebaseSection';
 
-/* ─── API Services Section ─── */
+/* API Services Section */
 
 interface ApiServicesSectionProps {
   data: PrivacyData['sections']['apiServices'];
@@ -254,7 +254,7 @@ export const ApiServicesSection = memo(({ data }: ApiServicesSectionProps) => {
 
 ApiServicesSection.displayName = 'ApiServicesSection';
 
-/* ─── Rights Section ─── */
+/* Rights Section */
 
 interface RightsSectionProps {
   data: PrivacyData['sections']['rights'];
@@ -282,7 +282,7 @@ export const RightsSection = memo(({ data }: RightsSectionProps) => {
 
 RightsSection.displayName = 'RightsSection';
 
-/* ─── Contact Section ─── */
+/* Contact Section */
 
 interface ContactSectionProps {
   data: PrivacyData['sections']['contact'];

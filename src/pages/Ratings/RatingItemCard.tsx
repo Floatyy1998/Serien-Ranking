@@ -22,8 +22,7 @@ import { PosterFrame } from '../../components/ui/PosterFrame';
 import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
 export { PLACEHOLDER_SVG };
 
-// ─── Provider Badge with Popup ──────────────────────────────────────────
-// Auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
+// Provider-Badge mit Popup — auch von RatingCompactRow (Listen-Ansicht) wiederverwendet.
 
 export function ProviderBadgeArea({
   providers,
@@ -192,14 +191,10 @@ export function ProviderBadgeArea({
   );
 }
 
-// ─── Props ──────────────────────────────────────────────────────────────
-
 interface RatingItemCardProps {
   item: PreparedItem;
   theme: ReturnType<typeof useTheme>['currentTheme'];
 }
-
-// ─── Component ──────────────────────────────────────────────────────────
 
 export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) => {
   // D1: --prog wird per rAF animiert ans Karten-Element geschrieben

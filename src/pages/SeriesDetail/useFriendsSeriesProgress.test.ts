@@ -3,7 +3,7 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 
-// ── firebase compat ───────────────────────────────────────────────────
+// firebase compat
 const fb = vi.hoisted(() => {
   const onceMock = vi.fn(
     (): Promise<{ val: () => unknown }> => Promise.resolve({ val: () => null })
@@ -15,7 +15,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── friends context ───────────────────────────────────────────────────
+// friends context
 interface Friend {
   uid: string;
   displayName?: string;

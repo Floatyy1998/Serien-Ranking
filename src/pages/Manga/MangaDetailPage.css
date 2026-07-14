@@ -408,9 +408,7 @@
   gap: 6px;
 }
 
-/* ============================================
-   2050-Desktop: Sektionen zonen statt endlos stapeln
-   ============================================ */
+/* 2050-Desktop: Sektionen zonen statt endlos stapeln */
 @media (min-width: 1100px) {
   .manga-detail-content {
     display: grid;

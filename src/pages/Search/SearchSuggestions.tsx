@@ -1,7 +1,4 @@
-/**
- * SearchSuggestions - Memoized component for popular and recent search suggestions
- * Shown when the search input is empty.
- */
+/** Beliebte + letzte Suchbegriffe — sichtbar bei leerem Suchfeld. */
 
 import { Close, History, Search, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';

@@ -277,7 +277,6 @@ export const SerienKalenderPage: React.FC = () => {
     return [...byDay.values()];
   }, [visible, now, startOfToday]);
 
-  // ── Aktionen ────────────────────────────────────────────────────────────────
   const openEntry = (entry: TvPremiereStaticEntry) => {
     navigate(`/series/${entry.tmdbId}`);
   };
@@ -460,7 +459,7 @@ export const SerienKalenderPage: React.FC = () => {
 
         {!loading && !failed && visible.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-            {/* ── 0. Hero-Spotlight ── */}
+            {/* Hero-Spotlight */}
             {hero && (
               <SerienKalenderHero
                 entry={hero}
@@ -472,7 +471,7 @@ export const SerienKalenderPage: React.FC = () => {
               />
             )}
 
-            {/* ── 1. Premieren-Kalender: Timeline ── */}
+            {/* Premieren-Kalender: Timeline */}
             <section>
               {renderSectionTitle(
                 <CalendarMonth style={sectionIconStyle} />,

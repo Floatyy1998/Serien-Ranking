@@ -1,4 +1,4 @@
-/* CatchUpPage - Performance-optimized styles */
+/* CatchUpPage */
 
 @keyframes fadeInUp {
   from {
@@ -20,7 +20,7 @@
   }
 }
 
-/* === Page layout === */
+/* Page layout */
 
 .cu-page {
   height: 100vh; /* Fallback für Browser ohne dvh */
@@ -34,7 +34,7 @@
   z-index: var(--z-base);
 }
 
-/* === Hero Stats === */
+/* Hero Stats */
 
 .cu-hero {
   margin: 8px 20px 24px;
@@ -79,7 +79,7 @@
   margin-top: 2px;
 }
 
-/* === Sort Toolbar === */
+/* Sort Toolbar */
 
 .cu-sort-sticky {
   padding: 0 16px 12px;
@@ -189,7 +189,7 @@
   font-family: var(--font-display);
 }
 
-/* === Series Card === */
+/* Series Card */
 
 .cu-series-list {
   padding: 0 20px 120px;
@@ -387,7 +387,7 @@
   margin-left: 4px;
 }
 
-/* === Gradient Ring === */
+/* Gradient Ring */
 
 .cu-ring-wrap {
   position: relative;
@@ -405,7 +405,7 @@
   justify-content: center;
 }
 
-/* === Empty State === */
+/* Empty State */
 
 .cu-empty {
   display: flex;
@@ -447,7 +447,7 @@
   gap: 10px;
 }
 
-/* === Header badge === */
+/* Header badge */
 
 .cu-header-badge {
   padding: 6px 12px;

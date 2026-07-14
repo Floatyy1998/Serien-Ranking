@@ -61,7 +61,6 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showYearPicker, setShowYearPicker] = useState(false);
 
-  // Load watch journey data
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
@@ -82,7 +81,6 @@ export const useWatchJourneyData = (): UseWatchJourneyDataResult => {
     loadData();
   }, [user, selectedYear]);
 
-  // Responsive chart width
   useEffect(() => {
     const updateWidth = () => setChartWidth(window.innerWidth - 40);
     updateWidth();

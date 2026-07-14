@@ -79,7 +79,6 @@ export function useRewatchHandler() {
     const nowUnix = Math.floor(Date.now() / 1000);
 
     try {
-      // Snapshot vorher lesen
       const [epSnap, rewatchLastSnap] = await Promise.all([
         dbRef(epPath).once('value'),
         dbRef(rewatchLastWatchedAtPath).once('value'),
@@ -209,7 +208,6 @@ export function useRewatchHandler() {
     }
   };
 
-  // Swipe helpers for rewatches
   const handleRewatchSwipeStart = (key: string) =>
     setSwipingRewatches((prev) => new Set(prev).add(key));
   const handleRewatchSwipeDrag = (key: string, offset: number) =>

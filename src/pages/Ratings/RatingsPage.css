@@ -1,6 +1,6 @@
 /* RatingsPage - Cinematic card styles */
 
-/* ─── Page Container ──────────────────────────────────────────────────── */
+/* Page Container */
 
 .ratings-page {
   min-height: 100%;
@@ -13,7 +13,7 @@
   justify-content: center;
 }
 
-/* ─── Decorative Background ───────────────────────────────────────────── */
+/* Decorative Background */
 
 .ratings-decorative-bg {
   position: fixed;
@@ -25,7 +25,7 @@
   z-index: 0;
 }
 
-/* ─── Sticky Header ───────────────────────────────────────────────────── */
+/* Sticky Header */
 
 .ratings-sticky-header {
   position: sticky;
@@ -46,7 +46,7 @@
   justify-content: space-between;
 }
 
-/* ─── Stats Row ───────────────────────────────────────────────────────── */
+/* Stats Row */
 
 .ratings-stats-row {
   display: flex;
@@ -88,7 +88,7 @@
   font-size: 14px;
 }
 
-/* ─── Content Area ────────────────────────────────────────────────────── */
+/* Content Area */
 
 .ratings-content {
   padding: 0 20px;
@@ -97,7 +97,7 @@
   z-index: 1;
 }
 
-/* ─── Responsive Grid ─────────────────────────────────────────────────── */
+/* Responsive Grid */
 
 .ratings-grid {
   display: grid;
@@ -118,7 +118,7 @@
   }
 }
 
-/* ─── Grid Item ───────────────────────────────────────────────────────── */
+/* Grid Item */
 
 .ratings-grid-item {
   content-visibility: auto;
@@ -137,7 +137,7 @@
   transform: scale(0.97);
 }
 
-/* ─── D5: Dichte-Modus (Toggle + Kompakt-Liste) ───────────────────────── */
+/* D5: Dichte-Modus (Toggle + Kompakt-Liste) */
 
 .ratings-density-toggle {
   display: flex;
@@ -360,7 +360,7 @@
   outline-offset: 2px;
 }
 
-/* ─── Cinematic Card ──────────────────────────────────────────────────── */
+/* Cinematic Card */
 
 .ratings-card {
   position: relative;
@@ -379,7 +379,7 @@
   border-radius: var(--radius-lg);
 }
 
-/* ─── Overlay ─────────────────────────────────────────────────────────── */
+/* Overlay */
 
 .ratings-card-overlay {
   position: absolute;
@@ -393,7 +393,7 @@
   overflow: hidden;
 }
 
-/* ─── Top Row ─────────────────────────────────────────────────────────── */
+/* Top Row */
 
 .ratings-card-top {
   display: flex;
@@ -417,7 +417,7 @@
   pointer-events: auto;
 }
 
-/* ─── Watchlist Badge ─────────────────────────────────────────────────── */
+/* Watchlist Badge */
 
 .ratings-card-watchlist-badge {
   border-radius: var(--radius-sm);
@@ -428,7 +428,7 @@
   pointer-events: auto;
 }
 
-/* ─── Bottom Section ──────────────────────────────────────────────────── */
+/* Bottom Section */
 
 .ratings-card-bottom {
   background: linear-gradient(
@@ -445,7 +445,7 @@
   justify-content: flex-end;
 }
 
-/* ─── Title ───────────────────────────────────────────────────────────── */
+/* Title */
 
 .ratings-card-title {
   font-size: 13px;
@@ -467,7 +467,7 @@
   }
 }
 
-/* ─── Meta Row ────────────────────────────────────────────────────────── */
+/* Meta Row */
 
 .ratings-card-meta {
   display: flex;
@@ -511,7 +511,7 @@
   white-space: nowrap;
 }
 
-/* ─── Progress Bar ────────────────────────────────────────────────────── */
+/* Progress Bar */
 
 .ratings-card-progress {
   display: flex;
@@ -578,7 +578,7 @@
   white-space: nowrap;
 }
 
-/* ─── Provider Badges (positioned inside overlay top-left) ────────────── */
+/* Provider Badges (positioned inside overlay top-left) */
 
 .ratings-provider-badges {
   display: flex;
@@ -677,14 +677,14 @@
   white-space: nowrap;
 }
 
-/* ─── Grid Spacer ─────────────────────────────────────────────────────── */
+/* Grid Spacer */
 
 .ratings-spacer {
   grid-column: 1 / -1;
   height: 100px;
 }
 
-/* ─── Empty State ─────────────────────────────────────────────────────── */
+/* Empty State */
 
 .ratings-empty-state {
   text-align: center;

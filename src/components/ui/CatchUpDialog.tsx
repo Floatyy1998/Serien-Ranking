@@ -29,7 +29,6 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       : (Object.values(season.episodes) as typeof season.episodes);
   })();
 
-  // Calculate how many episodes will be marked
   const episodesToMark = (() => {
     const getEpisodes = (season: (typeof seasons)[number]) => {
       if (!season?.episodes) return [];
@@ -52,7 +51,6 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
     return count;
   })();
 
-  // Preview text
   const previewText = (() => {
     if (episodesToMark === 0) return 'Keine neuen Episoden zu markieren';
     const parts: string[] = [];

@@ -712,7 +712,7 @@ button.episode-list-number:focus-visible {
   transition: width 0.3s var(--ease-default);
 }
 
-/* ---- Friends Progress Strip ---------------------------------------- */
+/* Friends Progress Strip */
 
 .friends-progress-strip {
   display: flex;

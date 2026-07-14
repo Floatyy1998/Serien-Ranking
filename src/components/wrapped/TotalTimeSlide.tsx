@@ -1,7 +1,3 @@
-/**
- * TotalTimeSlide - Zeigt die Gesamtzeit an
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 
@@ -20,7 +16,6 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
   totalEpisodes,
   totalMovies,
 }) => {
-  // Berechne beste Darstellung
   const displayTime =
     totalDays >= 1
       ? { value: totalDays.toFixed(1), unit: 'Tage' }

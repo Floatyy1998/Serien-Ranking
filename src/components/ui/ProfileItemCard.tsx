@@ -28,9 +28,7 @@ interface CardTheme {
   status?: { success?: string; warning?: string };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Provider Badge area with popup                                     */
-/* ------------------------------------------------------------------ */
+/* Provider-Badge mit Popup */
 
 function ProviderBadgeArea({
   providers,
@@ -166,9 +164,7 @@ function ProviderBadgeArea({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main card                                                          */
-/* ------------------------------------------------------------------ */
+/* Karte */
 
 interface ProfileItemCardProps {
   title: string;

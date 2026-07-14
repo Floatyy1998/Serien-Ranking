@@ -1,6 +1,5 @@
 /**
- * StatsPage - Premium Statistics Dashboard
- * Bento-Grid-Komposition. Business logic in useStatsData,
+ * Bento-Grid-Komposition. Logik in useStatsData,
  * Pods in StatsComponents/StatsDetailSections, Layout in StatsPage.css.
  */
 

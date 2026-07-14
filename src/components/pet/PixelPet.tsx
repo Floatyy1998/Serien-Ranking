@@ -26,7 +26,6 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
       ctx.clearRect(0, 0, size, size);
       ctx.fillStyle = color;
 
-      // Verbesserte Pixel-Pet Formen
       const patterns: Record<Pet['type'], number[][]> = {
         cat: [
           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -159,7 +158,6 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
       const pattern = patterns[pet.type] || patterns.cat;
       const bounceOffset = animated ? Math.sin(frameRef.current * 0.1) * 2 : 0;
 
-      // Zeichne das Pet
       pattern.forEach((row, y) => {
         row.forEach((pixel, x) => {
           if (pixel === 1) {
@@ -168,7 +166,6 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
         });
       });
 
-      // Zeichne Augen
       ctx.fillStyle = '#000';
       const eyePositions = {
         cat: [
@@ -206,7 +203,6 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
         ctx.fillRect(x * pixelSize, y * pixelSize + bounceOffset, pixelSize, pixelSize);
       });
 
-      // Mood-Indikator basierend auf Happiness
       if (pet.happiness < 30) {
         // Traurig - Träne
         ctx.fillStyle = '#4FC3F7';
@@ -219,7 +215,6 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
         ctx.fillRect(13.5 * pixelSize, 3 * pixelSize, pixelSize, pixelSize);
       }
 
-      // Hunger-Indikator
       if (pet.hunger > 70) {
         // Hungrig - Magen knurrt
         ctx.fillStyle = '#FFA500';

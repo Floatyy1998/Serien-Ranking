@@ -1,9 +1,5 @@
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../types/WatchActivity';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
 export interface MonthlyData {
   month: number;
   monthName: string;
@@ -119,10 +115,6 @@ export interface MultiYearTrendsData {
   totalHours: number;
 }
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
-
 export const MONTH_NAMES = [
   'Jan',
   'Feb',
@@ -215,10 +207,6 @@ export const FALLBACK_COLORS = [
   '#66bb6a',
   '#29b6f6',
 ];
-
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
 
 // Merge German/English genre names to a single canonical name
 const GENRE_ALIASES: Record<string, string> = {

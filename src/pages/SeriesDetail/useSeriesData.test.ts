@@ -3,7 +3,7 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 
-// ── Context mock ──────────────────────────────────────────────────────
+// Context mock
 const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   hiddenSeriesList: [] as Series[],

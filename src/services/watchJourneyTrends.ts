@@ -2,21 +2,15 @@ import { calculateWatchJourney } from './watchJourneyService';
 import type { MultiYearTrendsData, YearlyTrendData } from './watchJourneyTypes';
 import { getColor, GENRE_COLORS, PROVIDER_COLORS } from './watchJourneyTypes';
 
-// ============================================================================
-// MULTI-YEAR TRENDS CALCULATION
-// ============================================================================
-
 export async function calculateMultiYearTrends(
   userId: string,
   years: number[]
 ): Promise<MultiYearTrendsData> {
-  // Fetch data for all years in parallel
   const yearDataPromises = years.map((year) => calculateWatchJourney(userId, year));
   const allYearData = await Promise.all(yearDataPromises);
 
-  // Process each year
   const yearlyData: YearlyTrendData[] = allYearData.map((data) => {
-    // Calculate genre distribution (hours)
+    // Verteilungen in Stunden
     const genreDistribution: Record<string, number> = {};
     data.genreMonths.forEach((month) => {
       Object.entries(month.values).forEach(([genre, mins]) => {
@@ -24,7 +18,6 @@ export async function calculateMultiYearTrends(
       });
     });
 
-    // Calculate provider distribution (hours)
     const providerDistribution: Record<string, number> = {};
     data.providerMonths.forEach((month) => {
       Object.entries(month.values).forEach(([provider, mins]) => {
@@ -32,13 +25,11 @@ export async function calculateMultiYearTrends(
       });
     });
 
-    // Find top genre
     const topGenre =
       Object.entries(genreDistribution)
         .filter(([genre]) => genre !== 'Andere')
         .sort((a, b) => b[1] - a[1])[0]?.[0] || '-';
 
-    // Find top provider
     const topProvider =
       Object.entries(providerDistribution)
         .filter(([provider]) => provider !== 'Andere')
@@ -57,10 +48,8 @@ export async function calculateMultiYearTrends(
     };
   });
 
-  // Sort by year
   yearlyData.sort((a, b) => a.year - b.year);
 
-  // Aggregate all-time top genres
   const allGenres: Record<string, number> = {};
   yearlyData.forEach((yd) => {
     Object.entries(yd.genreDistribution).forEach(([genre, hours]) => {
@@ -78,7 +67,6 @@ export async function calculateMultiYearTrends(
       color: getColor(genre, GENRE_COLORS, i),
     }));
 
-  // Aggregate all-time top providers
   const allProviders: Record<string, number> = {};
   yearlyData.forEach((yd) => {
     Object.entries(yd.providerDistribution).forEach(([provider, hours]) => {
@@ -96,7 +84,7 @@ export async function calculateMultiYearTrends(
       color: getColor(provider, PROVIDER_COLORS, i),
     }));
 
-  // Calculate trends (compare last two years if available)
+  // Trend = Vergleich der letzten zwei Jahre (±10% Toleranz)
   let episodesTrend: 'up' | 'down' | 'stable' = 'stable';
   let hoursTrend: 'up' | 'down' | 'stable' = 'stable';
 
@@ -111,7 +99,6 @@ export async function calculateMultiYearTrends(
     else if (lastYear.totalHours < prevYear.totalHours * 0.9) hoursTrend = 'down';
   }
 
-  // Totals
   const totalEpisodes = yearlyData.reduce((sum, yd) => sum + yd.episodes, 0);
   const totalMovies = yearlyData.reduce((sum, yd) => sum + yd.movies, 0);
   const totalHours = yearlyData.reduce((sum, yd) => sum + yd.totalHours, 0);

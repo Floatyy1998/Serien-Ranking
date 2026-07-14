@@ -1,5 +1,5 @@
 /**
- * 🚀 Service Worker Manager für Serien-Ranking
+ * Service Worker Manager für Serien-Ranking
  * Koordiniert Service Worker Registration und Cache-Management
  */
 
@@ -39,9 +39,6 @@ class ServiceWorkerManager {
     this.init();
   }
 
-  /**
-   * 🔧 Service Worker Initialisierung
-   */
   private async init(): Promise<void> {
     if (!this.isSupported) return;
 
@@ -64,9 +61,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 📝 Service Worker Registration
-   */
   private async register(): Promise<ServiceWorkerRegistration> {
     if (this.registrationPromise) {
       return this.registrationPromise;
@@ -105,7 +99,7 @@ class ServiceWorkerManager {
   }
 
   /**
-   * 🆕 Update liegt bereit (neuer Worker wartet).
+   * Update liegt bereit (neuer Worker wartet).
    * Kein Zwangs-Reload: (a) dezente, klickbare Pille anbieten und
    * (b) automatisch anwenden, sobald der Tab unsichtbar ist — der Reload
    * passiert dann, ohne dass der User ihn sieht.
@@ -129,7 +123,7 @@ class ServiceWorkerManager {
   }
 
   /**
-   * ✅ Wartenden Worker aktivieren. Der Reload folgt im
+   * Wartenden Worker aktivieren. Der Reload folgt im
    * controllerchange-Handler — und nur weil WIR ihn ausgelöst haben.
    */
   private applyUpdate(registration: ServiceWorkerRegistration): void {
@@ -143,9 +137,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 🎧 Event Listeners Setup
-   */
   private setupEventListeners(): void {
     if (!navigator.serviceWorker) return;
     if (this.eventListenersAttached) return;
@@ -171,9 +162,6 @@ class ServiceWorkerManager {
     });
   }
 
-  /**
-   * 💬 Worker Message Handler
-   */
   private handleWorkerMessage(data: Record<string, unknown>): void {
     switch (data.type) {
       case 'CACHE_UPDATED':
@@ -193,15 +181,11 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 🔄 Service Worker Update
-   */
   public async updateServiceWorker(): Promise<void> {
     try {
       const registration = await this.registrationPromise;
       if (!registration) return;
 
-      // Forciere ein Update
       await registration.update();
 
       if (registration.waiting) {
@@ -209,7 +193,6 @@ class ServiceWorkerManager {
         // gezielt aktivieren — der controllerchange-Reload ist hier gewollt.
         this.applyUpdate(registration);
 
-        // Warte auf Aktivierung
         await new Promise<void>((resolve) => {
           const checkState = () => {
             if (registration.active) {
@@ -226,9 +209,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 🔍 Prüfe auf Service Worker Updates
-   */
   private async checkForUpdates(): Promise<void> {
     try {
       const registration = await this.registrationPromise;
@@ -246,9 +226,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 📦 Firebase Daten Cache Management
-   */
   public cacheFirebaseData(path: string, data: unknown): void {
     this.postMessage({
       type: 'CACHE_FIREBASE_DATA',
@@ -256,9 +233,6 @@ class ServiceWorkerManager {
     });
   }
 
-  /**
-   * 🗑️ Cache Management
-   */
   public async clearCache(cacheName?: string): Promise<void> {
     this.postMessage({
       type: 'CLEAR_CACHE',
@@ -266,9 +240,6 @@ class ServiceWorkerManager {
     });
   }
 
-  /**
-   * 📊 Cache Status abrufen
-   */
   public async getCacheStatus(): Promise<CacheStatus | null> {
     if (!this.worker) return null;
 
@@ -282,9 +253,6 @@ class ServiceWorkerManager {
     });
   }
 
-  /**
-   * 🔄 Background Sync registrieren
-   */
   public async registerBackgroundSync(tag: string): Promise<void> {
     try {
       const registration = await this.registrationPromise;
@@ -302,9 +270,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 💾 Offline Update Queue Management
-   */
   public async queueFirebaseUpdate(update: Omit<PendingUpdate, 'id' | 'timestamp'>): Promise<void> {
     const pendingUpdate: PendingUpdate = {
       ...update,
@@ -320,9 +285,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 📱 PWA Install Prompt
-   */
   public async showInstallPrompt(): Promise<boolean> {
     if ('beforeinstallprompt' in window) {
       // PWA Install Logic hier implementieren
@@ -331,9 +293,6 @@ class ServiceWorkerManager {
     return false;
   }
 
-  /**
-   * 🗄️ IndexedDB Helper
-   */
   private async storeInIndexedDB(storeName: string, data: unknown): Promise<void> {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open('SerienRankingDB', 1);
@@ -358,9 +317,6 @@ class ServiceWorkerManager {
     });
   }
 
-  /**
-   * 💬 Message an Service Worker senden
-   */
   private postMessage(message: Record<string, unknown>, transfer?: Transferable[]): void {
     if (navigator.serviceWorker.controller) {
       if (transfer) {
@@ -371,9 +327,6 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * 🔔 UI Notifications
-   */
   /**
    * Dezente, klickbare Update-Pille. Kein Spinner, kein Zwang: ein Tap
    * wendet das Update sofort an, das X blendet sie aus (das Update kommt
@@ -447,12 +400,10 @@ class ServiceWorkerManager {
   }
 
   private notifyOfflineReady(): void {
-    // Optional: Custom Event für UI Components
     window.dispatchEvent(new CustomEvent('sw-offline-ready'));
   }
 
   private notifyUpdateComplete(): void {
-    // Benachrichtigung über abgeschlossenes Update
     window.dispatchEvent(
       new CustomEvent('sw-update-complete', {
         detail: {
@@ -462,9 +413,6 @@ class ServiceWorkerManager {
     );
   }
 
-  /**
-   * 📊 Public API für Cache Statistics
-   */
   public async getCacheStatistics(): Promise<{
     totalSize: number;
     cacheCount: number;
@@ -483,9 +431,6 @@ class ServiceWorkerManager {
     };
   }
 
-  /**
-   * 🎯 Public API für Online/Offline Status
-   */
   public get isOnline(): boolean {
     return navigator.onLine;
   }
@@ -497,7 +442,6 @@ class ServiceWorkerManager {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Return cleanup function
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);

@@ -55,7 +55,7 @@ describe('useAdminHealthAlert', () => {
     expect(fb.ref).toHaveBeenCalledWith('admin/dataIntegrityIssues');
     await waitFor(() => expect(toast.showToast).toHaveBeenCalledTimes(1));
     // broken-poster + stale-catalog = 2 (missing-all-genre wird ignoriert)
-    expect(toast.showToast).toHaveBeenCalledWith('⚠ 2 Data Health Probleme', 3000);
+    expect(toast.showToast).toHaveBeenCalledWith('2 Data Health Probleme', 3000);
   });
 
   it('zeigt keinen Toast wenn nur ignorierte Typen vorliegen', async () => {

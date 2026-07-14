@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: ref(path).push(event) → sammelt {path, event} in `pushed`.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const pushed: Array<{ path: string; event: Record<string, unknown> }> = [];
   return {

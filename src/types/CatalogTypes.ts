@@ -1,9 +1,7 @@
-// ============================================================
 // Catalog Types — Shared + User-specific data for the new
 // Firebase structure (catalog/series, users/{uid}/series, etc.)
-// ============================================================
 
-// --------------- Shared catalog data (stored once) ---------------
+// Shared catalog data (stored once)
 
 export interface CatalogSeries {
   title: string;
@@ -62,7 +60,7 @@ export interface CatalogMovie {
   lastUpdated: number;
 }
 
-// --------------- User-specific references ---------------
+// User-specific references
 
 export interface UserSeriesRef {
   rating: Record<string, number>;
@@ -100,7 +98,7 @@ export interface UserMovieRef {
   }>;
 }
 
-// --------------- Watch data ---------------
+// Watch data
 
 export interface EpisodeWatchData {
   watched?: boolean;

@@ -1,7 +1,3 @@
-/**
- * HeatmapSlide - Zeigt Watch-Zeiten als Heatmap (Wochentag x Stunde)
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 
@@ -13,10 +9,8 @@ const DAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const HOUR_LABELS = ['0', '3', '6', '9', '12', '15', '18', '21'];
 
 export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
-  // Find max value for color scaling
   const maxValue = Math.max(...heatmapData.flat(), 1);
 
-  // Get color based on intensity
   const getColor = (value: number): string => {
     if (value === 0) return 'rgba(255,255,255,0.05)';
     const intensity = value / maxValue;
@@ -26,7 +20,6 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
     return 'rgba(233, 69, 96, 0.9)';
   };
 
-  // Find peak time
   let peakDay = 0;
   let peakHour = 0;
   let peakValue = 0;

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { ADMIN_UID } from '../../config/admin';
 
-// --- Firebase compat mock ---------------------------------------------------
+// Firebase compat mock
 const fb = vi.hoisted(() => {
   const state: { data: unknown } = { data: null };
   const set = vi.fn(() => Promise.resolve());
@@ -17,7 +17,7 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// --- Context mocks ----------------------------------------------------------
+// Context mocks
 type FriendsState = {
   unreadActivitiesCount: number;
   lastReadActivitiesTime: number;

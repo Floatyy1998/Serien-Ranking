@@ -16,7 +16,7 @@ export const drawDragon = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): WYVERN-FORM ===
+  // STUFE 8+ (Lv50): WYVERN-FORM
   if (level >= 50) {
     drawWyvern(
       ctx,
@@ -34,7 +34,7 @@ export const drawDragon = (
     return;
   }
 
-  // === STUFEN 1-7: NORMALER DRACHE (Lv1-49) ===
+  // STUFEN 1-7: NORMALER DRACHE (Lv1-49)
 
   // Kopf
   ctx.fillStyle = color;
@@ -264,7 +264,7 @@ export const drawDragon = (
     ctx.shadowBlur = 0;
   }
 
-  // === STUFE 6 (Lv30-39): VETERAN ===
+  // STUFE 6 (Lv30-39): VETERAN
   if (level >= 30) {
     // Kampfnarben auf Schuppen
     ctx.strokeStyle = light + '88';
@@ -296,7 +296,7 @@ export const drawDragon = (
     }
   }
 
-  // === STUFE 7 (Lv40-49): ELITE ===
+  // STUFE 7 (Lv40-49): ELITE
   if (level >= 40) {
     // Rüstungsplatten auf Schultern
     ctx.fillStyle = '#808080CC';
@@ -402,7 +402,7 @@ export const drawDragonWingsOverlay = (
   }
 };
 
-// === WYVERN-FORM (Level 50+) ===
+// WYVERN-FORM (Level 50+)
 function drawWyvern(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -601,7 +601,7 @@ function drawWyvern(
     ctx.fillRect((centerX - 0.3) * ps, (centerY + 2) * ps + offset, ps * 0.6, ps);
   }
 
-  // === CHAMPION (Lv60+) ===
+  // CHAMPION (Lv60+)
   if (isChampion) {
     // Doppelte Flügelmembran-Schicht
     ctx.fillStyle = dark + '44';
@@ -620,7 +620,7 @@ function drawWyvern(
     ctx.fillRect((centerX + 12) * ps, (centerY + 0) * ps + offset, ps, ps);
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     // Kristallhörner leuchten
     ctx.shadowColor = hornColor;
@@ -659,7 +659,7 @@ function drawWyvern(
     }
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     // Ätherischer Wyvern — ganzer Körper schimmert
     ctx.shadowColor = '#00FFFF';

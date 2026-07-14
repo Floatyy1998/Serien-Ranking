@@ -1,8 +1,3 @@
-/**
- * ActivityPage - Social Activity Feed
- * Composition component using extracted tab subcomponents
- */
-
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';

@@ -1,7 +1,3 @@
-/**
- * AchievementsSlide - Zeigt freigeschaltete Achievements
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';

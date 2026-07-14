@@ -3,11 +3,11 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 
-// ── react-router-dom ──────────────────────────────────────────────────
+// react-router-dom
 const rr = vi.hoisted(() => ({ id: '5' }));
 vi.mock('react-router-dom', () => ({ useParams: () => ({ id: rr.id }) }));
 
-// ── firebase compat ───────────────────────────────────────────────────
+// firebase compat
 const fb = vi.hoisted(() => {
   const updateMock = vi.fn(() => Promise.resolve());
   const setMock = vi.fn(() => Promise.resolve());
@@ -25,7 +25,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// ── contexts + hooks + services ───────────────────────────────────────
+// contexts + hooks + services
 const ctx = vi.hoisted(() => ({
   allSeriesList: [] as Series[],
   user: { uid: 'u1' } as { uid: string } | null,

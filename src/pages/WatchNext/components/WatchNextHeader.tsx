@@ -143,7 +143,6 @@ export const WatchNextHeader = ({
         </div>
       </div>
 
-      {/* Filter Section */}
       <AnimatePresence>
         {showFilter && (
           <motion.div

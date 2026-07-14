@@ -230,7 +230,7 @@ async function ensureVersionFresh(): Promise<number | null> {
   return remote;
 }
 
-// ---------- Provider-Dedup-Expansion ----------
+// Provider-Dedup-Expansion
 
 interface ProviderEntry {
   logo?: string;
@@ -275,7 +275,7 @@ function expandProviders<T extends { providers?: unknown }>(raw: unknown): Recor
   return out;
 }
 
-// ---------- Public API ----------
+// Public API
 
 /**
  * Laedt catalog/seriesMeta (alle Serien, ohne Seasons, ~400 KB gzipped ~80 KB).
@@ -685,7 +685,7 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   return true;
 }
 
-// ---------- Zentraler Versions-Watcher (Silent-Refresh ueberall) ----------
+// Zentraler Versions-Watcher (Silent-Refresh ueberall)
 //
 // Ein EINZIGER Watcher pro Tab pollt version.json (5-min-Intervall +
 // visibilitychange, 30s-Debounce, nur wenn der Tab sichtbar ist). Erkennt er

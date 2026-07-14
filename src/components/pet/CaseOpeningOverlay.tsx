@@ -161,7 +161,6 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
       audioCtxRef.current = new AudioContext();
     }
 
-    // Check Firebase if pending drop still exists
     const uid = auth?.user?.uid;
     if (!uid) return;
     dbRef(userPath(uid, 'pendingAccessoryDrops', dropData.dropId))

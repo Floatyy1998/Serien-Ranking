@@ -10,7 +10,6 @@ import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 
-// Floating Icon Component
 const FloatingIcon: React.FC<{
   icon: React.ReactNode;
   delay: number;
@@ -50,7 +49,6 @@ const WrappedNotificationImpl: React.FC = () => {
   const { currentTheme } = useTheme();
   const { enabled, year, loading } = useWrappedConfig();
 
-  // Don't show while loading or if disabled
   if (loading || !enabled) return null;
 
   return (

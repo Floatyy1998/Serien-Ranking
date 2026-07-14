@@ -2,10 +2,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock (analog useDiscussions.test): on/off/once/push/update/set/
 // remove + chainbares orderByChild + ServerValue.increment.
-// ---------------------------------------------------------------------------
 type ValueCb = (snap: FbSnapshot) => void;
 type ErrCb = (err: Error) => void;
 interface FbSnapshot {

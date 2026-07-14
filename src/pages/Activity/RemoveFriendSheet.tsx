@@ -1,7 +1,3 @@
-/**
- * RemoveFriendSheet - BottomSheet confirmation for removing a friend
- */
-
 import { PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';

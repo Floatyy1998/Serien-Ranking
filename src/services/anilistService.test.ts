@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { discoverManga, getMangaById, searchManga } from './anilistService';
 
-// ---------------------------------------------------------------------------
 // AniList = GraphQL über globales fetch(). Wir stubben fetch und geben
 // realistische { data: { Page | Media } }-Shapes zurück.
-// ---------------------------------------------------------------------------
 const fetchMock = vi.fn();
 
 function graphqlOk(data: unknown) {

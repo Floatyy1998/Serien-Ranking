@@ -22,7 +22,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ===========================================================================
 describe('getMangaDexInfo', () => {
   it('mappt Suchergebnis auf MangaDexInfo (completed → status)', async () => {
     backendFetchMock.mockResolvedValueOnce(
@@ -88,7 +87,6 @@ describe('getMangaDexInfo', () => {
   });
 });
 
-// ===========================================================================
 describe('getMangaDexChapterDates', () => {
   it('mappt Releases, filtert Renumbering-Anomalien und schätzt nächstes Datum', async () => {
     // neueste zuerst (wie API): 100 (02-10), 2 (Comeback-Anomalie), 99 (02-03).

@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: ref(path).push(entry). Aufrufe werden in state gesammelt.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const state = {
     pushCalls: [] as Array<{ path: string; value: unknown }>,

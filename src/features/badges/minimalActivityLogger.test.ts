@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EarnedBadge } from './badgeDefinitions';
 
-// ---- Firebase-Mock (nur innerhalb der Funktionen genutzt) ----
+// Firebase-Mock (nur innerhalb der Funktionen genutzt)
 const fb = vi.hoisted(() => {
   let onceVal: unknown = null;
   const setMock = vi.fn(async () => {});
@@ -51,7 +51,7 @@ vi.mock('firebase/compat/app', () => {
   return { default: { database } };
 });
 
-// ---- badgeCounterService-Mock ----
+// badgeCounterService-Mock
 const counter = vi.hoisted(() => ({
   updateStreakCounter: vi.fn(async () => {}),
   incrementQuickwatchCounter: vi.fn(async () => {}),
@@ -63,7 +63,7 @@ const counter = vi.hoisted(() => ({
 }));
 vi.mock('./badgeCounterService', () => ({ badgeCounterService: counter }));
 
-// ---- offlineBadgeSystem-Mock ----
+// offlineBadgeSystem-Mock
 const badgeSys = vi.hoisted(() => {
   let badges: unknown[] = [];
   return {

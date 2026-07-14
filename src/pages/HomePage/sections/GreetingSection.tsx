@@ -95,7 +95,6 @@ export const GreetingSection = React.memo(function GreetingSection({
     };
   }, []);
 
-  // Close tooltip when clicking elsewhere
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;

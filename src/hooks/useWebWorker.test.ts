@@ -3,11 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useWebWorker, type WebWorkerOptions } from './useWebWorker';
 
-// ---------------------------------------------------------------------------
 // Fake Worker: registriert message/error-Listener (der Hook nutzt
 // addEventListener, nicht onmessage) und erlaubt das gezielte Auslösen von
 // Events via emit(). postMessage/terminate sind Spies.
-// ---------------------------------------------------------------------------
 type Listener = (evt: unknown) => void;
 
 class FakeWorker {

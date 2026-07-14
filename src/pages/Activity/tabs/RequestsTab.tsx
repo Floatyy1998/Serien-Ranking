@@ -1,7 +1,3 @@
-/**
- * RequestsTab - Incoming and sent friend requests.
- */
-
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import MarkEmailReadRounded from '@mui/icons-material/MarkEmailReadRounded';

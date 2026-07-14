@@ -13,7 +13,6 @@ import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services
 import { backendFetch } from '../../services/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
 
-/** TMDB genre object */
 interface TMDBGenre {
   id: number;
   name: string;
@@ -45,17 +44,14 @@ export const useMovieData = () => {
   const { user } = useAuth() || {};
   const { movieList } = useMovieList();
 
-  // --- Core state ---
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tmdbMovie, setTmdbMovie] = useState<Movie | null>(null);
   const [activeTab, setActiveTab] = useState<'info' | 'cast'>('info');
   const [isAdding, setIsAdding] = useState(false);
 
-  // --- Responsive state ---
   const { isMobile } = useDeviceType();
 
-  // --- UI feedback state ---
   const [dialog, setDialog] = useState<DialogState>({
     open: false,
     message: '',
@@ -66,7 +62,6 @@ export const useMovieData = () => {
     message: '',
   });
 
-  // --- TMDB data state ---
   const [tmdbBackdrop, setTmdbBackdrop] = useState<string | null>(null);
   const [providers, setProviders] = useState<TMDBWatchProvider[] | null>(null);
   const [tmdbRating, setTmdbRating] = useState<{
@@ -79,7 +74,6 @@ export const useMovieData = () => {
   } | null>(null);
   const [tmdbOverview, setTmdbOverview] = useState<string | null>(null);
 
-  // --- Derived data ---
   const localMovie = useMemo(() => {
     return movieList.find((m: Movie) => m.id === Number(id));
   }, [movieList, id]);
@@ -112,7 +106,6 @@ export const useMovieData = () => {
     return Math.round(avg * 10) / 10;
   }, [movie]);
 
-  // --- Helpers ---
   const getBackdropUrl = (backdropPath: string | undefined): string =>
     getImageUrl(backdropPath, 'original', '');
 
@@ -122,12 +115,10 @@ export const useMovieData = () => {
     return `${hours}h ${mins}m`;
   };
 
-  // --- TMDB + OMDB fetching ---
   useEffect(() => {
     const apiKey = getTmdbApiKey();
 
     if (id && apiKey) {
-      // Fetch backdrop and TMDB rating
       tmdbFetch<TmdbMediaDetail>(`movie/${id}`)
         .then((data) => {
           if (data.backdrop_path) {
@@ -145,7 +136,6 @@ export const useMovieData = () => {
         })
         .catch(() => {}); // bewusst still: Backdrop/TMDB-Rating sind optionale Anreicherung
 
-      // Fetch providers
       tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
         .then((data) => {
           if (data.results?.DE?.flatrate) {
@@ -159,7 +149,6 @@ export const useMovieData = () => {
         .catch(() => {}); // bewusst still: Provider-Anzeige ist optionale Anreicherung
     }
 
-    // Full fetch if not found locally
     if (!localMovie && id && apiKey && !tmdbMovie) {
       const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
       setLoading(true);
@@ -201,7 +190,6 @@ export const useMovieData = () => {
     }
   }, [localMovie, id, tmdbMovie]);
 
-  // Fetch IMDB rating from OMDb API
   useEffect(() => {
     const omdbKey = import.meta.env.VITE_API_OMDb;
     const imdbId = movie?.imdb?.imdb_id || localMovie?.imdb?.imdb_id;
@@ -221,7 +209,6 @@ export const useMovieData = () => {
     }
   }, [movie, localMovie]);
 
-  // --- Handlers ---
   const handleAddMovie = useCallback(async () => {
     if (!movie || !user) return;
 
@@ -329,31 +316,26 @@ export const useMovieData = () => {
   }, [movie, user]);
 
   return {
-    // Identifiers
     id,
     navigate,
     user,
 
-    // Movie data
     movie,
     localMovie,
     tmdbMovie,
     isReadOnlyTmdbMovie,
     loading,
 
-    // TMDB enrichment
     tmdbBackdrop,
     tmdbRating,
     imdbRating,
     tmdbOverview,
     providers,
 
-    // Rating data
     currentRating,
     isWatched,
     averageRating,
 
-    // UI state
     activeTab,
     setActiveTab: (tab: 'info' | 'cast') => {
       setActiveTab(tab);
@@ -366,12 +348,10 @@ export const useMovieData = () => {
     setDialog,
     snackbar,
 
-    // Handlers
     handleAddMovie,
     handleDeleteMovie,
     handleToggleWatched,
 
-    // Helpers
     getBackdropUrl,
     formatRuntime,
   };

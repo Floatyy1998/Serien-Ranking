@@ -80,7 +80,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
     return colors;
   }, [data]);
 
-  // Single year: genre ranking from distribution
   const singleYearGenreRanking = useMemo(() => {
     if (!isSingleYear) return [];
     const yd = data.yearlyData[0];
@@ -109,7 +108,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
 
   return (
     <div>
-      {/* Hero Stats */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -498,7 +496,6 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
         </>
       )}
 
-      {/* Year-by-Year Cards */}
       <TrendsYearCards yearlyData={data.yearlyData} topGenreColors={topGenreColors} />
     </div>
   );

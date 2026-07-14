@@ -1,7 +1,3 @@
-/**
- * PetCreationModal - Full-screen modal for creating a new pet
- */
-
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';

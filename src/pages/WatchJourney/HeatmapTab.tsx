@@ -20,14 +20,11 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
   const textSecondary = currentTheme.text.secondary;
   const bgSurface = currentTheme.background.surface;
 
-  // Responsive Gap-Größe basierend auf Bildschirmbreite
   const dayLabelWidth = 40; // Breite für Tages-Labels (Mo, Di, etc.)
-  // Berechne ungefähre Zellgröße für Gap-Berechnung
   const approxCellSize = (width - dayLabelWidth - 40) / 25; // 24 Zellen + padding
   const cellGap = Math.max(2, Math.min(4, approxCellSize * 0.1));
   const maxCount = Math.max(...data.heatmap.map((h) => h.count), 1);
 
-  // Hover state für Tooltip
   const [hoveredCell, setHoveredCell] = useState<{
     hour: number;
     day: number;
@@ -35,7 +32,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
     minutes: number;
   } | null>(null);
 
-  // Calculate insights
   const peakHourLabel = `${data.peakHour}:00`;
   const isNightOwl = data.peakHour >= 22 || data.peakHour <= 4;
   const isEarlyBird = data.peakHour >= 5 && data.peakHour <= 9;
@@ -52,7 +48,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
     .filter((h) => h.dayOfWeek >= 1 && h.dayOfWeek <= 5)
     .reduce((a, b) => a + b.count, 0);
 
-  // Prepare bar data for hourly distribution
   const hourlyData = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => ({
       hour: `${i}:00`,
@@ -63,7 +58,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
 
   return (
     <div>
-      {/* Hero - Peak Time */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -157,7 +151,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         </div>
       </motion.div>
 
-      {/* Hourly Distribution Bar Chart */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -244,7 +237,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         </div>
       </motion.div>
 
-      {/* Heatmap Grid */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -263,7 +255,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           Wochentag x Uhrzeit
         </h3>
 
-        {/* Hover Tooltip */}
         <AnimatePresence>
           {hoveredCell && (
             <motion.div
@@ -299,9 +290,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           )}
         </AnimatePresence>
 
-        {/* Full-width Heatmap Container */}
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-          {/* Hour labels - positioned to align with grid cells */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12, height: 24 }}>
             <div style={{ width: dayLabelWidth, flexShrink: 0 }} /> {/* Spacer for day labels */}
             <div style={{ display: 'flex', position: 'relative', flex: 1 }}>
@@ -331,7 +320,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             </div>
           </div>
 
-          {/* Grid */}
           <div onMouseLeave={() => setHoveredCell(null)}>
             {[0, 1, 2, 3, 4, 5, 6].map((day) => (
               <div
@@ -397,7 +385,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           </div>
         </div>
 
-        {/* Legend */}
         <div
           style={{
             display: 'flex',
@@ -423,7 +410,6 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
         </div>
       </motion.div>
 
-      {/* Insights */}
       <div style={{ padding: '0 20px' }}>
         <h3
           style={{

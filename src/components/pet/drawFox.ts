@@ -16,7 +16,7 @@ export const drawFox = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): GÖTTLICHE KITSUNE-FORM ===
+  // STUFE 8+ (Lv50): GÖTTLICHE KITSUNE-FORM
   if (level >= 50) {
     drawDivineKitsune(
       ctx,
@@ -34,7 +34,7 @@ export const drawFox = (
     return;
   }
 
-  // === STUFEN 1-7: NORMALER FUCHS / KITSUNE (Lv1-49) ===
+  // STUFEN 1-7: NORMALER FUCHS / KITSUNE (Lv1-49)
 
   // Kopf
   ctx.fillStyle = color;
@@ -342,7 +342,7 @@ export const drawFox = (
     }
   }
 
-  // === STUFE 6 (Lv30-39): VETERAN ===
+  // STUFE 6 (Lv30-39): VETERAN
   if (level >= 30) {
     // Kampfnarbe über dem linken Auge
     ctx.strokeStyle = '#FFF8';
@@ -372,7 +372,7 @@ export const drawFox = (
     ctx.stroke();
   }
 
-  // === STUFE 7 (Lv40-49): ELITE ===
+  // STUFE 7 (Lv40-49): ELITE
   if (level >= 40) {
     // Rüstungsartige Muster (japanische Krieger-Markierungen)
     ctx.strokeStyle = '#DC143C66';
@@ -401,7 +401,7 @@ export const drawFox = (
   }
 };
 
-// === GÖTTLICHE KITSUNE-FORM (Level 50+) ===
+// GÖTTLICHE KITSUNE-FORM (Level 50+)
 function drawDivineKitsune(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -490,7 +490,7 @@ function drawDivineKitsune(
     ctx.fillRect((centerX + 2) * ps, (centerY + 12) * ps + offset, ps, ps);
   }
 
-  // === 9 GÖTTLICHE SCHWÄNZE (das Hauptmerkmal) ===
+  // 9 GÖTTLICHE SCHWÄNZE (das Hauptmerkmal)
   const tailGlow = isLegend ? 0.3 : 0.2;
   for (let i = 0; i < 9; i++) {
     const angle = (i - 4) * 0.25;
@@ -639,7 +639,7 @@ function drawDivineKitsune(
     }
   }
 
-  // === CHAMPION (Lv60+) ===
+  // CHAMPION (Lv60+)
   if (isChampion) {
     // Spirituelle Aura um den Körper
     if (animated) {
@@ -660,7 +660,7 @@ function drawDivineKitsune(
     }
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     // Goldene Augen statt rote
     ctx.shadowColor = '#FFD700';
@@ -693,7 +693,7 @@ function drawDivineKitsune(
     }
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     // Ätherischer göttlicher Kitsune
     ctx.shadowColor = '#4169E1';

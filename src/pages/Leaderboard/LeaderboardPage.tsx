@@ -74,7 +74,7 @@ export const LeaderboardPage = () => {
   const topThree = rankings.slice(0, 3);
   const rest = rankings.slice(3);
 
-  // ── Loading State ──
+  // Loading state
   if (loading) {
     return (
       <div className="lb-loading" style={{ background: currentTheme.background.default }}>
@@ -111,7 +111,7 @@ export const LeaderboardPage = () => {
     );
   }
 
-  // ── No Friends State ──
+  // No-friends state
   if (mode === 'friends' && rankings.length <= 1) {
     return (
       <div
@@ -173,7 +173,7 @@ export const LeaderboardPage = () => {
     );
   }
 
-  // ── Main Leaderboard ──
+  // Main leaderboard
   return (
     <div
       ref={scrollContainerRef}
@@ -242,7 +242,7 @@ export const LeaderboardPage = () => {
   );
 };
 
-// ── Mode Toggle Sub-Component ──
+// Mode toggle
 const ModeToggle = React.memo(function ModeToggle({
   mode,
   onModeChange,

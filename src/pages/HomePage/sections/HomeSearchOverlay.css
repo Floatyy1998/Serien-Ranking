@@ -442,12 +442,12 @@
   gap: 12px;
 }
 
-/* ===========================================================================
+/*
  * Desktop: Full-bleed wie Mobile — der Owner will auf JEDER Auflösung volle
  * Flächennutzung (kein zentriertes max-width-Panel). Gegen Leere arbeitet
  * Inhalt: mehr „Beliebt"-Titel, größere Poster/Typo auf großen Screens.
  * Steht am Dateiende, damit die Overrides nach den Basisregeln kommen.
- * =========================================================================== */
+ */
 @media (min-width: 700px) {
   .hso__head {
     padding: 26px 32px 16px;

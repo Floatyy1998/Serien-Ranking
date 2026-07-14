@@ -1,7 +1,4 @@
-/**
- * SettingsPage - Premium Settings Experience
- * Slim composition component following DiscoverPage pattern
- */
+/** Kompositions-Komponente nach DiscoverPage-Muster — Logik in useSettingsData. */
 
 import { Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
 import { Switch } from '@mui/material';

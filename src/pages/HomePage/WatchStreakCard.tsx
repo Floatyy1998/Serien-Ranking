@@ -30,7 +30,6 @@ export const WatchStreakCard: React.FC = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [celebrateRecord, setCelebrateRecord] = useState(false);
 
-  // Load streak data
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
@@ -75,7 +74,6 @@ export const WatchStreakCard: React.FC = () => {
     return () => ref.off('value', handler);
   }, [user?.uid]);
 
-  // Load active pet info
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -85,7 +83,6 @@ export const WatchStreakCard: React.FC = () => {
 
     const activeHandler = (snapshot: firebase.database.DataSnapshot) => {
       const activePetId = snapshot.val();
-      // Clean up previous pet listener
       if (petRef && petHandler) {
         petRef.off('value', petHandler);
       }
@@ -167,7 +164,6 @@ export const WatchStreakCard: React.FC = () => {
   const displayStreak = status === 'lost' ? 0 : streak.currentStreak;
   const isRecord = displayStreak > 0 && displayStreak >= streak.longestStreak;
 
-  // Shield eligibility
   const canUseShield = status === 'shieldable';
   const cooldown = getShieldCooldown(streak.lastShieldUsedDate);
   const petTotalXP = pet ? (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience : 0;

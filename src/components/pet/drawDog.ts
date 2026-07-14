@@ -17,7 +17,7 @@ export const drawDog = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): WOLF-FORM ===
+  // STUFE 8+ (Lv50): WOLF-FORM
   if (level >= 50) {
     drawWolf(
       ctx,
@@ -36,7 +36,7 @@ export const drawDog = (
     return;
   }
 
-  // === STUFEN 1-7: NORMALER HUND (Lv1-49) ===
+  // STUFEN 1-7: NORMALER HUND (Lv1-49)
   const headSize =
     level >= 20 ? 1.35 : level >= 15 ? 1.3 : level >= 10 ? 1.2 : level >= 5 ? 1.1 : 1;
 
@@ -245,7 +245,7 @@ export const drawDog = (
     }
   }
 
-  // === STUFE 6 (Lv30-39): VETERAN ===
+  // STUFE 6 (Lv30-39): VETERAN
   if (level >= 30) {
     // Kampfnarben
     ctx.strokeStyle = light + 'AA';
@@ -272,7 +272,7 @@ export const drawDog = (
     ctx.fillRect((centerX + 3.5) * ps, (centerY + 10) * ps + offset, ps * 0.5, ps * 3);
   }
 
-  // === STUFE 7 (Lv40-49): ELITE ===
+  // STUFE 7 (Lv40-49): ELITE
   if (level >= 40) {
     // Rüstungs-artige Fellmuster
     ctx.strokeStyle = eyeColor + '66';
@@ -296,7 +296,7 @@ export const drawDog = (
   }
 };
 
-// === WOLF-FORM (Level 50+) ===
+// WOLF-FORM (Level 50+)
 function drawWolf(
   ctx: CanvasRenderingContext2D,
   pet: Pet,
@@ -469,7 +469,7 @@ function drawWolf(
     ctx.fillRect((centerX - 6) * ps, (centerY + 1.5) * ps + offset, ps * 1.5, ps * 0.5);
   }
 
-  // === CHAMPION (Lv60+): Extra Features ===
+  // CHAMPION (Lv60+): Extra Features
   if (isChampion) {
     // Breitere Schultern
     ctx.fillStyle = dark + bodyAlpha;
@@ -499,7 +499,7 @@ function drawWolf(
     ctx.stroke();
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     // Leuchtende Pfoten-Aura
     ctx.shadowColor = eyeColor;
@@ -537,7 +537,7 @@ function drawWolf(
     }
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     // Ätherisches Glühen
     ctx.shadowColor = '#87CEEB';

@@ -1,7 +1,3 @@
-/**
- * ProfileSection - Avatar with upload, username edit, display name edit
- */
-
 import { Check, Edit, Person, PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';

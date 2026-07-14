@@ -1,5 +1,5 @@
 /**
- * 🔄 Realtime-Listener-Wiring (einzelner .on('value')-Listener).
+ * Realtime-Listener-Wiring (einzelner .on('value')-Listener).
  * State-Updates laufen über die injizierten Setter des Haupt-Hooks.
  */
 import firebase from 'firebase/compat/app';
@@ -48,7 +48,6 @@ export function attachRealtimeListener<T>(
           setIsStale(false);
           setError(null);
           setIsOffline(false); // Successful realtime = online
-          // Cache aktualisieren
           await saveToCache(newData);
         } else {
           // !exists kann transient sein wenn Firebase RTDB bei einem

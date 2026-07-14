@@ -42,10 +42,8 @@ export const SeriesDetailPage = memo(() => {
   const [activeTab, setActiveTab] = useState<'info' | 'cast' | 'characters'>('info');
   const [markingNext, setMarkingNext] = useState(false);
 
-  // Responsive state
   const { isMobile } = useDeviceType();
 
-  // Data hook
   const {
     series,
     localSeries,
@@ -76,7 +74,6 @@ export const SeriesDetailPage = memo(() => {
     }
   };
 
-  // Actions hook
   const {
     isAdding,
     isDeleting,
@@ -96,10 +93,7 @@ export const SeriesDetailPage = memo(() => {
     handleStopRewatch,
   } = useSeriesActions(series, user?.uid, tmdbSeries ?? undefined);
 
-  // Recap hook
   const recap = useRecapData(localSeries ?? undefined);
-
-  // Character guide hook
   const characterGuide = useCharacterDescriptions(localSeries ?? undefined);
   const [showRecap, setShowRecap] = useState(false);
 
@@ -172,7 +166,6 @@ export const SeriesDetailPage = memo(() => {
     sessionStorage.setItem(`series_${id}_tab`, activeTab);
   }, [id, activeTab, series]);
 
-  // Episode discussion counts
   const selectedSeasonData = series?.seasons?.[selectedSeasonIndex];
   const episodeDiscussionCounts = useEpisodeDiscussionCounts(
     Number(id) || 0,
@@ -180,7 +173,6 @@ export const SeriesDetailPage = memo(() => {
     selectedSeasonData?.episodes?.length || 0
   );
 
-  // Computed values
   const overallRating = useMemo(() => {
     if (!series) return '0.00';
     return calculateOverallRating(series);

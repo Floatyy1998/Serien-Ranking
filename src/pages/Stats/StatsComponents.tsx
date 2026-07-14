@@ -1,6 +1,5 @@
 /**
- * StatsComponents - Memoized Bento-Pods für die StatsPage
- * AnimatedRing, WatchtimePod, ProgressPod, QuickPods, ActorUniverseBanner.
+ * Memoized Bento-Pods für die StatsPage.
  * Ratings/Genres/Provider-Panels liegen in StatsDetailSections.
  */
 
@@ -21,9 +20,7 @@ import { tapScaleSmall } from '../../lib/motion';
 
 export { RatingsSection, TopGenresSection, TopProvidersSection } from './StatsDetailSections';
 
-/* ------------------------------------------------------------------ */
-/*  Theme color type (minimal surface needed by subcomponents)         */
-/* ------------------------------------------------------------------ */
+/* Theme color type (minimal surface needed by subcomponents) */
 interface ThemeColors {
   primary: string;
   accent?: string;
@@ -38,9 +35,6 @@ const podIn = {
   animate: { opacity: 1, y: 0 },
 };
 
-/* ------------------------------------------------------------------ */
-/*  AnimatedRing                                                       */
-/* ------------------------------------------------------------------ */
 interface AnimatedRingProps {
   progress: number;
   size: number;
@@ -84,9 +78,7 @@ export const AnimatedRing: React.FC<AnimatedRingProps> = memo(
 );
 AnimatedRing.displayName = 'AnimatedRing';
 
-/* ------------------------------------------------------------------ */
-/*  WatchtimePod — großer Zeit-Pod inkl. Serien/Filme-Split            */
-/* ------------------------------------------------------------------ */
+/* WatchtimePod — großer Zeit-Pod inkl. Serien/Filme-Split */
 interface WatchtimePodProps {
   stats: StatsData;
   timeData: FormattedTime;
@@ -170,9 +162,7 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
 });
 WatchtimePod.displayName = 'WatchtimePod';
 
-/* ------------------------------------------------------------------ */
-/*  ProgressPod — Ring + Episoden-Zähler                               */
-/* ------------------------------------------------------------------ */
+/* ProgressPod — Ring + Episoden-Zähler */
 interface ProgressPodProps {
   stats: StatsData;
   theme: ThemeColors;
@@ -216,9 +206,7 @@ export const ProgressPod = memo(({ stats, theme }: ProgressPodProps) => (
 ));
 ProgressPod.displayName = 'ProgressPod';
 
-/* ------------------------------------------------------------------ */
-/*  QuickPods — Serien / Filme / Fertig / Diese Woche                  */
-/* ------------------------------------------------------------------ */
+/* QuickPods — Serien / Filme / Fertig / Diese Woche */
 interface QuickPodsProps {
   stats: StatsData;
   theme: ThemeColors;
@@ -285,9 +273,6 @@ export const QuickPods = memo(({ stats, theme }: QuickPodsProps) => {
 });
 QuickPods.displayName = 'QuickPods';
 
-/* ------------------------------------------------------------------ */
-/*  ActorUniverseBanner                                                */
-/* ------------------------------------------------------------------ */
 interface ActorUniverseBannerProps {
   theme: ThemeColors;
   onNavigate: () => void;

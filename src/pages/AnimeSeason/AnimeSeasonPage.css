@@ -7,7 +7,7 @@
    die --theme- und --color-Vars. Abstände: --space-8 Sektionen, --space-6
    Timeline-Tage, --space-4 Grid-gap. */
 
-/* ─── Filterleiste (Format-Segmented + Provider-Toggle) ─────────────────── */
+/* Filterleiste (Format-Segmented + Provider-Toggle) */
 
 .as-filterbar {
   display: flex;
@@ -19,7 +19,7 @@
   margin: 0 20px 20px;
 }
 
-/* ─── Skeletons ─────────────────────────────────────────────────────────── */
+/* Skeletons */
 
 /* KEIN Licht-Sweep auf dieser Seite: über volle Kartenbreite rast der
    Gradient pro Zyklus einmal quer durch (wirkt wie Flackern). Stattdessen
@@ -46,7 +46,7 @@
   }
 }
 
-/* ─── Karten-Grid (Querformat-Karten) ───────────────────────────────────── */
+/* Karten-Grid (Querformat-Karten) */
 
 .as-grid {
   display: grid;
@@ -72,7 +72,7 @@
   }
 }
 
-/* ─── Grid Item ─────────────────────────────────────────────────────────── */
+/* Grid Item */
 
 .as-grid-item {
   /* KEIN content-visibility: auto mehr — nach dem Einmal-Mount hinter dem
@@ -112,7 +112,7 @@
   transform: scale(0.98);
 }
 
-/* ─── Querformat-Karte („Premieren-Ticket") ─────────────────────────────── */
+/* Querformat-Karte („Premieren-Ticket") */
 
 .as-card {
   position: relative;
@@ -443,7 +443,7 @@
   opacity: 0.85;
 }
 
-/* ─── Premieren-Timeline (Signature) ──────────────────────────────────────
+/* Premieren-Timeline (Signature)
    Vertikale Glow-Spine links, ein Datums-Node pro Tag. Die Chronologie IST
    die Information — der Node „HEUTE" pulsiert, TBA ist dashed. */
 
@@ -547,7 +547,7 @@
   flex-shrink: 0;
 }
 
-/* ─── Hero-Spotlight ──────────────────────────────────────────────────────
+/* Hero-Spotlight
    bannerImage als Backdrop (cover) mit Scrim + Grain; OHNE Banner liegt ein
    Coverfarben-Gradient unter dem nur als Textur geblurrten Cover (kein
    Vollflächen-Blur-Matsch auf Ultrawide mehr) — das scharfe 2/3-Poster
@@ -745,7 +745,7 @@
   -webkit-line-clamp: unset;
 }
 
-/* ─── Live-Countdown (Signature-Moment im Hero) ─────────────────────────── */
+/* Live-Countdown (Signature-Moment im Hero) */
 
 .as-countdown {
   display: flex;

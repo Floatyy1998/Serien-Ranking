@@ -1,6 +1,6 @@
 /* PetsPage - Layout classes with pet- prefix */
 
-/* ─── Page shell ─── */
+/* Page shell */
 .pet-page {
   position: relative;
   padding-bottom: 100px;
@@ -32,7 +32,7 @@
   z-index: 0;
 }
 
-/* ─── Pet Selector (tab bar) ─── */
+/* Pet Selector (tab bar) */
 .pet-selector {
   display: flex;
   align-items: center;
@@ -99,7 +99,7 @@
   box-sizing: border-box;
 }
 
-/* ─── PetCard (display, stats, XP bonus) ─── */
+/* PetCard (display, stats, XP bonus) */
 .pet-card-info {
   text-align: center;
   padding: 10px 20px 20px;
@@ -181,7 +181,7 @@
   justify-content: center;
 }
 
-/* ─── Animated backgrounds ─── */
+/* Animated backgrounds */
 /* Stackable animation classes — kombiniere z.B. "pet-bg-anim-breathe pet-bg-anim-twinkle"  */
 
 .pet-bg-anim-breathe {
@@ -841,7 +841,7 @@
   margin-top: 2px;
 }
 
-/* ─── Actions ─── */
+/* Actions */
 .pet-actions {
   padding: 0 20px 24px;
   display: flex;
@@ -876,7 +876,7 @@
   box-shadow: 0 8px 24px var(--theme-primary-40, rgba(102, 126, 234, 0.35));
 }
 
-/* ─── Customization (Apple-style segmented control + filter chips) ─── */
+/* Customization (Apple-style segmented control + filter chips) */
 .pet-customization {
   padding: 0 20px;
   position: relative;
@@ -1131,7 +1131,7 @@
   opacity: 0.85;
 }
 
-/* ─── Release ─── */
+/* Release */
 .pet-release-footer {
   padding: 24px 20px 0;
   display: flex;
@@ -1150,7 +1150,7 @@
   opacity: 0.5;
 }
 
-/* ─── Release Confirm Modal ─── */
+/* Release Confirm Modal */
 .pet-release-overlay {
   position: fixed;
   top: 0;
@@ -1220,7 +1220,7 @@
   box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
 }
 
-/* ─── Creation Modal ─── */
+/* Creation Modal */
 .pet-create-page {
   min-height: 100vh;
   position: relative;
@@ -1295,7 +1295,7 @@
   font-weight: 700;
 }
 
-/* ─── Loading ─── */
+/* Loading */
 .pet-loading {
   min-height: 100vh;
   display: flex;

@@ -1,8 +1,3 @@
-/**
- * BadgeCard - Individual badge display component
- * Extracted from BadgesPage for better separation of concerns
- */
-
 import { Lock } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';

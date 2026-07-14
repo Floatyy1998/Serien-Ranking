@@ -1,8 +1,3 @@
-/**
- * TasteProfilePage - KI Watch-Empfehlungen
- * Clean list layout, theme-aware
- */
-
 import { AutoAwesome, Movie, Refresh, Star, Tv } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React from 'react';
@@ -14,8 +9,6 @@ import { useTasteProfileData } from './useTasteProfileData';
 import type { Recommendation } from './useTasteProfileData';
 import './TasteProfilePage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
-
-// ==================== Card ====================
 
 const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index }) => {
   const navigate = useNavigate();
@@ -110,8 +103,6 @@ const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index 
   );
 };
 
-// ==================== Loading ====================
-
 const LoadingState: React.FC = () => {
   const { currentTheme } = useTheme();
 
@@ -156,8 +147,6 @@ const LoadingState: React.FC = () => {
     </div>
   );
 };
-
-// ==================== Main ====================
 
 export const TasteProfilePage: React.FC = () => {
   const { currentTheme } = useTheme();

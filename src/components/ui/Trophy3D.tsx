@@ -160,8 +160,7 @@ export const Trophy3D = ({
           </filter>
         </defs>
 
-        {/* ===== CUP BODY ===== */}
-        {/* Classic trophy: wider at top, elegant curve down */}
+        {/* Cup body: wider at top, elegant curve down */}
         <path
           d={`
             M 48,52
@@ -196,7 +195,7 @@ export const Trophy3D = ({
           fill={`url(#hl-${place})`}
         />
 
-        {/* ===== RIM (top ellipse) ===== */}
+        {/* Rim (top ellipse) */}
         <ellipse
           cx="100"
           cy="52"
@@ -211,8 +210,7 @@ export const Trophy3D = ({
         {/* Inner cup opening */}
         <ellipse cx="100" cy="52" rx="46" ry="6" fill={s.bodyDeep} opacity="0.5" />
 
-        {/* ===== HANDLES ===== */}
-        {/* Left handle — elegant curved */}
+        {/* Left handle */}
         <path
           d="M 44,62 C 20,58 10,72 12,92 C 14,112 28,122 46,112"
           fill="none"
@@ -229,7 +227,7 @@ export const Trophy3D = ({
           strokeLinecap="round"
           opacity="0.35"
         />
-        {/* Left handle inner curve for elegance */}
+        {/* Left handle inner curve */}
         <path
           d="M 44,68 C 28,66 22,76 24,90 C 25,102 34,108 46,104"
           fill="none"
@@ -257,7 +255,7 @@ export const Trophy3D = ({
           opacity="0.2"
         />
 
-        {/* ===== DECORATIVE LINE ON CUP ===== */}
+        {/* Decorative line on cup */}
         <ellipse
           cx="100"
           cy="76"
@@ -269,7 +267,7 @@ export const Trophy3D = ({
           opacity="0.35"
         />
 
-        {/* ===== ENGRAVED NAMEPLATE ===== */}
+        {/* Engraved nameplate */}
         {showText && name ? (
           <g>
             {/* Dark recessed plate */}
@@ -350,7 +348,7 @@ export const Trophy3D = ({
           opacity="0.25"
         />
 
-        {/* ===== STEM ===== */}
+        {/* Stem */}
         <path
           d={`
             M 86,138
@@ -367,7 +365,7 @@ export const Trophy3D = ({
         {/* Stem highlight */}
         <rect x="91" y="140" width="5" height="24" rx="2.5" fill={s.highlight} opacity="0.3" />
 
-        {/* ===== KNOB ===== */}
+        {/* Knob */}
         <ellipse
           cx="100"
           cy="166"
@@ -379,7 +377,7 @@ export const Trophy3D = ({
         />
         <ellipse cx="96" cy="164.5" rx="12" ry="2" fill={s.highlight} opacity="0.3" />
 
-        {/* ===== BASE ===== */}
+        {/* Base */}
         <path
           d={`
             M 58,172
@@ -399,7 +397,7 @@ export const Trophy3D = ({
         {/* Base bottom edge */}
         <ellipse cx="100" cy="190" rx="44" ry="5.5" fill={s.bodyDeep} opacity="0.3" />
 
-        {/* ===== NAMEPLATE ON BASE ===== */}
+        {/* Nameplate on base */}
         {showText && name && (
           <>
             <rect x="76" y="176" width="48" height="11" rx="2" fill={s.bodyDeep} opacity="0.25" />

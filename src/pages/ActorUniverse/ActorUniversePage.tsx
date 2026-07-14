@@ -13,7 +13,6 @@ import { useActorUniverseData } from './useActorUniverseData';
 import './ActorUniversePage.css';
 import { tapScale } from '../../lib/motion';
 
-// Tab configuration
 const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
   { id: 'recommendations', label: 'Empfehlungen', icon: TrendingUp },
   { id: 'top', label: 'Top Actors', icon: Star },

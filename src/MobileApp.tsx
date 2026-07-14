@@ -147,7 +147,6 @@ export const MobileApp = () => {
       return;
     }
 
-    // Set initial title
     const safeIndex = tickerRef.current % tickerMessages.length;
     document.title = `(${totalUnread}) ${tickerMessages[safeIndex]} — TV-RANK`;
 

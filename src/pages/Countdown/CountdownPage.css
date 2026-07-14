@@ -1,6 +1,6 @@
 /* CountdownPage - Layout styles with cd- prefix */
 
-/* ── Page layout ── */
+/* Page layout */
 .cd-content {
   padding: 0 20px;
   padding-bottom: 100px;
@@ -48,7 +48,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Hero card ── */
+/* Hero card */
 .cd-hero {
   position: relative;
   width: 100%;
@@ -148,7 +148,7 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-/* ── Countdown circle (hero) ── */
+/* Countdown circle (hero) */
 .cd-hero-circle {
   flex-shrink: 0;
   width: 68px;
@@ -185,7 +185,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ── List item ── */
+/* List item */
 .cd-item {
   display: flex;
   align-items: center;
@@ -239,7 +239,7 @@
   font-size: var(--text-sm);
 }
 
-/* ── Day count badge (list item) ── */
+/* Day count badge (list item) */
 .cd-item-days {
   flex-shrink: 0;
   display: flex;

@@ -2,10 +2,8 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-/* ---------------------------------------------------------------------------
- * Mocks: firebase once, react-router, static catalog, useTheme (via
- * ThemeContext, für useResolvedTheme). Filter/Sort/Rating bleiben echt.
- * ------------------------------------------------------------------------- */
+/* Mocks: firebase once, react-router, static catalog, useTheme (via
+ * ThemeContext, für useResolvedTheme). Filter/Sort/Rating bleiben echt. */
 const fb = vi.hoisted(() => {
   const state = { dataByPath: {} as Record<string, unknown> };
   const makeRef = (path: string) => ({

@@ -1,7 +1,3 @@
-/**
- * ColorEditor - Single color row for editing a theme color
- */
-
 import { memo, useEffect, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 

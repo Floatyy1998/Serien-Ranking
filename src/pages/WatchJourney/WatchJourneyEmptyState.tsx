@@ -29,7 +29,6 @@ export const WatchJourneyEmptyState: React.FC<WatchJourneyEmptyStateProps> = ({
 
   return (
     <div className="wj-empty" style={{ background: bgDefault }}>
-      {/* Header with Year Picker */}
       <div className="wj-empty-header">
         <BackButton />
         <div style={{ flex: 1 }}>
@@ -47,7 +46,6 @@ export const WatchJourneyEmptyState: React.FC<WatchJourneyEmptyStateProps> = ({
         />
       </div>
 
-      {/* Year Picker Dropdown */}
       <WatchJourneyYearPicker.Dropdown
         showYearPicker={showYearPicker}
         availableYears={availableYears}
@@ -56,7 +54,6 @@ export const WatchJourneyEmptyState: React.FC<WatchJourneyEmptyStateProps> = ({
         variant="empty"
       />
 
-      {/* Empty State Content */}
       <div className="wj-empty-content">
         <TrendingUp style={{ fontSize: 80, color: `${textSecondary}30`, marginBottom: 24 }} />
         <h2 style={{ color: textPrimary }}>Keine Daten für {selectedYear}</h2>

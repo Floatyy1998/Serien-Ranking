@@ -60,7 +60,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      {/* Hero Stats */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,7 +112,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Gantt Chart Timeline */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -142,7 +140,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
             Serien-Timeline {data.year}
           </h3>
 
-          {/* Month range selector */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <SerienTabMonthSelect
               value={monthRangeStart}
@@ -168,7 +165,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           </div>
         </div>
 
-        {/* Month headers - only show selected range */}
         <div
           style={{
             display: 'flex',
@@ -192,7 +188,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           ))}
         </div>
 
-        {/* Series rows */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 6 : 18 }}>
           {(showAllTimeline ? timelineSeries : timelineSeries.slice(0, 10)).map((series, index) => (
             <motion.div
@@ -219,7 +214,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 padding: isMobile ? '2px 0' : '4px 0',
               }}
             >
-              {/* Poster thumbnail */}
               <div
                 style={{
                   width: isMobile ? 32 : 65,
@@ -239,7 +233,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 )}
               </div>
 
-              {/* Title & Stats */}
               <div
                 style={{
                   width: isMobile ? 55 : 170,
@@ -326,7 +319,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
           ))}
         </div>
 
-        {/* Show more / Show less button */}
         {timelineSeries.length > 10 && (
           <motion.button
             initial={{ opacity: 0 }}
@@ -374,7 +366,6 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         )}
       </motion.div>
 
-      {/* Top Series Ranking */}
       <SerienTabRanking seriesStats={seriesStats} posters={posters} formatDate={formatDate} />
     </div>
   );

@@ -2,10 +2,10 @@
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-/* ---------------------------------------------------------------------------
+/*
  * Firebase once für users/$uid/series + static catalog (series meta + seasons
  * bulk) + useSeriesList (eigene Watchlist). findNextUpcoming bleibt echt.
- * ------------------------------------------------------------------------- */
+ */
 const fb = vi.hoisted(() => {
   const state = { series: null as unknown };
   const makeRef = (_path: string) => ({

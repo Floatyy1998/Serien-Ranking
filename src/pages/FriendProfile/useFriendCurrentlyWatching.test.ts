@@ -2,11 +2,11 @@
 import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-/* ---------------------------------------------------------------------------
+/*
  * Firebase-Mock mit Query-Chain (orderByChild/startAt/limitToLast → once).
  * useSeriesList + static catalog gemockt; readEventUniversal (compactEvent)
  * bleibt echt und reicht Legacy-Events durch.
- * ------------------------------------------------------------------------- */
+ */
 const fb = vi.hoisted(() => {
   const state = { events: null as unknown, onceCalls: [] as string[] };
   const makeRef = (path: string) => {

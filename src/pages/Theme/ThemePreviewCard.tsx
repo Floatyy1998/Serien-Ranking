@@ -1,7 +1,3 @@
-/**
- * ThemePreviewCard - Preset theme button for the ThemePage
- */
-
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from '@mui/icons-material';

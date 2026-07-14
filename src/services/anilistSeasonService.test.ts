@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Reines sessionStorage-Mock (node-env hat keins). Map-backed.
-// ---------------------------------------------------------------------------
 function makeSessionStorage() {
   const map = new Map<string, string>();
   return {
@@ -47,7 +45,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ===========================================================================
 describe('reine Season-Helfer', () => {
   it('getCurrentSeason leitet Season aus dem Monat ab', async () => {
     const { getCurrentSeason } = await load();
@@ -89,7 +86,6 @@ describe('reine Season-Helfer', () => {
   });
 });
 
-// ===========================================================================
 describe('fetchSeasonAnime', () => {
   it('lädt eine Seite und mappt media/hasNextPage', async () => {
     fetchMock.mockResolvedValueOnce(graphqlPage([makeAnime(1), makeAnime(2)], true));
@@ -185,7 +181,6 @@ describe('fetchSeasonAnime', () => {
   });
 });
 
-// ===========================================================================
 describe('fetchContinuingAnime', () => {
   it('holt zwei vorherige Seasons, dedupliziert und sortiert nach Popularität', async () => {
     // origin[0] = shift(-1), origin[1] = shift(-2)

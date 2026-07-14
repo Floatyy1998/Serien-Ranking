@@ -22,10 +22,6 @@ import {
 import './PublicProfilePage.css';
 import { tapScale } from '../../lib/motion';
 
-/* ------------------------------------------------------------------ */
-/*  Loading state                                                      */
-/* ------------------------------------------------------------------ */
-
 const LoadingState = memo<{ theme: ReturnType<typeof usePublicProfileData>['currentTheme'] }>(
   ({ theme }) => (
     <div className="pp-loading" style={{ background: theme.background.default }}>
@@ -58,10 +54,6 @@ const LoadingState = memo<{ theme: ReturnType<typeof usePublicProfileData>['curr
   )
 );
 LoadingState.displayName = 'LoadingState';
-
-/* ------------------------------------------------------------------ */
-/*  Not-found state                                                    */
-/* ------------------------------------------------------------------ */
 
 const NotFoundState = memo<{
   theme: ReturnType<typeof usePublicProfileData>['currentTheme'];
@@ -111,10 +103,6 @@ const NotFoundState = memo<{
   </div>
 ));
 NotFoundState.displayName = 'NotFoundState';
-
-/* ------------------------------------------------------------------ */
-/*  Main page (composition only)                                       */
-/* ------------------------------------------------------------------ */
 
 export const PublicProfilePage: React.FC = () => {
   const {

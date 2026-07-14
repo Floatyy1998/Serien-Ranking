@@ -3,10 +3,8 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 
-/* ---------------------------------------------------------------------------
- * firebase once (eigener User), fetchPublicUserFields (Freund),
- * calculateTasteMatch, useAuth, useParams gemockt. getScoreColor/-Message echt.
- * ------------------------------------------------------------------------- */
+/* firebase once (eigener User), fetchPublicUserFields (Freund),
+ * calculateTasteMatch, useAuth, useParams gemockt. getScoreColor/-Message echt. */
 const state = vi.hoisted(() => ({
   user: null as { uid: string; displayName?: string; photoURL?: string } | null,
   params: {} as Record<string, string | undefined>,

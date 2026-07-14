@@ -1,6 +1,6 @@
 /* WatchJourneyPage - Layout & Animation Styles */
 
-/* ===== Loading State ===== */
+/* Loading State */
 .wj-loading {
   height: 100vh;
   display: flex;
@@ -73,7 +73,7 @@
   margin: 0;
 }
 
-/* ===== Empty State ===== */
+/* Empty State */
 .wj-empty {
   height: 100vh;
   display: flex;
@@ -116,7 +116,7 @@
   line-height: 1.6;
 }
 
-/* ===== Main Container ===== */
+/* Main Container */
 .wj-container {
   position: fixed;
   top: 0;
@@ -128,7 +128,7 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* ===== Background Gradients ===== */
+/* Background Gradients */
 .wj-bg-gradients {
   position: fixed;
   top: 0;
@@ -172,7 +172,7 @@
   z-index: 1;
 }
 
-/* ===== Header ===== */
+/* Header */
 .wj-header {
   position: sticky;
   top: 0;
@@ -197,7 +197,7 @@
   margin-top: 2px;
 }
 
-/* ===== Year Picker ===== */
+/* Year Picker */
 .wj-year-btn {
   display: flex;
   align-items: center;
@@ -248,7 +248,7 @@
   cursor: pointer;
 }
 
-/* ===== Tabs ===== */
+/* Tabs */
 .wj-tabs-scroll {
   padding: 0 16px 24px;
   overflow-x: auto;
@@ -317,7 +317,7 @@
   }
 }
 
-/* ===== Active Tab Title ===== */
+/* Active Tab Title */
 .wj-tab-title {
   padding: 0 16px 16px;
 }

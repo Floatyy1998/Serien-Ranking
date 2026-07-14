@@ -1,7 +1,3 @@
-/**
- * LateNightSlide - Zeigt Late-Night Watching Statistiken
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';

@@ -2,11 +2,9 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: ref('discussionFeed') mit chainbaren Query-Buildern
 // (orderByChild/equalTo/limitToLast → derselbe Ref). on() erfasst den
 // Callback, off() wird protokolliert.
-// ---------------------------------------------------------------------------
 type ValueCb = (snap: FeedSnapshot) => void;
 type ErrCb = (err: Error) => void;
 interface FeedSnapshot {

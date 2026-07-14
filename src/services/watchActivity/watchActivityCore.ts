@@ -12,9 +12,7 @@ import { getActiveBingeSession, updateBingeSession } from './bingeSessionTrackin
 import { updateWatchStreak } from './watchStreakTracking';
 import { triggerPetReaction } from '../../hooks/usePetReactions';
 
-// ============================================================================
 // PUBLIC API - EPISODE WATCH
-// ============================================================================
 
 export async function logEpisodeWatch(
   userId: string,
@@ -27,7 +25,6 @@ export async function logEpisodeWatch(
   genres?: string[],
   providers?: string[]
 ): Promise<void> {
-  // Verwende Episode-spezifische Event-Erstellung mit Bulk-Marking-Erkennung
   const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData();
   const runtime = episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
@@ -49,7 +46,6 @@ export async function logEpisodeWatch(
     isBingeSession = activeSession ? activeSession.episodes.length > 1 : false;
   }
 
-  // Build event
   const event: EpisodeWatchEvent = {
     ...baseEvent,
     type: 'episode_watch',
@@ -61,7 +57,6 @@ export async function logEpisodeWatch(
     isRewatch,
   };
 
-  // Optional fields
   if (genres && genres.length > 0) event.genres = genres;
   if (providers && providers.length > 0) {
     event.provider = providers[0];
@@ -73,7 +68,6 @@ export async function logEpisodeWatch(
   await saveEvent(userId, event);
   await updateWatchStreak(userId);
 
-  // Leaderboard-Stats aktualisieren
   updateLeaderboardStats(userId, {
     episodesWatched: 1,
     watchtimeMinutes: runtime,
@@ -99,9 +93,7 @@ export async function logEpisodeWatch(
   }
 }
 
-// ============================================================================
 // PUBLIC API - MOVIE WATCH
-// ============================================================================
 
 export async function logMovieWatch(
   userId: string,
@@ -115,7 +107,6 @@ export async function logMovieWatch(
   const year = new Date().getFullYear();
 
   try {
-    // Check for duplicate
     const existing = await findExistingMovieEvent(userId, movieId, year);
 
     if (existing) {
@@ -150,7 +141,6 @@ export async function logMovieWatch(
     await saveEvent(userId, event);
     await updateWatchStreak(userId);
 
-    // Leaderboard-Stats aktualisieren
     updateLeaderboardStats(userId, {
       moviesWatched: 1,
       watchtimeMinutes: runtime || 120,

@@ -21,7 +21,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
   const recordSuccess = '#4cc9f0';
   const recordSecondary = '#ff4d6d';
 
-  // Runtime distribution for histogram
   const runtimeDistribution = useMemo(() => {
     const buckets = [
       { label: '< 30', min: 0, max: 30, count: 0 },
@@ -43,7 +42,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
     }));
   }, [data.seriesStats]);
 
-  // Top rewatched series
   const topRewatched = useMemo(() => {
     return [...data.seriesStats]
       .filter((s) => s.rewatchEpisodes > 0)
@@ -51,7 +49,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
       .slice(0, 5);
   }, [data.seriesStats]);
 
-  // Top binged series
   const topBinged = useMemo(() => {
     return [...data.seriesStats]
       .filter((s) => s.bingeEpisodes > 0)
@@ -61,7 +58,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
 
   return (
     <div style={{ paddingBottom: 40 }}>
-      {/* Binge Stats Section */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -152,7 +148,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             </div>
           </div>
 
-          {/* Top Binged Series */}
           {topBinged.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
@@ -188,7 +183,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Rewatch Stats Section */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -267,7 +261,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             </div>
           </div>
 
-          {/* Top Rewatched Series */}
           {topRewatched.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
@@ -303,7 +296,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Runtime Distribution */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -362,7 +354,6 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Personal Records */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

@@ -1,7 +1,3 @@
-/**
- * FriendsTab - Searchable friends list with avatars, online state and removal.
- */
-
 import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import PersonRemoveRounded from '@mui/icons-material/PersonRemoveRounded';

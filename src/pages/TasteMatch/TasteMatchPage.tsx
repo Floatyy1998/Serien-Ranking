@@ -1,8 +1,3 @@
-/**
- * TasteMatchPage - Geschmacks-Vergleich zwischen zwei Usern
- * Premium Design mit Tabs - Slim Composition
- */
-
 import {
   AutoAwesome,
   Category,
@@ -31,7 +26,6 @@ import { useTasteMatchData } from './useTasteMatchData';
 import './TasteMatchPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
 
-// ==================== Loading State ====================
 const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
   bgDefault,
   textPrimary,
@@ -97,7 +91,6 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
   </div>
 );
 
-// ==================== Tab Configuration ====================
 const TAB_CONFIG = (primaryColor: string, seriesCount: number, moviesCount: number) => [
   {
     id: 'overview' as const,
@@ -125,7 +118,6 @@ const TAB_CONFIG = (primaryColor: string, seriesCount: number, moviesCount: numb
   },
 ];
 
-// ==================== MAIN COMPONENT ====================
 export const TasteMatchPage: React.FC = () => {
   const { currentTheme } = useTheme();
   const bgDefault = currentTheme.background.default;
@@ -160,7 +152,6 @@ export const TasteMatchPage: React.FC = () => {
 
   return (
     <div className="tm-page" style={{ background: bgDefault }}>
-      {/* Decorative background gradients */}
       <div className="tm-bg-gradients">
         <div
           className="tm-bg-gradients__orb tm-bg-gradients__orb--user"
@@ -183,7 +174,6 @@ export const TasteMatchPage: React.FC = () => {
       </div>
 
       <div className="tm-content">
-        {/* Header */}
         <PageHeader
           title="Taste Match"
           icon={<AutoAwesome style={{ fontSize: 22, color: ACCENT_COLORS.match }} />}
@@ -226,7 +216,6 @@ export const TasteMatchPage: React.FC = () => {
           }
         />
 
-        {/* Premium Score Section */}
         <ScoreHeader
           result={result}
           userName={userName}
@@ -235,7 +224,6 @@ export const TasteMatchPage: React.FC = () => {
           friendPhoto={friendPhoto}
         />
 
-        {/* Premium Stat Rings */}
         <div className="tm-stat-rings">
           <StatRing
             icon={<Tv style={{ fontSize: 22 }} />}
@@ -275,7 +263,6 @@ export const TasteMatchPage: React.FC = () => {
           />
         </div>
 
-        {/* Premium Tabs */}
         <div className="tm-tabs-wrapper">
           <div className="tm-tabs">
             {tabs.map((tab) => {
@@ -304,7 +291,6 @@ export const TasteMatchPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="tm-tab-content">
           <AnimatePresence mode="wait">
             {activeTab === 'overview' && <OverviewTab result={result} cardBg={cardBg} />}

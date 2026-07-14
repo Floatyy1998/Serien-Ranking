@@ -1,7 +1,4 @@
-/**
- * useStatsData - Business logic hook for StatsPage
- * Computes all viewing statistics from series and movie lists.
- */
+/** Berechnet alle Seh-Statistiken der StatsPage aus Serien- und Filmliste. */
 
 import { useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';

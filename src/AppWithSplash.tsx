@@ -21,7 +21,6 @@ declare global {
   }
 }
 
-// Initialisiere globalen Status
 if (typeof window !== 'undefined') {
   window.appReadyStatus = {
     theme: false,
@@ -55,7 +54,6 @@ export const AppWithSplash: React.FC = () => {
       setIsAppMounted(true);
     }, 200);
 
-    // Prüfe regelmäßig ob alle Systeme ready sind
     checkInterval.current = setInterval(() => {
       const status = window.appReadyStatus;
       const isReady =
@@ -97,7 +95,6 @@ export const AppWithSplash: React.FC = () => {
     };
   }, [allSystemsReady]);
 
-  // Check if we're on auth pages - if so, skip splash screen
   const currentPath = window.location.pathname;
   const isAuthPage =
     currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
@@ -112,7 +109,6 @@ export const AppWithSplash: React.FC = () => {
     // localStorage gesperrt (Private Mode) → lieber ohne Splash starten
   }
 
-  // Skip splash screen for auth pages and logged-out visitors
   if (isAuthPage || !hasCachedUser) {
     return <App />;
   }

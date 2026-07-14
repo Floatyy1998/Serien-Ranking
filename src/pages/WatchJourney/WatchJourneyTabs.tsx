@@ -39,7 +39,6 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
 
   return (
     <>
-      {/* Tab bar */}
       <div className="wj-tabs-scroll">
         <div className="wj-tabs-bar" role="tablist" aria-label="Watch-Journey-Ansichten">
           {TABS.map((tab) => {
@@ -72,7 +71,6 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
         </div>
       </div>
 
-      {/* Active Tab Title */}
       <div className="wj-tab-title">
         <h2>{TABS.find((t) => t.id === activeTab)?.label}</h2>
       </div>

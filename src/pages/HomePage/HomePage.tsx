@@ -90,7 +90,6 @@ export const HomePage: React.FC = () => {
   const { entries: unsubscribedNewSeasons, dismiss: dismissUnsubscribedNewSeasons } =
     useUnsubscribedNewSeasons(seriesWithNewSeasons);
 
-  // Swipe handlers
   const {
     continueWatching,
     swipingContinueEpisodes,
@@ -116,7 +115,6 @@ export const HomePage: React.FC = () => {
     saveQuickRating,
   } = useEpisodeSwipeHandlers();
 
-  // Rewatch
   const {
     rewatchEpisodes,
     completingRewatches,
@@ -130,7 +128,6 @@ export const HomePage: React.FC = () => {
     handleRewatchSwipeEnd,
   } = useRewatchHandler();
 
-  // UI state
   const [posterNav, setPosterNav] = useState<{
     open: boolean;
     seriesId: number;
@@ -145,7 +142,6 @@ export const HomePage: React.FC = () => {
     rarity: string;
   } | null>(null);
 
-  // Data hooks
   const stats = useWebWorkerStatsOptimized();
   const { trending, loading: trendingLoading } = useTMDBTrending();
   const seasonal = useSeasonalRecommendations();
@@ -173,12 +169,10 @@ export const HomePage: React.FC = () => {
     return <div>Redirecting...</div>;
   }
 
-  // Poster navigation
   const handlePosterClick = (seriesId: number, title: string, episodePath: string) => {
     setPosterNav({ open: true, seriesId, title, episodePath });
   };
 
-  // Swipe helpers for continue-watching
   const handleContinueSwipeStart = (key: string) =>
     setSwipingContinueEpisodes((prev) => new Set(prev).add(key));
   const handleContinueSwipeDrag = (key: string, offset: number) =>
@@ -196,7 +190,6 @@ export const HomePage: React.FC = () => {
     });
   };
 
-  // Swipe helpers for today-episodes
   const handleTodaySwipeStart = (key: string) =>
     setSwipingEpisodes((prev) => new Set(prev).add(key));
   const handleTodaySwipeDrag = (key: string, offset: number) =>
@@ -214,7 +207,6 @@ export const HomePage: React.FC = () => {
     });
   };
 
-  // renderSection for all configurable sections
   const renderSection = (sectionId: string) => {
     switch (sectionId) {
       case 'activity-marquee':

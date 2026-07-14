@@ -4,9 +4,7 @@
  * Diese Typen sind Jahr-agnostisch und können jedes Jahr recycelt werden.
  */
 
-// ========================================
 // Basis-Statistiken
-// ========================================
 
 export interface WrappedStats {
   year: number;
@@ -52,7 +50,6 @@ export interface WrappedStats {
   // Zusätzliche Fun Facts
   funFacts: FunFact[];
 
-  // NEUE STATS
   // Erstes & Letztes des Jahres
   firstWatch: FirstLastWatch | null;
   lastWatch: FirstLastWatch | null;
@@ -64,9 +61,7 @@ export interface WrappedStats {
   heatmapData: number[][]; // [dayOfWeek][hour] = count
 }
 
-// ========================================
 // Top-Listen Einträge
-// ========================================
 
 export interface TopSeriesEntry {
   id: number;
@@ -103,9 +98,7 @@ export interface TopProviderEntry {
   percentage: number;
 }
 
-// ========================================
 // Zeitliche Statistiken
-// ========================================
 
 export interface MonthStats {
   month: number; // 1-12
@@ -137,9 +130,7 @@ export interface DayOfWeekStats {
   percentage: number;
 }
 
-// ========================================
 // Binge-Statistiken
-// ========================================
 
 export interface BingeSessionStats {
   seriesId: number;
@@ -149,9 +140,7 @@ export interface BingeSessionStats {
   date: string;
 }
 
-// ========================================
 // Geräte-Statistiken
-// ========================================
 
 export interface DeviceBreakdown {
   mobile: { count: number; percentage: number };
@@ -159,9 +148,7 @@ export interface DeviceBreakdown {
   tablet: { count: number; percentage: number };
 }
 
-// ========================================
 // First/Last Watch
-// ========================================
 
 export interface FirstLastWatch {
   type: 'episode' | 'movie';
@@ -173,9 +160,7 @@ export interface FirstLastWatch {
   id: number;
 }
 
-// ========================================
 // Late Night Stats
-// ========================================
 
 export interface LateNightStats {
   totalLateNightWatches: number; // Nach 22 Uhr
@@ -184,9 +169,7 @@ export interface LateNightStats {
   percentage: number; // % aller Views nach 22 Uhr
 }
 
-// ========================================
 // Achievements
-// ========================================
 
 export interface WrappedAchievement {
   id: string;
@@ -247,9 +230,7 @@ export const WRAPPED_ACHIEVEMENTS: Omit<WrappedAchievement, 'unlocked' | 'value'
   },
 ];
 
-// ========================================
 // Fun Facts
-// ========================================
 
 export interface FunFact {
   id: string;
@@ -257,9 +238,7 @@ export interface FunFact {
   icon?: string;
 }
 
-// ========================================
 // Slide-Konfiguration
-// ========================================
 
 export type WrappedSlideType =
   | 'intro'
@@ -306,9 +285,7 @@ export const DEFAULT_SLIDE_CONFIG: WrappedSlideConfig[] = [
   { type: 'summary', title: 'Zusammenfassung', enabled: true, order: 14 },
 ];
 
-// ========================================
 // Hilfsfunktionen für Labels
-// ========================================
 
 export const MONTH_NAMES = [
   'Januar',

@@ -1,7 +1,3 @@
-/**
- * DiscussionsTab - Discussion notifications list
- */
-
 import { ChatBubbleOutline, Favorite, Flag } from '@mui/icons-material';
 import ForumRounded from '@mui/icons-material/ForumRounded';
 import { motion } from 'framer-motion';

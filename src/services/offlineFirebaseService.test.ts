@@ -9,12 +9,10 @@ const swm = vi.hoisted(() => ({
 }));
 vi.mock('./serviceWorkerManager', () => ({ serviceWorkerManager: swm }));
 
-// ---------------------------------------------------------------------------
 // Minimaler In-Memory-IndexedDB-Fake (fake-indexeddb ist NICHT installiert).
 // Deckt die von OfflineFirebaseService genutzten Operationen ab:
 // open (mit onupgradeneeded/onsuccess), transaction → objectStore →
 // get/put/delete/clear/count/getAll. Requests feuern asynchron via queueMicrotask.
-// ---------------------------------------------------------------------------
 interface Req {
   result?: unknown;
   error?: unknown;

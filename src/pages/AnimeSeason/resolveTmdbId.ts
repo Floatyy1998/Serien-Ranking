@@ -245,7 +245,7 @@ function anilistFallbackProviders(anime: SeasonAnime): TmdbProviderInfo[] {
   return result;
 }
 
-// ── TVMaze-Datums-Check ──────────────────────────────────────────────────────
+// TVMaze-Datums-Check
 
 /** Episode gilt als „dieselbe Premiere", wenn sie ±3 Tage ums AniList-Datum liegt. */
 const TVMAZE_WINDOW_MS = 3 * 24 * 60 * 60 * 1000;

@@ -4,11 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 
-/* ---------------------------------------------------------------------------
- * Modul-Konstanten (BACKEND_URL/TMDB_API_KEY) werden beim Import gelesen →
+/* Modul-Konstanten (BACKEND_URL/TMDB_API_KEY) werden beim Import gelesen →
  * vor dem Import via hoisted env setzen. TMDB leer lassen, damit die
- * TMDB-Anreicherung übersprungen wird (kein globaler fetch nötig).
- * ------------------------------------------------------------------------- */
+ * TMDB-Anreicherung übersprungen wird (kein globaler fetch nötig). */
 vi.hoisted(() => {
   (import.meta as unknown as { env: Record<string, string> }).env.VITE_BACKEND_API_URL =
     'https://backend.test';

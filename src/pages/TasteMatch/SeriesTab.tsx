@@ -1,7 +1,3 @@
-/**
- * SeriesTab - Gemeinsame Serien Anzeige
- */
-
 import { Favorite, Tv } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';

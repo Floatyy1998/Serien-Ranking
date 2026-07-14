@@ -3,11 +3,9 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Discussion } from '../types/Discussion';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock. ref(path) mit on/off/once/push/update/set/remove und
 // chainbarem orderByChild. Realtime-Callbacks werden erfasst; Mutationen in
 // call-Arrays protokolliert. `dataByPath` steuert once()-Rückgaben.
-// ---------------------------------------------------------------------------
 type ValueCb = (snap: FbSnapshot) => void;
 type ErrCb = (err: Error) => void;
 interface FbSnapshot {

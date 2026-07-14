@@ -29,7 +29,6 @@ export const StatsGrid = () => {
   const { isMobile } = useDeviceType();
   const stats = useHomeStats();
 
-  // Navigation handlers
   const handleSeriesClick = () => {
     navigate('/ratings'); // Default to series tab
   };
@@ -53,7 +52,6 @@ export const StatsGrid = () => {
   const progressPct =
     stats.totalEpisodes > 0 ? Math.round((stats.watchedEpisodes / stats.totalEpisodes) * 100) : 0;
 
-  // Circular ring SVG params
   const ringSize = 80;
   const ringStroke = 5;
   const ringRadius = (ringSize - ringStroke) / 2;

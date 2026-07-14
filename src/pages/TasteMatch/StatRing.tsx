@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 
-// Stat Ring - Premium Version
 export const StatRing: React.FC<{
   icon: React.ReactNode;
   label: string;
@@ -39,7 +38,6 @@ export const StatRing: React.FC<{
       }}
     >
       <div style={{ position: 'relative', width: size, height: size }}>
-        {/* Glow effect */}
         <div
           style={{
             position: 'absolute',

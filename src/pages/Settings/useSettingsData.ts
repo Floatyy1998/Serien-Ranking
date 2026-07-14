@@ -1,7 +1,3 @@
-/**
- * useSettingsData - Custom hook for all SettingsPage state and Firebase operations
- */
-
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage';
 import { useEffect, useRef, useState, useCallback } from 'react';

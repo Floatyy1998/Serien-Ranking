@@ -99,7 +99,7 @@ export const ActivityFeedTab = ({
     [getItemDetails]
   );
 
-  // ── Overview stats (from the full, unfiltered feed) ──────────────
+  // Overview stats (from the full, unfiltered feed)
   const stats = useMemo(() => {
     // eslint-disable-next-line react-hooks/purity -- "today" bucket needs the current time
     const startOfToday = new Date(Date.now());

@@ -29,9 +29,6 @@ export {
   OverviewSection,
 } from './EpisodeDiscussionExtras';
 
-// SECONDARY_COLOR is resolved per-component from theme.accent
-
-// ---------- Loading State ----------
 export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => (
   <div className="ed-loading" style={{ background: currentTheme.background.default }}>
     <div
@@ -66,7 +63,6 @@ export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => 
 ));
 LoadingState.displayName = 'LoadingState';
 
-// ---------- Not Found State ----------
 export const NotFoundState = memo(
   ({ currentTheme, onGoBack }: { currentTheme: Theme; onGoBack: () => void }) => (
     <div className="ed-not-found" style={{ background: currentTheme.background.default }}>
@@ -109,7 +105,6 @@ export const NotFoundState = memo(
 );
 NotFoundState.displayName = 'NotFoundState';
 
-// ---------- Hero Section ----------
 interface HeroSectionProps {
   currentTheme: Theme;
   stillPath: string | null | undefined;
@@ -331,7 +326,6 @@ export const HeroSection = memo(
 );
 HeroSection.displayName = 'HeroSection';
 
-// ---------- Quick Actions ----------
 interface QuickActionsProps {
   currentTheme: Theme;
   hasUser: boolean;

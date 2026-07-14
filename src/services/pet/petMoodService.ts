@@ -68,7 +68,6 @@ export class PetMoodService {
       return 'sad';
     }
 
-    // Kritische Zustände haben Priorität
     if (pet.hunger > 80) {
       return 'hungry';
     }
@@ -76,18 +75,15 @@ export class PetMoodService {
       return 'sad';
     }
 
-    // Feiertags-Stimmung
     const holidayMood = this.getMoodByHoliday();
     if (holidayMood) {
       return holidayMood;
     }
 
-    // Sehr glücklich
     if (pet.happiness > 80) {
       return 'loved';
     }
 
-    // Standard: Tageszeit-basierte Stimmung
     return this.getMoodByTimeOfDay();
   }
 
@@ -108,7 +104,6 @@ export class PetMoodService {
   }
 
   getMoodAnimation(mood: Pet['mood']): MoodAnimation {
-    // Verschiedene Animationen basierend auf Stimmung
     const animations = {
       happy: {
         y: [0, -5, 0],

@@ -1,6 +1,6 @@
 /* WrappedPage - Layout styles */
 
-/* === Animations === */
+/* Animations */
 
 @keyframes wrapped-spin {
   0% {
@@ -43,7 +43,7 @@
   }
 }
 
-/* === Full-screen states (loading / error) === */
+/* Full-screen states (loading / error) */
 
 .wrapped-fullscreen {
   min-height: 100vh;
@@ -55,7 +55,7 @@
   overflow: hidden;
 }
 
-/* === Loading state === */
+/* Loading state */
 
 .wrapped-loading-orb {
   position: absolute;
@@ -140,7 +140,7 @@
   margin-top: 8px;
 }
 
-/* === Error state === */
+/* Error state */
 
 .wrapped-error-decoration {
   position: absolute;
@@ -204,7 +204,7 @@
   transform: scale(1.05);
 }
 
-/* === Main slide container === */
+/* Main slide container */
 
 .wrapped-container {
   position: fixed;
@@ -224,7 +224,7 @@
   height: 100%;
 }
 
-/* === Progress indicator === */
+/* Progress indicator */
 
 .wrapped-progress {
   position: fixed;
@@ -268,7 +268,7 @@
   box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
 }
 
-/* === Close button === */
+/* Close button */
 
 .wrapped-close-btn {
   position: fixed;
@@ -296,7 +296,7 @@
   transform: scale(1.05);
 }
 
-/* === Navigation hint === */
+/* Navigation hint */
 
 .wrapped-nav-hint {
   position: fixed;

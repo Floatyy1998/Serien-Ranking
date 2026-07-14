@@ -31,23 +31,17 @@ export type { WatchJourneyData, MultiYearTrendsData };
 export { DAY_NAMES };
 export { calculateMultiYearTrends };
 
-// ============================================================================
-// MAIN CALCULATION
-// ============================================================================
-
 export async function calculateWatchJourney(
   userId: string,
   year: number
 ): Promise<WatchJourneyData> {
   const events = await getYearlyActivity(userId, year);
 
-  // Filter watch events
   const watchEvents = events.filter(
     (e): e is EpisodeWatchEvent | MovieWatchEvent =>
       e.type === 'episode_watch' || e.type === 'movie_watch'
   );
 
-  // Initialize data structures
   const genreMonthly = MONTH_NAMES.map((name, i) => ({
     month: i + 1,
     monthName: name,
@@ -83,16 +77,13 @@ export async function calculateWatchJourney(
   let bingeEpisodeCount = 0;
   const bingeSessionEpisodes = new Map<string, number>(); // Track episodes per session
 
-  // Rewatch tracking
   let rewatchCount = 0;
   let rewatchMinutes = 0;
 
-  // Runtime tracking
   const episodeRuntimes: number[] = [];
   let shortestEpisode = Infinity;
   let longestEpisode = 0;
 
-  // Series tracking
   const seriesMap = new Map<
     number,
     {
@@ -110,7 +101,6 @@ export async function calculateWatchJourney(
     }
   >();
 
-  // Process events
   watchEvents.forEach((event) => {
     const monthIndex = event.month - 1;
     if (monthIndex < 0 || monthIndex > 11) return;
@@ -120,7 +110,6 @@ export async function calculateWatchJourney(
       ? (event as EpisodeWatchEvent).episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES
       : (event as MovieWatchEvent).runtime || 120;
 
-    // Activity
     if (isEpisode) {
       activityMonthly[monthIndex].episodes++;
       totalEpisodes++;
@@ -157,7 +146,6 @@ export async function calculateWatchJourney(
       providerCounts.set(provider, (providerCounts.get(provider) || 0) + runtime);
     });
 
-    // Heatmap
     const heatmapKey = `${event.hour}-${event.dayOfWeek}`;
     if (!heatmapGrid[heatmapKey]) {
       heatmapGrid[heatmapKey] = { count: 0, minutes: 0 };
@@ -175,13 +163,11 @@ export async function calculateWatchJourney(
       }
     }
 
-    // Rewatch tracking
     if (isEpisode && (event as EpisodeWatchEvent).isRewatch) {
       rewatchCount++;
       rewatchMinutes += runtime;
     }
 
-    // Episode runtime tracking
     if (isEpisode) {
       const epRuntime =
         (event as EpisodeWatchEvent).episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
@@ -189,7 +175,6 @@ export async function calculateWatchJourney(
       if (epRuntime < shortestEpisode) shortestEpisode = epRuntime;
       if (epRuntime > longestEpisode) longestEpisode = epRuntime;
 
-      // Series tracking
       const epEvent = event as EpisodeWatchEvent;
       const seriesId = epEvent.seriesId;
 
@@ -217,7 +202,6 @@ export async function calculateWatchJourney(
       seriesData.minutes += epRuntime;
       seriesData.runtimes.push(epRuntime);
 
-      // Update first/last watched dates
       if (eventTimestamp < seriesData.firstWatched) {
         seriesData.firstWatched = eventTimestamp;
       }
@@ -232,13 +216,11 @@ export async function calculateWatchJourney(
         seriesData.bingeEpisodes++;
       }
 
-      // Add genres (normalized)
       (epEvent.genres || [])
         .filter(isValidGenre)
         .map(normalizeGenre)
         .forEach((g) => seriesData.genres.add(g));
 
-      // Update provider if not set
       if (!seriesData.provider && epEvent.provider) {
         seriesData.provider = epEvent.provider;
       }
@@ -255,7 +237,6 @@ export async function calculateWatchJourney(
     .sort((a, b) => b[1] - a[1])
     .map(([provider]) => provider);
 
-  // Generate colors
   const genreColors: Record<string, string> = {};
   topGenres.forEach((genre, i) => {
     genreColors[genre] = genre === 'Andere' ? '#636e72' : getColor(genre, GENRE_COLORS, i);
@@ -266,7 +247,6 @@ export async function calculateWatchJourney(
     providerColors[provider] = getColor(provider, PROVIDER_COLORS, i);
   });
 
-  // Build heatmap array
   const heatmap: HeatmapData[] = [];
   let maxCount = 0;
   let maxMinutes = 0;

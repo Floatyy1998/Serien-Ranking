@@ -29,7 +29,7 @@ describe('isMovieRated', () => {
 describe('detectUnratedMovies', () => {
   it('returns watched-but-unrated movies', () => {
     const list = [
-      makeMovie({ id: 1, watched: true, rating: {} }), // ✓ watched, unrated
+      makeMovie({ id: 1, watched: true, rating: {} }), // watched, unrated
       makeMovie({ id: 2, watched: true, rating: { Action: 7 } }), // rated → out
       makeMovie({ id: 3, watched: false, rating: {} }), // not watched → out
       makeMovie({ id: 4, rating: {} }), // watched undefined → out

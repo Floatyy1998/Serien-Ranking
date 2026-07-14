@@ -16,14 +16,14 @@ import {
 import type { Series } from '../types/Series';
 import { dbUpdate } from '../services/db/ref';
 
-// ⚠️ LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
+// LEGACY FUNCTION - NUR FÜR MIGRATION, NICHT FÜR WRAPPED 2026!
 export async function fixMissingFirstWatchedAt(
   userId: string,
   seriesData: Record<string, Series>
 ): Promise<void> {
-  console.warn('⚠️ WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
-  console.warn('⚠️ Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
-  console.warn('⚠️ Nur verwenden wenn du weißt was du tust!');
+  console.warn('WARNUNG: Diese Funktion setzt das HEUTIGE Datum für alle alten Episoden!');
+  console.warn('Für Wrapped 2026 werden Daten automatisch korrekt gesammelt.');
+  console.warn('Nur verwenden wenn du weißt was du tust!');
   try {
     const todayISO = new Date().toISOString();
     const updates: Record<string, number> = {};
@@ -59,7 +59,7 @@ export async function fixMissingFirstWatchedAt(
       await dbUpdate(updates);
     }
   } catch (error) {
-    console.error('❌ Error fixing firstWatchedAt dates:', error);
+    console.error('Error fixing firstWatchedAt dates:', error);
   }
 }
 

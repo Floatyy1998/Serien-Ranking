@@ -1,7 +1,3 @@
-/**
- * PetCard - Displays a single pet with its visual, mood badge, stats bars, and XP bonus status
- */
-
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { EvolvingPixelPet } from '../../components/pet';

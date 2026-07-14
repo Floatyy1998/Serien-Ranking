@@ -1,7 +1,3 @@
-/**
- * AppearanceSection - Theme and homepage layout navigation buttons
- */
-
 import { ChevronRight, Palette, ViewQuilt } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';

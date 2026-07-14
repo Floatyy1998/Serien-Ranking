@@ -65,13 +65,11 @@ export const MangaReadingListPage = () => {
     localStorage.getItem('mangaReadingListFormat') || 'all'
   );
 
-  // Swipe state
   const [swipingEpisodes, setSwipingEpisodes] = useState<Set<string>>(new Set());
   const [dragOffsets, setDragOffsets] = useState<Record<string, number>>({});
   const [completingEpisodes, setCompletingEpisodes] = useState<Set<string>>(new Set());
   const [swipeDirections, setSwipeDirections] = useState<Record<string, 'left' | 'right'>>({});
 
-  // Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       startTransition(() => setDebouncedFilter(filterInput));
@@ -79,13 +77,11 @@ export const MangaReadingListPage = () => {
     return () => clearTimeout(timer);
   }, [filterInput]);
 
-  // Persist preferences
   useEffect(() => {
     localStorage.setItem('mangaReadingListSort', sortOption);
     localStorage.setItem('mangaReadingListFormat', formatFilter);
   }, [sortOption, formatFilter]);
 
-  // Filter + Sort
   const items = useMemo(() => {
     let filtered = mangaList.filter(
       (m) => m.readStatus === 'reading' || m.readStatus === 'planned'

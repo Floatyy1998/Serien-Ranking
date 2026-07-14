@@ -46,7 +46,7 @@ export const drawPanda = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): KUNG-FU-WÄCHTER FORM ===
+  // STUFE 8+ (Lv50): KUNG-FU-WÄCHTER FORM
   if (level >= 50) {
     drawGuardianPanda(
       ctx,
@@ -64,14 +64,14 @@ export const drawPanda = (
     return;
   }
 
-  // === STUFEN 1-7: KAWAII PANDA (Lv1-49) ===
+  // STUFEN 1-7: KAWAII PANDA (Lv1-49)
   // Snowman-Silhouette: Kopf + Körper als zwei klar erkennbare Kugeln,
   // Mickey-Mouse-Ohren oben, klassische Panda-Markierungen.
 
   const sizeBoost =
     level >= 20 ? 1.12 : level >= 15 ? 1.08 : level >= 10 ? 1.05 : level >= 5 ? 1.02 : 1;
 
-  // === KÖRPER (untere Kugel, User-Farbe) ===
+  // KÖRPER (untere Kugel, User-Farbe)
   const bodyR = 5.5 * sizeBoost;
   const bodyCY = centerY + 6;
   ctx.fillStyle = color;
@@ -81,7 +81,7 @@ export const drawPanda = (
   ctx.fillStyle = dark + '33';
   arcFill(ctx, centerX + bodyR * 0.4, bodyCY + 0.5, bodyR * 0.7, ps, offset);
 
-  // === KLEINE SCHWARZE PFOTEN unten ===
+  // KLEINE SCHWARZE PFOTEN unten
   ctx.fillStyle = '#1A1A1A';
   ellipseFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.5, 1.5, 0.9, ps, offset);
   ellipseFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.5, 1.5, 0.9, ps, offset);
@@ -90,16 +90,16 @@ export const drawPanda = (
   arcFill(ctx, centerX - 2.5, bodyCY + bodyR - 0.3, 0.4, ps, offset);
   arcFill(ctx, centerX + 2.5, bodyCY + bodyR - 0.3, 0.4, ps, offset);
 
-  // === KLEINE SCHWARZE ÄRMCHEN (kuschelnd seitlich angelegt) ===
+  // KLEINE SCHWARZE ÄRMCHEN (kuschelnd seitlich angelegt)
   ctx.fillStyle = '#1A1A1A';
   ellipseFill(ctx, centerX - bodyR * 0.85, bodyCY + 0.5, 1.2, 1.8, ps, offset, -0.3);
   ellipseFill(ctx, centerX + bodyR * 0.85, bodyCY + 0.5, 1.2, 1.8, ps, offset, 0.3);
 
-  // === WEISSER BAUCH-OVAL ===
+  // WEISSER BAUCH-OVAL
   ctx.fillStyle = '#FFFFFF';
   ellipseFill(ctx, centerX, bodyCY + 0.5, bodyR * 0.65, bodyR * 0.75, ps, offset);
 
-  // === KOPF (obere Kugel, größer als Körper für Chibi-Look) ===
+  // KOPF (obere Kugel, größer als Körper für Chibi-Look)
   const headR = 6.5 * sizeBoost;
   const headCY = centerY - 3;
   ctx.fillStyle = color;
@@ -109,7 +109,7 @@ export const drawPanda = (
   ctx.fillStyle = dark + '22';
   arcFill(ctx, centerX + headR * 0.3, headCY + 0.5, headR * 0.75, ps, offset);
 
-  // === MICKEY-MOUSE-OHREN (groß, klar erkennbar OBEN auf dem Kopf) ===
+  // MICKEY-MOUSE-OHREN (groß, klar erkennbar OBEN auf dem Kopf)
   const earR = (level >= 15 ? 2.6 : level >= 10 ? 2.4 : level >= 5 ? 2.2 : 2) * sizeBoost;
   const earOffsetX = headR * 0.75;
   const earOffsetY = headCY - headR * 0.85;
@@ -124,16 +124,16 @@ export const drawPanda = (
   arcFill(ctx, centerX - earOffsetX, earOffsetY + 0.3, earR * 0.5, ps, offset);
   arcFill(ctx, centerX + earOffsetX, earOffsetY + 0.3, earR * 0.5, ps, offset);
 
-  // === WEISSE SCHNAUZE (großes weiches Oval) ===
+  // WEISSE SCHNAUZE (großes weiches Oval)
   ctx.fillStyle = '#FFFFFF';
   ellipseFill(ctx, centerX, headCY + 2, 3.5, 2.8, ps, offset);
 
-  // === SCHWARZE AUGENFLECKEN (klassisches Panda-Merkmal, schräg gestellt) ===
+  // SCHWARZE AUGENFLECKEN (klassisches Panda-Merkmal, schräg gestellt)
   ctx.fillStyle = '#1A1A1A';
   ellipseFill(ctx, centerX - 2.8, headCY - 0.3, 1.8, 2.2, ps, offset, -0.4);
   ellipseFill(ctx, centerX + 2.8, headCY - 0.3, 1.8, 2.2, ps, offset, 0.4);
 
-  // === GROSSE KAWAII-AUGEN ===
+  // GROSSE KAWAII-AUGEN
   // Weißer Hintergrund
   ctx.fillStyle = '#FFFFFF';
   arcFill(ctx, centerX - 2.6, headCY + 0.3, 0.9, ps, offset);
@@ -150,16 +150,16 @@ export const drawPanda = (
   arcFill(ctx, centerX - 2.7, headCY + 0.7, 0.15, ps, offset);
   arcFill(ctx, centerX + 2.5, headCY + 0.7, 0.15, ps, offset);
 
-  // === ROSA WANGEN (Pummel-Look) ===
+  // ROSA WANGEN (Pummel-Look)
   ctx.fillStyle = '#FFB6C1CC';
   arcFill(ctx, centerX - 4.3, headCY + 1.8, 1.3, ps, offset);
   arcFill(ctx, centerX + 4.3, headCY + 1.8, 1.3, ps, offset);
 
-  // === KLEINE SCHWARZE KNUBBEL-NASE ===
+  // KLEINE SCHWARZE KNUBBEL-NASE
   ctx.fillStyle = '#1A1A1A';
   ellipseFill(ctx, centerX, headCY + 2, 0.7, 0.55, ps, offset);
 
-  // === FREUNDLICHES LÄCHELN ===
+  // FREUNDLICHES LÄCHELN
   ctx.strokeStyle = '#1A1A1A';
   ctx.lineWidth = ps * 0.4;
   ctx.lineCap = 'round';
@@ -176,7 +176,7 @@ export const drawPanda = (
   ctx.stroke();
   ctx.lineCap = 'butt';
 
-  // === Stufe 3 (Lv5+): Bambusblatt in der Hand ===
+  // Stufe 3 (Lv5+): Bambusblatt in der Hand
   if (level >= 5 && equippedSlot !== 'neck') {
     // Stamm
     ctx.fillStyle = '#558B2F';
@@ -188,7 +188,7 @@ export const drawPanda = (
     ellipseFill(ctx, centerX + bodyR * 0.85 + 1.5, bodyCY - 2, 1, 0.4, ps, offset, -0.5);
   }
 
-  // === Stufe 4 (Lv10+): Schläfrige Augen + Schlaf-Z ===
+  // Stufe 4 (Lv10+): Schläfrige Augen + Schlaf-Z
   if (level >= 10) {
     // Augenlid-Andeutung (oberer Teil der Augen leicht abgedunkelt)
     ctx.fillStyle = '#1A1A1A88';
@@ -208,7 +208,7 @@ export const drawPanda = (
     }
   }
 
-  // === Stufe 5 (Lv20+): Herz auf der Brust + Funken ===
+  // Stufe 5 (Lv20+): Herz auf der Brust + Funken
   if (level >= 20) {
     if (equippedSlot !== 'neck') {
       ctx.fillStyle = '#FF6B9D';
@@ -233,7 +233,7 @@ export const drawPanda = (
     }
   }
 
-  // === Stufe 6 (Lv30+): Bambusblatt am Ohr + dickere Wangen ===
+  // Stufe 6 (Lv30+): Bambusblatt am Ohr + dickere Wangen
   if (level >= 30) {
     if (equippedSlot !== 'head') {
       ctx.fillStyle = '#8BC34A';
@@ -253,7 +253,7 @@ export const drawPanda = (
     arcFill(ctx, centerX + 4.3, headCY + 1.8, 1.5, ps, offset);
   }
 
-  // === Stufe 7 (Lv40+): Qi-Glow um die Ohren + leuchtende Augen ===
+  // Stufe 7 (Lv40+): Qi-Glow um die Ohren + leuchtende Augen
   if (level >= 40) {
     ctx.shadowColor = '#90EE90';
     ctx.shadowBlur = ps * 3;
@@ -272,7 +272,7 @@ export const drawPanda = (
   }
 };
 
-// === KUNG-FU-WÄCHTER-FORM (Level 50+) ===
+// KUNG-FU-WÄCHTER-FORM (Level 50+)
 function drawGuardianPanda(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -300,7 +300,7 @@ function drawGuardianPanda(
   const blackInk = '#1A1A1A' + bodyAlpha;
   const whiteFur = '#FFFFFF' + bodyAlpha;
 
-  // === GROSSER WÄCHTER-KÖRPER ===
+  // GROSSER WÄCHTER-KÖRPER
   const bodyR = isLegend ? 7 : isChampion ? 6.5 : 6;
   const bodyCY = centerY + 6;
   ctx.fillStyle = mainColor;
@@ -326,7 +326,7 @@ function drawGuardianPanda(
   ctx.fillStyle = whiteFur;
   ellipseFill(ctx, centerX, bodyCY + 0.5, bodyR * 0.7, bodyR * 0.75, ps, offset);
 
-  // === KOPF (groß, klar erkennbar) ===
+  // KOPF (groß, klar erkennbar)
   const headR = isLegend ? 7 : 6.7;
   const headCY = centerY - 3.5;
   ctx.fillStyle = mainColor;
@@ -335,7 +335,7 @@ function drawGuardianPanda(
   ctx.fillStyle = darkColor + '22';
   arcFill(ctx, centerX + headR * 0.3, headCY + 0.5, headR * 0.75, ps, offset);
 
-  // === Große Mickey-Style-Ohren ===
+  // Große Mickey-Style-Ohren
   const earR = 2.7;
   const earOffsetX = headR * 0.75;
   const earOffsetY = headCY - headR * 0.85;
@@ -354,11 +354,11 @@ function drawGuardianPanda(
     arcFill(ctx, centerX + earOffsetX, earOffsetY + 0.3, earR * 0.3, ps, offset);
   }
 
-  // === Schnauze ===
+  // Schnauze
   ctx.fillStyle = lightColor;
   ellipseFill(ctx, centerX, headCY + 2.2, 3.8, 3, ps, offset);
 
-  // === Augenflecken ===
+  // Augenflecken
   ctx.fillStyle = blackInk;
   ellipseFill(ctx, centerX - 3, headCY - 0.3, 2, 2.4, ps, offset, -0.4);
   ellipseFill(ctx, centerX + 3, headCY - 0.3, 2, 2.4, ps, offset, 0.4);
@@ -404,7 +404,7 @@ function drawGuardianPanda(
   ctx.stroke();
   ctx.lineCap = 'butt';
 
-  // === Yin-Yang auf der Brust ===
+  // Yin-Yang auf der Brust
   if (equippedSlot !== 'neck') {
     ctx.fillStyle = whiteFur;
     arcFill(ctx, centerX, bodyCY + 0.5, 1.9, ps, offset);
@@ -422,7 +422,7 @@ function drawGuardianPanda(
     arcFill(ctx, centerX, bodyCY + 1.45, 0.2, ps, offset);
   }
 
-  // === Rotes Stirnband ===
+  // Rotes Stirnband
   if (equippedSlot !== 'head') {
     ctx.fillStyle = '#DC143C' + bodyAlpha;
     ctx.fillRect(
@@ -450,7 +450,7 @@ function drawGuardianPanda(
     arcFill(ctx, centerX + bodyR * 0.9 + 0.5, bodyCY + 0.5, 1, ps, offset);
   }
 
-  // === CHAMPION (Lv60+) ===
+  // CHAMPION (Lv60+)
   if (isChampion) {
     if (animated) {
       const auraPhase = frame * 0.03 * animationSpeed;
@@ -462,7 +462,7 @@ function drawGuardianPanda(
     }
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     ctx.shadowColor = '#FFD700';
     ctx.shadowBlur = ps * 5;
@@ -493,7 +493,7 @@ function drawGuardianPanda(
     ctx.shadowBlur = 0;
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     ctx.shadowColor = '#FFFFFF';
     ctx.shadowBlur = ps * 12;

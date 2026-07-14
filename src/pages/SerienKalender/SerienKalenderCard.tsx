@@ -160,7 +160,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
 
   const badge = premiereBadge(entry);
 
-  // ── Datums-Pill ────────────────────────────────────────────────────────────
+  // Datums-Pill
   const startDate = parsePremiereDate(entry.premiereDate);
   const nowDate = new Date(now);
   const startOfTomorrow = new Date(
@@ -209,7 +209,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
       style={{ '--as-i': Math.min(staggerIndex, 14) } as React.CSSProperties}
     >
       <article className="as-card">
-        {/* ── Poster links, volle Kartenhöhe (themed Placeholder als Fallback) ── */}
+        {/* Poster links, volle Kartenhöhe (themed Placeholder als Fallback) */}
         <img
           src={cover || placeholder}
           alt={`Poster von ${title}`}
@@ -219,7 +219,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
           style={{ background: currentTheme.background.surfaceElevated }}
         />
 
-        {/* ── Text-Block rechts ── */}
+        {/* Text-Block rechts */}
         <div className="as-card-body">
           <div className="as-card-toprow">
             <span className="as-card-chips">

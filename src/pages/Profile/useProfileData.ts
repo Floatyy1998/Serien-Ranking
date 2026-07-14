@@ -1,8 +1,3 @@
-/**
- * useProfileData - Custom hook for ProfilePage business logic
- * Extracts state, data loading, stats calculations, menu items, and logout handler
- */
-
 import type { SvgIconComponent } from '@mui/icons-material';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { ADMIN_UID } from '../../config/admin';

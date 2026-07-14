@@ -1,7 +1,3 @@
-/**
- * CatchUpCard - Kompakte Karte für Aufholen-Feature auf der HomePage
- */
-
 import { useNavigate } from 'react-router-dom';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -20,7 +16,6 @@ export const CatchUpCard: React.FC = memo(() => {
   const { currentTheme } = useTheme();
   const { seriesList } = useSeriesList();
 
-  // Calculate catch-up stats
   const stats = useMemo(() => {
     let seriesCount = 0;
     let totalEpisodes = 0;

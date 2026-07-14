@@ -5,7 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import type { SharedItem } from '../../services/tasteMatchService';
 import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
-// Shared Item Card - Premium Version
 export const SharedItemCard: React.FC<{
   item: SharedItem;
   index: number;

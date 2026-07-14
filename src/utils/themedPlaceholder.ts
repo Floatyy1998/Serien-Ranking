@@ -88,7 +88,7 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
     </filter>
   </defs>
 
-  <!-- ============ BACKGROUND LAYERS ============ -->
+  <!-- Background layers -->
   <rect width="300" height="450" fill="url(#bg)"/>
   <rect width="300" height="450" fill="url(#auroraA)"/>
   <rect width="300" height="450" fill="url(#auroraB)"/>
@@ -118,7 +118,7 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
     <circle cx="248" cy="424" r="0.8" opacity="0.45"/>
   </g>
 
-  <!-- ============ TOP: LOGO + WORDMARK ============ -->
+  <!-- Top: Logo + Wordmark -->
   <!-- Sanfter Halo direkt hinter dem Logo (kein Ring, kein Glasdisc) -->
   <circle cx="150" cy="98" r="68" fill="url(#logoHalo)"/>
 
@@ -151,7 +151,7 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
     <circle cx="150" cy="188" r="2" fill="${primary}" stroke="none"/>
   </g>
 
-  <!-- ============ HERO CARD: "KEIN POSTER" ============ -->
+  <!-- Hero card: "KEIN POSTER" -->
   <!-- Glass card -->
   <rect x="28" y="232" width="244" height="104" rx="18"
         fill="url(#glassFill)" stroke="url(#glassEdge)" stroke-width="1.2"/>
@@ -185,7 +185,7 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
           font-size="11" font-weight="600" fill="#a3afc7" letter-spacing="2">VORHANDEN</text>
   </g>
 
-  <!-- ============ BOTTOM: TAGLINE + FOOTER ============ -->
+  <!-- Bottom: Tagline + Footer -->
   <!-- Tagline -->
   <text x="150" y="380" text-anchor="middle"
         font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"

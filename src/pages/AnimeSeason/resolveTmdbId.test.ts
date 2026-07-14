@@ -4,7 +4,7 @@ import { readResolveCacheSync, readResolvedTmdbInfoSync, resolveTmdbInfo } from 
 
 const CACHE_KEY = 'animeSeasonTmdb:v11';
 
-// ── sessionStorage-Stub (node hat keins) ─────────────────────────────────
+// sessionStorage-Stub (node hat keins)
 const sessionStore = new Map<string, string>();
 const sessionStorageMock = {
   getItem: (k: string) => (sessionStore.has(k) ? (sessionStore.get(k) as string) : null),

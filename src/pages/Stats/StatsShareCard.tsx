@@ -13,8 +13,7 @@ import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { FormattedTime, StatsData } from './useStatsData';
 
-// ==================== Karten-Bausteine ====================
-
+// Karten-Bausteine
 const tileStyle: React.CSSProperties = {
   flex: 1,
   background: 'var(--glass-medium)',
@@ -110,8 +109,7 @@ const TopRow: React.FC<TopRowProps> = ({ label, value }) => {
   );
 };
 
-// ==================== Karte ====================
-
+// Karte
 interface StatsShareCardProps {
   stats: StatsData;
   timeData: FormattedTime;
@@ -176,8 +174,7 @@ const StatsShareCard: React.FC<StatsShareCardProps> = ({ stats, timeData }) => {
   );
 };
 
-// ==================== Sheet ====================
-
+// Sheet
 interface StatsShareSheetProps {
   isOpen: boolean;
   onClose: () => void;

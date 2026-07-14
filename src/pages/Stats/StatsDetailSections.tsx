@@ -11,9 +11,7 @@ interface ThemeColors {
   status: { success: string; error: string; warning: string };
 }
 
-/* ------------------------------------------------------------------ */
-/*  RatingsSection — zwei Ø-Rating-Pods (Serien / Filme)               */
-/* ------------------------------------------------------------------ */
+/* RatingsSection — zwei Ø-Rating-Pods (Serien / Filme) */
 interface RatingsSectionProps {
   avgSeriesRating: number;
   avgMovieRating: number;
@@ -69,9 +67,6 @@ export const RatingsSection = memo(
 );
 RatingsSection.displayName = 'RatingsSection';
 
-/* ------------------------------------------------------------------ */
-/*  TopGenresSection                                                   */
-/* ------------------------------------------------------------------ */
 interface TopGenresProps {
   genres: { name: string; count: number }[];
   theme: ThemeColors;
@@ -148,9 +143,6 @@ export const TopGenresSection = memo(({ genres, theme, wide }: TopGenresProps) =
 });
 TopGenresSection.displayName = 'TopGenresSection';
 
-/* ------------------------------------------------------------------ */
-/*  TopProvidersSection                                                */
-/* ------------------------------------------------------------------ */
 interface TopProvidersProps {
   providers: { name: string; count: number }[];
   theme: ThemeColors;

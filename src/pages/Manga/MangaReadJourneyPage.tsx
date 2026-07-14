@@ -39,7 +39,6 @@ export const MangaReadJourneyPage = () => {
   const { isDesktop } = useDeviceType();
   const [activeTab, setActiveTab] = useState<TabType>('activity');
 
-  // Compute journey data from manga list
   const journeyData = useMemo(() => {
     // Monthly activity (based on lastReadAt)
     const monthlyActivity = Array.from({ length: 12 }, (_, i) => ({

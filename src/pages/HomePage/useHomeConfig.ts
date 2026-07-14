@@ -1,7 +1,6 @@
 import { dbRef, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-// Default orders
 export const DEFAULT_SECTION_ORDER = [
   'activity-marquee',
   'quick-actions',
@@ -107,7 +106,6 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     cachedConfig?.hiddenSecondaryActions || []
   );
 
-  // Stable reference via useCallback to avoid useEffect re-runs
   const applyConfigData = useCallback((data: Record<string, unknown>) => {
     const applyList = (
       key: string,
@@ -248,7 +246,6 @@ export function useHomeConfig(uid: string | undefined): UseHomeConfigReturn {
     };
   }, [uid, applyConfigData]);
 
-  // Memoize derived value to avoid re-computation on unrelated renders
   const visibleSections = useMemo(
     () => sectionOrder.filter((id) => !hiddenSections.includes(id)),
     [sectionOrder, hiddenSections]

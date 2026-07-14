@@ -259,7 +259,6 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const unifiedNotifications = useMemo(() => {
     const items: UnifiedNotification[] = [];
 
-    // Feature announcements
     for (const ann of ANNOUNCEMENTS) {
       items.push({
         id: ann.id,
@@ -273,7 +272,6 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
-    // Friend activities
     for (const act of friendActivities) {
       // „Gesehen"-Aktivitäten gehören in den Feed, NICHT in den Bell-Hub.
       if (act.type === 'episode_watched' || act.type === 'episodes_watched') continue;
@@ -305,7 +303,6 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
-    // Friend requests
     for (const req of friendRequests) {
       items.push({
         id: `req_${req.id}`,
@@ -320,7 +317,6 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
-    // Discussion notifications
     for (const n of notifications) {
       let navigateTo: string | undefined;
       if (n.data?.discussionPath) {
@@ -386,7 +382,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       items.push(item);
     }
 
-    // Recommendations (only pending — accepted/declined disappear from feed)
+    // Nur pending — accepted/declined verschwinden aus dem Feed.
     for (const rec of recommendations) {
       if (rec.status !== 'pending') continue;
       items.push({
@@ -412,7 +408,6 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       });
     }
 
-    // Sort by timestamp descending, limit to 30
     items.sort((a, b) => b.timestamp - a.timestamp);
     return items.slice(0, 30);
   }, [

@@ -52,25 +52,21 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     const apiKey = getTmdbApiKey();
     if (!id || !apiKey) return;
 
-    // ALWAYS fetch backdrop and providers from TMDB
-    // Fetch backdrop and TMDB rating
+    // Backdrop/Rating immer von TMDB holen (auch für lokal vorhandene Serien).
     tmdbFetch<TmdbMediaDetail>(`tv/${id}`)
       .then((data) => {
         if (data.backdrop_path) {
           setTmdbBackdrop(data.backdrop_path);
         }
-        // Store TMDB rating data
         if (data.vote_average && data.vote_count) {
           setTmdbRating({
             vote_average: data.vote_average,
             vote_count: data.vote_count,
           });
         }
-        // Store first_air_date
         if (data.first_air_date) {
           setTmdbFirstAirDate(data.first_air_date);
         }
-        // Store overview for description
         if (data.overview) {
           setTmdbOverview(data.overview);
         }
@@ -141,7 +137,7 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
               })
             );
 
-            // Transform TMDB data to match our Series type
+            // TMDB-Daten in unseren Series-Typ überführen
             const series: Series = {
               id: data.id,
               title: bestName || '',
@@ -185,7 +181,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     }
   }, [localSeries, id, tmdbSeries]); // Remove loading dependency, add tmdbSeries to prevent re-fetching
 
-  // Use local series if available, otherwise use TMDB series
   const series = localSeries || tmdbSeries;
 
   // Fetch IMDB rating from OMDb API
@@ -210,7 +205,6 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     }
   }, [series, localSeries]);
 
-  // Check if this is a TMDB-only series (not in user's list)
   const isReadOnlyTmdbSeries = !localSeries && !!tmdbSeries;
 
   return {

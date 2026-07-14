@@ -3,10 +3,8 @@ import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Friend, FriendRequest } from '../../types/Friend';
 
-/* ---------------------------------------------------------------------------
- * fetchPublicUserFields wird gemockt; loadPublicProfile (echt) baut daraus
- * das Profil-Objekt.
- * ------------------------------------------------------------------------- */
+/* fetchPublicUserFields wird gemockt; loadPublicProfile (echt) baut daraus
+ * das Profil-Objekt. */
 const svc = vi.hoisted(() => ({
   fields: {} as Record<
     string,

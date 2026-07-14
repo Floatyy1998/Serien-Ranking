@@ -1,5 +1,5 @@
 /**
- * 🔢 Badge Counter Service
+ * Badge Counter Service
  *
  * Verwaltet einfache Counter für Badges ohne Activities zu speichern.
  * Nur für zeitkritische Badges wie Quickwatch die nicht aus Serien-Daten berechenbar sind.
@@ -8,9 +8,6 @@
 import { dbRef, dbGet, userPath } from '../../services/db/ref';
 
 class BadgeCounterService {
-  /**
-   * ⚡ Quickwatch-Counter erhöhen
-   */
   async incrementQuickwatchCounter(userId: string): Promise<void> {
     try {
       const counterRef = dbRef(userPath(userId, 'badgeCounters', 'quickwatchEpisodes'));
@@ -21,7 +18,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🔄 Rewatch-Counter erhöhen (Fallback falls watchCount nicht verfügbar)
+   * Rewatch-Counter erhöhen (Fallback falls watchCount nicht verfügbar)
    */
   async incrementRewatchCounter(userId: string): Promise<void> {
     try {
@@ -33,7 +30,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 📊 Streak-Counter aktualisieren (basierend auf täglicher Aktivität)
+   * Streak-Counter aktualisieren (basierend auf täglicher Aktivität)
    */
   async updateStreakCounter(userId: string): Promise<void> {
     try {
@@ -69,7 +66,6 @@ class BadgeCounterService {
         currentStreak = 1;
       }
 
-      // Aktualisiere beide Werte
       await Promise.all([lastActivityRef.set(today), streakRef.set(currentStreak)]);
     } catch {
       /* ignore — non-critical write/read */
@@ -77,14 +73,13 @@ class BadgeCounterService {
   }
 
   /**
-   * 🤝 Social Badge Counter erhöhen (echte Hinzufügungen)
+   * Social Badge Counter erhöhen (echte Hinzufügungen)
    */
   async incrementSocialCounter(userId: string, type: 'series' | 'movie'): Promise<void> {
     try {
       const counterRef = dbRef(userPath(userId, 'badgeCounters', 'itemsAdded'));
       await counterRef.transaction((current) => (current || 0) + 1);
 
-      // Auch typ-spezifische Counter
       const typeCounterRef = dbRef(userPath(userId, 'badgeCounters', `${type}Added`));
       await typeCounterRef.transaction((current) => (current || 0) + 1);
     } catch {
@@ -93,7 +88,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🍿 Multi-Timeframe Binge-Session Counter mit 2-Step Process
+   * Multi-Timeframe Binge-Session Counter (zwei getrennte Transaktions-Durchläufe)
    */
   async recordBingeEpisode(userId: string): Promise<void> {
     try {
@@ -104,7 +99,7 @@ class BadgeCounterService {
         { key: '2days', duration: 48 * 60 * 60 * 1000 }, // Wochenende
       ];
 
-      // STEP 1: Erst alle abgelaufenen Sessions auf 0 setzen
+      // Erst alle abgelaufenen Sessions beenden
       for (const timeframe of timeframes) {
         const bingeRef = dbRef(userPath(userId, 'badgeCounters', 'bingeWindows', timeframe.key));
 
@@ -120,7 +115,7 @@ class BadgeCounterService {
         });
       }
 
-      // STEP 2: Dann neue Episode hinzufügen (neue Session starten wenn nötig)
+      // Dann neue Episode hinzufügen (neue Session starten wenn nötig)
       for (const timeframe of timeframes) {
         const bingeRef = dbRef(userPath(userId, 'badgeCounters', 'bingeWindows', timeframe.key));
 
@@ -147,7 +142,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🧹 Manuelle Cleanup-Funktion für abgelaufene Binge-Sessions
+   * Manuelle Cleanup-Funktion für abgelaufene Binge-Sessions
    */
   async finalizeBingeSession(userId: string): Promise<void> {
     try {
@@ -160,7 +155,7 @@ class BadgeCounterService {
         const current = snapshot.val();
 
         if (current?.windowEnd && now > current.windowEnd) {
-          await bingeRef.remove(); // Abgelaufene Session entfernen
+          await bingeRef.remove();
         }
       }
     } catch {
@@ -169,7 +164,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🏃 Marathon-Session Counter (wöchentlich) - Ein Episode zur aktuellen Woche hinzufügen
+   * Marathon-Session Counter (wöchentlich) - Ein Episode zur aktuellen Woche hinzufügen
    */
   async recordMarathonEpisode(userId: string): Promise<void> {
     try {
@@ -186,7 +181,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🏃 Marathon-Session Counter (wöchentlich) - LEGACY: Mehrere Episoden hinzufügen
+   * Marathon-Session Counter (wöchentlich) - LEGACY: Mehrere Episoden hinzufügen
    */
   async recordMarathonProgress(userId: string, episodeCount: number): Promise<void> {
     try {
@@ -200,7 +195,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 📊 Aktuelle Marathon-Statistiken für Timer-Anzeige
+   * Aktuelle Marathon-Statistiken für Timer-Anzeige
    */
   async getMarathonStats(userId: string): Promise<{
     currentWeekEpisodes: number;
@@ -235,7 +230,7 @@ class BadgeCounterService {
   }
 
   /**
-   * 🕰️ Berechne verbleibende Zeit bis Wochenende
+   * Verbleibende Zeit bis Wochenende (Sonntag 23:59:59), in Sekunden
    */
   private getTimeRemainingInWeek(): number {
     const now = new Date();
@@ -269,9 +264,6 @@ class BadgeCounterService {
     return `${year}-W${weekNumber}`;
   }
 
-  /**
-   * 🎯 Beliebigen Counter erhöhen
-   */
   async incrementCounter(userId: string, counterName: string, amount: number = 1): Promise<void> {
     try {
       const counterRef = dbRef(userPath(userId, 'badgeCounters', counterName));
@@ -281,9 +273,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * 📖 Counter lesen
-   */
   async getCounter(userId: string, counterName: string): Promise<number> {
     try {
       return (await dbGet<number>(userPath(userId, 'badgeCounters', counterName))) || 0;
@@ -292,9 +281,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * 📊 Alle Counter eines Users
-   */
   async getAllCounters(userId: string): Promise<Record<string, number>> {
     try {
       return (await dbGet<Record<string, number>>(userPath(userId, 'badgeCounters'))) || {};
@@ -303,9 +289,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * 🧹 Counter zurücksetzen
-   */
   async resetCounter(userId: string, counterName: string): Promise<void> {
     try {
       await dbRef(userPath(userId, 'badgeCounters', counterName)).set(0);
@@ -314,9 +297,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * 🗑️ Alle Counter löschen
-   */
   async clearAllCounters(userId: string): Promise<void> {
     try {
       await dbRef(userPath(userId, 'badgeCounters')).remove();
@@ -325,9 +305,6 @@ class BadgeCounterService {
     }
   }
 
-  /**
-   * 🏃 Marathon-Woche überprüfen und neue erstellen falls nötig
-   */
   async ensureCurrentMarathonWeek(userId: string): Promise<void> {
     try {
       const currentWeekKey = this.getWeekKey();
@@ -335,9 +312,7 @@ class BadgeCounterService {
       const snapshot = await marathonWeeksRef.once('value');
       const marathonWeeks = snapshot.val() || {};
 
-      // Prüfe ob aktuelle Woche bereits existiert
       if (!marathonWeeks[currentWeekKey]) {
-        // Neue Woche mit 0 Episoden erstellen
         await marathonWeeksRef.child(currentWeekKey).set(0);
       }
     } catch {
@@ -346,6 +321,5 @@ class BadgeCounterService {
   }
 }
 
-// Singleton Export
 export const badgeCounterService = new BadgeCounterService();
 export default badgeCounterService;

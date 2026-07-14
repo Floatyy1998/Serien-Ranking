@@ -4,7 +4,7 @@ import { renderHook, act, waitFor, cleanup } from '@testing-library/react';
 import type { Series } from '../../types/Series';
 import type { RewatchItem } from '../../hooks/useRewatchEpisodes';
 
-// --- Firebase compat mock ---------------------------------------------------
+// Firebase compat mock
 const fb = vi.hoisted(() => {
   const state: { epVal: unknown; rewatchLastVal: unknown } = {
     epVal: null,
@@ -26,7 +26,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// --- Context / hook mocks ---------------------------------------------------
+// Context / hook mocks
 const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authState.user }) }));
 

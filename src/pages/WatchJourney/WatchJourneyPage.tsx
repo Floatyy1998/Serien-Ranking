@@ -1,10 +1,3 @@
-/**
- * WatchJourneyPage - Premium Watch Journey Experience
- *
- * Zeigt deine Watch-Trends mit professionellen Recharts-Visualisierungen.
- * Slim composition component - business logic in useWatchJourneyData hook.
- */
-
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
 import { ACCENT_COLORS } from './accentColors';
@@ -54,7 +47,6 @@ export const WatchJourneyPage: React.FC = () => {
 
   return (
     <div className="wj-container" style={{ background: bgDefault }}>
-      {/* Decorative Background Gradients */}
       <div className="wj-bg-gradients">
         <div
           className="wj-bg-blob wj-bg-blob--top"
@@ -77,7 +69,6 @@ export const WatchJourneyPage: React.FC = () => {
       </div>
 
       <div className="wj-content">
-        {/* Header */}
         <PageHeader
           title="Watch Journey"
           gradientTo={ACCENT_COLORS.movies}
@@ -93,7 +84,6 @@ export const WatchJourneyPage: React.FC = () => {
           }
         />
 
-        {/* Year Picker Dropdown */}
         <WatchJourneyYearPicker.Dropdown
           showYearPicker={showYearPicker}
           availableYears={availableYears}
@@ -101,10 +91,8 @@ export const WatchJourneyPage: React.FC = () => {
           selectYear={selectYear}
         />
 
-        {/* Tab Navigation */}
         <WatchJourneyTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* Tab Content */}
         <WatchJourneyTabContent
           activeTab={activeTab}
           data={data ?? ({} as NonNullable<typeof data>)}

@@ -472,11 +472,10 @@ export const AnimeSeasonPage: React.FC = () => {
     };
   }, [selected, reloadKey]);
 
-  // ── Hero + Sektionen ───────────────────────────────────────────────────────
-  // ── Basis-Entries (ohne Datums-Korrekturen) ────────────────────────────────
-  // Getrennt vom Display-Memo. Recomputes durch eintreffende Auflösungen sind
-  // ok: die Hydration-Pipeline hängt am pendingKey-Fingerprint + Refs, nicht
-  // an der Array-Identität von allEntries.
+  // Basis-Entries (ohne Datums-Korrekturen), getrennt vom Display-Memo.
+  // Recomputes durch eintreffende Auflösungen sind ok: die Hydration-Pipeline
+  // hängt am pendingKey-Fingerprint + Refs, nicht an der Array-Identität von
+  // allEntries.
   const { newThisSeason, continuingEntries, finishedEntries, allEntries, totalCount, inListCount } =
     useMemo(() => {
       // Filme NICHT gegen die Serienliste matchen — Basistitel-/Franchise-
@@ -539,8 +538,8 @@ export const AnimeSeasonPage: React.FC = () => {
       serverResolved,
     ]);
 
-  // ── Hero + Timeline (reaktiv — Datums-Priorität: Liste → TVMaze → AniList,
-  //    plus optionaler „Mit Provider"-Filter über die Hydration) ─────────────
+  // Hero + Timeline (reaktiv — Datums-Priorität: Liste → TVMaze → AniList,
+  // plus optionaler „Mit Provider"-Filter über die Hydration)
   const { hero, dayGroups, visibleContinuing, visibleFinished } = useMemo(() => {
     // Sichtbarkeit: (1) Einträge, deren Auflösung KEINEN TMDB-Treffer ergab,
     // fliegen komplett raus — nicht öffenbar, nicht addbar. Unaufgelöste
@@ -630,7 +629,7 @@ export const AnimeSeasonPage: React.FC = () => {
     [allEntries]
   );
 
-  // ── Progressive TMDB-Hydration (deutsches overview + Provider-Logos) ──────
+  // Progressive TMDB-Hydration (deutsches overview + Provider-Logos).
   // Der Effekt darf NICHT an der Array-Identität von allEntries hängen:
   // jedes Firebase-Listen-Update erzeugt neue Objekte → Cleanup/Re-Run ließ
   // das Skeleton wild flackern und startete die Worker neu. Deshalb ein
@@ -1102,7 +1101,7 @@ export const AnimeSeasonPage: React.FC = () => {
 
         {!loading && serverSeasonalReady && !hydration.active && !error && totalCount > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-8)' }}>
-            {/* ── 0. Hero-Spotlight (volle Breite) ── */}
+            {/* Hero-Spotlight (volle Breite) */}
             {hero &&
               (() => {
                 const { overviewDe, tmdbProviders, tmdbRating } = hydrationFor(hero);
@@ -1122,7 +1121,7 @@ export const AnimeSeasonPage: React.FC = () => {
                 );
               })()}
 
-            {/* ── 1. Premieren-Kalender: EINE Timeline für die ganze Season ── */}
+            {/* Premieren-Kalender: EINE Timeline für die ganze Season */}
             {timelineCount > 0 && (
               <section>
                 {renderSectionTitle(
@@ -1218,7 +1217,7 @@ export const AnimeSeasonPage: React.FC = () => {
               </section>
             )}
 
-            {/* ── 2. Fortlaufend ── */}
+            {/* Fortlaufend */}
             {visibleContinuing.length > 0 && (
               <section ref={continuingRef} className="as-continuing">
                 {renderSectionTitle(
@@ -1229,7 +1228,7 @@ export const AnimeSeasonPage: React.FC = () => {
               </section>
             )}
 
-            {/* ── 3. Bereits beendet ── */}
+            {/* Bereits beendet */}
             {visibleFinished.length > 0 && (
               <section>
                 {renderSectionTitle(

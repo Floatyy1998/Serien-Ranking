@@ -140,10 +140,6 @@ export const EpisodeManagementPage = () => {
   );
 };
 
-/* ------------------------------------------------
-   Local sub-components (composition helpers)
-   ------------------------------------------------ */
-
 /** Spinning refresh indicator shown during pull-to-refresh */
 function RefreshIndicator({ isRefreshing }: { isRefreshing: boolean }) {
   return (

@@ -65,7 +65,6 @@ export const RatingsPage: React.FC = () => {
     quickFilter !== 'recently-added' &&
     (quickFilter === 'ongoing' || (filters.sortBy || 'rating-desc') === 'rating-desc');
 
-  // ─── Loading State ──────────────────────────────────
   if (!user) {
     return (
       <div
@@ -81,7 +80,6 @@ export const RatingsPage: React.FC = () => {
     );
   }
 
-  // ─── Main Render ────────────────────────────────────
   return (
     <div
       ref={scrollRef}

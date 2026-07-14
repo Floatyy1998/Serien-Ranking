@@ -23,12 +23,11 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   const [canScrollRight, setCanScrollRight] = useState(false);
   const { isDesktop } = useDeviceType();
 
-  // Check scroll position
   const checkScroll = () => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-    setCanScrollLeft(scrollLeft > 5); // Add small threshold
-    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5); // Add small threshold
+    setCanScrollLeft(scrollLeft > 5);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
   };
 
   useEffect(() => {
@@ -37,11 +36,10 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
     const container = scrollRef.current;
     if (container) {
       container.addEventListener('scroll', checkScroll);
-      // Also check on resize
       const resizeObserver = new ResizeObserver(checkScroll);
       resizeObserver.observe(container);
 
-      // Check when images load
+      // Nachladende Bilder ändern die Scroll-Breite
       const images = container.querySelectorAll('img');
       images.forEach((img) => {
         if (img.complete) {
@@ -66,7 +64,6 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
   const scroll = (direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
 
-    // Don't scroll if we can't scroll in that direction
     if (direction === 'left' && !canScrollLeft) return;
     if (direction === 'right' && !canScrollRight) return;
 

@@ -1,7 +1,3 @@
-/**
- * MoviesTab - Gemeinsame Filme Anzeige
- */
-
 import { Favorite, Movie } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';

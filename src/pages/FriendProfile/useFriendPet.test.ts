@@ -2,11 +2,11 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-/* ---------------------------------------------------------------------------
+/*
  * Firebase-Mock: ref(path).on('value', handler) / off('value', handler).
  * Handler werden per Pfad in einer Map gehalten, sodass Tests Snapshots
  * synchron emittieren können. off-Calls werden für Cleanup-Assertions geloggt.
- * ------------------------------------------------------------------------- */
+ */
 type Snap = { val: () => unknown };
 type Handler = (s: Snap) => void;
 

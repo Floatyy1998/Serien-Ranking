@@ -1,7 +1,7 @@
 /* TasteMatchPage - Layout, grid and animation styles */
 /* Dynamic theme colors remain as inline styles via currentTheme */
 
-/* ==================== Loading State ==================== */
+/* Loading State */
 .tm-loading-container {
   height: 100vh;
   display: flex;
@@ -83,7 +83,7 @@
   margin: 0;
 }
 
-/* ==================== Main Layout ==================== */
+/* Main Layout */
 .tm-page {
   position: fixed;
   top: 0;
@@ -138,7 +138,7 @@
   z-index: 1;
 }
 
-/* ==================== Header ==================== */
+/* Header */
 .tm-header {
   position: sticky;
   top: 0;
@@ -171,7 +171,7 @@
   cursor: pointer;
 }
 
-/* ==================== Score Section ==================== */
+/* Score Section */
 .tm-score-section {
   padding: 20px 20px 32px;
   text-align: center;
@@ -199,7 +199,7 @@
   filter: blur(90px);
 }
 
-/* ==================== Avatars ==================== */
+/* Avatars */
 .tm-avatars {
   display: flex;
   justify-content: center;
@@ -250,7 +250,7 @@
   justify-content: center;
 }
 
-/* ==================== Names ==================== */
+/* Names */
 .tm-names {
   display: flex;
   justify-content: center;
@@ -273,7 +273,7 @@
   font-size: 20px;
 }
 
-/* ==================== Score Display ==================== */
+/* Score Display */
 .tm-score-display {
   position: relative;
   z-index: 1;
@@ -297,7 +297,7 @@
   z-index: 1;
 }
 
-/* ==================== Stat Rings Grid ==================== */
+/* Stat Rings Grid */
 .tm-stat-rings {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -305,7 +305,7 @@
   padding: 0 12px 28px;
 }
 
-/* ==================== Tabs ==================== */
+/* Tabs */
 .tm-tabs-wrapper {
   padding: 0 16px 20px;
   overflow: visible;
@@ -351,12 +351,12 @@
   box-shadow: none;
 }
 
-/* ==================== Tab Content ==================== */
+/* Tab Content */
 .tm-tab-content {
   padding: 0 16px;
 }
 
-/* ==================== Section Headers (Series/Movies) ==================== */
+/* Section Headers (Series/Movies) */
 .tm-section-header {
   display: flex;
   align-items: center;
@@ -382,7 +382,7 @@
   border-radius: var(--radius-sm);
 }
 
-/* ==================== Empty State ==================== */
+/* Empty State */
 .tm-empty-state {
   text-align: center;
   padding: 60px 30px;
@@ -413,7 +413,7 @@
   margin: 8px 0 0;
 }
 
-/* ==================== Overview: Providers Card ==================== */
+/* Overview: Providers Card */
 .tm-providers-card {
   border-radius: var(--radius-xl);
   padding: 18px;
@@ -458,7 +458,7 @@
   color: white;
 }
 
-/* ==================== Overview: Quick Stats Grid ==================== */
+/* Overview: Quick Stats Grid */
 .tm-quick-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -512,7 +512,7 @@
   font-weight: 500;
 }
 
-/* ==================== Genres: Legend ==================== */
+/* Genres: Legend */
 .tm-genre-legend {
   display: flex;
   justify-content: center;
@@ -557,7 +557,7 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ==================== Genres: Section Header ==================== */
+/* Genres: Section Header */
 .tm-genre-section-header {
   display: flex;
   align-items: center;
@@ -583,9 +583,7 @@
   display: none;
 }
 
-/* ============================================
-   2050-Desktop: kompakte Ringe/Stats statt Riesen-Leerboxen
-   ============================================ */
+/* 2050-Desktop: kompakte Ringe/Stats statt Riesen-Leerboxen */
 @media (min-width: 768px) {
   .tm-stat-rings {
     grid-template-columns: repeat(4, minmax(200px, 280px));

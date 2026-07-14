@@ -38,14 +38,12 @@ export function calculateWrappedStats(
   bingeSessions: BingeSession[],
   year: number
 ): WrappedStats {
-  // Filtere Events für das gewünschte Jahr
   const yearEvents = events.filter((e) => new Date(e.timestamp).getFullYear() === year);
   const episodeEvents = yearEvents.filter((e) => e.type === 'episode_watch') as EpisodeWatchEvent[];
   const movieEvents = yearEvents.filter(
     (e) => e.type === 'movie_watch' || e.type === 'movie_rating'
   ) as MovieWatchEvent[];
 
-  // Grundlegende Berechnungen
   const totalEpisodes = episodeEvents.length;
   const totalMovies = movieEvents.length;
 
@@ -56,41 +54,29 @@ export function calculateWrappedStats(
   const movieMinutes = movieEvents.reduce((sum, e) => sum + (e.runtime || 120), 0);
   const totalMinutes = episodeMinutes + movieMinutes;
 
-  // Top Serien
   const topSeries = calculateTopSeries(episodeEvents);
-
-  // Top Filme
   const topMovies = calculateTopMovies(movieEvents);
-
-  // Top Genres
   const topGenres = calculateTopGenres(episodeEvents, movieEvents);
-
-  // Top Providers (Streaming-Dienste)
   const topProviders = calculateTopProviders(episodeEvents, movieEvents);
 
-  // Zeitliche Muster
   const monthlyBreakdown = calculateMonthlyBreakdown(yearEvents);
   const mostActiveMonth = findMostActiveMonth(monthlyBreakdown);
   const mostActiveDay = findMostActiveDay(yearEvents);
   const favoriteTimeOfDay = calculateFavoriteTimeOfDay(yearEvents);
   const favoriteDayOfWeek = calculateFavoriteDayOfWeek(yearEvents);
 
-  // Binge-Statistiken
   const yearBingeSessions = bingeSessions.filter(
     (s) => new Date(s.startedAt).getFullYear() === year
   );
   const longestBinge = findLongestBingeSession(yearBingeSessions);
 
-  // Geräte-Breakdown
   const deviceBreakdown = calculateDeviceBreakdown(yearEvents);
 
-  // Unique Serien
   const uniqueSeriesIds = new Set(episodeEvents.map((e) => e.seriesId));
 
   // Längste Streak aufeinanderfolgender Watch-Tage im Jahr
   const longestStreak = calculateLongestStreak(yearEvents);
 
-  // Achievements
   const achievements = calculateAchievements({
     totalEpisodes,
     totalMovies,
@@ -102,7 +88,6 @@ export function calculateWrappedStats(
     yearBingeSessions,
   });
 
-  // Fun Facts
   const funFacts = generateFunFacts({
     totalMinutes,
     totalEpisodes,
@@ -112,15 +97,9 @@ export function calculateWrappedStats(
     favoriteTimeOfDay,
   });
 
-  // NEUE BERECHNUNGEN
-  // First & Last Watch
   const firstWatch = findFirstWatch(yearEvents);
   const lastWatch = findLastWatch(yearEvents);
-
-  // Late Night Stats
   const lateNightStats = calculateLateNightStats(yearEvents);
-
-  // Heatmap Data
   const heatmapData = calculateHeatmapData(yearEvents);
 
   return {
@@ -154,17 +133,12 @@ export function calculateWrappedStats(
     deviceBreakdown,
     achievements,
     funFacts,
-    // Neue Stats
     firstWatch,
     lastWatch,
     lateNightStats,
     heatmapData,
   };
 }
-
-// ========================================
-// Binge-Berechnungen
-// ========================================
 
 function findLongestBingeSession(sessions: BingeSession[]): BingeSessionStats | null {
   if (sessions.length === 0) return null;
@@ -179,10 +153,6 @@ function findLongestBingeSession(sessions: BingeSession[]): BingeSessionStats | 
     date: longest.startedAt.split('T')[0],
   };
 }
-
-// ========================================
-// Geräte-Berechnungen
-// ========================================
 
 function calculateDeviceBreakdown(events: ActivityEvent[]): DeviceBreakdown {
   const counts = { mobile: 0, desktop: 0, tablet: 0 };

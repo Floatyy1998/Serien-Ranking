@@ -56,7 +56,6 @@ interface MangaDetailBodyProps {
   setCustomPlatform: (v: string) => void;
   showDeleteConfirm: boolean;
   setShowDeleteConfirm: (v: boolean) => void;
-  // handlers
   onStatusChange: (status: Manga['readStatus']) => void;
   onChapterChange: (chapter: number) => void;
   onRating: (rating: number) => void;

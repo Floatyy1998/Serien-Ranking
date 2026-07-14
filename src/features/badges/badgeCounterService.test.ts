@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Verschachtelter Firebase-Mock mit transaction/set/remove/child/once, damit
 // die counter-Logik (transaction-basiert) end-to-end gegen einen Baum läuft.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const root: Record<string, unknown> = {};
   const segs = (p: string) => p.split('/').filter(Boolean);
@@ -65,7 +63,7 @@ const counterPath = (name: string) => `users/${UID}/badgeCounters/${name}`;
 
 beforeEach(() => fb.reset());
 
-// ---------- einfache Increment-Counter ----------
+// einfache Increment-Counter
 
 describe('increment-Counter (transaction)', () => {
   it('incrementQuickwatchCounter startet bei 1 und erhöht', async () => {
@@ -97,7 +95,7 @@ describe('increment-Counter (transaction)', () => {
   });
 });
 
-// ---------- read/reset/clear ----------
+// read/reset/clear
 
 describe('Lesen und Zurücksetzen', () => {
   it('getCounter liest den Wert, fehlend → 0', async () => {
@@ -126,7 +124,7 @@ describe('Lesen und Zurücksetzen', () => {
   });
 });
 
-// ---------- Streak ----------
+// Streak
 
 describe('updateStreakCounter', () => {
   beforeEach(() => {
@@ -173,7 +171,7 @@ describe('updateStreakCounter', () => {
   });
 });
 
-// ---------- Binge-Windows ----------
+// Binge-Windows
 
 describe('recordBingeEpisode', () => {
   beforeEach(() => {
@@ -242,7 +240,7 @@ describe('finalizeBingeSession', () => {
   });
 });
 
-// ---------- Marathon ----------
+// Marathon
 
 describe('Marathon-Counter', () => {
   beforeEach(() => {

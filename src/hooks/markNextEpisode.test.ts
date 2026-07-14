@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Series } from '../types/Series';
 
-// --- Firebase compat mock ---------------------------------------------------
+// Firebase compat mock
 const fb = vi.hoisted(() => {
   const onceMock = vi.fn<() => Promise<{ val: () => unknown }>>();
   const updateMock = vi.fn((_updates?: Record<string, unknown>) => Promise.resolve());
@@ -14,7 +14,7 @@ const fb = vi.hoisted(() => {
 vi.mock('firebase/compat/app', () => ({ default: { database: fb.database } }));
 vi.mock('firebase/compat/database', () => ({}));
 
-// --- Side-effect module mocks (compactWatch stays real) ---------------------
+// Side-effect module mocks (compactWatch stays real)
 vi.mock('../services/offline/queuedUpdate', () => ({
   applyUserUpdate: vi.fn(() => Promise.resolve({ queued: false })),
 }));

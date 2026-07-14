@@ -58,7 +58,6 @@ export const MangaPage = () => {
   const collectionRef = useRef<HTMLDivElement>(null);
   const [collectionFilter, setCollectionFilter] = useState('all');
 
-  // Trending/Popular/Top hooks
   const trendingItems = useMangaTrending();
   const popularItems = useMangaPopular();
   const topRatedItems = useMangaTopRated();
@@ -99,7 +98,7 @@ export const MangaPage = () => {
         background: currentTheme.background.default,
       }}
     >
-      {/* ─── Header ────────────────────────── */}
+      {/* Header */}
       <header
         style={{
           background: `linear-gradient(180deg, ${currentTheme.primary}40 0%, ${currentTheme.primary}10 50%, transparent 100%)`,
@@ -157,7 +156,7 @@ export const MangaPage = () => {
         </motion.div>
       </header>
 
-      {/* ─── Search Bar ──────────────── */}
+      {/* Search Bar */}
       <div style={{ padding: '0 20px', marginBottom: 20 }}>
         <motion.button
           type="button"
@@ -189,7 +188,7 @@ export const MangaPage = () => {
         </motion.button>
       </div>
 
-      {/* ─── Quick Actions Grid ──────────────── */}
+      {/* Quick Actions Grid */}
       {mangaList.length > 0 && (
         <div className="manga-quick-grid">
           <QuickTile
@@ -239,13 +238,13 @@ export const MangaPage = () => {
         </div>
       )}
 
-      {/* ─── Continue Reading ────────────────────────── */}
+      {/* Continue Reading */}
       <ContinueReadingSection onFilterReading={handleGoToReadingList} />
 
-      {/* ─── Recently Added ──────────────────────────── */}
+      {/* Recently Added */}
       <RecentlyAddedMangaSection />
 
-      {/* ─── Trending Carousel ───────────────────────── */}
+      {/* Trending Carousel */}
       <MangaCarouselSection
         variant="trending"
         items={trendingItems}
@@ -254,7 +253,7 @@ export const MangaPage = () => {
         iconColor={currentTheme.primary}
       />
 
-      {/* ─── Popular Carousel ────────────────────────── */}
+      {/* Popular Carousel */}
       <MangaCarouselSection
         variant="popular"
         items={popularItems}
@@ -263,7 +262,7 @@ export const MangaPage = () => {
         iconColor={currentTheme.status?.error || '#ef4444'}
       />
 
-      {/* ─── Top Rated Carousel ──────────────────────── */}
+      {/* Top Rated Carousel */}
       <MangaCarouselSection
         variant="top-rated"
         items={topRatedItems}
@@ -272,7 +271,7 @@ export const MangaPage = () => {
         iconColor={currentTheme.accent}
       />
 
-      {/* ─── For-You Cards ───────────────────────────── */}
+      {/* For-You Cards */}
       {mangaList.length > 0 && (
         <section style={{ marginBottom: 32 }}>
           <SectionHeader
@@ -295,10 +294,10 @@ export const MangaPage = () => {
         </section>
       )}
 
-      {/* ─── Stats ───────────────────────────────────── */}
+      {/* Stats */}
       <MangaStatsSection />
 
-      {/* ─── Collection Grid ─────────────────────────── */}
+      {/* Collection Grid */}
       {loading ? (
         <LoadingSpinner text="Sammlung wird geladen …" />
       ) : mangaList.length > 0 ? (
@@ -394,7 +393,7 @@ export const MangaPage = () => {
   );
 };
 
-// ─── Quick Tile ─────────────────────────────────────
+// Quick Tile
 
 const QuickTile = ({
   icon,
@@ -423,7 +422,7 @@ const QuickTile = ({
   </motion.button>
 );
 
-// ─── Manga Card ─────────────────────────────────────
+// Manga Card
 
 const MangaCard = ({
   manga,

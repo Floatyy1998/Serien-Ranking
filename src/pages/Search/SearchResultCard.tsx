@@ -1,8 +1,3 @@
-/**
- * SearchResultCard - Memoized card component for search results
- * Displays poster, rating, type badge, add/check button, title, and year.
- */
-
 import { Add, Check, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';

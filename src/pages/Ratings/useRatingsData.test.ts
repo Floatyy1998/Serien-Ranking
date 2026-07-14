@@ -5,7 +5,7 @@ import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { useRatingsData } from './useRatingsData';
 
-// ── router mock ───────────────────────────────────────────────────────
+// router mock
 const router = vi.hoisted(() => ({
   params: new URLSearchParams(),
   setParams: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => router.navigate,
 }));
 
-// ── contexts ──────────────────────────────────────────────────────────
+// contexts
 const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   movieList: [] as Movie[],
@@ -33,7 +33,7 @@ vi.mock('../../contexts/MovieListContext', () => ({
 const preloadImage = vi.fn();
 vi.mock('../../lib/preloadImage', () => ({ preloadImage: (u?: string) => preloadImage(u) }));
 
-// ── fixtures ──────────────────────────────────────────────────────────
+// fixtures
 type Episode = Series['seasons'][number]['episodes'][number];
 const airedEp = (o: Partial<Episode> & { id: number }): Episode =>
   ({ air_date: '2020-01-01', watched: false, episode_number: o.id, ...o }) as Episode;

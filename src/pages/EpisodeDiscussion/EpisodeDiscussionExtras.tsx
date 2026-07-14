@@ -7,7 +7,6 @@ import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
 
-// ---------- Episode Navigation ----------
 interface EpisodeNavigationProps {
   currentTheme: Theme;
   navigation: EpisodeNavigationInfo;
@@ -99,7 +98,6 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
 ));
 EpisodeNavigation.displayName = 'EpisodeNavigation';
 
-// ---------- Overview Section ----------
 interface OverviewSectionProps {
   currentTheme: Theme;
   episodeOverview: string;
@@ -143,7 +141,6 @@ export const OverviewSection = memo(({ currentTheme, episodeOverview }: Overview
 ));
 OverviewSection.displayName = 'OverviewSection';
 
-// ---------- Crew Section ----------
 interface CrewSectionProps {
   currentTheme: Theme;
   directors: { id: number; name: string; job: string; profile_path: string | null }[];
@@ -215,7 +212,6 @@ export const CrewSection = memo(({ currentTheme, directors, writers }: CrewSecti
 });
 CrewSection.displayName = 'CrewSection';
 
-// ---------- Guest Stars Section ----------
 interface GuestStarsSectionProps {
   currentTheme: Theme;
   guestStars: { id: number; name: string; character: string; profile_path: string | null }[];
@@ -300,7 +296,6 @@ export const GuestStarsSection = memo(
 );
 GuestStarsSection.displayName = 'GuestStarsSection';
 
-// ---------- Discussion Section ----------
 interface DiscussionSectionProps {
   seriesId: string | undefined;
   seasonNumber: string | undefined;

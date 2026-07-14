@@ -1,4 +1,4 @@
-/* ─── Admin Dashboard ─────────────────────────────────────── */
+/* Admin Dashboard */
 
 .admin-tab-bar {
   position: sticky;
@@ -59,7 +59,7 @@
   padding: 0 0 80px;
 }
 
-/* ─── Pulse Animation ────────────────────────────────────── */
+/* Pulse Animation */
 
 @keyframes admin-pulse {
   0%,

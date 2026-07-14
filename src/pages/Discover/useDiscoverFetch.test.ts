@@ -6,7 +6,7 @@ import type { Movie } from '../../types/Movie';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { clearProviderCache } from './watchProviderFilter';
 
-// ── contexts (shared by useDiscoverActions too) ───────────────────────
+// contexts (shared by useDiscoverActions too)
 const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   movieList: [] as Movie[],
@@ -20,7 +20,7 @@ vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
 }));
 
-// ── useDiscoverActions side-effect deps ───────────────────────────────
+// useDiscoverActions side-effect deps
 vi.mock('../../services/firebase/analytics', () => ({
   trackSeriesAdded: vi.fn(),
   trackMovieAdded: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
 }));
 vi.mock('../../services/backendApi', () => ({ backendFetch: vi.fn(async () => ({ ok: true })) }));
 
-// ── fetch helper ──────────────────────────────────────────────────────
+// fetch helper
 type FetchResult = { ok: boolean; json: () => Promise<unknown> };
 const jsonOk = (body: unknown): FetchResult => ({ ok: true, json: async () => body });
 

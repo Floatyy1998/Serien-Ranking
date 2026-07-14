@@ -1,7 +1,3 @@
-/**
- * TimePatternSlide - Zeigt Zeitmuster (Tageszeit, Wochentag)
- */
-
 import React from 'react';
 import { seededRandom } from '../../utils/seededRandom';
 import { motion } from 'framer-motion';

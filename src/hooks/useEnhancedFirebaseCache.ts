@@ -1,5 +1,5 @@
 /**
- * 🚀 Enhanced useFirebaseCache Hook with Offline Support
+ * Enhanced useFirebaseCache Hook with Offline Support
  * Erweitert den ursprünglichen Hook um Service Worker und IndexedDB Integration
  *
  * Komponierender Hook — die Einzelteile leben in ./firebaseCache/:
@@ -34,9 +34,6 @@ import {
   versionsMatch,
 } from './firebaseCache/versionCheck';
 
-/**
- * Enhanced useFirebaseCache Hook with Offline-First capabilities
- */
 export function useEnhancedFirebaseCache<T = unknown>(
   path: string,
   options: EnhancedCacheOptions = {}
@@ -59,16 +56,10 @@ export function useEnhancedFirebaseCache<T = unknown>(
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const listenerRef = useRef<(() => void) | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  /**
-   * 📦 Daten aus allen verfügbaren Caches laden
-   */
   const loadFromCache = useCallback(
     (): Promise<T | null> => loadFromCacheIO<T>(path, enableOfflineSupport),
     [path, enableOfflineSupport]
   );
-  /**
-   * 💾 Daten in alle Caches speichern
-   */
   const versionRef = useRef<number | undefined>(undefined);
   const saveToCache = useCallback(
     (newData: T): Promise<void> =>
@@ -80,24 +71,17 @@ export function useEnhancedFirebaseCache<T = unknown>(
       }),
     [path, ttl, enableOfflineSupport, cacheInServiceWorker]
   );
-  /**
-   * 🌐 Daten aus Firebase laden
-   */
   const fetchFromFirebase = useCallback(async (): Promise<T | null> => {
     if (!path) return null;
     const ref = firebase.database().ref(path);
     const snapshot = await ref.once('value');
     if (snapshot.exists()) {
       const firebaseData = snapshot.val();
-      // Cache aktualisieren
       await saveToCache(firebaseData);
       return firebaseData;
     }
     return null;
   }, [path, saveToCache]);
-  /**
-   * 🔄 Realtime Listener einrichten
-   */
   const setupRealtimeListener = useCallback(() => {
     if (!path || !useRealtimeListener) return;
     // Detach any previous listener before attaching a new one to avoid duplicates
@@ -121,11 +105,8 @@ export function useEnhancedFirebaseCache<T = unknown>(
     });
   }, [path, useRealtimeListener, saveToCache, loadFromCache]);
   /**
-   * 🔄 Delta Sync Listener einrichten (child_changed/added/removed)
+   * Delta-Listener (child_changed/added/removed) auf Basis von initialData aufsetzen.
    * Spart massiv Bandbreite: Nur geänderte Kinder werden heruntergeladen, nicht der gesamte Datensatz.
-   */
-  /**
-   * Hilfsfunktion: Delta-Listener auf Basis von initialData aufsetzen.
    * Wird sowohl beim initialen Setup als auch nach Full-Load verwendet.
    */
   const attachDelta = useCallback(
@@ -219,16 +200,12 @@ export function useEnhancedFirebaseCache<T = unknown>(
     },
     [path, useDeltaSync, versionPath, attachDelta, doFullLoadAndAttach]
   );
-  /**
-   * 🔄 Daten neu laden (Refetch)
-   */
   const refetch = useCallback(async (): Promise<void> => {
     if (!path) return;
     setLoading(true);
     setError(null);
     try {
       if (navigator.onLine) {
-        // Online: Firebase laden
         const firebaseData = await fetchFromFirebase();
         // Wenn Firebase nichts zurueckliefert (transient empty snapshot bei
         // einem Reconnect-Glitch), bestehenden State NICHT auf null setzen —
@@ -240,7 +217,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
           setIsStale(false);
         }
       } else {
-        // Offline: Cache laden
         const cachedData = await loadFromCache();
         if (cachedData) {
           setData(cachedData);
@@ -262,20 +238,11 @@ export function useEnhancedFirebaseCache<T = unknown>(
     }
     setLoading(false);
   }, [path, fetchFromFirebase, loadFromCache]);
-  /**
-   * 🗑️ Cache leeren
-   */
   const clearCache = useCallback(
     (): Promise<void> => clearCachedPath(path, enableOfflineSupport),
     [path, enableOfflineSupport]
   );
-  /**
-   * 🎧 Online/Offline Event Handler
-   */
   useReconnectSync<T>({ syncOnReconnect, isStale, data, refetch, setIsOffline, setIsStale });
-  /**
-   * 🚀 Initial Load Effect
-   */
   useEffect(() => {
     if (!path) {
       setData(null);
@@ -283,7 +250,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
       setLoading(false);
       return;
     }
-    // Abort previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -292,21 +258,19 @@ export function useEnhancedFirebaseCache<T = unknown>(
       setLoading(true);
       setError(null);
       try {
-        // 1. SOFORT Cache laden für bessere UX (auch offline)
+        // Sofort Cache laden für bessere UX (auch offline)
         const cachedData = await loadFromCache();
         if (cachedData) {
           setData(cachedData);
           setIsStale(!navigator.onLine); // Nur stale wenn offline
           setLoading(false); // Wichtig: Loading sofort beenden!
         }
-        // 2. Nur wenn online - Realtime Listener oder Fetch versuchen
         if (navigator.onLine) {
           if (useDeltaSync) {
             setupDeltaListener(cachedData);
           } else if (useRealtimeListener) {
             setupRealtimeListener();
           } else {
-            // 3. Versuche aktuellen Wert von Firebase zu laden
             try {
               const firebaseData = await fetchFromFirebase();
               // Nur aktualisieren wenn sich Daten geändert haben
@@ -321,7 +285,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
             setLoading(false);
           }
         } else {
-          // Offline Modus
           setIsOffline(true);
           if (!cachedData) {
             setError('Offline - keine Daten verfügbar');
@@ -342,7 +305,6 @@ export function useEnhancedFirebaseCache<T = unknown>(
       }
     };
     loadData();
-    // Cleanup
     return () => {
       if (listenerRef.current) {
         listenerRef.current();

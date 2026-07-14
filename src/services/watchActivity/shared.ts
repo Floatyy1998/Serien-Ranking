@@ -9,16 +9,12 @@ import type { ActivityEvent } from '../../types/WatchActivity';
 import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
 import { compactifyEvent, isCompactEvent, expandCompactEvent } from './compactEvent';
 
-// ============================================================================
 // KONSTANTEN
-// ============================================================================
 
 const WRAPPED_BASE = 'wrapped';
 const LAST_CLEANUP_KEY = 'wrapped_last_cleanup_year';
 
-// ============================================================================
 // PFAD-FUNKTIONEN
-// ============================================================================
 
 export function getEventsPath(userId: string, year: number): string {
   return userPath(userId, WRAPPED_BASE, year, 'events');
@@ -36,9 +32,7 @@ export function getWrappedBasePath(userId: string): string {
   return userPath(userId, WRAPPED_BASE);
 }
 
-// ============================================================================
 // HILFSFUNKTIONEN
-// ============================================================================
 
 export function detectDeviceType(): 'mobile' | 'desktop' | 'tablet' {
   const ua = navigator.userAgent.toLowerCase();
@@ -109,9 +103,7 @@ export function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<
   return result;
 }
 
-// ============================================================================
 // CLEANUP FUNKTION (DEAKTIVIERT - Daten werden für Journey behalten)
-// ============================================================================
 
 export async function cleanupOldYearData(_userId: string): Promise<void> {
   // DEAKTIVIERT: Wir behalten alle historischen Daten für die Watch Journey
@@ -119,9 +111,7 @@ export async function cleanupOldYearData(_userId: string): Promise<void> {
   return;
 }
 
-// ============================================================================
 // EVENT SPEICHERN
-// ============================================================================
 
 export async function saveEvent(userId: string, event: ActivityEvent): Promise<boolean> {
   const eventId = generateEventId();
@@ -146,9 +136,7 @@ export async function saveEvent(userId: string, event: ActivityEvent): Promise<b
   }
 }
 
-// ============================================================================
 // CLEANUP/ADMIN
-// ============================================================================
 
 export async function clearAllWrappedData(userId: string): Promise<void> {
   try {
@@ -161,9 +149,7 @@ export async function clearAllWrappedData(userId: string): Promise<void> {
   }
 }
 
-// ============================================================================
 // DATA RETRIEVAL
-// ============================================================================
 
 /**
  * Stellt temporale Felder aus dem timestamp wieder her, falls sie fehlen.

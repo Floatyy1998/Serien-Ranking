@@ -1,7 +1,3 @@
-/**
- * TasteMatchCard - Kompakte Karte für Taste Match auf der HomePage
- */
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';

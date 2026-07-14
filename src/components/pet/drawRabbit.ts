@@ -16,7 +16,7 @@ export const drawRabbit = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): MONDHASE / TSUKIMI-FORM ===
+  // STUFE 8+ (Lv50): MONDHASE / TSUKIMI-FORM
   if (level >= 50) {
     drawMoonRabbit(
       ctx,
@@ -34,14 +34,14 @@ export const drawRabbit = (
     return;
   }
 
-  // === STUFEN 1-7: NORMALER HASE (Lv1-49) ===
+  // STUFEN 1-7: NORMALER HASE (Lv1-49)
 
   const headSize =
     level >= 20 ? 1.2 : level >= 15 ? 1.15 : level >= 10 ? 1.1 : level >= 5 ? 1.05 : 1;
   const earHeight = level >= 20 ? 6 : level >= 15 ? 5.5 : level >= 10 ? 5 : level >= 5 ? 4 : 3;
   const bodyWidth = level >= 20 ? 12 : level >= 15 ? 11 : level >= 10 ? 10 : level >= 5 ? 9 : 8;
 
-  // === Ohren — breit, gespreizt nach außen, leicht abgewinkelt ===
+  // Ohren — breit, gespreizt nach außen, leicht abgewinkelt
   // Stufen-Treppe nach außen: je höher, desto weiter weg vom Zentrum
   const drawEar = (sign: number) => {
     // sign = -1 (links) oder +1 (rechts)
@@ -86,7 +86,7 @@ export const drawRabbit = (
   drawEar(-1);
   drawEar(1);
 
-  // === Großer runder Kopf ===
+  // Großer runder Kopf
   const hw = 5 * headSize;
   const hh = 5 * headSize;
   ctx.fillStyle = color;
@@ -106,7 +106,7 @@ export const drawRabbit = (
   ctx.fillRect((centerX - 4) * ps, (centerY + 0.5) * ps + offset, ps * 1.5, ps * 1.5);
   ctx.fillRect((centerX + 2.5) * ps, (centerY + 0.5) * ps + offset, ps * 1.5, ps * 1.5);
 
-  // === Rundlicher Körper (breit, hockend) ===
+  // Rundlicher Körper (breit, hockend)
   ctx.fillStyle = color;
   ctx.fillRect((centerX - bodyWidth / 2) * ps, (centerY + 3) * ps + offset, ps * bodyWidth, ps * 7);
   // Bauch-Verbreiterung
@@ -129,7 +129,7 @@ export const drawRabbit = (
   ctx.fillRect((centerX - 3) * ps, (centerY + 4) * ps + offset, ps * 6, ps * 6);
   ctx.fillRect((centerX - 4) * ps, (centerY + 5) * ps + offset, ps * 8, ps * 4);
 
-  // === Hinterbeine seitlich ===
+  // Hinterbeine seitlich
   ctx.fillStyle = color;
   ctx.fillRect((centerX - bodyWidth / 2 - 1) * ps, (centerY + 9) * ps + offset, ps * 2.5, ps * 3);
   ctx.fillRect((centerX + bodyWidth / 2 - 1.5) * ps, (centerY + 9) * ps + offset, ps * 2.5, ps * 3);
@@ -161,12 +161,12 @@ export const drawRabbit = (
     ps * 0.5
   );
 
-  // === Vorderpfoten (zentral, klein) ===
+  // Vorderpfoten (zentral, klein)
   ctx.fillStyle = color;
   ctx.fillRect((centerX - 2.5) * ps, (centerY + 8) * ps + offset, ps * 2, ps * 2);
   ctx.fillRect((centerX + 0.5) * ps, (centerY + 8) * ps + offset, ps * 2, ps * 2);
 
-  // === Pom-Pom Schwanz ===
+  // Pom-Pom Schwanz
   ctx.fillStyle = '#FFF';
   ctx.fillRect((centerX + bodyWidth / 2) * ps, (centerY + 6) * ps + offset, ps * 2, ps * 2);
   ctx.fillRect(
@@ -182,7 +182,7 @@ export const drawRabbit = (
     ps * 0.5
   );
 
-  // === Augen (groß, glänzend, weit auseinander) ===
+  // Augen (groß, glänzend, weit auseinander)
   ctx.fillStyle = '#000';
   ctx.fillRect((centerX - 3) * ps, (centerY - 1) * ps + offset, ps * 1.5, ps * 1.8);
   ctx.fillRect((centerX + 1.5) * ps, (centerY - 1) * ps + offset, ps * 1.5, ps * 1.8);
@@ -191,12 +191,12 @@ export const drawRabbit = (
   ctx.fillRect((centerX - 2.5) * ps, (centerY - 0.7) * ps + offset, ps * 0.5, ps * 0.6);
   ctx.fillRect((centerX + 2) * ps, (centerY - 0.7) * ps + offset, ps * 0.5, ps * 0.6);
 
-  // === Rosa Nase ===
+  // Rosa Nase
   ctx.fillStyle = '#FF85A1';
   ctx.fillRect((centerX - 0.7) * ps, (centerY + 1) * ps + offset, ps * 1.4, ps * 0.7);
   ctx.fillRect((centerX - 0.4) * ps, (centerY + 1.7) * ps + offset, ps * 0.8, ps * 0.3);
 
-  // === Mund (Y-förmig) ===
+  // Mund (Y-förmig)
   ctx.strokeStyle = '#222';
   ctx.lineWidth = ps * 0.3;
   ctx.beginPath();
@@ -208,7 +208,7 @@ export const drawRabbit = (
   ctx.lineTo((centerX + 1) * ps, (centerY + 3) * ps + offset);
   ctx.stroke();
 
-  // === Stufe 3 (Lv5+): Schnurrhaare + Hasenzähne ===
+  // Stufe 3 (Lv5+): Schnurrhaare + Hasenzähne
   if (level >= 5) {
     ctx.strokeStyle = '#FFFFFFAA';
     ctx.lineWidth = ps * 0.25;
@@ -229,7 +229,7 @@ export const drawRabbit = (
     ctx.fillRect((centerX + 0.2) * ps, (centerY + 3) * ps + offset, ps * 0.5, ps * 0.8);
   }
 
-  // === Stufe 4 (Lv10+): Rosa Wangen, dichteres Fell ===
+  // Stufe 4 (Lv10+): Rosa Wangen, dichteres Fell
   if (level >= 10) {
     ctx.fillStyle = '#FFB6C1AA';
     ctx.beginPath();
@@ -250,7 +250,7 @@ export const drawRabbit = (
     ctx.stroke();
   }
 
-  // === Stufe 5 (Lv20+): Kleeblatt + Funken ===
+  // Stufe 5 (Lv20+): Kleeblatt + Funken
   if (level >= 20) {
     if (equippedSlot !== 'head') {
       ctx.fillStyle = '#50C878';
@@ -285,7 +285,7 @@ export const drawRabbit = (
     }
   }
 
-  // === Stufe 6 (Lv30+): Veteran ===
+  // Stufe 6 (Lv30+): Veteran
   if (level >= 30) {
     ctx.strokeStyle = '#FFF8';
     ctx.lineWidth = ps * 0.3;
@@ -309,7 +309,7 @@ export const drawRabbit = (
     );
   }
 
-  // === Stufe 7 (Lv40+): Elite ===
+  // Stufe 7 (Lv40+): Elite
   if (level >= 40) {
     ctx.shadowColor = '#FFD700';
     ctx.shadowBlur = ps * 2;
@@ -324,7 +324,7 @@ export const drawRabbit = (
   }
 };
 
-// === MONDHASE / TSUKIMI-FORM (Level 50+) ===
+// MONDHASE / TSUKIMI-FORM (Level 50+)
 function drawMoonRabbit(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -351,7 +351,7 @@ function drawMoonRabbit(
 
   const earH = isLegend ? 9 : isChampion ? 8 : 7;
 
-  // === Lange majestätische Ohren, gespreizt ===
+  // Lange majestätische Ohren, gespreizt
   const drawMoonEar = (sign: number) => {
     const baseX = centerX + sign * 5;
     ctx.fillStyle = mainColor;
@@ -403,7 +403,7 @@ function drawMoonRabbit(
     ps * 0.3
   );
 
-  // === Eleganter großer Kopf ===
+  // Eleganter großer Kopf
   ctx.fillStyle = mainColor;
   ctx.fillRect((centerX - 6) * ps, (centerY - 3) * ps + offset, ps * 12, ps * 6);
   ctx.fillRect((centerX - 5) * ps, (centerY - 4) * ps + offset, ps * 10, ps);
@@ -418,7 +418,7 @@ function drawMoonRabbit(
   ctx.fillRect((centerX - 5.5) * ps, (centerY + 0.5) * ps + offset, ps * 2, ps * 2);
   ctx.fillRect((centerX + 3.5) * ps, (centerY + 0.5) * ps + offset, ps * 2, ps * 2);
 
-  // === Massiver runder Körper ===
+  // Massiver runder Körper
   const bodyW = isLegend ? 14 : isChampion ? 13 : 12;
   ctx.fillStyle = mainColor;
   ctx.fillRect((centerX - bodyW / 2) * ps, (centerY + 3) * ps + offset, ps * bodyW, ps * 8);
@@ -463,7 +463,7 @@ function drawMoonRabbit(
   ctx.fillRect((centerX - 3) * ps, (centerY + 8) * ps + offset, ps * 2, ps * 2);
   ctx.fillRect((centerX + 1) * ps, (centerY + 8) * ps + offset, ps * 2, ps * 2);
 
-  // === Großer leuchtender Mond-Pom-Pom ===
+  // Großer leuchtender Mond-Pom-Pom
   ctx.fillStyle = '#FFF' + bodyAlpha;
   ctx.fillRect((centerX + bodyW / 2) * ps, (centerY + 5) * ps + offset, ps * 3, ps * 3);
   ctx.fillRect((centerX + bodyW / 2 + 0.5) * ps, (centerY + 4.5) * ps + offset, ps * 2, ps * 0.5);
@@ -475,7 +475,7 @@ function drawMoonRabbit(
     ctx.fillRect((centerX + bodyW / 2 - 0.5) * ps, (centerY + 4) * ps + offset, ps * 4.5, ps * 4.5);
   }
 
-  // === Mystische Augen ===
+  // Mystische Augen
   const eyeColor = isLegend ? '#FFD700' : '#9CACFF';
   ctx.fillStyle = eyeColor;
   ctx.fillRect((centerX - 3.5) * ps, (centerY - 1) * ps + offset, ps * 1.8, ps * 1.8);
@@ -501,7 +501,7 @@ function drawMoonRabbit(
   ctx.fillRect((centerX - 0.7) * ps, (centerY + 2.5) * ps + offset, ps * 0.5, ps * 0.8);
   ctx.fillRect((centerX + 0.2) * ps, (centerY + 2.5) * ps + offset, ps * 0.5, ps * 0.8);
 
-  // === Mondstein-Symbol auf der Stirn ===
+  // Mondstein-Symbol auf der Stirn
   if (equippedSlot !== 'head') {
     ctx.fillStyle = '#FFFFFF' + bodyAlpha;
     ctx.beginPath();
@@ -563,7 +563,7 @@ function drawMoonRabbit(
     }
   }
 
-  // === CHAMPION (Lv60+) ===
+  // CHAMPION (Lv60+)
   if (isChampion) {
     if (equippedSlot !== 'head') {
       ctx.shadowColor = '#FFFFFF';
@@ -594,7 +594,7 @@ function drawMoonRabbit(
     }
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     ctx.shadowColor = '#FFD700';
     ctx.shadowBlur = ps * 5;
@@ -626,7 +626,7 @@ function drawMoonRabbit(
     }
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     ctx.shadowColor = '#FFFFFF';
     ctx.shadowBlur = ps * 10;

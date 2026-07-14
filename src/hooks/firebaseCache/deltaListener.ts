@@ -1,5 +1,5 @@
 /**
- * 🔄 Delta-Sync-Listener-Wiring (child_changed/added/removed).
+ * Delta-Sync-Listener-Wiring (child_changed/added/removed).
  * Spart massiv Bandbreite: Nur geänderte Kinder werden heruntergeladen,
  * nicht der gesamte Datensatz.
  *

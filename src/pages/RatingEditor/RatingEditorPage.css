@@ -1,4 +1,4 @@
-/* ===== RatingEditorPage Layout ===== */
+/* RatingEditorPage Layout */
 .rate-page {
   height: 100vh;
   background: var(--color-background-default);
@@ -45,7 +45,7 @@
   z-index: 0;
 }
 
-/* ===== Header ===== */
+/* Header */
 .rate-header {
   display: flex;
   align-items: center;
@@ -105,7 +105,7 @@
   box-shadow: 0 4px 15px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
 }
 
-/* ===== Tab Navigation ===== */
+/* Tab Navigation */
 .rate-tabs {
   display: flex;
   padding: 12px 20px;
@@ -135,7 +135,7 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 33%, transparent);
 }
 
-/* ===== Content Area ===== */
+/* Content Area */
 .rate-content {
   flex: 1;
   padding: 16px 20px;
@@ -146,7 +146,7 @@
   z-index: 1;
 }
 
-/* ===== Overall Section ===== */
+/* Overall Section */
 .rate-overall-section {
   display: flex;
   flex-direction: column;
@@ -239,7 +239,7 @@
   font-weight: 500;
 }
 
-/* ===== Emoji Indicators ===== */
+/* Emoji Indicators */
 .rate-emoji-row {
   display: flex;
   gap: 14px;
@@ -279,7 +279,7 @@
   filter: grayscale(0) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
-/* ===== Slider ===== */
+/* Slider */
 .rate-slider-card {
   width: 100%;
   padding: 20px;
@@ -357,7 +357,7 @@
   font-weight: 500;
 }
 
-/* ===== Quick Select Grid ===== */
+/* Quick Select Grid */
 .rate-quick-card {
   background: var(--glass-light);
   border: 1px solid var(--glass-border-light);
@@ -412,7 +412,7 @@
   transform: scale(1.05);
 }
 
-/* ===== Genre Ratings Section ===== */
+/* Genre Ratings Section */
 .rate-genre-list {
   display: flex;
   flex-direction: column;
@@ -474,7 +474,7 @@
   background-clip: text;
 }
 
-/* ===== Bottom Actions ===== */
+/* Bottom Actions */
 .rate-actions {
   position: fixed;
   bottom: 0;
@@ -538,7 +538,7 @@
   transform: none !important;
 }
 
-/* ===== Snackbar ===== */
+/* Snackbar */
 .rate-snackbar {
   position: fixed;
   bottom: 100px;
@@ -564,7 +564,7 @@
   font-weight: 500;
 }
 
-/* ===== Desktop adjustments ===== */
+/* Desktop adjustments */
 @media (min-width: 768px) {
   .rate-page {
     background: var(--color-background-default);

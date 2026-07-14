@@ -1,7 +1,3 @@
-/**
- * RecordDaySlide - Zeigt den aktivsten Tag des Jahres
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';

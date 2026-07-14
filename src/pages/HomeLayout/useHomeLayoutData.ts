@@ -8,8 +8,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';
 
-// --- Constants ---
-
 export const DEFAULT_SECTION_ORDER = [
   'activity-marquee',
   'quick-actions',
@@ -77,8 +75,6 @@ export const SECONDARY_ACTIONS_LABELS: Record<string, string> = {
   pets: 'Pets',
 };
 
-// --- Types ---
-
 export interface HomeConfig {
   sectionOrder: string[];
   hiddenSections: string[];
@@ -109,8 +105,6 @@ export interface UseHomeLayoutDataResult {
   getExpandableConfig: (sectionId: string) => ExpandableConfig | null;
 }
 
-// --- Helpers ---
-
 /** Merge saved order with defaults, ensuring no items are lost */
 function mergeOrder(saved: string[], defaults: string[], labels: Record<string, string>): string[] {
   const valid = saved.filter((id: string) => labels[id]);
@@ -139,8 +133,6 @@ function filterValid(arr: string[], labels: Record<string, string>): string[] {
   return arr.filter((id: string) => labels[id]);
 }
 
-// --- Hook ---
-
 export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
   const authContext = useAuth();
   const user = authContext?.user;
@@ -162,7 +154,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Firebase save (debounced) ---
+  // Firebase save (debounced)
 
   const saveConfig = useCallback(
     (config: HomeConfig) => {
@@ -198,7 +190,7 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
     ]
   );
 
-  // --- Firebase load ---
+  // Firebase load
 
   useEffect(() => {
     if (!user) return;
@@ -234,8 +226,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
       });
   }, [user]);
 
-  // --- Generic toggle helper ---
-
   const makeToggle = (
     hidden: string[],
     setHidden: React.Dispatch<React.SetStateAction<string[]>>,
@@ -249,16 +239,12 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
     };
   };
 
-  // --- Section handlers ---
-
   const handleSectionReorder = (newOrder: string[]) => {
     setSectionOrder(newOrder);
     saveConfig({ ...currentConfig(), sectionOrder: newOrder });
   };
 
   const handleSectionToggle = makeToggle(hiddenSections, setHiddenSections, 'hiddenSections');
-
-  // --- Sub-section handlers ---
 
   const handleForYouReorder = (newOrder: string[]) => {
     setForYouOrder(newOrder);
@@ -286,8 +272,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
     'hiddenSecondaryActions'
   );
 
-  // --- Reset ---
-
   const handleReset = () => {
     setSectionOrder(DEFAULT_SECTION_ORDER);
     setHiddenSections([]);
@@ -309,8 +293,6 @@ export const useHomeLayoutData = (): UseHomeLayoutDataResult => {
     });
     hapticWarning();
   };
-
-  // --- Expandable config lookup ---
 
   const getExpandableConfig = (sectionId: string): ExpandableConfig | null => {
     switch (sectionId) {

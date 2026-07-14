@@ -54,7 +54,6 @@ export const GalaxyMapTab = ({
     resetView,
   } = useActorPanZoom();
 
-  // Background stars - pre-computed at module level
   const backgroundStars = BACKGROUND_STARS;
 
   return (

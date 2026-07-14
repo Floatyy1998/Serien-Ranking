@@ -1,8 +1,3 @@
-/**
- * BadgesPage - Premium Achievement Gallery
- * Beautiful badge showcase with animated progress
- */
-
 import { EmojiEvents, Refresh } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';

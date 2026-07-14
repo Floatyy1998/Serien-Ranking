@@ -152,11 +152,9 @@
   --text-glow-subtle: 0 0 10px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
-/* ===========================================================================
- * Glassmorphism utility classes — single source of truth for glass cards.
- * Use these instead of repeating `background + backdrop-filter + border` triples
- * inline in component styles. Pair with --radius-* and --shadow-* as needed.
- * =========================================================================== */
+/* Glassmorphism utility classes — single source of truth for glass cards.
+   Use these instead of repeating `background + backdrop-filter + border` triples
+   inline in component styles. Pair with --radius-* and --shadow-* as needed. */
 .glass-card-light {
   background: var(--glass-light);
   -webkit-backdrop-filter: var(--glass-filter-md);
@@ -312,7 +310,6 @@
    no longer overrides that styling. To hide a scrollbar on a specific container,
    opt in with the `.hide-scrollbar` utility below. */
 
-/* Ensure smooth scrolling still works */
 html {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
@@ -358,9 +355,7 @@ svg rect {
   box-shadow: none !important;
 }
 
-/* ============================
-   WCAG 2.1 AA - Focus styles
-   ============================ */
+/* WCAG 2.1 AA - Focus styles */
 
 /* Global focus-visible outline for all interactive elements */
 *:focus-visible {
@@ -446,9 +441,7 @@ textarea[style*='outline']:focus-visible {
   border-width: 0;
 }
 
-/* ============================
-   Animations
-   ============================ */
+/* Animations */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -574,9 +567,7 @@ textarea[style*='outline']:focus-visible {
   }
 }
 
-/* ============================
-   Premium Utility Classes
-   ============================ */
+/* Premium Utility Classes */
 
 /* Noise/grain overlay - subtiler, cinematischer Film-Grain */
 .noise-overlay::before {
@@ -738,9 +729,7 @@ button:active:not(:disabled),
   pointer-events: none;
 }
 
-/* ============================
-   Animated Gradient Border
-   ============================ */
+/* Animated Gradient Border */
 @property --border-angle {
   syntax: '<angle>';
   initial-value: 0deg;
@@ -826,18 +815,13 @@ button:active:not(:disabled),
   contain: strict;
 }
 
-/* ============================
-   Container Queries
-   ============================ */
+/* Container Queries */
 .card-container {
   container-type: inline-size;
   container-name: card;
 }
 
-/* ============================
-   Scroll-Driven Animations
-   (Progressive Enhancement)
-   ============================ */
+/* Scroll-Driven Animations (Progressive Enhancement) */
 @supports (animation-timeline: scroll()) {
   .parallax-header {
     animation: parallaxFade linear;
@@ -889,12 +873,9 @@ button:active:not(:disabled),
   }
 }
 
-/* ============================
-   View Transitions API
-   (Progressive Enhancement)
+/* View Transitions API (Progressive Enhancement)
    - SPA: aktiviert durch useTransitionNavigate-Hook
-   - MPA: aktiviert durch navigation: auto
-   ============================ */
+   - MPA: aktiviert durch navigation: auto */
 @view-transition {
   navigation: auto;
 }

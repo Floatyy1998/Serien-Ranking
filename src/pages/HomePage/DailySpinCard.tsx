@@ -39,7 +39,6 @@ export const DailySpinCard: React.FC = () => {
     return () => ref.off('value', handler);
   }, [user?.uid]);
 
-  // Load streak for bonus display
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
@@ -52,7 +51,6 @@ export const DailySpinCard: React.FC = () => {
     return () => ref.off('value', handler);
   }, [user?.uid]);
 
-  // Load total spins
   useEffect(() => {
     if (!user?.uid) return;
     const ref = dbRef(userPath(user.uid, 'dailySpin', 'totalSpins'));

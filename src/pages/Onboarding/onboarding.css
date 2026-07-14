@@ -1,9 +1,7 @@
-/* ───────────────────────────────────────────────────────────
-   CINÉMA EDITORIAL — Onboarding design system
+/* CINÉMA EDITORIAL — Onboarding design system
    Display: Fraunces (variable serif w/ optical sizes + SOFT)
    Mono:    JetBrains Mono — labels, counters, accents
-   Body:    inherit (Roboto/system) — kept neutral on purpose
-   ─────────────────────────────────────────────────────────── */
+   Body:    inherit (Roboto/system) — kept neutral on purpose */
 
 /* All tokens are driven by the active app theme. Fallbacks here are only for
    the very first render before <OnboardingPage> injects the user theme. */
@@ -44,7 +42,7 @@
   z-index: 5;
 }
 
-/* ── Typography presets ─────────────────────────────────── */
+/* Typography presets */
 
 .ob-display {
   font-family: var(--ob-font-display);
@@ -84,7 +82,7 @@
   font-size: 13px;
 }
 
-/* ── Step shell ─────────────────────────────────────────── */
+/* Step shell */
 
 .ob-step {
   position: absolute;
@@ -95,7 +93,7 @@
   padding-bottom: calc(env(safe-area-inset-bottom));
 }
 
-/* ── Progress meter (top bar — like an old reel counter) ── */
+/* Progress meter (top bar — like an old reel counter) */
 
 .ob-progress {
   position: relative;
@@ -127,7 +125,7 @@
   color: rgba(var(--ob-glow), 0.6);
 }
 
-/* ── Letter reveal ───────────────────────────────────────── */
+/* Letter reveal */
 
 .ob-letter {
   display: inline-block;
@@ -135,7 +133,7 @@
   will-change: transform, opacity;
 }
 
-/* ── Marquee cover wall ──────────────────────────────────── */
+/* Marquee cover wall */
 
 .ob-wall {
   position: absolute;
@@ -209,7 +207,7 @@
     );
 }
 
-/* ── Buttons ─────────────────────────────────────────────── */
+/* Buttons */
 
 .ob-cta {
   position: relative;
@@ -282,7 +280,7 @@
   color: var(--ob-text);
 }
 
-/* ── Search field — minimal editorial ────────────────────── */
+/* Search field — minimal editorial */
 
 .ob-search {
   position: relative;
@@ -343,7 +341,7 @@
   background: rgba(var(--ob-glow), 0.12);
 }
 
-/* ── Story-bubble row of added items (sticky chrome) ─────── */
+/* Story-bubble row of added items (sticky chrome) */
 
 .ob-bubbles {
   display: flex;
@@ -375,7 +373,7 @@
   box-shadow: 0 0 0 2px var(--ob-stage);
 }
 
-/* ── Genre tile (filmposter-style) ──────────────────────── */
+/* Genre tile (filmposter-style) */
 
 .ob-genre-tile {
   position: relative;
@@ -487,7 +485,7 @@
   transform: scale(1);
 }
 
-/* ── Content card (Magazine style) ──────────────────────── */
+/* Content card (Magazine style) */
 
 .ob-card {
   position: relative;
@@ -643,7 +641,7 @@
   flex-shrink: 0;
 }
 
-/* ── Sheet / picker chrome ──────────────────────────────── */
+/* Sheet / picker chrome */
 
 .ob-sheet-backdrop {
   position: fixed;
@@ -791,7 +789,7 @@
   flex-shrink: 0;
 }
 
-/* ── Episode picker ─────────────────────────────────────── */
+/* Episode picker */
 
 .ob-season-tabs {
   display: flex;
@@ -909,7 +907,7 @@
   flex-shrink: 0;
 }
 
-/* ── Completion screen ──────────────────────────────────── */
+/* Completion screen */
 
 .ob-stage-grid {
   position: absolute;
@@ -1031,7 +1029,7 @@
   animation-name: ob-fall-c;
 }
 
-/* ── Table of contents (program / sidekick) ─────────────── */
+/* Table of contents (program / sidekick) */
 
 .ob-toc {
   list-style: none;
@@ -1156,7 +1154,7 @@
   }
 }
 
-/* ── Welcome side block (program strip) ─────────────────── */
+/* Welcome side block (program strip) */
 
 .ob-welcome-side {
   display: flex;
@@ -1169,7 +1167,7 @@
   justify-content: space-between;
 }
 
-/* ── Magazine spread: 2-column on wide screens ──────────── */
+/* Magazine spread: 2-column on wide screens */
 
 .ob-spread {
   flex: 1;
@@ -1219,7 +1217,7 @@
   }
 }
 
-/* ── Mobile tightening ──────────────────────────────────── */
+/* Mobile tightening */
 
 @media (max-width: 480px) {
   .ob-cta {
@@ -1230,7 +1228,7 @@
   }
 }
 
-/* ── Desktop layout split ───────────────────────────────── */
+/* Desktop layout split */
 
 .ob-welcome-grid {
   display: grid;

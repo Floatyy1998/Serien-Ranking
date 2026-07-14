@@ -1,8 +1,3 @@
-/**
- * ProfileComponents - Memoized subcomponents for ProfilePage
- * ProfileHeader, ProfileStats, ProfileMenuSection, ProfileLogoutButton
- */
-
 import {
   CalendarToday,
   ChevronRight,
@@ -20,10 +15,6 @@ import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './usePro
 import { tapScaleSmall } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
-
-/* ------------------------------------------------------------------ */
-/*  ProfileHeader                                                      */
-/* ------------------------------------------------------------------ */
 
 interface ProfileHeaderProps {
   displayName: string;
@@ -101,10 +92,6 @@ export const ProfileHeader = memo(
   )
 );
 ProfileHeader.displayName = 'ProfileHeader';
-
-/* ------------------------------------------------------------------ */
-/*  ProfileStats                                                       */
-/* ------------------------------------------------------------------ */
 
 interface StatItemConfig {
   icon: SvgIconComponent;
@@ -192,10 +179,7 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
 });
 ProfileStats.displayName = 'ProfileStats';
 
-/* ------------------------------------------------------------------ */
-/*  ProfileFeaturedNav - Large featured navigation buttons             */
-/* ------------------------------------------------------------------ */
-
+/* Große Featured-Navigation */
 interface ProfileFeaturedNavProps {
   title: string;
   items: ProfileMenuItem[];
@@ -264,10 +248,7 @@ export const ProfileFeaturedNav = memo(
 );
 ProfileFeaturedNav.displayName = 'ProfileFeaturedNav';
 
-/* ------------------------------------------------------------------ */
-/*  ProfileMenuGroup - Grouped list menu (secondary, settings)         */
-/* ------------------------------------------------------------------ */
-
+/* Gruppiertes Listen-Menü (Sekundär, Settings) */
 interface ProfileMenuGroupProps {
   title: string;
   items: ProfileMenuItem[];
@@ -336,10 +317,6 @@ export const ProfileMenuGroup = memo(
   )
 );
 ProfileMenuGroup.displayName = 'ProfileMenuGroup';
-
-/* ------------------------------------------------------------------ */
-/*  ProfileLogoutButton                                                */
-/* ------------------------------------------------------------------ */
 
 interface ProfileLogoutButtonProps {
   currentTheme: Theme;

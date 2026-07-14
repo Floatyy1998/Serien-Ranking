@@ -87,9 +87,6 @@ export function findMostActiveDay(events: ActivityEvent[]): DayStats {
   };
 }
 
-/**
- * Berechnet die Tageszeit basierend auf der Stunde
- */
 function getTimeOfDay(hour: number): 'morning' | 'afternoon' | 'evening' | 'night' {
   if (hour >= 6 && hour < 12) return 'morning';
   if (hour >= 12 && hour < 18) return 'afternoon';
@@ -141,10 +138,6 @@ export function calculateFavoriteDayOfWeek(events: ActivityEvent[]): DayOfWeekSt
   };
 }
 
-// ========================================
-// First/Last Watch
-// ========================================
-
 export function findFirstWatch(events: ActivityEvent[]): FirstLastWatch | null {
   const watchEvents = events.filter(
     (e) => e.type === 'episode_watch' || e.type === 'movie_watch' || e.type === 'movie_rating'
@@ -152,7 +145,6 @@ export function findFirstWatch(events: ActivityEvent[]): FirstLastWatch | null {
 
   if (watchEvents.length === 0) return null;
 
-  // Sortiere nach Timestamp aufsteigend
   const sorted = [...watchEvents].sort(
     (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
@@ -189,7 +181,6 @@ export function findLastWatch(events: ActivityEvent[]): FirstLastWatch | null {
 
   if (watchEvents.length === 0) return null;
 
-  // Sortiere nach Timestamp absteigend
   const sorted = [...watchEvents].sort(
     (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
   );
@@ -219,10 +210,6 @@ export function findLastWatch(events: ActivityEvent[]): FirstLastWatch | null {
   }
 }
 
-// ========================================
-// Late Night Stats
-// ========================================
-
 export function calculateLateNightStats(events: ActivityEvent[]): LateNightStats {
   const watchEvents = events.filter(
     (e) => e.type === 'episode_watch' || e.type === 'movie_watch' || e.type === 'movie_rating'
@@ -236,18 +223,15 @@ export function calculateLateNightStats(events: ActivityEvent[]): LateNightStats
   for (const event of watchEvents) {
     const hour = event.hour ?? 12;
 
-    // Late Night: 22-23 oder 0-5
     if (hour >= 22 || hour < 6) {
       lateNightCount++;
     }
 
-    // Midnight: 0-4
     if (hour >= 0 && hour < 5) {
       midnightCount++;
     }
 
-    // Track latest watch (nach Uhrzeit, nicht Datum)
-    // Wir suchen die späteste Uhrzeit (z.B. 3:45 Uhr nachts)
+    // Späteste Uhrzeit, nicht spätestes Datum (3:45 nachts schlägt 23:00)
     const normalizedHour = hour < 6 ? hour + 24 : hour; // 3 Uhr wird zu 27
     if (!latestWatch || normalizedHour > latestWatch.hour) {
       const title =
@@ -270,12 +254,8 @@ export function calculateLateNightStats(events: ActivityEvent[]): LateNightStats
   };
 }
 
-// ========================================
-// Heatmap Data (7 Tage x 24 Stunden)
-// ========================================
-
 export function calculateHeatmapData(events: ActivityEvent[]): number[][] {
-  // Erstelle 7x24 Matrix (Tage x Stunden)
+  // 7x24 Matrix (Tage x Stunden)
   const heatmap: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
 
   const watchEvents = events.filter(
@@ -290,10 +270,6 @@ export function calculateHeatmapData(events: ActivityEvent[]): number[][] {
 
   return heatmap;
 }
-
-// ========================================
-// Streak (längste Serie aufeinanderfolgender Watch-Tage)
-// ========================================
 
 /**
  * Längste Kette aufeinanderfolgender Kalendertage mit mindestens einem

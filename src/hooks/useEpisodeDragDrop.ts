@@ -61,13 +61,11 @@ export const useEpisodeDragDrop = ({
     if (draggedIndex !== null && editModeActive) {
       // Prevent ALL scrolling during drag (except auto-scroll)
       const preventScroll = (e: Event) => {
-        // Always prevent default scroll when dragging
         if (e.cancelable) {
           e.preventDefault();
         }
       };
 
-      // Add to both document and container
       const container = document.querySelector('.episodes-scroll-container');
 
       document.addEventListener('touchmove', preventScroll, { passive: false });
@@ -95,7 +93,6 @@ export const useEpisodeDragDrop = ({
     }
   }, [draggedIndex, editModeActive]);
 
-  // Drag and drop handlers
   const handleDragStart = useCallback((e: React.DragEvent | React.TouchEvent, index: number) => {
     setDraggedIndex(index);
     if ('dataTransfer' in e) {
@@ -120,7 +117,6 @@ export const useEpisodeDragDrop = ({
         const isNearTop = mouseY < scrollThreshold;
         const isNearBottom = mouseY > viewportHeight - scrollThreshold;
 
-        // Start auto-scroll if near edges
         if ((isNearTop || isNearBottom) && !autoScrollIntervalRef.current) {
           autoScrollIntervalRef.current = setInterval(() => {
             const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
@@ -137,7 +133,6 @@ export const useEpisodeDragDrop = ({
             const clientHeight = container.clientHeight;
             const maxScroll = Math.max(0, scrollHeight - clientHeight);
 
-            // Get current mouse position from the latest event
             const currentMouseY = e.clientY;
             const currentIsNearTop = currentMouseY < scrollThreshold;
             const currentIsNearBottom = currentMouseY > viewportHeight - scrollThreshold;
@@ -155,7 +150,6 @@ export const useEpisodeDragDrop = ({
             }
           }, 20);
         } else if (!isNearTop && !isNearBottom && autoScrollIntervalRef.current) {
-          // Stop auto-scroll when moved away from edges
           clearInterval(autoScrollIntervalRef.current);
           autoScrollIntervalRef.current = null;
         }
@@ -168,7 +162,6 @@ export const useEpisodeDragDrop = ({
     async (e: React.DragEvent | React.TouchEvent, dropIndex: number) => {
       e.preventDefault();
 
-      // Clear auto-scroll on drop
       if (autoScrollIntervalRef.current) {
         clearInterval(autoScrollIntervalRef.current);
         autoScrollIntervalRef.current = null;
@@ -181,10 +174,8 @@ export const useEpisodeDragDrop = ({
       newEpisodes.splice(draggedIndex, 1);
       newEpisodes.splice(dropIndex, 0, draggedItem);
 
-      // Update order in Firebase
       if (user && editModeActive) {
         const newOrder = newEpisodes.map((ep) => ep.seriesId);
-        // Remove duplicates and keep first occurrence
         const uniqueOrder = [...new Set(newOrder)];
         setWatchlistOrder(uniqueOrder);
         await dbRef(userPath(user.uid, 'watchlistOrder')).set(uniqueOrder);
@@ -216,7 +207,7 @@ export const useEpisodeDragDrop = ({
         }
         setDraggedIndex(index);
         setCurrentTouchIndex(index);
-      }, 150); // Reduced delay to 150ms for better responsiveness
+      }, 150);
     },
     [editModeActive]
   );
@@ -231,12 +222,10 @@ export const useEpisodeDragDrop = ({
       if (lastTouchPositionRef.current && draggedIndex !== null) {
         const deltaY = touch.clientY - lastTouchPositionRef.current.y;
         if (Math.abs(deltaY) > 2) {
-          // Only update if significant movement
           touchDirectionRef.current = deltaY < 0 ? 'up' : 'down';
         }
       }
 
-      // Update current and last touch position
       lastTouchPositionRef.current = currentTouchPositionRef.current;
       currentTouchPositionRef.current = {
         x: touch.clientX,
@@ -257,16 +246,12 @@ export const useEpisodeDragDrop = ({
         }
       }
 
-      // Only proceed with drag logic if drag has actually started
       if (draggedIndex === null) return;
 
-      // Find the element under the current touch position
       const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
       if (elementBelow) {
-        // Find the closest episode card
         const card = elementBelow.closest('.episode-card');
         if (card) {
-          // Get all episode cards
           const allCards = Array.from(document.querySelectorAll('.episode-card'));
           const targetIndex = allCards.indexOf(card as HTMLElement);
 
@@ -281,7 +266,6 @@ export const useEpisodeDragDrop = ({
       const scrollThreshold = 150; // Start scrolling when within 150px of edge
       const stopThreshold = 180; // Stop only when moved 180px away from edge (hysteresis)
 
-      // Check if we're near edges AND moving in that direction
       const isNearTop = currentY < scrollThreshold;
       const isNearBottom = currentY > viewportHeight - scrollThreshold;
       const isMovingUp = touchDirectionRef.current === 'up';
@@ -293,11 +277,9 @@ export const useEpisodeDragDrop = ({
       const shouldStopScroll =
         currentY > stopThreshold && currentY < viewportHeight - stopThreshold;
 
-      // Start auto-scrolling if near edges and not already scrolling
       if ((shouldStartScrollUp || shouldStartScrollDown) && !isAutoScrollingRef.current) {
         isAutoScrollingRef.current = true;
 
-        // Clear any existing interval first
         if (autoScrollIntervalRef.current) {
           clearInterval(autoScrollIntervalRef.current);
         }
@@ -313,14 +295,12 @@ export const useEpisodeDragDrop = ({
             return;
           }
 
-          // Use the current touch position from the ref
           const touchY = currentTouchPositionRef.current.y;
           const scrollThreshold = 150; // Same threshold as in main function
           const viewportHeight = window.innerHeight;
           const isNearTop = touchY < scrollThreshold;
           const isNearBottom = touchY > viewportHeight - scrollThreshold;
 
-          // Only scroll if still near edges
           if (!isNearTop && !isNearBottom) {
             isAutoScrollingRef.current = false;
             clearInterval(autoScrollIntervalRef.current ?? undefined);
@@ -328,7 +308,6 @@ export const useEpisodeDragDrop = ({
             return;
           }
 
-          // Get container element
           const container = document.querySelector('.episodes-scroll-container') as HTMLElement;
           if (!container) {
             isAutoScrollingRef.current = false;
@@ -337,16 +316,12 @@ export const useEpisodeDragDrop = ({
             return;
           }
 
-          // Get container scroll position and dimensions
           const scrollTop = container.scrollTop;
           const scrollHeight = container.scrollHeight;
           const clientHeight = container.clientHeight;
           const maxScroll = Math.max(0, scrollHeight - clientHeight);
 
-          // Check if container has content to scroll
           const hasScrollableContent = scrollHeight > clientHeight;
-
-          // If page isn't scrollable, stop auto-scroll
           if (!hasScrollableContent) {
             isAutoScrollingRef.current = false;
             clearInterval(autoScrollIntervalRef.current ?? undefined);
@@ -355,20 +330,15 @@ export const useEpisodeDragDrop = ({
           }
 
           if (isNearTop && scrollTop > 0) {
-            // Calculate scroll speed based on distance from edge
+            // Scroll speed skaliert mit Distanz zur Kante
             const distanceFromTop = Math.max(1, scrollThreshold - touchY);
             const speedFactor = distanceFromTop / scrollThreshold;
-            const scrollAmount = Math.ceil(1500 * speedFactor); // MASSIVE speed increase to 1500
-
-            // Scroll container up
+            const scrollAmount = Math.ceil(1500 * speedFactor);
             container.scrollTop = Math.max(0, scrollTop - scrollAmount);
           } else if (isNearBottom && scrollTop < maxScroll) {
-            // Calculate scroll speed based on distance from edge
             const distanceFromBottom = touchY - (viewportHeight - scrollThreshold);
             const speedFactor = distanceFromBottom / scrollThreshold;
-            const scrollAmount = Math.ceil(1500 * speedFactor); // MASSIVE speed increase to 1500
-
-            // Scroll container down
+            const scrollAmount = Math.ceil(1500 * speedFactor);
             container.scrollTop = Math.min(maxScroll, scrollTop + scrollAmount);
           }
         }, 10); // Run every 10ms (100fps) for smoother, faster scrolling
@@ -411,25 +381,21 @@ export const useEpisodeDragDrop = ({
   );
 
   const handleTouchEnd = useCallback(async () => {
-    // Clear the drag delay timer if it's still running
     if (dragDelayTimerRef.current) {
       clearTimeout(dragDelayTimerRef.current);
       dragDelayTimerRef.current = null;
     }
 
-    // Clear auto-scroll if active
     if (autoScrollIntervalRef.current) {
       clearInterval(autoScrollIntervalRef.current);
       autoScrollIntervalRef.current = null;
     }
 
-    // Cancel animation frame
     if (autoScrollAnimationRef.current) {
       cancelAnimationFrame(autoScrollAnimationRef.current);
       autoScrollAnimationRef.current = null;
     }
 
-    // Clear flags
     isAutoScrollingRef.current = false;
     touchStartRef.current = null;
     currentTouchPositionRef.current = null;
@@ -445,7 +411,6 @@ export const useEpisodeDragDrop = ({
     newEpisodes.splice(draggedIndex, 1);
     newEpisodes.splice(currentTouchIndex, 0, draggedItem);
 
-    // Update order in Firebase
     if (user && editModeActive) {
       const newOrder = newEpisodes.map((ep) => ep.seriesId);
       const uniqueOrder = [...new Set(newOrder)];

@@ -348,12 +348,10 @@
   display: none;
 }
 
-/* ============================================================
-   2050-Desktop: Cinematisches Ein-Screen-Profil (kein Scrollen).
+/* 2050-Desktop: Cinematisches Ein-Screen-Profil (kein Scrollen).
    Oben Kino-Hero aus den Backdrops der Top-Serien mit Identität
    + Watchtime-Panel, darunter vier editoriale Link-Spalten,
-   Abmelden fix am Fuß. Alles passt in einen Viewport.
-   ============================================================ */
+   Abmelden fix am Fuß. Alles passt in einen Viewport. */
 @media (min-width: 1100px) {
   .profile-page {
     display: grid;
@@ -367,7 +365,7 @@
     padding: 0;
   }
 
-  /* --- Kino-Hero (Reihe 1, volle Breite) --- */
+  /* Kino-Hero (Reihe 1, volle Breite) */
   .profile-hero {
     grid-column: 1 / -1;
     grid-row: 1;
@@ -500,7 +498,7 @@
     margin-bottom: 0;
   }
 
-  /* --- Navigation: vier editoriale Link-Spalten (Reihe 2) --- */
+  /* Navigation: vier editoriale Link-Spalten (Reihe 2) */
   .profile-menu-section {
     grid-row: 2;
     padding: 22px 36px 0;
@@ -593,7 +591,7 @@
     display: none;
   }
 
-  /* --- Abmelden: schmale Zeile am Fuß (Reihe 3) --- */
+  /* Abmelden: schmale Zeile am Fuß (Reihe 3) */
   .profile-logout-section {
     grid-column: 1 / -1;
     grid-row: 3;

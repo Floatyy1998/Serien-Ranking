@@ -1,7 +1,4 @@
-/**
- * SearchPage - Premium Search Experience
- * Slim composition component. Business logic in useSearchPage, UI in subcomponents.
- */
+/** Kompositions-Komponente — Logik in useSearchPage, UI in Subkomponenten. */
 
 import { CalendarToday, Close, Movie, Search, Subscriptions } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';

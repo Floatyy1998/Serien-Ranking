@@ -1,6 +1,6 @@
 /**
- * useRecentlyWatched - Custom hook for RecentlyWatchedPage business logic
- * Manages state, data loading, scroll persistence, search debounce, and episode actions.
+ * Business-Logik der RecentlyWatchedPage: Daten-Laden, Scroll-Persistenz,
+ * Such-Debounce und Episoden-Aktionen.
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
@@ -113,7 +113,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Data manager
   const dataManager = useMemo(() => {
     return new EpisodeDataManager(seriesList, daysToShow, debouncedSearchQuery);
   }, [seriesList, daysToShow, debouncedSearchQuery]);
@@ -207,7 +206,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     }
   }, [handleScroll]);
 
-  // Rewatch episode
   const handleRewatchEpisode = async (episode: WatchedEpisode) => {
     if (!user) return;
 
@@ -259,7 +257,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     }
   };
 
-  // Toggle series expanded state
   const toggleSeriesExpanded = (date: string, seriesId: number) => {
     const key = `${date}-${seriesId}`;
     setExpandedSeries((prev) => {
@@ -277,7 +274,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     return expandedSeries.has(`${date}-${seriesId}`);
   };
 
-  // Time range change
   const handleTimeRangeChange = (days: number) => {
     setDaysToShow(days);
     setLoadedDateGroups([]);
@@ -285,7 +281,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     dataManager.clearCache();
   };
 
-  // Navigation helpers
   const navigateToSeries = (seriesId: number) => {
     navigate(`/series/${seriesId}`);
   };
@@ -302,7 +297,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     navigate(`/episode/${seriesId}/s/${seasonNumber}/e/${episodeNumber}?tab=discussions`);
   };
 
-  // Relative date label
   const getRelativeDateLabel = (episode: WatchedEpisode) => {
     if (episode.daysAgo === 0) return 'Heute';
     if (episode.daysAgo === 1) return 'Gestern';
@@ -313,7 +307,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     return `Vor ${Math.floor(episode.daysAgo / 30)} Monaten`;
   };
 
-  // Group episodes by series
   const groupEpisodesBySeries = (episodes: WatchedEpisode[]) => {
     const grouped: { [seriesId: number]: WatchedEpisode[] } = {};
     for (const episode of episodes) {
@@ -325,7 +318,6 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
     return grouped;
   };
 
-  // Total episodes count
   const totalEpisodes = loadedDateGroups.reduce((sum, group) => sum + group.episodes.length, 0);
 
   return {

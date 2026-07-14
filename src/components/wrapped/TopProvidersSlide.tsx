@@ -1,7 +1,3 @@
-/**
- * TopProvidersSlide - Zeigt die Top-Streaming-Dienste des Jahres mit Animationen
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopProviderEntry } from '../../types/Wrapped';
@@ -31,7 +27,6 @@ const PROVIDER_LOGOS: Record<string, string> = {
   MagentaTV: 'https://image.tmdb.org/t/p/original/t2P3qlP2sYT3b91hnRMKMSX8XmH.jpg',
 };
 
-// Provider-Farben
 const PROVIDER_COLORS: Record<string, string> = {
   Netflix: '#E50914',
   'Amazon Prime Video': '#00A8E1',

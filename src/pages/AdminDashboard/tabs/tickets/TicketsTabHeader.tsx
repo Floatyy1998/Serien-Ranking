@@ -28,7 +28,7 @@ export function TicketsTabHeader({
 }: TicketsTabHeaderProps) {
   return (
     <>
-      {/* ── Stats Bar ── */}
+      {/* Stats Bar */}
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {[
           { label: 'Gesamt', value: totalCount, color: theme.text.secondary },
@@ -60,7 +60,7 @@ export function TicketsTabHeader({
         ))}
       </div>
 
-      {/* ── Search ── */}
+      {/* Search */}
       <div style={{ position: 'relative' }}>
         <Search
           style={{
@@ -91,7 +91,7 @@ export function TicketsTabHeader({
         />
       </div>
 
-      {/* ── Filters ── */}
+      {/* Filters */}
       <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
         {/* Type Filter */}
         <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>

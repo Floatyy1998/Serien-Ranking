@@ -5,10 +5,8 @@ import type { Series } from '../types/Series';
 import type { Movie } from '../types/Movie';
 import type { WebWorkerOptions, WebWorkerResult } from './useWebWorker';
 
-// ---------------------------------------------------------------------------
 // useWebWorker wird gemockt: wir testen die Wrapper-Logik (depsKey, workerInput,
 // enabled, messageType/resultType) — nicht den Worker selbst.
-// ---------------------------------------------------------------------------
 const capture = vi.hoisted(() => ({
   lastOptions: null as WebWorkerOptions<unknown> | null,
   lastInitial: undefined as unknown,

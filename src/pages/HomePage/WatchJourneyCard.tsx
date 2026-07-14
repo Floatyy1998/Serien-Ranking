@@ -1,7 +1,3 @@
-/**
- * WatchJourneyCard - Kompakte Karte für Watch Journey auf der HomePage
- */
-
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import TrendingUp from '@mui/icons-material/TrendingUp';

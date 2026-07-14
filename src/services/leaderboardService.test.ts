@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // In-Memory-Firebase-Mock: ein Baum + chainbare ref()/query()-Stubs.
 // Unterstützt once/set/update(multi-path)/push/child/orderByChild/equalTo,
 // ServerValue.TIMESTAMP + increment und onDisconnect.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const db: Record<string, unknown> = {};
   const state = { pushCounter: 0, failOnce: new Set<string>() };

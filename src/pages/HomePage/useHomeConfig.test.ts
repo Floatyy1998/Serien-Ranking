@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor, cleanup } from '@testing-library/react';
 
-// --- Firebase compat mock ---------------------------------------------------
+// Firebase compat mock
 const fb = vi.hoisted(() => {
   const state: { data: unknown } = { data: null };
   const once = vi.fn(() => Promise.resolve({ val: () => state.data }));

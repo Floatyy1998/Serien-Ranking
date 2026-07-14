@@ -11,14 +11,14 @@
   }
 }
 
-/* ── Page Container ────────────────────────────────────────── */
+/* Page Container */
 .activity-page {
   min-height: 100vh;
   position: relative;
   padding-bottom: 100px;
 }
 
-/* ── Decorative Background ─────────────────────────────────── */
+/* Decorative Background */
 .activity-bg {
   position: fixed;
   top: 0;
@@ -42,7 +42,7 @@
   }
 }
 
-/* ── Header ────────────────────────────────────────────────── */
+/* Header */
 .activity-header {
   padding: 20px;
   padding-top: calc(20px + env(safe-area-inset-top));
@@ -65,7 +65,7 @@
   gap: 16px;
 }
 
-/* ── Add-Friend Button ─────────────────────────────────────── */
+/* Add-Friend Button */
 .activity-add-btn {
   width: 44px;
   height: 44px;
@@ -79,7 +79,7 @@
   flex-shrink: 0;
 }
 
-/* ── Nav: expanding pill tabs ──────────────────────────────── */
+/* Nav: expanding pill tabs */
 .activity-nav {
   display: flex;
   margin: 0 20px 18px;
@@ -145,7 +145,7 @@
   margin-left: 9px;
 }
 
-/* ── Nav badges ────────────────────────────────────────────── */
+/* Nav badges */
 .activity-nav__dot {
   position: absolute;
   top: -3px;
@@ -170,7 +170,7 @@
   justify-content: center;
 }
 
-/* ── Discussion Banner ─────────────────────────────────────── */
+/* Discussion Banner */
 .activity-banner {
   margin: 0 20px;
   padding: 14px 18px;
@@ -203,14 +203,14 @@
   font-size: 20px;
 }
 
-/* ── Tab Content ───────────────────────────────────────────── */
+/* Tab Content */
 .activity-content {
   padding: 0 20px;
   position: relative;
   z-index: var(--z-base);
 }
 
-/* ── Feed rows & interactive bits ──────────────────────────── */
+/* Feed rows & interactive bits */
 .activity-entry {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -250,7 +250,7 @@
   }
 }
 
-/* ── Active friends rail ───────────────────────────────────── */
+/* Active friends rail */
 .activity-pulse-row {
   display: flex;
   gap: 14px;
@@ -310,7 +310,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Spotlight hero ────────────────────────────────────────── */
+/* Spotlight hero */
 .activity-spotlight {
   position: relative;
   border-radius: var(--radius-2xl);
@@ -466,7 +466,7 @@
   }
 }
 
-/* ── Live stats ────────────────────────────────────────────── */
+/* Live stats */
 .activity-stats {
   display: flex;
   gap: 10px;
@@ -507,7 +507,7 @@
   font-weight: 600;
 }
 
-/* ── Segmented filter ──────────────────────────────────────── */
+/* Segmented filter */
 .activity-segmented {
   display: flex;
   gap: 4px;
@@ -534,7 +534,7 @@
   z-index: 0;
 }
 
-/* ── Date section header & timeline rail ───────────────────── */
+/* Date section header & timeline rail */
 .activity-date-head {
   display: flex;
   align-items: center;
@@ -584,7 +584,7 @@
   z-index: 1;
 }
 
-/* ── Reduced motion ────────────────────────────────────────── */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .activity-bg,
   .activity-spotlight__live-dot {

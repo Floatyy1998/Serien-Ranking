@@ -7,10 +7,6 @@ import { matchesAnyCsv } from '../../lib/filters/multiSelectFilter';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
-
 export interface FriendProvider {
   id: number;
   logo: string;
@@ -57,10 +53,6 @@ export interface Filters {
   sortBy?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
-
 export const calculateFriendRating = (item: FriendItem): string => {
   if (!item.rating) return '0.00';
   return calculateOverallRating(item as unknown as Series);
@@ -87,10 +79,6 @@ export const calculateProgress = (item: FriendItem): number => {
 
   return totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
 };
-
-/* ------------------------------------------------------------------ */
-/*  Filtering / sorting                                                */
-/* ------------------------------------------------------------------ */
 
 // Mehrfach-Auswahl (ODER): genre/provider sind CSV („Action,Comedy").
 const filterByGenre = (items: FriendItem[], genre: string): FriendItem[] =>
@@ -238,10 +226,6 @@ const applyFiltersAndSort = (
   return sortItems(filtered, sortBy);
 };
 
-/* ------------------------------------------------------------------ */
-/*  Hook return type                                                   */
-/* ------------------------------------------------------------------ */
-
 export interface UseFriendProfileDataReturn {
   loading: boolean;
   friendId: string | undefined;
@@ -260,10 +244,6 @@ export interface UseFriendProfileDataReturn {
   navigateToTasteMatch: () => void;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Hook                                                               */
-/* ------------------------------------------------------------------ */
-
 export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   const { id: friendId } = useParams();
   const navigate = useNavigate();
@@ -275,8 +255,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   const [friendMovies, setFriendMovies] = useState<FriendItem[]>([]);
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
   const [filters, setFilters] = useState<Filters>({});
-
-  /* ---------- data fetching ---------- */
 
   useEffect(() => {
     const loadFriendData = async () => {
@@ -290,7 +268,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         const friendDisplayName = await dbGet<string>(paths.displayName(friendId));
         setFriendName(friendDisplayName || 'User');
 
-        // Lade User-Refs + Catalog parallel.
         // Catalog wird aus statischen Server-Files geladen (kein Firebase-Egress),
         // mit Firebase-Fallback falls Static-Endpoint nicht erreichbar ist.
         const [seriesSnapshot, moviesSnapshot, staticSeriesCatalog, staticMoviesCatalog] =
@@ -368,8 +345,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     loadFriendData();
   }, [friendId]);
 
-  /* ---------- filtered / sorted lists ---------- */
-
   const ratedSeries = useMemo(
     () => applyFiltersAndSort(friendSeries, filters, false),
     [friendSeries, filters]
@@ -381,8 +356,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
   );
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
-
-  /* ---------- scroll restoration ---------- */
 
   useEffect(() => {
     const shouldRestore = sessionStorage.getItem('shouldRestoreFriendProfileScroll');
@@ -426,8 +399,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
     }
   }, [friendId, activeTab, currentItems.length]);
 
-  /* ---------- stats ---------- */
-
   const itemsWithRating = useMemo(
     () =>
       currentItems.filter((item) => {
@@ -445,8 +416,6 @@ export const useFriendProfileData = (): UseFriendProfileDataReturn => {
         : 0,
     [itemsWithRating]
   );
-
-  /* ---------- navigation ---------- */
 
   const handleItemClick = useCallback(
     (item: FriendItem, type: 'series' | 'movie') => {

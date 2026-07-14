@@ -1,7 +1,3 @@
-/**
- * GenresTab - Genre-Vergleich mit Legende und Balkendiagrammen
- */
-
 import { Category } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -35,7 +31,6 @@ export const GenresTab: React.FC<GenresTabProps> = React.memo(
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
       >
-        {/* Premium Legend Card */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -77,7 +72,6 @@ export const GenresTab: React.FC<GenresTabProps> = React.memo(
           </div>
         </motion.div>
 
-        {/* Genre comparison section header */}
         <div className="tm-genre-section-header">
           <Category style={{ fontSize: 18, color: ACCENT_COLORS.genres }} />
           <span className="tm-genre-section-header__text">Genre-Vergleich</span>

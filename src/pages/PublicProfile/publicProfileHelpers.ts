@@ -4,10 +4,6 @@ import { calculateOverallRating } from '../../lib/rating/rating';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
-/* ------------------------------------------------------------------ */
-/*  Shared types                                                       */
-/* ------------------------------------------------------------------ */
-
 export interface PublicProvider {
   id: number;
   logo: string;
@@ -61,9 +57,7 @@ export interface PublicUserData {
   displayName?: string;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Fallback theme for unauthenticated visitors                        */
-/* ------------------------------------------------------------------ */
+/* Fallback-Theme für nicht eingeloggte Besucher */
 
 export interface FallbackTheme {
   primary: string;
@@ -104,18 +98,10 @@ export function useResolvedTheme(): PublicTheme {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/*  Rating helpers                                                     */
-/* ------------------------------------------------------------------ */
-
 export function calculatePublicRating(item: PublicItem): string {
   if (!item.rating) return '0.00';
   return calculateOverallRating(item as unknown as Series);
 }
-
-/* ------------------------------------------------------------------ */
-/*  Progress helper                                                    */
-/* ------------------------------------------------------------------ */
 
 export function calculateProgress(item: PublicItem): number {
   if (!item.seasons) return 0;
@@ -139,9 +125,7 @@ export function calculateProgress(item: PublicItem): number {
   return totalAiredEpisodes > 0 ? (watchedEpisodes / totalAiredEpisodes) * 100 : 0;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Filtering / sorting (identical to FriendProfile semantics)         */
-/* ------------------------------------------------------------------ */
+/* Filtern/Sortieren — identische Semantik wie FriendProfile */
 
 // Mehrfach-Auswahl (ODER): genre/provider sind CSV („Action,Comedy").
 const filterByGenre = (items: PublicItem[], genre: string): PublicItem[] =>

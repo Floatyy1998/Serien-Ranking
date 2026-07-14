@@ -6,7 +6,7 @@ import type { Movie } from '../../types/Movie';
 import { useSearchPage } from './useSearchPage';
 import { clearProviderCache } from '../Discover/watchProviderFilter';
 
-// ── router mock ───────────────────────────────────────────────────────
+// router mock
 const router = vi.hoisted(() => ({
   params: new URLSearchParams(),
   setParams: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => router.navigate,
 }));
 
-// ── contexts / libs ───────────────────────────────────────────────────
+// contexts / libs
 const ctx = vi.hoisted(() => ({
   seriesList: [] as Series[],
   movieList: [] as Movie[],
@@ -49,7 +49,7 @@ vi.mock('../../features/badges/minimalActivityLogger', () => ({
   logMovieAdded: (...a: unknown[]) => logMovieAdded(...a),
 }));
 
-// ── fetch fixtures ────────────────────────────────────────────────────
+// fetch fixtures
 type FetchResult = { ok: boolean; json: () => Promise<unknown> };
 const jsonOk = (body: unknown): FetchResult => ({ ok: true, json: async () => body });
 

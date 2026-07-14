@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase: kontrollierbarer Pfad→Wert-Store. once('value') liefert val().
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const store = new Map<string, unknown>();
   return {
@@ -24,9 +22,7 @@ vi.mock('firebase/compat/database', () => ({}));
 const backendFetchMock = vi.hoisted(() => vi.fn());
 vi.mock('../services/backendApi', () => ({ backendFetch: backendFetchMock }));
 
-// ---------------------------------------------------------------------------
 // localStorage-Stub (node-env). Unterstützt length + key(i) für clearAll.
-// ---------------------------------------------------------------------------
 function makeLocalStorage() {
   const map = new Map<string, string>();
   return {
@@ -63,7 +59,6 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-// ===========================================================================
 describe('fillerLookupKey', () => {
   it('formatiert s{n}-e{n}', async () => {
     const { fillerLookupKey } = await load();

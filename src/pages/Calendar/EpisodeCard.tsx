@@ -82,8 +82,6 @@ function useProviderColoring(
   return { brandColor, hasNoActiveSub, displayProvider: pick.raw };
 }
 
-// ── Shared helpers ───────────────────────────────────────────────
-
 function formatEpisodeCode(seasonNumber: number, episodeNumber: number): string {
   return `S${String(seasonNumber).padStart(2, '0')}E${String(episodeNumber).padStart(2, '0')}`;
 }
@@ -119,8 +117,6 @@ const BREAK_COLORS = {
 function breakColor(type: NonNullable<WeeklyEpisode['breakType']>): string {
   return BREAK_COLORS[type];
 }
-
-// ── Provider badge (single logo) ─────────────────────────────────
 
 const ProviderBadge = memo(
   ({
@@ -170,8 +166,7 @@ const ProviderBadge = memo(
 );
 ProviderBadge.displayName = 'ProviderBadge';
 
-// ── Premiere overlay (desktop poster) ────────────────────────────
-
+// Premiere-Overlay auf dem Desktop-Poster
 const PremiereOverlay = memo(
   ({
     type,
@@ -192,8 +187,7 @@ const PremiereOverlay = memo(
 );
 PremiereOverlay.displayName = 'PremiereOverlay';
 
-// ── Watch status indicator (mobile) ──────────────────────────────
-
+// Watch-Status-Indikator (mobile)
 interface WatchIndicatorProps {
   watched: boolean;
   onMark: () => void;
@@ -234,8 +228,7 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
 });
 WatchIndicator.displayName = 'WatchIndicator';
 
-// ── Poster wrapper (desktop) ─────────────────────────────────────
-
+// Poster-Wrapper (desktop)
 interface PosterWrapProps {
   posterSrc: string;
   premiereType?: WeeklyEpisode['premiereType'];
@@ -321,8 +314,7 @@ const PosterWrap = memo(
 );
 PosterWrap.displayName = 'PosterWrap';
 
-// ── Mobile poster with provider overlay ──────────────────────────
-
+// Mobile-Poster mit Provider-Overlay
 const MobilePoster = memo(
   ({
     src,
@@ -352,8 +344,6 @@ const MobilePoster = memo(
   )
 );
 MobilePoster.displayName = 'MobilePoster';
-
-// ── Single Episode Card ──────────────────────────────────────────
 
 interface SingleEpisodeCardProps {
   ep: WeeklyEpisode;
@@ -513,8 +503,6 @@ export const SingleEpisodeCard = memo(
   }
 );
 SingleEpisodeCard.displayName = 'SingleEpisodeCard';
-
-// ── Episode Group Card ───────────────────────────────────────────
 
 interface EpisodeGroupCardProps {
   group: SeriesGroup;

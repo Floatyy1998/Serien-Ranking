@@ -1,9 +1,6 @@
 /**
- * CatchUpPage - Premium Catch Up Experience
- * Zeigt Serien an, bei denen der User hinterherhinkt
- *
- * Composition-only component. Business logic lives in useCatchUpData.
- * Subcomponents: HeroStats, SortToolbar, SeriesCard, EmptyState.
+ * Zeigt Serien an, bei denen der User hinterherhinkt. Composition-only —
+ * die Logik lebt in useCatchUpData.
  */
 
 import { motion } from 'framer-motion';
@@ -96,8 +93,6 @@ export const CatchUpPage: React.FC = () => {
     </PageLayout>
   );
 };
-
-/* ---------- Tiny inline subcomponent ---------- */
 
 const HeaderBadge: React.FC<{ count: number }> = ({ count }) => {
   const { currentTheme } = useTheme();

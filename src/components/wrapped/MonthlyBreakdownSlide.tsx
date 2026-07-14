@@ -1,7 +1,3 @@
-/**
- * MonthlyBreakdownSlide - Zeigt monatliche Watchtime
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { MonthStats } from '../../types/Wrapped';

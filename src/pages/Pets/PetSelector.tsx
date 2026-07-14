@@ -1,7 +1,3 @@
-/**
- * PetSelector - Tab bar for switching between pets and adding new ones
- */
-
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';

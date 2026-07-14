@@ -2,10 +2,10 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-/* ---------------------------------------------------------------------------
+/*
  * Mocks: firebase once('value'), react-router (useParams/useNavigate),
  * static catalog. Rating/Filter/Sort-Logik bleibt echt.
- * ------------------------------------------------------------------------- */
+ */
 const fb = vi.hoisted(() => {
   const state = { dataByPath: {} as Record<string, unknown> };
   const makeRef = (path: string) => ({

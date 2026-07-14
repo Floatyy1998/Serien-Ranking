@@ -1,7 +1,3 @@
-/**
- * PetActions - Feed, play, and revive action buttons
- */
-
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import type { Pet } from '../../types/pet.types';

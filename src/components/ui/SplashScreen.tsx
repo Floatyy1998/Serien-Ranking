@@ -28,7 +28,6 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Initialisiere System');
 
-  // Track real loading progress
   useEffect(() => {
     const startTime = Date.now();
     let completed = false;
@@ -62,7 +61,6 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
       const progress = readySystems / totalSystems;
       setLoadingProgress(progress);
 
-      // Update loading text based on progress
       if (progress < 0.2) {
         setLoadingText('Initialisiere System');
       } else if (progress < 0.4) {
@@ -77,13 +75,12 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
         setLoadingText('Start');
       }
 
-      // Complete when all systems ready
       if (progress >= 1) {
         finish();
         return;
       }
 
-      // Complete when external condition is met (e.g. AppWithSplash fallback)
+      // Externe Bedingung (z. B. AppWithSplash-Fallback) beendet den Splash ebenfalls
       if (waitForCondition?.()) {
         finish();
         return;

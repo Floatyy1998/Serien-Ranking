@@ -25,7 +25,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
   const textPrimary = currentTheme.text.primary;
   const textSecondary = currentTheme.text.secondary;
 
-  // Prepare data for bar chart
   const chartData = useMemo(() => {
     return data.activity.map((month) => ({
       name: month.monthName,
@@ -34,7 +33,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
     }));
   }, [data]);
 
-  // Find best month
   const bestMonth = data.activity.reduce((best, curr) =>
     curr.episodes + curr.movies > best.episodes + best.movies ? curr : best
   );
@@ -47,7 +45,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
 
   return (
     <div>
-      {/* Hero Stats */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -156,7 +153,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Bar Chart */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -230,7 +226,6 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
         </div>
       </motion.div>
 
-      {/* Insights */}
       <div style={{ padding: '0 20px' }}>
         <h3
           style={{

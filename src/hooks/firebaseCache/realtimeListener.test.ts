@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: ref().on(event, success, error) merkt sich die Callbacks,
 // ref().off(event, listener) wird gespyt. `on` gibt den success-Callback als
 // Listener-Handle zurück (wie firebase/compat).
-// ---------------------------------------------------------------------------
 type Snapshot = { exists: () => boolean; val: () => unknown };
 
 const fb = vi.hoisted(() => {

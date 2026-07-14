@@ -16,8 +16,6 @@ import type { Movie } from '../../types/Movie';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 const MIN_RATED_ITEMS = 5;
 
-// ==================== Types ====================
-
 export interface Recommendation {
   title: string;
   reason: string;
@@ -58,8 +56,6 @@ export interface TasteProfileStats {
   rewatchedSeries: number;
   watchlistCount: number;
 }
-
-// ==================== Helpers ====================
 
 function getRatedItems<T extends Series | Movie>(items: T[]): T[] {
   return items.filter((item) => {
@@ -168,7 +164,6 @@ function getTopSeriesPerGenre(
     }
   }
 
-  // Top 3 pro Genre
   for (const genre of Object.keys(genreMap)) {
     genreMap[genre] = genreMap[genre].sort((a, b) => b.rating - a.rating).slice(0, 3);
   }
@@ -221,8 +216,6 @@ function analyzeHeatmap(heatmap: WatchJourneyData['heatmap']): {
   };
 }
 
-// ==================== TMDB Enrichment ====================
-
 /** Such-Treffer (search/tv bzw. search/movie) — nur die gelesenen Felder. */
 interface TmdbSearchHit {
   id: number;
@@ -254,11 +247,10 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
           ),
         ]);
 
-        // Bestes Ergebnis (TV bevorzugt, dann Movie)
         const tvHit = tvData.results?.[0];
         const movieHit = movieData.results?.[0];
 
-        // Wähle den besseren Treffer (höhere Popularität)
+        // Besserer Treffer gewinnt (höhere Popularität, TV bei Gleichstand)
         const isTv = tvHit && (!movieHit || (tvHit.popularity || 0) >= (movieHit.popularity || 0));
         const hit = isTv ? tvHit : movieHit;
 
@@ -309,8 +301,6 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
   );
 }
 
-// ==================== Hook ====================
-
 export const useTasteProfileData = () => {
   const { user } = useAuth() || {};
   const { allSeriesList } = useSeriesList();
@@ -326,7 +316,6 @@ export const useTasteProfileData = () => {
   const [journeyData, setJourneyData] = useState<WatchJourneyData | null>(null);
   const [streakData, setStreakData] = useState<{ current: number; longest: number } | null>(null);
 
-  // Load journey data on mount
   useEffect(() => {
     if (!user?.uid) return;
     const year = new Date().getFullYear();
@@ -347,7 +336,6 @@ export const useTasteProfileData = () => {
       .catch((error) => console.error('Watch-Streak konnte nicht geladen werden:', error));
   }, [user?.uid]);
 
-  // Pre-compute stats from series/movie lists
   const stats: TasteProfileStats = useMemo(() => {
     const ratedSeries = getRatedItems(allSeriesList);
     const ratedMovies = getRatedItems(movieList);
@@ -419,11 +407,8 @@ export const useTasteProfileData = () => {
     setGenerating(true);
     setError(null);
 
-    // Top Serien pro Genre berechnen
     const ratedSeries = getRatedItems(allSeriesList);
     const topSeriesPerGenre = getTopSeriesPerGenre(ratedSeries);
-
-    // Journey-Daten aufbereiten
     const heatmapInsights = journeyData ? analyzeHeatmap(journeyData.heatmap) : null;
 
     try {
@@ -544,7 +529,6 @@ export const useTasteProfileData = () => {
           (rec) => !ownedNormalized.has(normalize(rec.title))
         );
 
-        // TMDB-Daten holen (Poster, Provider, Rating)
         const enrichedRecs = await enrichRecsWithTMDB(filteredRecs);
 
         const profileResult: TasteProfileResult = {

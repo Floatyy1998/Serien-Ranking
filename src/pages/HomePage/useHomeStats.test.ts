@@ -5,7 +5,7 @@ import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import type { WorkerStats } from '../../hooks/useWebWorkerStatsOptimized';
 
-// --- Context / hook mocks ---------------------------------------------------
+// Context / hook mocks
 const ctx = vi.hoisted(() => ({
   user: null as { uid: string } | null,
   allSeriesList: [] as Series[],

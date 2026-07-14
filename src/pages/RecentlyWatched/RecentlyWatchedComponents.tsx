@@ -1,7 +1,4 @@
-/**
- * RecentlyWatchedComponents - Memoized subcomponents for RecentlyWatchedPage
- * Extracted JSX blocks to keep the main page file composition-only.
- */
+/** Memoized Subkomponenten der RecentlyWatchedPage. */
 
 import { CalendarToday, ChatBubbleOutline, Check, History, PlayCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
@@ -21,8 +18,7 @@ const DISCUSSION_ICON_STYLE: React.CSSProperties = { fontSize: '15px' };
 const CARD_BODY_STYLE: React.CSSProperties = { flex: 1, minWidth: 0 };
 const REWATCH_ICON_STYLE: React.CSSProperties = { fontSize: '20px' };
 
-// ── Discussion indicator badge ──────────────────────────────────────────────
-
+// Discussion indicator badge
 export const EpisodeDiscussionIndicator: React.FC<{
   seriesId: number;
   seasonNumber: number;
@@ -62,8 +58,7 @@ export const EpisodeDiscussionIndicator: React.FC<{
 });
 EpisodeDiscussionIndicator.displayName = 'EpisodeDiscussionIndicator';
 
-// ── Episode count badge (header action) ─────────────────────────────────────
-
+// Episode count badge (header action)
 export const EpisodeCountBadge = memo<{ totalEpisodes: number }>(({ totalEpisodes }) => {
   const { currentTheme } = useTheme();
 
@@ -102,8 +97,7 @@ export const EpisodeCountBadge = memo<{ totalEpisodes: number }>(({ totalEpisode
 });
 EpisodeCountBadge.displayName = 'EpisodeCountBadge';
 
-// ── Search bar ──────────────────────────────────────────────────────────────
-
+// Search bar
 export const SearchBar = memo<{
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -144,8 +138,7 @@ export const SearchBar = memo<{
 });
 SearchBar.displayName = 'SearchBar';
 
-// ── Time range chip bar ─────────────────────────────────────────────────────
-
+// Time range chip bar
 export const TimeRangeChips = memo<{
   timeRanges: TimeRange[];
   daysToShow: number;
@@ -189,8 +182,7 @@ export const TimeRangeChips = memo<{
 });
 TimeRangeChips.displayName = 'TimeRangeChips';
 
-// ── Empty state ─────────────────────────────────────────────────────────────
-
+// Empty state
 export const EmptyState = memo<{
   searchQuery: string;
   daysToShow: number;
@@ -214,8 +206,7 @@ export const EmptyState = memo<{
 });
 EmptyState.displayName = 'EmptyState';
 
-// ── Date group header ───────────────────────────────────────────────────────
-
+// Date group header
 export const DateGroupHeader = memo<{
   displayDate: string;
   episodeCount: number;
@@ -262,8 +253,7 @@ export const DateGroupHeader = memo<{
 });
 DateGroupHeader.displayName = 'DateGroupHeader';
 
-// ── Single episode card ─────────────────────────────────────────────────────
-
+// Single episode card
 export const SingleEpisodeCard = memo<{
   episode: WatchedEpisode;
   isCompleting: boolean;

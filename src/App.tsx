@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from 'react';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
-// BadgeNotificationManager entfernt - BadgeProvider übernimmt alle Badge-Notifications
 import { AppProviders } from './AppProviders';
 import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
 import { DynamicThemeProvider } from './contexts/ThemeProvider';
@@ -92,14 +91,11 @@ const PageLoader = () => (
 export function App() {
   const [isThemeLoaded, setIsThemeLoaded] = useState(false);
 
-  // Theme beim App-Start laden - aber NACH Firebase Initialisierung
   useEffect(() => {
-    // Sofort lokales Theme laden für schnellen Start (braucht kein Firebase)
     const initializeTheme = async () => {
-      // Erst mal lokales Theme laden (sofort verfügbar, braucht kein Firebase)
+      // Lokales Theme sofort laden für schnellen Start (braucht kein Firebase)
       await loadSavedTheme();
 
-      // Theme wurde geladen - State setzen
       setIsThemeLoaded(true);
       window.setAppReady?.('theme', true);
 

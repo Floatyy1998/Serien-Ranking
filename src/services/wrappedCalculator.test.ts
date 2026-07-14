@@ -38,9 +38,7 @@ import type {
   MovieWatchEvent,
 } from '../types/WatchActivity';
 
-// ========================================
 // Builder
-// ========================================
 
 const ep = (over: Partial<EpisodeWatchEvent> = {}): EpisodeWatchEvent => ({
   type: 'episode_watch',
@@ -125,9 +123,7 @@ const mustFind = <T>(list: T[], predicate: (item: T) => boolean): T => {
 const achievementById = (ctx: AchievementContext, id: string) =>
   mustFind(calculateAchievements(ctx), (a) => a.id === id);
 
-// ========================================
 // calculateWrappedStats (Fassade + Gesamtaggregation)
-// ========================================
 
 describe('calculateWrappedStats', () => {
   it('liefert für ein leeres Jahr die dokumentierten Null-/Fallback-Werte', () => {
@@ -279,9 +275,7 @@ describe('calculateWrappedStats', () => {
   });
 });
 
-// ========================================
 // Rankings: Top Serien / Filme / Genres / Provider
-// ========================================
 
 describe('calculateTopSeries', () => {
   it('aggregiert pro seriesId; Titel kommt vom ERSTEN Event der Serie', () => {
@@ -474,9 +468,7 @@ describe('calculateTopProviders', () => {
   });
 });
 
-// ========================================
 // Temporal: Monate / Tage / Tageszeiten
-// ========================================
 
 describe('calculateMonthlyBreakdown', () => {
   it('liefert immer 12 Monate mit deutschen Namen', () => {
@@ -636,9 +628,7 @@ describe('calculateFavoriteDayOfWeek', () => {
   });
 });
 
-// ========================================
 // First / Last Watch
-// ========================================
 
 describe('findFirstWatch / findLastWatch', () => {
   const events: ActivityEvent[] = [
@@ -687,9 +677,7 @@ describe('findFirstWatch / findLastWatch', () => {
   });
 });
 
-// ========================================
 // Late Night Stats
-// ========================================
 
 describe('calculateLateNightStats', () => {
   it('zählt Late-Night (22-6) und Midnight (0-4) getrennt; Prozent gerundet', () => {
@@ -739,9 +727,7 @@ describe('calculateLateNightStats', () => {
   });
 });
 
-// ========================================
 // Heatmap
-// ========================================
 
 describe('calculateHeatmapData', () => {
   it('liefert eine 7x24-Matrix und zählt Events bei [dayOfWeek][hour]', () => {
@@ -769,9 +755,7 @@ describe('calculateHeatmapData', () => {
   });
 });
 
-// ========================================
 // Achievements
-// ========================================
 
 describe('calculateAchievements', () => {
   it('liefert immer alle 10 Templates; freigeschaltete zuerst, sonst Template-Reihenfolge', () => {
@@ -885,9 +869,7 @@ describe('calculateAchievements', () => {
   });
 });
 
-// ========================================
 // Fun Facts
-// ========================================
 
 describe('generateFunFacts', () => {
   it('liefert 5 Facts mit Top-Serie (sonst 4) in fester Reihenfolge', () => {

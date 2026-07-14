@@ -69,7 +69,6 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     // Store swipe direction for exit animation
     setSwipeDirections((prev) => ({ ...prev, [episodeKey]: swipeDirection }));
 
-    // Add to completing set for animation
     setCompletingEpisodes((prev) => new Set(prev).add(episodeKey));
 
     // After animation, hide the episode

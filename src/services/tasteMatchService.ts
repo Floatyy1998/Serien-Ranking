@@ -163,7 +163,6 @@ function calculateGenreDistribution(
     });
   });
 
-  // Filme zählen
   movies.forEach((m) => {
     m.genres.filter(isValidGenre).forEach((genre) => {
       genreCounts.set(genre, (genreCounts.get(genre) || 0) + 1);
@@ -197,10 +196,9 @@ export async function calculateTasteMatch(
   userId: string,
   friendId: string
 ): Promise<TasteMatchResult> {
-  // Daten laden
   const [userData, friendData] = await Promise.all([loadUserData(userId), loadUserData(friendId)]);
 
-  // 1. Serien-Overlap berechnen
+  // Serien-Overlap berechnen
   const userSeriesIds = new Set(userData.series.map((s) => s.id));
   const friendSeriesIds = new Set(friendData.series.map((s) => s.id));
   const sharedSeriesIds = [...userSeriesIds].filter((id) => friendSeriesIds.has(id));
@@ -224,7 +222,7 @@ export async function calculateTasteMatch(
   const seriesOverlapScore =
     totalUniqueSeries > 0 ? Math.round((sharedSeriesIds.length / totalUniqueSeries) * 100) : 0;
 
-  // 2. Film-Overlap berechnen
+  // Film-Overlap berechnen
   const userMovieIds = new Set(userData.movies.map((m) => m.id));
   const friendMovieIds = new Set(friendData.movies.map((m) => m.id));
   const sharedMovieIds = [...userMovieIds].filter((id) => friendMovieIds.has(id));
@@ -248,7 +246,7 @@ export async function calculateTasteMatch(
   const movieOverlapScore =
     totalUniqueMovies > 0 ? Math.round((sharedMovieIds.length / totalUniqueMovies) * 100) : 0;
 
-  // 3. Genre-Match berechnen
+  // Genre-Match berechnen
   const userGenres = calculateGenreDistribution(userData.series, userData.movies);
   const friendGenres = calculateGenreDistribution(friendData.series, friendData.movies);
 
@@ -288,7 +286,7 @@ export async function calculateTasteMatch(
       (a, b) => b.userPercentage + b.friendPercentage - (a.userPercentage + a.friendPercentage)
     );
 
-  // 4. Rating-Match berechnen (für gemeinsame Items)
+  // Rating-Match berechnen (für gemeinsame Items)
   const allSharedItems = [...sharedSeries, ...sharedMovies];
   const itemsWithBothRatings = allSharedItems.filter(
     (item) => item.userRating !== undefined && item.friendRating !== undefined
@@ -306,7 +304,7 @@ export async function calculateTasteMatch(
     sameRatingCount = itemsWithBothRatings.filter((item) => (item.ratingDiff || 0) < 1).length;
   }
 
-  // 5. Provider-Match berechnen
+  // Provider-Match berechnen
   const userProviders = new Set<string>();
   const friendProviders = new Set<string>();
 
@@ -320,7 +318,7 @@ export async function calculateTasteMatch(
   const providerMatchScore =
     totalProviders > 0 ? Math.round((sharedProviders.length / totalProviders) * 100) : 0;
 
-  // 6. Overall Match berechnen (gewichteter Durchschnitt)
+  // Overall Match berechnen (gewichteter Durchschnitt)
   const weights = {
     series: 25,
     movies: 15,

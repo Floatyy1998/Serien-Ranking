@@ -17,10 +17,6 @@ export type {
 } from './publicProfileHelpers';
 export { calculatePublicRating, calculateProgress } from './publicProfileHelpers';
 
-/* ================================================================== */
-/*  Main hook                                                          */
-/* ================================================================== */
-
 export function usePublicProfileData() {
   const { publicId } = useParams();
   const navigate = useNavigate();
@@ -28,7 +24,6 @@ export function usePublicProfileData() {
 
   const currentTheme = useResolvedTheme();
 
-  /* state */
   const [loading, setLoading] = useState(true);
   const [profileName, setProfileName] = useState('');
   const [profileSeries, setProfileSeries] = useState<PublicItem[]>([]);
@@ -37,13 +32,12 @@ export function usePublicProfileData() {
   const [profileExists, setProfileExists] = useState(true);
   const [filters, setFilters] = useState<PublicFilters>({});
 
-  /* ----- data fetching ----- */
   useEffect(() => {
     const loadPublicProfileData = async () => {
       if (!publicId) return;
 
       try {
-        // Step 1: publicId -> userId via oeffentlich lesbarer Lookup-Node.
+        // publicId -> userId via oeffentlich lesbarer Lookup-Node.
         // (Vorher wurde der gesamte /users-Tree iteriert, was unter den
         // aktuellen Security-Rules ohne Auth nicht mehr erlaubt ist.)
         const lookup = await dbGet<{ userId?: string }>(`publicProfiles/${publicId}`);
@@ -55,7 +49,7 @@ export function usePublicProfileData() {
           return;
         }
 
-        // Step 2: Einzelne Profil-Felder laden — Public-Rules erlauben Read
+        // Einzelne Profil-Felder laden — Public-Rules erlauben Read
         // nur auf den whitelisted Subnodes, nicht auf dem ganzen $uid-Node.
         const [
           isPublicSnap,
@@ -152,7 +146,6 @@ export function usePublicProfileData() {
     loadPublicProfileData();
   }, [publicId]);
 
-  /* ----- filtered / sorted lists ----- */
   const ratedSeries = useMemo(
     () => applyFilters(profileSeries, filters, false),
     [profileSeries, filters]
@@ -165,7 +158,6 @@ export function usePublicProfileData() {
 
   const currentItems = activeTab === 'series' ? ratedSeries : ratedMovies;
 
-  /* ----- average rating ----- */
   const averageRating = useMemo(() => {
     const allItems = [...profileSeries, ...profileMovies];
     const withRating = allItems.filter((item) => {
@@ -188,7 +180,7 @@ export function usePublicProfileData() {
     }).length;
   }, [profileSeries, profileMovies]);
 
-  /* ----- scroll position restore ----- */
+  // Scroll-Position wiederherstellen
   useEffect(() => {
     const shouldRestore = sessionStorage.getItem('shouldRestorePublicProfileScroll');
 
@@ -232,7 +224,7 @@ export function usePublicProfileData() {
     }
   }, [publicId, activeTab, currentItems.length]);
 
-  /* ----- save scroll + navigate ----- */
+  // Scroll-Position speichern, dann navigieren
   const handleItemClick = useCallback(
     (item: PublicItem, type: 'series' | 'movie') => {
       let position = 0;

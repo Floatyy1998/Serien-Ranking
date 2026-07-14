@@ -6,12 +6,10 @@ import {
 } from './offlineUserCache';
 import type { FirebaseUserLike } from './offlineFirebaseTypes';
 
-// ---------------------------------------------------------------------------
 // In-Memory-localStorage + minimaler IDBDatabase-Fake (nur die von diesen
 // Funktionen genutzten Operationen: transaction → objectStore → get/delete).
 // Requests feuern onsuccess/onerror asynchron (queueMicrotask), damit die
 // Handler wie im echten IndexedDB nach dem Erstellen zugewiesen werden können.
-// ---------------------------------------------------------------------------
 function makeLocalStorage() {
   const m = new Map<string, string>();
   return {

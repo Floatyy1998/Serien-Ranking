@@ -1,7 +1,3 @@
-/**
- * TopMoviesSlide - Zeigt die Top-Filme des Jahres
- */
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopMovieEntry } from '../../types/Wrapped';

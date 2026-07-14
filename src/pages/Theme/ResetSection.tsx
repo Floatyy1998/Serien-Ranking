@@ -1,7 +1,3 @@
-/**
- * ResetSection - Theme reset button with confirmation
- */
-
 import { memo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Refresh } from '@mui/icons-material';

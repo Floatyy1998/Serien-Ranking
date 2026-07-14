@@ -3,8 +3,6 @@ import { Bookmark, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { formatDate } from './useCalendarData';
 
-// ── Types ────────────────────────────────────────────────────────
-
 interface WeekNavProps {
   kwNumber: number;
   monday: Date;
@@ -26,8 +24,6 @@ interface StatsProps {
 }
 
 export interface CalendarToolbarProps extends WeekNavProps, FilterChipsProps, StatsProps {}
-
-// ── Sub-components ───────────────────────────────────────────────
 
 const WeekNav = memo(
   ({ kwNumber, monday, sunday, weekOffset, onPrev, onNext, onReset }: WeekNavProps) => {
@@ -144,8 +140,6 @@ const StatItems = memo(({ totalEpisodes, watchedCount }: StatsProps) => {
   );
 });
 StatItems.displayName = 'StatItems';
-
-// ── Main toolbar ─────────────────────────────────────────────────
 
 export const CalendarToolbar = memo(
   ({

@@ -65,9 +65,7 @@ function makeAccessory(
   return acc;
 }
 
-// ============================================================
 // Toggle Accessory - max 1 equipped per pet
-// ============================================================
 
 export async function toggleAccessory(
   userId: string,
@@ -113,9 +111,7 @@ export async function toggleAccessory(
   return pet;
 }
 
-// ============================================================
 // Starter Accessories - 3 random ones for new pets
-// ============================================================
 
 const STARTER_POOL = [
   'beanie',
@@ -143,10 +139,6 @@ export function generateStarterAccessories(): PetAccessory[] {
   return starters;
 }
 
-// ============================================================
-// Accessory Drop System
-// ============================================================
-
 export interface AccessoryDrop {
   dropId: string;
   accessoryId: string;
@@ -155,11 +147,6 @@ export interface AccessoryDrop {
   rarity: AccessoryRarity;
 }
 
-/**
- * Rolls for a random accessory drop after watching an episode.
- * Writes a pending drop to Firebase instead of granting immediately.
- * The user must claim it via the case-opening overlay.
- */
 /** Accessories exclusive to daily spin and milestones — never drop from episodes */
 const EXCLUSIVE_ACCESSORIES = new Set([
   // Spin exclusive
@@ -214,6 +201,11 @@ const EXCLUSIVE_ACCESSORIES = new Set([
   'obsidianAmulet',
 ]);
 
+/**
+ * Rolls for a random accessory drop after watching an episode.
+ * Writes a pending drop to Firebase instead of granting immediately.
+ * The user must claim it via the case-opening overlay.
+ */
 export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop | null> {
   const config = await getDropConfig();
   if (Math.random() > config.dropChance) {
@@ -314,9 +306,7 @@ function rollRarity(weights: {
   return 'legendary';
 }
 
-// ============================================================
 // Legacy: Check & Unlock Accessories (level-up / seasonal rewards)
-// ============================================================
 
 function hasAccessory(pet: Pet, accessoryId: string): boolean {
   return pet.accessories?.some((a) => a.id === accessoryId) || false;
@@ -351,10 +341,6 @@ export async function checkAndUnlockAccessories(pet: Pet): Promise<void> {
     await dbRef(userPath(pet.userId, 'pets', pet.id, 'accessories')).set(pet.accessories);
   }
 }
-
-// ============================================================
-// Achievements
-// ============================================================
 
 export async function checkAchievements(pet: Pet): Promise<void> {
   const updates: Record<string, string[] | undefined> = {};
@@ -396,13 +382,7 @@ export async function checkAchievements(pet: Pet): Promise<void> {
   }
 }
 
-// ============================================================
-// Color & Pattern Changes
-// ============================================================
-
-// ============================================================
 // Background equipping (toggle on/off)
-// ============================================================
 
 export async function equipBackground(
   userId: string,

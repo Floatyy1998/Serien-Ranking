@@ -1,7 +1,3 @@
-/**
- * TasteProfileCard - KI Geschmacksprofil Karte für die HomePage "Für dich" Section
- */
-
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import AutoAwesome from '@mui/icons-material/AutoAwesome';

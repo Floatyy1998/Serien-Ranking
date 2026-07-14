@@ -1,9 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // IndexedDB-Layer mocken: ein simpler In-Memory-Store, der die Semantik von
 // catalogIDB nachbildet (idbGetVersioned liefert nur bei passender Version).
-// ---------------------------------------------------------------------------
 const idb = vi.hoisted(() => {
   const store = new Map<string, { v: number | null; data: unknown }>();
   return {
@@ -37,9 +35,7 @@ vi.mock('./catalogIDB', () => ({
   idbRemovePrefix: idb.idbRemovePrefix,
 }));
 
-// ---------------------------------------------------------------------------
 // Fake-Server fuer fetch(). version.json separat, uebrige Dateien per Name.
-// ---------------------------------------------------------------------------
 interface FileResp {
   ok: boolean;
   status: number;
@@ -74,10 +70,8 @@ const callsTo = (needle: string) =>
 const lastUrlFor = (needle: string) =>
   String([...fetchSpy.mock.calls].reverse().find((c) => String(c[0]).includes(needle))?.[0] ?? '');
 
-// ---------------------------------------------------------------------------
 // DOM-Umgebung (node-env hat kein window/document): addEventListener +
 // setInterval werden aufgezeichnet, damit Tests Events gezielt feuern koennen.
-// ---------------------------------------------------------------------------
 function makeDomEnv() {
   const handlers: Record<string, Array<() => void>> = {};
   const intervals: Array<() => void> = [];
@@ -161,7 +155,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-// ===========================================================================
 describe('fetchStaticCatalogSeries — Caching & Provider-Expansion', () => {
   it('Cold-Path: holt seriesMeta.json mit ?v=<version> und schreibt in IDB', async () => {
     server.version = 111;
@@ -287,7 +280,6 @@ describe('fetchStaticTvPremieres / fetchStaticSeasonalAnime — .entries-Unwrap'
   });
 });
 
-// ===========================================================================
 describe('checkForCatalogVersionBump', () => {
   it('gleiche Version → false, keine Invalidierung', async () => {
     server.version = 100;
@@ -328,7 +320,6 @@ describe('checkForCatalogVersionBump', () => {
   });
 });
 
-// ===========================================================================
 describe('subscribeCatalogChange — zentraler Versions-Watcher', () => {
   it('startet den Watcher: registriert visibilitychange, focus und ein Intervall', async () => {
     const { subscribeCatalogChange } = await load();
@@ -441,7 +432,6 @@ describe('subscribeCatalogChange — zentraler Versions-Watcher', () => {
   });
 });
 
-// ===========================================================================
 describe('clearStaticCatalogCache', () => {
   it('entfernt alle Catalog-Keys aus dem IDB', async () => {
     idb.store.set(LS.seriesMeta, { v: 1, data: {} });
@@ -459,7 +449,6 @@ describe('clearStaticCatalogCache', () => {
   });
 });
 
-// ===========================================================================
 describe('fetchStaticCatalogMovies', () => {
   it('Cold-Path: holt moviesMeta.json mit ?v=, expandiert Provider, schreibt IDB', async () => {
     server.version = 55;

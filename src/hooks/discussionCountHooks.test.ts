@@ -2,10 +2,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Firebase-Mock: ref(path).once('value') → Snapshot mit .val(). Für den
 // Batch-Read auch orderByKey/startAt/endAt (chainbar, no-op).
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const state = {
     dataByPath: {} as Record<string, unknown>,

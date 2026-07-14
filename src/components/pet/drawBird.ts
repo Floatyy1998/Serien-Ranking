@@ -16,7 +16,7 @@ export const drawBird = (
   const centerX = 16;
   const centerY = 16;
 
-  // === STUFE 8+ (Lv50): PHÖNIX-FORM ===
+  // STUFE 8+ (Lv50): PHÖNIX-FORM
   if (level >= 50) {
     drawPhoenix(
       ctx,
@@ -34,7 +34,7 @@ export const drawBird = (
     return;
   }
 
-  // === STUFEN 1-7: NORMALER VOGEL (Lv1-49) ===
+  // STUFEN 1-7: NORMALER VOGEL (Lv1-49)
   const wingFlap = animated ? Math.sin(frame * 0.2 * animationSpeed) * 3 : 0;
 
   // Kopf
@@ -310,7 +310,7 @@ export const drawBird = (
   ctx.fillRect((centerX + 1) * ps, (centerY + 10.5) * ps + offset, ps * 0.5, ps);
   ctx.fillRect((centerX + 2) * ps, (centerY + 10.5) * ps + offset, ps * 0.5, ps);
 
-  // === STUFE 6 (Lv30-39): VETERAN ===
+  // STUFE 6 (Lv30-39): VETERAN
   if (level >= 30) {
     // Kampfnarbe am Flügel
     ctx.strokeStyle = light + '88';
@@ -332,7 +332,7 @@ export const drawBird = (
     ctx.fillRect((centerX + 2) * ps, (centerY + 10) * ps + offset, ps * 0.5, ps * 3);
   }
 
-  // === STUFE 7 (Lv40-49): ELITE ===
+  // STUFE 7 (Lv40-49): ELITE
   if (level >= 40) {
     // Metallische Flügelkanten
     ctx.fillStyle = '#C0C0C0AA';
@@ -365,7 +365,7 @@ export const drawBird = (
   }
 };
 
-// === PHÖNIX-FORM (Level 50+) ===
+// PHÖNIX-FORM (Level 50+)
 function drawPhoenix(
   ctx: CanvasRenderingContext2D,
   level: number,
@@ -566,7 +566,7 @@ function drawPhoenix(
     ctx.fillRect((centerX + 2) * ps, (centerY - 9) * ps + offset, ps, ps * 2);
   }
 
-  // === CHAMPION (Lv60+) ===
+  // CHAMPION (Lv60+)
   if (isChampion) {
     // Doppelte Flügel-Schicht (innere Flügel leuchten)
     if (animated) {
@@ -590,7 +590,7 @@ function drawPhoenix(
     ctx.shadowBlur = 0;
   }
 
-  // === LEGENDE (Lv75+) ===
+  // LEGENDE (Lv75+)
   if (isLegend) {
     // Permanenter Flammen-Schweif (intensiver)
     if (animated) {
@@ -619,7 +619,7 @@ function drawPhoenix(
     ctx.shadowBlur = 0;
   }
 
-  // === MYTHISCH (Lv100) ===
+  // MYTHISCH (Lv100)
   if (isMythical) {
     // Ätherischer Phönix — gesamter Körper leuchtet
     ctx.shadowColor = '#FFD700';
