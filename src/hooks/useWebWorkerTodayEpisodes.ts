@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
-import { upgradeBackdropUrl } from '../utils/imageUrl';
+import { getBackdropSize, upgradeBackdropUrl } from '../utils/imageUrl';
 import { useWebWorker } from './useWebWorker';
 
 /** Episode die heute ausgestrahlt wird oder ausgestrahlt wurde und noch nicht gesehen wurde */
@@ -67,8 +67,8 @@ export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   });
 
   // Worker liefert w1280; im Worker gibt es kein window für die Screen-Erkennung
-  return useMemo(
-    () => episodes.map((e) => ({ ...e, backdrop: upgradeBackdropUrl(e.backdrop) })),
-    [episodes]
-  );
+  return useMemo(() => {
+    if (getBackdropSize() !== 'original') return episodes;
+    return episodes.map((e) => ({ ...e, backdrop: upgradeBackdropUrl(e.backdrop) }));
+  }, [episodes]);
 };
