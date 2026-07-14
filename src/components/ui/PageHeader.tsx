@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { motion } from 'framer-motion';
+import { NAV_SLOT_PATHS } from '../../config/navItems';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { getNavSlots, subscribeNavSlots } from '../../services/navConfig';
 import { BackButton } from './BackButton';
 import { GradientText } from './GradientText';
 
@@ -30,6 +32,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 }) => {
   const { currentTheme } = useTheme();
   const shouldReduceMotion = useReducedMotion();
+
+  // Seiten, die als Dock-Ziel konfiguriert sind, sind Top-Level — kein Zurück.
+  const navSlots = useSyncExternalStore(subscribeNavSlots, getNavSlots);
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const isNavRoot =
+    pathname === '/profile' || navSlots.some((id) => NAV_SLOT_PATHS[id] === pathname);
 
   return (
     <header
@@ -77,7 +85,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           gap: '16px',
         }}
       >
-        {showBack && <BackButton />}
+        {showBack && !isNavRoot && <BackButton />}
         <div style={{ flex: 1 }}>
           <GradientText
             as="h1"

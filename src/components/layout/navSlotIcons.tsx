@@ -1,0 +1,33 @@
+import {
+  BarChart,
+  CalendarToday,
+  EmojiEvents,
+  Explore,
+  Groups,
+  History,
+  Insights,
+  MenuBook,
+  MilitaryTech,
+  Pets,
+  PlayCircle,
+  PlaylistAddCheck,
+  Schedule,
+  Subscriptions,
+} from '@mui/icons-material';
+
+export const NAV_SLOT_ICONS: Record<string, React.ReactNode> = {
+  watchnext: <PlayCircle />,
+  calendar: <CalendarToday />,
+  ratings: <BarChart />,
+  manga: <MenuBook />,
+  discover: <Explore />,
+  stats: <Insights />,
+  leaderboard: <EmojiEvents />,
+  badges: <MilitaryTech />,
+  pets: <Pets />,
+  activity: <Groups />,
+  countdowns: <Schedule />,
+  catchup: <PlaylistAddCheck />,
+  subscriptions: <Subscriptions />,
+  history: <History />,
+};

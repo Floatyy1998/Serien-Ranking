@@ -1,16 +1,19 @@
-import { BarChart, CalendarToday, MenuBook, MoreHoriz, PlayCircle } from '@mui/icons-material';
+import { MoreHoriz } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { NAV_SLOT_OPTIONS } from '../../config/navItems';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
+import { useNavSlots } from '../../hooks/useNavConfig';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
 import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
+import { NAV_SLOT_ICONS } from './navSlotIcons';
 import './BottomNavigation.css';
 
 interface NavItem {
@@ -30,20 +33,72 @@ export const BottomNavigation = () => {
 
   const todayEpisodes = useTodayEpisodes();
   const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
+  const navSlots = useNavSlots();
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pillPos, setPillPos] = useState({ left: 0, width: 0 });
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const navItems: NavItem[] = useMemo(() => {
+    const slotItems: NavItem[] = navSlots
+      .map((id) => NAV_SLOT_OPTIONS.find((o) => o.id === id))
+      .filter((o): o is (typeof NAV_SLOT_OPTIONS)[number] => !!o)
+      .map((o) => ({
+        id: o.id,
+        path: o.path,
+        label: o.label,
+        icon: NAV_SLOT_ICONS[o.id],
+        badge: o.id === 'calendar' && unwatchedToday > 0 ? unwatchedToday : undefined,
+      }));
+
+    return [
+      {
+        id: 'home',
+        path: '/',
+        icon: (
+          <div
+            style={{
+              width: '24px',
+              height: '24px',
+              backgroundColor: 'currentColor',
+              WebkitMaskImage: 'url(/tv-logo.svg)',
+              maskImage: 'url(/tv-logo.svg)',
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain' as string,
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat' as string,
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center' as string,
+            }}
+          />
+        ),
+        label: 'Home',
+      },
+      ...slotItems,
+      {
+        // "Mehr" öffnet den Profil-Hub — dort hängen Discover, Stats, Badges,
+        // Pets, Leaderboard, Freunde, Abos, Einstellungen etc.
+        id: 'more',
+        path: '/profile',
+        icon: <MoreHoriz />,
+        label: 'Mehr',
+      },
+    ];
+  }, [navSlots, unwatchedToday]);
+
   const getActiveIndex = () => {
-    if (location.pathname === '/') return 0;
-    if (location.pathname.startsWith('/watchlist')) return 1;
-    if (location.pathname === '/calendar') return 2;
-    if (location.pathname.startsWith('/ratings')) return 3;
-    if (location.pathname.startsWith('/manga')) return 4;
-    if (location.pathname === '/profile') return 5;
-    return 0;
+    let best = 0;
+    let bestLen = -1;
+    navItems.forEach((item, i) => {
+      const match =
+        item.path === '/' ? location.pathname === '/' : location.pathname.startsWith(item.path);
+      if (match && item.path.length > bestLen) {
+        best = i;
+        bestLen = item.path.length;
+      }
+    });
+    return best;
   };
 
   const activeIndex = getActiveIndex();
@@ -56,65 +111,7 @@ export const BottomNavigation = () => {
       left: el.offsetLeft + 4,
       width: el.offsetWidth - 8,
     });
-  }, [pillTargetIndex]);
-
-  const navItems: NavItem[] = [
-    {
-      id: 'home',
-      path: '/',
-      icon: (
-        <div
-          style={{
-            width: '24px',
-            height: '24px',
-            backgroundColor: 'currentColor',
-            WebkitMaskImage: 'url(/tv-logo.svg)',
-            maskImage: 'url(/tv-logo.svg)',
-            WebkitMaskSize: 'contain',
-            maskSize: 'contain' as string,
-            WebkitMaskRepeat: 'no-repeat',
-            maskRepeat: 'no-repeat' as string,
-            WebkitMaskPosition: 'center',
-            maskPosition: 'center' as string,
-          }}
-        />
-      ),
-      label: 'Home',
-    },
-    {
-      id: 'watchnext',
-      path: '/watchlist',
-      icon: <PlayCircle />,
-      label: 'Weiter',
-    },
-    {
-      id: 'calendar',
-      path: '/calendar',
-      icon: <CalendarToday />,
-      label: 'Kalender',
-      badge: unwatchedToday > 0 ? unwatchedToday : undefined,
-    },
-    {
-      id: 'ratings',
-      path: '/ratings',
-      icon: <BarChart />,
-      label: 'Bewertungen',
-    },
-    {
-      id: 'manga',
-      path: '/manga',
-      icon: <MenuBook />,
-      label: 'Manga',
-    },
-    {
-      // "Mehr" öffnet den Profil-Hub — dort hängen Discover, Stats, Badges,
-      // Pets, Leaderboard, Freunde, Abos, Einstellungen etc.
-      id: 'more',
-      path: '/profile',
-      icon: <MoreHoriz />,
-      label: 'Mehr',
-    },
-  ];
+  }, [pillTargetIndex, navItems.length]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';

@@ -40,6 +40,7 @@ export const paths = {
   displayName: (uid: string) => `${user(uid)}/displayName`,
   theme: (uid: string) => `${user(uid)}/theme`,
   homeConfig: (uid: string) => `${user(uid)}/homeConfig`,
+  navConfig: (uid: string) => `${user(uid)}/navConfig`,
 
   // Detection-Notification-States (Dismiss-Tabellen)
   notificationState: (uid: string, node: string) => `${user(uid)}/${node}`,

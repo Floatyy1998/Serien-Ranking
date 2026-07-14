@@ -1,9 +1,131 @@
 /* HomeLayoutPage - Layout styles with hl- prefix */
 
 .hl-content {
-  padding: 0 20px;
+  padding: 0 20px 120px;
   position: relative;
   z-index: 1;
+}
+
+.hl-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.hl-guide,
+.hl-navside {
+  min-width: 0;
+}
+
+/* Anleitung (Glas-Panel links) */
+
+.hl-guide {
+  border-radius: var(--radius-3xl);
+  padding: 30px 28px;
+}
+
+.hl-guide-title {
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(32px, 2.4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.16;
+  padding-bottom: 0.14em;
+  margin-bottom: 8px;
+}
+
+.hl-guide-sub {
+  margin: 0 0 28px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.hl-guide-list {
+  list-style: none;
+  margin: 0 0 30px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hl-guide-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.hl-guide-chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--theme-primary-12);
+  border: 1px solid var(--theme-primary-25);
+  box-shadow: 0 0 18px var(--theme-primary-10);
+  color: var(--theme-primary);
+}
+
+.hl-guide-chip svg {
+  font-size: 21px;
+}
+
+.hl-guide .hl-reset-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+/* Geräte-Mockup */
+
+.hl-device {
+  border-radius: 42px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    var(--shadow-cinematic),
+    0 0 80px -30px var(--theme-primary-30),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  width: min(560px, 100%);
+  margin: 0 auto;
+}
+
+.hl-screen {
+  border-radius: 32px;
+  overflow: hidden;
+  padding: 16px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: min(78vh, 960px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.hl-mini-greeting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 2px 6px 6px;
+  flex-shrink: 0;
+}
+
+.hl-mini-greeting .hl-skel-lines {
+  gap: 6px;
+}
+
+.hl-mini-avatar {
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--theme-primary-30);
 }
 
 .hl-toolbar {
@@ -54,7 +176,6 @@
 .hl-section-list {
   border-radius: var(--radius-xl);
   padding: 12px;
-  margin-bottom: 100px;
 }
 
 .hl-reorder-group {
@@ -207,22 +328,492 @@
   left: 3px;
 }
 
-/* Desktop: Reorder-Liste kompakt — 2520px-Zeilen mit Toggle am anderen
-   Ende sind unlesbar; Drag&Drop bleibt eine vertikale Liste. */
-@media (min-width: 900px) {
-  .hl-section-list {
-    max-width: 960px;
+/* Sektionen im Screen */
+
+.hl-canvas-list {
+  list-style: none;
+  margin: 0;
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.hl-cv-section {
+  border-radius: var(--radius-lg);
+  padding: 12px 14px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  border: 1px solid var(--glass-border-subtle);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  cursor: grab;
+  transition:
+    opacity 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.hl-cv-section:hover {
+  border-color: var(--glass-border-medium);
+}
+
+.hl-cv-section--off {
+  opacity: 0.4;
+  border-style: dashed;
+  background: transparent;
+  box-shadow: none;
+}
+
+.hl-cv-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hl-cv-section--off .hl-cv-head {
+  margin-bottom: 0;
+}
+
+.hl-cv-drag {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.hl-cv-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hl-cv-eye {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.hl-cv-eye svg {
+  font-size: 19px;
+}
+
+.hl-cv-chips {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hl-cv-chip {
+  padding: 7px 14px;
+  border-radius: var(--radius-full);
+  background: var(--theme-primary-12);
+  border: 1px solid var(--theme-primary-20);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    opacity 0.2s;
+}
+
+.hl-cv-chip--off {
+  background: transparent;
+  border-color: var(--glass-border-subtle);
+  border-style: dashed;
+  opacity: 0.55;
+}
+
+/* Miniatur-Inhalte (Mini-App statt Hohlrahmen) */
+
+.hl-skel-row {
+  display: flex;
+  gap: 8px;
+}
+
+.hl-skel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hl-skel-banner-row,
+.hl-skel-poster,
+.hl-skel-card,
+.hl-skel-tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hl-skel-banner-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.hl-skel-banner-row::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 42%;
+  background: linear-gradient(270deg, var(--theme-primary-10), transparent);
+  pointer-events: none;
+}
+
+.hl-skel-thumb {
+  width: 22px;
+  height: 32px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, var(--theme-primary-30), var(--theme-primary-08));
+  border: 1px solid var(--theme-primary-20);
+}
+
+.hl-skel-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.hl-skel-line {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.hl-skel-line--dim {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hl-skel-progress {
+  position: absolute;
+  left: 0;
+  right: 60%;
+  bottom: 0;
+  height: 2px;
+  background: var(--theme-primary);
+  opacity: 0.8;
+}
+
+.hl-skel-marquee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 2px;
+}
+
+.hl-skel-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hl-skel-poster {
+  width: 58px;
+  height: 86px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px;
+  background:
+    linear-gradient(180deg, var(--theme-primary-08), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+}
+
+.hl-skel-poster .hl-skel-line {
+  width: 70%;
+  height: 4px;
+}
+
+.hl-skel-card {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+}
+
+.hl-skel-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--theme-primary-25);
+  border: 1px solid var(--theme-primary-30);
+}
+
+.hl-skel-tile {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+}
+
+.hl-skel-ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 3px solid var(--theme-primary-30);
+  border-top-color: var(--theme-primary);
+  background: transparent;
+}
+
+/* Dock-Editor (sitzt im Screen) */
+
+.hl-dock-editor {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: var(--radius-full);
+  padding: 7px 8px;
+  flex-shrink: 0;
+}
+
+.hl-dock-slots {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  justify-content: space-around;
+}
+
+.hl-dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  position: relative;
+  padding: 6px 10px;
+}
+
+.hl-dock-item--slot {
+  cursor: grab;
+  border-radius: var(--radius-lg);
+  transition: background 0.2s;
+}
+
+.hl-dock-item--slot:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.hl-dock-item--fixed {
+  flex-shrink: 0;
+  border-radius: var(--radius-lg);
+}
+
+.hl-dock-item--fixed:first-child {
+  background: var(--theme-primary-15);
+}
+
+.hl-dock-icon {
+  display: flex;
+}
+
+.hl-dock-icon svg {
+  font-size: 22px;
+}
+
+.hl-dock-home-icon {
+  width: 22px;
+  height: 22px;
+  -webkit-mask-image: url(/tv-logo.svg);
+  mask-image: url(/tv-logo.svg);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+}
+
+.hl-dock-label {
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 72px;
+}
+
+.hl-dock-remove {
+  position: absolute;
+  top: -5px;
+  right: -2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(12, 12, 12, 0.9);
+  color: #f87171;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+}
+
+@media (hover: hover) {
+  .hl-dock-remove {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .hl-dock-item--slot:hover .hl-dock-remove,
+  .hl-dock-remove:focus-visible {
+    opacity: 1;
   }
 }
 
-/* Toolbar + Liste als eine zentrierte Zone (kein Reset-Button am 2500px-Rand) */
-@media (min-width: 900px) {
+/* Touch: kein Dauer-Badge — Tippen auf das Dock-Item entfernt es */
+@media (hover: none) {
+  .hl-dock-remove {
+    display: none;
+  }
+}
+
+/* Ziel-Palette (Glas-Panel rechts) */
+
+.hl-navside {
+  border-radius: var(--radius-3xl);
+  padding: 26px 24px;
+}
+
+.hl-nav-palette {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hl-pal-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border-subtle);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 0;
+  text-align: left;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    opacity 0.2s,
+    transform 0.2s;
+}
+
+.hl-pal-chip:hover {
+  background: var(--theme-primary-08);
+  border-color: var(--theme-primary-30);
+  transform: translateY(-1px);
+}
+
+.hl-pal-chip--full {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.hl-pal-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--theme-primary-12);
+  border: 1px solid var(--theme-primary-20);
+  color: var(--theme-primary);
+}
+
+.hl-pal-icon svg {
+  font-size: 17px;
+}
+
+.hl-pal-add {
+  font-size: 15px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.hl-palette-hint {
+  margin: 12px 0 0;
+  font-size: 12px;
+}
+
+/* Desktop: Bühne — Anleitung links, Gerät als Hero mittig, Palette rechts */
+@media (min-width: 1100px) {
   .hl-content {
-    max-width: 1000px;
-    margin: 0 auto;
+    padding: 24px 40px 80px;
   }
 
-  .hl-section-list {
-    max-width: none;
+  .hl-stage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) min(560px, 44vw) minmax(0, 1fr);
+    gap: clamp(32px, 3vw, 72px);
+    align-items: center;
+  }
+
+  .hl-device {
+    width: 100%;
+  }
+
+  .hl-guide,
+  .hl-navside {
+    justify-self: center;
+    width: min(540px, 100%);
+  }
+
+  .hl-device {
+    margin: 0;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .hl-content {
+    max-width: 640px;
+    margin: 0 auto;
   }
 }

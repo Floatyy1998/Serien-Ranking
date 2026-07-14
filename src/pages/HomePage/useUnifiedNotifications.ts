@@ -66,6 +66,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_nav-layout-2026-07',
+    title: 'Neu: Deine Navigation, dein Layout 🎛️',
+    message:
+      'Die untere Leiste gehört jetzt dir: Belege bis zu 4 Plätze mit deinen Lieblingszielen — von Statistiken bis Backlog. Dazu ein komplett neuer Layout-Editor, in dem du deine Homepage als Mini-App direkt anfasst, eine neu gebaute Rangliste im Kino-Look und schärfere Backdrops auf großen Displays. Alle Details in den Patch Notes.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik)
+    timestamp: new Date('2026-07-14T23:30:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_redesign-2050-2026-07',
     title: 'TV-Rank in neuem Gewand ✨',
     message:

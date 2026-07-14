@@ -75,6 +75,49 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: 'Juli 2026 – Deine Navigation, dein Layout',
+      date: '2026-07-14',
+      features: [
+        {
+          icon: <Navigation />,
+          color: currentTheme.primary,
+          title: 'Die untere Leiste gehört jetzt dir',
+          description:
+            'Belege bis zu 4 Plätze der Navigationsleiste mit deinen Lieblingszielen — Kalender raus, Statistiken rein? Rangliste statt Manga? Du entscheidest. Seiten in der Leiste verlieren automatisch ihren Zurück-Pfeil, denn sie sind jetzt ein Zuhause.',
+          link: { label: 'Leiste anpassen', path: '/home-layout' },
+        },
+        {
+          icon: <PhoneIphone />,
+          color: currentTheme.secondary,
+          title: 'Neuer Layout-Editor: deine App in klein',
+          description:
+            'Homepage anpassen heißt jetzt anfassen: Deine App schwebt als Miniatur in der Mitte — Sektionen greifst und verschiebst du direkt, das Auge blendet aus, und die Leiste bestückst du per Tipp. Was du siehst, ist live dein Layout.',
+        },
+        {
+          icon: <Equalizer />,
+          color: currentTheme.status.warning,
+          title: 'Rangliste im Kino-Look',
+          description:
+            'Das Podium ist jetzt eine Bühne: große Avatare mit Medaillen-Ring und Krone, Glas-Sockel mit Gold-, Silber- und Bronze-Lichtkante und deine Zahl groß im Rampenlicht. Die Trophäen-Galerie füllt den Desktop als Glas-Karten in voller Breite.',
+          link: { label: 'Zur Rangliste', path: '/leaderboard' },
+        },
+        {
+          icon: <SmartDisplay />,
+          color: currentTheme.accent,
+          title: 'Backdrops in Originalauflösung',
+          description:
+            'Auf großen und hochauflösenden Displays laden die Kino-Zeilen auf der Startseite ihre Artworks jetzt in Originalqualität — kein weiches Hochskalieren mehr. Auch die Backdrop-Collage im Profil ist deutlich schärfer geworden.',
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.status.purple,
+          title: 'Feinschliff im ganzen System',
+          description:
+            'Tooltips sind jetzt feine Glas-Kapseln, Formulare (z. B. Feedback & Bugs) bekommen Glas-Felder mit leuchtendem Fokus, Manga-Filter sind runde Pills mit schöneren Leer-Zuständen — und selbst Text-Markierung und Scrollbar färben sich nach deinem Theme.',
+        },
+      ],
+    },
+    {
       version: 'Juli 2026 – Das große Redesign',
       date: '2026-07-13',
       features: [
