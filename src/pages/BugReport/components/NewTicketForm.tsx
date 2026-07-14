@@ -89,27 +89,13 @@ export function NewTicketForm({
     if (!success) setSubmitting(false);
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    background: theme.background.default,
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '8px',
-    color: theme.text.secondary,
-    fontSize: '13px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: 'inherit',
-  };
-
   return (
     <div
+      className="glass-card-medium"
       onPaste={handlePaste}
       style={{
-        padding: '16px',
-        borderRadius: '12px',
-        background: theme.background.surface,
-        border: `1px solid rgba(255,255,255,0.06)`,
+        padding: '20px',
+        borderRadius: 'var(--radius-xl)',
       }}
     >
       <div
@@ -150,9 +136,14 @@ export function NewTicketForm({
                 style={{
                   flex: 1,
                   padding: '10px',
-                  borderRadius: '8px',
-                  border: active ? `2px solid ${cfg.color}` : '1px solid rgba(255,255,255,0.08)',
-                  background: active ? `${cfg.color}15` : theme.background.default,
+                  borderRadius: 'var(--radius-md)',
+                  border: active
+                    ? `1px solid ${cfg.color}80`
+                    : '1px solid var(--glass-border-subtle)',
+                  background: active ? `${cfg.color}1f` : 'var(--glass-subtle)',
+                  boxShadow: active
+                    ? `inset 0 0 0 1px ${cfg.color}40, 0 0 16px ${cfg.color}1a`
+                    : undefined,
                   color: active ? cfg.color : theme.text.muted,
                   fontSize: '13px',
                   fontWeight: 600,
@@ -190,10 +181,15 @@ export function NewTicketForm({
                   onClick={() => setPriority(p)}
                   style={{
                     flex: 1,
-                    padding: '7px',
-                    borderRadius: '8px',
-                    border: active ? `2px solid ${cfg.color}` : '1px solid rgba(255,255,255,0.08)',
-                    background: active ? `${cfg.color}15` : theme.background.default,
+                    padding: '8px',
+                    borderRadius: 'var(--radius-md)',
+                    border: active
+                      ? `1px solid ${cfg.color}80`
+                      : '1px solid var(--glass-border-subtle)',
+                    background: active ? `${cfg.color}1f` : 'var(--glass-subtle)',
+                    boxShadow: active
+                      ? `inset 0 0 0 1px ${cfg.color}40, 0 0 16px ${cfg.color}1a`
+                      : undefined,
                     color: active ? cfg.color : theme.text.muted,
                     fontSize: '12px',
                     fontWeight: 600,
@@ -227,7 +223,7 @@ export function NewTicketForm({
                 ? 'Kurze Beschreibung des Problems'
                 : 'Kurze Beschreibung des Features'
             }
-            style={inputStyle}
+            className="glass-input"
           />
         </div>
 
@@ -251,7 +247,8 @@ export function NewTicketForm({
                 : 'Was soll das Feature können? Warum wäre es nützlich?'
             }
             rows={4}
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="glass-input"
+            style={{ resize: 'vertical' }}
           />
         </div>
 
@@ -275,7 +272,8 @@ export function NewTicketForm({
                 : '1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...'
             }
             rows={3}
-            style={{ ...inputStyle, resize: 'vertical' }}
+            className="glass-input"
+            style={{ resize: 'vertical' }}
           />
         </div>
 
@@ -398,8 +396,8 @@ export function NewTicketForm({
               }}
               placeholder="Falls vorhanden: Fehlermeldungen aus der Browser-Konsole (F12) hier einfügen"
               rows={3}
+              className="glass-input"
               style={{
-                ...inputStyle,
                 resize: 'vertical',
                 fontFamily: 'monospace',
                 fontSize: '12px',
@@ -415,12 +413,13 @@ export function NewTicketForm({
             onClick={onCancel}
             style={{
               flex: 1,
-              padding: '10px',
-              borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: 'transparent',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--glass-border-light)',
+              background: 'var(--glass-light)',
               color: theme.text.muted,
               fontSize: '13px',
+              fontWeight: 600,
               cursor: 'pointer',
             }}
           >
@@ -432,17 +431,21 @@ export function NewTicketForm({
             disabled={!title.trim() || !description.trim() || submitting}
             style={{
               flex: 2,
-              padding: '10px',
-              borderRadius: '8px',
+              padding: '12px',
+              borderRadius: 'var(--radius-md)',
               border: 'none',
               background:
                 title.trim() && description.trim() && !submitting
                   ? theme.primary
                   : `${theme.primary}30`,
               color:
-                title.trim() && description.trim() && !submitting ? '#fff' : `${theme.primary}60`,
+                title.trim() && description.trim() && !submitting
+                  ? theme.background.default
+                  : `${theme.primary}60`,
+              boxShadow:
+                title.trim() && description.trim() && !submitting ? 'var(--glow-soft)' : undefined,
               fontSize: '13px',
-              fontWeight: 600,
+              fontWeight: 700,
               cursor: title.trim() && description.trim() && !submitting ? 'pointer' : 'default',
               display: 'flex',
               alignItems: 'center',

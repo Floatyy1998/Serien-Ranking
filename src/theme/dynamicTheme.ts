@@ -1,6 +1,7 @@
 import {
   generateColorPalette,
   createAccessibleTextColors,
+  blendColors,
   darkenColor,
   lightenColor,
   withOpacity,
@@ -102,7 +103,9 @@ export function generateDynamicTheme(config: UserThemeConfig) {
       primary: primaryColor,
       body: textColor || backgroundTextColors.secondary,
       secondary: textColor || backgroundTextColors.secondary,
-      muted: textColor ? withOpacity(textColor, 0.6) : backgroundTextColors.muted,
+      // Solider Hex statt rgba: viele Stellen hängen `${text.muted}XX`-Alpha an —
+      // auf einem rgba-String ergibt das ungültiges CSS (siehe DailySpinCard-Bug).
+      muted: textColor ? blendColors(textColor, backgroundColor, 0.62) : backgroundTextColors.muted,
       accent: finalAccentColor,
     },
 
@@ -242,9 +245,22 @@ export function createMuiTheme(dynamicTheme: ReturnType<typeof generateDynamicTh
       MuiTooltip: {
         styleOverrides: {
           tooltip: {
-            backgroundColor: backgroundColor,
-            color: primaryColor,
-            fontSize: '1rem',
+            backgroundColor: withOpacity(darkenColor(backgroundColor, 0.2), 0.82),
+            backgroundImage:
+              'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            backdropFilter: 'var(--glass-filter-sm)',
+            WebkitBackdropFilter: 'var(--glass-filter-sm)',
+            color: dynamicTheme.text.secondary,
+            fontSize: 'var(--text-sm)',
+            fontWeight: 600,
+            letterSpacing: '0.01em',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-sm)',
+            border: `1px solid ${border.light}`,
+            boxShadow: 'var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.08)',
+          },
+          arrow: {
+            color: withOpacity(darkenColor(backgroundColor, 0.2), 0.82),
           },
         },
       },

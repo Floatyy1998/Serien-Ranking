@@ -9,8 +9,8 @@ import {
 } from './constants';
 
 describe('Accent-Konstanten', () => {
-  it('User/Friend Farben sind gültige Hex-Werte', () => {
-    expect(USER_COLOR).toMatch(/^#[0-9a-f]{6}$/i);
+  it('User-Farbe folgt dem Theme, Friend-Farbe ist gültiger Hex-Wert', () => {
+    expect(USER_COLOR).toMatch(/^var\(--theme-primary, #[0-9a-f]{6}\)$/i);
     expect(FRIEND_COLOR).toMatch(/^#[0-9a-f]{6}$/i);
   });
 

@@ -27,9 +27,6 @@ function applyCSSVariables(
   root.style.setProperty('--color-primary', theme.primary);
   root.style.setProperty('--color-primary-hover', theme.primaryHover);
   root.style.setProperty('--color-primary-dark', theme.primaryDark);
-  root.style.setProperty('--color-primary-06', `${theme.primary}0f`);
-  root.style.setProperty('--color-primary-10', `${theme.primary}1a`);
-  root.style.setProperty('--color-primary-15', `${theme.primary}26`);
 
   // Theme-Variablen (für CSS-Nutzung)
   root.style.setProperty('--theme-primary', theme.primary);

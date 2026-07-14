@@ -128,12 +128,8 @@ export const StatsGrid = () => {
                 <defs>
                   <linearGradient id="stats-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                     <stop offset="0%" stopColor={currentTheme.primary || colors.primary} />
-                    <stop offset="35%" stopColor={currentTheme.accent || colors.primary} />
-                    <stop offset="65%" stopColor={currentTheme.status?.warning || '#f59e0b'} />
-                    <stop
-                      offset="100%"
-                      stopColor={currentTheme.status?.success || colors.status.success}
-                    />
+                    <stop offset="50%" stopColor={currentTheme.accent || colors.primary} />
+                    <stop offset="100%" stopColor={currentTheme.secondary || colors.primary} />
                   </linearGradient>
                 </defs>
                 <circle

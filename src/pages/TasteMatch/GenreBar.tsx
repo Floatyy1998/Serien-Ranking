@@ -98,7 +98,7 @@ export const GenreBar: React.FC<{
               height: '100%',
               background: USER_GRADIENT,
               borderRadius: 5,
-              boxShadow: `0 0 10px ${USER_COLOR}50`,
+              boxShadow: '0 0 10px var(--theme-primary-30)',
             }}
           />
         </div>

@@ -37,19 +37,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.3);
+  background-color: color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent);
   border-radius: 4px;
   border: transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.5);
+  background-color: color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.3) transparent;
+  scrollbar-color: color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent) transparent;
 }
 
 /* iOS-specific overscroll prevention */

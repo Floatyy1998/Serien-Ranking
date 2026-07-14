@@ -33,6 +33,12 @@ vi.mock('../../components/ui', () => ({
       <span>{subtitle}</span>
     </div>
   ),
+  EmptyState: ({ title, description }: { title?: ReactNode; description?: ReactNode }) => (
+    <div>
+      <span>{title}</span>
+      <span>{description}</span>
+    </div>
+  ),
 }));
 
 function makeManga(overrides: Partial<Manga> = {}): Manga {
@@ -71,7 +77,7 @@ describe('MangaRatingsPage', () => {
     render(<MangaRatingsPage />);
     fireEvent.click(screen.getByText('Unbewertet'));
     // Das einzige (bewertete) Manga wird herausgefiltert
-    expect(screen.getByText('Keine Manga mit diesem Filter')).toBeInTheDocument();
+    expect(screen.getByText('Keine Manga gefunden')).toBeInTheDocument();
   });
 
   it('navigiert zur Detailseite beim Klick auf ein Poster', () => {

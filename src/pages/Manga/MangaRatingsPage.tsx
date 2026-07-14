@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { PageHeader, PageLayout } from '../../components/ui';
+import { EmptyState, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Manga } from '../../types/Manga';
@@ -179,57 +179,68 @@ export const MangaRatingsPage = () => {
           style={{
             display: 'flex',
             gap: 8,
-            overflowX: 'auto',
+            flexWrap: 'wrap',
             marginBottom: 12,
-            paddingBottom: 4,
           }}
         >
-          {QUICK_FILTERS.map((f) => (
-            <button
-              key={f.id}
-              onClick={() => setQuickFilter(f.id)}
-              style={{
-                padding: '7px 14px',
-                borderRadius: 10,
-                border: `1px solid ${quickFilter === f.id ? currentTheme.primary : 'rgba(255,255,255,0.08)'}`,
-                background:
-                  quickFilter === f.id ? `${currentTheme.primary}20` : 'rgba(255,255,255,0.04)',
-                color: quickFilter === f.id ? currentTheme.primary : currentTheme.text.secondary,
-                fontSize: 12,
-                fontWeight: 500,
-                whiteSpace: 'nowrap',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-body)',
-                opacity: quickFilter === f.id ? 1 : 0.7,
-              }}
-            >
-              {f.label}
-            </button>
-          ))}
+          {QUICK_FILTERS.map((f) => {
+            const active = quickFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setQuickFilter(f.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-full)',
+                  border: `1px solid ${active ? 'var(--theme-primary-40)' : 'var(--glass-border-subtle)'}`,
+                  background: active ? 'var(--theme-primary-15)' : 'var(--glass-subtle)',
+                  backdropFilter: 'var(--glass-filter-sm)',
+                  WebkitBackdropFilter: 'var(--glass-filter-sm)',
+                  boxShadow: active ? 'inset 0 0 0 1px var(--theme-primary-20)' : undefined,
+                  color: active ? currentTheme.primary : currentTheme.text.secondary,
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 500,
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  opacity: active ? 1 : 0.75,
+                  transition:
+                    'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Sort */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-          {SORT_OPTIONS.map((s) => (
-            <button
-              key={s.value}
-              onClick={() => setSortBy(s.value)}
-              style={{
-                padding: '5px 10px',
-                borderRadius: 8,
-                border: 'none',
-                background: sortBy === s.value ? `${currentTheme.primary}25` : 'transparent',
-                color: sortBy === s.value ? currentTheme.primary : currentTheme.text.secondary,
-                fontSize: 11,
-                fontWeight: sortBy === s.value ? 600 : 400,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-body)',
-                opacity: sortBy === s.value ? 1 : 0.5,
-              }}
-            >
-              {s.label}
-            </button>
-          ))}
+          {SORT_OPTIONS.map((s) => {
+            const active = sortBy === s.value;
+            return (
+              <button
+                key={s.value}
+                onClick={() => setSortBy(s.value)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-full)',
+                  border: `1px solid ${active ? 'var(--theme-primary-30)' : 'transparent'}`,
+                  background: active ? 'var(--theme-primary-12)' : 'transparent',
+                  color: active ? currentTheme.primary : currentTheme.text.secondary,
+                  fontSize: 11,
+                  fontWeight: active ? 700 : 400,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  opacity: active ? 1 : 0.55,
+                  transition:
+                    'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
+                }}
+              >
+                {s.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Grid */}
@@ -299,9 +310,11 @@ export const MangaRatingsPage = () => {
         </div>
 
         {items.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
-            Keine Manga mit diesem Filter
-          </div>
+          <EmptyState
+            icon={<Star style={{ fontSize: 40 }} />}
+            title="Keine Manga gefunden"
+            description="Mit diesem Filter gibt es gerade nichts. Wähle einen anderen Filter oder füge neue Manga hinzu."
+          />
         )}
       </div>
     </PageLayout>

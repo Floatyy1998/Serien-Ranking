@@ -61,7 +61,7 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
             className="tm-avatar"
             style={{
               background: USER_GRADIENT,
-              boxShadow: `0 8px 30px ${USER_COLOR}50`,
+              boxShadow: '0 8px 30px var(--theme-primary-30)',
             }}
           >
             {userPhoto ? (
@@ -127,9 +127,9 @@ export const ScoreHeader: React.FC<ScoreHeaderProps> = React.memo(
             transition={{ delay: 0.2 }}
             className="tm-name-pill"
             style={{
-              background: `${USER_COLOR}20`,
+              background: 'var(--theme-primary-12)',
               color: USER_COLOR,
-              border: `1px solid ${USER_COLOR}30`,
+              border: '1px solid var(--theme-primary-20)',
             }}
           >
             {userName}

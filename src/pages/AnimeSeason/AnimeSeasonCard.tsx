@@ -21,7 +21,7 @@
  */
 
 import React, { useState } from 'react';
-import { CircularProgress } from '@mui/material';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
@@ -360,7 +360,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
                 style={{ color: currentTheme.text.secondary }}
               >
                 {adding ? (
-                  <CircularProgress size={12} style={{ color: currentTheme.accent }} />
+                  <LoadingSpinner inline size={12} borderWidth={2} color={currentTheme.accent} />
                 ) : (
                   <Add style={{ fontSize: '15px' }} />
                 )}
@@ -414,7 +414,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
         {/* Spinner-Overlay während der Klick-Auflösung */}
         {resolving && (
           <div className="as-card-resolving">
-            <CircularProgress size={28} style={{ color: currentTheme.accent }} />
+            <LoadingSpinner inline size={28} color={currentTheme.accent} />
           </div>
         )}
       </article>

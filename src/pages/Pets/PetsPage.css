@@ -872,7 +872,7 @@
 }
 
 .pet-action-btn--revive {
-  background: linear-gradient(135deg, var(--theme-primary, #667eea), var(--theme-accent, #8b5cf6));
+  background: linear-gradient(135deg, var(--theme-primary, #00d123), var(--theme-accent, #008a6e));
   box-shadow: 0 8px 24px var(--theme-primary-40, rgba(102, 126, 234, 0.35));
 }
 

@@ -9,6 +9,8 @@ interface LoadingSpinnerProps {
   borderWidth?: number;
   text?: string;
   style?: React.CSSProperties;
+  /** Kompakt für Buttons/Zeilen: kein Padding, kein Textblock */
+  inline?: boolean;
 }
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -17,19 +19,27 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   borderWidth = 3,
   text,
   style,
+  inline = false,
 }) => {
   const { currentTheme } = useTheme();
   const spinnerColor = color || currentTheme.primary;
 
   return (
-    <div role="status" style={{ textAlign: 'center', padding: '40px 0', ...style }}>
+    <div
+      role="status"
+      style={
+        inline
+          ? { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', ...style }
+          : { textAlign: 'center', padding: '40px 0', ...style }
+      }
+    >
       <div
         aria-hidden="true"
         style={{
           width: size,
           height: size,
           position: 'relative',
-          margin: '0 auto 16px',
+          margin: inline ? 0 : '0 auto 16px',
         }}
       >
         {/* Outer ring - slow */}

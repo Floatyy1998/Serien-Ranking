@@ -67,21 +67,68 @@ export class ErrorBoundary extends Component<Props, State> {
       <div
         style={{
           minHeight: '100vh',
-          background: '#0a0a0a',
-          color: '#e5e5e5',
+          background:
+            'radial-gradient(120% 80% at 50% 0%, var(--theme-primary-05, rgba(0,209,35,0.05)), transparent 60%), var(--theme-background, #000)',
+          color: 'var(--color-text-secondary, #e5e5e5)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '24px',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+          fontFamily: 'var(--font-body, -apple-system, sans-serif)',
         }}
       >
-        <div style={{ maxWidth: '480px', width: '100%' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px' }}>:(</div>
-          <h1 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 8px', color: '#fff' }}>
+        <div
+          style={{
+            maxWidth: '520px',
+            width: '100%',
+            padding: '32px 28px',
+            borderRadius: 'var(--radius-2xl, 24px)',
+            background: 'var(--glass-medium, rgba(255,255,255,0.07))',
+            backdropFilter: 'var(--glass-filter-lg, blur(24px))',
+            WebkitBackdropFilter: 'var(--glass-filter-lg, blur(24px))',
+            border: '1px solid var(--glass-border-light, rgba(255,255,255,0.08))',
+            boxShadow:
+              'var(--shadow-cinematic, 0 20px 60px -15px rgba(0,0,0,0.7)), inset 0 1px 0 rgba(255,255,255,0.12)',
+          }}
+        >
+          <div
+            aria-hidden="true"
+            style={{
+              width: '56px',
+              height: '56px',
+              borderRadius: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '26px',
+              marginBottom: '18px',
+              background: 'color-mix(in srgb, #ef4444 14%, transparent)',
+              border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)',
+              boxShadow: '0 0 24px color-mix(in srgb, #ef4444 20%, transparent)',
+            }}
+          >
+            ⚠️
+          </div>
+          <h1
+            style={{
+              fontSize: '22px',
+              fontWeight: 800,
+              letterSpacing: '-0.02em',
+              margin: '0 0 8px',
+              color: '#fff',
+              fontFamily: 'var(--font-display, inherit)',
+            }}
+          >
             Etwas ist schiefgelaufen
           </h1>
-          <p style={{ fontSize: '14px', color: '#a3a3a3', margin: '0 0 24px', lineHeight: 1.5 }}>
+          <p
+            style={{
+              fontSize: '14px',
+              color: 'var(--color-text-muted, #a3a3a3)',
+              margin: '0 0 24px',
+              lineHeight: 1.5,
+            }}
+          >
             Die App ist auf einen unerwarteten Fehler gestossen. Du kannst den Fehler kopieren und
             als Bug-Ticket einreichen.
           </p>
@@ -90,10 +137,10 @@ export class ErrorBoundary extends Component<Props, State> {
           <pre
             style={{
               fontSize: '11px',
-              color: '#ef4444',
-              background: '#1a1a1a',
-              border: '1px solid #262626',
-              borderRadius: '8px',
+              color: '#f87171',
+              background: 'rgba(0, 0, 0, 0.35)',
+              border: '1px solid color-mix(in srgb, #ef4444 18%, transparent)',
+              borderRadius: 'var(--radius-md, 12px)',
               padding: '12px',
               margin: '0 0 20px',
               whiteSpace: 'pre-wrap',
@@ -112,14 +159,17 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleCopy}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: '1px solid #333',
-                background: '#1a1a1a',
-                color: '#e5e5e5',
+                padding: '13px 16px',
+                borderRadius: 'var(--radius-md, 12px)',
+                border: '1px solid var(--glass-border-light, rgba(255,255,255,0.08))',
+                background: 'var(--glass-light, rgba(255,255,255,0.04))',
+                color: 'var(--color-text-secondary, #e5e5e5)',
                 fontSize: '13px',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
+                minHeight: '44px',
+                fontFamily: 'inherit',
+                transition: 'background var(--duration-fast, 0.15s) ease',
               }}
             >
               Fehler kopieren
@@ -128,14 +178,17 @@ export class ErrorBoundary extends Component<Props, State> {
               onClick={this.handleReload}
               style={{
                 flex: 1,
-                padding: '12px 16px',
-                borderRadius: '8px',
+                padding: '13px 16px',
+                borderRadius: 'var(--radius-md, 12px)',
                 border: 'none',
-                background: '#3b82f6',
-                color: '#fff',
+                background: 'var(--theme-primary, #00d123)',
+                color: 'var(--theme-background, #000)',
                 fontSize: '13px',
-                fontWeight: 600,
+                fontWeight: 700,
                 cursor: 'pointer',
+                minHeight: '44px',
+                fontFamily: 'inherit',
+                boxShadow: 'var(--glow-soft, 0 0 24px rgba(0,209,35,0.25))',
               }}
             >
               Neu laden
@@ -163,9 +216,10 @@ export class ErrorBoundary extends Component<Props, State> {
             style={{
               display: 'block',
               textAlign: 'center',
-              marginTop: '16px',
+              marginTop: '18px',
               fontSize: '13px',
-              color: '#3b82f6',
+              fontWeight: 600,
+              color: 'var(--theme-primary, #00d123)',
               textDecoration: 'none',
             }}
           >

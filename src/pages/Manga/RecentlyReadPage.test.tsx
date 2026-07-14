@@ -31,6 +31,12 @@ vi.mock('../../components/ui', () => ({
       <span>{subtitle}</span>
     </div>
   ),
+  EmptyState: ({ title, description }: { title?: ReactNode; description?: ReactNode }) => (
+    <div>
+      <span>{title}</span>
+      <span>{description}</span>
+    </div>
+  ),
 }));
 
 function makeManga(overrides: Partial<Manga> = {}): Manga {

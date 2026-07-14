@@ -83,7 +83,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           top: '20%',
           bottom: '20%',
           width: '2px',
-          background: `linear-gradient(180deg, #00d9ff 0%, ${currentTheme.accent} 100%)`,
+          background: `linear-gradient(180deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
           transformOrigin: 'top',
           opacity: 0.3,
         }}

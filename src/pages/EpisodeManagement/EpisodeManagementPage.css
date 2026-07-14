@@ -35,7 +35,11 @@
   width: 50%;
   height: 40%;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
+  background: radial-gradient(
+    ellipse,
+    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 12%, transparent) 0%,
+    transparent 70%
+  );
   filter: blur(40px);
   pointer-events: none;
   z-index: 0;

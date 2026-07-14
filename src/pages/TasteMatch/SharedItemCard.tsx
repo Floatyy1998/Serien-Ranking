@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { SharedItem } from '../../services/tasteMatchService';
-import { USER_COLOR, USER_GRADIENT, FRIEND_COLOR, ACCENT_COLORS } from './constants';
+import { USER_COLOR, FRIEND_COLOR, ACCENT_COLORS } from './constants';
 
 export const SharedItemCard: React.FC<{
   item: SharedItem;
@@ -55,7 +55,7 @@ export const SharedItemCard: React.FC<{
             left: 0,
             right: 0,
             height: '2px',
-            background: `linear-gradient(90deg, ${USER_GRADIENT.split('(')[1].split(',')[1]}, ${FRIEND_COLOR})`,
+            background: `linear-gradient(90deg, ${USER_COLOR}, ${FRIEND_COLOR})`,
           }}
         />
       )}
@@ -112,7 +112,7 @@ export const SharedItemCard: React.FC<{
                 alignItems: 'center',
                 gap: '4px',
                 padding: '3px 8px',
-                background: `${USER_COLOR}20`,
+                background: 'var(--theme-primary-12)',
                 borderRadius: '6px',
               }}
             >

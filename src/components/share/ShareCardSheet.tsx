@@ -10,7 +10,7 @@
  */
 
 import { IosShare } from '@mui/icons-material';
-import { CircularProgress } from '@mui/material';
+import { LoadingSpinner } from '../ui/LoadingSpinner';
 import { motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -161,7 +161,12 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
         >
           {sharing ? (
             <>
-              <CircularProgress size={20} sx={{ color: currentTheme.background.default }} />
+              <LoadingSpinner
+                inline
+                size={20}
+                borderWidth={2}
+                color={currentTheme.background.default}
+              />
               <span>Bild wird erstellt…</span>
             </>
           ) : (

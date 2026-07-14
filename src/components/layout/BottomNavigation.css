@@ -92,8 +92,8 @@
   top: 10px;
   bottom: 10px;
   border-radius: 14px;
-  background: var(--color-primary-15);
-  border: 1px solid var(--color-primary-15);
+  background: var(--theme-primary-15);
+  border: 1px solid var(--theme-primary-15);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   pointer-events: none;

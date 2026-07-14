@@ -2,7 +2,7 @@ import { History } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader, PageLayout } from '../../components/ui';
+import { EmptyState, PageHeader, PageLayout } from '../../components/ui';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -91,26 +91,33 @@ export const RecentlyReadPage = () => {
       <div style={{ padding: '0 16px' }}>
         {/* Time Range */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-          {TIME_RANGES.map((r) => (
-            <button
-              key={r.days}
-              onClick={() => setRangeDays(r.days)}
-              style={{
-                padding: '7px 14px',
-                borderRadius: 10,
-                border: `1px solid ${rangeDays === r.days ? currentTheme.primary : 'rgba(255,255,255,0.08)'}`,
-                background:
-                  rangeDays === r.days ? `${currentTheme.primary}20` : 'rgba(255,255,255,0.04)',
-                color: rangeDays === r.days ? currentTheme.primary : currentTheme.text.secondary,
-                fontSize: 12,
-                fontWeight: 500,
-                cursor: 'pointer',
-                fontFamily: 'var(--font-body)',
-              }}
-            >
-              {r.label}
-            </button>
-          ))}
+          {TIME_RANGES.map((r) => {
+            const active = rangeDays === r.days;
+            return (
+              <button
+                key={r.days}
+                onClick={() => setRangeDays(r.days)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 'var(--radius-full)',
+                  border: `1px solid ${active ? 'var(--theme-primary-40)' : 'var(--glass-border-subtle)'}`,
+                  background: active ? 'var(--theme-primary-15)' : 'var(--glass-subtle)',
+                  backdropFilter: 'var(--glass-filter-sm)',
+                  WebkitBackdropFilter: 'var(--glass-filter-sm)',
+                  boxShadow: active ? 'inset 0 0 0 1px var(--theme-primary-20)' : undefined,
+                  color: active ? currentTheme.primary : currentTheme.text.secondary,
+                  fontSize: 12,
+                  fontWeight: active ? 700 : 500,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                  transition:
+                    'background var(--duration-fast) ease, border-color var(--duration-fast) ease, color var(--duration-fast) ease',
+                }}
+              >
+                {r.label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Date Groups */}
@@ -218,22 +225,11 @@ export const RecentlyReadPage = () => {
         </div>
 
         {dateGroups.length === 0 && (
-          <div style={{ textAlign: 'center', padding: 60 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>📖</div>
-            <div style={{ fontSize: 16, fontWeight: 600, color: currentTheme.text.primary }}>
-              Kein Lese-Verlauf
-            </div>
-            <div
-              style={{
-                fontSize: 14,
-                color: currentTheme.text.secondary,
-                opacity: 0.6,
-                marginTop: 4,
-              }}
-            >
-              Hier siehst du deine zuletzt gelesenen Manga.
-            </div>
-          </div>
+          <EmptyState
+            icon={<History style={{ fontSize: 40 }} />}
+            title="Kein Lese-Verlauf"
+            description="Hier siehst du deine zuletzt gelesenen Manga, sobald du Kapitel als gelesen markierst."
+          />
         )}
       </div>
     </PageLayout>

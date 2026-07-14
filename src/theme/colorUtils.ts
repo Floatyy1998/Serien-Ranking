@@ -102,6 +102,19 @@ export function darkenColor(hex: string, amount: number): string {
 }
 
 /**
+ * Verblendet zwei Hex-Farben zu einem soliden Hex (fgRatio = Anteil von fg).
+ */
+export function blendColors(fg: string, bg: string, fgRatio: number): string {
+  const f = hexToRgb(fg);
+  const b = hexToRgb(bg);
+  if (!f || !b) return fg;
+  const mix = (x: number, y: number) => Math.round(x * fgRatio + y * (1 - fgRatio));
+  return `#${[mix(f.r, b.r), mix(f.g, b.g), mix(f.b, b.b)]
+    .map((c) => c.toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
+/**
  * Erstellt eine transparente Version einer Farbe
  */
 export function withOpacity(hex: string, opacity: number): string {

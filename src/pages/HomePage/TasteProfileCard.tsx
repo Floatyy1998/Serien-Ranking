@@ -5,19 +5,18 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, NavCard } from '../../components/ui';
 
-const ACCENT = '#a855f7';
-
 export const TasteProfileCard: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const accent = currentTheme.secondary;
 
   return (
     <NavCard
       onClick={() => navigate('/taste-profile')}
-      accentColor={ACCENT}
+      accentColor={accent}
       aria-label="KI Geschmacksprofil: Dein Seriengeschmack analysiert"
     >
-      <IconContainer color={ACCENT} secondaryColor="#ec4899">
+      <IconContainer color={accent} secondaryColor={currentTheme.accent}>
         <AutoAwesome style={{ fontSize: 20, color: 'white' }} />
       </IconContainer>
 
@@ -57,7 +56,7 @@ export const TasteProfileCard: React.FC = () => {
               width: 6,
               height: 6,
               borderRadius: '50%',
-              background: `linear-gradient(135deg, ${ACCENT}, #ec4899)`,
+              background: `linear-gradient(135deg, ${accent}, ${currentTheme.accent})`,
             }}
           />
         ))}

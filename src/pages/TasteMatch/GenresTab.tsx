@@ -42,7 +42,7 @@ export const GenresTab: React.FC<GenresTabProps> = React.memo(
               className="tm-genre-legend__swatch"
               style={{
                 background: USER_GRADIENT,
-                boxShadow: `0 4px 12px ${USER_COLOR}40`,
+                boxShadow: '0 4px 12px var(--theme-primary-25)',
               }}
             >
               <span className="tm-genre-legend__swatch-text">

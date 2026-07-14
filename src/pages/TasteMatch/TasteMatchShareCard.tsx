@@ -43,7 +43,7 @@ const CardAvatar: React.FC<AvatarProps> = ({ name, photo, gradient, color, showI
       fontSize: 64,
       fontWeight: 900,
       color: 'white',
-      boxShadow: `0 12px 40px ${color}50`,
+      boxShadow: `0 12px 40px color-mix(in srgb, ${color} 31%, transparent)`,
       flexShrink: 0,
     }}
   >

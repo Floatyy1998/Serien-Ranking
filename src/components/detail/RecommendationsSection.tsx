@@ -314,7 +314,7 @@ const MagneticCard = memo(
             aspectRatio: '2 / 3',
             borderRadius: 16,
             overflow: 'hidden',
-            background: '#0a0e1a',
+            background: 'var(--theme-surface, #0f0f0f)',
             transformStyle: 'preserve-3d',
             rotateX: isMobile ? 0 : rotateX,
             rotateY: isMobile ? 0 : rotateY,

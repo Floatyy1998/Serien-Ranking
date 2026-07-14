@@ -26,7 +26,9 @@ export const SectionToggleCard = ({ checked, onChange, label }: SectionToggleCar
       <span
         className="hl-toggle-track"
         style={{
-          backgroundColor: checked ? currentTheme.primary : `${currentTheme.text.muted}30`,
+          backgroundColor: checked
+            ? currentTheme.primary
+            : `color-mix(in srgb, ${currentTheme.text.muted} 30%, transparent)`,
         }}
       >
         <span

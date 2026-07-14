@@ -40,7 +40,7 @@
 }
 
 .manga-search-input:focus {
-  border-color: var(--color-primary, #8b5cf6);
+  border-color: var(--color-primary, #00d123);
   background: var(--glass-medium);
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
@@ -251,7 +251,7 @@
 
 .manga-filter-tab--active {
   opacity: 1;
-  border-color: var(--color-primary, #8b5cf6);
+  border-color: var(--color-primary, #00d123);
   background: rgba(139, 92, 246, 0.15);
 }
 

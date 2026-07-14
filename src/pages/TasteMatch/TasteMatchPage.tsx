@@ -33,7 +33,7 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
   <div className="tm-loading-container" style={{ background: bgDefault }}>
     <div
       className="tm-loading-bg-orb tm-loading-bg-orb--user"
-      style={{ background: `radial-gradient(circle, ${USER_COLOR}30, transparent 70%)` }}
+      style={{ background: 'radial-gradient(circle, var(--theme-primary-20), transparent 70%)' }}
     />
     <div
       className="tm-loading-bg-orb tm-loading-bg-orb--friend"
@@ -65,7 +65,7 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
         transition={{ duration: 1.5, repeat: Infinity }}
         className="tm-loading-orbiter__center"
         style={{
-          background: `linear-gradient(135deg, ${USER_COLOR}40, ${FRIEND_COLOR}40)`,
+          background: `linear-gradient(135deg, var(--theme-primary-25), ${FRIEND_COLOR}40)`,
         }}
       >
         <CompareArrows style={{ fontSize: 32, color: textPrimary }} />
@@ -156,7 +156,7 @@ export const TasteMatchPage: React.FC = () => {
         <div
           className="tm-bg-gradients__orb tm-bg-gradients__orb--user"
           style={{
-            background: `radial-gradient(ellipse, ${USER_COLOR}15 0%, transparent 70%)`,
+            background: 'radial-gradient(ellipse, var(--theme-primary-08) 0%, transparent 70%)',
           }}
         />
         <div

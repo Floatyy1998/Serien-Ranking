@@ -10,6 +10,23 @@
   --theme-text-secondary: #ffffff;
   --theme-secondary-gradient: #8b5cf6;
 
+  /* Alpha-Skala der Theme-Farben */
+  --theme-primary-05: color-mix(in srgb, var(--theme-primary) 5%, transparent);
+  --theme-primary-08: color-mix(in srgb, var(--theme-primary) 8%, transparent);
+  --theme-primary-10: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  --theme-primary-12: color-mix(in srgb, var(--theme-primary) 12%, transparent);
+  --theme-primary-15: color-mix(in srgb, var(--theme-primary) 15%, transparent);
+  --theme-primary-20: color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --theme-primary-25: color-mix(in srgb, var(--theme-primary) 25%, transparent);
+  --theme-primary-30: color-mix(in srgb, var(--theme-primary) 30%, transparent);
+  --theme-primary-40: color-mix(in srgb, var(--theme-primary) 40%, transparent);
+  --theme-primary-50: color-mix(in srgb, var(--theme-primary) 50%, transparent);
+  --theme-primary-60: color-mix(in srgb, var(--theme-primary) 60%, transparent);
+  --theme-accent-15: color-mix(in srgb, var(--theme-accent) 15%, transparent);
+  --theme-accent-30: color-mix(in srgb, var(--theme-accent) 30%, transparent);
+  --theme-secondary-10: color-mix(in srgb, var(--theme-secondary-gradient) 10%, transparent);
+  --theme-secondary-20: color-mix(in srgb, var(--theme-secondary-gradient) 20%, transparent);
+
   /* Design Tokens - Typography Scale
      Kanonische Font-Größen — Komponenten mappen hart kodierte px hierauf.
      Basis 16px; px absichtlich (nicht rem), da mit dem übrigen System konsistent. */
@@ -98,23 +115,21 @@
   --font-display: 'Satoshi', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Glow-Tokens */
-  --glow-primary:
-    0 0 20px color-mix(in srgb, var(--theme-primary) 40%, transparent),
-    0 0 40px color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --glow-primary: 0 0 20px var(--theme-primary-40), 0 0 40px var(--theme-primary-20);
   --glow-primary-intense:
-    0 0 20px color-mix(in srgb, var(--theme-primary) 60%, transparent),
-    0 0 60px color-mix(in srgb, var(--theme-primary) 30%, transparent),
-    0 0 100px color-mix(in srgb, var(--theme-primary) 15%, transparent);
+    0 0 20px var(--theme-primary-60), 0 0 60px var(--theme-primary-30),
+    0 0 100px var(--theme-primary-15);
+  --glow-soft: 0 0 24px var(--theme-primary-25);
   /* Pre-init fallback only — ThemeContext overrides this at runtime with the live
      accent color as a box-shadow. Aligned to the theme language (green) instead of
      the old static purple so a pre-hydration flash matches the brand. */
-  --glow-accent:
-    0 0 20px color-mix(in srgb, var(--theme-primary) 45%, transparent),
-    0 0 40px color-mix(in srgb, var(--theme-primary) 20%, transparent);
+  --glow-accent: 0 0 20px var(--theme-primary-40), 0 0 40px var(--theme-primary-20);
   --glow-cinematic:
-    0 0 30px color-mix(in srgb, var(--theme-primary) 25%, transparent),
-    0 0 80px color-mix(in srgb, var(--theme-primary) 10%, transparent),
+    0 0 30px var(--theme-primary-25), 0 0 80px var(--theme-primary-10),
     0 0 120px color-mix(in srgb, var(--theme-secondary-gradient) 8%, transparent);
+
+  --shadow-glow: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 32px -6px var(--theme-primary-20);
+  --focus-ring: 0 0 0 4px var(--theme-primary-15);
 
   /* Glass-Stufen — chromatisch: minimal mit der Theme-Primary getönt statt
      neutralweiß. Das Glas nimmt dadurch die Identität des User-Themes an
@@ -139,7 +154,7 @@
     var(--theme-secondary-gradient, #8b5cf6)
   );
   --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
-  --gradient-cool: linear-gradient(135deg, var(--theme-primary), #3b82f6);
+  --gradient-cool: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
   --gradient-cinematic: linear-gradient(
     135deg,
     var(--theme-primary),
@@ -190,6 +205,36 @@
   border: 1px solid var(--glass-border-light);
   border-top-color: rgba(255, 255, 255, 0.22);
   box-shadow: var(--shadow-lg), var(--glass-specular);
+}
+
+/* Glas-Inputs (native input/textarea) */
+.glass-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--glass-light);
+  -webkit-backdrop-filter: var(--glass-filter-sm);
+  backdrop-filter: var(--glass-filter-sm);
+  border: 1px solid var(--glass-border-light);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary, #fff);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  box-sizing: border-box;
+  transition:
+    border-color var(--duration-fast) var(--ease-default),
+    box-shadow var(--duration-fast) var(--ease-default),
+    background var(--duration-fast) var(--ease-default);
+}
+
+.glass-input::placeholder {
+  color: var(--color-text-muted, #999);
+  opacity: 0.7;
+}
+
+.glass-input:focus {
+  border-color: var(--theme-primary-40);
+  box-shadow: var(--focus-ring);
+  background: var(--glass-medium);
 }
 
 /* Geteilter TabSwitcher (components/ui): mobil volle Breite,
@@ -355,6 +400,11 @@ svg rect {
   box-shadow: none !important;
 }
 
+::selection {
+  background: var(--theme-primary-25);
+  color: inherit;
+}
+
 /* WCAG 2.1 AA - Focus styles */
 
 /* Global focus-visible outline for all interactive elements */
@@ -390,7 +440,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--theme-primary, #00d123) !important;
   outline-offset: 2px !important;
-  box-shadow: 0 0 0 4px rgba(0, 209, 35, 0.15) !important;
+  box-shadow: var(--focus-ring) !important;
 }
 
 /* MUI TextFields have their own focus border via fieldset — skip global outline */

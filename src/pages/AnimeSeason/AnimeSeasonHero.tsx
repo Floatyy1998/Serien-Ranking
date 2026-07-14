@@ -19,7 +19,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { CircularProgress } from '@mui/material';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { Add, CheckCircle } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -243,7 +243,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
           style={{ color: '#fff' }}
         >
           {adding ? (
-            <CircularProgress size={16} style={{ color: currentTheme.accent }} />
+            <LoadingSpinner inline size={16} borderWidth={2} color={currentTheme.accent} />
           ) : (
             <Add style={{ fontSize: '20px' }} />
           )}
@@ -315,7 +315,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
 
       {resolving && (
         <div className="as-card-resolving">
-          <CircularProgress size={32} style={{ color: currentTheme.accent }} />
+          <LoadingSpinner inline size={32} color={currentTheme.accent} />
         </div>
       )}
     </section>
