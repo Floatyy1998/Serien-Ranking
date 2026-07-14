@@ -39,6 +39,14 @@ const fb = vi.hoisted(() => {
       const cur = (getAt(path) as Record<string, unknown>) || {};
       setAt(path, { ...cur, ...v });
     },
+    async transaction(fn: (current: unknown) => unknown) {
+      const next = fn(getAt(path));
+      if (next === undefined) {
+        return { committed: false, snapshot: { val: () => getAt(path) } };
+      }
+      setAt(path, next);
+      return { committed: true, snapshot: { val: () => next } };
+    },
   });
   return {
     getAt,
@@ -124,11 +132,43 @@ describe('ensureInitialized', () => {
     expect(data).toEqual({ boxesOpened: 5, lastOpenedBoxNumber: 5, schemaVersion: 2 });
   });
 
-  it('Self-Heal: gesunkene Episodenzahl zieht die Baseline auf den aktuellen Stand zurück', async () => {
+  it('Self-Heal: erste Defizit-Sichtung heilt NICHT, sondern merkt nur einen Kandidaten vor', async () => {
+    // Regression Doppel-Einloesung: App-Start mit halb geladener Zaehlung
+    // darf die Baseline nicht zurueckspulen (Box waere doppelt einloesbar).
     fb.setAt(MB, { boxesOpened: 5, lastOpenedBoxNumber: 5, schemaVersion: 2 });
     const data = await ensureInitialized('u', 40); // earned=2 < lastOpened 5
+    expect(data.lastOpenedBoxNumber).toBe(5); // Baseline unveraendert
+    expect(data.healCandidateEarned).toBe(2);
+    expect(typeof data.healCandidateAt).toBe('number');
+    expect(fb.getAt(MB)).toMatchObject({ lastOpenedBoxNumber: 5 });
+  });
+
+  it('Self-Heal: Defizit besteht nach >= 24h weiter → Baseline wird zurückgezogen', async () => {
+    fb.setAt(MB, {
+      boxesOpened: 5,
+      lastOpenedBoxNumber: 5,
+      schemaVersion: 2,
+      healCandidateEarned: 2,
+      healCandidateAt: Date.now() - 25 * 60 * 60 * 1000,
+    });
+    const data = await ensureInitialized('u', 40); // earned=2 < lastOpened 5
     expect(data.lastOpenedBoxNumber).toBe(2);
+    expect(data.healCandidateAt).toBeUndefined();
     expect(fb.getAt(MB)).toMatchObject({ lastOpenedBoxNumber: 2 });
+  });
+
+  it('Self-Heal: höherer Stand verwirft den Heal-Kandidaten (Zählung war nur stale)', async () => {
+    fb.setAt(MB, {
+      boxesOpened: 5,
+      lastOpenedBoxNumber: 5,
+      schemaVersion: 2,
+      healCandidateEarned: 2,
+      healCandidateAt: Date.now() - 25 * 60 * 60 * 1000,
+    });
+    const data = await ensureInitialized('u', 120); // earned=6 >= lastOpened 5
+    expect(data.lastOpenedBoxNumber).toBe(5);
+    expect(data.healCandidateAt).toBeUndefined();
+    expect(data.healCandidateEarned).toBeUndefined();
   });
 
   it('lastOpenedBoxNumber 0 gilt als gültiger Stand (kein Re-Baseline bei jedem Mount)', async () => {
@@ -150,7 +190,7 @@ describe('getAvailableBoxCount', () => {
 
   it('nie negativ', async () => {
     fb.setAt(MB, { boxesOpened: 5, lastOpenedBoxNumber: 5, schemaVersion: 2 });
-    // Self-Heal zieht Baseline auf earned → 0 verfügbar
+    // Defizit-Fall: Baseline bleibt (Heal-Hysterese) → max(0, 2-5) = 0 verfügbar
     expect(await getAvailableBoxCount('u', 40)).toBe(0);
   });
 });
@@ -159,6 +199,22 @@ describe('openMysteryBox', () => {
   it('liefert null, wenn keine Box verdient ist', async () => {
     fb.setAt(MB, { boxesOpened: 2, lastOpenedBoxNumber: 2, schemaVersion: 2 });
     expect(await openMysteryBox('u', 40)).toBeNull();
+  });
+
+  it('Regression Doppel-Einlösung: dieselbe Box kann nur EINMAL geöffnet werden', async () => {
+    // 1 Box verfügbar (earned 2, Baseline 1) — zweiter Open (zweites Gerät /
+    // Doppel-Tap) muss leer ausgehen, die Transaktion claimt atomar.
+    fb.setAt(MB, { boxesOpened: 1, lastOpenedBoxNumber: 1, schemaVersion: 2 });
+    vi.spyOn(Math, 'random').mockReturnValue(0.9); // common → xp_boost
+
+    const first = await openMysteryBox('u', 40);
+    const second = await openMysteryBox('u', 40);
+
+    expect(first).not.toBeNull();
+    expect(second).toBeNull();
+    expect(fb.getAt(MB)).toMatchObject({ boxesOpened: 2, lastOpenedBoxNumber: 2 });
+    const inv = fb.getAt('users/u/xpBoostInventory') as unknown[];
+    expect(inv).toHaveLength(1); // nur EINE Belohnung
   });
 
   it('öffnet die nächste Box, speichert Fortschritt und wendet eine XP-Boost-Belohnung an', async () => {

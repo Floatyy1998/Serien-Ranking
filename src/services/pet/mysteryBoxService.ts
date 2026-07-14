@@ -38,7 +38,19 @@ export interface MysteryBoxData {
   lastOpenedBoxNumber: number;
   /** Schema-Version — fehlt bei v1-Eintraegen, triggert Migration */
   schemaVersion?: number;
+  /**
+   * Self-Heal-Kandidat: earned-Stand + Zeitpunkt der ERSTEN Sichtung eines
+   * Defizits (Baseline > earned). Geheilt wird erst, wenn das Defizit nach
+   * >= 24h immer noch besteht — sonst spult jeder App-Start mit halb
+   * geladener Episoden-Zaehlung die Baseline zurueck und bereits geoeffnete
+   * Boxen lassen sich auf dem zweiten Geraet erneut einloesen.
+   */
+  healCandidateEarned?: number;
+  healCandidateAt?: number;
 }
+
+/** Defizit muss so lange bestehen, bevor der Self-Heal die Baseline zurückzieht */
+export const HEAL_DELAY_MS = 24 * 60 * 60 * 1000;
 
 /** Milestone-exclusive accessories (cannot drop from episodes or spin) */
 const MILESTONE_EXCLUSIVE_ACCESSORIES = [
@@ -104,13 +116,47 @@ export async function ensureInitialized(
     // Self-Heal: Liegt die Baseline VOR dem aktuellen Stand (Episoden-Zaehlung
     // gesunken — Serie geloescht, Catalog-Regeneration, geaenderte Zaehlbasis),
     // wuerde jede neue Box verschluckt: der Counter laeuft bis 20 und springt
-    // ohne Box auf 0. Baseline auf den aktuellen Stand zurueckziehen — das
-    // gewaehrt keine rueckwirkenden Boxen, macht aber die naechste wieder frei.
+    // ohne Box auf 0.
+    //
+    // ABER: beim App-Start ist die Zaehlung oft nur TEILWEISE geladen (alter
+    // IndexedDB-Cache, Delta-Sync laeuft noch). Sofortiges Zurueckspulen liess
+    // bereits geoeffnete Boxen nach dem Sync wieder aufploppen — Doppel-
+    // Einloesung auf dem zweiten Geraet. Deshalb Hysterese: erst heilen, wenn
+    // das Defizit nach >= 24h IMMER NOCH besteht; jeder zwischenzeitliche
+    // Stand ohne Defizit verwirft den Kandidaten.
     const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
     if (totalEpisodes > 0 && data.lastOpenedBoxNumber > earnedBoxes) {
-      const healed: MysteryBoxData = { ...data, lastOpenedBoxNumber: earnedBoxes };
-      await ref.set(healed);
-      return healed;
+      const candAt = typeof data.healCandidateAt === 'number' ? data.healCandidateAt : null;
+      if (candAt !== null && Date.now() - candAt >= HEAL_DELAY_MS) {
+        const healed: MysteryBoxData = {
+          boxesOpened: data.boxesOpened ?? 0,
+          lastOpenedBoxNumber: earnedBoxes,
+          schemaVersion: BOX_SCHEMA_VERSION,
+        };
+        await ref.set(healed);
+        return healed;
+      }
+      if (candAt === null) {
+        const marked: MysteryBoxData = {
+          ...data,
+          healCandidateEarned: earnedBoxes,
+          healCandidateAt: Date.now(),
+        };
+        await ref.set(marked);
+        return marked;
+      }
+      // Kandidat laeuft noch — Baseline unveraendert lassen
+      return data;
+    }
+    // Kein Defizit (mehr): offenen Heal-Kandidaten verwerfen
+    if (data.healCandidateAt !== undefined || data.healCandidateEarned !== undefined) {
+      const cleared: MysteryBoxData = {
+        boxesOpened: data.boxesOpened ?? 0,
+        lastOpenedBoxNumber: data.lastOpenedBoxNumber,
+        schemaVersion: BOX_SCHEMA_VERSION,
+      };
+      await ref.set(cleared);
+      return cleared;
     }
     return data;
   }
@@ -151,23 +197,36 @@ export async function openMysteryBox(
 ): Promise<MysteryBoxReward | null> {
   const data = await ensureInitialized(userId, totalEpisodes);
   const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
-  const lastOpened = data.lastOpenedBoxNumber;
 
-  if (earnedBoxes <= lastOpened) return null;
+  if (earnedBoxes <= data.lastOpenedBoxNumber) return null;
 
-  // Die nächste Box öffnen
-  const boxNumber = lastOpened + 1;
+  // Atomarer Claim per Transaktion: verhindert, dass zwei Geraete (oder
+  // schnelle Doppel-Taps) dieselbe Box-Nummer einloesen. Der Verlierer
+  // bekommt committed=false und geht leer aus — statt einer zweiten Belohnung.
+  const ref = dbRef(userPath(userId, 'mysteryBox'));
+  const tx = await ref.transaction((current: MysteryBoxData | null) => {
+    // Lokaler Transaktions-Cache kann leer sein → frisch gelesenen Stand
+    // als Ausgangspunkt nehmen; der Server-Roundtrip validiert ihn.
+    const cur = current ?? data;
+    const last =
+      typeof cur.lastOpenedBoxNumber === 'number' ? cur.lastOpenedBoxNumber : earnedBoxes;
+    if (earnedBoxes <= last) return undefined; // nichts (mehr) offen → abort
+    return {
+      boxesOpened: (cur.boxesOpened || 0) + 1,
+      lastOpenedBoxNumber: last + 1,
+      schemaVersion: BOX_SCHEMA_VERSION,
+      // Heal-Kandidat entfaellt bewusst: eine erfolgreich geoeffnete Box
+      // beweist, dass die Episoden-Zaehlung stimmt.
+    };
+  });
+
+  if (!tx.committed) return null;
+  const claimed = tx.snapshot?.val() as MysteryBoxData | null;
+  const boxNumber = claimed?.lastOpenedBoxNumber ?? data.lastOpenedBoxNumber + 1;
 
   // Rarity basierend auf Box-Nummer (je mehr Boxen, desto besser)
   const rarity = getBoxRarity(boxNumber);
   const reward = await generateMysteryReward(userId, rarity);
-
-  // Speichern
-  await dbRef(userPath(userId, 'mysteryBox')).set({
-    boxesOpened: (data?.boxesOpened || 0) + 1,
-    lastOpenedBoxNumber: boxNumber,
-    schemaVersion: BOX_SCHEMA_VERSION,
-  });
 
   // Reward anwenden
   await applyMysteryReward(userId, reward);

@@ -38,7 +38,9 @@ interface MysteryBoxOverlayProps {
 
 export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpisodes, onClose }) => {
   const { user } = useAuth() || {};
-  const [phase, setPhase] = useState<'closed' | 'shaking' | 'opening' | 'reveal'>('closed');
+  const [phase, setPhase] = useState<'closed' | 'shaking' | 'opening' | 'reveal' | 'gone'>(
+    'closed'
+  );
   const [reward, setReward] = useState<MysteryBoxReward | null>(null);
 
   const handleOpen = async () => {
@@ -65,6 +67,11 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
             // ignore
           }
         }, 800);
+      } else {
+        // Transaktion verloren: Box wurde parallel (anderes Geraet /
+        // Doppel-Tap) schon geoeffnet — sonst haengt das Overlay in
+        // 'opening' fest.
+        setPhase('gone');
       }
     }, 1500);
   };
@@ -135,7 +142,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
         </motion.h2>
 
         {/* Mystery Box */}
-        {phase !== 'reveal' && (
+        {phase !== 'reveal' && phase !== 'gone' && (
           <motion.div
             animate={
               phase === 'shaking'
@@ -280,6 +287,55 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               {reward.type === 'xp_boost' &&
                 `${reward.xpMultiplier}x XP Boost — aktiviere ihn auf der Pet-Seite!`}
             </motion.p>
+          </motion.div>
+        )}
+
+        {/* Box war schon weg (anderes Gerät hat sie geöffnet) */}
+        {phase === 'gone' && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 16,
+              marginBottom: 32,
+              textAlign: 'center',
+            }}
+          >
+            <Inventory2 style={{ fontSize: 56, color: 'rgba(255,255,255,0.35)' }} />
+            <span
+              style={{
+                color: 'white',
+                fontSize: 18,
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              Diese Box wurde schon geöffnet
+            </span>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, margin: 0, maxWidth: 320 }}>
+              Wahrscheinlich auf einem anderen Gerät eingelöst. Die nächste Box wartet nach den
+              nächsten Episoden auf dich.
+            </p>
+            <motion.button
+              whileTap={tapScale}
+              onClick={onClose}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                color: 'white',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: 16,
+                padding: '10px 32px',
+                fontSize: 15,
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginTop: 8,
+              }}
+            >
+              Alles klar
+            </motion.button>
           </motion.div>
         )}
 
