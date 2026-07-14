@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// ---------------------------------------------------------------------------
 // Verschachtelter Firebase-Mock (once/set/child/orderByKey/limitToLast + ServerValue).
 // OfflineBadgeSystem ist ein Singleton pro uid mit 30-Min-Cache → wir nutzen
 // vi.resetModules() + dynamischen Import und Fake-Timer für Cache-Ablauf.
-// ---------------------------------------------------------------------------
 const fb = vi.hoisted(() => {
   const root: Record<string, unknown> = {};
   const segs = (p: string) => p.split('/').filter(Boolean);
@@ -93,7 +91,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// ---------- Singleton ----------
+// Singleton
 
 describe('getOfflineBadgeSystem', () => {
   it('liefert dieselbe Instanz pro uid, verschiedene für verschiedene uids', async () => {
@@ -105,8 +103,6 @@ describe('getOfflineBadgeSystem', () => {
     expect(a1).not.toBe(b);
   });
 });
-
-// ---------- getUserBadges ----------
 
 describe('getUserBadges', () => {
   it('liefert die gespeicherten Badges als Array', async () => {
@@ -125,8 +121,6 @@ describe('getUserBadges', () => {
     expect(badges).toEqual([]);
   });
 });
-
-// ---------- checkForNewBadges ----------
 
 describe('checkForNewBadges', () => {
   it('vergibt explorer_bronze bei 50 Serien und persistiert es', async () => {
@@ -159,7 +153,7 @@ describe('checkForNewBadges', () => {
   });
 });
 
-// ---------- Cache ----------
+// Cache
 
 describe('Caching', () => {
   it('isCacheValid: false vor Nutzung, true nach Laden, false nach 30 Min', async () => {
@@ -185,8 +179,6 @@ describe('Caching', () => {
     expect(sys.isCacheValid()).toBe(false);
   });
 });
-
-// ---------- getBadgeProgress ----------
 
 describe('getBadgeProgress', () => {
   it('unbekannte Badge-ID → null', async () => {
@@ -220,6 +212,26 @@ describe('getBadgeProgress', () => {
     expect(p).toMatchObject({ current: 3, total: 5 });
   });
 
+  it('rewatch: liest das aktuelle Compact-Format (eps/{episodeId} = {w,c,f,l})', async () => {
+    fb.setAt('users/u1/series', { '100': { rating: 0 } });
+    fb.setAt('users/u1/seriesWatch', {
+      '100': {
+        seasons: {
+          '0': {
+            eps: {
+              '9001': { w: 1, c: 3, f: 1750000000, l: 1750000000 },
+              '9002': { w: 1, c: 2 },
+            },
+          },
+        },
+      },
+    });
+    const { getOfflineBadgeSystem } = await load();
+    const p = await getOfflineBadgeSystem('u1').getBadgeProgress('rewatch_bronze');
+    // (3-1) + (2-1) = 3
+    expect(p).toMatchObject({ current: 3, total: 5 });
+  });
+
   it('collector: zählt gültige Ratings aus Serien + Filmen', async () => {
     fb.setAt('users/u1/series', { a: { rating: 8 }, b: { rating: 0 } });
     fb.setAt('users/u1/movies', { m: { rating: 9 } });
@@ -235,8 +247,6 @@ describe('getBadgeProgress', () => {
     expect(p).toMatchObject({ current: 3, total: 3 });
   });
 });
-
-// ---------- getAllBadgeProgress ----------
 
 describe('getAllBadgeProgress', () => {
   it('liefert Fortschritt für unerreichte Badges (keyed by id)', async () => {
@@ -266,8 +276,6 @@ describe('getAllBadgeProgress', () => {
   });
 });
 
-// ---------- getCategoryProgress ----------
-
 describe('getCategoryProgress', () => {
   it('liefert eine Liste für alle unerreichten Badges der Kategorie', async () => {
     seedSeries('u1', 10);
@@ -279,8 +287,6 @@ describe('getCategoryProgress', () => {
   });
 });
 
-// ---------- recalculateAllBadges ----------
-
 describe('recalculateAllBadges', () => {
   it('leert den Cache und berechnet neu', async () => {
     seedSeries('u1', 50);
@@ -290,8 +296,6 @@ describe('recalculateAllBadges', () => {
     expect(badges.map((b) => b.id)).toContain('explorer_bronze');
   });
 });
-
-// ---------- debugSocialBadges ----------
 
 describe('debugSocialBadges', () => {
   it('liefert Freundesanzahl und Social-Badge-Definitionen', async () => {

@@ -40,7 +40,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 🚀 Haupt-Badge-Prüfung - Berechnet aus echten Daten
+   * Haupt-Badge-Prüfung - berechnet aus echten Daten
    */
   async checkForNewBadges(): Promise<EarnedBadge[]> {
     const [userData, currentBadges] = await Promise.all([this.getUserData(), this.getUserBadges()]);
@@ -69,7 +69,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 📊 Lade alle User-Daten einmal (mit Caching)
+   * Lade alle User-Daten einmal (mit Caching)
    */
   private async getUserData(): Promise<BadgeUserData> {
     const now = Date.now();
@@ -98,32 +98,45 @@ export class OfflineBadgeSystem {
     const refs = refsSnap.val() as Record<string, Record<string, unknown>>;
     const watchData = (watchSnap.val() || {}) as Record<string, Record<string, unknown>>;
     return Object.entries(refs).map(([tmdbId, ref]) => {
-      const rawSeasons = watchData[tmdbId]?.seasons
-        ? Object.values(watchData[tmdbId].seasons as Record<string, unknown>)
-        : [];
-      // Convert compact format (w/c/f/l arrays) to BadgeSeason format
-      const seasons = rawSeasons.map((rawSeason: unknown) => {
+      const seasonsNode = (watchData[tmdbId]?.seasons || {}) as Record<string, unknown>;
+      // f ist in beiden Watch-Formaten Unix-Sekunden; die Badge-Checker
+      // vergleichen watchedAt mit Date.now(), daher auf Millisekunden umrechnen.
+      const seasons = Object.entries(seasonsNode).map(([sn, rawSeason]) => {
         const s = rawSeason as Record<string, unknown>;
-        const wArr = (s.w || []) as number[];
-        const cArr = (s.c || []) as number[];
-        const fArr = (s.f || []) as number[];
-        const maxLen = Math.max(
-          Array.isArray(wArr) ? wArr.length : 0,
-          Array.isArray(cArr) ? cArr.length : 0,
-          Array.isArray(fArr) ? fArr.length : 0
-        );
-        const episodes = [];
-        for (let i = 0; i < maxLen; i++) {
-          const w = Array.isArray(wArr) ? wArr[i] || 0 : 0;
-          const c = Array.isArray(cArr) ? cArr[i] || 0 : 0;
-          const f = Array.isArray(fArr) ? fArr[i] || 0 : 0;
-          episodes.push({
-            watched: w === 1,
-            watchCount: c,
-            watchedAt: f || undefined,
-          });
+        const episodes: { watched: boolean; watchCount: number; watchedAt?: number }[] = [];
+        if (s.eps && typeof s.eps === 'object') {
+          // Aktuelles Compact-Format: eps/{episodeId} = {w,c,f,l}
+          for (const rawEp of Object.values(s.eps as Record<string, unknown>)) {
+            const e = rawEp as Record<string, unknown>;
+            const f = typeof e.f === 'number' ? e.f : 0;
+            episodes.push({
+              watched: e.w === 1,
+              watchCount: typeof e.c === 'number' ? e.c : 0,
+              watchedAt: f ? f * 1000 : undefined,
+            });
+          }
+        } else {
+          // Legacy-Format: index-basierte Arrays {w:[],c:[],f:[]}
+          const wArr = (s.w || []) as number[];
+          const cArr = (s.c || []) as number[];
+          const fArr = (s.f || []) as number[];
+          const maxLen = Math.max(
+            Array.isArray(wArr) ? wArr.length : 0,
+            Array.isArray(cArr) ? cArr.length : 0,
+            Array.isArray(fArr) ? fArr.length : 0
+          );
+          for (let i = 0; i < maxLen; i++) {
+            const w = Array.isArray(wArr) ? wArr[i] || 0 : 0;
+            const c = Array.isArray(cArr) ? cArr[i] || 0 : 0;
+            const f = Array.isArray(fArr) ? fArr[i] || 0 : 0;
+            episodes.push({
+              watched: w === 1,
+              watchCount: c,
+              watchedAt: f ? f * 1000 : undefined,
+            });
+          }
         }
-        return { episodes, seasonNumber: (s.seasonNumber as number) || 0 };
+        return { episodes, seasonNumber: (s.seasonNumber as number) || Number(sn) || 0 };
       });
       return { rating: ref.rating, seasons };
     }) as BadgeSeriesItem[];
@@ -152,7 +165,6 @@ export class OfflineBadgeSystem {
     return snapshot.exists() ? (snapshot.val() as BadgeCounters) : {};
   }
 
-  // Badge Management
   async getUserBadges(): Promise<EarnedBadge[]> {
     if (this.isCacheValid() && this.cachedBadges) {
       return this.cachedBadges;
@@ -172,7 +184,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 📊 Badge-Fortschritt berechnen für nicht erreichte Badges
+   * Badge-Fortschritt berechnen für nicht erreichte Badges
    */
   async getBadgeProgress(badgeId: string): Promise<BadgeProgress | null> {
     const badge = BADGE_DEFINITIONS.find((b) => b.id === badgeId);
@@ -215,7 +227,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 📈 Fortschritt für alle nicht-erreichten Badges
+   * Fortschritt für alle nicht-erreichten Badges
    */
   async getAllBadgeProgress(): Promise<Record<string, BadgeProgress>> {
     if (this.isCacheValid() && this.cachedProgress) {
@@ -306,9 +318,6 @@ export class OfflineBadgeSystem {
     return progressData;
   }
 
-  /**
-   * 📈 Fortschritt für alle Badges einer Kategorie
-   */
   async getCategoryProgress(category: BadgeCategory): Promise<BadgeProgress[]> {
     const categoryBadges = BADGE_DEFINITIONS.filter((b) => b.category === category);
     const progressList: BadgeProgress[] = [];
@@ -324,7 +333,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 🔄 Alle Badges neu berechnen (für Migration/Reparatur)
+   * Alle Badges neu berechnen (für Migration/Reparatur)
    */
   async recalculateAllBadges(): Promise<EarnedBadge[]> {
     this.cachedData = null;
@@ -332,7 +341,7 @@ export class OfflineBadgeSystem {
   }
 
   /**
-   * 🧹 Invalidate Cache (nach großen Änderungen)
+   * Invalidate Cache (nach großen Änderungen)
    */
   invalidateCache(): void {
     this.cachedData = null;
@@ -341,17 +350,11 @@ export class OfflineBadgeSystem {
     this.lastCacheTime = 0;
   }
 
-  /**
-   * 🔍 Prüfe ob Cache noch gültig ist
-   */
   isCacheValid(): boolean {
     const now = Date.now();
     return this.cachedData !== null && now - this.lastCacheTime < this.CACHE_DURATION;
   }
 
-  /**
-   * 🐛 Debug Social Badges - für Testing
-   */
   async debugSocialBadges(): Promise<{
     friendsCount: number;
     socialBadges: Badge[];
@@ -368,7 +371,7 @@ export class OfflineBadgeSystem {
   }
 }
 
-// Singleton Export
+// Eine Instanz pro userId (Cache ist user-gebunden)
 const offlineBadgeSystemInstances = new Map<string, OfflineBadgeSystem>();
 
 export const getOfflineBadgeSystem = (userId: string): OfflineBadgeSystem => {
