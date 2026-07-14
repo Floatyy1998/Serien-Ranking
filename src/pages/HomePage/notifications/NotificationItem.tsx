@@ -49,7 +49,7 @@ export const NotificationItem = React.memo(function NotificationItem({
         cursor: item.kind !== 'request' && item.navigateTo ? 'pointer' : 'default',
         borderBottom: !isLast ? `1px solid ${theme.border.default}40` : 'none',
         position: 'relative',
-        background: !item.read ? theme.background.surface : 'transparent',
+        background: !item.read ? 'var(--theme-primary-08)' : 'transparent',
         borderRadius: '12px',
         marginBottom: !isLast ? '2px' : 0,
       }}

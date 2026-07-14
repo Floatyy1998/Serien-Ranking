@@ -416,10 +416,7 @@ export const HomePage: React.FC = () => {
         displayName={dbDisplayName || user.displayName || undefined}
         photoURL={user.photoURL ?? undefined}
         totalUnreadBadge={notifs.totalUnreadBadge}
-        onNotificationsOpen={() => {
-          setShowNotifications(true);
-          notifs.handleMarkAllNotificationsRead();
-        }}
+        onNotificationsOpen={() => setShowNotifications(true)}
         watchedEpisodes={stats.watchedEpisodes}
         totalMovies={stats.totalMovies}
         progress={stats.progress}
@@ -451,7 +448,12 @@ export const HomePage: React.FC = () => {
 
       <NotificationSheet
         isOpen={showNotifications}
-        onClose={() => setShowNotifications(false)}
+        onClose={() => {
+          setShowNotifications(false);
+          // Erst beim Schließen als gelesen markieren — solange das Sheet offen
+          // ist, bleibt sichtbar, welche Einträge neu sind.
+          notifs.handleMarkAllNotificationsRead();
+        }}
         notifications={notifs.unifiedNotifications}
         onMarkAllRead={notifs.handleMarkAllNotificationsRead}
         onMarkAsRead={notifs.markAsRead}

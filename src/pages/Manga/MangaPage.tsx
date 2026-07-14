@@ -147,10 +147,7 @@ export const MangaPage = () => {
 
           <HeaderActions
             totalUnreadBadge={notifs.totalUnreadBadge}
-            onNotificationsOpen={() => {
-              setShowNotifications(true);
-              notifs.handleMarkAllNotificationsRead();
-            }}
+            onNotificationsOpen={() => setShowNotifications(true)}
             photoURL={photoURL}
           />
         </motion.div>
@@ -376,7 +373,10 @@ export const MangaPage = () => {
 
       <NotificationSheet
         isOpen={showNotifications}
-        onClose={() => setShowNotifications(false)}
+        onClose={() => {
+          setShowNotifications(false);
+          notifs.handleMarkAllNotificationsRead();
+        }}
         notifications={notifs.unifiedNotifications}
         onMarkAllRead={notifs.handleMarkAllNotificationsRead}
         onMarkAsRead={notifs.markAsRead}
