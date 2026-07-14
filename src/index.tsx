@@ -10,5 +10,8 @@ import './index.css';
 // Service Worker Manager — sofort importieren damit SW beim App-Start registriert wird
 import './services/serviceWorkerManager';
 
+// Native Capacitor-Hülle (iOS/Android): Back-Button etc.; im Browser No-op
+import './services/nativeShell';
+
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(<AppWithSplash />);

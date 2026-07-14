@@ -65,6 +65,40 @@ describe('haptics — supported device (vibrate present, no reduced motion)', ()
   });
 });
 
+describe('haptics — native Capacitor-Hülle', () => {
+  it('nutzt die native Haptics-Engine statt navigator.vibrate', () => {
+    const impact = vi.fn(() => Promise.resolve());
+    const notification = vi.fn(() => Promise.resolve());
+    stubNavigator(vibrateSpy);
+    vi.stubGlobal('window', {
+      matchMedia: vi.fn(() => ({ matches: false })),
+      Capacitor: {
+        isNativePlatform: () => true,
+        Plugins: { Haptics: { impact, notification } },
+      },
+    });
+
+    hapticTap();
+    expect(impact).toHaveBeenCalledWith({ style: 'LIGHT' });
+
+    hapticError();
+    expect(notification).toHaveBeenCalledWith({ type: 'ERROR' });
+
+    hapticCelebrate();
+    expect(notification).toHaveBeenCalledWith({ type: 'SUCCESS' });
+    expect(impact).toHaveBeenCalledWith({ style: 'HEAVY' });
+
+    expect(vibrateSpy).not.toHaveBeenCalled();
+  });
+
+  it('fällt im Browser (kein Capacitor) auf vibrate zurück', () => {
+    stubNavigator(vibrateSpy);
+    stubWindowMatchMedia(false);
+    hapticTap();
+    expect(vibrateSpy).toHaveBeenCalledWith(10);
+  });
+});
+
 describe('haptics — feature-detection guards', () => {
   it('no-op when navigator has no vibrate function (does not throw)', () => {
     stubNavigator(null);
