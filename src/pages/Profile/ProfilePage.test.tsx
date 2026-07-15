@@ -4,7 +4,6 @@ import { cleanup, render, screen } from '@testing-library/react';
 
 const { useProfileDataMock } = vi.hoisted(() => ({ useProfileDataMock: vi.fn() }));
 
-vi.mock('../../components/ui/BackButton', () => ({ BackButton: () => <button>Zurück</button> }));
 vi.mock('./ProfileComponents', () => ({
   ProfileHeader: ({ displayName }: { displayName: string }) => <div>NAME:{displayName}</div>,
   ProfileStats: () => <div data-testid="stats" />,

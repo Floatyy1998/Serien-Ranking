@@ -1,7 +1,6 @@
 /** Kompositions-Komponente — Logik in useProfileData, memoized Subkomponenten. */
 
 import { memo } from 'react';
-import { BackButton } from '../../components/ui/BackButton';
 import {
   ProfileFeaturedNav,
   ProfileHeader,
@@ -43,10 +42,6 @@ export const ProfilePage = memo(() => {
           `,
         }}
       />
-
-      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
-        <BackButton />
-      </div>
 
       {/* Kino-Hero: mobil ein neutraler Wrapper, Desktop eine Backdrop-Collage
           der Top-Serien mit Identität + Stats als Glas-Ebene darüber */}
