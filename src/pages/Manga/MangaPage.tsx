@@ -12,7 +12,7 @@ import { motion } from 'framer-motion';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { GradientText, HeaderActions, SectionHeader } from '../../components/ui';
+import { GradientText, HeaderActions, NavEscapeButtons, SectionHeader } from '../../components/ui';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -112,6 +112,7 @@ export const MangaPage = () => {
           transition={{ type: 'spring', stiffness: 250, damping: 22 }}
           style={{ display: 'flex', alignItems: 'center', gap: 12 }}
         >
+          <NavEscapeButtons />
           <div style={{ flex: 1 }}>
             <GradientText
               as="h1"

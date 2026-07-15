@@ -39,7 +39,6 @@ export const CalendarPage = () => {
       <div className="calendar-page">
         <PageHeader
           title="TV-Kalender"
-          showBack={false}
           actions={
             totalEpisodes > 0 ? (
               <span style={{ fontSize: '13px', fontWeight: 600, color: currentTheme.text.muted }}>

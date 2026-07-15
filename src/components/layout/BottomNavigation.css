@@ -4,6 +4,12 @@
   /* iOS Home-Indicator: Safe-Area berücksichtigen, damit die Dock nicht hinter
      der System-Gesten-Leiste sitzt und Touch-Targets überlagert werden. */
   bottom: calc(12px + env(safe-area-inset-bottom));
+}
+
+/* In der iOS-App liefert die Safe-Area schon reichlich Abstand — das Dock darf
+   dichter an den Home-Indicator (Owner-Wunsch: minimal nach unten). */
+:root.native-ios .mobile-bottom-navigation {
+  bottom: calc(2px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: 90%;

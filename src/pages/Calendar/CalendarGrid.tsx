@@ -230,14 +230,19 @@ export const CalendarGrid = memo(
             const d = new Date(k + 'T00:00:00');
             const active = i === clampedIdx;
             const isToday = k === todayKey;
+            const dayEpisodes = g.flatMap((grp) => grp.episodes);
+            const allWatched = dayEpisodes.length > 0 && dayEpisodes.every((ep) => ep.watched);
             return (
               <button
                 key={k}
                 type="button"
                 role="tab"
                 aria-selected={active}
-                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${g.length > 0 ? ` — ${g.length} Serien` : ''}`}
+                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${
+                  allWatched ? ' — alles geschaut' : g.length > 0 ? ` — ${g.length} Serien` : ''
+                }`}
                 className={`cal-day-chip ${active ? 'is-active' : ''}`}
+                style={allWatched ? { borderColor: `${currentTheme.status.success}59` } : undefined}
                 onClick={() => goToDay(i)}
               >
                 <span className="cal-day-chip__wd">{WEEKDAYS_SHORT[i]}</span>
@@ -247,11 +252,21 @@ export const CalendarGrid = memo(
                 >
                   {d.getDate()}
                 </span>
-                <span
-                  className="cal-day-chip__dot"
-                  style={{ opacity: g.length > 0 ? 1 : 0 }}
-                  aria-hidden
-                />
+                {allWatched ? (
+                  <span
+                    className="cal-day-chip__check"
+                    style={{ color: currentTheme.status.success }}
+                    aria-hidden
+                  >
+                    ✓
+                  </span>
+                ) : (
+                  <span
+                    className="cal-day-chip__dot"
+                    style={{ opacity: g.length > 0 ? 1 : 0 }}
+                    aria-hidden
+                  />
+                )}
               </button>
             );
           })}

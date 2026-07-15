@@ -24,6 +24,7 @@ vi.mock('@mui/icons-material', () => ({
 }));
 
 vi.mock('../../components/ui', () => ({
+  NavEscapeButtons: () => null,
   GradientText: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
   TabSwitcher: ({
     tabs,

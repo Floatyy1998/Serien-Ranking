@@ -7,7 +7,7 @@
 import { Movie as MovieIcon, Star, Tv as TvIcon } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
-import { GradientText, TabSwitcher } from '../../components/ui';
+import { GradientText, NavEscapeButtons, TabSwitcher } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { RatingsStats } from './useRatingsData';
 
@@ -30,6 +30,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
     >
       <div className="ratings-header-inner">
         <div className="ratings-header-row">
+          <NavEscapeButtons />
           <GradientText
             as="h1"
             from={theme.text.primary}

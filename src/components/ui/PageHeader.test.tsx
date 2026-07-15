@@ -23,6 +23,10 @@ vi.mock('react-router-dom', () => ({
 
 vi.mock('../../hooks/useReducedMotion', () => ({ useReducedMotion: () => true }));
 
+// jsdom steht immer auf '/' (= Nav-Root, kein Zurück) — für die Back-Tests
+// eine Nicht-Dock-Seite simulieren.
+vi.mock('../../hooks/useIsNavRoot', () => ({ useIsNavRoot: () => false }));
+
 vi.mock('../../contexts/ThemeContext', async () => {
   const { generateDynamicTheme } = await import('../../theme/dynamicTheme');
   const currentTheme = generateDynamicTheme({

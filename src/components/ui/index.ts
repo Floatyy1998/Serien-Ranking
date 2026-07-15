@@ -24,6 +24,7 @@ export { Dialog } from './Dialog';
 export { HorizontalScrollContainer } from './HorizontalScrollContainer';
 export { QuickFilter } from './QuickFilter';
 export { BackButton } from './BackButton';
+export { NavEscapeButtons } from './NavEscapeButtons';
 export { PageLayout } from './PageLayout';
 export { PageHeader } from './PageHeader';
 export { TabSwitcher } from './TabSwitcher';

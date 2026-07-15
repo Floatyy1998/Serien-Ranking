@@ -62,6 +62,7 @@ vi.mock('./sections/MangaCarouselSection', () => ({ MangaCarouselSection: () => 
 vi.mock('./sections/RecentlyAddedMangaSection', () => ({ RecentlyAddedMangaSection: () => null }));
 
 vi.mock('../../components/ui', () => ({
+  NavEscapeButtons: () => null,
   GradientText: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   HeaderActions: () => <div data-testid="header-actions" />,
   SectionHeader: ({ title }: { title?: ReactNode }) => <div>{title}</div>,

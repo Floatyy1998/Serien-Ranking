@@ -1041,6 +1041,18 @@
     box-shadow: 0 0 6px var(--theme-primary);
   }
 
+  /* Tag komplett geschaut: Haken statt Punkt (Farbe allein reicht nicht —
+     im Standard-Theme ist Primär bereits grün) */
+  .cal-day-chip__check {
+    height: 5px;
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 0 6px currentColor;
+  }
+
   .cal-day-chip.is-active {
     background: color-mix(in srgb, var(--theme-primary) 16%, transparent);
     border-color: color-mix(in srgb, var(--theme-primary) 45%, transparent);

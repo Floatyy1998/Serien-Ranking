@@ -31,6 +31,7 @@ vi.mock('../../../contexts/ThemeContext', () => {
 });
 
 vi.mock('../../../components/ui', () => ({
+  NavEscapeButtons: () => null,
   GradientText: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
 }));
 vi.mock('../SortBar', () => ({ SortBar: () => <div data-testid="sort-bar" /> }));

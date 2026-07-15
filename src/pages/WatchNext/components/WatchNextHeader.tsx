@@ -3,7 +3,7 @@ import Edit from '@mui/icons-material/Edit';
 import FilterList from '@mui/icons-material/FilterList';
 import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { GradientText } from '../../../components/ui';
+import { GradientText, NavEscapeButtons } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScale } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
@@ -68,6 +68,7 @@ export const WatchNextHeader = ({
       style={{ background: `${currentTheme.background.default}90` }}
     >
       <div className="watch-next-header__top">
+        <NavEscapeButtons />
         <div>
           <GradientText
             as="h1"

@@ -16,6 +16,14 @@ vi.mock('../../contexts/NotificationContext', () => ({ useNotifications: () => (
 vi.mock('../../hooks/useKeyboardNavigation', () => ({
   useKeyboardNavigation: () => ({ onKeyDown: vi.fn() }),
 }));
+// Der echte Hook liest window.location (jsdom immer '/') — hier an den
+// gemockten Router koppeln.
+vi.mock('../../hooks/useIsNavRoot', () => ({
+  useIsNavRoot: () =>
+    ['/', '/watchlist', '/calendar', '/ratings', '/manga', '/profile'].includes(
+      routerState.pathname
+    ),
+}));
 
 const todayEpisodes = vi.hoisted(() => ({ value: [] as Array<{ watched: boolean }> }));
 vi.mock('../../hooks/useTodayEpisodes', () => ({
