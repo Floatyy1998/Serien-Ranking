@@ -10,6 +10,7 @@ import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
 import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
+import { PushOptInPrompt } from './components/PushOptInPrompt';
 import './styles/App.css';
 
 // Main nav tabs: eager imports — these are always needed and must never show a loading spinner
@@ -188,6 +189,7 @@ export const MobileApp = () => {
   return (
     <div className="mobile-app">
       <ScrollToTop />
+      <PushOptInPrompt />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>

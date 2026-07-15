@@ -109,6 +109,20 @@ export const isNativePushEnabled = (): boolean => {
   }
 };
 
+/** OS-Berechtigungsstatus: 'prompt' = noch nie gefragt, null = kein natives Push. */
+export const getNativePushPermission = async (): Promise<
+  'granted' | 'denied' | 'prompt' | null
+> => {
+  const entry = getPlugin();
+  if (!entry) return null;
+  try {
+    const perm = await entry.plugin.checkPermissions?.();
+    return perm?.receive ?? null;
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Beim App-Start aufrufen (mit eingeloggtem User): re-registriert das Gerät,
  * damit rotierte FCM-Tokens aktuell bleiben. No-op im Browser oder wenn der
