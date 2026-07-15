@@ -1,10 +1,12 @@
 import { BugReport } from '@mui/icons-material';
 import { memo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const BugFab = memo(() => {
+  const navigate = useNavigate();
   return (
     <button
-      onClick={() => window.open('/bug-report?create=true', '_blank')}
+      onClick={() => navigate('/bug-report?create=true')}
       aria-label="Bug melden"
       style={{
         position: 'fixed',
