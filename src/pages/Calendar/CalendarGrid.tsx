@@ -154,7 +154,6 @@ export const CalendarGrid = memo(
     weekStamp,
   }: CalendarGridProps) => {
     const { isDesktop } = useDeviceType();
-    const { currentTheme } = useTheme();
 
     const entries = Array.from(groupedSchedule.entries());
     const todayIdx = entries.findIndex(([k]) => k === todayKey);
@@ -238,35 +237,24 @@ export const CalendarGrid = memo(
                 type="button"
                 role="tab"
                 aria-selected={active}
-                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${
+                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${isToday ? ' (heute)' : ''}${
                   allWatched ? ' — alles geschaut' : g.length > 0 ? ` — ${g.length} Serien` : ''
                 }`}
-                className={`cal-day-chip ${active ? 'is-active' : ''}`}
-                style={allWatched ? { borderColor: `${currentTheme.status.success}59` } : undefined}
+                className={`cal-day-chip ${active ? 'is-active' : ''} ${isToday ? 'is-today' : ''} ${allWatched ? 'is-complete' : ''}`}
                 onClick={() => goToDay(i)}
               >
-                <span className="cal-day-chip__wd">{WEEKDAYS_SHORT[i]}</span>
-                <span
-                  className="cal-day-chip__num"
-                  style={isToday && !active ? { color: currentTheme.primary } : undefined}
-                >
-                  {d.getDate()}
-                </span>
-                {allWatched ? (
-                  <span
-                    className="cal-day-chip__check"
-                    style={{ color: currentTheme.status.success }}
-                    aria-hidden
-                  >
+                {allWatched && (
+                  <span className="cal-day-chip__badge" aria-hidden>
                     ✓
                   </span>
-                ) : (
-                  <span
-                    className="cal-day-chip__dot"
-                    style={{ opacity: g.length > 0 ? 1 : 0 }}
-                    aria-hidden
-                  />
                 )}
+                <span className="cal-day-chip__wd">{WEEKDAYS_SHORT[i]}</span>
+                <span className="cal-day-chip__num">{d.getDate()}</span>
+                <span
+                  className="cal-day-chip__dot"
+                  style={{ opacity: g.length > 0 && !allWatched ? 1 : 0 }}
+                  aria-hidden
+                />
               </button>
             );
           })}

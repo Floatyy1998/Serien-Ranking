@@ -1041,18 +1041,6 @@
     box-shadow: 0 0 6px var(--theme-primary);
   }
 
-  /* Tag komplett geschaut: Haken statt Punkt (Farbe allein reicht nicht —
-     im Standard-Theme ist Primär bereits grün) */
-  .cal-day-chip__check {
-    height: 5px;
-    display: flex;
-    align-items: center;
-    font-size: 10px;
-    font-weight: 900;
-    line-height: 1;
-    text-shadow: 0 0 6px currentColor;
-  }
-
   .cal-day-chip.is-active {
     background: color-mix(in srgb, var(--theme-primary) 16%, transparent);
     border-color: color-mix(in srgb, var(--theme-primary) 45%, transparent);
@@ -1061,6 +1049,56 @@
   .cal-day-chip.is-active .cal-day-chip__wd,
   .cal-day-chip.is-active .cal-day-chip__num {
     color: var(--theme-primary);
+  }
+
+  /* Heute: Zahl sitzt in einem gefüllten Primary-Kreis (wie im Desktop-Grid) */
+  .cal-day-chip.is-today .cal-day-chip__wd {
+    color: var(--theme-primary);
+  }
+  .cal-day-chip.is-today .cal-day-chip__num {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--theme-primary);
+    color: var(--color-background-default);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--theme-primary) 60%, transparent);
+  }
+
+  /* Tag komplett geschaut: Chip färbt sich sichtbar in Success + Eck-Badge
+     mit Haken (Form statt nur Farbe — Standard-Theme ist selbst grün) */
+  .cal-day-chip {
+    position: relative;
+  }
+  .cal-day-chip.is-complete {
+    background: color-mix(in srgb, var(--color-success) 16%, transparent);
+    border-color: color-mix(in srgb, var(--color-success) 45%, transparent);
+  }
+  .cal-day-chip.is-complete .cal-day-chip__num {
+    color: var(--color-success);
+  }
+  .cal-day-chip.is-complete.is-today .cal-day-chip__num {
+    color: var(--color-background-default);
+  }
+  .cal-day-chip__badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-success);
+    color: var(--color-background-default);
+    font-size: 10px;
+    font-weight: 900;
+    line-height: 1;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-success) 70%, transparent);
+    z-index: 1;
   }
 
   .cal-mobile-day {

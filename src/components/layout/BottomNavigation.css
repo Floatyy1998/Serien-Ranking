@@ -34,9 +34,10 @@
 }
 
 /* In der iOS-App liefert die Safe-Area schon reichlich Abstand — das Dock darf
-   dichter an den Home-Indicator (Owner-Wunsch: minimal nach unten). */
+   dichter an den Home-Indicator und leicht IN die Safe-Area hinein (Owner-
+   Wunsch). max() hält auf Geräten ohne Inset einen Mindestabstand. */
 :root.native-ios .mobile-bottom-navigation {
-  bottom: calc(2px + env(safe-area-inset-bottom));
+  bottom: max(6px, calc(env(safe-area-inset-bottom) - 6px));
 }
 
 .nav-container {
