@@ -1051,20 +1051,14 @@
     color: var(--theme-primary);
   }
 
-  /* Heute: Zahl sitzt in einem gefüllten Primary-Kreis (wie im Desktop-Grid) */
+  /* Heute: leuchtender Primary-Ring um den Chip + Kürzel in Primary
+     (dezenter als der frühere gefüllte Kreis, aber klar erkennbar) */
+  .cal-day-chip.is-today {
+    border-color: color-mix(in srgb, var(--theme-primary) 55%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary) 28%, transparent);
+  }
   .cal-day-chip.is-today .cal-day-chip__wd {
     color: var(--theme-primary);
-  }
-  .cal-day-chip.is-today .cal-day-chip__num {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--theme-primary);
-    color: var(--color-background-default);
-    box-shadow: 0 0 10px color-mix(in srgb, var(--theme-primary) 60%, transparent);
   }
 
   /* Tag komplett geschaut: Chip färbt sich sichtbar in Success + Eck-Badge
@@ -1078,9 +1072,6 @@
   }
   .cal-day-chip.is-complete .cal-day-chip__num {
     color: var(--color-success);
-  }
-  .cal-day-chip.is-complete.is-today .cal-day-chip__num {
-    color: var(--color-background-default);
   }
   .cal-day-chip__badge {
     position: absolute;

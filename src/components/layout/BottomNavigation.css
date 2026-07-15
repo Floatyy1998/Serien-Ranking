@@ -37,7 +37,7 @@
    dichter an den Home-Indicator und leicht IN die Safe-Area hinein (Owner-
    Wunsch). max() hält auf Geräten ohne Inset einen Mindestabstand. */
 :root.native-ios .mobile-bottom-navigation {
-  bottom: max(6px, calc(env(safe-area-inset-bottom) - 6px));
+  bottom: max(4px, calc(env(safe-area-inset-bottom) - 16px));
 }
 
 .nav-container {
