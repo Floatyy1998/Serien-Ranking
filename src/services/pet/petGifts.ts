@@ -1,4 +1,5 @@
 import { dbRef, userPath } from '../../services/db/ref';
+import { queuePush } from '../pushQueue';
 
 export type PetGiftType = 'snack' | 'toy';
 
@@ -66,6 +67,11 @@ export async function sendPetGift(opts: {
   };
 
   await dbRef(userPath(toUid, 'notifications')).push(payload);
+  await queuePush(toUid, {
+    title: `🎁 ${payload.title}`,
+    body: payload.message,
+    url: '/pets',
+  });
 
   try {
     localStorage.setItem(COOLDOWN_LS_PREFIX + toUid, String(Date.now()));

@@ -1,4 +1,6 @@
+import { ADMIN_UID } from '../config/admin';
 import { dbRef, userPath } from '../services/db/ref';
+import { queuePush } from '../services/pushQueue';
 import type { DiscussionItemType } from '../types/Discussion';
 
 // Helper to generate a unique path for discussions
@@ -35,6 +37,17 @@ export const sendNotificationToUser = async (
       ...notification,
       timestamp: Date.now(),
       read: false,
+    });
+    // Zusätzlich als nativen Push ausliefern (Backend verschickt an die Geräte)
+    const url = notification.type.startsWith('bug_ticket')
+      ? targetUserId === ADMIN_UID
+        ? '/admin'
+        : '/bug-report'
+      : '/discussions';
+    await queuePush(targetUserId, {
+      title: notification.title,
+      body: notification.message,
+      url,
     });
   } catch (error) {
     console.error('Error sending notification:', error);
