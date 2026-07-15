@@ -18,7 +18,21 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => ({
   NotificationsActive: () => null,
+  PhoneIphone: () => null,
   SwapHoriz: () => null,
+}));
+
+const { pushAvailableMock, enablePushMock, disablePushMock } = vi.hoisted(() => ({
+  pushAvailableMock: vi.fn(() => false),
+  enablePushMock: vi.fn(async () => true),
+  disablePushMock: vi.fn(async () => {}),
+}));
+
+vi.mock('../../services/pushNotifications', () => ({
+  isNativePushAvailable: pushAvailableMock,
+  isNativePushEnabled: vi.fn(() => false),
+  enableNativePush: enablePushMock,
+  disableNativePush: disablePushMock,
 }));
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: authUser }) }));
@@ -57,6 +71,8 @@ import { NotificationsSection } from './NotificationsSection';
 beforeEach(() => {
   setThresholdMock.mockClear();
   setProviderMock.mockClear();
+  enablePushMock.mockClear();
+  pushAvailableMock.mockReturnValue(false);
 });
 afterEach(() => cleanup());
 
@@ -73,6 +89,18 @@ describe('NotificationsSection', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '14 T.' })).not.toBeDisabled());
     fireEvent.click(screen.getByRole('button', { name: '14 T.' }));
     await waitFor(() => expect(setThresholdMock).toHaveBeenCalledWith('u1', 14));
+  });
+
+  it('hides the native push toggle in the browser', () => {
+    render(<NotificationsSection />);
+    expect(screen.queryByLabelText('Push-Benachrichtigungen')).not.toBeInTheDocument();
+  });
+
+  it('shows the native push toggle in the app shell and enables push', async () => {
+    pushAvailableMock.mockReturnValue(true);
+    render(<NotificationsSection />);
+    fireEvent.click(screen.getByLabelText('Push-Benachrichtigungen'));
+    await waitFor(() => expect(enablePushMock).toHaveBeenCalledWith('u1'));
   });
 
   it('toggles the provider-change notifications setting', async () => {

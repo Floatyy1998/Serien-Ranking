@@ -6,11 +6,17 @@
  * - Provider-Änderungs-Notifications an/aus
  */
 
-import { NotificationsActive, SwapHoriz } from '@mui/icons-material';
+import { NotificationsActive, PhoneIphone, SwapHoriz } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import {
+  disableNativePush,
+  enableNativePush,
+  isNativePushAvailable,
+  isNativePushEnabled,
+} from '../../services/pushNotifications';
 import {
   DEFAULT_INACTIVE_THRESHOLD_DAYS,
   DEFAULT_PROVIDER_NOTIFICATIONS_ENABLED,
@@ -33,6 +39,9 @@ export const NotificationsSection = memo(() => {
   );
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(isNativePushEnabled);
+  const [pushBusy, setPushBusy] = useState(false);
+  const pushAvailable = isNativePushAvailable();
 
   useEffect(() => {
     if (!user) return;
@@ -62,6 +71,22 @@ export const NotificationsSection = memo(() => {
     }
   };
 
+  const handlePushToggle = async (enabled: boolean) => {
+    if (!user || pushBusy) return;
+    setPushBusy(true);
+    try {
+      if (enabled) {
+        const ok = await enableNativePush(user.uid);
+        setPushEnabled(ok);
+      } else {
+        await disableNativePush(user.uid);
+        setPushEnabled(false);
+      }
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   const handleProviderToggle = async (enabled: boolean) => {
     if (!user || saving) return;
     setSaving(true);
@@ -83,6 +108,52 @@ export const NotificationsSection = memo(() => {
       <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
         Benachrichtigungen
       </h2>
+
+      {pushAvailable && (
+        <div
+          className="settings-toggle-row"
+          style={{
+            background: currentTheme.background.default,
+            borderColor: currentTheme.border.default,
+          }}
+        >
+          <div className="settings-toggle-info">
+            <PhoneIphone style={{ fontSize: '22px', color: currentTheme.primary }} />
+            <div>
+              <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
+                Push-Benachrichtigungen
+              </h3>
+              <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
+                Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy
+              </p>
+            </div>
+          </div>
+          <label className="settings-toggle-switch">
+            <input
+              type="checkbox"
+              checked={pushEnabled}
+              onChange={(e) => handlePushToggle(e.target.checked)}
+              disabled={pushBusy}
+              aria-label="Push-Benachrichtigungen"
+              className="settings-toggle-input"
+            />
+            <span
+              className="settings-toggle-track"
+              style={{
+                backgroundColor: pushEnabled
+                  ? currentTheme.primary
+                  : `${currentTheme.text.muted}30`,
+                opacity: pushBusy ? 0.5 : 1,
+              }}
+            >
+              <span
+                className="settings-toggle-thumb"
+                style={{ left: pushEnabled ? '26px' : '4px' }}
+              />
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Inactive Threshold */}
       <div

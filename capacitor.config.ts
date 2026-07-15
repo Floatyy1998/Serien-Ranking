@@ -20,6 +20,11 @@ const config: CapacitorConfig = {
     contentInset: 'never',
     backgroundColor: '#000000',
   },
+  plugins: {
+    PushNotifications: {
+      presentationOptions: ['badge', 'sound', 'alert'],
+    },
+  },
 };
 
 export default config;

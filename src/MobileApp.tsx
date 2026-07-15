@@ -175,6 +175,9 @@ export const MobileApp = () => {
     if (user?.uid === ADMIN_UID) {
       import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
     }
+    if (user?.uid) {
+      import('./services/pushNotifications').then((m) => m.initNativePush(user.uid));
+    }
   }, [user?.uid]);
 
   // Redirect to onboarding if not complete

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "648705749955",
+    "firebase_url": "https://serien-ranking.firebaseio.com",
+    "project_id": "serien-ranking",
+    "storage_bucket": "serien-ranking.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:648705749955:android:c67468c44beefc3fa10376",
+        "android_client_info": {
+          "package_name": "de.tvrank.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARsm8CvrMlrX_jzeTQBrCQxKq0vdI2Pfg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
