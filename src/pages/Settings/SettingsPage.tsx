@@ -10,6 +10,7 @@ import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
 import { ProfileSection } from './ProfileSection';
 import { PublicProfileSection } from './PublicProfileSection';
+import { DeleteAccountSection } from './DeleteAccountSection';
 import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
 import { NotificationsSection } from './NotificationsSection';
@@ -164,6 +165,8 @@ export const SettingsPage = () => {
           <Logout style={{ fontSize: '20px' }} />
           Abmelden
         </motion.button>
+
+        <DeleteAccountSection />
       </div>
 
       {/* Success Snackbar */}
