@@ -11,7 +11,7 @@ query ($search: String!, $page: Int, $perPage: Int) {
       lastPage
       hasNextPage
     }
-    media(search: $search, type: MANGA, sort: POPULARITY_DESC) {
+    media(search: $search, type: MANGA, sort: POPULARITY_DESC, isAdult: false) {
       id
       title {
         romaji
