@@ -194,23 +194,6 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
         fontFamily: 'inherit',
       }}
     >
-      {/* Live-Puls: signalisiert den Echtzeit-Ticker. */}
-      <span
-        aria-hidden
-        style={{
-          position: 'absolute',
-          left: 12,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: 6,
-          height: 6,
-          borderRadius: '50%',
-          background: currentTheme.primary,
-          boxShadow: `0 0 8px ${currentTheme.primary}`,
-          animation: 'pulseGlow 2.4s ease-in-out infinite',
-          zIndex: 3,
-        }}
-      />
       {/* Side fades for that subtle "ticker" feel */}
       <span
         aria-hidden
