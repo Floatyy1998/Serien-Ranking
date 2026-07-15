@@ -104,6 +104,12 @@ export const BottomNavigation = () => {
   const activeIndex = getActiveIndex();
   const pillTargetIndex = hoveredIndex ?? activeIndex;
 
+  // Auf Touch-Geräten feuert kein mouseleave — ohne Reset klebt der Pill nach
+  // Swipe-/Programm-Navigation auf dem zuletzt getippten Tab fest.
+  useEffect(() => {
+    setHoveredIndex(null);
+  }, [location.pathname]);
+
   useEffect(() => {
     const el = itemRefs.current[pillTargetIndex];
     if (!el) return;
@@ -193,7 +199,6 @@ export const BottomNavigation = () => {
                 className={`nav-item ${active ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
                 onMouseEnter={() => setHoveredIndex(index)}
-                onTouchStart={() => setHoveredIndex(index)}
                 whileTap={{ scale: 0.9 }}
               >
                 <div className="nav-icon-container">

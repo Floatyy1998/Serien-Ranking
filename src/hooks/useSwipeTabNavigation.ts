@@ -9,18 +9,31 @@ const MIN_DISTANCE_X = 70;
 const MAX_DURATION_MS = 600;
 /** Rand-Zone aussparen: dort wohnt die System-Back-Geste (Android/iOS). */
 const EDGE_GUARD_PX = 28;
+/** Seiten mit eigener Horizontal-Gestik wechseln nicht per Swipe weg. */
+const EXCLUDED_SOURCES = new Set(['/calendar']);
 
-/** Horizontale Scroller (Poster-Reihen etc.) haben Vorrang vor dem Tab-Swipe. */
+/**
+ * Alles mit horizontalem Scroll-Styling blockt den Tab-Swipe — bewusst auch
+ * dann, wenn der Inhalt gerade nicht überläuft (eine halb leere Poster-Reihe
+ * soll beim Wischen nicht plötzlich die Seite wechseln).
+ */
 const startsInHorizontalScroller = (start: EventTarget | null): boolean => {
   let el = start instanceof Element ? start : null;
   while (el && el !== document.body) {
-    if (el.scrollWidth > el.clientWidth + 4) {
-      const { overflowX } = getComputedStyle(el);
-      if (overflowX === 'auto' || overflowX === 'scroll') return true;
-    }
+    const { overflowX } = getComputedStyle(el);
+    if (overflowX === 'auto' || overflowX === 'scroll') return true;
     el = el.parentElement;
   }
   return false;
+};
+
+/** Richtung des letzten Swipe-Wechsels: 1 = weiter, -1 = zurück. Wird von
+ *  der neuen Seite beim Mount konsumiert (Slide-in aus der Wischrichtung). */
+let pendingDirection: 1 | -1 | 0 = 0;
+export const consumeSwipeDirection = (): 1 | -1 | 0 => {
+  const d = pendingDirection;
+  pendingDirection = 0;
+  return d;
 };
 
 interface SwipeHandlers {
@@ -61,6 +74,7 @@ export const useSwipeTabNavigation = (): SwipeHandlers => {
         y: clientY,
         t: Date.now(),
         blocked:
+          EXCLUDED_SOURCES.has(pathname) ||
           clientX < EDGE_GUARD_PX ||
           clientX > window.innerWidth - EDGE_GUARD_PX ||
           startsInHorizontalScroller(e.target),
@@ -83,10 +97,12 @@ export const useSwipeTabNavigation = (): SwipeHandlers => {
 
       const index = paths.indexOf(pathname);
       if (index === -1) return;
-      const target = index + (dx < 0 ? 1 : -1);
+      const direction = dx < 0 ? 1 : -1;
+      const target = index + direction;
       if (target < 0 || target >= paths.length) return;
 
       hapticTap();
+      pendingDirection = direction;
       navigate(paths[target]);
     },
   };
