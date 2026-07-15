@@ -39,6 +39,7 @@ import { useHomeConfig } from './useHomeConfig';
 import { useRewatchHandler } from './useRewatchHandler';
 import { useUnifiedNotifications } from './useUnifiedNotifications';
 import { GreetingSection } from './sections/GreetingSection';
+import { PlayTestBanner } from './PlayTestBanner';
 import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
@@ -411,6 +412,8 @@ export const HomePage: React.FC = () => {
         animeMangaHandoffs={animeMangaHandoffs}
         onDismissAnimeManga={clearAnimeMangaHandoffs}
       />
+
+      <PlayTestBanner />
 
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}
