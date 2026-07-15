@@ -75,6 +75,20 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: 'Juli 2026 – TV-Rank klopft an',
+      date: '2026-07-15',
+      features: [
+        {
+          icon: <NotificationsActive />,
+          color: currentTheme.primary,
+          title: 'Push-Benachrichtigungen in den Apps',
+          description:
+            'Die iOS- und Android-App melden sich jetzt von selbst: morgens, wenn eine deiner Serien heute eine neue Folge bekommt, und sofort, wenn dich eine Freundschaftsanfrage erreicht. Einschalten unter Einstellungen → Benachrichtigungen → Push-Benachrichtigungen.',
+          link: { label: 'Zu den Einstellungen', path: '/settings' },
+        },
+      ],
+    },
+    {
       version: 'Juli 2026 – Deine Navigation, dein Layout',
       date: '2026-07-14',
       features: [
