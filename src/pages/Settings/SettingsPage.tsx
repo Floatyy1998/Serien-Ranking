@@ -1,6 +1,6 @@
 /** Kompositions-Komponente nach DiscoverPage-Muster — Logik in useSettingsData. */
 
-import { Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
+import { Android, Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
 import { Switch } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import type { ThemeContextType } from '../../contexts/ThemeContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
+import { isNativeApp } from '../../services/nativeShell';
 import { ProfileSection } from './ProfileSection';
 import { PublicProfileSection } from './PublicProfileSection';
 import { DeleteAccountSection } from './DeleteAccountSection';
@@ -126,6 +127,38 @@ export const SettingsPage = () => {
                 <h2 className="settings-nav-btn-title">Desktop App</h2>
                 <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
                   TV-Rank für Windows herunterladen
+                </p>
+              </div>
+            </motion.a>
+          )}
+
+          {/* Android-APK: nur im Browser anbieten, in der nativen App sinnlos */}
+          {!isNativeApp() && !window.electronAPI?.isElectron && (
+            <motion.a
+              href="https://github.com/Floatyy1998/Serien-Ranking/releases/latest/download/TV-Rank.apk"
+              download
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              whileTap={tapScaleSmall}
+              className="settings-nav-btn"
+              style={{
+                color: currentTheme.text.primary,
+                textDecoration: 'none',
+              }}
+            >
+              <div
+                className="settings-nav-btn-icon"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                }}
+              >
+                <Android style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+              </div>
+              <div className="settings-nav-btn-text">
+                <h2 className="settings-nav-btn-title">Android App</h2>
+                <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+                  APK direkt herunterladen und installieren
                 </p>
               </div>
             </motion.a>

@@ -50,6 +50,7 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material', () => ({
+  Android: () => null,
   Check: () => null,
   DesktopWindows: () => null,
   Logout: () => null,
