@@ -94,7 +94,19 @@
 
   /* Design Tokens - Overlay / Modal Backdrop (single source for dialog scrims) */
   --overlay-backdrop: rgba(0, 0, 0, 0.6);
+}
 
+/* Native App (WKWebView/Android WebView): backdrop-filter ist dort mit Abstand
+   der teuerste Effekt beim Scrollen. Halbierte Radien sehen praktisch identisch
+   aus, rendern aber deutlich flüssiger. */
+:root.native-app {
+  --blur-sm: blur(4px);
+  --blur-md: blur(8px);
+  --blur-lg: blur(12px);
+  --blur-xl: blur(20px);
+}
+
+:root {
   /* Design Tokens - Opacity */
   --opacity-disabled: 0.5;
   --opacity-muted: 0.6;

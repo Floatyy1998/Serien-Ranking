@@ -8,10 +8,6 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: routerState.pathname }),
 }));
 
-vi.mock('../../hooks/useSwipeTabNavigation', () => ({
-  useSwipeTabNavigation: () => ({}),
-  consumeSwipeDirection: () => 0,
-}));
 vi.mock('./BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-nav" />,
 }));

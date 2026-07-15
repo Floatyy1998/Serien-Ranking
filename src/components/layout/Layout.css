@@ -63,36 +63,5 @@
   display: none;
 }
 
-/* Swipe-Tab-Wechsel (native App): neue Seite gleitet aus der Wischrichtung rein */
-.mobile-content.swipe-in-next {
-  animation: swipe-in-next 0.3s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-.mobile-content.swipe-in-prev {
-  animation: swipe-in-prev 0.3s cubic-bezier(0.22, 0.9, 0.3, 1);
-}
-
-@keyframes swipe-in-next {
-  from {
-    transform: translateX(72px);
-    opacity: 0.35;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes swipe-in-prev {
-  from {
-    transform: translateX(-72px);
-    opacity: 0.35;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
 /* Desktop nutzt bewusst die VOLLE Breite (Owner-Entscheidung) —
    hier keinen max-width-Container einführen. */
