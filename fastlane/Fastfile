@@ -21,7 +21,9 @@ platform :ios do
       api_key: api_key,
       development: false,
       generate_apple_certs: true,
-      output_path: "build/certs"
+      output_path: "build/certs",
+      keychain_path: File.expand_path("~/Library/Keychains/fastlane_tmp_keychain-db"),
+      keychain_password: ""
     )
 
     sigh(
