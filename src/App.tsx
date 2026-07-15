@@ -67,6 +67,11 @@ const PrivacyPage = lazyWithRetry(() =>
     default: m.PrivacyPage,
   }))
 );
+const AccountDeletionPage = lazyWithRetry(() =>
+  import('./pages/AccountDeletion').then((m) => ({
+    default: m.AccountDeletionPage,
+  }))
+);
 const ImpressumPage = lazyWithRetry(() =>
   import('./pages/Impressum').then((m) => ({
     default: m.ImpressumPage,
@@ -177,6 +182,7 @@ function AppContent() {
                 <Route path="/public/:publicId" element={<PublicProfilePage />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/impressum" element={<ImpressumPage />} />
+                <Route path="/konto-loeschen" element={<AccountDeletionPage />} />
                 <Route
                   path="/*"
                   element={

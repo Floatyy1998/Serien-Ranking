@@ -1,0 +1,1 @@
+export { AccountDeletionPage } from './AccountDeletionPage';
