@@ -58,6 +58,11 @@
   padding-bottom: 0;
 }
 
+/* Seite ist kein Dock-Ziel: Dock ausgeblendet, nur Atem-Raum statt 90px */
+.mobile-content.nav-hidden {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+
 /* Hide scrollbar for WebKit browsers (Safari, Chrome) */
 .mobile-content::-webkit-scrollbar {
   display: none;

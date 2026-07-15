@@ -7,6 +7,7 @@ import { NAV_SLOT_OPTIONS } from '../../config/navItems';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useIsNavRoot } from '../../hooks/useIsNavRoot';
 import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useNavSlots } from '../../hooks/useNavConfig';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
@@ -34,6 +35,7 @@ export const BottomNavigation = () => {
   const todayEpisodes = useTodayEpisodes();
   const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
   const navSlots = useNavSlots();
+  const isNavRoot = useIsNavRoot();
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [pillPos, setPillPos] = useState({ left: 0, width: 0 });
@@ -133,13 +135,6 @@ export const BottomNavigation = () => {
     }
   };
 
-  // /profile ist seit dem "Mehr"-Tab ein Top-Level-Ziel — Dock bleibt sichtbar
-  const shouldHide =
-    location.pathname.includes('/series/') ||
-    location.pathname.includes('/movie/') ||
-    location.pathname.includes('/rating/') ||
-    location.pathname.startsWith('/episodes/');
-
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
     currentIndex: activeIndex,
@@ -148,7 +143,9 @@ export const BottomNavigation = () => {
     loop: true,
   });
 
-  if (shouldHide) return null;
+  // Das Dock zeigt sich NUR auf seinen eigenen Zielen (Home, Slots, "Mehr") —
+  // alle anderen Seiten laufen über Zurück + Home im PageHeader.
+  if (!isNavRoot) return null;
 
   const getAriaLabel = (item: NavItem, active: boolean) => {
     let label = item.label;

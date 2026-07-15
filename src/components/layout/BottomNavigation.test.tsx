@@ -57,6 +57,12 @@ describe('BottomNavigation', () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it('versteckt sich auf Seiten, die kein Dock-Ziel sind', () => {
+    routerState.pathname = '/stats';
+    const { container } = render(<BottomNavigation />);
+    expect(container.firstChild).toBeNull();
+  });
+
   it('zeigt ein Badge für ungesehene Episoden heute', () => {
     todayEpisodes.value = [{ watched: false }, { watched: true }];
     render(<BottomNavigation />);

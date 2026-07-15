@@ -8,6 +8,9 @@ vi.mock('react-router-dom', () => ({
   useLocation: () => ({ pathname: routerState.pathname }),
 }));
 
+const navRootState = vi.hoisted(() => ({ value: true }));
+vi.mock('../../hooks/useIsNavRoot', () => ({ useIsNavRoot: () => navRootState.value }));
+
 vi.mock('./BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-nav" />,
 }));
@@ -17,6 +20,7 @@ vi.mock('../BugFab', () => ({
 
 beforeEach(() => {
   routerState.pathname = '/';
+  navRootState.value = true;
 });
 
 afterEach(() => {
@@ -43,6 +47,16 @@ describe('Layout', () => {
       </Layout>
     );
     expect(screen.queryByTestId('bottom-nav')).not.toBeInTheDocument();
+  });
+
+  it('nutzt reduziertes Padding, wenn die Seite kein Dock-Ziel ist', () => {
+    navRootState.value = false;
+    const { container } = render(
+      <Layout>
+        <p>Inhalt</p>
+      </Layout>
+    );
+    expect(container.querySelector('.mobile-content')).toHaveClass('nav-hidden');
   });
 
   it('blendet den BugFab auf der Bug-Report-Seite aus', () => {
