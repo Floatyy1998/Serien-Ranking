@@ -43,12 +43,12 @@ jobs:
           # Shards in getrennten Prozessen: jsdom-Tests bauen ueber viele
           # Dateien kumulativ Speicher auf — bei ~300 Dateien stirbt ein
           # einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
-          # Frischer Prozess pro Shard setzt den Speicher zurueck. 8 Shards:
-          # 4 reichten fuer Hub-Modul-Changes, aber ein package.json-Change
-          # (= komplette Suite affected) sprengte einen 4er-Shard weiterhin.
+          # Frischer Prozess pro Shard setzt den Speicher zurueck. 16 Shards:
+          # 8 reichten nicht, als ein package.json-Change die komplette Suite
+          # affected machte (ein 8er-Shard lief bei 6 GB in den Heap-OOM).
           run_shards() {
-            for i in 1 2 3 4 5 6 7 8; do
-              npx vitest run "$@" --passWithNoTests --shard="$i/8"
+            for i in $(seq 1 16); do
+              npx vitest run "$@" --passWithNoTests --shard="$i/16"
             done
           }
           BASE=""
