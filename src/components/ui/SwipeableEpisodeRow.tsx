@@ -7,7 +7,7 @@
 
 import { Check, DragHandle } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useRef } from 'react';
 
 interface SwipeableEpisodeRowProps {
   itemKey: string;
@@ -92,6 +92,9 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
   }) => {
     const isMobile = window.innerWidth < 768;
     const color = accentColor;
+    // Eigene Tap-Erkennung: framers onTap bricht schon bei Mikro-Bewegungen ab
+    // (auf Touch der Normalfall) — hier gilt: <12px Weg + <600ms = Tap.
+    const tapStart = useRef<{ x: number; y: number; t: number } | null>(null);
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
     const isDragTarget =
       index != null &&
@@ -144,7 +147,16 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 onComplete(info.offset.x > 0 ? 'right' : 'left');
               }
             }}
-            onTap={onPosterClick ? () => onPosterClick() : undefined}
+            onPointerDown={(e) => {
+              tapStart.current = { x: e.clientX, y: e.clientY, t: Date.now() };
+            }}
+            onPointerUp={(e) => {
+              const start = tapStart.current;
+              tapStart.current = null;
+              if (!start || !onPosterClick) return;
+              const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+              if (moved < 12 && Date.now() - start.t < 600) onPosterClick();
+            }}
             whileDrag={{ scale: 1.015 }}
             style={{
               position: 'absolute',

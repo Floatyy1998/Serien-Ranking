@@ -48,7 +48,9 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          // pointerEvents im Exit: der Backdrop bleibt während der Ausblend-
+          // Animation im DOM und würde sonst den ersten Scroll/Tap schlucken.
+          exit={{ opacity: 0, pointerEvents: 'none' }}
           transition={{ duration: 0.2 }}
           style={{
             position: 'fixed',
