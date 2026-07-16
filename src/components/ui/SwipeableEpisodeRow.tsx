@@ -126,7 +126,9 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         style={{ position: 'relative' }}
       >
-        {/* Swipe hit area — only when NOT in edit mode */}
+        {/* Swipe hit area — only when NOT in edit mode. onTap öffnet dasselbe
+            Ziel wie der Poster-Tap (ganze Karte klickbar); framer feuert Taps
+            nicht, wenn tatsächlich gezogen wurde — Swipe bleibt ungestört. */}
         {!isEditMode && (
           <motion.div
             drag="x"
@@ -142,6 +144,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 onComplete(info.offset.x > 0 ? 'right' : 'left');
               }
             }}
+            onTap={onPosterClick ? () => onPosterClick() : undefined}
             whileDrag={{ scale: 1.015 }}
             style={{
               position: 'absolute',
@@ -150,6 +153,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               right: '50px',
               bottom: 0,
               zIndex: 4,
+              cursor: onPosterClick ? 'pointer' : undefined,
             }}
           />
         )}
