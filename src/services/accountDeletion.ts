@@ -105,6 +105,15 @@ export async function deleteAccount(password: string): Promise<void> {
     /* existiert oft nicht */
   }
 
+  // First-Party-Analytics: Events/Zähler sind user-bezogen gespeichert und
+  // gehören mitgelöscht (DSGVO Art. 17).
+  await dbRef(`analytics/users/${uid}`)
+    .remove()
+    .catch(() => {});
+  await dbRef(`analytics/global/realtime/activeUsers/${uid}`)
+    .remove()
+    .catch(() => {});
+
   // Alle Nutzerdaten — der eigentliche Kern der Löschung
   await dbRef(`users/${uid}`).remove();
 
