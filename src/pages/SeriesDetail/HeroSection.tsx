@@ -666,6 +666,8 @@ export const HeroSection = memo<HeroSectionProps>(
                   <ProviderOverrideButton
                     seriesId={seriesId}
                     seriesTitle={series.title || series.name}
+                    size="medium"
+                    hasProviders={displayProviders.length > 0}
                     onChange={setProviderOverride}
                   />
                   <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
@@ -953,6 +955,8 @@ export const HeroSection = memo<HeroSectionProps>(
                 <ProviderOverrideButton
                   seriesId={seriesId}
                   seriesTitle={series.title || series.name}
+                  size="large"
+                  hasProviders={displayProviders.length > 0}
                   onChange={setProviderOverride}
                 />
                 <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />

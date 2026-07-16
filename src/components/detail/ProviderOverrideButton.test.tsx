@@ -19,17 +19,12 @@ vi.mock('framer-motion', async () => {
 });
 
 vi.mock('@mui/icons-material', () => ({
+  Add: () => null,
   AutoAwesome: () => null,
   Check: () => null,
-  Edit: () => null,
 }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../../lib/motion', () => ({ tapScaleTight: {} }));
-vi.mock('../ui/IconButton', () => ({
-  IconButton: (props: { onClick: () => void; ariaLabel: string }) => (
-    <button aria-label={props.ariaLabel} onClick={props.onClick} />
-  ),
-}));
 
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
 vi.mock('../../contexts/ThemeContext', () => {

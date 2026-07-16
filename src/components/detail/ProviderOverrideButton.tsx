@@ -3,7 +3,7 @@
  * die Serie manuell einem Streaming-Dienst zugeordnet wird (oder zurück auf
  * Automatik). Schreibt users/$uid/subscriptions/seriesOverrides.
  */
-import { AutoAwesome, Check, Edit } from '@mui/icons-material';
+import { Add, AutoAwesome, Check } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
@@ -17,11 +17,14 @@ import {
   getSeriesProviderOverride,
   setSeriesProviderOverride,
 } from '../../services/providerOverride';
-import { IconButton } from '../ui/IconButton';
 
 interface ProviderOverrideButtonProps {
   seriesId: number;
   seriesTitle?: string;
+  /** Passend zur ProviderBadges-Größe daneben. */
+  size?: 'medium' | 'large';
+  /** Ohne Provider wird statt des Add-Chips eine beschriftete Pill gezeigt. */
+  hasProviders?: boolean;
   /** Meldet die gespeicherte Zuordnung zurück (null = wieder Automatik). */
   onChange?: (providerName: string | null) => void;
 }
@@ -29,6 +32,8 @@ interface ProviderOverrideButtonProps {
 export const ProviderOverrideButton = ({
   seriesId,
   seriesTitle,
+  size = 'medium',
+  hasProviders = true,
   onChange,
 }: ProviderOverrideButtonProps) => {
   const { user } = useAuth() || {};
@@ -76,17 +81,59 @@ export const ProviderOverrideButton = ({
     textAlign: 'left',
   });
 
+  const chipDiameter = size === 'large' ? 36 : 28;
+
   return (
     <>
-      <IconButton
-        icon={<Edit style={{ fontSize: 16 }} />}
-        onClick={openDialog}
-        size={34}
-        borderRadius="12px"
-        variant="glass"
-        ariaLabel="Anbieter zuordnen"
-        tooltip="Anbieter zuordnen"
-      />
+      {hasProviders ? (
+        // Fügt sich als gestrichelter „+"-Chip in die Logo-Reihe ein
+        <motion.button
+          whileTap={tapScaleTight}
+          onClick={openDialog}
+          aria-label="Anbieter zuordnen"
+          title="Anbieter zuordnen"
+          style={{
+            width: chipDiameter,
+            height: chipDiameter,
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: size === 'large' ? 10 : 8,
+            border: '1.5px dashed var(--glass-border-medium)',
+            background: 'transparent',
+            color: currentTheme.text.muted,
+            cursor: 'pointer',
+            opacity: 0.8,
+          }}
+        >
+          <Add style={{ fontSize: size === 'large' ? 20 : 16 }} />
+        </motion.button>
+      ) : (
+        // Kein Provider bekannt: einladende Pill statt einsamem Icon
+        <motion.button
+          whileTap={tapScaleTight}
+          onClick={openDialog}
+          aria-label="Anbieter zuordnen"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            minHeight: chipDiameter + 6,
+            padding: '6px 14px 6px 10px',
+            borderRadius: 'var(--radius-full)',
+            border: '1.5px dashed var(--glass-border-medium)',
+            background: 'var(--glass-subtle)',
+            color: currentTheme.text.muted,
+            fontSize: 12.5,
+            fontWeight: 600,
+            cursor: 'pointer',
+          }}
+        >
+          <Add style={{ fontSize: 16 }} />
+          Anbieter zuordnen
+        </motion.button>
+      )}
 
       {createPortal(
         <AnimatePresence>
