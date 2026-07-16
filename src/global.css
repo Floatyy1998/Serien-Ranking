@@ -179,6 +179,17 @@
   --text-glow-subtle: 0 0 10px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
+/* Interaktive Elemente: touch-action manipulation entfernt die ~350ms
+   Double-Tap-Zoom-Wartezeit von WebKit (WKWebView ignoriert user-scalable=no
+   dafür nicht zuverlässig) — Taps feuern sofort, Navbar fühlt sich direkt an.
+   Klassen mit eigenem touch-action (Drag-Griffe: none) gewinnen per Spezifität. */
+button,
+a,
+[role='button'],
+[role='tab'] {
+  touch-action: manipulation;
+}
+
 /* Glassmorphism utility classes — single source of truth for glass cards.
    Use these instead of repeating `background + backdrop-filter + border` triples
    inline in component styles. Pair with --radius-* and --shadow-* as needed. */
