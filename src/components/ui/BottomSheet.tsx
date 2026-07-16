@@ -47,9 +47,11 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          // pointerEvents im Exit: der Backdrop bleibt während der Ausblend-
-          // Animation im DOM und würde sonst den ersten Scroll/Tap schlucken.
+          // pointerEvents explizit in BEIDEN Zuständen: Exit gibt Scroll/Taps
+          // sofort frei; Animate stellt es wieder her, falls das Sheet erneut
+          // geöffnet wird, während es noch ausblendet (sonst klebt 'none' und
+          // der Backdrop fängt keine Klicks mehr).
+          animate={{ opacity: 1, pointerEvents: 'auto' }}
           exit={{ opacity: 0, pointerEvents: 'none' }}
           transition={{ duration: 0.2 }}
           style={{
