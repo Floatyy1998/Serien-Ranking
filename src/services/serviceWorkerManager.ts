@@ -157,6 +157,19 @@ class ServiceWorkerManager {
       }
     });
 
+    // iOS-Netz: die native App wird beim Backgrounding eingefroren, BEVOR der
+    // unsichtbare Reload durchläuft — die alte Seite liefe dann unter dem
+    // neuen Worker weiter und crasht erst mitten in der nächsten Navigation
+    // (alter Lazy-Chunk weg → Not-Reload). Deshalb: direkt beim Aufwachen
+    // nachziehen — DA fühlt sich ein Reload wie ein normaler App-Start an.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      if (!this.intentionalActivation) return;
+      if (sessionStorage.getItem('sw-reloaded')) return;
+      sessionStorage.setItem('sw-reloaded', 'true');
+      window.location.reload();
+    });
+
     navigator.serviceWorker.addEventListener('message', (event) => {
       this.handleWorkerMessage(event.data);
     });
