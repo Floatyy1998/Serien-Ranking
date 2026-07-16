@@ -150,7 +150,11 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             onPointerDown={(e) => {
               tapStart.current = { x: e.clientX, y: e.clientY, t: Date.now() };
             }}
-            onPointerUp={(e) => {
+            // Bewusst onClick statt onPointerUp: das Click-Event ist das LETZTE
+            // der Touch-Kette. Öffnet man schon auf pointerup, trifft der
+            // nachlaufende Click den frisch gemounteten Sheet-Backdrop und
+            // schließt ihn sofort wieder (Race — „nur jeder x-te Tap ging").
+            onClick={(e) => {
               const start = tapStart.current;
               tapStart.current = null;
               if (!start || !onPosterClick) return;
