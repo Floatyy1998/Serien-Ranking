@@ -641,6 +641,7 @@ export const HeroSection = memo<HeroSectionProps>(
                     isMobile
                     noMargin
                   />
+                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
                 <div
                   style={{
@@ -670,7 +671,6 @@ export const HeroSection = memo<HeroSectionProps>(
                     hasProviders={displayProviders.length > 0}
                     onChange={setProviderOverride}
                   />
-                  <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
               </>
             ) : null}
@@ -930,7 +930,10 @@ export const HeroSection = memo<HeroSectionProps>(
                 padding: '16px 18px',
               }}
             >
-              <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
+                <FriendsWhoHaveThis itemId={series.id} mediaType="series" />
+              </div>
               <RatingsCard
                 series={series}
                 localSeries={localSeries}
@@ -959,7 +962,6 @@ export const HeroSection = memo<HeroSectionProps>(
                   hasProviders={displayProviders.length > 0}
                   onChange={setProviderOverride}
                 />
-                <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
               </div>
             </div>
           )}
