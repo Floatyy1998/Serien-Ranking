@@ -93,8 +93,16 @@ export const ProviderOverrideButton = ({
           aria-label="Anbieter zuordnen"
           title="Anbieter zuordnen"
           style={{
+            // Exakte Badge-Maße erzwingen — die globale .mobile-app-button-Regel
+            // bläht kleine Buttons sonst über min-width/-height auf.
             width: chipDiameter,
             height: chipDiameter,
+            minWidth: chipDiameter,
+            minHeight: chipDiameter,
+            maxWidth: chipDiameter,
+            maxHeight: chipDiameter,
+            padding: 0,
+            boxSizing: 'border-box',
             flexShrink: 0,
             display: 'flex',
             alignItems: 'center',
