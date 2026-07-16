@@ -12,7 +12,12 @@ import { motion } from 'framer-motion';
 import { memo, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useDrawInProgress } from '../../hooks/useDrawInProgress';
 import { BackButton } from '../../components/ui';
-import { FriendsWhoHaveThis, ProviderBadges, VideoGallery } from '../../components/detail';
+import {
+  FriendsWhoHaveThis,
+  ProviderBadges,
+  ProviderOverrideButton,
+  VideoGallery,
+} from '../../components/detail';
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -645,6 +650,10 @@ export const HeroSection = memo<HeroSectionProps>(
                       mediaType="tv"
                     />
                   )}
+                  <ProviderOverrideButton
+                    seriesId={seriesId}
+                    seriesTitle={series.title || series.name}
+                  />
                   <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
               </>
@@ -927,6 +936,10 @@ export const HeroSection = memo<HeroSectionProps>(
                     mediaType="tv"
                   />
                 )}
+                <ProviderOverrideButton
+                  seriesId={seriesId}
+                  seriesTitle={series.title || series.name}
+                />
                 <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
               </div>
             </div>

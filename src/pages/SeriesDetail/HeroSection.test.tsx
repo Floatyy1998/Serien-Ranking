@@ -70,6 +70,7 @@ vi.mock('../../components/ui', () => ({ BackButton: () => <button aria-label="ba
 vi.mock('../../components/detail', () => ({
   FriendsWhoHaveThis: () => <div />,
   ProviderBadges: () => <div />,
+  ProviderOverrideButton: () => <div />,
   VideoGallery: () => <div />,
 }));
 vi.mock('../../components/recommendations/RecommendButton', () => ({

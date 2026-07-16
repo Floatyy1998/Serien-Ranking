@@ -35,6 +35,9 @@ export function getProviderLogoUrl(name: string): string | undefined {
   return PROVIDER_LOGOS[name];
 }
 
+/** Kanonische Liste der zuordenbaren Streaming-Dienste (DE-Auswahl). */
+export const KNOWN_PROVIDER_NAMES: string[] = Object.keys(PROVIDER_LOGOS);
+
 /**
  * Wendet einen User-Override auf eine Provider-Liste an: wenn ein Override
  * existiert, wird DIESE als alleiniger Provider returnt (synthetisches
