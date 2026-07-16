@@ -3,7 +3,7 @@
  * die Serie manuell einem Streaming-Dienst zugeordnet wird (oder zurück auf
  * Automatik). Schreibt users/$uid/subscriptions/seriesOverrides.
  */
-import { Add, AutoAwesome, Check } from '@mui/icons-material';
+import { Add, AutoAwesome, Check, Edit } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
 import { useState } from 'react';
@@ -86,12 +86,13 @@ export const ProviderOverrideButton = ({
   return (
     <>
       {hasProviders ? (
-        // Fügt sich als gestrichelter „+"-Chip in die Logo-Reihe ein
+        // Gestrichelter Stift-Chip in Badge-Größe: Anbieter WECHSELN
+        // (das Plus bleibt dem Leerzustand vorbehalten — dort wird zugeordnet)
         <motion.button
           whileTap={tapScaleTight}
           onClick={openDialog}
-          aria-label="Anbieter zuordnen"
-          title="Anbieter zuordnen"
+          aria-label="Anbieter ändern"
+          title="Anbieter ändern"
           style={{
             // Exakte Badge-Maße erzwingen — die globale .mobile-app-button-Regel
             // bläht kleine Buttons sonst über min-width/-height auf.
@@ -115,7 +116,7 @@ export const ProviderOverrideButton = ({
             opacity: 0.8,
           }}
         >
-          <Add style={{ fontSize: size === 'large' ? 20 : 16 }} />
+          <Edit style={{ fontSize: size === 'large' ? 16 : 13 }} />
         </motion.button>
       ) : (
         // Kein Provider bekannt: einladende Pill statt einsamem Icon

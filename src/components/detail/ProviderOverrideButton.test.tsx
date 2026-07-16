@@ -22,6 +22,7 @@ vi.mock('@mui/icons-material', () => ({
   Add: () => null,
   AutoAwesome: () => null,
   Check: () => null,
+  Edit: () => null,
 }));
 vi.mock('../../lib/haptics', () => ({ hapticTap: vi.fn() }));
 vi.mock('../../lib/motion', () => ({ tapScaleTight: {} }));
@@ -57,7 +58,7 @@ afterEach(() => {
 });
 
 const openDialog = async () => {
-  fireEvent.click(screen.getByRole('button', { name: 'Anbieter zuordnen' }));
+  fireEvent.click(screen.getByRole('button', { name: /Anbieter (ändern|zuordnen)/ }));
   await act(async () => {
     await Promise.resolve();
   });
