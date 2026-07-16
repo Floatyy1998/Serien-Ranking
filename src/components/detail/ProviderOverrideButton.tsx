@@ -22,9 +22,15 @@ import { IconButton } from '../ui/IconButton';
 interface ProviderOverrideButtonProps {
   seriesId: number;
   seriesTitle?: string;
+  /** Meldet die gespeicherte Zuordnung zurück (null = wieder Automatik). */
+  onChange?: (providerName: string | null) => void;
 }
 
-export const ProviderOverrideButton = ({ seriesId, seriesTitle }: ProviderOverrideButtonProps) => {
+export const ProviderOverrideButton = ({
+  seriesId,
+  seriesTitle,
+  onChange,
+}: ProviderOverrideButtonProps) => {
   const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [open, setOpen] = useState(false);
@@ -46,6 +52,7 @@ export const ProviderOverrideButton = ({ seriesId, seriesTitle }: ProviderOverri
     try {
       await setSeriesProviderOverride(user.uid, seriesId, providerName);
       setCurrent(providerName);
+      onChange?.(providerName);
     } finally {
       setBusy(false);
       setOpen(false);

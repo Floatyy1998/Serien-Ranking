@@ -21,8 +21,9 @@ import {
 import { RecommendButton } from '../../components/recommendations/RecommendButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
-import { mergeProviders } from '../../lib/providerMerge';
+import { applyOverrideToProviders, mergeProviders } from '../../lib/providerMerge';
 import type { MergedProvider } from '../../lib/providerMerge';
+import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import {
   fetchAniListProviderFallback,
   isLikelyAnime,
@@ -214,11 +215,23 @@ export const HeroSection = memo<HeroSectionProps>(
     ]);
 
     // Priorität: Merge (Liste + Live) → Katalog-ID-Lookup → AniList-Fallback.
-    const displayProviders = mergedDisplayProviders.length
+    const autoProviders = mergedDisplayProviders.length
       ? mergedDisplayProviders
       : catalogProviders.length
         ? catalogProviders
         : anilistFallback;
+
+    // Manuelle Zuordnung gewinnt — und aktualisiert die Badges sofort nach
+    // dem Speichern (Dialog meldet die Änderung per onChange zurück).
+    const { getSeriesOverride } = useActiveSubscriptions();
+    const [providerOverride, setProviderOverride] = useState<string | null>(null);
+    useEffect(() => {
+      setProviderOverride(getSeriesOverride(seriesId));
+    }, [getSeriesOverride, seriesId]);
+    const displayProviders = useMemo(
+      () => applyOverrideToProviders(autoProviders, providerOverride),
+      [autoProviders, providerOverride]
+    );
 
     const actionButtons = !isReadOnlyTmdbSeries && (
       <div className="hero-actions">
@@ -653,6 +666,7 @@ export const HeroSection = memo<HeroSectionProps>(
                   <ProviderOverrideButton
                     seriesId={seriesId}
                     seriesTitle={series.title || series.name}
+                    onChange={setProviderOverride}
                   />
                   <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
                 </div>
@@ -939,6 +953,7 @@ export const HeroSection = memo<HeroSectionProps>(
                 <ProviderOverrideButton
                   seriesId={seriesId}
                   seriesTitle={series.title || series.name}
+                  onChange={setProviderOverride}
                 />
                 <VideoGallery tmdbId={seriesId} mediaType="tv" buttonStyle="compact" />
               </div>

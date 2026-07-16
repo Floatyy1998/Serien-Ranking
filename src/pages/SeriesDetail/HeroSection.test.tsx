@@ -73,12 +73,25 @@ vi.mock('../../components/detail', () => ({
   ProviderOverrideButton: () => <div />,
   VideoGallery: () => <div />,
 }));
+vi.mock('../../hooks/useActiveSubscriptions', () => ({
+  useActiveSubscriptions: () => ({
+    activeProviders: new Set(),
+    hasAnySubscription: false,
+    isOnActiveSub: () => false,
+    seriesOverrides: {},
+    getSeriesOverride: () => null,
+    loading: false,
+  }),
+}));
 vi.mock('../../components/recommendations/RecommendButton', () => ({
   RecommendButton: () => <button aria-label="recommend" />,
 }));
 vi.mock('./RatingsCard', () => ({ RatingsCard: () => <div data-testid="ratings" /> }));
 vi.mock('./StatusBadge', () => ({ StatusBadge: () => <span />, NextEpisodeChip: () => <span /> }));
-vi.mock('../../lib/providerMerge', () => ({ mergeProviders: () => [] }));
+vi.mock('../../lib/providerMerge', () => ({
+  mergeProviders: () => [],
+  applyOverrideToProviders: (providers: unknown[]) => providers ?? [],
+}));
 vi.mock('../../services/anilistProviderFallback', () => ({
   fetchAniListProviderFallback: () => Promise.resolve([]),
   isLikelyAnime: () => false,
