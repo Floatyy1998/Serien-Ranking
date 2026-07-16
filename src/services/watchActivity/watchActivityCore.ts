@@ -11,6 +11,20 @@ import { createBaseEventData, createEpisodeEventData, getEventsPath, saveEvent }
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';
 import { updateWatchStreak } from './watchStreakTracking';
 import { triggerPetReaction } from '../../hooks/usePetReactions';
+import { bumpSeriesVersion, dbGet, dbRef, paths } from '../db/ref';
+
+/**
+ * Aktives Gucken heißt „aktiv dran": Einzel-Marks setzen die Serie
+ * automatisch auf die Watchlist, damit sie bei „Weiterschauen" auftaucht.
+ * Bulk-Abhaken (Alt-Serien nachtragen) tut das bewusst NICHT.
+ */
+async function ensureOnWatchlist(userId: string, seriesId: number): Promise<void> {
+  const path = `${paths.seriesItem(userId, seriesId)}/watchlist`;
+  const current = await dbGet<boolean>(path);
+  if (current === true) return;
+  await dbRef(path).set(true);
+  await bumpSeriesVersion(userId);
+}
 
 // PUBLIC API - EPISODE WATCH
 
@@ -27,6 +41,12 @@ export async function logEpisodeWatch(
 ): Promise<void> {
   const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData();
   const runtime = episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
+
+  // Einzel-Mark → Serie gehört ins „Weiterschauen" (Rewatch setzt die
+  // Watchlist schon beim Start). Best-effort, blockiert das Logging nicht.
+  if (!isBulkMarking && !isRewatch) {
+    ensureOnWatchlist(userId, seriesId).catch(() => {});
+  }
 
   // Binge session handling - SKIP für Bulk-Marking
   let bingeSessionId: string | undefined;
