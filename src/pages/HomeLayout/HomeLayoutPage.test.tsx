@@ -34,6 +34,8 @@ vi.mock('framer-motion', async () => {
     'onReorder',
     'value',
     'layout',
+    'dragListener',
+    'dragControls',
   ]);
   const make = (tag: string) =>
     React.forwardRef(function M(props: Record<string, unknown>, ref: unknown) {
@@ -45,6 +47,7 @@ vi.mock('framer-motion', async () => {
   return {
     motion,
     Reorder: { Group: make('div'), Item: make('div') },
+    useDragControls: () => ({ start: () => {} }),
     AnimatePresence: (p: { children?: unknown }) =>
       React.createElement(React.Fragment, null, p.children as never),
   };

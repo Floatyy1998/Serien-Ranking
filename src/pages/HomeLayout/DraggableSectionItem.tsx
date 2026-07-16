@@ -1,10 +1,14 @@
 /**
  * DraggableSectionItem - A single draggable section row with optional expandable sub-items
  * Inline styles ONLY for theme colors, CSS classes for layout
+ *
+ * Drag läuft ausschließlich über den Griff (dragListener={false}): sonst
+ * beansprucht framer-motion auf Touch-Geräten jede Berührung der Zeile und
+ * blockiert das Scrollen der Seite.
  */
 
 import { DragIndicator, ExpandMore } from '@mui/icons-material';
-import { AnimatePresence, motion, Reorder } from 'framer-motion';
+import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { ExpandableConfig } from './useHomeLayoutData';
 import { SECTION_LABELS } from './useHomeLayoutData';
@@ -17,6 +21,60 @@ interface DraggableSectionItemProps {
   expandableConfig: ExpandableConfig | null;
 }
 
+interface SubItemProps {
+  subId: string;
+  isSubHidden: boolean;
+  label: string;
+  onToggle: () => void;
+}
+
+const DraggableSubItem = ({ subId, isSubHidden, label, onToggle }: SubItemProps) => {
+  const { currentTheme } = useTheme();
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      key={subId}
+      value={subId}
+      className={`hl-sub-item ${isSubHidden ? 'hl-sub-item--hidden' : ''}`}
+      dragListener={false}
+      dragControls={dragControls}
+      style={{
+        background: `${currentTheme.primary}08`,
+      }}
+      whileDrag={{
+        scale: 1.02,
+        boxShadow: `0 4px 12px ${currentTheme.primary}20`,
+        zIndex: 10,
+      }}
+    >
+      <span
+        className="hl-grip"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          dragControls.start(e);
+        }}
+        aria-hidden
+      >
+        <DragIndicator className="hl-sub-drag-icon" style={{ color: currentTheme.text.muted }} />
+      </span>
+      <span
+        className="hl-sub-label"
+        style={{
+          color: isSubHidden ? currentTheme.text.muted : currentTheme.text.primary,
+        }}
+      >
+        {label}
+      </span>
+      <SectionToggleCard
+        checked={!isSubHidden}
+        onChange={onToggle}
+        label={`${label} ${isSubHidden ? 'einblenden' : 'ausblenden'}`}
+      />
+    </Reorder.Item>
+  );
+};
+
 export const DraggableSectionItem = ({
   sectionId,
   isHidden,
@@ -24,12 +82,15 @@ export const DraggableSectionItem = ({
   expandableConfig,
 }: DraggableSectionItemProps) => {
   const { currentTheme } = useTheme();
+  const dragControls = useDragControls();
 
   return (
     <Reorder.Item
       key={sectionId}
       value={sectionId}
       className={`hl-section-item ${isHidden ? 'hl-section-item--hidden' : ''}`}
+      dragListener={false}
+      dragControls={dragControls}
       style={{
         background: currentTheme.background.default,
         border: `1px solid ${currentTheme.border.default}`,
@@ -42,7 +103,16 @@ export const DraggableSectionItem = ({
     >
       {/* Main row */}
       <div className="hl-section-row">
-        <DragIndicator className="hl-drag-icon" style={{ color: currentTheme.text.muted }} />
+        <span
+          className="hl-grip"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            dragControls.start(e);
+          }}
+          aria-hidden
+        >
+          <DragIndicator className="hl-drag-icon" style={{ color: currentTheme.text.muted }} />
+        </span>
 
         {/* Label + optional expand button */}
         <div
@@ -103,44 +173,15 @@ export const DraggableSectionItem = ({
                   onReorder={expandableConfig.onReorder}
                   className="hl-sub-reorder-group"
                 >
-                  {expandableConfig.order.map((subId) => {
-                    const isSubHidden = expandableConfig.hiddenItems.includes(subId);
-                    return (
-                      <Reorder.Item
-                        key={subId}
-                        value={subId}
-                        className={`hl-sub-item ${isSubHidden ? 'hl-sub-item--hidden' : ''}`}
-                        style={{
-                          background: `${currentTheme.primary}08`,
-                        }}
-                        whileDrag={{
-                          scale: 1.02,
-                          boxShadow: `0 4px 12px ${currentTheme.primary}20`,
-                          zIndex: 10,
-                        }}
-                      >
-                        <DragIndicator
-                          className="hl-sub-drag-icon"
-                          style={{ color: currentTheme.text.muted }}
-                        />
-                        <span
-                          className="hl-sub-label"
-                          style={{
-                            color: isSubHidden
-                              ? currentTheme.text.muted
-                              : currentTheme.text.primary,
-                          }}
-                        >
-                          {expandableConfig.labels[subId] || subId}
-                        </span>
-                        <SectionToggleCard
-                          checked={!isSubHidden}
-                          onChange={() => expandableConfig.onToggle(subId)}
-                          label={`${expandableConfig.labels[subId]} ${isSubHidden ? 'einblenden' : 'ausblenden'}`}
-                        />
-                      </Reorder.Item>
-                    );
-                  })}
+                  {expandableConfig.order.map((subId) => (
+                    <DraggableSubItem
+                      key={subId}
+                      subId={subId}
+                      isSubHidden={expandableConfig.hiddenItems.includes(subId)}
+                      label={expandableConfig.labels[subId] || subId}
+                      onToggle={() => expandableConfig.onToggle(subId)}
+                    />
+                  ))}
                 </Reorder.Group>
               </div>
             </motion.div>

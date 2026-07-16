@@ -42,6 +42,48 @@ export async function deleteAccount(password: string): Promise<void> {
     /* best effort */
   }
 
+  // Freundschaftsanfragen in beide Richtungen (enthalten Usernamen + E-Mail)
+  try {
+    const removeRequests = async (field: 'fromUserId' | 'toUserId') => {
+      const snap = await dbRef('friendRequests').orderByChild(field).equalTo(uid).once('value');
+      const requests = (snap.val() as Record<string, unknown>) || {};
+      await Promise.all(
+        Object.keys(requests).map((id) =>
+          dbRef(`friendRequests/${id}`)
+            .remove()
+            .catch(() => {})
+        )
+      );
+    };
+    await removeRequests('fromUserId');
+    await removeRequests('toUserId');
+  } catch {
+    /* best effort */
+  }
+
+  // Monats-Archive der Rangliste: Keys sind YYYY-MM — blind über die mögliche
+  // Spanne löschen (remove auf nicht existente Pfade ist ein No-op) statt das
+  // komplette Archiv aller Nutzer zu lesen.
+  try {
+    const now = new Date();
+    const months: string[] = [];
+    for (let year = 2024; year <= now.getFullYear(); year++) {
+      const lastMonth = year === now.getFullYear() ? now.getMonth() + 1 : 12;
+      for (let month = 1; month <= lastMonth; month++) {
+        months.push(`${year}-${String(month).padStart(2, '0')}`);
+      }
+    }
+    await Promise.all(
+      months.map((m) =>
+        dbRef(`leaderboardArchive/${m}/${uid}`)
+          .remove()
+          .catch(() => {})
+      )
+    );
+  } catch {
+    /* best effort */
+  }
+
   // Öffentliche Referenzen
   try {
     const publicId = await dbGet<string>(userPath(uid, 'publicProfileId'));

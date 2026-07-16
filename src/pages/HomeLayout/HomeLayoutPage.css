@@ -212,6 +212,24 @@
   flex-shrink: 0;
 }
 
+/* Drag-Griff: einziger Punkt, an dem gezogen wird. touch-action: none lässt
+   den Browser hier NICHT scrollen — überall sonst scrollt die Seite normal.
+   Negative Margins + Padding vergrößern die Touch-Fläche ohne Layout-Shift. */
+.hl-grip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 10px;
+  margin: -10px;
+  touch-action: none;
+  cursor: grab;
+}
+
+.hl-grip:active {
+  cursor: grabbing;
+}
+
 .hl-label-area {
   flex: 1;
   display: flex;

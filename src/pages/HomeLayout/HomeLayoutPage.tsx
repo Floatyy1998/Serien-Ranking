@@ -13,7 +13,7 @@ import {
   Visibility,
   VisibilityOff,
 } from '@mui/icons-material';
-import { motion, Reorder } from 'framer-motion';
+import { motion, Reorder, useDragControls } from 'framer-motion';
 import { useMemo, useRef } from 'react';
 import { NAV_SLOT_ICONS } from '../../components/layout/navSlotIcons';
 import { GradientText, PageHeader, PageLayout } from '../../components/ui';
@@ -122,11 +122,16 @@ interface CanvasSectionProps {
 const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps) => {
   const { currentTheme } = useTheme();
   const chipDragRef = useRef(false);
+  // Drag nur am Griff: sonst frisst framer-motion auf Touch-Geräten jede
+  // Berührung der Sektion und blockiert das Scrollen der Seite.
+  const dragControls = useDragControls();
 
   return (
     <Reorder.Item
       value={id}
       className={`hl-cv-section ${hidden ? 'hl-cv-section--off' : ''}`}
+      dragListener={false}
+      dragControls={dragControls}
       whileDrag={{
         scale: 1.02,
         boxShadow: `0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px ${currentTheme.primary}40`,
@@ -135,7 +140,16 @@ const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps)
       layout
     >
       <div className="hl-cv-head">
-        <DragIndicator className="hl-cv-drag" style={{ color: currentTheme.text.muted }} />
+        <span
+          className="hl-grip"
+          onPointerDown={(e) => {
+            e.preventDefault();
+            dragControls.start(e);
+          }}
+          aria-hidden
+        >
+          <DragIndicator className="hl-cv-drag" style={{ color: currentTheme.text.muted }} />
+        </span>
         <span
           className="hl-cv-label"
           style={{ color: hidden ? currentTheme.text.muted : currentTheme.text.secondary }}
@@ -182,6 +196,7 @@ const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps)
                 }}
                 style={{
                   color: off ? currentTheme.text.muted : currentTheme.text.secondary,
+                  touchAction: 'none',
                 }}
               >
                 {expandable.labels[sub] || sub}
@@ -344,7 +359,7 @@ export const HomeLayoutPage = () => {
                       key={id}
                       value={id}
                       className="hl-dock-item hl-dock-item--slot"
-                      style={{ color: currentTheme.text.secondary }}
+                      style={{ color: currentTheme.text.secondary, touchAction: 'none' }}
                       whileDrag={{ scale: 1.08, zIndex: 10 }}
                       onDragStart={() => {
                         dockDragRef.current = true;
