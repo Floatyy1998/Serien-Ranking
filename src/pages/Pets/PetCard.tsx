@@ -41,11 +41,19 @@ export const PetCard = memo(function PetCard({
 }: PetCardProps) {
   const { currentTheme } = useTheme();
 
+  // Ampel-Logik: Rot nur bei kritischem Stand, nicht dauerhaft
+  const hungerColor =
+    hungerPercentage <= 30
+      ? currentTheme.status?.error || '#ef4444'
+      : hungerPercentage <= 60
+        ? currentTheme.status?.warning || '#eab308'
+        : currentTheme.status?.success || '#22c55e';
+
   const stats = [
     {
       label: 'Hunger',
       value: hungerPercentage,
-      color: currentTheme.status?.error || '#ff6b6b',
+      color: hungerColor,
       icon: '🍖',
       text: `${Math.round(hungerPercentage)}%`,
     },
