@@ -487,7 +487,9 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
   const { HeaderIcon, DetailIcon, ActionIcon } = config;
 
-  const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%)`;
+  // Deckende Basis-Schicht: ohne funktionierenden backdrop-filter (Android WebView)
+  // scheint sonst der Seiteninhalt durch die Karte durch.
+  const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%), rgb(15, 17, 21)`;
   const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
 
   return (

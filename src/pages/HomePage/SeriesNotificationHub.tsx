@@ -18,17 +18,17 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
-import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
-import { useTheme } from '../../contexts/ThemeContext';
-import type { Series } from '../../types/Series';
+import { AnimeMangaHandoffNotification } from '../../components/ui/AnimeMangaHandoffNotification';
 import { CarouselNotification } from '../../components/ui/CarouselNotification';
-import { ProactiveRecapCard } from './ProactiveRecapCard';
+import '../../components/ui/CarouselNotification.css';
 import { ProviderChangeNotification } from '../../components/ui/ProviderChangeNotification';
 import { UnsubscribedNewSeasonNotification } from '../../components/ui/UnsubscribedNewSeasonNotification';
-import { AnimeMangaHandoffNotification } from '../../components/ui/AnimeMangaHandoffNotification';
-import type { ProviderChangeInfo, AnimeMangaHandoff } from '../../contexts/seriesListDetection';
+import type { AnimeMangaHandoff, ProviderChangeInfo } from '../../contexts/seriesListDetection';
+import { useTheme } from '../../contexts/ThemeContext';
+import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 import type { UnsubscribedNewSeasonEntry } from '../../hooks/useUnsubscribedNewSeasons';
-import '../../components/ui/CarouselNotification.css';
+import type { Series } from '../../types/Series';
+import { ProactiveRecapCard } from './ProactiveRecapCard';
 
 type CategoryKey =
   | 'recap'
@@ -160,17 +160,17 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     [categoryCounts]
   );
 
-  // Aktiver Tab — User-Pick wird gespeichert. Wenn die gewählte Kategorie
-  // verschwindet (z.B. weil dismissed), fällt der derived `currentKey` auf die
-  // erste verfügbare zurück — kein setState-im-Effect-Reset nötig.
-  const [activeKey, setActiveKey] = useState<CategoryKey | null>(null);
+  // Gezeigte Kategorie bleibt stehen, bis sie verschwindet oder der User wechselt —
+  // asynchron nachladende Detections tauschen die Karte nicht mehr aus.
+  const [shownKey, setShownKey] = useState<CategoryKey | null>(null);
 
   if (activeCategories.length === 0) return null;
 
   const currentKey =
-    activeKey && activeCategories.some((c) => c.key === activeKey)
-      ? activeKey
+    shownKey && activeCategories.some((c) => c.key === shownKey)
+      ? shownKey
       : activeCategories[0].key;
+  if (currentKey !== shownKey) setShownKey(currentKey);
 
   const renderActive = () => {
     switch (currentKey) {
@@ -259,7 +259,7 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
                 role="tab"
                 aria-selected={isActive}
                 className={`notif-hub-tab ${isActive ? 'active' : ''}`}
-                onClick={() => setActiveKey(c.key)}
+                onClick={() => setShownKey(c.key)}
                 style={
                   isActive
                     ? {

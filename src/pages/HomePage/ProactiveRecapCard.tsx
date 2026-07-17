@@ -68,7 +68,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
             boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)',
             backdropFilter: 'var(--blur-md)',
             WebkitBackdropFilter: 'var(--blur-md)',
-            background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee)`,
+            background: `linear-gradient(135deg, ${currentTheme.background.surface}ee, ${currentTheme.background.default}ee), ${currentTheme.background.default}`,
             // Karte selbst scrollt NICHT mehr — sonst wandern Kopf +
             // Schließen-Button beim langen Recap aus dem Bild. Der Recap-Text
             // bekommt seinen eigenen scrollbaren Bereich (siehe unten).

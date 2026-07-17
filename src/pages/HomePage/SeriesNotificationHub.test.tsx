@@ -63,6 +63,22 @@ describe('SeriesNotificationHub', () => {
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
   });
 
+  it('keeps the shown category when a higher-priority one arrives later', () => {
+    const { rerender } = render(
+      <SeriesNotificationHub {...baseProps()} completedSeries={[S(1)]} />
+    );
+    expect(screen.getByTestId('carousel')).toHaveTextContent('completed');
+    rerender(
+      <SeriesNotificationHub
+        {...baseProps()}
+        completedSeries={[S(1)]}
+        seriesWithNewSeasons={[S(2)]}
+      />
+    );
+    expect(screen.getByRole('tab', { name: /Fertig/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /Neu/ })).toHaveAttribute('aria-selected', 'false');
+  });
+
   it('shows a tab bar and switches the active category on tab click', () => {
     render(
       <SeriesNotificationHub {...baseProps()} completedSeries={[S(1)]} unratedSeries={[S(2)]} />

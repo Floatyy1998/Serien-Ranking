@@ -37,7 +37,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
       ? `Neue Staffel auf ${first.providers.join(', ')}`
       : `${entries.length} neue Staffeln auf nicht abonnierten Anbietern`;
 
-  const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%)`;
+  const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%), rgb(15, 17, 21)`;
   const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
 
   return (
