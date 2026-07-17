@@ -29,7 +29,7 @@ export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   useTheme();
-  useOptimizedFriends();
+  const { unreadRequestsCount } = useOptimizedFriends();
   useNotifications();
 
   const todayEpisodes = useTodayEpisodes();
@@ -85,9 +85,10 @@ export const BottomNavigation = () => {
         path: '/profile',
         icon: <MoreHoriz />,
         label: 'Mehr',
+        badge: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
       },
     ];
-  }, [navSlots, unwatchedToday]);
+  }, [navSlots, unwatchedToday, unreadRequestsCount]);
 
   const getActiveIndex = () => {
     let best = 0;
@@ -224,7 +225,8 @@ export const BottomNavigation = () => {
                   )}
                 </div>
                 <AnimatePresence>
-                  {active && (
+                  {/* Kein Aktiv-Punkt unter "Mehr" — wirkt neben dem …-Icon wie ein 4. Punkt */}
+                  {active && item.id !== 'more' && (
                     <motion.div
                       className="nav-active-dot"
                       initial={{ scale: 0, opacity: 0 }}
