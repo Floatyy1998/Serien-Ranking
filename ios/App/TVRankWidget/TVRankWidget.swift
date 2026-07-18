@@ -58,7 +58,8 @@ struct WidgetPayload: Decodable {
     var urls = today.compactMap { $0.poster }
     urls += (countdowns ?? []).compactMap { $0.poster }
     urls += (week ?? []).flatMap { $0.eps.compactMap { $0.poster } }
-    return Array(Set(urls.filter { !$0.isEmpty }))
+    var seen = Set<String>()
+    return urls.filter { !$0.isEmpty && seen.insert($0).inserted }
   }
 }
 
@@ -82,7 +83,7 @@ struct TodayProvider: TimelineProvider {
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<TodayEntry>) -> Void) {
     let payload = WidgetPayload.loadFromStore()
-    let urls = payload.allPosterURLs.prefix(16)
+    let urls = payload.allPosterURLs.prefix(24)
     guard !urls.isEmpty else {
       completion(entryTimeline(payload, [:]))
       return
@@ -147,12 +148,25 @@ struct PosterThumb: View {
   var width: CGFloat = 24
   var height: CGFloat = 34
 
+  @ViewBuilder
+  private func poster(_ img: UIImage) -> some View {
+    // iOS-18-Tinted-Modus maskiert Bilder sonst zu weißen Silhouetten
+    if #available(iOSApplicationExtension 18.0, *) {
+      Image(uiImage: img)
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+        .widgetAccentedRenderingMode(.fullColor)
+    } else {
+      Image(uiImage: img)
+        .resizable()
+        .aspectRatio(contentMode: .fill)
+    }
+  }
+
   var body: some View {
     Group {
       if let img = image {
-        Image(uiImage: img)
-          .resizable()
-          .aspectRatio(contentMode: .fill)
+        poster(img)
       } else {
         ZStack {
           Color.white.opacity(0.08)
@@ -341,12 +355,14 @@ struct CountdownWidget: Widget {
 // MARK: - Wochen-Kalender
 
 struct WeekWidgetView: View {
+  @Environment(\.widgetRenderingMode) var renderingMode
   let entry: TodayEntry
 
-  var days: [WidgetPayload.Day] { Array((entry.payload.week ?? []).prefix(4)) }
+  // Höhen-Budget einer systemLarge-Kachel: 3 Tage à max. 2 Folgen
+  var days: [WidgetPayload.Day] { Array((entry.payload.week ?? []).prefix(3)) }
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 9) {
+    VStack(alignment: .leading, spacing: 8) {
       HeaderText(text: "DEINE WOCHE")
 
       if days.isEmpty {
@@ -354,19 +370,10 @@ struct WeekWidgetView: View {
         EmptyHint(text: "Diese Woche keine neuen Folgen")
         Spacer(minLength: 0)
       } else {
-        ForEach(Array(days.enumerated()), id: \.offset) { idx, day in
+        ForEach(Array(days.enumerated()), id: \.offset) { _, day in
           VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
-              Text(day.label)
-                .font(.system(size: 10, weight: .heavy, design: .rounded))
-                .kerning(0.8)
-                .foregroundStyle(day.label == "HEUTE" ? Color.black : accent)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 2.5)
-                .background(
-                  day.label == "HEUTE" ? AnyShapeStyle(accent) : AnyShapeStyle(accent.opacity(0.14)),
-                  in: Capsule()
-                )
+              dayChip(day.label)
               Rectangle()
                 .fill(.white.opacity(0.08))
                 .frame(height: 0.5)
@@ -382,12 +389,6 @@ struct WeekWidgetView: View {
                 EpChip(text: ep.ep)
               }
             }
-            if day.eps.count > 2 {
-              Text("+ \(day.eps.count - 2) weitere")
-                .font(.system(size: 10, design: .rounded))
-                .foregroundStyle(.white.opacity(0.4))
-                .padding(.leading, 27)
-            }
           }
         }
         Spacer(minLength: 0)
@@ -396,6 +397,22 @@ struct WeekWidgetView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .widgetURL(URL(string: "de.tvrank.app://calendar"))
     .containerBackground(for: .widget) { widgetBackground }
+  }
+
+  @ViewBuilder
+  private func dayChip(_ label: String) -> some View {
+    // Invertierter HEUTE-Chip nur in Vollfarbe — im Tinted-Modus wäre Schwarz auf Weiß unlesbar
+    let inverted = label == "HEUTE" && renderingMode == .fullColor
+    Text(label)
+      .font(.system(size: 10, weight: .heavy, design: .rounded))
+      .kerning(0.8)
+      .foregroundStyle(inverted ? Color.black : accent)
+      .padding(.horizontal, 7)
+      .padding(.vertical, 2.5)
+      .background(
+        inverted ? AnyShapeStyle(accent) : AnyShapeStyle(accent.opacity(0.14)),
+        in: Capsule()
+      )
   }
 }
 
