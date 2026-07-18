@@ -70,7 +70,7 @@ export const WidgetDataSync = () => {
         poster: smallPoster(ep.poster),
       })),
       countdown: next ? { title: next.title, days: next.daysUntil, date: next.nextDate } : null,
-      countdowns: countdowns.slice(0, 3).map((c) => ({
+      countdowns: countdowns.slice(0, 5).map((c) => ({
         title: c.title,
         days: c.daysUntil,
         date: c.nextDate,

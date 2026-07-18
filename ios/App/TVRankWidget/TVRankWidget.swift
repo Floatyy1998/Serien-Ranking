@@ -212,7 +212,13 @@ struct TodayWidgetView: View {
   @Environment(\.widgetFamily) var family
   let entry: TodayEntry
 
-  var maxRows: Int { family == .systemSmall ? 2 : 3 }
+  var maxRows: Int {
+    switch family {
+    case .systemSmall: return 2
+    case .systemMedium: return 2
+    default: return 6
+    }
+  }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 7) {
@@ -265,7 +271,7 @@ struct TodayWidget: Widget {
     }
     .configurationDisplayName("Heute läuft")
     .description("Heutige Folgen deiner Serien auf einen Blick.")
-    .supportedFamilies([.systemSmall, .systemMedium])
+    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
 
@@ -277,7 +283,8 @@ struct CountdownWidgetView: View {
 
   var items: [WidgetPayload.Countdown] {
     let all = entry.payload.countdowns ?? (entry.payload.countdown.map { [$0] } ?? [])
-    return Array(all.prefix(family == .systemSmall ? 1 : 3))
+    let limit = family == .systemSmall ? 1 : family == .systemMedium ? 2 : 5
+    return Array(all.prefix(limit))
   }
 
   private func number(_ days: Int) -> String {
@@ -348,7 +355,7 @@ struct CountdownWidget: Widget {
     }
     .configurationDisplayName("Countdown")
     .description("Countdown zu den nächsten Staffeln und Premieren deiner Serien.")
-    .supportedFamilies([.systemSmall, .systemMedium])
+    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
 
