@@ -8,9 +8,8 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Optimize images */
+/* Bilder: bewusst ohne will-change (eine GPU-Layer pro Poster killt iOS) */
 img {
-  will-change: transform;
   contain: layout style paint;
 }
 
@@ -23,12 +22,7 @@ img {
   transform: translateZ(0);
 }
 
-/* Smooth scrolling - only when user has no motion preference */
-@media (prefers-reduced-motion: no-preference) {
-  * {
-    scroll-behavior: smooth;
-  }
-}
+/* Kein globales scroll-behavior:smooth — sanfte Scrolls explizit anfordern */
 
 * {
   -webkit-tap-highlight-color: transparent;

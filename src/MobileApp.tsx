@@ -2,6 +2,8 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout, ScrollToTop } from './components/layout';
+import { MainTabs } from './components/layout/MainTabs';
+import { MAIN_TAB_PATHS } from './config/navItems';
 import { useAuth } from './contexts/AuthContext';
 import { ADMIN_UID } from './config/admin';
 import { useOptimizedFriends } from './contexts/OptimizedFriendsContext';
@@ -13,13 +15,8 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import './styles/App.css';
 
-// Main nav tabs: eager imports — these are always needed and must never show a loading spinner
-import { HomePage } from './pages/HomePage';
-import { WatchNextPage } from './pages/WatchNext';
-import { RatingsPage } from './pages/Ratings';
-import { ProfilePage } from './pages/Profile';
-import { SearchPage } from './pages/Search';
-
+// Die Haupt-Tabs (Home, Watchlist, Ratings, Profil, Suche, Kalender, Manga)
+// leben in MainTabs (Keep-Alive) — hier nur noch die übrigen Routen.
 import {
   SeriesDetailPage,
   MovieDetailPage,
@@ -47,13 +44,11 @@ import {
   PrivacyPage,
   DiscussionFeedPage,
   CountdownPage,
-  CalendarPage,
   OnboardingPage,
   LeaderboardPage,
   PatchNotesPage,
   AdminDashboardPage,
   BugReportPage,
-  MangaPage,
   MangaDetailPage,
   MangaRatingsPage,
   MangaSearchPage,
@@ -186,399 +181,350 @@ export const MobileApp = () => {
     return <Navigate to="/onboarding" replace />;
   }
 
+  const isTabPath = MAIN_TAB_PATHS.has(location.pathname);
+
   return (
     <div className="mobile-app">
       <ScrollToTop />
       <PushOptInPrompt />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
-          <Routes>
-            {/* Onboarding - Full-screen, no Layout */}
-            <Route path="/onboarding" element={<OnboardingPage />} />
+          {/* Keep-Alive-Shell der Haupt-Tabs — Tab-Wechsel kostet keinen Remount */}
+          <div style={{ display: isTabPath ? undefined : 'none' }}>
+            <Layout>
+              <MainTabs />
+            </Layout>
+          </div>
+          {!isTabPath && (
+            <Routes>
+              {/* Onboarding - Full-screen, no Layout */}
+              <Route path="/onboarding" element={<OnboardingPage />} />
 
-            {/* Main Pages */}
-            <Route
-              path="/"
-              element={
-                <Layout>
-                  <HomePage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/watchlist"
-              element={
-                <Layout>
-                  <WatchNextPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/ratings"
-              element={
-                <Layout>
-                  <RatingsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                // Seit dem "Mehr"-Tab ist /profile ein Top-Level-Ziel — Dock bleibt sichtbar
-                <Layout>
-                  <ProfilePage />
-                </Layout>
-              }
-            />
+              {/* Additional Pages */}
+              <Route
+                path="/recently-watched"
+                element={
+                  <Layout hideNav>
+                    <RecentlyWatchedPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/discover"
+                element={
+                  <Layout hideNav>
+                    <DiscoverPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/activity"
+                element={
+                  <Layout hideNav>
+                    <ActivityPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/discussions"
+                element={
+                  <Layout hideNav>
+                    <DiscussionFeedPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/badges"
+                element={
+                  <Layout hideNav>
+                    <BadgesPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/pets"
+                element={
+                  <Layout hideNav>
+                    <PetsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/theme"
+                element={
+                  <Layout hideNav>
+                    <ThemePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/home-layout"
+                element={
+                  <Layout hideNav>
+                    <HomeLayoutPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/stats"
+                element={
+                  <Layout hideNav>
+                    <StatsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/taste-profile"
+                element={
+                  <Layout hideNav>
+                    <TasteProfilePage />
+                  </Layout>
+                }
+              />
+              {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
+              <Route path="/wrapped" element={<WrappedPage />} />
+              <Route path="/wrapped/:year" element={<WrappedPage />} />
+              <Route
+                path="/actor-universe"
+                element={
+                  <Layout hideNav>
+                    <ActorUniversePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <Layout hideNav>
+                    <SettingsPage />
+                  </Layout>
+                }
+              />
 
-            {/* Additional Pages */}
-            <Route
-              path="/recently-watched"
-              element={
-                <Layout hideNav>
-                  <RecentlyWatchedPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/discover"
-              element={
-                <Layout hideNav>
-                  <DiscoverPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/activity"
-              element={
-                <Layout hideNav>
-                  <ActivityPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/discussions"
-              element={
-                <Layout hideNav>
-                  <DiscussionFeedPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/search"
-              element={
-                <Layout>
-                  <SearchPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/badges"
-              element={
-                <Layout hideNav>
-                  <BadgesPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/pets"
-              element={
-                <Layout hideNav>
-                  <PetsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/theme"
-              element={
-                <Layout hideNav>
-                  <ThemePage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/home-layout"
-              element={
-                <Layout hideNav>
-                  <HomeLayoutPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <Layout hideNav>
-                  <StatsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/taste-profile"
-              element={
-                <Layout hideNav>
-                  <TasteProfilePage />
-                </Layout>
-              }
-            />
-            {/* Wrapped routes - config wird in WrappedPage aus Firebase geprüft */}
-            <Route path="/wrapped" element={<WrappedPage />} />
-            <Route path="/wrapped/:year" element={<WrappedPage />} />
-            <Route
-              path="/actor-universe"
-              element={
-                <Layout hideNav>
-                  <ActorUniversePage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <Layout hideNav>
-                  <SettingsPage />
-                </Layout>
-              }
-            />
+              {/* Detail Pages */}
+              <Route
+                path="/series/:id"
+                element={
+                  <Layout hideNav>
+                    <SeriesDetailPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/episodes/:id"
+                element={
+                  <Layout hideNav>
+                    <EpisodeManagementPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/episode/:seriesId/s/:seasonNumber/e/:episodeNumber"
+                element={
+                  <Layout hideNav>
+                    <EpisodeDiscussionPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/rating/:type/:id"
+                element={
+                  <Layout hideNav>
+                    <RatingEditorPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/movie/:id"
+                element={
+                  <Layout hideNav>
+                    <MovieDetailPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/friend/:id"
+                element={
+                  <Layout hideNav>
+                    <FriendProfilePage />
+                  </Layout>
+                }
+              />
+              <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
+              <Route path="/watch-journey" element={<WatchJourneyPage />} />
+              <Route path="/catch-up" element={<CatchUpPage />} />
+              <Route path="/hidden-series" element={<HiddenSeriesPage />} />
+              <Route
+                path="/anime-season"
+                element={
+                  <Layout hideNav>
+                    <AnimeSeasonPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/serien-kalender"
+                element={
+                  <Layout hideNav>
+                    <SerienKalenderPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/leaderboard"
+                element={
+                  <Layout hideNav>
+                    <LeaderboardPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/patch-notes"
+                element={
+                  <Layout hideNav>
+                    <PatchNotesPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <Layout hideNav>
+                    <AdminDashboardPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/bug-report"
+                element={
+                  <Layout hideNav>
+                    <BugReportPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/subscriptions"
+                element={
+                  <Layout hideNav>
+                    <SubscriptionsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/countdowns"
+                element={
+                  <Layout hideNav>
+                    <CountdownPage />
+                  </Layout>
+                }
+              />
 
-            {/* Detail Pages */}
-            <Route
-              path="/series/:id"
-              element={
-                <Layout hideNav>
-                  <SeriesDetailPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/episodes/:id"
-              element={
-                <Layout hideNav>
-                  <EpisodeManagementPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/episode/:seriesId/s/:seasonNumber/e/:episodeNumber"
-              element={
-                <Layout hideNav>
-                  <EpisodeDiscussionPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/rating/:type/:id"
-              element={
-                <Layout hideNav>
-                  <RatingEditorPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/movie/:id"
-              element={
-                <Layout hideNav>
-                  <MovieDetailPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/friend/:id"
-              element={
-                <Layout hideNav>
-                  <FriendProfilePage />
-                </Layout>
-              }
-            />
-            <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
-            <Route path="/watch-journey" element={<WatchJourneyPage />} />
-            <Route path="/catch-up" element={<CatchUpPage />} />
-            <Route path="/hidden-series" element={<HiddenSeriesPage />} />
-            <Route
-              path="/anime-season"
-              element={
-                <Layout hideNav>
-                  <AnimeSeasonPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/serien-kalender"
-              element={
-                <Layout hideNav>
-                  <SerienKalenderPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/leaderboard"
-              element={
-                <Layout hideNav>
-                  <LeaderboardPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/patch-notes"
-              element={
-                <Layout hideNav>
-                  <PatchNotesPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <Layout hideNav>
-                  <AdminDashboardPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/bug-report"
-              element={
-                <Layout hideNav>
-                  <BugReportPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/calendar"
-              element={
-                <Layout>
-                  <CalendarPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/subscriptions"
-              element={
-                <Layout hideNav>
-                  <SubscriptionsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/countdowns"
-              element={
-                <Layout hideNav>
-                  <CountdownPage />
-                </Layout>
-              }
-            />
+              {/* Manga Pages - specific routes before :id */}
+              <Route
+                path="/manga/ratings"
+                element={
+                  <Layout hideNav>
+                    <MangaRatingsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/search"
+                element={
+                  <Layout hideNav>
+                    <MangaSearchPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/catch-up"
+                element={
+                  <Layout hideNav>
+                    <MangaCatchUpPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/hidden"
+                element={
+                  <Layout hideNav>
+                    <HiddenMangaPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/recently-read"
+                element={
+                  <Layout hideNav>
+                    <RecentlyReadPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/stats"
+                element={
+                  <Layout hideNav>
+                    <MangaStatsPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/discover"
+                element={
+                  <Layout hideNav>
+                    <MangaDiscoverPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/journey"
+                element={
+                  <Layout hideNav>
+                    <MangaReadJourneyPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/reading-list"
+                element={
+                  <Layout hideNav>
+                    <MangaReadingListPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/manga/:id"
+                element={
+                  <Layout hideNav>
+                    <MangaDetailPage />
+                  </Layout>
+                }
+              />
 
-            {/* Manga Pages - specific routes before :id */}
-            <Route
-              path="/manga"
-              element={
-                <Layout>
-                  <MangaPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/ratings"
-              element={
-                <Layout hideNav>
-                  <MangaRatingsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/search"
-              element={
-                <Layout hideNav>
-                  <MangaSearchPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/catch-up"
-              element={
-                <Layout hideNav>
-                  <MangaCatchUpPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/hidden"
-              element={
-                <Layout hideNav>
-                  <HiddenMangaPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/recently-read"
-              element={
-                <Layout hideNav>
-                  <RecentlyReadPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/stats"
-              element={
-                <Layout hideNav>
-                  <MangaStatsPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/discover"
-              element={
-                <Layout hideNav>
-                  <MangaDiscoverPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/journey"
-              element={
-                <Layout hideNav>
-                  <MangaReadJourneyPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/reading-list"
-              element={
-                <Layout hideNav>
-                  <MangaReadingListPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/manga/:id"
-              element={
-                <Layout hideNav>
-                  <MangaDetailPage />
-                </Layout>
-              }
-            />
+              {/* Legal Pages */}
+              <Route
+                path="/impressum"
+                element={
+                  <Layout hideNav>
+                    <ImpressumPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/privacy"
+                element={
+                  <Layout hideNav>
+                    <PrivacyPage />
+                  </Layout>
+                }
+              />
 
-            {/* Legal Pages */}
-            <Route
-              path="/impressum"
-              element={
-                <Layout hideNav>
-                  <ImpressumPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/privacy"
-              element={
-                <Layout hideNav>
-                  <PrivacyPage />
-                </Layout>
-              }
-            />
-
-            {/* Redirect old routes */}
-            <Route path="/profile/:id" element={<FriendProfilePage />} />
-            <Route path="/friends" element={<Navigate to="/activity" />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+              {/* Redirect old routes */}
+              <Route path="/profile/:id" element={<FriendProfilePage />} />
+              <Route path="/friends" element={<Navigate to="/activity" />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          )}
         </Suspense>
       </ErrorBoundary>
     </div>

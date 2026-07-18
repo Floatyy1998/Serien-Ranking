@@ -107,16 +107,6 @@
   z-index: 0;
 }
 
-/* Aktiv-Punkt */
-.nav-active-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-primary, #00d123);
-  pointer-events: none;
-  margin: -2px auto 0;
-}
-
 /* Nav Label */
 .nav-label {
   font-size: 10px;

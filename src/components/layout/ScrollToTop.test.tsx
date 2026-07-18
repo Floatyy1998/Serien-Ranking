@@ -28,8 +28,16 @@ describe('ScrollToTop', () => {
   });
 
   it('scrollt das Fenster nach dem Timer nach oben', () => {
+    routerState.pathname = '/series/123';
     render(<ScrollToTop />);
     vi.advanceTimersByTime(1);
     expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('lässt Haupt-Tab-Pfade in Ruhe (MainTabs stellt Scroll selbst wieder her)', () => {
+    routerState.pathname = '/';
+    render(<ScrollToTop />);
+    vi.advanceTimersByTime(1);
+    expect(window.scrollTo).not.toHaveBeenCalled();
   });
 });

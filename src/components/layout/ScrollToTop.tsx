@@ -1,20 +1,24 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { MAIN_TAB_PATHS } from '../../config/navItems';
 
 export const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    // Haupt-Tabs stellen ihre Scroll-Position selbst wieder her (MainTabs)
+    if (MAIN_TAB_PATHS.has(pathname)) return;
+
     // Small delay to ensure DOM is updated
     const timer = setTimeout(() => {
       // Scroll window to top
       window.scrollTo(0, 0);
 
-      // Scroll mobile-content container to top (this is the main scroll container)
-      const mobileContent = document.querySelector('.mobile-content');
-      if (mobileContent) {
-        mobileContent.scrollTop = 0;
-      }
+      // Alle .mobile-content-Container zurücksetzen — neben der (versteckten)
+      // Tab-Shell hat auch die aktive Detail-Seite einen eigenen
+      document.querySelectorAll('.mobile-content').forEach((el) => {
+        el.scrollTop = 0;
+      });
 
       // Also handle any other scrollable containers
       const scrollableContainers = document.querySelectorAll(

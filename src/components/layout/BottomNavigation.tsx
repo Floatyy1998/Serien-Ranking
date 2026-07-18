@@ -1,9 +1,9 @@
 import { MoreHoriz } from '@mui/icons-material';
 import { Badge } from '@mui/material';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { NAV_SLOT_OPTIONS } from '../../config/navItems';
+import { MAIN_TAB_PATHS, NAV_SLOT_OPTIONS } from '../../config/navItems';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -38,6 +38,8 @@ export const BottomNavigation = () => {
   const isNavRoot = useIsNavRoot();
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // Pille springt sofort beim Tap, nicht erst nach dem Render der Ziel-Seite
+  const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [pillPos, setPillPos] = useState({ left: 0, width: 0 });
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -105,33 +107,47 @@ export const BottomNavigation = () => {
   };
 
   const activeIndex = getActiveIndex();
-  const pillTargetIndex = hoveredIndex ?? activeIndex;
+  const pillTargetIndex = hoveredIndex ?? pendingIndex ?? activeIndex;
 
   // Auf Touch-Geräten feuert kein mouseleave — ohne Reset klebt der Pill nach
   // Swipe-/Programm-Navigation auf dem zuletzt getippten Tab fest.
   useEffect(() => {
     setHoveredIndex(null);
+    setPendingIndex(null);
   }, [location.pathname]);
 
-  useEffect(() => {
-    const el = itemRefs.current[pillTargetIndex];
-    if (!el) return;
-    setPillPos({
-      left: el.offsetLeft + 4,
-      width: el.offsetWidth - 8,
-    });
-  }, [pillTargetIndex, navItems.length]);
+  // Messen nur mit sichtbarem Dock (offsetWidth 0 = versteckt → alte Werte
+  // behalten); ResizeObserver fängt Resize/Font-Load/Slot-Änderungen ab
+  useLayoutEffect(() => {
+    const measure = () => {
+      const el = itemRefs.current[pillTargetIndex];
+      if (!el || el.offsetWidth === 0) return;
+      setPillPos({
+        left: el.offsetLeft + 4,
+        width: el.offsetWidth - 8,
+      });
+    };
+    measure();
+    const container = containerRef.current;
+    if (!container || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [pillTargetIndex, navItems.length, location.pathname]);
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
   };
 
-  const handleNavigation = (path: string) => {
+  const handleNavigation = (path: string, index: number) => {
     hapticTap();
     if (isActive(path)) {
+      // Der eigentliche Scroller ist .mobile-content, nicht das Window
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      setPendingIndex(index);
       navigate(path);
     }
   };
@@ -139,14 +155,15 @@ export const BottomNavigation = () => {
   const { onKeyDown: handleNavKeyDown } = useKeyboardNavigation({
     itemCount: navItems.length,
     currentIndex: activeIndex,
-    onIndexChange: (index) => handleNavigation(navItems[index].path),
+    onIndexChange: (index) => handleNavigation(navItems[index].path, index),
     orientation: 'horizontal',
     loop: true,
   });
 
   // Das Dock zeigt sich NUR auf seinen eigenen Zielen (Home, Slots, "Mehr") —
-  // alle anderen Seiten laufen über Zurück + Home im PageHeader.
-  if (!isNavRoot) return null;
+  // alle anderen Seiten laufen über Zurück + Home im PageHeader. Der Check auf
+  // MAIN_TAB_PATHS verhindert Renders in der versteckten Keep-Alive-Shell.
+  if (!isNavRoot || !MAIN_TAB_PATHS.has(location.pathname)) return null;
 
   const getAriaLabel = (item: NavItem, active: boolean) => {
     let label = item.label;
@@ -195,7 +212,7 @@ export const BottomNavigation = () => {
                 aria-label={getAriaLabel(item, active)}
                 tabIndex={active ? 0 : -1}
                 className={`nav-item ${active ? 'active' : ''}`}
-                onClick={() => handleNavigation(item.path)}
+                onClick={() => handleNavigation(item.path, index)}
                 onMouseEnter={() => setHoveredIndex(index)}
                 whileTap={{ scale: 0.9 }}
               >
@@ -224,19 +241,6 @@ export const BottomNavigation = () => {
                     <div className="nav-icon">{item.icon}</div>
                   )}
                 </div>
-                <AnimatePresence>
-                  {/* Kein Aktiv-Punkt unter "Mehr" — wirkt neben dem …-Icon wie ein 4. Punkt */}
-                  {active && item.id !== 'more' && (
-                    <motion.div
-                      className="nav-active-dot"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                    />
-                  )}
-                </AnimatePresence>
-
                 <span
                   className="nav-label"
                   style={{
