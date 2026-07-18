@@ -13,7 +13,16 @@
           "package_name": "de.tvrank.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "648705749955-sdn6k0knfr9c7t3cum71ub0ok6neegvs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "de.tvrank.app",
+            "certificate_hash": "38cfb3cebcd031770b7c8110fa6c2cd253c476c2"
+          }
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyARsm8CvrMlrX_jzeTQBrCQxKq0vdI2Pfg"
@@ -21,7 +30,15 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "648705749955-25l1d1c84ckmnuugmdoo5s2t1lg46k8v.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "de.tvrank.app"
+              }
+            }
+          ]
         }
       }
     }

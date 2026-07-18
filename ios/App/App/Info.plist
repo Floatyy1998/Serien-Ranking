@@ -59,6 +59,14 @@
 				<string>de.tvrank.app</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>google-signin</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.648705749955-25l1d1c84ckmnuugmdoo5s2t1lg46k8v</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
