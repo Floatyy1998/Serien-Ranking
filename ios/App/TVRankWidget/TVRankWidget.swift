@@ -135,7 +135,7 @@ struct HeaderText: View {
     HStack(spacing: 5) {
       Circle().fill(accent).frame(width: 5, height: 5)
       Text(text)
-        .font(.system(size: 10.5, weight: .heavy, design: .rounded))
+        .font(.system(size: 11.5, weight: .heavy, design: .rounded))
         .kerning(1.4)
         .foregroundStyle(accent)
     }
@@ -145,8 +145,8 @@ struct HeaderText: View {
 struct PosterThumb: View {
   let image: UIImage?
   let fallback: String
-  var width: CGFloat = 24
-  var height: CGFloat = 34
+  var width: CGFloat = 30
+  var height: CGFloat = 42
 
   @ViewBuilder
   private func poster(_ img: UIImage) -> some View {
@@ -154,8 +154,8 @@ struct PosterThumb: View {
     if #available(iOSApplicationExtension 18.0, *) {
       Image(uiImage: img)
         .resizable()
-        .aspectRatio(contentMode: .fill)
         .widgetAccentedRenderingMode(.fullColor)
+        .aspectRatio(contentMode: .fill)
     } else {
       Image(uiImage: img)
         .resizable()
@@ -189,7 +189,7 @@ struct EpChip: View {
   let text: String
   var body: some View {
     Text(text)
-      .font(.system(size: 9.5, weight: .semibold, design: .monospaced))
+      .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
       .foregroundStyle(.white.opacity(0.55))
       .padding(.horizontal, 5)
       .padding(.vertical, 2)
@@ -201,7 +201,7 @@ struct EmptyHint: View {
   let text: String
   var body: some View {
     Text(text)
-      .font(.system(size: 12.5, design: .rounded))
+      .font(.system(size: 13.5, design: .rounded))
       .foregroundStyle(.white.opacity(0.55))
   }
 }
@@ -228,7 +228,7 @@ struct TodayWidgetView: View {
             PosterThumb(image: ep.poster.flatMap { entry.posters[$0] }, fallback: ep.title)
             VStack(alignment: .leading, spacing: 1) {
               Text(ep.title)
-                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                .font(.system(size: 14, weight: .semibold, design: .rounded))
                 .lineLimit(1)
                 .foregroundStyle(.white.opacity(ep.watched ? 0.45 : 0.95))
                 .strikethrough(ep.watched, color: .white.opacity(0.3))
@@ -301,10 +301,10 @@ struct CountdownWidgetView: View {
         VStack(alignment: .leading, spacing: 3) {
           HStack(alignment: .firstTextBaseline, spacing: 4) {
             Text(number(cd.days))
-              .font(.system(size: 34, weight: .heavy, design: .rounded))
+              .font(.system(size: 40, weight: .heavy, design: .rounded))
               .foregroundStyle(accent)
             Text(unit(cd.days))
-              .font(.system(size: 13, weight: .semibold, design: .rounded))
+              .font(.system(size: 14, weight: .semibold, design: .rounded))
               .foregroundStyle(accent.opacity(0.7))
           }
           Text(cd.title)
@@ -316,7 +316,7 @@ struct CountdownWidgetView: View {
       } else {
         ForEach(Array(items.enumerated()), id: \.offset) { _, cd in
           HStack(spacing: 8) {
-            PosterThumb(image: cd.poster.flatMap { entry.posters[$0] }, fallback: cd.title, width: 26, height: 37)
+            PosterThumb(image: cd.poster.flatMap { entry.posters[$0] }, fallback: cd.title, width: 30, height: 42)
             VStack(alignment: .leading, spacing: 1) {
               Text(cd.title)
                 .font(.system(size: 12.5, weight: .semibold, design: .rounded))
@@ -328,7 +328,7 @@ struct CountdownWidgetView: View {
             }
             Spacer(minLength: 0)
             Text(number(cd.days))
-              .font(.system(size: 20, weight: .heavy, design: .rounded))
+              .font(.system(size: 24, weight: .heavy, design: .rounded))
               .foregroundStyle(accent.opacity(0.85))
           }
         }
@@ -380,9 +380,9 @@ struct WeekWidgetView: View {
             }
             ForEach(Array(day.eps.prefix(2).enumerated()), id: \.offset) { _, ep in
               HStack(spacing: 7) {
-                PosterThumb(image: ep.poster.flatMap { entry.posters[$0] }, fallback: ep.title, width: 20, height: 28)
+                PosterThumb(image: ep.poster.flatMap { entry.posters[$0] }, fallback: ep.title, width: 26, height: 36)
                 Text(ep.title)
-                  .font(.system(size: 12, weight: .medium, design: .rounded))
+                  .font(.system(size: 13.5, weight: .medium, design: .rounded))
                   .lineLimit(1)
                   .foregroundStyle(.white.opacity(0.92))
                 Spacer(minLength: 4)
@@ -404,7 +404,7 @@ struct WeekWidgetView: View {
     // Invertierter HEUTE-Chip nur in Vollfarbe — im Tinted-Modus wäre Schwarz auf Weiß unlesbar
     let inverted = label == "HEUTE" && renderingMode == .fullColor
     Text(label)
-      .font(.system(size: 10, weight: .heavy, design: .rounded))
+      .font(.system(size: 11, weight: .heavy, design: .rounded))
       .kerning(0.8)
       .foregroundStyle(inverted ? Color.black : accent)
       .padding(.horizontal, 7)
