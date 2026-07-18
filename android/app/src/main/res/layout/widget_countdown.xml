@@ -10,20 +10,38 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="COUNTDOWN"
+        android:text="●  COUNTDOWN"
         android:textColor="#00D123"
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.15" />
 
-    <TextView android:id="@+id/cd_title1" style="@style/WidgetCountdownTitle" />
-    <TextView android:id="@+id/cd_days1" style="@style/WidgetCountdownDays" />
+    <LinearLayout android:id="@+id/cd_row1" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/cd_img1" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/cd_title1" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/cd_when1" style="@style/WidgetRowAccent" />
+        </LinearLayout>
+        <TextView android:id="@+id/cd_days1" style="@style/WidgetBigDays" />
+    </LinearLayout>
 
-    <TextView android:id="@+id/cd_title2" style="@style/WidgetCountdownTitle" />
-    <TextView android:id="@+id/cd_days2" style="@style/WidgetCountdownDays" />
+    <LinearLayout android:id="@+id/cd_row2" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/cd_img2" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/cd_title2" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/cd_when2" style="@style/WidgetRowAccent" />
+        </LinearLayout>
+        <TextView android:id="@+id/cd_days2" style="@style/WidgetBigDays" />
+    </LinearLayout>
 
-    <TextView android:id="@+id/cd_title3" style="@style/WidgetCountdownTitle" />
-    <TextView android:id="@+id/cd_days3" style="@style/WidgetCountdownDays" />
+    <LinearLayout android:id="@+id/cd_row3" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/cd_img3" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/cd_title3" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/cd_when3" style="@style/WidgetRowAccent" />
+        </LinearLayout>
+        <TextView android:id="@+id/cd_days3" style="@style/WidgetBigDays" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/cd_empty"

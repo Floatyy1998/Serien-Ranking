@@ -29,6 +29,7 @@ public class WidgetBridgePlugin extends Plugin {
 
     notifyProvider(ctx, TvRankWidget.class);
     notifyProvider(ctx, TvRankCountdownWidget.class);
+    notifyProvider(ctx, TvRankWeekWidget.class);
 
     call.resolve();
   }

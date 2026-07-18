@@ -11,34 +11,50 @@
         android:id="@+id/widget_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="HEUTE"
+        android:text="●  HEUTE"
         android:textColor="#00D123"
         android:textSize="11sp"
         android:textStyle="bold"
         android:letterSpacing="0.15" />
 
-    <TextView
-        android:id="@+id/widget_row1"
-        style="@style/WidgetEpisodeRow" />
+    <LinearLayout android:id="@+id/widget_row1" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/widget_img1" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/widget_title1" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/widget_sub1" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/widget_row2" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/widget_img2" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/widget_title2" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/widget_sub2" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/widget_row3" style="@style/WidgetPosterRow">
+        <ImageView android:id="@+id/widget_img3" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/widget_title3" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/widget_sub3" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/widget_row2"
-        style="@style/WidgetEpisodeRow" />
-
-    <TextView
-        android:id="@+id/widget_row3"
-        style="@style/WidgetEpisodeRow" />
-
-    <TextView
-        android:id="@+id/widget_row4"
-        style="@style/WidgetEpisodeRow" />
+        android:id="@+id/widget_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:textColor="#66FFFFFF"
+        android:textSize="11sp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/widget_empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Heute keine neuen Folgen"
         android:textColor="#99FFFFFF"
         android:textSize="13sp"
         android:visibility="gone" />
@@ -47,8 +63,8 @@
         android:id="@+id/widget_countdown"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="7dp"
         android:textColor="#CCFFFFFF"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:visibility="gone" />
 </LinearLayout>

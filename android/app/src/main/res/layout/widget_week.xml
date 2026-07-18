@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/wk_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="●  DEINE WOCHE"
+        android:textColor="#00D123"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.15" />
+
+    <LinearLayout android:id="@+id/wk_row1" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day1" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img1" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title1" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub1" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/wk_row2" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day2" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img2" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title2" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub2" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/wk_row3" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day3" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img3" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title3" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub3" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/wk_row4" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day4" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img4" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title4" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub4" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/wk_row5" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day5" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img5" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title5" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub5" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/wk_row6" style="@style/WidgetPosterRow">
+        <TextView android:id="@+id/wk_day6" style="@style/WidgetDayChip" />
+        <ImageView android:id="@+id/wk_img6" style="@style/WidgetPoster" android:contentDescription="@null" />
+        <LinearLayout style="@style/WidgetRowText">
+            <TextView android:id="@+id/wk_title6" style="@style/WidgetRowTitle" />
+            <TextView android:id="@+id/wk_sub6" style="@style/WidgetRowSub" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/wk_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#99FFFFFF"
+        android:textSize="13sp"
+        android:visibility="gone" />
+</LinearLayout>

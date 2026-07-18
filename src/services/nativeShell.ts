@@ -1,10 +1,11 @@
 /** Brücke zur Capacitor-Hülle — läuft auch im Browser und muss dort kompletter No-op sein. */
 
 interface CapacitorAppPlugin {
-  addListener?: (
+  addListener?: ((
     event: 'backButton',
     handler: (state: { canGoBack: boolean }) => void
-  ) => Promise<unknown>;
+  ) => Promise<unknown>) &
+    ((event: 'appUrlOpen', handler: (data: { url: string }) => void) => Promise<unknown>);
   minimizeApp?: () => Promise<void>;
 }
 
@@ -114,6 +115,14 @@ const initNativeShell = (): void => {
     } else {
       app.minimizeApp?.().catch(() => {});
     }
+  });
+
+  // Widget-/Shortcut-Deep-Links: de.tvrank.app://calendar → /calendar
+  app?.addListener?.('appUrlOpen', ({ url }: { url: string }) => {
+    const path = url.replace(/^[a-z0-9.+-]+:\/\//i, '/').replace(/^\/tv-rank\.de/, '');
+    if (!path.startsWith('/')) return;
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
   });
 
   initAppShortcuts(cap);

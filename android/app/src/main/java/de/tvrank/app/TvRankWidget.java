@@ -1,86 +1,102 @@
 package de.tvrank.app;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
-import android.content.Intent;
+import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-/** „Heute läuft"-Widget: liest das von der App gespiegelte JSON aus den SharedPreferences. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/** „Heute läuft"-Widget: heutige Folgen mit Postern + Countdown-Fußzeile. */
 public class TvRankWidget extends AppWidgetProvider {
 
   public static final String PREFS = "tvrank_widget";
   public static final String KEY_DATA = "data";
 
-  private static final int[] ROW_IDS = { R.id.widget_row1, R.id.widget_row2, R.id.widget_row3, R.id.widget_row4 };
+  private static final int[] ROWS = { R.id.widget_row1, R.id.widget_row2, R.id.widget_row3 };
+  private static final int[] IMGS = { R.id.widget_img1, R.id.widget_img2, R.id.widget_img3 };
+  private static final int[] TITLES = { R.id.widget_title1, R.id.widget_title2, R.id.widget_title3 };
+  private static final int[] SUBS = { R.id.widget_sub1, R.id.widget_sub2, R.id.widget_sub3 };
 
   @Override
   public void onUpdate(Context context, AppWidgetManager manager, int[] widgetIds) {
-    for (int id : widgetIds) {
-      manager.updateAppWidget(id, build(context));
-    }
+    final PendingResult result = goAsync();
+    new Thread(() -> {
+      try {
+        RemoteViews views = build(context);
+        for (int id : widgetIds) manager.updateAppWidget(id, views);
+      } finally {
+        result.finish();
+      }
+    }).start();
   }
 
   private RemoteViews build(Context ctx) {
     RemoteViews views = new RemoteViews(ctx.getPackageName(), R.layout.widget_today);
 
-    for (int rowId : ROW_IDS) views.setViewVisibility(rowId, View.GONE);
+    for (int row : ROWS) views.setViewVisibility(row, View.GONE);
     views.setViewVisibility(R.id.widget_empty, View.GONE);
+    views.setViewVisibility(R.id.widget_more, View.GONE);
     views.setViewVisibility(R.id.widget_countdown, View.GONE);
 
-    try {
-      String raw = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_DATA, null);
-      JSONObject data = raw != null ? new JSONObject(raw) : new JSONObject();
-      JSONArray today = data.optJSONArray("today");
-      int shown = 0;
-      if (today != null) {
-        for (int i = 0; i < today.length() && shown < ROW_IDS.length; i++) {
-          JSONObject ep = today.optJSONObject(i);
-          if (ep == null) continue;
-          String line = ep.optString("title", "?") + "  ·  " + ep.optString("ep", "");
-          views.setTextViewText(ROW_IDS[shown], (ep.optBoolean("watched", false) ? "✓ " : "• ") + line);
-          views.setViewVisibility(ROW_IDS[shown], View.VISIBLE);
-          shown++;
-        }
-      }
-      int total = today != null ? today.length() : 0;
-      views.setTextViewText(R.id.widget_header, total > 0 ? "HEUTE · " + total : "HEUTE");
-      if (shown == 0) {
-        views.setTextViewText(R.id.widget_empty, "Heute keine neuen Folgen");
-        views.setViewVisibility(R.id.widget_empty, View.VISIBLE);
-      }
+    JSONObject data = WidgetSupport.readPayload(ctx);
+    JSONArray today = data.optJSONArray("today");
+    int total = today != null ? today.length() : 0;
+    views.setTextViewText(R.id.widget_header, total > 0 ? "●  HEUTE · " + total : "●  HEUTE");
 
-      JSONObject countdown = data.optJSONObject("countdown");
-      if (countdown != null) {
-        long days = countdown.optLong("days", -1);
-        if (days >= 0) {
-          String when = days == 0 ? "heute!" : days == 1 ? "morgen" : "in " + days + " Tagen";
-          views.setTextViewText(
-            R.id.widget_countdown,
-            "⏳ " + countdown.optString("title", "?") + " " + when
-          );
-          views.setViewVisibility(R.id.widget_countdown, View.VISIBLE);
-        }
+    List<String> urls = new ArrayList<>();
+    if (today != null) {
+      for (int i = 0; i < Math.min(total, ROWS.length); i++) {
+        JSONObject ep = today.optJSONObject(i);
+        if (ep != null) urls.add(ep.optString("poster", ""));
       }
-    } catch (Exception e) {
-      views.setTextViewText(R.id.widget_empty, "TV-Rank öffnen zum Aktualisieren");
-      views.setViewVisibility(R.id.widget_empty, View.VISIBLE);
+    }
+    Map<String, Bitmap> posters = WidgetImageLoader.fetchAll(urls, WidgetSupport.POSTER_W, WidgetSupport.POSTER_H);
+
+    int shown = 0;
+    if (today != null) {
+      for (int i = 0; i < total && shown < ROWS.length; i++) {
+        JSONObject ep = today.optJSONObject(i);
+        if (ep == null) continue;
+        boolean watched = ep.optBoolean("watched", false);
+        views.setTextViewText(TITLES[shown], ep.optString("title", "?"));
+        views.setTextViewText(SUBS[shown], ep.optString("ep", "") + (watched ? "   ✓ gesehen" : ""));
+        Bitmap poster = posters.get(ep.optString("poster", ""));
+        if (poster != null) views.setImageViewBitmap(IMGS[shown], poster);
+        else views.setImageViewResource(IMGS[shown], R.drawable.widget_poster_placeholder);
+        views.setViewVisibility(ROWS[shown], View.VISIBLE);
+        shown++;
+      }
     }
 
-    Intent open = new Intent(ctx, MainActivity.class);
-    PendingIntent pi = PendingIntent.getActivity(
-      ctx,
-      0,
-      open,
-      PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-    );
-    views.setOnClickPendingIntent(R.id.widget_root, pi);
+    if (shown == 0) {
+      views.setTextViewText(R.id.widget_empty, "Keine neuen Folgen — Zeit für den Backlog 🍿");
+      views.setViewVisibility(R.id.widget_empty, View.VISIBLE);
+    } else if (total > shown) {
+      views.setTextViewText(R.id.widget_more, "+ " + (total - shown) + " weitere");
+      views.setViewVisibility(R.id.widget_more, View.VISIBLE);
+    }
 
+    JSONObject countdown = data.optJSONObject("countdown");
+    if (countdown != null) {
+      long days = countdown.optLong("days", -1);
+      if (days >= 0) {
+        views.setTextViewText(
+          R.id.widget_countdown,
+          "⏳ " + countdown.optString("title", "?") + " " + WidgetSupport.formatDays(days)
+        );
+        views.setViewVisibility(R.id.widget_countdown, View.VISIBLE);
+      }
+    }
+
+    views.setOnClickPendingIntent(R.id.widget_root, WidgetSupport.deepLink(ctx, "calendar", 0));
     return views;
   }
 }
