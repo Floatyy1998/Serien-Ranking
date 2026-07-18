@@ -5,8 +5,13 @@ require 'json'
 
 WIDGET_NAME = 'TVRankWidget'.freeze
 
+# fastlane führt Ruby mit CWD fastlane/ aus — Pfade an der Repo-Root verankern
+def repo_path(rel)
+  File.join(File.expand_path('..', __dir__), rel)
+end
+
 def add_widget_target!(project_path)
-  proj = Xcodeproj::Project.open(project_path)
+  proj = Xcodeproj::Project.open(repo_path(project_path))
   return if proj.targets.any? { |t| t.name == WIDGET_NAME }
 
   app = proj.targets.find { |t| t.name == 'App' }
@@ -55,10 +60,11 @@ end
 
 # Der von `cap sync` generierten Plugin-Liste unser lokales Plugin hinzufügen
 def register_widget_bridge_plugin!(config_json_path)
-  config = JSON.parse(File.read(config_json_path))
+  path = repo_path(config_json_path)
+  config = JSON.parse(File.read(path))
   list = config['packageClassList'] || []
   unless list.include?('WidgetBridgePlugin')
     config['packageClassList'] = list + ['WidgetBridgePlugin']
-    File.write(config_json_path, JSON.pretty_generate(config))
+    File.write(path, JSON.pretty_generate(config))
   end
 end
