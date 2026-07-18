@@ -1,7 +1,8 @@
 import type { ComponentType } from 'react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MAIN_TAB_PATHS } from '../../config/navItems';
+import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
+import { useNavSlots } from '../../hooks/useNavConfig';
 import { CalendarPage, MangaPage } from '../../lazyRoutes';
 import { HomePage } from '../../pages/HomePage';
 import { ProfilePage } from '../../pages/Profile';
@@ -22,18 +23,47 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
 
 export const MainTabs = () => {
   const { pathname } = useLocation();
+  const navSlots = useNavSlots();
   const isTab = MAIN_TAB_PATHS.has(pathname);
 
-  // Letzter aktiver Tab bleibt auch auf Detail-Seiten (Shell versteckt) gemerkt
   const [active, setActive] = useState<string | null>(isTab ? pathname : null);
   if (isTab && active !== pathname) setActive(pathname);
 
   const [mounted, setMounted] = useState<string[]>(() => (isTab ? [pathname] : []));
   if (active && !mounted.includes(active)) setMounted([...mounted, active]);
 
+  // Übrige Tabs im Leerlauf versteckt vormounten — Navbar-Slots zuerst
+  useEffect(() => {
+    if (!active) return;
+    const slotPaths = navSlots.map((id) => NAV_SLOT_PATHS[id]);
+    const premountOrder = [...slotPaths, '/profile', ...Object.keys(TAB_COMPONENTS)].filter(
+      (p) => p in TAB_COMPONENTS
+    );
+    const next = premountOrder.find((p) => !mounted.includes(p));
+    if (!next) return;
+    let cancelled = false;
+    const kick = () => {
+      if (cancelled) return;
+      startTransition(() => {
+        setMounted((prev) => (prev.includes(next) ? prev : [...prev, next]));
+      });
+    };
+    if ('requestIdleCallback' in window) {
+      const id = requestIdleCallback(kick, { timeout: 4000 });
+      return () => {
+        cancelled = true;
+        cancelIdleCallback(id);
+      };
+    }
+    const id = setTimeout(kick, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+    };
+  }, [active, mounted, navSlots]);
+
   const scrollPositions = useRef<Record<string, number>>({});
 
-  // Scroll-Position pro Tab laufend mitschreiben (Scroller = .mobile-content)
   useEffect(() => {
     if (!active) return;
     const scroller = document.querySelector('.mobile-content');
@@ -45,7 +75,7 @@ export const MainTabs = () => {
     return () => scroller.removeEventListener('scroll', onScroll);
   }, [active]);
 
-  // Navbar-Wechsel startet oben; nur Rückkehr zum selben Tab restauriert die Scroll-Position
+  // display:none verwirft die Scroll-Position; nur Rückkehr zum selben Tab restauriert sie
   const lastShownTab = useRef<string | null>(null);
   useLayoutEffect(() => {
     if (!isTab || !active) return;

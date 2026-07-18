@@ -14,8 +14,6 @@ export const ScrollToTop = () => {
       // Scroll window to top
       window.scrollTo(0, 0);
 
-      // Alle .mobile-content-Container zurücksetzen — neben der (versteckten)
-      // Tab-Shell hat auch die aktive Detail-Seite einen eigenen
       document.querySelectorAll('.mobile-content').forEach((el) => {
         el.scrollTop = 0;
       });

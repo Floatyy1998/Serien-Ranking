@@ -9,6 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { Deferred } from '../../components/ui/Deferred';
 import { AnimeFillerBanner } from './AnimeFillerBanner';
 import { RecapSheet } from '../../components/ui/RecapSheet';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -515,25 +516,29 @@ export const SeriesDetailPage = memo(() => {
           {/* Seasons Overview */}
           {series.seasons && series.seasons.length > 0 && (
             <div style={{ padding: isMobile ? '0 12px 12px' : '0 20px 20px' }}>
-              <SeasonsSection
-                series={series}
-                selectedSeasonIndex={selectedSeasonIndex}
-                setSelectedSeasonIndex={setSelectedSeasonIndex}
-                setShowRewatchDialog={setShowRewatchDialog}
-                episodeDiscussionCounts={episodeDiscussionCounts}
-                warningColor={warningColor}
-                currentTheme={currentTheme}
-                handleStopRewatch={handleStopRewatch}
-                handleStartRewatch={handleStartRewatch}
-                handleEpisodeQuickToggle={handleEpisodeQuickToggle}
-                navigate={navigate}
-                fillerByKey={animeFiller.fillerByKey}
-              />
+              <Deferred>
+                <SeasonsSection
+                  series={series}
+                  selectedSeasonIndex={selectedSeasonIndex}
+                  setSelectedSeasonIndex={setSelectedSeasonIndex}
+                  setShowRewatchDialog={setShowRewatchDialog}
+                  episodeDiscussionCounts={episodeDiscussionCounts}
+                  warningColor={warningColor}
+                  currentTheme={currentTheme}
+                  handleStopRewatch={handleStopRewatch}
+                  handleStartRewatch={handleStartRewatch}
+                  handleEpisodeQuickToggle={handleEpisodeQuickToggle}
+                  navigate={navigate}
+                  fillerByKey={animeFiller.fillerByKey}
+                />
+              </Deferred>
             </div>
           )}
 
           {/* TMDB-Empfehlungen */}
-          <RecommendationsSection id={series.tmdb_id || series.id} mediaType="tv" />
+          <Deferred>
+            <RecommendationsSection id={series.tmdb_id || series.id} mediaType="tv" />
+          </Deferred>
         </>
       )}
 

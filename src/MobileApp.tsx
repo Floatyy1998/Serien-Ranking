@@ -15,8 +15,7 @@ import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import './styles/App.css';
 
-// Die Haupt-Tabs (Home, Watchlist, Ratings, Profil, Suche, Kalender, Manga)
-// leben in MainTabs (Keep-Alive) — hier nur noch die übrigen Routen.
+// Haupt-Tabs leben in MainTabs (Keep-Alive) — hier nur die übrigen Routen
 import {
   SeriesDetailPage,
   MovieDetailPage,
@@ -189,7 +188,6 @@ export const MobileApp = () => {
       <PushOptInPrompt />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
-          {/* Keep-Alive-Shell der Haupt-Tabs — Tab-Wechsel kostet keinen Remount */}
           <div style={{ display: isTabPath ? undefined : 'none' }}>
             <Layout>
               <MainTabs />

@@ -38,7 +38,6 @@ export const BottomNavigation = () => {
   const isNavRoot = useIsNavRoot();
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // Pille springt sofort beim Tap, nicht erst nach dem Render der Ziel-Seite
   const [pendingIndex, setPendingIndex] = useState<number | null>(null);
   const [pillPos, setPillPos] = useState({ left: 0, width: 0 });
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -114,7 +113,7 @@ export const BottomNavigation = () => {
     setPendingIndex(null);
   }, [location.pathname]);
 
-  // Nur bei sichtbarem Dock messen (offsetWidth 0 = versteckt); ResizeObserver fängt Resize/Slot-Änderungen ab
+  // offsetWidth 0 = Dock unsichtbar → nicht messen, sonst kaputte Pillen-Koordinaten
   useLayoutEffect(() => {
     const measure = () => {
       const el = itemRefs.current[pillTargetIndex];
@@ -140,7 +139,6 @@ export const BottomNavigation = () => {
   const handleNavigation = (path: string, index: number) => {
     hapticTap();
     if (isActive(path)) {
-      // Der eigentliche Scroller ist .mobile-content, nicht das Window
       window.scrollTo({ top: 0, behavior: 'smooth' });
       document.querySelector('.mobile-content')?.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -157,7 +155,7 @@ export const BottomNavigation = () => {
     loop: true,
   });
 
-  // Dock nur auf eigenen Zielen; MAIN_TAB_PATHS-Check verhindert Renders in der Keep-Alive-Shell
+  // MAIN_TAB_PATHS-Check verhindert Renders in der versteckten Keep-Alive-Shell
   if (!isNavRoot || !MAIN_TAB_PATHS.has(location.pathname)) return null;
 
   const getAriaLabel = (item: NavItem, active: boolean) => {

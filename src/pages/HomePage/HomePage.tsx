@@ -426,7 +426,6 @@ export const HomePage: React.FC = () => {
         todayEpisodes={stats.todayEpisodes}
       />
 
-      {/* initial={false}: kein Fade aller Sektionen beim Mount */}
       <AnimatePresence initial={false}>
         {config.visibleSections.map((sectionId) => {
           const content = renderSection(sectionId);

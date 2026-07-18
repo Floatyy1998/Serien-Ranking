@@ -200,12 +200,12 @@ describe('SeriesDetailPage', () => {
     expect(screen.getByText('Lade...')).toBeInTheDocument();
   });
 
-  it('renders the hero and tab switcher for a loaded series', () => {
+  it('renders the hero and tab switcher for a loaded series', async () => {
     seriesDataRef.current = { series, loading: false };
     render(<SeriesDetailPage />);
     expect(screen.getByTestId('hero')).toBeInTheDocument();
     expect(screen.getByText('Info & Episoden')).toBeInTheDocument();
     expect(screen.getByText('Besetzung')).toBeInTheDocument();
-    expect(screen.getByTestId('seasons')).toBeInTheDocument();
+    expect(await screen.findByTestId('seasons')).toBeInTheDocument();
   });
 });

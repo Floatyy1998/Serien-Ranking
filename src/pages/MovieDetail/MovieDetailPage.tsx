@@ -5,6 +5,7 @@ import { memo } from 'react';
 import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
+import { Deferred } from '../../components/ui/Deferred';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';
@@ -128,22 +129,26 @@ export const MovieDetailPage = memo(() => {
       ) : (
         <div role="tabpanel" id="md-tabpanel-info" aria-labelledby="md-tab-info">
           <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
-          <RecommendationsSection id={movie.id} mediaType="movie" />
+          <Deferred>
+            <RecommendationsSection id={movie.id} mediaType="movie" />
+          </Deferred>
         </div>
       )}
 
       {/* Discussions Section */}
       <div className="md-discussion">
-        <DiscussionThread
-          itemId={movie.id}
-          itemType="movie"
-          isWatched={isWatched}
-          feedMetadata={{
-            itemTitle: movie.title || 'Unbekannter Film',
-            posterPath:
-              movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined,
-          }}
-        />
+        <Deferred>
+          <DiscussionThread
+            itemId={movie.id}
+            itemType="movie"
+            isWatched={isWatched}
+            feedMetadata={{
+              itemTitle: movie.title || 'Unbekannter Film',
+              posterPath:
+                movie.poster && typeof movie.poster === 'object' ? movie.poster.poster : undefined,
+            }}
+          />
+        </Deferred>
       </div>
 
       {/* Delete Confirmation Dialog */}

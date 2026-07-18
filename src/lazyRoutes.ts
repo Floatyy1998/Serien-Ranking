@@ -1,7 +1,6 @@
 import { createElement, lazy, type ComponentType } from 'react';
 
-// Chunk nach einem Deploy verschwunden: KEIN Reload mitten in der Nutzung —
-// die neue Version wird erst übernommen, wenn die App im Hintergrund ist.
+// Nach Chunk-Fehler: Reload erst, wenn die App im Hintergrund ist
 let backgroundReloadArmed = false;
 function armBackgroundReload() {
   if (backgroundReloadArmed) return;
@@ -13,7 +12,6 @@ function armBackgroundReload() {
   window.addEventListener('pagehide', apply);
 }
 
-// Fallback statt Splash-Reload: Seite gehört zur neuen Version, Rest der App läuft weiter
 const ChunkFailedPage: ComponentType = () =>
   createElement(
     'div',
@@ -80,7 +78,6 @@ function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ de
     try {
       return await factory();
     } catch {
-      // kurzer Netz-Schluckauf? Ein zweiter Versuch nach 1,5 s
       await new Promise((resolve) => setTimeout(resolve, 1500));
       try {
         return await factory();
@@ -325,9 +322,7 @@ export const SerienKalenderPage = lazyWithRetry(() =>
   }))
 );
 
-// ALLE Routen-Chunks im Leerlauf vorladen: einmal importierte Module bleiben
-// die ganze Session im Speicher — ein Deploy kann offene Apps so nicht brechen.
-// Reihenfolge: wahrscheinlichste Ziele (Details, Navbar-Slots) zuerst.
+// Alle Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys
 export function preloadRoutes() {
   const routes = [
     () => import('./pages/SeriesDetail'),
@@ -377,8 +372,7 @@ export function preloadRoutes() {
     () => import('./pages/Privacy'),
   ];
 
-  // WKWebView/ältere Safari haben kein requestIdleCallback — ohne Fallback
-  // brach die Kette dort nach dem ersten Chunk ab
+  // WKWebView/ältere Safari haben kein requestIdleCallback
   const idle = (cb: () => void, timeout: number) => {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(cb, { timeout });
