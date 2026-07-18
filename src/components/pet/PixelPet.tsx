@@ -224,22 +224,15 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
     };
 
     let animationId: number;
-    let lastDraw = 0;
-    // Pixel-Art braucht keine 60fps: ~10fps zeichnen, unsichtbar gar nicht
-    const animate = (t: number) => {
-      if (animated) animationId = requestAnimationFrame(animate);
-      if (t - lastDraw < 100) return;
-      if (document.hidden || canvas.offsetParent === null) return;
-      lastDraw = t;
-      frameRef.current = Math.floor(t / 16.7);
+    const animate = () => {
+      frameRef.current++;
       drawPet();
+      if (animated) {
+        animationId = requestAnimationFrame(animate);
+      }
     };
 
-    animationId = requestAnimationFrame(animate);
-    if (!animated) {
-      frameRef.current = 0;
-      drawPet();
-    }
+    animate();
 
     return () => {
       if (animationId) {
