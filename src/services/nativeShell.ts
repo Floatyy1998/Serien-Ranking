@@ -83,6 +83,15 @@ const SHORTCUT_ROUTES: Record<string, string> = {
   calendar: '/calendar',
 };
 
+// Rohes pushState({}) zerstört React Routers history.state.idx (NaN-Kette →
+// jeder BackButton fällt auf Home zurück) — Index deshalb selbst weiterführen
+const routerNavigate = (path: string): void => {
+  const state = window.history.state as { idx?: number } | null;
+  const idx = typeof state?.idx === 'number' && Number.isFinite(state.idx) ? state.idx : 0;
+  window.history.pushState({ idx: idx + 1 }, '', path);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+};
+
 const initAppShortcuts = (cap: CapacitorGlobal): void => {
   const shortcuts = cap.Plugins?.AppShortcuts;
   if (!shortcuts?.set) return;
@@ -97,9 +106,7 @@ const initAppShortcuts = (cap: CapacitorGlobal): void => {
     .catch(() => {});
   shortcuts.addListener?.('click', ({ shortcutId }) => {
     const route = SHORTCUT_ROUTES[shortcutId];
-    if (!route) return;
-    window.history.pushState({}, '', route);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    if (route) routerNavigate(route);
   });
 };
 
@@ -120,9 +127,7 @@ const initNativeShell = (): void => {
   // Widget-/Shortcut-Deep-Links: de.tvrank.app://calendar → /calendar
   app?.addListener?.('appUrlOpen', ({ url }: { url: string }) => {
     const path = url.replace(/^[a-z0-9.+-]+:\/\//i, '/').replace(/^\/tv-rank\.de/, '');
-    if (!path.startsWith('/')) return;
-    window.history.pushState({}, '', path);
-    window.dispatchEvent(new PopStateEvent('popstate'));
+    if (path.startsWith('/')) routerNavigate(path);
   });
 
   initAppShortcuts(cap);
