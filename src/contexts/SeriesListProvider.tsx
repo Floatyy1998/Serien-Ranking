@@ -28,6 +28,64 @@ import {
 } from './seriesListDetection';
 import { SeriesListContext } from './SeriesListContext';
 
+// Per-Serie-Memoization für den Catalog↔User-Merge. Bewusst Modul-State
+// (kein Ref/Hook-Wert): reine Input→Output-Memoization, pro UID gehalten und
+// beim UID-Wechsel verworfen.
+interface MergeCacheEntry {
+  meta: CatalogSeries;
+  seasons: Record<string, CatalogSeason> | undefined;
+  userRef: UserSeriesRef;
+  watchData: SeriesWatchData | undefined;
+  view: Series;
+}
+let mergeCacheUid: string | null = null;
+const mergeCache = new Map<string, MergeCacheEntry>();
+
+function mergeAllSeriesCached(
+  uid: string,
+  userSeriesRefs: Record<string, UserSeriesRef>,
+  catalogMeta: Record<string, CatalogSeries>,
+  catalogSeasons: Record<string, Record<string, CatalogSeason>>,
+  watchDataMap: Record<string, SeriesWatchData> | null
+): Series[] {
+  if (mergeCacheUid !== uid) {
+    mergeCache.clear();
+    mergeCacheUid = uid;
+  }
+
+  const liveIds = new Set<string>();
+  const merged: Series[] = [];
+  for (const [tmdbIdStr, userRef] of Object.entries(userSeriesRefs)) {
+    const meta = catalogMeta[tmdbIdStr];
+    if (!meta) continue;
+    liveIds.add(tmdbIdStr);
+    const seasons = catalogSeasons[tmdbIdStr];
+    const watchData = watchDataMap?.[tmdbIdStr];
+
+    const cached = mergeCache.get(tmdbIdStr);
+    if (
+      cached &&
+      cached.meta === meta &&
+      cached.seasons === seasons &&
+      cached.userRef === userRef &&
+      cached.watchData === watchData
+    ) {
+      merged.push(cached.view);
+      continue;
+    }
+
+    // Merge meta + seasons back into CatalogSeries shape
+    const catalogWithSeasons: CatalogSeries = { ...meta, seasons: seasons || undefined };
+    const view = mergeToSeriesView(Number(tmdbIdStr), catalogWithSeasons, userRef, watchData);
+    mergeCache.set(tmdbIdStr, { meta, seasons, userRef, watchData, view });
+    merged.push(view);
+  }
+  for (const key of Array.from(mergeCache.keys())) {
+    if (!liveIds.has(key)) mergeCache.delete(key);
+  }
+  return merged;
+}
+
 export const SeriesListProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth() || {};
 
@@ -267,24 +325,20 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
 
   const loading = refsLoading || watchLoading || catalogLoading;
 
-  // Merge: CatalogMeta + CatalogSeasons + UserRefs + WatchData → Series[]
+  // Merge: CatalogMeta + CatalogSeasons + UserRefs + WatchData → Series[].
+  // Inkrementell über den Modul-Cache (mergeAllSeriesCached): die Delta-Merges
+  // sind referenzstabil für unveränderte Kinder, d.h. ein einzelner Watch-Write
+  // adaptiert nur noch die betroffene Serie neu statt aller (bei 500+ Serien
+  // war der Voll-Rebuild pro Episoden-Klick der teuerste Render-Posten).
   const allSeries: Series[] = useMemo(() => {
     if (!userSeriesRefs || !catalogMeta || !user) return [];
-
-    const merged: Series[] = [];
-    for (const [tmdbIdStr, userRef] of Object.entries(userSeriesRefs)) {
-      const tmdbId = Number(tmdbIdStr);
-      const meta = catalogMeta[tmdbIdStr];
-      if (!meta) continue;
-      // Merge meta + seasons back into CatalogSeries shape
-      const catalogWithSeasons: CatalogSeries = {
-        ...meta,
-        seasons: catalogSeasons[tmdbIdStr] || undefined,
-      };
-      const watchData = watchDataMap?.[tmdbIdStr];
-      merged.push(mergeToSeriesView(tmdbId, catalogWithSeasons, userRef, watchData));
-    }
-    return merged;
+    return mergeAllSeriesCached(
+      user.uid,
+      userSeriesRefs,
+      catalogMeta,
+      catalogSeasons,
+      watchDataMap
+    );
   }, [userSeriesRefs, catalogMeta, catalogSeasons, watchDataMap, user]);
   const seriesList = useMemo(() => allSeries.filter((s) => !s.hidden), [allSeries]);
   const hiddenSeriesList = useMemo(() => allSeries.filter((s) => s.hidden === true), [allSeries]);

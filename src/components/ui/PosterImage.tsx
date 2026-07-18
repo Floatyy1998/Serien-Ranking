@@ -61,7 +61,8 @@ export const PosterImage = memo(
         decoding="async"
         loading={loading}
         className={className}
-        style={style}
+        // Poster sind 2:3 — reservierter Platz vor dem Load verhindert Layout-Shift.
+        style={{ aspectRatio: '2 / 3', ...style }}
         // Eigenes Retry + Fallback → globaler Retry-Handler überspringt dieses Bild.
         data-poster-image="true"
         onError={() => {

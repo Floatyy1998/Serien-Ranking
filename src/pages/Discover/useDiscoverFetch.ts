@@ -198,9 +198,14 @@ export const useDiscoverFetch = (
 
         const mediaType = activeTab === 'series' ? 'tv' : 'movie';
 
-        for (const item of selectedItems) {
-          const data = await tmdbFetch<TmdbListResponse>(`${mediaType}/${item.id}/recommendations`);
+        const recResponses = await Promise.all(
+          selectedItems.map(async (item) => ({
+            item,
+            data: await tmdbFetch<TmdbListResponse>(`${mediaType}/${item.id}/recommendations`),
+          }))
+        );
 
+        for (const { item, data } of recResponses) {
           if (data.results) {
             data.results.forEach((rec: DiscoverItem) => {
               if (

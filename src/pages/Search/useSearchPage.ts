@@ -233,18 +233,28 @@ export const useSearchPage = (
         const wantSeries = searchType === 'all' || searchType === 'series';
         const wantMovies = searchType === 'all' || searchType === 'movies';
 
-        // DE + EN parallel (EN als Titel-Fallback für nicht-lateinische DE-Titel).
-        const [seriesDE, seriesEN, movieDE, movieEN] = await Promise.all([
+        // Erst DE laden; EN nur nachladen, wenn ein DE-Titel nicht-lateinisch ist
+        // (EN dient rein als Titel-Fallback — spart die Hälfte der TMDB-Calls).
+        const [seriesDE, movieDE] = await Promise.all([
           wantSeries
             ? tmdbFetch<TmdbSearchResponse>('search/tv', { query })
-            : Promise.resolve(null),
-          wantSeries
-            ? tmdbFetch<TmdbSearchResponse>('search/tv', { query, language: 'en-US' })
             : Promise.resolve(null),
           wantMovies
             ? tmdbFetch<TmdbSearchResponse>('search/movie', { query })
             : Promise.resolve(null),
-          wantMovies
+        ]);
+
+        const needsEnSeries = (seriesDE?.results || []).some((i) =>
+          hasNonLatin(i.name || i.title || '')
+        );
+        const needsEnMovies = (movieDE?.results || []).some((i) =>
+          hasNonLatin(i.title || i.name || '')
+        );
+        const [seriesEN, movieEN] = await Promise.all([
+          needsEnSeries
+            ? tmdbFetch<TmdbSearchResponse>('search/tv', { query, language: 'en-US' })
+            : Promise.resolve(null),
+          needsEnMovies
             ? tmdbFetch<TmdbSearchResponse>('search/movie', { query, language: 'en-US' })
             : Promise.resolve(null),
         ]);

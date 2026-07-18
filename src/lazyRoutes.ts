@@ -322,9 +322,14 @@ export const SerienKalenderPage = lazyWithRetry(() =>
   }))
 );
 
-// Alle Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys
-export function preloadRoutes() {
-  const routes = [
+// Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys.
+//
+// iOS-Shell (kein Service Worker!) braucht den VOLL-Preload aller Routen als
+// Deploy-Schutz — neue Lazy-Routen müssen dort weiterhin eingetragen werden.
+// Im Web/PWA precached der Service Worker ohnehin alle Chunks; dort reicht das
+// Warmladen der meistbesuchten Seiten (spart Idle-CPU auf Low-End-Geräten).
+export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
+  const coreRoutes = [
     () => import('./pages/SeriesDetail'),
     () => import('./pages/MovieDetail'),
     () => import('./pages/Manga'),
@@ -332,15 +337,18 @@ export function preloadRoutes() {
     () => import('./pages/Discover'),
     () => import('./pages/RecentlyWatched'),
     () => import('./pages/Calendar'),
-    () => import('./pages/Countdown'),
-    () => import('./pages/Stats'),
     () => import('./pages/EpisodeManagement'),
-    () => import('./pages/EpisodeDiscussion'),
     () => import('./pages/FriendProfile'),
-    () => import('./pages/Badges'),
     () => import('./pages/Settings'),
     () => import('./pages/Pets'),
     () => import('./pages/Leaderboard'),
+    () => import('./pages/Badges'),
+  ];
+
+  const extendedRoutes = [
+    () => import('./pages/Countdown'),
+    () => import('./pages/Stats'),
+    () => import('./pages/EpisodeDiscussion'),
     () => import('./pages/CatchUp'),
     () => import('./pages/Subscriptions'),
     () => import('./pages/RatingEditor'),
@@ -367,9 +375,22 @@ export function preloadRoutes() {
     () => import('./pages/HomeLayout'),
     () => import('./pages/PatchNotes'),
     () => import('./pages/BugReport'),
-    () => import('./pages/AdminDashboard'),
     () => import('./pages/Impressum'),
     () => import('./pages/Privacy'),
+  ];
+
+  const adminRoutes = [() => import('./pages/AdminDashboard')];
+
+  const isNativeShell =
+    typeof window !== 'undefined' && !!(window as unknown as { Capacitor?: unknown }).Capacitor;
+  const hasServiceWorker =
+    typeof navigator !== 'undefined' && !!navigator.serviceWorker?.controller;
+
+  const routes = [
+    ...coreRoutes,
+    // Ohne SW (iOS-Shell, Erstbesuch) alles vorladen — Deploy-Schutz.
+    ...(isNativeShell || !hasServiceWorker ? extendedRoutes : []),
+    ...(opts.isAdmin ? adminRoutes : []),
   ];
 
   // WKWebView/ältere Safari haben kein requestIdleCallback

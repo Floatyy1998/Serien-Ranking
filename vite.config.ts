@@ -61,11 +61,16 @@ export default defineConfig(({ command }) => ({
             },
           },
           {
-            urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
-            handler: 'NetworkFirst',
+            // SWR statt NetworkFirst: idempotente TMDB-Reads (Trending, Discover,
+            // Details) kommen sofort aus dem Cache und revalidieren im Hintergrund
+            // — entlastet den geteilten API-Key. Suche wird per Search-Param nicht
+            // gecacht (unbounded Query-Raum).
+            urlPattern: ({ url }) =>
+              url.hostname === 'api.themoviedb.org' && !url.pathname.includes('/search/'),
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'tmdb-api',
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 },
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 },
             },
           },
         ],

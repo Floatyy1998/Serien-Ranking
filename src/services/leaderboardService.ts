@@ -1,4 +1,4 @@
-import { dbRef, dbGet, dbUpdate, userPath, paths } from '../services/db/ref';
+import { dbRef, dbUpdate, userPath, paths } from '../services/db/ref';
 import type { GlobalLeaderboardEntry, LeaderboardStats, MonthlyTrophy } from '../types/Leaderboard';
 import { toLocalDateString } from '../lib/date/date.utils';
 import { fetchPublicUserFields } from '../services/firebase/userDisplayData';
@@ -51,6 +51,14 @@ async function fetchProfileSubnode(
   }
 }
 
+// Session-Cache für die eigenen Profil-Felder: updateLeaderboardStats läuft
+// bei jedem Watch-Event — ohne Cache wären das 3 Punkt-Reads pro Episode.
+const ownProfileCache = new Map<
+  string,
+  { ts: number; displayName: string; username: string | null; photoURL: string | null }
+>();
+const OWN_PROFILE_TTL_MS = 30 * 60 * 1000;
+
 function getDefaultStats(): LeaderboardStats {
   return {
     episodesThisMonth: 0,
@@ -93,19 +101,25 @@ export async function updateLeaderboardStats(
     let displayName = 'Unbekannt';
     let username: string | null = null;
     let photoURL: string | null = null;
-    try {
-      const [dnameSnap, unameSnap, photoSnap] = await Promise.all([
-        dbRef(paths.displayName(userId)).once('value'),
-        dbRef(userPath(userId, 'username')).once('value'),
-        dbRef(userPath(userId, 'photoURL')).once('value'),
-      ]);
-      displayName = toDisplayName(dnameSnap.val(), unameSnap.val());
-      const uname = unameSnap.val();
-      username = typeof uname === 'string' && uname.trim().length > 0 ? uname : null;
-      const photo = photoSnap.val();
-      photoURL = typeof photo === 'string' && photo.length > 0 ? photo : null;
-    } catch {
-      // defaults bleiben
+    const cached = ownProfileCache.get(userId);
+    if (cached && Date.now() - cached.ts < OWN_PROFILE_TTL_MS) {
+      ({ displayName, username, photoURL } = cached);
+    } else {
+      try {
+        const [dnameSnap, unameSnap, photoSnap] = await Promise.all([
+          dbRef(paths.displayName(userId)).once('value'),
+          dbRef(userPath(userId, 'username')).once('value'),
+          dbRef(userPath(userId, 'photoURL')).once('value'),
+        ]);
+        displayName = toDisplayName(dnameSnap.val(), unameSnap.val());
+        const uname = unameSnap.val();
+        username = typeof uname === 'string' && uname.trim().length > 0 ? uname : null;
+        const photo = photoSnap.val();
+        photoURL = typeof photo === 'string' && photo.length > 0 ? photo : null;
+        ownProfileCache.set(userId, { ts: Date.now(), displayName, username, photoURL });
+      } catch {
+        // defaults bleiben
+      }
     }
 
     // Schreib-Pfade fuer Multi-Path-Update sammeln, damit Rollover + Reset
@@ -335,6 +349,28 @@ export async function fetchLeaderboardProfiles(
 export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]> {
   const currentMonth = getCurrentMonthKey();
 
+  // Primär: serverseitig aggregierter Snapshot (Backend-Cron schreibt
+  // leaderboardTop/{monthKey} alle 15 Min) — ein kleiner Read statt des
+  // kompletten leaderboardStats-Baums + N Profil-Reads.
+  try {
+    const topSnap = await dbRef(`leaderboardTop/${currentMonth}`).once('value');
+    const top = topSnap.val() as {
+      entries?: Record<string, GlobalLeaderboardEntry> | GlobalLeaderboardEntry[];
+    } | null;
+    if (top?.entries) {
+      const entries = Object.values(top.entries).filter(Boolean) as GlobalLeaderboardEntry[];
+      if (entries.length > 0) {
+        return entries.map((e) => ({
+          ...e,
+          displayName: toDisplayName(e.displayName, e.username),
+        }));
+      }
+    }
+  } catch {
+    // Snapshot (noch) nicht vorhanden → Legacy-Pfad unten
+  }
+
+  // Fallback (nur solange der Backend-Cron den Snapshot noch nicht schreibt):
   // Query nur Eintraege fuer den aktuellen Monat statt den kompletten
   // leaderboardStats-Baum (spart Egress: nur aktive User statt alle alten).
   const snapshot = await dbRef('leaderboardStats')
@@ -366,220 +402,10 @@ export async function fetchGlobalLeaderboard(): Promise<GlobalLeaderboardEntry[]
     });
   }
 
-  // Profil-Daten in /leaderboardStats sind nur ein Cache und können stale sein
-  // (alte Namen, fehlende Bilder). Daher für jeden Eintrag die öffentlich
-  // lesbaren Subnodes aus /users/{uid} nachladen und überschreiben.
-  await Promise.all(
-    entries.map(async (e) => {
-      const profile = await fetchProfileSubnode(e.uid);
-      if (profile.displayName !== 'Unbekannt' || e.displayName === 'Unbekannt') {
-        e.displayName = profile.displayName;
-      }
-      if (profile.photoURL) e.photoURL = profile.photoURL;
-      if (profile.username) e.username = profile.username;
-    })
-  );
-
+  // Kein per-Eintrag-Profil-Nachladen mehr (3×N Punkt-Reads skalierten nicht):
+  // die gecachten Profil-Felder in leaderboardStats werden bei jedem Watch-Event
+  // aktualisiert; der Server-Snapshot oben liefert ohnehin frische Daten.
   return entries;
-}
-
-function getMonthKey(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-}
-
-/**
- * Gibt die letzten N MonthKeys zurück (ohne den aktuellen Monat).
- */
-function getPastMonthKeys(count: number): string[] {
-  const keys: string[] = [];
-  const now = new Date();
-  for (let i = 1; i <= count; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    keys.push(getMonthKey(d));
-  }
-  return keys;
-}
-
-const MONTH_NAMES_SERVICE: Record<string, string> = {
-  '01': 'Januar',
-  '02': 'Februar',
-  '03': 'März',
-  '04': 'April',
-  '05': 'Mai',
-  '06': 'Juni',
-  '07': 'Juli',
-  '08': 'August',
-  '09': 'September',
-  '10': 'Oktober',
-  '11': 'November',
-  '12': 'Dezember',
-};
-
-type MonthEntry = { uid: string; displayName: string; photoURL?: string; score: number };
-
-/**
- * Sammelt die maximale Watchtime pro User fuer einen Monat aus allen
- * verfuegbaren Quellen. Reihenfolge der Quellen ist egal — es zaehlt der
- * groesste gefundene Wert, damit auch unvollstaendige Schreiboperationen
- * (z. B. abgebrochenes Rollover) nicht zum Verlust fuehren.
- *
- * Quellen:
- *  1) /leaderboardArchive/{monthKey} (oeffentlich, komplett — primaere Quelle)
- *  2) /users/{uid}/leaderboard/history/{monthKey} (privater Snapshot)
- *  3) /leaderboardStats/{uid} (nur falls dessen monthKey noch zum gefragten Monat passt)
- */
-async function collectMonthEntries(
-  monthKey: string,
-  allStats: Record<string, Record<string, unknown>>
-): Promise<MonthEntry[]> {
-  const archiveSnap = await dbRef(`leaderboardArchive/${monthKey}`).once('value');
-  const archive = (archiveSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
-
-  const candidateUids = new Set<string>([...Object.keys(archive), ...Object.keys(allStats)]);
-  const results: MonthEntry[] = [];
-
-  await Promise.all(
-    Array.from(candidateUids).map(async (uid) => {
-      try {
-        const archiveEntry = archive[uid];
-        const statsEntry = allStats[uid];
-
-        const archiveWatchtime = (archiveEntry?.watchtimeThisMonth as number) || 0;
-        const statsWatchtime =
-          statsEntry && (statsEntry.monthKey as string) === monthKey
-            ? (statsEntry.watchtimeThisMonth as number) || 0
-            : 0;
-
-        let historyWatchtime = 0;
-        try {
-          const hist = await dbGet<Record<string, number>>(
-            userPath(uid, 'leaderboard', 'history', monthKey)
-          );
-          historyWatchtime = hist?.watchtimeThisMonth ?? 0;
-        } catch {
-          // History nicht lesbar — andere Quellen reichen ggf.
-        }
-
-        const watchtime = Math.max(archiveWatchtime, statsWatchtime, historyWatchtime);
-        if (watchtime <= 0) return;
-
-        const displayName = toDisplayName(
-          archiveEntry?.displayName,
-          archiveEntry?.username,
-          statsEntry?.displayName,
-          statsEntry?.username
-        );
-        const photoURL =
-          (archiveEntry?.photoURL as string) || (statsEntry?.photoURL as string) || undefined;
-
-        results.push({ uid, displayName, photoURL, score: watchtime });
-      } catch {
-        // Skip user
-      }
-    })
-  );
-
-  return results;
-}
-
-/**
- * Prüft bis zu 12 vergangene Monate und archiviert alle, die noch nicht archiviert sind.
- * Datenquellen siehe collectMonthEntries.
- */
-export async function checkAndArchiveMonth(): Promise<void> {
-  const pastMonths = getPastMonthKeys(12);
-
-  const trophiesSnap = await dbRef('leaderboardTrophies').once('value');
-  const existingTrophies = (trophiesSnap.val() as Record<string, unknown>) || {};
-  const missingMonths = pastMonths.filter((m) => !existingTrophies[m]);
-  if (missingMonths.length === 0) return;
-
-  const statsSnap = await dbRef('leaderboardStats').once('value');
-  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
-
-  for (const monthKey of missingMonths) {
-    const entryList = await collectMonthEntries(monthKey, allStats);
-
-    if (entryList.length === 0) continue;
-
-    const entries = entryList.sort((a, b) => b.score - a.score);
-
-    const toEntry = (e: (typeof entries)[0] | undefined) =>
-      e && e.score > 0
-        ? { uid: e.uid, displayName: e.displayName, photoURL: e.photoURL || null, score: e.score }
-        : null;
-
-    const trophyData = {
-      archived: true,
-      category: 'watchtimeThisMonth',
-      first: toEntry(entries[0]),
-      second: toEntry(entries[1]),
-      third: toEntry(entries[2]),
-    };
-
-    await dbRef(`leaderboardTrophies/${monthKey}`).set(trophyData);
-
-    // Benachrichtigungen nur für den letzten Monat senden (nicht für uralte)
-    if (monthKey === pastMonths[0]) {
-      const [, monthNum] = monthKey.split('-');
-      const monthLabel = MONTH_NAMES_SERVICE[monthNum] || monthNum;
-      const placeLabels = ['1. Platz', '2. Platz', '3. Platz'];
-
-      const winners = [trophyData.first, trophyData.second, trophyData.third];
-      await Promise.all(
-        winners.map(async (winner, idx) => {
-          if (!winner) return;
-          try {
-            await dbRef(userPath(winner.uid, 'notifications')).push({
-              type: 'trophy_won',
-              title: 'Trophäe gewonnen!',
-              message: `Du hast den ${placeLabels[idx]} in der Watchtime-Rangliste für ${monthLabel} erreicht!`,
-              timestamp: Date.now(),
-              read: false,
-              data: {
-                monthKey,
-                place: idx + 1,
-                score: winner.score,
-              },
-            });
-          } catch {
-            // Notification-Fehler ignorieren
-          }
-        })
-      );
-    }
-  }
-}
-
-/**
- * Erzwingt das Neu-Berechnen des Trophys für einen einzelnen Monat. Im
- * Gegensatz zu checkAndArchiveMonth überschreibt das auch existierende Einträge
- * und nutzt für jeden User den maximalen Wert aus History-Snapshot UND
- * leaderboardStats — falls beim ersten Archivieren ein User übersprungen wurde
- * (z. B. weil sein monthKey schon weitergerollt hatte und die History noch
- * nicht geschrieben war).
- */
-export async function forceRebuildArchive(monthKey: string): Promise<void> {
-  const statsSnap = await dbRef('leaderboardStats').once('value');
-  const allStats = (statsSnap.val() as Record<string, Record<string, unknown>> | null) ?? {};
-
-  const entryList = await collectMonthEntries(monthKey, allStats);
-
-  if (entryList.length === 0) return;
-
-  const entries = entryList.sort((a, b) => b.score - a.score);
-  const toEntry = (e: (typeof entries)[0] | undefined) =>
-    e && e.score > 0
-      ? { uid: e.uid, displayName: e.displayName, photoURL: e.photoURL || null, score: e.score }
-      : null;
-
-  await dbRef(`leaderboardTrophies/${monthKey}`).set({
-    archived: true,
-    category: 'watchtimeThisMonth',
-    first: toEntry(entries[0]),
-    second: toEntry(entries[1]),
-    third: toEntry(entries[2]),
-  });
 }
 
 /**

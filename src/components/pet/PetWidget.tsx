@@ -172,6 +172,8 @@ export const PetWidget: React.FC = () => {
       localStorage.setItem('petHungerToastLast', String(Date.now()));
     };
 
+    // Hunger/Happiness ändern sich über Stunden — 30 Min reichen und sparen
+    // die periodischen Firebase-Writes von updateAllPetsStatus (vorher 5 Min).
     const interval = setInterval(
       async () => {
         try {
@@ -189,7 +191,7 @@ export const PetWidget: React.FC = () => {
           console.error('Error updating pets status:', error);
         }
       },
-      5 * 60 * 1000
+      30 * 60 * 1000
     );
 
     checkHungerToast(pet);

@@ -34,6 +34,18 @@ export function buildTmdbUrl(path: string, params: TmdbParams = {}): string {
   return url.toString();
 }
 
+// Kurzlebiger Antwort-Cache + In-Flight-Dedup: alle Clients teilen sich EINEN
+// TMDB-API-Key (~50 req/s global) — identische Requests innerhalb weniger
+// Minuten (Tipp-Suche, Tab-Wechsel, parallele Hooks) dürfen den Key nicht
+// mehrfach belasten.
+const CACHE_TTL_MS = 5 * 60_000;
+const CACHE_MAX = 300;
+// Im Test-Modus deaktiviert — Tests mocken fetch pro Fall und dürfen keine
+// gecachten Antworten aus vorherigen Tests sehen.
+const CACHE_ENABLED = import.meta.env.MODE !== 'test';
+const responseCache = new Map<string, { ts: number; data: unknown }>();
+const inFlight = new Map<string, Promise<unknown>>();
+
 /**
  * Fetcht einen TMDB-Endpunkt und gibt das geparste JSON zurück.
  * Wirft bei fehlendem API-Key oder HTTP-Fehler.
@@ -44,7 +56,37 @@ export async function tmdbFetch<T = unknown>(
   init?: RequestInit
 ): Promise<T> {
   if (!getTmdbApiKey()) throw new Error('VITE_API_TMDB fehlt');
-  const res = await fetch(buildTmdbUrl(path, params), init);
-  if (!res.ok) throw new Error(`TMDB ${res.status} für ${path}`);
-  return res.json() as Promise<T>;
+  const url = buildTmdbUrl(path, params);
+
+  // Abortable Requests nicht dedupen/cachen — ein geteiltes Promise würde
+  // beim Abort des einen Aufrufers auch alle anderen mit abbrechen.
+  if (init?.signal || !CACHE_ENABLED) {
+    const res = await fetch(url, init);
+    if (!res.ok) throw new Error(`TMDB ${res.status} für ${path}`);
+    return res.json() as Promise<T>;
+  }
+
+  const cached = responseCache.get(url);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.data as T;
+
+  const pending = inFlight.get(url);
+  if (pending) return pending as Promise<T>;
+
+  const promise = (async () => {
+    const res = await fetch(url, init);
+    if (!res.ok) throw new Error(`TMDB ${res.status} für ${path}`);
+    const data = (await res.json()) as T;
+    if (responseCache.size >= CACHE_MAX) {
+      const oldest = responseCache.keys().next().value;
+      if (oldest) responseCache.delete(oldest);
+    }
+    responseCache.set(url, { ts: Date.now(), data });
+    return data;
+  })();
+  inFlight.set(url, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlight.delete(url);
+  }
 }

@@ -179,17 +179,20 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
           mapTMDBItem(item, 'movie')
         );
 
+        // Fallback läuft für ALLE Nutzer gleichzeitig, wenn das Backend down ist —
+        // Provider-Badges nur für die Top-Items nachladen statt ~40 Calls/Nutzer.
+        const PROVIDER_ENRICH_LIMIT = 5;
         const [seriesWithProviders, moviesWithProviders] = await Promise.all([
           Promise.all(
-            baseSeries.map(async (item) => ({
+            baseSeries.map(async (item, idx) => ({
               ...item,
-              providers: await fetchProviders('series', item.id),
+              providers: idx < PROVIDER_ENRICH_LIMIT ? await fetchProviders('series', item.id) : [],
             }))
           ),
           Promise.all(
-            baseMovies.map(async (item) => ({
+            baseMovies.map(async (item, idx) => ({
               ...item,
-              providers: await fetchProviders('movie', item.id),
+              providers: idx < PROVIDER_ENRICH_LIMIT ? await fetchProviders('movie', item.id) : [],
             }))
           ),
         ]);

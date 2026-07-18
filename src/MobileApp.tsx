@@ -156,7 +156,7 @@ export const MobileApp = () => {
   // Haertung darf das nur der Admin (sonst permission-denied). Deshalb nur
   // fuer den Admin ausloesen.
   useEffect(() => {
-    preloadRoutes();
+    preloadRoutes({ isAdmin: user?.uid === ADMIN_UID });
     if (user?.uid === ADMIN_UID) {
       import('./pages/BugReport/useBugReportData').then((m) => m.cleanupOldTickets());
     }

@@ -112,6 +112,7 @@ describe('useLeaderboardData – trophies', () => {
     expect(result.current.celebration?.place).toBe(1);
     expect(result.current.celebration?.monthLabel).toBe('Juni');
     expect(result.current.celebration?.score).toBe(100);
-    expect(svc.checkAndArchiveMonth).toHaveBeenCalled();
+    // Archivierung läuft serverseitig (Backend-Cron), nicht mehr im Client
+    expect(svc.checkAndArchiveMonth).not.toHaveBeenCalled();
   });
 });
