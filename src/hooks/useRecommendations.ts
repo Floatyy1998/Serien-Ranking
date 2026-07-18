@@ -1,6 +1,6 @@
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
-import { dbRef, userPath } from '../services/db/ref';
+import { dbGet, dbRef, paths, userPath } from '../services/db/ref';
 import { queuePush } from '../services/pushQueue';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -76,10 +76,17 @@ export function useRecommendations(): UseRecommendationsReturn {
     async ({ recipientUids, media, message }: SendRecommendationInput): Promise<number> => {
       if (!user || recipientUids.length === 0) return 0;
 
+      // DB-Profil hat Vorrang — Auth-Werte können das Google-/Apple-Profil sein
+      const [dbName, dbPhoto] = await Promise.all([
+        dbGet<string>(paths.displayName(user.uid)).catch(() => null),
+        dbGet<string>(paths.photoURL(user.uid)).catch(() => null),
+      ]);
       const senderName =
+        dbName ||
         (user.displayName && user.displayName.trim()) ||
         (user.email && user.email.split('@')[0]) ||
         'Unbekannt';
+      const senderPhoto = dbPhoto || user.photoURL;
 
       const base: Omit<Recommendation, 'id'> = {
         mediaId: media.id,
@@ -89,7 +96,7 @@ export function useRecommendations(): UseRecommendationsReturn {
         ...(media.backdropPath ? { mediaBackdrop: media.backdropPath } : {}),
         senderUid: user.uid,
         senderName,
-        ...(user.photoURL ? { senderPhotoURL: user.photoURL } : {}),
+        ...(senderPhoto ? { senderPhotoURL: senderPhoto } : {}),
         ...(message && message.trim() ? { message: message.trim() } : {}),
         timestamp: Date.now(),
         status: 'pending',

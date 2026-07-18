@@ -38,6 +38,7 @@ export const paths = {
 
   // Profil / Sonstiges
   displayName: (uid: string) => `${user(uid)}/displayName`,
+  photoURL: (uid: string) => `${user(uid)}/photoURL`,
   theme: (uid: string) => `${user(uid)}/theme`,
   homeConfig: (uid: string) => `${user(uid)}/homeConfig`,
   navConfig: (uid: string) => `${user(uid)}/navConfig`,

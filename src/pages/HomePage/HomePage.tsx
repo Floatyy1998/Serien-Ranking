@@ -52,6 +52,7 @@ export const HomePage: React.FC = () => {
 
   // All hooks must be called unconditionally (before any return)
   const [dbDisplayName, setDbDisplayName] = useState<string | null>(null);
+  const [dbPhotoURL, setDbPhotoURL] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -60,6 +61,12 @@ export const HomePage: React.FC = () => {
           if (name) setDbDisplayName(name);
         })
         .catch(() => {}); // bewusst still: Begrüßung fällt auf den Auth-Displaynamen zurück
+      // DB-Profilbild hat Vorrang — Auth-photoURL kann das Google-/Apple-Foto sein
+      dbGet<string>(paths.photoURL(user.uid))
+        .then((url) => {
+          if (url) setDbPhotoURL(url);
+        })
+        .catch(() => {});
     }
   }, [user]);
 
@@ -417,7 +424,7 @@ export const HomePage: React.FC = () => {
 
       <GreetingSection
         displayName={dbDisplayName || user.displayName || undefined}
-        photoURL={user.photoURL ?? undefined}
+        photoURL={dbPhotoURL || user.photoURL || undefined}
         totalUnreadBadge={notifs.totalUnreadBadge}
         onNotificationsOpen={() => setShowNotifications(true)}
         watchedEpisodes={stats.watchedEpisodes}
