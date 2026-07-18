@@ -33,8 +33,7 @@ export const MainTabs = () => {
 
   const scrollPositions = useRef<Record<string, number>>({});
 
-  // Scroll-Position pro Tab laufend mitschreiben (Scroller = .mobile-content;
-  // bei sichtbarer Tab-Shell existiert genau einer, da die Routes unmounted sind)
+  // Scroll-Position pro Tab laufend mitschreiben (Scroller = .mobile-content)
   useEffect(() => {
     if (!active) return;
     const scroller = document.querySelector('.mobile-content');
@@ -46,8 +45,7 @@ export const MainTabs = () => {
     return () => scroller.removeEventListener('scroll', onScroll);
   }, [active]);
 
-  // Navbar-Wechsel startet oben; nur Rückkehr von Detail-Seiten zum SELBEN Tab
-  // stellt die Scroll-Position wieder her (display:none verwirft sie)
+  // Navbar-Wechsel startet oben; nur Rückkehr zum selben Tab restauriert die Scroll-Position
   const lastShownTab = useRef<string | null>(null);
   useLayoutEffect(() => {
     if (!isTab || !active) return;

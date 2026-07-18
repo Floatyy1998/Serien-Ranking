@@ -1,8 +1,4 @@
-/**
- * Wählbare Ziele für die freien Slots der Bottom-Navigation.
- * Home (erster Slot) und „Mehr" (letzter Slot) sind fix und hier bewusst
- * nicht enthalten — ebenso keine Detail-Routen.
- */
+/** Wählbare Ziele der freien Nav-Slots — Home und „Mehr" sind fix und fehlen hier bewusst. */
 
 export interface NavSlotOption {
   id: string;

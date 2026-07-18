@@ -1,9 +1,4 @@
-/**
- * Brücke zur nativen Capacitor-Hülle (iOS/Android).
- * Die Hülle lädt die Live-Web-App — dieser Code läuft also auch im normalen
- * Browser und muss dort ein kompletter No-op sein (guarded über
- * window.Capacitor, keine Imports aus @capacitor/*).
- */
+/** Brücke zur Capacitor-Hülle — läuft auch im Browser und muss dort kompletter No-op sein. */
 
 interface CapacitorAppPlugin {
   addListener?: (
@@ -32,8 +27,7 @@ const initNativeShell = (): void => {
   const cap = getCapacitor();
   if (!cap) return;
 
-  // Android-Hardware-Back: in der App-History zurück statt App schließen;
-  // auf der Startseite die App minimieren (Standard-Android-Verhalten).
+  // Android-Hardware-Back: History zurück; auf der Startseite App minimieren.
   const app = cap.Plugins?.App;
   app?.addListener?.('backButton', ({ canGoBack }) => {
     if (canGoBack && window.location.pathname !== '/') {

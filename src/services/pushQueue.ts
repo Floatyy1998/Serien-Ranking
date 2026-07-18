@@ -1,9 +1,4 @@
-/**
- * Warteschlange für native Push-Benachrichtigungen: Clients legen Einträge in
- * pushQueue ab, der Backend-Listener (hello.js) verschickt sie per FCM an die
- * Geräte-Tokens des Empfängers und löscht den Eintrag. Gleiche Vertrauensstufe
- * wie users/$uid/notifications (jeder Auth-User darf benachrichtigen).
- */
+/** Push-Queue: Clients legen Einträge ab, der Backend-Listener (hello.js) verschickt per FCM und löscht. */
 import { dbRef, serverTimestamp } from './db/ref';
 
 export const queuePush = async (

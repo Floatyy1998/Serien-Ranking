@@ -68,9 +68,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           }
         }, 800);
       } else {
-        // Transaktion verloren: Box wurde parallel (anderes Geraet /
-        // Doppel-Tap) schon geoeffnet — sonst haengt das Overlay in
-        // 'opening' fest.
+        // Transaktion verloren (Box parallel schon geöffnet) — sonst hängt das Overlay in 'opening' fest
         setPhase('gone');
       }
     }, 1500);
@@ -96,7 +94,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           padding: '20px',
         }}
       >
-        {/* Close button */}
         <button
           onClick={onClose}
           aria-label="Schließen"
@@ -141,7 +138,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           )}
         </motion.h2>
 
-        {/* Mystery Box */}
         {phase !== 'reveal' && phase !== 'gone' && (
           <motion.div
             animate={
@@ -186,7 +182,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
                 overflow: 'hidden',
               }}
             >
-              {/* Shimmer effect */}
               <motion.div
                 animate={{ x: [-200, 200] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
@@ -207,7 +202,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           </motion.div>
         )}
 
-        {/* Reveal */}
         {phase === 'reveal' && reward && (
           <motion.div
             initial={{ scale: 0, opacity: 0 }}
@@ -221,7 +215,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               marginBottom: 32,
             }}
           >
-            {/* Glow */}
             <motion.div
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -339,7 +332,6 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           </motion.div>
         )}
 
-        {/* Action buttons */}
         {phase === 'closed' && (
           <motion.button
             whileHover={{ scale: 1.05 }}

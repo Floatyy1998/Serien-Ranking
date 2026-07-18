@@ -1,9 +1,4 @@
-/**
- * Nativer Push (FCM/APNs) über die Capacitor-Hülle. Läuft nur in den
- * iOS/Android-Apps — im Browser komplett No-op (guarded über window.Capacitor,
- * keine @capacitor/*-Imports). Der Geräte-Token landet unter
- * users/$uid/fcmTokens/{key}; der Backend-Sender liest ihn dort.
- */
+/** Nativer Push via Capacitor — im Browser No-op; Token landet unter users/$uid/fcmTokens für den Backend-Sender. */
 import { dbRef, serverTimestamp, userPath } from './db/ref';
 
 interface PushPlugin {
@@ -123,11 +118,7 @@ export const getNativePushPermission = async (): Promise<
   }
 };
 
-/**
- * Beim App-Start aufrufen (mit eingeloggtem User): re-registriert das Gerät,
- * damit rotierte FCM-Tokens aktuell bleiben. No-op im Browser oder wenn der
- * Nutzer Push nie aktiviert hat.
- */
+/** Beim App-Start aufrufen: re-registriert das Gerät, damit rotierte FCM-Tokens aktuell bleiben. */
 export const initNativePush = (uid: string): void => {
   const entry = getPlugin();
   if (!entry || !isNativePushEnabled()) return;

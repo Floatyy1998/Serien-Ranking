@@ -1,11 +1,4 @@
-/**
- * DraggableSectionItem - A single draggable section row with optional expandable sub-items
- * Inline styles ONLY for theme colors, CSS classes for layout
- *
- * Drag läuft ausschließlich über den Griff (dragListener={false}): sonst
- * beansprucht framer-motion auf Touch-Geräten jede Berührung der Zeile und
- * blockiert das Scrollen der Seite.
- */
+/** Draggable Sektionszeile; Drag nur über den Griff (dragListener=false) — sonst blockiert framer-motion auf Touch das Scrollen. */
 
 import { DragIndicator, ExpandMore } from '@mui/icons-material';
 import { AnimatePresence, motion, Reorder, useDragControls } from 'framer-motion';
@@ -101,7 +94,6 @@ export const DraggableSectionItem = ({
         zIndex: 10,
       }}
     >
-      {/* Main row */}
       <div className="hl-section-row">
         <span
           className="hl-grip"
@@ -114,7 +106,6 @@ export const DraggableSectionItem = ({
           <DragIndicator className="hl-drag-icon" style={{ color: currentTheme.text.muted }} />
         </span>
 
-        {/* Label + optional expand button */}
         <div
           className={`hl-label-area ${expandableConfig ? 'hl-label-area--expandable' : ''}`}
           onClick={
@@ -152,7 +143,6 @@ export const DraggableSectionItem = ({
         />
       </div>
 
-      {/* Expandable sub-items */}
       {expandableConfig && (
         <AnimatePresence>
           {expandableConfig.expanded && !isHidden && (

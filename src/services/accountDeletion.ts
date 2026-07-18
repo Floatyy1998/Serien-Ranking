@@ -1,9 +1,4 @@
-/**
- * Endgültige Konto-Löschung (Store-Pflicht: Play-Datensicherheit + Apple 5.1.1).
- * Reihenfolge ist wichtig: erst Re-Auth (Firebase verlangt frisches Login für
- * user.delete()), dann alle RTDB-/Storage-Daten (solange noch Schreibrechte
- * bestehen), zuletzt das Auth-Konto selbst.
- */
+/** Konto-Löschung (Store-Pflicht) — Reihenfolge wichtig: Re-Auth, dann RTDB/Storage, zuletzt Auth-Konto. */
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
@@ -19,8 +14,7 @@ export async function deleteAccount(password: string): Promise<void> {
   await user.reauthenticateWithCredential(credential);
   const uid = user.uid;
 
-  // Presence-onDisconnect abbestellen, sonst schreibt der Verbindungsabbruch
-  // nach dem Löschen wieder einen users/$uid-Stub.
+  // onDisconnect abbestellen, sonst schreibt der Verbindungsabbruch wieder einen users/$uid-Stub.
   try {
     await dbRef(userPath(uid, 'isOnline')).onDisconnect().cancel();
     await dbRef(userPath(uid, 'lastActive')).onDisconnect().cancel();
@@ -61,9 +55,7 @@ export async function deleteAccount(password: string): Promise<void> {
     /* best effort */
   }
 
-  // Monats-Archive der Rangliste: Keys sind YYYY-MM — blind über die mögliche
-  // Spanne löschen (remove auf nicht existente Pfade ist ein No-op) statt das
-  // komplette Archiv aller Nutzer zu lesen.
+  // Archiv-Keys sind YYYY-MM — blind über die Spanne löschen statt das komplette Archiv zu lesen.
   try {
     const now = new Date();
     const months: string[] = [];
@@ -105,8 +97,7 @@ export async function deleteAccount(password: string): Promise<void> {
     /* existiert oft nicht */
   }
 
-  // First-Party-Analytics: Events/Zähler sind user-bezogen gespeichert und
-  // gehören mitgelöscht (DSGVO Art. 17).
+  // First-Party-Analytics sind user-bezogen gespeichert — mitlöschen (DSGVO Art. 17).
   await dbRef(`analytics/users/${uid}`)
     .remove()
     .catch(() => {});

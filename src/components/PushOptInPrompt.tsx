@@ -14,11 +14,7 @@ import {
 
 const DISMISS_KEY = 'pushPromptDismissed';
 
-/**
- * Einmaliger Opt-in-Prompt in der nativen App: fragt kurz nach dem ersten
- * Login, ob Push an soll — „Aktivieren" öffnet den System-Dialog. Erscheint
- * nie wieder, sobald entschieden (Toggle bleibt in den Einstellungen).
- */
+/** Einmaliger Push-Opt-in-Prompt in der nativen App; nach Entscheidung nie wieder (Toggle in den Einstellungen). */
 export const PushOptInPrompt = () => {
   const { user, onboardingComplete } = useAuth() || {};
   const { currentTheme } = useTheme();
@@ -35,8 +31,7 @@ export const PushOptInPrompt = () => {
     }
     let cancelled = false;
     const timer = setTimeout(async () => {
-      // Nur zeigen, wenn das OS noch nie gefragt wurde — nach einem
-      // System-„Nein" wäre der Prompt eine Sackgasse.
+      // Nur zeigen, wenn das OS noch nie gefragt wurde — nach System-„Nein" wäre der Prompt eine Sackgasse
       const perm = await getNativePushPermission();
       if (!cancelled && (perm === 'prompt' || perm === 'granted')) setVisible(true);
     }, 4000);

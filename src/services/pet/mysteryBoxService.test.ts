@@ -1,11 +1,4 @@
-/**
- * Tests für den Mystery-Box-Service.
- *
- * Fokus: 20-Episoden-Kadenz (Threshold/Progress), verfügbare Boxen,
- * ensureInitialized (Erstbesuch, v1→v2-Migration, Self-Heal bei gesunkener
- * Episodenzahl) und das Öffnen einer Box (Reward + Persistenz). Firebase und
- * Pet-Zugriff sind gemockt, Math.random gesteuert.
- */
+/** Mystery-Box-Service: Kadenz, ensureInitialized (Migration/Self-Heal), Box-Öffnung — Firebase/Pets gemockt, Math.random gesteuert. */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const fb = vi.hoisted(() => {
@@ -133,8 +126,7 @@ describe('ensureInitialized', () => {
   });
 
   it('Self-Heal: erste Defizit-Sichtung heilt NICHT, sondern merkt nur einen Kandidaten vor', async () => {
-    // Regression Doppel-Einloesung: App-Start mit halb geladener Zaehlung
-    // darf die Baseline nicht zurueckspulen (Box waere doppelt einloesbar).
+    // Regression Doppel-Einlösung: halb geladene Zählung darf die Baseline nicht zurückspulen.
     fb.setAt(MB, { boxesOpened: 5, lastOpenedBoxNumber: 5, schemaVersion: 2 });
     const data = await ensureInitialized('u', 40); // earned=2 < lastOpened 5
     expect(data.lastOpenedBoxNumber).toBe(5); // Baseline unveraendert
@@ -202,8 +194,7 @@ describe('openMysteryBox', () => {
   });
 
   it('Regression Doppel-Einlösung: dieselbe Box kann nur EINMAL geöffnet werden', async () => {
-    // 1 Box verfügbar (earned 2, Baseline 1) — zweiter Open (zweites Gerät /
-    // Doppel-Tap) muss leer ausgehen, die Transaktion claimt atomar.
+    // 1 Box verfügbar — zweiter Open (zweites Gerät/Doppel-Tap) muss leer ausgehen, Transaktion claimt atomar.
     fb.setAt(MB, { boxesOpened: 1, lastOpenedBoxNumber: 1, schemaVersion: 2 });
     vi.spyOn(Math, 'random').mockReturnValue(0.9); // common → xp_boost
 
@@ -314,8 +305,7 @@ describe('openMysteryBox', () => {
 });
 
 describe('getBoxRarity – Skalierung mit der Box-Nummer', () => {
-  // Öffnet gezielt Box <boxNumber> und prüft die Rarity über die (deterministische)
-  // XP-Boost-Belohnung (generateMysteryReward-roll 0.9 → xp_boost, keine Pick-RNG).
+  // Rarity über die deterministische XP-Boost-Belohnung geprüft (Reward-roll 0.9 → xp_boost).
   const openBoxAt = async (boxNumber: number, rarityRoll: number) => {
     fb.reset();
     getUserPets.mockResolvedValue(alivePet());

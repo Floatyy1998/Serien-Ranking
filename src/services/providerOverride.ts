@@ -1,8 +1,4 @@
-/**
- * Manuelle Serie→Anbieter-Zuordnung (users/$uid/subscriptions/seriesOverrides).
- * Der Override gewinnt überall gegen die automatischen TMDB-Provider
- * (Home-Karten, Kalender, Abo-Matching — siehe useActiveSubscriptions).
- */
+/** Manuelle Serie→Anbieter-Zuordnung — gewinnt überall gegen die automatischen TMDB-Provider. */
 import { invalidateActiveSubscriptions } from '../hooks/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from './db/ref';
 

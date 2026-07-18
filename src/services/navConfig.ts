@@ -1,8 +1,4 @@
-/**
- * Persistenz + Mini-Store für die konfigurierbare Bottom-Navigation.
- * localStorage gewinnt sofort (kein Dock-Flackern beim Start), RTDB synct
- * im Hintergrund über Geräte hinweg (users/$uid/navConfig).
- */
+/** Store für die konfigurierbare Bottom-Nav: localStorage gewinnt sofort (kein Flackern), RTDB synct über Geräte. */
 
 import { DEFAULT_NAV_SLOTS, MAX_NAV_SLOTS, NAV_SLOT_OPTIONS } from '../config/navItems';
 import { dbRef, paths } from './db/ref';

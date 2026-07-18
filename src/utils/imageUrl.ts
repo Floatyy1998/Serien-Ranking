@@ -2,15 +2,11 @@ const TMDB_BASE = 'https://image.tmdb.org/t/p';
 
 type PosterInput = string | { poster?: string } | null | undefined;
 
-// Aelteste Catalog-Eintraege haben durch einen Backend-Bug URLs wie
-// ".../w342null" oder ".../w342undefined" produziert (String-Konkatenation
-// mit fehlendem poster_path). Diese als invalid erkennen und auf Fallback.
+// Alter Backend-Bug produzierte URLs wie ".../w342null" — als invalid erkennen, Fallback nutzen.
 const isBrokenTmdbUrl = (url: string): boolean =>
   url.endsWith('/null') || url.endsWith('null') || url.endsWith('undefined');
 
-// Module-level Themed-Fallback. Wird vom ThemeProvider per Effect gesetzt, damit
-// Caller (Hooks, Worker-Brueckenfunktionen, helpers, ...) keinen useTheme()
-// brauchen, um den Theme-eingefaerbten Placeholder als Default zu bekommen.
+// Vom ThemeProvider gesetzt, damit Caller keinen useTheme() für den themed Placeholder brauchen.
 let themedPlaceholder: string | null = null;
 
 export const setThemedPlaceholder = (url: string | null): void => {
@@ -41,9 +37,7 @@ export const getImageUrl = (
   size: TmdbImageSize = 'w342',
   fallback?: string
 ): string => {
-  // Priorisierung: expliziter Caller-Fallback (auch '' erlaubt um Bild zu
-  // verstecken) > themed > static. `fallback === undefined` heisst "default
-  // benutzen", `fallback === ''` heisst explizit "nichts zeigen".
+  // Caller-Fallback > themed > static; `fallback === ''` heißt explizit "nichts zeigen".
   const fb = fallback !== undefined ? fallback : (themedPlaceholder ?? STATIC_PLACEHOLDER);
   if (!posterObj) return fb;
   const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;
@@ -55,10 +49,7 @@ export const getImageUrl = (
   return `${TMDB_BASE}/${size}${path}`;
 };
 
-/**
- * Backdrop-Größe für Kino-Zeilen/Heros/Collagen: auf großen bzw. Retina-Screens
- * (effektiv ≥ 2200px) reicht w1280 nicht mehr — dann original laden.
- */
+/** Backdrop-Größe: auf großen/Retina-Screens (effektiv ≥ 2200px) reicht w1280 nicht — dann original. */
 export const getBackdropSize = (): TmdbImageSize => {
   if (typeof window === 'undefined') return 'w1280';
   const effectivePx = window.innerWidth * (window.devicePixelRatio || 1);
@@ -71,12 +62,7 @@ export const upgradeBackdropUrl = <T extends string | undefined>(url: T): T => {
   return url.replace('/t/p/w1280/', '/t/p/original/') as T;
 };
 
-/**
- * Build a TMDB `srcset` for responsive loading. Returns an empty string for
- * placeholder URLs / external URLs that we cannot resize. Pair with a single
- * default `src` from `getImageUrl(..., 'w342')` and an appropriate `sizes`
- * attribute, e.g. `(max-width: 640px) 30vw, 200px`.
- */
+/** TMDB-`srcset` für responsives Laden; leer für Placeholder/externe URLs (nicht resizebar). */
 export const getPosterSrcSet = (posterObj: PosterInput): string => {
   if (!posterObj) return '';
   const path = typeof posterObj === 'object' ? posterObj.poster : posterObj;

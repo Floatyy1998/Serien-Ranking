@@ -1,8 +1,4 @@
-/**
- * Stift neben den Anbieter-Logos der Detailseite: öffnet einen Dialog, in dem
- * die Serie manuell einem Streaming-Dienst zugeordnet wird (oder zurück auf
- * Automatik). Schreibt users/$uid/subscriptions/seriesOverrides.
- */
+/** Dialog zur manuellen Provider-Zuordnung einer Serie (schreibt users/$uid/subscriptions/seriesOverrides). */
 import { Add, AutoAwesome, Check, Edit } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
@@ -86,16 +82,14 @@ export const ProviderOverrideButton = ({
   return (
     <>
       {hasProviders ? (
-        // Gestrichelter Stift-Chip in Badge-Größe: Anbieter WECHSELN
-        // (das Plus bleibt dem Leerzustand vorbehalten — dort wird zugeordnet)
+        // Stift-Chip = Anbieter wechseln; das Plus bleibt dem Leerzustand vorbehalten
         <motion.button
           whileTap={tapScaleTight}
           onClick={openDialog}
           aria-label="Anbieter ändern"
           title="Anbieter ändern"
           style={{
-            // Exakte Badge-Maße erzwingen — die globale .mobile-app-button-Regel
-            // bläht kleine Buttons sonst über min-width/-height auf.
+            // Exakte Maße erzwingen — die globale .mobile-app-Button-Regel bläht kleine Buttons sonst auf
             width: chipDiameter,
             height: chipDiameter,
             minWidth: chipDiameter,

@@ -27,9 +27,7 @@
   --theme-secondary-10: color-mix(in srgb, var(--theme-secondary-gradient) 10%, transparent);
   --theme-secondary-20: color-mix(in srgb, var(--theme-secondary-gradient) 20%, transparent);
 
-  /* Design Tokens - Typography Scale
-     Kanonische Font-Größen — Komponenten mappen hart kodierte px hierauf.
-     Basis 16px; px absichtlich (nicht rem), da mit dem übrigen System konsistent. */
+  /* Typography-Skala: kanonische Font-Größen, Basis 16px; px absichtlich (nicht rem) */
   --text-xs: 11px;
   --text-sm: 13px;
   --text-base: 14px;
@@ -83,10 +81,7 @@
   --blur-lg: blur(24px);
   --blur-xl: blur(40px);
 
-  /* Design Tokens - Liquid-Glass-Filter (Blur + Refraktion).
-     Die eine Quelle für alle backdrop-filter: kräftige Sättigung + leichte
-     Brightness lassen Inhalte hinter dem Glas farbig „durchglühen" statt nur
-     matschig zu verschwimmen. Immer diese Tokens statt blur+saturate-Kombis. */
+  /* Liquid-Glass-Filter — einzige Quelle für backdrop-filter; immer diese Tokens statt eigener blur+saturate-Kombis */
   --glass-filter-sm: var(--blur-sm) saturate(1.7) brightness(1.05);
   --glass-filter-md: var(--blur-md) saturate(1.75) brightness(1.06);
   --glass-filter-lg: var(--blur-lg) saturate(1.8) brightness(1.07);
@@ -96,9 +91,7 @@
   --overlay-backdrop: rgba(0, 0, 0, 0.6);
 }
 
-/* Native App (WKWebView/Android WebView): backdrop-filter ist dort mit Abstand
-   der teuerste Effekt beim Scrollen. Halbierte Radien sehen praktisch identisch
-   aus, rendern aber deutlich flüssiger. */
+/* Native App (WKWebView/Android): backdrop-filter ist der teuerste Scroll-Effekt — halbierte Blur-Radien rendern flüssiger */
 :root.native-app {
   --blur-sm: blur(4px);
   --blur-md: blur(8px);
@@ -132,9 +125,7 @@
     0 0 20px var(--theme-primary-60), 0 0 60px var(--theme-primary-30),
     0 0 100px var(--theme-primary-15);
   --glow-soft: 0 0 24px var(--theme-primary-25);
-  /* Pre-init fallback only — ThemeContext overrides this at runtime with the live
-     accent color as a box-shadow. Aligned to the theme language (green) instead of
-     the old static purple so a pre-hydration flash matches the brand. */
+  /* Pre-Init-Fallback (grün, damit der Pre-Hydration-Flash zur Marke passt) — ThemeContext überschreibt zur Laufzeit */
   --glow-accent: 0 0 20px var(--theme-primary-40), 0 0 40px var(--theme-primary-20);
   --glow-cinematic:
     0 0 30px var(--theme-primary-25), 0 0 80px var(--theme-primary-10),
@@ -143,9 +134,7 @@
   --shadow-glow: 0 8px 32px -8px rgba(0, 0, 0, 0.5), 0 0 32px -6px var(--theme-primary-20);
   --focus-ring: 0 0 0 4px var(--theme-primary-15);
 
-  /* Glass-Stufen — chromatisch: minimal mit der Theme-Primary getönt statt
-     neutralweiß. Das Glas nimmt dadurch die Identität des User-Themes an
-     (kaskadiert automatisch bei Theme-Wechsel). */
+  /* Glass-Stufen: minimal mit der Theme-Primary getönt — kaskadiert automatisch bei Theme-Wechsel */
   --glass-subtle: color-mix(in srgb, var(--theme-primary) 2%, rgba(255, 255, 255, 0.02));
   --glass-light: color-mix(in srgb, var(--theme-primary) 3%, rgba(255, 255, 255, 0.04));
   --glass-medium: color-mix(in srgb, var(--theme-primary) 4%, rgba(255, 255, 255, 0.07));
@@ -154,8 +143,7 @@
   --glass-border-light: color-mix(in srgb, var(--theme-primary) 8%, rgba(255, 255, 255, 0.08));
   --glass-border-medium: color-mix(in srgb, var(--theme-primary) 10%, rgba(255, 255, 255, 0.13));
 
-  /* Specular-Kanten: heller Lichtfang oben, feine Ablösung unten — der
-     „geschliffene" Rand, der Glas von einem grauen Overlay unterscheidet. */
+  /* Specular-Kanten: Lichtfang oben, Ablösung unten — unterscheidet Glas vom grauen Overlay */
   --glass-specular:
     inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
 
@@ -179,10 +167,7 @@
   --text-glow-subtle: 0 0 10px color-mix(in srgb, var(--theme-primary) 30%, transparent);
 }
 
-/* Interaktive Elemente: touch-action manipulation entfernt die ~350ms
-   Double-Tap-Zoom-Wartezeit von WebKit (WKWebView ignoriert user-scalable=no
-   dafür nicht zuverlässig) — Taps feuern sofort, Navbar fühlt sich direkt an.
-   Klassen mit eigenem touch-action (Drag-Griffe: none) gewinnen per Spezifität. */
+/* touch-action: manipulation entfernt WebKits ~350ms Double-Tap-Zoom-Delay; eigene touch-action-Klassen (Drag-Griffe: none) gewinnen per Spezifität */
 button,
 a,
 [role='button'],
@@ -190,9 +175,7 @@ a,
   touch-action: manipulation;
 }
 
-/* Glassmorphism utility classes — single source of truth for glass cards.
-   Use these instead of repeating `background + backdrop-filter + border` triples
-   inline in component styles. Pair with --radius-* and --shadow-* as needed. */
+/* Glass-Utility-Klassen — statt background+backdrop-filter+border inline zu wiederholen */
 .glass-card-light {
   background: var(--glass-light);
   -webkit-backdrop-filter: var(--glass-filter-md);
@@ -215,9 +198,7 @@ a,
   box-shadow: var(--glass-specular);
 }
 
-/* Liquid Glass — die Vollausbaustufe: chromatischer Tint + Licht von oben
-   (radialer Sheen) + Specular-Kanten + Tiefe. Für prominente Flächen
-   (Docks, Overlays, Sheets); für einfache Karten reichen .glass-card-*. */
+/* Liquid Glass (Tint + Sheen + Specular + Tiefe) für prominente Flächen; für einfache Karten reichen .glass-card-* */
 .liquid-glass {
   position: relative;
   background:
@@ -260,8 +241,7 @@ a,
   background: var(--glass-medium);
 }
 
-/* Geteilter TabSwitcher (components/ui): mobil volle Breite,
-   ab Desktop kompakte Segmented-Control statt Vollbreite-Balken. */
+/* Geteilter TabSwitcher (components/ui): mobil volle Breite, ab Desktop kompakte Segmented-Control */
 .ui-tabs {
   display: flex;
   gap: 6px;
@@ -310,8 +290,7 @@ a,
   }
 }
 
-/* Geteiltes BottomSheet (components/ui): mobil angedockt, ab Desktop ein
-   schwebendes, voll gerundetes Glas-Panel über dem Dock. */
+/* Geteiltes BottomSheet (components/ui): mobil angedockt, ab Desktop schwebendes Glas-Panel über dem Dock */
 .ui-sheet {
   width: 100%;
   max-height: var(--sheet-max-h, 85vh);
@@ -333,8 +312,7 @@ a,
   }
 }
 
-/* Sheet-Inhalt: Listen nutzen die Desktop-Breite als mehrspaltiges Grid
-   statt gestreckter Einzelzeilen. */
+/* Sheet-Listen nutzen die Desktop-Breite als mehrspaltiges Grid */
 .sheet-grid {
   padding: 0 12px;
 }
@@ -373,10 +351,7 @@ a,
   border-radius: 999px;
 }
 
-/* Scrollbars: the styled custom scrollbar lives in index.css (single source of
-   truth). The former global `display:none !important` hard-hide was removed so it
-   no longer overrides that styling. To hide a scrollbar on a specific container,
-   opt in with the `.hide-scrollbar` utility below. */
+/* Custom-Scrollbar-Styling lebt in index.css; Verstecken nur per Opt-in über .hide-scrollbar */
 
 html {
   scroll-behavior: smooth;
@@ -771,11 +746,7 @@ button:active:not(:disabled),
   box-shadow: var(--glass-specular);
 }
 
-/* Kino-Zeilen-Artwork: standardmäßig hinter „Milchglas" (glasmorpher Blur —
-   ruhige, farbige Textur statt sechs schreiender Plakate), auf Hover wischt
-   die Zeile das Glas weg und das Artwork wird scharf. Der leichte Scale
-   kaschiert das Blur-Edge-Bleeding an der Maskenkante. Touch-Geräte ohne
-   Hover bleiben beim ruhigen Frosted-Default. */
+/* Kino-Artwork: Milchglas-Blur als Default, Hover macht scharf; der leichte Scale kaschiert Blur-Edge-Bleeding an der Maskenkante */
 .cine-art {
   filter: blur(16px) saturate(1.35) brightness(0.55);
   transform: scale(1.08);
@@ -946,9 +917,7 @@ button:active:not(:disabled),
   }
 }
 
-/* View Transitions API (Progressive Enhancement)
-   - SPA: aktiviert durch useTransitionNavigate-Hook
-   - MPA: aktiviert durch navigation: auto */
+/* View Transitions API (Progressive Enhancement): SPA via useTransitionNavigate, MPA via navigation: auto */
 @view-transition {
   navigation: auto;
 }

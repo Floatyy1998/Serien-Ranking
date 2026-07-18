@@ -2,10 +2,7 @@ import { DeleteForever } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader } from '../../components/ui';
 
-/**
- * Öffentliche Info-Seite zur Konto-Löschung (Pflicht-URL für den
- * Google-Play-Datensicherheitsbereich; auch ausgeloggt erreichbar).
- */
+/** Öffentliche Konto-Löschungs-Seite (Pflicht-URL für Google Play; auch ausgeloggt erreichbar). */
 export const AccountDeletionPage = () => {
   const { currentTheme } = useTheme();
 

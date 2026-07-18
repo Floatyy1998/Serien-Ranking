@@ -11,13 +11,7 @@ const DISMISS_KEY = 'playTestBannerDismissed';
 const isAndroid = (): boolean =>
   typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
 
-/**
- * Lädt Android-Nutzer ein, dem geschlossenen Play-Test beizutreten
- * (12 aktive Tester über 14 Tage sind Googles Bedingung für den
- * Produktions-Release). Interessenten melden sich per Feature-Ticket
- * mit ihrer Play-Store-E-Mail und werden manuell eingeladen.
- * Nur auf Android-Geräten sichtbar, wegklickbar.
- */
+/** Android-only, wegklickbar: lädt zum Play-Test ein (12 Tester/14 Tage = Google-Bedingung); Einladung manuell per Feature-Ticket. */
 export const PlayTestBanner = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();

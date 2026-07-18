@@ -1,14 +1,4 @@
-/**
- * Haptic feedback helpers.
- *
- * Semantische, app-weite Muster statt magischer `vibrate()`-Zahlen an jeder
- * Stelle. Läuft die App in der nativen Capacitor-Hülle (iOS/Android), wird
- * die echte Haptics-Engine benutzt (Taptic Engine auf iOS — dort gibt es
- * kein `navigator.vibrate`); im Browser fällt alles auf die Vibration API
- * zurück und ist ohne Support ein No-op.
- *
- * Reduced motion wird respektiert: Vibration ist ein Bewegungs-Cue.
- */
+/** Semantische Haptik-Muster: nativ via Capacitor (iOS hat kein navigator.vibrate), sonst Vibration API; respektiert Reduced Motion. */
 
 interface CapacitorHapticsPlugin {
   impact?: (options: { style: 'HEAVY' | 'MEDIUM' | 'LIGHT' }) => Promise<void>;

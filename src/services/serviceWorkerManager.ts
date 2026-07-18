@@ -1,8 +1,3 @@
-/**
- * Service Worker Manager für Serien-Ranking
- * Koordiniert Service Worker Registration und Cache-Management
- */
-
 interface CacheStatus {
   caches: Array<{
     name: string;
@@ -76,15 +71,12 @@ class ServiceWorkerManager {
 
     const registration = await this.registrationPromise;
 
-    // Wartender Worker schon beim Seitenstart da → Update ist bereit,
-    // aber KEIN Reload: unsichtbar anwenden sobald der Tab in den
-    // Hintergrund geht, oder sofort per Klick auf die Pille.
+    // Wartender Worker beim Seitenstart → Update bereit, aber KEIN Reload (Pille bzw. Hidden-Apply).
     if (registration.waiting && navigator.serviceWorker.controller) {
       this.onUpdateReady(registration);
     }
 
-    // Mid-session update: warten bis der neue Worker fertig installiert
-    // ist ("installed" + bestehender Controller = Update, kein Erstbesuch).
+    // Mid-session: "installed" + bestehender Controller = Update, kein Erstbesuch.
     registration.addEventListener('updatefound', () => {
       const installing = registration.installing;
       if (!installing) return;
@@ -98,12 +90,7 @@ class ServiceWorkerManager {
     return registration;
   }
 
-  /**
-   * Update liegt bereit (neuer Worker wartet).
-   * Kein Zwangs-Reload: (a) dezente, klickbare Pille anbieten und
-   * (b) automatisch anwenden, sobald der Tab unsichtbar ist — der Reload
-   * passiert dann, ohne dass der User ihn sieht.
-   */
+  /** Update bereit: Pille anbieten + automatisch anwenden, sobald der Tab unsichtbar ist. */
   private onUpdateReady(registration: ServiceWorkerRegistration): void {
     if (this.updateReadyHandled) return;
     this.updateReadyHandled = true;
@@ -122,10 +109,7 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * Wartenden Worker aktivieren. Der Reload folgt im
-   * controllerchange-Handler — und nur weil WIR ihn ausgelöst haben.
-   */
+  /** Wartenden Worker aktivieren — der Reload folgt im controllerchange-Handler. */
   private applyUpdate(registration: ServiceWorkerRegistration): void {
     if (!registration.waiting) return;
     this.intentionalActivation = true;
@@ -145,9 +129,7 @@ class ServiceWorkerManager {
     // Flag vom letzten Reload sofort entfernen (damit der nächste Update-Reload funktioniert)
     sessionStorage.removeItem('sw-reloaded');
 
-    // Reload NUR wenn wir die Aktivierung selbst ausgelöst haben (Pille
-    // oder Hidden-Apply). Erstinstallation/clientsClaim lösen sonst keinen
-    // Zwangs-Reload mehr aus.
+    // Reload NUR bei selbst ausgelöster Aktivierung — Erstinstallation/clientsClaim reloadet nicht.
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!this.intentionalActivation) return;
       const reloadFlag = sessionStorage.getItem('sw-reloaded');
@@ -157,11 +139,7 @@ class ServiceWorkerManager {
       }
     });
 
-    // iOS-Netz: die native App wird beim Backgrounding eingefroren, BEVOR der
-    // unsichtbare Reload durchläuft — die alte Seite liefe dann unter dem
-    // neuen Worker weiter und crasht erst mitten in der nächsten Navigation
-    // (alter Lazy-Chunk weg → Not-Reload). Deshalb: direkt beim Aufwachen
-    // nachziehen — DA fühlt sich ein Reload wie ein normaler App-Start an.
+    // iOS friert die App vor dem unsichtbaren Reload ein (alte Seite unter neuem Worker → Chunk-Crash) — deshalb beim Aufwachen nachziehen.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState !== 'visible') return;
       if (!this.intentionalActivation) return;
@@ -202,8 +180,7 @@ class ServiceWorkerManager {
       await registration.update();
 
       if (registration.waiting) {
-        // Explizit angefordertes Update (z. B. aus den Einstellungen):
-        // gezielt aktivieren — der controllerchange-Reload ist hier gewollt.
+        // Explizit angefordertes Update: gezielt aktivieren, der Reload ist hier gewollt.
         this.applyUpdate(registration);
 
         await new Promise<void>((resolve) => {
@@ -340,11 +317,7 @@ class ServiceWorkerManager {
     }
   }
 
-  /**
-   * Dezente, klickbare Update-Pille. Kein Spinner, kein Zwang: ein Tap
-   * wendet das Update sofort an, das X blendet sie aus (das Update kommt
-   * dann unsichtbar beim nächsten Tab-Wechsel bzw. App-Start).
-   */
+  /** Dezente Update-Pille: Tap wendet sofort an, X blendet aus (Update kommt dann unsichtbar später). */
   private showUpdatePill(onApply: () => void): void {
     if (document.getElementById('sw-update-banner')) return;
     const style = document.createElement('style');
@@ -462,5 +435,4 @@ class ServiceWorkerManager {
   }
 }
 
-// Singleton Instance
 export const serviceWorkerManager = new ServiceWorkerManager();

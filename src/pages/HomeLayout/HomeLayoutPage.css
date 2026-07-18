@@ -212,9 +212,7 @@
   flex-shrink: 0;
 }
 
-/* Drag-Griff: einziger Punkt, an dem gezogen wird. touch-action: none lässt
-   den Browser hier NICHT scrollen — überall sonst scrollt die Seite normal.
-   Negative Margins + Padding vergrößern die Touch-Fläche ohne Layout-Shift. */
+/* Einziger Drag-Punkt: touch-action:none blockiert Scrollen nur hier; negative Margins vergrößern die Touch-Fläche */
 .hl-grip {
   display: flex;
   align-items: center;
@@ -356,8 +354,7 @@
   flex-direction: column;
   gap: 8px;
   overflow-y: auto;
-  /* Skeleton-Poster-Reihen ragen bewusst über den Rand (Peek-Look) — ohne
-     Clipping wird das ganze Mockup horizontal scrollbar. */
+  /* Poster-Reihen ragen bewusst über den Rand (Peek-Look) — ohne Clipping scrollt das Mockup horizontal */
   overflow-x: hidden;
   flex: 1;
   min-height: 0;
@@ -369,9 +366,7 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
   border: 1px solid var(--glass-border-subtle);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
-  /* KEIN overflow hier: das machte die Sektion zum Scroll-Container, dessen
-     Flex-Mindesthöhe auf 0 fällt — der Rahmen quetschte alle Sektionen platt.
-     Horizontal clippt die äußere .hl-canvas-list. */
+  /* KEIN overflow hier — sonst wird die Sektion zum Scroll-Container (Flex-min-height 0) und plattgequetscht */
   flex-shrink: 0;
   cursor: grab;
   transition:

@@ -1,7 +1,3 @@
-/**
- * Watch Activity Core - Haupt-API für Episode und Movie Watch Logging
- */
-
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
@@ -13,11 +9,7 @@ import { updateWatchStreak } from './watchStreakTracking';
 import { triggerPetReaction } from '../../hooks/usePetReactions';
 import { bumpSeriesVersion, dbGet, dbRef, paths } from '../db/ref';
 
-/**
- * Aktives Gucken heißt „aktiv dran": Einzel-Marks setzen die Serie
- * automatisch auf die Watchlist, damit sie bei „Weiterschauen" auftaucht.
- * Bulk-Abhaken (Alt-Serien nachtragen) tut das bewusst NICHT.
- */
+/** Einzel-Marks setzen die Serie auf die Watchlist („Weiterschauen"); Bulk-Abhaken bewusst nicht. */
 async function ensureOnWatchlist(userId: string, seriesId: number): Promise<void> {
   const path = `${paths.seriesItem(userId, seriesId)}/watchlist`;
   const current = await dbGet<boolean>(path);
@@ -42,8 +34,7 @@ export async function logEpisodeWatch(
   const { eventData: baseEvent, isBulkMarking } = createEpisodeEventData();
   const runtime = episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES;
 
-  // Einzel-Mark → Serie gehört ins „Weiterschauen" (Rewatch setzt die
-  // Watchlist schon beim Start). Best-effort, blockiert das Logging nicht.
+  // Einzel-Mark → „Weiterschauen"; Rewatch setzt die Watchlist schon beim Start. Best-effort.
   if (!isBulkMarking && !isRewatch) {
     ensureOnWatchlist(userId, seriesId).catch(() => {});
   }
@@ -93,9 +84,7 @@ export async function logEpisodeWatch(
     watchtimeMinutes: runtime,
   }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
 
-  // Freunde-Feed „gesehen"-Aktivität – NUR Erstwatch, kein Bulk-Marking (Catch-up
-  // soll den Feed nicht zuspammen), kein Rewatch. Erscheint bewusst NICHT im
-  // Notification-Hub/Badge (dort ausgeschlossen). Best-effort, dynamisch geladen.
+  // Freunde-Feed nur bei Erstwatch (kein Bulk/Rewatch — Feed-Spam); bewusst nicht im Notification-Hub.
   if (!isBulkMarking && !isRewatch) {
     import('../../features/badges/minimalActivityLogger')
       .then((m) =>
@@ -104,8 +93,7 @@ export async function logEpisodeWatch(
       .catch(() => {});
   }
 
-  // Pet reaction – binge takes priority over rewatch over plain cheer.
-  // Skipped for bulk-marking (catch-up) so the bubble doesn't spam.
+  // Pet-Reaktion: binge > rewatch > cheer; bei Bulk-Marking übersprungen (Bubble-Spam).
   if (!isBulkMarking) {
     if (isBingeSession) triggerPetReaction({ tone: 'binge' });
     else if (isRewatch) triggerPetReaction({ tone: 'rewatch' });
@@ -180,11 +168,7 @@ async function findExistingMovieEvent(
   year: number
 ): Promise<{ eventId: string; isCompact: boolean } | null> {
   try {
-    // Kein orderByChild('movieId') mehr: Events werden im Compact-Format
-    // gespeichert (t:'mv', s:movieId) — ein movieId-Child existiert dort nicht,
-    // die alte Query traf also nie und jedes Re-Log/Re-Rating erzeugte ein
-    // Duplikat (Wrapped zählte Filme + Laufzeit doppelt). Wir lesen den Knoten
-    // einmal und erkennen beide Formate.
+    // Kein orderByChild('movieId'): Compact-Events (t:'mv', s:movieId) haben das Child nicht — die alte Query traf nie und erzeugte Duplikate.
     const snapshot = await firebase.database().ref(getEventsPath(userId, year)).once('value');
 
     const events = snapshot.val() as Record<string, Record<string, unknown>> | null;

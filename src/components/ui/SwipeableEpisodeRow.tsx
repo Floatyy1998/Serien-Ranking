@@ -1,9 +1,4 @@
-/**
- * SwipeableEpisodeRow - Unified cinematic episode card.
- *
- * Used everywhere: ContinueWatching, TodayEpisodes, Rewatches, WatchNext.
- * Supports swipe-to-complete, drag-to-reorder (edit mode), ambient poster bg.
- */
+/** Einheitliche Episoden-Karte (ContinueWatching, TodayEpisodes, Rewatches, WatchNext): Swipe-to-complete, Reorder, Ambient-Poster. */
 
 import { Check, DragHandle } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
@@ -92,8 +87,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
   }) => {
     const isMobile = window.innerWidth < 768;
     const color = accentColor;
-    // Eigene Tap-Erkennung: framers onTap bricht schon bei Mikro-Bewegungen ab
-    // (auf Touch der Normalfall) — hier gilt: <12px Weg + <600ms = Tap.
+    // Eigene Tap-Erkennung (<12px Weg + <600ms), weil framers onTap bei Touch-Mikro-Bewegungen abbricht
     const tapStart = useRef<{ x: number; y: number; t: number } | null>(null);
     const dragRatio = Math.min(Math.abs(dragOffset) / 100, 1);
     const isDragTarget =
@@ -129,9 +123,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         style={{ position: 'relative' }}
       >
-        {/* Swipe hit area — only when NOT in edit mode. onTap öffnet dasselbe
-            Ziel wie der Poster-Tap (ganze Karte klickbar); framer feuert Taps
-            nicht, wenn tatsächlich gezogen wurde — Swipe bleibt ungestört. */}
+        {/* Swipe-Hitfläche (nicht im Edit-Mode): Klick öffnet dasselbe Ziel wie der Poster-Tap, echter Drag feuert keinen Tap */}
         {!isEditMode && (
           <motion.div
             drag="x"
@@ -150,10 +142,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             onPointerDown={(e) => {
               tapStart.current = { x: e.clientX, y: e.clientY, t: Date.now() };
             }}
-            // Bewusst onClick statt onPointerUp: das Click-Event ist das LETZTE
-            // der Touch-Kette. Öffnet man schon auf pointerup, trifft der
-            // nachlaufende Click den frisch gemounteten Sheet-Backdrop und
-            // schließt ihn sofort wieder (Race — „nur jeder x-te Tap ging").
+            // Bewusst onClick statt onPointerUp: sonst schließt der nachlaufende Click den frisch gemounteten Sheet-Backdrop sofort wieder (Race)
             onClick={(e) => {
               const start = tapStart.current;
               tapStart.current = null;
@@ -174,7 +163,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
           />
         )}
 
-        {/* ── Card ── */}
         <div
           draggable={isEditMode}
           onDragStart={
@@ -214,7 +202,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             transition: dragOffset ? 'none' : 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)',
           }}
         >
-          {/* ── Left accent bar ── */}
           {!staticBorder && (
             <div
               style={{
@@ -231,11 +218,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             />
           )}
 
-          {/* ── Artwork-/Ambient-Hintergrund ──
-              Desktop mit Backdrop: scharfes Serien-Artwork läuft von rechts in
-              die Zeile (Maske blendet zum Text hin aus) — die Zeile wird zum
-              Kino-Banner statt rechts ins Leere zu faden. Mobile/ohne Backdrop:
-              geblurter Poster-Ambient über die VOLLE Breite. */}
+          {/* Desktop mit Backdrop: Artwork läuft maskiert von rechts ein; Mobile/ohne Backdrop: geblurter Poster-Ambient in voller Breite */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
             {!isMobile && backdrop && !staticBackground ? (
               <img
@@ -243,8 +226,7 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                 alt=""
                 aria-hidden
                 decoding="async"
-                // Dimm-/Hover-Filter kommt aus global.css (.cine-art) — inline
-                // würde er die Hover-Regel überstimmen.
+                // Dimm-/Hover-Filter kommt aus global.css (.cine-art) — inline würde er die Hover-Regel überstimmen
                 className="cine-art"
                 style={{
                   position: 'absolute',
@@ -307,7 +289,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             />
           </div>
 
-          {/* Swipe glow */}
           <motion.div
             style={{
               position: 'absolute',
@@ -321,7 +302,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
             transition={{ duration: 0.2 }}
           />
 
-          {/* ── Content row ── */}
           <div
             style={{
               position: 'relative',
@@ -333,7 +313,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               minHeight: isMobile ? undefined : '112px',
             }}
           >
-            {/* ── Poster ── */}
             <div
               onClick={onPosterClick}
               style={{
@@ -380,7 +359,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               {posterOverlay}
             </div>
 
-            {/* ── Content ── */}
             <div
               style={{
                 flex: 1,
@@ -394,7 +372,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               {content}
             </div>
 
-            {/* ── Edit mode drag handle ── */}
             {isEditMode && (
               <div
                 style={{
@@ -408,7 +385,6 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
               </div>
             )}
 
-            {/* ── Actions ── */}
             {!isEditMode && (
               <AnimatePresence mode="wait">
                 {isCompleting ? (

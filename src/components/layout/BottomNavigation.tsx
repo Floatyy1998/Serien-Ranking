@@ -81,8 +81,7 @@ export const BottomNavigation = () => {
       },
       ...slotItems,
       {
-        // "Mehr" öffnet den Profil-Hub — dort hängen Discover, Stats, Badges,
-        // Pets, Leaderboard, Freunde, Abos, Einstellungen etc.
+        // "Mehr" öffnet den Profil-Hub (Discover, Stats, Badges, Freunde, Einstellungen usw.)
         id: 'more',
         path: '/profile',
         icon: <MoreHoriz />,
@@ -109,15 +108,13 @@ export const BottomNavigation = () => {
   const activeIndex = getActiveIndex();
   const pillTargetIndex = hoveredIndex ?? pendingIndex ?? activeIndex;
 
-  // Auf Touch-Geräten feuert kein mouseleave — ohne Reset klebt der Pill nach
-  // Swipe-/Programm-Navigation auf dem zuletzt getippten Tab fest.
+  // Touch feuert kein mouseleave — ohne Reset klebt die Pille am zuletzt getippten Tab
   useEffect(() => {
     setHoveredIndex(null);
     setPendingIndex(null);
   }, [location.pathname]);
 
-  // Messen nur mit sichtbarem Dock (offsetWidth 0 = versteckt → alte Werte
-  // behalten); ResizeObserver fängt Resize/Font-Load/Slot-Änderungen ab
+  // Nur bei sichtbarem Dock messen (offsetWidth 0 = versteckt); ResizeObserver fängt Resize/Slot-Änderungen ab
   useLayoutEffect(() => {
     const measure = () => {
       const el = itemRefs.current[pillTargetIndex];
@@ -160,9 +157,7 @@ export const BottomNavigation = () => {
     loop: true,
   });
 
-  // Das Dock zeigt sich NUR auf seinen eigenen Zielen (Home, Slots, "Mehr") —
-  // alle anderen Seiten laufen über Zurück + Home im PageHeader. Der Check auf
-  // MAIN_TAB_PATHS verhindert Renders in der versteckten Keep-Alive-Shell.
+  // Dock nur auf eigenen Zielen; MAIN_TAB_PATHS-Check verhindert Renders in der Keep-Alive-Shell
   if (!isNavRoot || !MAIN_TAB_PATHS.has(location.pathname)) return null;
 
   const getAriaLabel = (item: NavItem, active: boolean) => {
@@ -189,7 +184,6 @@ export const BottomNavigation = () => {
           ref={containerRef}
           onMouseLeave={() => setHoveredIndex(null)}
         >
-          {/* Animated Pill */}
           <motion.div
             className="nav-pill"
             animate={{ left: pillPos.left, width: pillPos.width }}

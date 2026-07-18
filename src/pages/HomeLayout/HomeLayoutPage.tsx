@@ -1,8 +1,4 @@
-/**
- * HomeLayoutPage - Homepage & Navigation als Direkt-Manipulation:
- * Die Vorschau IST der Editor — Sektionen im Canvas ziehen/ausblenden,
- * Nav-Ziele direkt im Dock sortieren und per Palette hinzufügen.
- */
+/** Homepage & Navigation als Direkt-Manipulation: die Vorschau IST der Editor (Canvas + Dock + Palette). */
 
 import {
   Add,
@@ -122,8 +118,7 @@ interface CanvasSectionProps {
 const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps) => {
   const { currentTheme } = useTheme();
   const chipDragRef = useRef(false);
-  // Drag nur am Griff: sonst frisst framer-motion auf Touch-Geräten jede
-  // Berührung der Sektion und blockiert das Scrollen der Seite.
+  // Drag nur am Griff — sonst frisst framer-motion auf Touch jede Berührung und blockiert das Scrollen
   const dragControls = useDragControls();
 
   return (
@@ -253,7 +248,6 @@ export const HomeLayoutPage = () => {
 
       <div className="hl-content">
         <div className="hl-stage">
-          {/* Links: Anleitung */}
           <div className="hl-guide liquid-glass">
             <GradientText as="h2" style={{ margin: 0 }}>
               <span className="hl-guide-title">
@@ -304,7 +298,6 @@ export const HomeLayoutPage = () => {
             </motion.button>
           </div>
 
-          {/* Mitte: Geräte-Mockup = Editor */}
           <div className="hl-device">
             <div className="hl-screen" style={{ background: currentTheme.background.default }}>
               <div className="hl-mini-greeting">
@@ -397,7 +390,6 @@ export const HomeLayoutPage = () => {
             </div>
           </div>
 
-          {/* Rechts: Ziel-Palette */}
           <aside className="hl-navside liquid-glass">
             <div className="hl-toolbar">
               <div className="hl-toolbar-left">

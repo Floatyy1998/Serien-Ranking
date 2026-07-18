@@ -4,18 +4,10 @@ import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { getUserPets } from './petCore';
 
-// ============================================================
-// Mystery Box — alle 20 Episoden eine Box
-// ============================================================
-
 /** Interval: alle X Episoden gibt es eine Mystery Box */
 export const BOX_EVERY_N_EPISODES = 20;
 
-/**
- * Schema-Version des mysteryBox-Eintrags.
- * v1: Box alle 50 Episoden — lastOpenedBoxNumber zählte 50er-Boxen
- * v2: Box alle 20 Episoden — Migration setzt Baseline auf aktuellen 20er-Stand
- */
+/** Schema-Version: v1 = 50er-Intervall, v2 = 20er — Migration re-baselined auf den 20er-Stand. */
 export const BOX_SCHEMA_VERSION = 2;
 
 export type MysteryRewardType = 'accessory' | 'xp_boost' | 'background';
@@ -38,13 +30,7 @@ export interface MysteryBoxData {
   lastOpenedBoxNumber: number;
   /** Schema-Version — fehlt bei v1-Eintraegen, triggert Migration */
   schemaVersion?: number;
-  /**
-   * Self-Heal-Kandidat: earned-Stand + Zeitpunkt der ERSTEN Sichtung eines
-   * Defizits (Baseline > earned). Geheilt wird erst, wenn das Defizit nach
-   * >= 24h immer noch besteht — sonst spult jeder App-Start mit halb
-   * geladener Episoden-Zaehlung die Baseline zurueck und bereits geoeffnete
-   * Boxen lassen sich auf dem zweiten Geraet erneut einloesen.
-   */
+  /** Self-Heal-Kandidat: erste Defizit-Sichtung; geheilt erst nach >= 24h — sonst Doppel-Einlösung bei halb geladener Zählung. */
   healCandidateEarned?: number;
   healCandidateAt?: number;
 }
@@ -80,10 +66,6 @@ const MILESTONE_EXCLUSIVE_ACCESSORIES = [
   'obsidianAmulet',
 ];
 
-// ============================================================
-// Box availability check
-// ============================================================
-
 /** Wie viele ungeöffnete Boxen hat der User? */
 export async function getAvailableBoxCount(userId: string, totalEpisodes: number): Promise<number> {
   const data = await ensureInitialized(userId, totalEpisodes);
@@ -91,12 +73,7 @@ export async function getAvailableBoxCount(userId: string, totalEpisodes: number
   return Math.max(0, earnedBoxes - data.lastOpenedBoxNumber);
 }
 
-/**
- * Stellt sicher, dass der mysteryBox-Eintrag existiert und der aktuellen
- * Schema-Version entspricht. Triggert v1→v2-Migration (50er→20er Intervall),
- * indem die Baseline auf den jetzigen 20er-Stand zurueckgesetzt wird —
- * damit nicht hunderte rueckwirkende Boxen aufploppen.
- */
+/** Legt den mysteryBox-Eintrag an bzw. migriert v1→v2 (Baseline auf aktuellen 20er-Stand — keine rückwirkenden Boxen). */
 export async function ensureInitialized(
   userId: string,
   totalEpisodes: number
@@ -105,25 +82,13 @@ export async function ensureInitialized(
   const snap = await ref.once('value');
   const data = snap.val();
 
-  // 0 ist ein gueltiger Stand (frischer User unter 20 Episoden) — wer den als
-  // "nicht vorhanden" wertet, re-baselined bei jedem Mount und verschluckt
-  // die erste Box, sobald sie einen App-Neustart ueberlebt.
+  // 0 ist ein gültiger Stand — sonst re-baselined jeder Mount und verschluckt die erste Box.
   const hasExisting =
     data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber >= 0;
   const schemaVersion = (data?.schemaVersion as number | undefined) ?? 1;
 
   if (hasExisting && schemaVersion >= BOX_SCHEMA_VERSION) {
-    // Self-Heal: Liegt die Baseline VOR dem aktuellen Stand (Episoden-Zaehlung
-    // gesunken — Serie geloescht, Catalog-Regeneration, geaenderte Zaehlbasis),
-    // wuerde jede neue Box verschluckt: der Counter laeuft bis 20 und springt
-    // ohne Box auf 0.
-    //
-    // ABER: beim App-Start ist die Zaehlung oft nur TEILWEISE geladen (alter
-    // IndexedDB-Cache, Delta-Sync laeuft noch). Sofortiges Zurueckspulen liess
-    // bereits geoeffnete Boxen nach dem Sync wieder aufploppen — Doppel-
-    // Einloesung auf dem zweiten Geraet. Deshalb Hysterese: erst heilen, wenn
-    // das Defizit nach >= 24h IMMER NOCH besteht; jeder zwischenzeitliche
-    // Stand ohne Defizit verwirft den Kandidaten.
+    // Self-Heal mit 24h-Hysterese: Baseline > earned verschluckt neue Boxen, aber sofortiges Zurückspulen bei halb geladener Zählung erlaubte Doppel-Einlösung.
     const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
     if (totalEpisodes > 0 && data.lastOpenedBoxNumber > earnedBoxes) {
       const candAt = typeof data.healCandidateAt === 'number' ? data.healCandidateAt : null;
@@ -161,10 +126,7 @@ export async function ensureInitialized(
     return data;
   }
 
-  // Migration v1 -> v2 ODER Erstbesuch: Baseline auf aktuellen Stand setzen.
-  // Bei Migration verlieren User die ungeoeffneten Boxen aus dem alten Schema —
-  // anders koennen wir den Schwall an 651 nachtraeglich entstandenen Boxen
-  // nicht verhindern, da die Umrechnung nicht reversibel ist.
+  // Migration/Erstbesuch: Baseline auf aktuellen Stand — verhindert den Schwall rückwirkender Boxen.
   const baseline = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
   const initData: MysteryBoxData = {
     boxesOpened: (data?.boxesOpened as number | undefined) ?? 0,
@@ -186,11 +148,6 @@ export function getProgressToNextBox(totalEpisodes: number): number {
   return within / BOX_EVERY_N_EPISODES;
 }
 
-// ============================================================
-// Mystery Box opening
-// ============================================================
-
-/** Open the next available mystery box */
 export async function openMysteryBox(
   userId: string,
   totalEpisodes: number
@@ -200,13 +157,10 @@ export async function openMysteryBox(
 
   if (earnedBoxes <= data.lastOpenedBoxNumber) return null;
 
-  // Atomarer Claim per Transaktion: verhindert, dass zwei Geraete (oder
-  // schnelle Doppel-Taps) dieselbe Box-Nummer einloesen. Der Verlierer
-  // bekommt committed=false und geht leer aus — statt einer zweiten Belohnung.
+  // Atomarer Claim per Transaktion — zwei Geräte/Doppel-Taps: der Verlierer geht leer aus.
   const ref = dbRef(userPath(userId, 'mysteryBox'));
   const tx = await ref.transaction((current: MysteryBoxData | null) => {
-    // Lokaler Transaktions-Cache kann leer sein → frisch gelesenen Stand
-    // als Ausgangspunkt nehmen; der Server-Roundtrip validiert ihn.
+    // Lokaler Transaktions-Cache kann leer sein → frisch gelesenen Stand als Ausgangspunkt.
     const cur = current ?? data;
     const last =
       typeof cur.lastOpenedBoxNumber === 'number' ? cur.lastOpenedBoxNumber : earnedBoxes;
@@ -215,8 +169,7 @@ export async function openMysteryBox(
       boxesOpened: (cur.boxesOpened || 0) + 1,
       lastOpenedBoxNumber: last + 1,
       schemaVersion: BOX_SCHEMA_VERSION,
-      // Heal-Kandidat entfaellt bewusst: eine erfolgreich geoeffnete Box
-      // beweist, dass die Episoden-Zaehlung stimmt.
+      // Heal-Kandidat entfällt bewusst: eine geöffnete Box beweist die korrekte Zählung.
     };
   });
 
@@ -227,8 +180,6 @@ export async function openMysteryBox(
   // Rarity basierend auf Box-Nummer (je mehr Boxen, desto besser)
   const rarity = getBoxRarity(boxNumber);
   const reward = await generateMysteryReward(userId, rarity);
-
-  // Reward anwenden
   await applyMysteryReward(userId, reward);
 
   return reward;

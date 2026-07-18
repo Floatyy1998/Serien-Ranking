@@ -47,10 +47,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
-          // pointerEvents explizit in BEIDEN Zuständen: Exit gibt Scroll/Taps
-          // sofort frei; Animate stellt es wieder her, falls das Sheet erneut
-          // geöffnet wird, während es noch ausblendet (sonst klebt 'none' und
-          // der Backdrop fängt keine Klicks mehr).
+          // pointerEvents in beiden Zuständen setzen — sonst klebt 'none' nach Re-Open während des Ausblendens
           animate={{ opacity: 1, pointerEvents: 'auto' }}
           exit={{ opacity: 0, pointerEvents: 'none' }}
           transition={{ duration: 0.2 }}
@@ -101,8 +98,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               WebkitBackdropFilter: 'var(--glass-filter-xl)',
               backdropFilter: 'var(--glass-filter-xl)',
               maxWidth,
-              /* max-height lebt in der Klasse (.ui-sheet) — Desktop darf
-                 den Prop-Wert überstimmen und fast die volle Höhe nutzen */
+              /* max-height lebt in .ui-sheet — Desktop darf den Prop-Wert überstimmen */
               ['--sheet-max-h' as string]: maxHeight,
               display: 'flex',
               flexDirection: 'column',
