@@ -39,6 +39,11 @@ const getCapacitor = (): CapacitorAuthGlobal | null => {
 /** 'web' im Browser/Electron, sonst 'ios' | 'android'. */
 export const getAuthPlatform = (): string => getCapacitor()?.getPlatform?.() ?? 'web';
 
+// Electron: Popups landen via setWindowOpenHandler im System-Browser (Login
+// käme dort nie zurück) — deshalb Redirect-Flow im selben Fenster.
+const isElectronShell = (): boolean =>
+  typeof window !== 'undefined' && !!window.electronAPI?.isElectron;
+
 const isCancelError = (err: unknown): boolean => {
   const e = err as { code?: string; message?: string };
   if (
@@ -110,6 +115,11 @@ export const signInWithSocial = async (
   const plugin = getCapacitor()?.Plugins?.FirebaseAuthentication;
   try {
     if (plugin) return await nativeSignIn(provider, plugin);
+    if (isElectronShell()) {
+      // Ergebnis kommt nach der Rückkehr über onAuthStateChanged an.
+      await firebase.auth().signInWithRedirect(buildWebProvider(provider));
+      return null;
+    }
     return await firebase.auth().signInWithPopup(buildWebProvider(provider));
   } catch (err) {
     if (isCancelError(err)) return null;
@@ -178,6 +188,10 @@ export const reauthenticateSocial = async (user: firebase.User): Promise<void> =
     if (!call) throw new Error('Login in dieser App-Version noch nicht verfügbar.');
     const result = await call({ skipNativeAuth: true });
     await user.reauthenticateWithCredential(toFirebaseCredential(provider, result));
+    return;
+  }
+  if (isElectronShell()) {
+    await user.reauthenticateWithRedirect(buildWebProvider(provider));
     return;
   }
   await user.reauthenticateWithPopup(buildWebProvider(provider));
