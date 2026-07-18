@@ -204,6 +204,7 @@ export const BottomNavigation = () => {
                 aria-label={getAriaLabel(item, active)}
                 tabIndex={active ? 0 : -1}
                 className={`nav-item ${active ? 'active' : ''}`}
+                style={{ color: isTarget ? 'var(--color-primary)' : undefined }}
                 onClick={() => handleNavigation(item.path, index)}
                 onMouseEnter={() => setHoveredIndex(index)}
                 whileTap={{ scale: 0.9 }}
@@ -233,14 +234,7 @@ export const BottomNavigation = () => {
                     <div className="nav-icon">{item.icon}</div>
                   )}
                 </div>
-                <span
-                  className="nav-label"
-                  style={{
-                    color: isTarget ? 'var(--color-primary)' : undefined,
-                  }}
-                >
-                  {item.label}
-                </span>
+                <span className="nav-label">{item.label}</span>
               </motion.button>
             );
           })}

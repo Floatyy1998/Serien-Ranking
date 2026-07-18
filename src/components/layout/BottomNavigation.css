@@ -66,7 +66,6 @@
   -webkit-tap-highlight-color: transparent;
   position: relative;
   z-index: 1;
-  transition: color 0.2s ease;
 }
 
 .nav-item.active {
