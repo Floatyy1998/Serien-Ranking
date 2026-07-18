@@ -19,12 +19,6 @@ import './styles/App.css';
 import {
   SeriesDetailPage,
   MovieDetailPage,
-  DiscoverPage,
-  ActivityPage,
-  StatsPage,
-  RecentlyWatchedPage,
-  BadgesPage,
-  PetsPage,
   ThemePage,
   HomeLayoutPage,
   WrappedPage,
@@ -37,14 +31,11 @@ import {
   TasteMatchPage,
   TasteProfilePage,
   WatchJourneyPage,
-  CatchUpPage,
   HiddenSeriesPage,
   ImpressumPage,
   PrivacyPage,
   DiscussionFeedPage,
-  CountdownPage,
   OnboardingPage,
-  LeaderboardPage,
   PatchNotesPage,
   AdminDashboardPage,
   BugReportPage,
@@ -58,7 +49,6 @@ import {
   MangaDiscoverPage,
   MangaReadJourneyPage,
   MangaReadingListPage,
-  SubscriptionsPage,
   AnimeSeasonPage,
   SerienKalenderPage,
   preloadRoutes,
@@ -200,50 +190,10 @@ export const MobileApp = () => {
 
               {/* Additional Pages */}
               <Route
-                path="/recently-watched"
-                element={
-                  <Layout hideNav>
-                    <RecentlyWatchedPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/discover"
-                element={
-                  <Layout hideNav>
-                    <DiscoverPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/activity"
-                element={
-                  <Layout hideNav>
-                    <ActivityPage />
-                  </Layout>
-                }
-              />
-              <Route
                 path="/discussions"
                 element={
                   <Layout hideNav>
                     <DiscussionFeedPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/badges"
-                element={
-                  <Layout hideNav>
-                    <BadgesPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/pets"
-                element={
-                  <Layout hideNav>
-                    <PetsPage />
                   </Layout>
                 }
               />
@@ -260,14 +210,6 @@ export const MobileApp = () => {
                 element={
                   <Layout hideNav>
                     <HomeLayoutPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/stats"
-                element={
-                  <Layout hideNav>
-                    <StatsPage />
                   </Layout>
                 }
               />
@@ -350,7 +292,6 @@ export const MobileApp = () => {
               />
               <Route path="/taste-match/:friendId" element={<TasteMatchPage />} />
               <Route path="/watch-journey" element={<WatchJourneyPage />} />
-              <Route path="/catch-up" element={<CatchUpPage />} />
               <Route path="/hidden-series" element={<HiddenSeriesPage />} />
               <Route
                 path="/anime-season"
@@ -365,14 +306,6 @@ export const MobileApp = () => {
                 element={
                   <Layout hideNav>
                     <SerienKalenderPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/leaderboard"
-                element={
-                  <Layout hideNav>
-                    <LeaderboardPage />
                   </Layout>
                 }
               />
@@ -400,23 +333,6 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
-              <Route
-                path="/subscriptions"
-                element={
-                  <Layout hideNav>
-                    <SubscriptionsPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/countdowns"
-                element={
-                  <Layout hideNav>
-                    <CountdownPage />
-                  </Layout>
-                }
-              />
-
               {/* Manga Pages - specific routes before :id */}
               <Route
                 path="/manga/ratings"

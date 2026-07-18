@@ -3,7 +3,20 @@ import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'r
 import { useLocation } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
 import { useNavSlots } from '../../hooks/useNavConfig';
-import { CalendarPage, MangaPage } from '../../lazyRoutes';
+import {
+  ActivityPage,
+  BadgesPage,
+  CalendarPage,
+  CatchUpPage,
+  CountdownPage,
+  DiscoverPage,
+  LeaderboardPage,
+  MangaPage,
+  PetsPage,
+  RecentlyWatchedPage,
+  StatsPage,
+  SubscriptionsPage,
+} from '../../lazyRoutes';
 import { HomePage } from '../../pages/HomePage';
 import { ProfilePage } from '../../pages/Profile';
 import { RatingsPage } from '../../pages/Ratings';
@@ -13,12 +26,22 @@ import { WatchNextPage } from '../../pages/WatchNext';
 // Keep-Alive: besuchte Haupt-Tabs bleiben gemountet (display:none statt Unmount)
 const TAB_COMPONENTS: Record<string, ComponentType> = {
   '/': HomePage,
-  '/watchlist': WatchNextPage,
-  '/ratings': RatingsPage,
   '/profile': ProfilePage,
   '/search': SearchPage,
+  '/watchlist': WatchNextPage,
+  '/ratings': RatingsPage,
   '/calendar': CalendarPage,
   '/manga': MangaPage,
+  '/discover': DiscoverPage,
+  '/stats': StatsPage,
+  '/leaderboard': LeaderboardPage,
+  '/badges': BadgesPage,
+  '/pets': PetsPage,
+  '/activity': ActivityPage,
+  '/countdowns': CountdownPage,
+  '/catch-up': CatchUpPage,
+  '/subscriptions': SubscriptionsPage,
+  '/recently-watched': RecentlyWatchedPage,
 };
 
 export const MainTabs = () => {
@@ -32,11 +55,11 @@ export const MainTabs = () => {
   const [mounted, setMounted] = useState<string[]>(() => (isTab ? [pathname] : []));
   if (active && !mounted.includes(active)) setMounted([...mounted, active]);
 
-  // Übrige Tabs im Leerlauf versteckt vormounten — Navbar-Slots zuerst
+  // Aktive Navbar-Ziele im Leerlauf versteckt vormounten (nicht alle 17 Tabs)
   useEffect(() => {
     if (!active) return;
     const slotPaths = navSlots.map((id) => NAV_SLOT_PATHS[id]);
-    const premountOrder = [...slotPaths, '/profile', ...Object.keys(TAB_COMPONENTS)].filter(
+    const premountOrder = ['/', ...slotPaths, '/profile', '/search'].filter(
       (p) => p in TAB_COMPONENTS
     );
     const next = premountOrder.find((p) => !mounted.includes(p));

@@ -34,12 +34,9 @@ export const NAV_SLOT_PATHS: Record<string, string> = Object.fromEntries(
 // Ziele der Keep-Alive-Tab-Shell (MainTabs) — bleiben nach Besuch gemountet
 export const MAIN_TAB_PATHS: ReadonlySet<string> = new Set([
   '/',
-  '/watchlist',
-  '/ratings',
   '/profile',
   '/search',
-  '/calendar',
-  '/manga',
+  ...NAV_SLOT_OPTIONS.map((o) => o.path),
 ]);
 
 export const DEFAULT_NAV_SLOTS = ['watchnext', 'calendar', 'ratings', 'manga'];
