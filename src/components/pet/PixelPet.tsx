@@ -1,3 +1,4 @@
+import { isAmbientPhaseActive } from '../../hooks/usePeriodicPulse';
 import React, { useEffect, useRef } from 'react';
 import type { Pet } from '../../types/pet.types';
 import { PET_COLORS } from '../../types/pet.types';
@@ -225,12 +226,15 @@ export const PixelPet: React.FC<PixelPetProps> = ({ pet, size = 64, animated = t
 
     let animationId: number;
     let lastDraw = 0;
-    // Pixel-Art braucht keine 60fps: ~10fps zeichnen, unsichtbar gar nicht
+    let hasDrawn = false;
+    // Pixel-Art braucht keine 60fps: ~10fps, nur im Ambient-Puls, unsichtbar nie
     const animate = (t: number) => {
       if (animated) animationId = requestAnimationFrame(animate);
       if (t - lastDraw < 100) return;
       if (document.hidden || canvas.offsetParent === null) return;
+      if (hasDrawn && !isAmbientPhaseActive()) return;
       lastDraw = t;
+      hasDrawn = true;
       frameRef.current = Math.floor(t / 16.7);
       drawPet();
     };

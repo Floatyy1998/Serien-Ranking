@@ -4,10 +4,12 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, NavCard } from '../../components/ui';
+import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 export const TasteProfileCard: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const ambientPulse = useAmbientPulse();
   const accent = currentTheme.secondary;
 
   return (
@@ -50,8 +52,12 @@ export const TasteProfileCard: React.FC = () => {
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
-            transition={{ delay: i * 0.2, duration: 1.5, repeat: Infinity }}
+            animate={
+              ambientPulse
+                ? { scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }
+                : { scale: 1, opacity: 0.6 }
+            }
+            transition={{ delay: i * 0.2, duration: 1.5, repeat: ambientPulse ? 2 : 0 }}
             style={{
               width: 6,
               height: 6,

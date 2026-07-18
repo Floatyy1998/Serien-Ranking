@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 interface NowPlayingIndicatorProps {
   color?: string;
@@ -24,6 +25,7 @@ const STAGGER_SECONDS = 0.22;
 export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
   ({ color, size = 'sm', position = 'top-left', label = 'Aktuell am Schauen' }) => {
     const prefersReducedMotion = useReducedMotion();
+    const ambientPulse = useAmbientPulse();
     const tint = color ?? 'var(--theme-primary, #00d123)';
     const dim = size === 'sm' ? 22 : 28;
     const barWidth = size === 'sm' ? 3 : 4;
@@ -76,14 +78,16 @@ export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
               display: 'block',
             }}
             initial={{ scaleY: prefersReducedMotion ? 0.75 : 0.4 }}
-            animate={prefersReducedMotion ? { scaleY: 0.75 } : { scaleY: [0.4, 1, 0.4] }}
+            animate={
+              prefersReducedMotion || !ambientPulse ? { scaleY: 0.75 } : { scaleY: [0.4, 1, 0.4] }
+            }
             transition={
-              prefersReducedMotion
-                ? { duration: 0 }
+              prefersReducedMotion || !ambientPulse
+                ? { duration: 0.4 }
                 : {
                     duration: CYCLE_SECONDS,
                     delay: i * STAGGER_SECONDS,
-                    repeat: Infinity,
+                    repeat: 3,
                     ease: 'easeInOut',
                   }
             }
