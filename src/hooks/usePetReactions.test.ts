@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pickReaction, triggerPetReaction, usePetReactions } from './usePetReactions';
 
@@ -60,7 +60,12 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  vi.runOnlyPendingTimers();
+  // Erst unmounten (Hook räumt Dismiss-/Idle-Timer ab), dann Rest-Timer in act
+  // flushen — sonst feuern setReaction-Updates nach dem jsdom-Teardown.
+  cleanup();
+  act(() => {
+    vi.runOnlyPendingTimers();
+  });
   vi.useRealTimers();
 });
 
