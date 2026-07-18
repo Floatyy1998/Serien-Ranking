@@ -1,30 +1,95 @@
-import { lazy, type ComponentType } from 'react';
+import { createElement, lazy, type ComponentType } from 'react';
 
-// Retry wrapper for lazy imports: on chunk load failure (e.g. after deploy),
-// reload the page once to fetch fresh asset hashes.
-const RELOAD_KEY = 'chunk-reload';
+// Chunk nach einem Deploy verschwunden: KEIN Reload mitten in der Nutzung —
+// die neue Version wird erst übernommen, wenn die App im Hintergrund ist.
+let backgroundReloadArmed = false;
+function armBackgroundReload() {
+  if (backgroundReloadArmed) return;
+  backgroundReloadArmed = true;
+  const apply = () => {
+    if (document.visibilityState === 'hidden') window.location.reload();
+  };
+  document.addEventListener('visibilitychange', apply);
+  window.addEventListener('pagehide', apply);
+}
+
+// Fallback statt Splash-Reload: Seite gehört zur neuen Version, Rest der App läuft weiter
+const ChunkFailedPage: ComponentType = () =>
+  createElement(
+    'div',
+    {
+      style: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '70vh',
+        gap: '16px',
+        padding: '32px',
+        textAlign: 'center',
+      },
+    },
+    createElement(
+      'h2',
+      {
+        style: {
+          color: 'var(--theme-primary, #00d123)',
+          fontFamily: 'var(--font-display, inherit)',
+          margin: 0,
+        },
+      },
+      'Seite konnte nicht geladen werden'
+    ),
+    createElement(
+      'p',
+      {
+        style: {
+          color: 'var(--color-text-secondary, rgba(255,255,255,0.7))',
+          maxWidth: '340px',
+          margin: 0,
+          lineHeight: 1.5,
+          fontSize: '15px',
+        },
+      },
+      'Wahrscheinlich gibt es eine neue App-Version. Sie wird automatisch übernommen, sobald die App kurz im Hintergrund war — oder direkt hier:'
+    ),
+    createElement(
+      'button',
+      {
+        onClick: () => window.location.reload(),
+        style: {
+          border: 'none',
+          borderRadius: '999px',
+          padding: '12px 24px',
+          fontWeight: 700,
+          fontSize: '15px',
+          cursor: 'pointer',
+          color: '#000',
+          background: 'var(--theme-primary, #00d123)',
+        },
+      },
+      'Jetzt aktualisieren'
+    )
+  );
 
 // React.lazy itself constrains T to ComponentType<any>; we mirror that so the
 // retry wrapper accepts the same shapes (FC<{}>, ComponentType<Props>, ...).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function lazyWithRetry<T extends ComponentType<any>>(factory: () => Promise<{ default: T }>) {
-  return lazy(() =>
-    factory().catch((error: unknown) => {
-      const alreadyReloaded = sessionStorage.getItem(RELOAD_KEY);
-      if (!alreadyReloaded) {
-        sessionStorage.setItem(RELOAD_KEY, '1');
-        window.location.reload();
-        return new Promise(() => {});
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch {
+      // kurzer Netz-Schluckauf? Ein zweiter Versuch nach 1,5 s
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      try {
+        return await factory();
+      } catch {
+        armBackgroundReload();
+        return { default: ChunkFailedPage as unknown as T };
       }
-      sessionStorage.removeItem(RELOAD_KEY);
-      throw error;
-    })
-  );
-}
-
-// Clear the reload flag on successful page load
-if (sessionStorage.getItem(RELOAD_KEY)) {
-  sessionStorage.removeItem(RELOAD_KEY);
+    }
+  });
 }
 
 // All other pages: lazy loaded
@@ -260,12 +325,14 @@ export const SerienKalenderPage = lazyWithRetry(() =>
   }))
 );
 
-// Preload all lazy route chunks when the browser is idle
-// so that first navigation to any page feels instant
+// ALLE Routen-Chunks im Leerlauf vorladen: einmal importierte Module bleiben
+// die ganze Session im Speicher — ein Deploy kann offene Apps so nicht brechen.
+// Reihenfolge: wahrscheinlichste Ziele (Details, Navbar-Slots) zuerst.
 export function preloadRoutes() {
   const routes = [
     () => import('./pages/SeriesDetail'),
     () => import('./pages/MovieDetail'),
+    () => import('./pages/Manga'),
     () => import('./pages/Activity'),
     () => import('./pages/Discover'),
     () => import('./pages/RecentlyWatched'),
@@ -277,22 +344,54 @@ export function preloadRoutes() {
     () => import('./pages/FriendProfile'),
     () => import('./pages/Badges'),
     () => import('./pages/Settings'),
+    () => import('./pages/Pets'),
+    () => import('./pages/Leaderboard'),
+    () => import('./pages/CatchUp'),
+    () => import('./pages/Subscriptions'),
+    () => import('./pages/RatingEditor'),
+    () => import('./pages/Manga/MangaDetailPage'),
+    () => import('./pages/Manga/MangaSearchPage'),
+    () => import('./pages/Manga/MangaRatingsPage'),
+    () => import('./pages/Manga/MangaCatchUpPage'),
+    () => import('./pages/Manga/RecentlyReadPage'),
+    () => import('./pages/Manga/MangaStatsPage'),
+    () => import('./pages/Manga/MangaDiscoverPage'),
+    () => import('./pages/Manga/MangaReadJourneyPage'),
+    () => import('./pages/Manga/MangaReadingListPage'),
+    () => import('./pages/Manga/HiddenMangaPage'),
+    () => import('./pages/AnimeSeason'),
+    () => import('./pages/SerienKalender'),
+    () => import('./pages/Wrapped'),
+    () => import('./pages/WatchJourney'),
+    () => import('./pages/TasteMatch'),
+    () => import('./pages/TasteProfile'),
+    () => import('./pages/ActorUniverse'),
+    () => import('./pages/DiscussionFeed'),
+    () => import('./pages/HiddenSeries'),
+    () => import('./pages/Theme'),
+    () => import('./pages/HomeLayout'),
+    () => import('./pages/PatchNotes'),
+    () => import('./pages/BugReport'),
+    () => import('./pages/AdminDashboard'),
+    () => import('./pages/Impressum'),
+    () => import('./pages/Privacy'),
   ];
+
+  // WKWebView/ältere Safari haben kein requestIdleCallback — ohne Fallback
+  // brach die Kette dort nach dem ersten Chunk ab
+  const idle = (cb: () => void, timeout: number) => {
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(cb, { timeout });
+    } else {
+      setTimeout(cb, Math.min(timeout, 1000));
+    }
+  };
 
   let i = 0;
   function loadNext() {
     if (i >= routes.length) return;
-    routes[i++]().finally(() => {
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(loadNext, { timeout: 3000 });
-      }
-    });
+    routes[i++]().finally(() => idle(loadNext, 3000));
   }
 
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadNext, { timeout: 5000 });
-  } else {
-    // Fallback for Safari
-    setTimeout(loadNext, 2000);
-  }
+  idle(loadNext, 5000);
 }
