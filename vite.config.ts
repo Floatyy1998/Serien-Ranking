@@ -45,6 +45,9 @@ export default defineConfig(({ command }) => ({
         // ist mehrere MB gross und nur fuer lokales Debugging gedacht.
         globIgnores: ['**/stats.html'],
         navigateFallback: 'index.html',
+        // Firebase-Reserved-Namespace (/__/auth/handler etc.) muss immer ans
+        // Netz — sonst frisst der SW den OAuth-Redirect und liefert die App aus.
+        navigateFallbackDenylist: [/^\/__\//],
         skipWaiting: false, // Neuer Worker wartet, bis wir ihn gezielt aktivieren
         clientsClaim: true, // Take control of all pages once activated
         cleanupOutdatedCaches: true,
