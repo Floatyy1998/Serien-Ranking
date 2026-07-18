@@ -27,14 +27,19 @@ public class WidgetBridgePlugin extends Plugin {
       .putString(TvRankWidget.KEY_DATA, json)
       .apply();
 
-    Intent update = new Intent(ctx, TvRankWidget.class);
+    notifyProvider(ctx, TvRankWidget.class);
+    notifyProvider(ctx, TvRankCountdownWidget.class);
+
+    call.resolve();
+  }
+
+  private void notifyProvider(Context ctx, Class<?> provider) {
+    Intent update = new Intent(ctx, provider);
     update.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
     int[] ids = AppWidgetManager
       .getInstance(ctx)
-      .getAppWidgetIds(new ComponentName(ctx, TvRankWidget.class));
+      .getAppWidgetIds(new ComponentName(ctx, provider));
     update.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
     ctx.sendBroadcast(update);
-
-    call.resolve();
   }
 }

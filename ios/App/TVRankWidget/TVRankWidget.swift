@@ -13,14 +13,19 @@ struct WidgetPayload: Decodable {
   }
   let today: [Ep]
   let countdown: Countdown?
+  let countdowns: [Countdown]?
 
-  static let empty = WidgetPayload(today: [], countdown: nil)
+  static let empty = WidgetPayload(today: [], countdown: nil, countdowns: nil)
   static let preview = WidgetPayload(
     today: [
       Ep(title: "One Piece", ep: "S21E135", watched: false),
       Ep(title: "Severance", ep: "S2E8", watched: true),
     ],
-    countdown: Countdown(title: "Stranger Things", days: 12)
+    countdown: Countdown(title: "Stranger Things", days: 12),
+    countdowns: [
+      Countdown(title: "Stranger Things", days: 12),
+      Countdown(title: "House of the Dragon", days: 40),
+    ]
   )
 }
 
@@ -122,9 +127,68 @@ struct TodayWidget: Widget {
   }
 }
 
+struct CountdownWidgetView: View {
+  @Environment(\.widgetFamily) var family
+  let entry: TodayEntry
+
+  var items: [WidgetPayload.Countdown] {
+    let all = entry.payload.countdowns ?? (entry.payload.countdown.map { [$0] } ?? [])
+    return Array(all.prefix(family == .systemSmall ? 2 : 3))
+  }
+
+  private func label(_ days: Int) -> String {
+    days == 0 ? "heute!" : days == 1 ? "morgen" : "in \(days) Tagen"
+  }
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 7) {
+      Text("COUNTDOWN")
+        .font(.system(size: 11, weight: .bold))
+        .kerning(1.2)
+        .foregroundStyle(accent)
+
+      if items.isEmpty {
+        Text("Keine anstehenden Premieren")
+          .font(.system(size: 13))
+          .foregroundStyle(.white.opacity(0.6))
+      } else {
+        ForEach(Array(items.enumerated()), id: \.offset) { _, cd in
+          VStack(alignment: .leading, spacing: 1) {
+            Text(cd.title)
+              .font(.system(size: 13.5, weight: .semibold))
+              .lineLimit(1)
+              .foregroundStyle(.white.opacity(0.95))
+            Text(label(cd.days))
+              .font(.system(size: 11.5))
+              .foregroundStyle(accent.opacity(0.85))
+          }
+        }
+      }
+
+      Spacer(minLength: 0)
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .containerBackground(for: .widget) {
+      Color(red: 0.043, green: 0.051, blue: 0.063)
+    }
+  }
+}
+
+struct CountdownWidget: Widget {
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: "TVRankCountdown", provider: TodayProvider()) { entry in
+      CountdownWidgetView(entry: entry)
+    }
+    .configurationDisplayName("Countdown")
+    .description("Countdown zu den nächsten Staffeln und Premieren deiner Serien.")
+    .supportedFamilies([.systemSmall, .systemMedium])
+  }
+}
+
 @main
 struct TVRankWidgetBundle: WidgetBundle {
   var body: some Widget {
     TodayWidget()
+    CountdownWidget()
   }
 }

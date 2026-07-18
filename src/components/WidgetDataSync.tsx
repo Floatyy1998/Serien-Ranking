@@ -18,6 +18,11 @@ export const WidgetDataSync = () => {
         watched: ep.watched,
       })),
       countdown: next ? { title: next.title, days: next.daysUntil, date: next.nextDate } : null,
+      countdowns: countdowns.slice(0, 3).map((c) => ({
+        title: c.title,
+        days: c.daysUntil,
+        date: c.nextDate,
+      })),
     };
     const json = JSON.stringify(payload);
     if (json === lastJson.current) return;

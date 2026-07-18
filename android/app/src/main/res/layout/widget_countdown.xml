@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cd_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_bg"
+    android:orientation="vertical"
+    android:padding="14dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="COUNTDOWN"
+        android:textColor="#00D123"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.15" />
+
+    <TextView android:id="@+id/cd_title1" style="@style/WidgetCountdownTitle" />
+    <TextView android:id="@+id/cd_days1" style="@style/WidgetCountdownDays" />
+
+    <TextView android:id="@+id/cd_title2" style="@style/WidgetCountdownTitle" />
+    <TextView android:id="@+id/cd_days2" style="@style/WidgetCountdownDays" />
+
+    <TextView android:id="@+id/cd_title3" style="@style/WidgetCountdownTitle" />
+    <TextView android:id="@+id/cd_days3" style="@style/WidgetCountdownDays" />
+
+    <TextView
+        android:id="@+id/cd_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#99FFFFFF"
+        android:textSize="13sp"
+        android:visibility="gone" />
+</LinearLayout>
