@@ -7,6 +7,7 @@ interface CapacitorAppPlugin {
   ) => Promise<unknown>) &
     ((event: 'appUrlOpen', handler: (data: { url: string }) => void) => Promise<unknown>);
   minimizeApp?: () => Promise<void>;
+  getLaunchUrl?: () => Promise<{ url: string } | undefined>;
 }
 
 interface CapacitorBadgePlugin {
@@ -124,11 +125,22 @@ const initNativeShell = (): void => {
     }
   });
 
-  // Widget-/Shortcut-Deep-Links: de.tvrank.app://calendar → /calendar
-  app?.addListener?.('appUrlOpen', ({ url }: { url: string }) => {
-    const path = url.replace(/^[a-z0-9.+-]+:\/\//i, '/').replace(/^\/tv-rank\.de/, '');
+  // Deep-Links: Widget/Shortcut (de.tvrank.app://calendar) und App-/Universal-
+  // Links (https://tv-rank.de/series/123) → in-App-Route. lastDeepLink dedupet,
+  // falls Launch-URL und appUrlOpen fuer denselben Start beide feuern.
+  let lastDeepLink = '';
+  const openDeepLink = (url: string | undefined): void => {
+    if (!url || url === lastDeepLink) return;
+    lastDeepLink = url;
+    const path = url.replace(/^[a-z0-9.+-]+:\/\//i, '/').replace(/^\/(www\.)?tv-rank\.de/, '');
     if (path.startsWith('/')) routerNavigate(path);
-  });
+  };
+  app?.addListener?.('appUrlOpen', ({ url }: { url: string }) => openDeepLink(url));
+  // Kaltstart durch Link: dann gibt es kein appUrlOpen-Event, nur die Launch-URL.
+  app
+    ?.getLaunchUrl?.()
+    .then((r) => openDeepLink(r?.url))
+    .catch(() => {});
 
   initAppShortcuts(cap);
 

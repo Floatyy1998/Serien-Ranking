@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "de.tvrank.app",
+      "sha256_cert_fingerprints": [
+        "A6:BA:E2:8D:22:7D:AD:43:DB:94:14:A0:6A:3F:5F:EB:84:44:52:E9:B8:51:7B:3F:CF:EC:8A:34:B7:8C:99:E8"
+      ]
+    }
+  }
+]
