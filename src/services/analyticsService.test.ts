@@ -178,7 +178,7 @@ describe('setEnabled', () => {
     svc.setEnabled(true);
     svc.setUser('u1');
     await svc.flush();
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBeUndefined();
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBeUndefined();
   });
 });
 
@@ -197,7 +197,7 @@ describe('init', () => {
     svc.track('episode_watched');
     await svc.flush();
     // setUser schreibt zwar Meta/Presence, aber der getrackte Event wird nie geflusht.
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBeUndefined();
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBeUndefined();
     expect(fb.getByPath(`analytics/users/u1/daily`)).toBeUndefined();
   });
 });
@@ -210,7 +210,7 @@ describe('track', () => {
     svc.track('not_allowed_event');
     await svc.flush();
     expect(fb.getByPath('analytics')).toBeTruthy(); // setUser schrieb meta
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBeUndefined();
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBeUndefined();
   });
 
   it('flusht automatisch, sobald der Buffer die Maximalgröße erreicht', async () => {
@@ -220,7 +220,7 @@ describe('track', () => {
     for (let i = 0; i < 50; i++) svc.track('episode_watched');
     // flush ist async — auf Microtasks warten
     await vi.waitFor(() =>
-      expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBe(50)
+      expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBe(50)
     );
   });
 });
@@ -238,9 +238,9 @@ describe('flush', () => {
     expect(fb.getByPath(`analytics/users/u1/daily/${DATE}/events/episode_watched`)).toBe(1);
     expect(fb.getByPath(`analytics/users/u1/daily/${DATE}/events/page_view`)).toBe(1);
     expect(fb.getByPath(`analytics/users/u1/daily/${DATE}/pageViews/home`)).toBe(1);
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBe(2);
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/events/page_view`)).toBe(1);
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/pageViews/home`)).toBe(1);
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBe(2);
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/events/page_view`)).toBe(1);
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/pageViews/home`)).toBe(1);
     // Roh-Batch-Knoten existiert
     const events = fb.getByPath(`analytics/users/u1/events/${DATE}`) as Record<string, unknown>;
     expect(Object.keys(events).length).toBe(1);
@@ -255,7 +255,7 @@ describe('flush', () => {
     await svc.flush();
     // Doppelter Key im Multi-Path-Objekt → nur +1; totalEvents zählt aber beide.
     expect(fb.getByPath(`analytics/users/u1/daily/${DATE}/events/episode_watched`)).toBe(1);
-    expect(fb.getByPath(`analytics/global/daily/${DATE}/totalEvents`)).toBe(2);
+    expect(fb.getByPath(`analytics/global/daily/${DATE}/shards/6/totalEvents`)).toBe(2);
   });
 
   it('no-op ohne User, ohne Consent oder bei leerem Buffer', async () => {

@@ -122,7 +122,7 @@ describe('useAdminDashboardData', () => {
     const entry = fb.state.listeners.find(
       (l) => l.path === 'analytics/global/realtime/activeUsers'
     );
-    act(() => entry?.cb({ val: () => ({ userA: { page: '/home', since: 123 } }) }));
+    act(() => entry?.cb({ val: () => ({ userA: { page: '/home', since: 123, ts: Date.now() } }) }));
     await waitFor(() => expect(result.current.realtimeUsers).toHaveLength(1));
     expect(result.current.realtimeUsers[0]).toEqual({ uid: 'userA', page: '/home', since: 123 });
   });

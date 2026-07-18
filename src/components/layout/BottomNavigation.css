@@ -90,6 +90,8 @@
 
 .nav-icon svg {
   font-size: 24px !important;
+  /* MUI-Default "transition: fill 200ms" — Farbe soll mit der Pille springen */
+  transition: none !important;
 }
 
 /* Animierte Pill (gleitet zum gehoverten/aktiven Tab) */

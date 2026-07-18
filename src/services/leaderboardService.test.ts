@@ -168,12 +168,10 @@ vi.mock('../services/firebase/userDisplayData', () => ({
 
 import { fetchPublicUserFields } from '../services/firebase/userDisplayData';
 import {
-  checkAndArchiveMonth,
   fetchGlobalLeaderboard,
   fetchLeaderboardData,
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
-  forceRebuildArchive,
   seedLeaderboardStats,
   updateLeaderboardStats,
 } from './leaderboardService';
@@ -398,7 +396,34 @@ describe('fetchLeaderboardProfiles', () => {
 });
 
 describe('fetchGlobalLeaderboard', () => {
-  it('filtert auf den aktuellen Monat, überspringt inaktive und backfillt frische Profile', async () => {
+  it('bevorzugt den serverseitigen leaderboardTop-Snapshot, wenn vorhanden', async () => {
+    fb.setByPath('leaderboardTop/2026-07', {
+      updatedAt: 123,
+      entries: [
+        {
+          uid: 'u9',
+          watchtimeThisMonth: 300,
+          episodesThisMonth: 9,
+          moviesThisMonth: 0,
+          streakThisMonth: 2,
+          streakAllTime: 4,
+          displayName: 'Server',
+          username: 'srv',
+          photoURL: 's.png',
+          lastUpdated: 1,
+        },
+      ],
+    });
+    // Legacy-Daten existieren parallel, dürfen aber nicht gelesen werden müssen
+    fb.setByPath('leaderboardStats/u1', { monthKey: '2026-07', watchtimeThisMonth: 1 });
+
+    const entries = await fetchGlobalLeaderboard();
+    expect(entries).toHaveLength(1);
+    expect(entries[0].uid).toBe('u9');
+    expect(entries[0].displayName).toBe('Server');
+  });
+
+  it('Fallback: filtert auf den aktuellen Monat und überspringt inaktive (ohne Profil-Backfill)', async () => {
     fb.setByPath('leaderboardStats/u1', {
       monthKey: '2026-07',
       watchtimeThisMonth: 100,
@@ -423,84 +448,18 @@ describe('fetchGlobalLeaderboard', () => {
       monthKey: '2026-05',
       watchtimeThisMonth: 500,
     });
-    // frische Profil-Subnodes für Backfill
-    fb.setByPath('users/u1/username', 'freshname');
-    fb.setByPath('users/u1/photoURL', 'fresh.png');
-
     const entries = await fetchGlobalLeaderboard();
 
     expect(entries).toHaveLength(1);
     expect(entries[0].uid).toBe('u1');
     expect(entries[0].watchtimeThisMonth).toBe(100);
-    // fetchProfileSubnode: displayName = toDisplayName(username, displayName) → 'freshname'
-    expect(entries[0].displayName).toBe('freshname');
-    expect(entries[0].photoURL).toBe('fresh.png');
+    // Kein per-Eintrag-Profil-Backfill mehr — gecachte Felder aus leaderboardStats
+    expect(entries[0].displayName).toBe('Old');
+    expect(entries[0].photoURL).toBe('old.png');
   });
 
   it('liefert [] wenn kein Eintrag existiert', async () => {
     await expect(fetchGlobalLeaderboard()).resolves.toEqual([]);
-  });
-});
-
-describe('checkAndArchiveMonth', () => {
-  it('archiviert nur Monate mit Daten und benachrichtigt die Gewinner des Vormonats', async () => {
-    // Nur der Vormonat (2026-06) hat Archiv-Einträge → nur er wird verarbeitet.
-    fb.setByPath('leaderboardArchive/2026-06', {
-      u1: { watchtimeThisMonth: 100, displayName: 'Alice', username: 'alice', photoURL: 'a.png' },
-      u2: { watchtimeThisMonth: 50, displayName: 'Bob' },
-    });
-
-    await checkAndArchiveMonth();
-
-    const trophy = fb.getByPath('leaderboardTrophies/2026-06') as Record<string, unknown>;
-    expect(trophy.archived).toBe(true);
-    expect(trophy.category).toBe('watchtimeThisMonth');
-    expect((trophy.first as Record<string, unknown>).uid).toBe('u1');
-    expect((trophy.first as Record<string, unknown>).score).toBe(100);
-    expect((trophy.second as Record<string, unknown>).uid).toBe('u2');
-    expect(trophy.third).toBeNull();
-
-    // Notifications an beide Gewinner (Vormonat = pastMonths[0])
-    const u1Notes = fb.getByPath('users/u1/notifications') as Record<string, unknown>;
-    const firstNote = Object.values(u1Notes)[0] as Record<string, unknown>;
-    expect(firstNote.type).toBe('trophy_won');
-    expect(fb.getByPath('users/u2/notifications')).toBeTruthy();
-  });
-
-  it('tut nichts, wenn alle Monate bereits archiviert sind', async () => {
-    // leaderboardTrophies für alle 12 Vormonate vorbelegen (truthy)
-    const now = new Date();
-    for (let i = 1; i <= 12; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      fb.setByPath(`leaderboardTrophies/${key}`, { archived: true });
-    }
-    fb.setByPath('leaderboardArchive/2026-06', { u1: { watchtimeThisMonth: 100 } });
-
-    await checkAndArchiveMonth();
-    // 2026-06 bleibt der Platzhalter, keine Gewinner-Slots geschrieben
-    const trophy = fb.getByPath('leaderboardTrophies/2026-06') as Record<string, unknown>;
-    expect(trophy.first).toBeUndefined();
-  });
-});
-
-describe('forceRebuildArchive', () => {
-  it('überschreibt den Trophy eines Monats aus den Archiv-Daten', async () => {
-    fb.setByPath('leaderboardArchive/2026-06', {
-      u1: { watchtimeThisMonth: 80, displayName: 'Alice' },
-    });
-    fb.setByPath('leaderboardTrophies/2026-06', { archived: true, first: { uid: 'stale' } });
-
-    await forceRebuildArchive('2026-06');
-
-    const trophy = fb.getByPath('leaderboardTrophies/2026-06') as Record<string, unknown>;
-    expect((trophy.first as Record<string, unknown>).uid).toBe('u1');
-    expect((trophy.first as Record<string, unknown>).score).toBe(80);
-  });
-
-  it('tut nichts bei leerem Monat', async () => {
-    await forceRebuildArchive('2026-06');
-    expect(fb.getByPath('leaderboardTrophies/2026-06')).toBeUndefined();
   });
 });
 

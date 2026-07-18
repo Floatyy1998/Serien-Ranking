@@ -88,11 +88,26 @@ export function useAdminDashboardData(daysRange = 30) {
           const snap = await dbRef(`analytics/global/daily/${dk}`).once('value');
           const val = snap.val();
           if (val) {
+            // Zähler liegen geshardet unter shards/{n}; Legacy-Daten (vor der
+            // Sharding-Umstellung) direkt auf dem Tages-Knoten — beides summieren.
+            let totalEvents = val.totalEvents || 0;
+            const events: Record<string, number> = { ...(val.events || {}) };
+            const pageViews: Record<string, number> = { ...(val.pageViews || {}) };
+            for (const s of Object.values(val.shards || {}) as Array<{
+              totalEvents?: number;
+              events?: Record<string, number>;
+              pageViews?: Record<string, number>;
+            }>) {
+              totalEvents += s.totalEvents || 0;
+              for (const [k, v] of Object.entries(s.events || {})) events[k] = (events[k] || 0) + v;
+              for (const [k, v] of Object.entries(s.pageViews || {}))
+                pageViews[k] = (pageViews[k] || 0) + v;
+            }
             stats.push({
               date: dk,
-              totalEvents: val.totalEvents || 0,
-              pageViews: val.pageViews || {},
-              events: val.events || {},
+              totalEvents,
+              pageViews,
+              events,
               activeUsers: val.activeUsers || {},
               newUsers: val.newUsers || 0,
             });
@@ -201,11 +216,19 @@ export function useAdminDashboardData(daysRange = 30) {
         setRealtimeUsers([]);
         return;
       }
-      const users: RealtimeUser[] = Object.entries(val).map(([uid, data]) => ({
-        uid,
-        page: (data as { page?: string })?.page || 'unknown',
-        since: (data as { since?: number })?.since || 0,
-      }));
+      // Heartbeat-Präsenz: Einträge ohne frischen ts-Stempel sind verwaiste
+      // Sessions (kein onDisconnect mehr) — nur die letzten 10 Min zählen.
+      const cutoff = Date.now() - 10 * 60 * 1000;
+      const users: RealtimeUser[] = Object.entries(val)
+        .filter(([, data]) => {
+          const d = data as { ts?: number; since?: number };
+          return (d?.ts || d?.since || 0) >= cutoff;
+        })
+        .map(([uid, data]) => ({
+          uid,
+          page: (data as { page?: string })?.page || 'unknown',
+          since: (data as { since?: number })?.since || 0,
+        }));
       setRealtimeUsers(users);
     });
 
