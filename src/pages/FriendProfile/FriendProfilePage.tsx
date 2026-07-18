@@ -7,8 +7,11 @@ import {
   Tv as TvIcon,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { dbGet } from '../../services/db/ref';
 import {
   EmptyState,
   Skeleton,
@@ -19,6 +22,7 @@ import {
   QuickFilter,
   ScrollToTopButton,
   TabSwitcher,
+  UserAvatar,
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
@@ -36,8 +40,21 @@ import { FriendPetCard } from './FriendPetCard';
 import './FriendProfilePage.css';
 import { tapScale } from '../../lib/motion';
 
+interface RestrictedProfile {
+  username?: string;
+  displayName?: string;
+  photoURL?: string;
+}
+
 export const FriendProfilePage = memo(() => {
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const {
+    friends,
+    loading: friendsLoading,
+    sentRequests,
+    sendFriendRequest,
+  } = useOptimizedFriends();
 
   const {
     loading,
@@ -56,9 +73,34 @@ export const FriendProfilePage = memo(() => {
     navigateToTasteMatch,
   } = useFriendProfileData();
 
-  const currentlyWatching = useFriendCurrentlyWatching(friendId);
-  const anticipation = useFriendAnticipation(friendId);
-  const friendPet = useFriendPet(friendId);
+  const isSelf = !!user?.uid && user.uid === friendId;
+  const isFriend = friends.some((f) => f.uid === friendId);
+  const restricted = !friendsLoading && !!friendId && !isSelf && !isFriend;
+
+  const [restrictedProfile, setRestrictedProfile] = useState<RestrictedProfile | null>(null);
+  const [requestState, setRequestState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+
+  useEffect(() => {
+    if (!restricted || !friendId) return;
+    dbGet<RestrictedProfile>(`userSearchIndex/${friendId}`)
+      .then((p) => setRestrictedProfile(p))
+      .catch(() => {});
+  }, [restricted, friendId]);
+
+  const alreadyRequested =
+    requestState === 'sent' ||
+    sentRequests.some((r) => r.toUserId === friendId && r.status === 'pending');
+
+  const handleSendRequest = async () => {
+    if (!restrictedProfile?.username || requestState === 'sending') return;
+    setRequestState('sending');
+    const ok = await sendFriendRequest(restrictedProfile.username);
+    setRequestState(ok ? 'sent' : 'error');
+  };
+
+  const currentlyWatching = useFriendCurrentlyWatching(restricted ? undefined : friendId);
+  const anticipation = useFriendAnticipation(restricted ? undefined : friendId);
+  const friendPet = useFriendPet(restricted ? undefined : friendId);
 
   const [insightsOpen, setInsightsOpen] = useState<boolean>(() => {
     try {
@@ -79,7 +121,68 @@ export const FriendProfilePage = memo(() => {
     });
   };
 
-  if (loading) {
+  if (restricted) {
+    const shownName = restrictedProfile?.displayName || restrictedProfile?.username || 'Profil';
+    return (
+      <PageLayout>
+        <PageHeader title={shownName} sticky={false} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+            padding: '48px 24px',
+            textAlign: 'center',
+          }}
+        >
+          <UserAvatar
+            userId={friendId ?? ''}
+            username={shownName}
+            photoURL={restrictedProfile?.photoURL}
+            size={96}
+            navigable={false}
+          />
+          <h2 style={{ margin: 0, color: currentTheme.text.primary, fontSize: 20 }}>{shownName}</h2>
+          <p style={{ margin: 0, color: currentTheme.text.muted, maxWidth: 320, lineHeight: 1.5 }}>
+            Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.
+          </p>
+          <motion.button
+            whileTap={tapScale}
+            onClick={handleSendRequest}
+            disabled={
+              alreadyRequested || requestState === 'sending' || !restrictedProfile?.username
+            }
+            style={{
+              border: 'none',
+              borderRadius: 999,
+              padding: '12px 24px',
+              fontWeight: 700,
+              fontSize: 15,
+              cursor: alreadyRequested ? 'default' : 'pointer',
+              color: '#000',
+              background: alreadyRequested
+                ? currentTheme.background.surface
+                : `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+              opacity: alreadyRequested ? 0.7 : 1,
+            }}
+          >
+            <span style={{ color: alreadyRequested ? currentTheme.text.muted : '#000' }}>
+              {alreadyRequested
+                ? 'Anfrage gesendet ✓'
+                : requestState === 'sending'
+                  ? 'Sende…'
+                  : requestState === 'error'
+                    ? 'Fehler — nochmal versuchen'
+                    : 'Freundschaftsanfrage senden'}
+            </span>
+          </motion.button>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  if (loading || friendsLoading) {
     return (
       <PageLayout
         style={{
