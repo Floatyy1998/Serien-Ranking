@@ -177,11 +177,11 @@ async function setLocalVersion(v: number): Promise<void> {
   await idbSetVersioned<number>(LOCAL_VERSION_KEY, 0, v);
 }
 
-async function invalidateLocalCaches(): Promise<void> {
+async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Promise<void> {
   await Promise.all([
     idbRemove(LS_META_KEY),
     idbRemove(LS_MOVIES_KEY),
-    idbRemove(LS_SEASONS_BULK_KEY),
+    ...(opts?.keepSeasonsBulk ? [] : [idbRemove(LS_SEASONS_BULK_KEY)]),
     idbRemove(LS_SEASONAL_ANIME_KEY),
     idbRemove(LS_ANIME_FILLER_KEY),
     idbRemove(LS_ANIME_MANGA_KEY),
@@ -190,10 +190,101 @@ async function invalidateLocalCaches(): Promise<void> {
   ]);
 }
 
+// Delta-Refetch fuer das Seasons-Bulk: seasonsAll.json ist das mit Abstand
+// groesste Katalog-File und waechst mit dem Katalog unbegrenzt. Statt es bei
+// jedem Versions-Bump komplett neu zu laden, holen wir seasons-index.json
+// (tmdbId → Version der letzten Aenderung), diffen gegen unsere lokale Version
+// und laden NUR die geaenderten Season-Files nach. Ab DELTA_MAX_FILES
+// Aenderungen ist der Bulk-Download billiger (Request-Overhead) → Voll-Refetch.
+const DELTA_MAX_FILES = 60;
+
+interface SeasonsIndexResponse {
+  version?: number;
+  ids?: Record<string, number>;
+}
+
+async function applySeasonsDelta(localV: number | null, remote: number): Promise<boolean> {
+  if (localV === null) return false;
+
+  // Nur auf einem Cache-Stand delta-mergen, der exakt zur lokalen Version
+  // gehoert — sonst drohen inkonsistente Teilzustaende.
+  const cached =
+    await idbGetAny<Record<string, Record<string, CatalogSeason>>>(LS_SEASONS_BULK_KEY);
+  if (!cached || cached.v !== localV || !cached.data) return false;
+  const bulk = cached.data;
+
+  let index: SeasonsIndexResponse;
+  try {
+    index = await fetchJson<SeasonsIndexResponse>('seasons-index.json', { version: remote });
+  } catch {
+    // Index fehlt (404 = aelteres Backend) oder Fetch-Fehler → Voll-Refetch
+    return false;
+  }
+  // Der Index muss zur Ziel-Version gehoeren (schuetzt vor einem stale File
+  // unter frischer ?v-URL, z.B. wenn der Index-Write serverseitig fehlschlug).
+  if (!index || index.version !== remote || !index.ids || typeof index.ids !== 'object') {
+    return false;
+  }
+  const ids = index.ids;
+
+  const changed = Object.keys(ids).filter((id) => ids[id] > localV);
+  if (changed.length > DELTA_MAX_FILES) return false;
+
+  const next: Record<string, Record<string, CatalogSeason>> = { ...bulk };
+  for (const key of Object.keys(next)) {
+    if (!(key in ids)) delete next[key];
+  }
+  try {
+    const results = await Promise.all(
+      changed.map(async (id) => {
+        const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
+          version: remote,
+        });
+        return [id, data] as const;
+      })
+    );
+    for (const [id, data] of results) {
+      if (data) next[id] = data;
+    }
+  } catch {
+    // Ein Teil-Fetch schlug fehl → kein Teilzustand persistieren, Voll-Refetch
+    return false;
+  }
+
+  memorySeasonsBulk = next;
+  memorySeasons.clear();
+  await idbSetVersioned(LS_SEASONS_BULK_KEY, remote, next);
+  return true;
+}
+
+/**
+ * Gemeinsame Bump-Behandlung: versucht erst den Seasons-Delta-Merge, dann
+ * werden die restlichen (kleinen) Caches invalidiert und die lokale Version
+ * nachgezogen. Gelingt der Delta, bleibt das grosse Seasons-Bulk erhalten.
+ */
+async function handleVersionBump(localV: number | null, remote: number): Promise<void> {
+  let seasonsDeltaOk: boolean;
+  try {
+    seasonsDeltaOk = await applySeasonsDelta(localV, remote);
+  } catch {
+    seasonsDeltaOk = false;
+  }
+  memoryMeta = null;
+  memoryMovies = null;
+  memorySeasons.clear();
+  if (!seasonsDeltaOk) memorySeasonsBulk = null;
+  memorySeasonalAnime = null;
+  memoryAnimeFiller = null;
+  memoryAnimeManga = null;
+  memoryTvPremieres = null;
+  await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
+  await setLocalVersion(remote);
+}
+
 /**
  * Hintergrund-Versionscheck: vergleicht Remote-Version mit der lokal
- * gespeicherten Version. Bei Mismatch werden alle Caches invalidiert,
- * damit der naechste Catalog-Aufruf frisch holt.
+ * gespeicherten Version. Bei Mismatch werden die Caches invalidiert (Seasons
+ * wenn moeglich per Delta aktualisiert), damit der naechste Aufruf frisch holt.
  *
  * Diese Funktion wird im Stale-While-Revalidate-Pfad ohne `await` aufgerufen
  * — UI bekommt die gecachten Daten sofort, der Refresh kommt beim naechsten
@@ -207,15 +298,7 @@ async function revalidateInBackground(localV: number | null): Promise<void> {
     // Nichts zu tun — Cache ist aktuell
     return;
   }
-  // Bump erkannt: Caches komplett invalidieren. UI sieht noch die alten
-  // Daten bis zum naechsten Refresh.
-  memoryMeta = null;
-  memoryMovies = null;
-  memorySeasons.clear();
-  memorySeasonsBulk = null;
-  memoryTvPremieres = null;
-  await invalidateLocalCaches();
-  await setLocalVersion(remote);
+  await handleVersionBump(localV, remote);
 }
 
 async function ensureVersionFresh(): Promise<number | null> {
@@ -275,6 +358,20 @@ function expandProviders<T extends { providers?: unknown }>(raw: unknown): Recor
   return out;
 }
 
+// RTDB-Ausfall-Spiegel: Der Backend-Cron spiegelt den Katalog nach
+// catalogMirror/* (Delta-Sync). Wird NUR gelesen, wenn der statische Origin
+// nicht erreichbar ist UND kein lokaler Cache existiert — Firebase-Egress
+// fällt also nur während eines echten Ausfalls an. Memory-only (kein IDB),
+// damit nach Origin-Rückkehr wieder der normale Pfad greift.
+async function readCatalogMirror<T>(path: string): Promise<T | null> {
+  try {
+    const { dbGet } = await import('./db/ref');
+    return await dbGet<T>(path);
+  } catch {
+    return null;
+  }
+}
+
 // Public API
 
 /**
@@ -303,7 +400,13 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
     void idbSetVersioned(LS_META_KEY, version, data);
     return data;
   } catch (e) {
-    console.warn('[staticCatalog] seriesMeta fetch failed, returning null', e);
+    console.warn('[staticCatalog] seriesMeta fetch failed, trying RTDB mirror', e);
+    const mirror = await readCatalogMirror<unknown>('catalogMirror/seriesMeta');
+    if (mirror) {
+      const data = expandProviders<CatalogSeries>(mirror);
+      memoryMeta = data;
+      return data;
+    }
     return null;
   }
 }
@@ -329,7 +432,13 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
     void idbSetVersioned(LS_MOVIES_KEY, version, data);
     return data;
   } catch (e) {
-    console.warn('[staticCatalog] moviesMeta fetch failed, returning null', e);
+    console.warn('[staticCatalog] moviesMeta fetch failed, trying RTDB mirror', e);
+    const mirror = await readCatalogMirror<unknown>('catalogMirror/moviesMeta');
+    if (mirror) {
+      const data = expandProviders<CatalogMovie>(mirror);
+      memoryMovies = data;
+      return data;
+    }
     return null;
   }
 }
@@ -369,8 +478,16 @@ export async function fetchStaticCatalogSeasons(
     void idbSetVersioned(cacheKey, version, data);
     return data;
   } catch (e) {
+    // 404 = Serie existiert nicht im Katalog — dafür hilft auch der Mirror nicht.
     if (!String(e).includes('404')) {
-      console.warn(`[staticCatalog] seasons/${id} fetch failed`, e);
+      console.warn(`[staticCatalog] seasons/${id} fetch failed, trying RTDB mirror`, e);
+      const mirror = await readCatalogMirror<Record<string, CatalogSeason>>(
+        `catalogMirror/seasons/${id}`
+      );
+      if (mirror) {
+        memorySeasons.set(id, mirror);
+        return mirror;
+      }
     }
     return null;
   }
@@ -668,20 +785,10 @@ export async function checkForCatalogVersionBump(): Promise<boolean> {
   if (local !== null && local === remote) {
     return false;
   }
-  // Bump detected: memory + IDB komplett invalidieren.
-  // WICHTIG: auch seasonalAnime + tvPremieres leeren, sonst sehen die
-  // Anime-Season- und Serien-Kalender-Seiten nach einem Bump weiter ihren
-  // stale In-Memory-Stand (die beiden haben keinen eigenen Versions-Check).
-  memoryMeta = null;
-  memoryMovies = null;
-  memorySeasons.clear();
-  memorySeasonsBulk = null;
-  memorySeasonalAnime = null;
-  memoryAnimeFiller = null;
-  memoryAnimeManga = null;
-  memoryTvPremieres = null;
-  await invalidateLocalCaches();
-  await setLocalVersion(remote);
+  // Bump detected: Seasons wenn moeglich per Delta nachziehen, den Rest
+  // invalidieren (inkl. seasonalAnime + tvPremieres — die beiden haben keinen
+  // eigenen Versions-Check).
+  await handleVersionBump(local, remote);
   return true;
 }
 

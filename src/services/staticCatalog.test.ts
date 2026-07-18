@@ -318,6 +318,50 @@ describe('checkForCatalogVersionBump', () => {
     const { checkForCatalogVersionBump } = await load();
     await expect(checkForCatalogVersionBump()).resolves.toBe(false);
   });
+
+  it('Delta-Pfad: aktualisiert das Seasons-Bulk per seasons-index statt Voll-Refetch', async () => {
+    server.version = 200;
+    seedLocalVersion(100);
+    idb.store.set(LS.seasonsBulk, {
+      v: 100,
+      data: { '1': { '0': { old: 1 } }, '2': { '0': { old: 2 } }, '3': { '0': { old: 3 } } },
+    });
+    // '1' unverändert (Stempel < lokale Version), '2' geändert, '3' entfernt
+    server.files['seasons-index.json'] = {
+      ok: true,
+      status: 200,
+      json: { version: 200, ids: { '1': 50, '2': 200 } },
+    };
+    server.files['seasons/2.json'] = { ok: true, status: 200, json: { '0': { fresh: true } } };
+    const { checkForCatalogVersionBump } = await load();
+
+    await expect(checkForCatalogVersionBump()).resolves.toBe(true);
+    const bulk = idb.store.get(LS.seasonsBulk);
+    expect(bulk?.v).toBe(200);
+    const data = bulk?.data as Record<string, unknown>;
+    expect(data['1']).toEqual({ '0': { old: 1 } });
+    expect(data['2']).toEqual({ '0': { fresh: true } });
+    expect(data['3']).toBeUndefined();
+    expect(idb.idbRemove).not.toHaveBeenCalledWith(LS.seasonsBulk);
+    // Nur das geänderte Season-File wurde geladen, nicht seasonsAll
+    expect(callsTo('seasons/2.json')).toBe(1);
+    expect(callsTo('seasonsAll.json')).toBe(0);
+  });
+
+  it('Delta-Pfad: Index mit falscher Version → Voll-Invalidierung des Bulks', async () => {
+    server.version = 200;
+    seedLocalVersion(100);
+    idb.store.set(LS.seasonsBulk, { v: 100, data: { '1': {} } });
+    server.files['seasons-index.json'] = {
+      ok: true,
+      status: 200,
+      json: { version: 150, ids: { '1': 50 } },
+    };
+    const { checkForCatalogVersionBump } = await load();
+
+    await expect(checkForCatalogVersionBump()).resolves.toBe(true);
+    expect(idb.idbRemove).toHaveBeenCalledWith(LS.seasonsBulk);
+  });
 });
 
 describe('subscribeCatalogChange — zentraler Versions-Watcher', () => {

@@ -1,6 +1,7 @@
 import type firebase from 'firebase/compat/app';
 import 'firebase/compat/database';
 import { dbRef, userPath } from '../services/db/ref';
+import { queuePush } from '../services/pushQueue';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import type {
@@ -96,6 +97,13 @@ export function useRecommendations(): UseRecommendationsReturn {
 
       await Promise.all(
         recipientUids.map((uid) => dbRef(userPath(uid, 'recommendations')).push(base))
+      );
+      const pushBody =
+        message && message.trim() ? `${media.title} — „${message.trim()}“` : media.title;
+      await Promise.all(
+        recipientUids.map((uid) =>
+          queuePush(uid, { title: `🎬 Empfehlung von ${senderName}`, body: pushBody, url: '/' })
+        )
       );
       return recipientUids.length;
     },
