@@ -38,17 +38,18 @@ jobs:
       # Fallback (neuer Branch / keine Basis) = volle Suite.
       - name: Unit tests (affected)
         env:
-          NODE_OPTIONS: --max-old-space-size=6144
+          NODE_OPTIONS: --max-old-space-size=8192
         run: |
           # Shards in getrennten Prozessen: jsdom-Tests bauen ueber viele
           # Dateien kumulativ Speicher auf — bei ~300 Dateien stirbt ein
           # einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
-          # Frischer Prozess pro Shard setzt den Speicher zurueck. 16 Shards:
-          # 8 reichten nicht, als ein package.json-Change die komplette Suite
-          # affected machte (ein 8er-Shard lief bei 6 GB in den Heap-OOM).
+          # Frischer Prozess pro Shard setzt den Speicher zurueck. Historie:
+          # 8 Shards/6 GB -> OOM (Jul 2026, package.json-Change = volle Suite),
+          # 16 Shards/6 GB -> OOM (18.07.2026, Suite gewachsen). Jetzt 24
+          # Shards + 8 GB Heap (Runner hat 16 GB).
           run_shards() {
-            for i in $(seq 1 16); do
-              npx vitest run "$@" --passWithNoTests --shard="$i/16"
+            for i in $(seq 1 24); do
+              npx vitest run "$@" --passWithNoTests --shard="$i/24"
             done
           }
           BASE=""
