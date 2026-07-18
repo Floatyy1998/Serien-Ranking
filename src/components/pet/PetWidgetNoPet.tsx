@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { usePeriodicPulse } from '../../hooks/usePeriodicPulse';
 
 interface PetWidgetNoPetProps {
   position: { x: number; y: number };
@@ -14,6 +15,7 @@ export const PetWidgetNoPet: React.FC<PetWidgetNoPetProps> = ({
   onClose,
 }) => {
   const { currentTheme } = useTheme();
+  const eggPulse = usePeriodicPulse(4000, 12000);
 
   return (
     <motion.div
@@ -65,13 +67,10 @@ export const PetWidgetNoPet: React.FC<PetWidgetNoPetProps> = ({
 
       <div style={{ textAlign: 'center' }}>
         <motion.div
-          animate={{
-            rotate: [0, 10, -10, 0],
-            y: [0, -5, 0],
-          }}
+          animate={eggPulse ? { rotate: [0, 10, -10, 0], y: [0, -5, 0] } : { rotate: 0, y: 0 }}
           transition={{
             duration: 2,
-            repeat: Infinity,
+            repeat: eggPulse ? 1 : 0,
             ease: 'easeInOut',
           }}
           style={{

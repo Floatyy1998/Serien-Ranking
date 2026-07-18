@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { showToast } from '../../lib/toast';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { pickReaction } from '../../hooks/usePetReactions';
+import { usePeriodicPulse } from '../../hooks/usePeriodicPulse';
 import { usePetReactions, triggerPetReaction } from '../../hooks/usePetReactions';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { petService } from '../../services/petService';
@@ -29,6 +30,7 @@ export const PetWidget: React.FC = () => {
   const user = authContext?.user;
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const badgePulse = usePeriodicPulse(5000, 15000);
   const [pet, setPet] = useState<Pet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showWidget, setShowWidget] = useState(true);
@@ -318,7 +320,7 @@ export const PetWidget: React.FC = () => {
             transition={
               isCritical
                 ? {
-                    boxShadow: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
+                    boxShadow: { duration: 1.5, repeat: badgePulse ? 3 : 0, ease: 'easeInOut' },
                   }
                 : undefined
             }
@@ -478,8 +480,8 @@ export const PetWidget: React.FC = () => {
               {healthy && (
                 <Tooltip title="Gesundes Pet: +50% XP-Bonus aktiv" arrow>
                   <motion.div
-                    animate={{ opacity: [0.8, 1, 0.8] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                    animate={badgePulse ? { opacity: [0.8, 1, 0.8] } : { opacity: 0.9 }}
+                    transition={{ duration: 2.5, repeat: badgePulse ? 1 : 0, ease: 'easeInOut' }}
                     style={{
                       position: 'absolute',
                       top: '-8px',
@@ -502,8 +504,8 @@ export const PetWidget: React.FC = () => {
               {!pet.isAlive && (
                 <Tooltip title="Pet ist verstorben – Tippe zum Wiederbeleben" arrow>
                   <motion.div
-                    animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    animate={badgePulse ? { rotate: [0, 10, -10, 0] } : { rotate: 0 }}
+                    transition={{ duration: 2, repeat: badgePulse ? 1 : 0 }}
                     style={{
                       position: 'absolute',
                       top: '-8px',
@@ -519,8 +521,12 @@ export const PetWidget: React.FC = () => {
               {pet.isAlive && pet.hunger > 70 && (
                 <Tooltip title="Dein Pet hat Hunger!" arrow>
                   <motion.div
-                    animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    animate={
+                      badgePulse
+                        ? { scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }
+                        : { scale: 1, opacity: 0.9 }
+                    }
+                    transition={{ duration: 1.5, repeat: badgePulse ? 2 : 0 }}
                     style={{
                       position: 'absolute',
                       top: '-5px',
