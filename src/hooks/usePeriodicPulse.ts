@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const AMBIENT_ON = 4000;
-const AMBIENT_PERIOD = 30000;
+const AMBIENT_PERIOD = 18000;
 
 /** Global synchronisierter Deko-Puls: alle Ambient-Animationen atmen gemeinsam. */
 export function useAmbientPulse(): boolean {
