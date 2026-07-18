@@ -2,6 +2,7 @@ import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-mo
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { hapticCelebrate, hapticTap } from '../../lib/haptics';
 import { petService } from '../../services/petService';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
@@ -127,6 +128,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
         tickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.02);
         noise.start(t);
         noise.stop(t + 0.02);
+        hapticTap();
       }
     });
     return unsubscribe;
@@ -143,6 +145,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
       revealAudio.pause();
     }, 5000);
     setPhase('reveal');
+    hapticCelebrate();
 
     // Auto-claim immediately so the item is safe even if user closes the app
     if (user && dropData) {

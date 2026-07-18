@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { hapticCelebrate, hapticTap } from '../../lib/haptics';
 import Bolt from '@mui/icons-material/Bolt';
 import Close from '@mui/icons-material/Close';
 import Whatshot from '@mui/icons-material/Whatshot';
@@ -192,6 +193,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
         lastTickAngleRef.current = segmentIdx;
         const vol = Math.min(1, 0.3 + progress * 0.7);
         playTickSound(vol);
+        hapticTap();
       }
 
       if (progress < 1) {
@@ -207,6 +209,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       setResult(spinResult.reward);
       setPhase('result');
       setCanSpin(false);
+      hapticCelebrate();
 
       // Same reveal sound as CaseOpeningOverlay
       const revealAudio = new Audio('/sounds/reveal.mp3');

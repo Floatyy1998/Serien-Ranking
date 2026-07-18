@@ -12,6 +12,7 @@ import { useKeyboardNavigation } from '../../hooks/useKeyboardNavigation';
 import { useNavSlots } from '../../hooks/useNavConfig';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
+import { setAppBadge } from '../../services/nativeShell';
 import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
 import { NAV_SLOT_ICONS } from './navSlotIcons';
@@ -34,6 +35,10 @@ export const BottomNavigation = () => {
 
   const todayEpisodes = useTodayEpisodes();
   const unwatchedToday = todayEpisodes.filter((ep) => !ep.watched).length;
+
+  useEffect(() => {
+    setAppBadge(unwatchedToday);
+  }, [unwatchedToday]);
   const navSlots = useNavSlots();
   const isNavRoot = useIsNavRoot();
 
