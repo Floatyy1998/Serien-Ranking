@@ -25,6 +25,7 @@ import { GradientText } from '../../components/ui';
 import { CoverWall } from '../../components/ui/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackRegister } from '../../services/firebase/analytics';
+import { SocialLoginButtons } from './SocialLoginButtons';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 
@@ -483,6 +484,8 @@ export const RegisterPage = () => {
                   {loading ? 'Registrieren...' : 'Registrieren'}
                 </Button>
               </form>
+
+              <SocialLoginButtons onError={setError} disabled={loading} />
             </Paper>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>

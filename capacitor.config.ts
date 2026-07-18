@@ -24,6 +24,11 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
+    FirebaseAuthentication: {
+      // Tokens nur nativ einsammeln — eingeloggt wird im Web-Layer (signInWithCredential).
+      skipNativeAuth: true,
+      providers: ['google.com', 'apple.com'],
+    },
   },
 };
 

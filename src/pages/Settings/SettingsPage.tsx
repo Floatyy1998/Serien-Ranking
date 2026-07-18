@@ -15,6 +15,7 @@ import { DeleteAccountSection } from './DeleteAccountSection';
 import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
 import { NotificationsSection } from './NotificationsSection';
+import { SecuritySection } from './SecuritySection';
 import './SettingsPage.css';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -175,6 +176,8 @@ export const SettingsPage = () => {
         />
 
         <NotificationsSection />
+
+        <SecuritySection />
 
         <LegalSection
           onNavigatePrivacy={() => navigate('/privacy')}

@@ -5,13 +5,20 @@ import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
 import { dbGet, dbRef, userPath } from './db/ref';
+import { reauthenticateSocial } from './firebase/socialAuth';
 
-export async function deleteAccount(password: string): Promise<void> {
+/** password = null → Social-Only-Konto, Re-Auth läuft über den Google/Apple-Provider. */
+export async function deleteAccount(password: string | null): Promise<void> {
   const user = firebase.auth().currentUser;
-  if (!user?.email) throw new Error('Kein angemeldeter Nutzer.');
+  if (!user) throw new Error('Kein angemeldeter Nutzer.');
 
-  const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
-  await user.reauthenticateWithCredential(credential);
+  if (password !== null) {
+    if (!user.email) throw new Error('Kein angemeldeter Nutzer.');
+    const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+    await user.reauthenticateWithCredential(credential);
+  } else {
+    await reauthenticateSocial(user);
+  }
   const uid = user.uid;
 
   // onDisconnect abbestellen, sonst schreibt der Verbindungsabbruch wieder einen users/$uid-Stub.

@@ -24,6 +24,7 @@ import { GradientText } from '../../components/ui';
 import { CoverWall } from '../../components/ui/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackLogin } from '../../services/firebase/analytics';
+import { SocialLoginButtons } from './SocialLoginButtons';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -384,6 +385,8 @@ export const LoginPage = () => {
                   Passwort vergessen?
                 </Button>
               </Box>
+
+              <SocialLoginButtons onError={setError} disabled={loading} />
             </Paper>
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
