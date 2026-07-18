@@ -56,7 +56,7 @@ export const RegisterPage = () => {
     }
 
     if (username.length < 3) {
-      setError('Benutzername muss mindestens 3 Zeichen lang sein.');
+      setError('Anzeigename muss mindestens 3 Zeichen lang sein.');
       return;
     }
 
@@ -245,7 +245,7 @@ export const RegisterPage = () => {
               <form onSubmit={handleSubmit}>
                 <TextField
                   fullWidth
-                  label="Benutzername"
+                  label="Anzeigename"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   margin="normal"

@@ -14,7 +14,8 @@ import { DiscoveryStep } from './steps/DiscoveryStep';
 import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
-import { dbRef, userPath } from '../../services/db/ref';
+import { dbGet, dbRef, userPath } from '../../services/db/ref';
+import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];
@@ -36,6 +37,10 @@ export const OnboardingPage: React.FC = () => {
 
   const [step, setStep] = useState<Step>('welcome');
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+  // Social-Sign-ups (Google/Apple) haben keinen selbst gewählten Namen —
+  // der Welcome-Step fragt ihn dann ab, statt das Mail-Kürzel stehen zu lassen.
+  const [nameEditable, setNameEditable] = useState(false);
+  const [nameValue, setNameValue] = useState('');
   const [pendingItems, setPendingItems] = useState<Map<string, OnboardingItem>>(new Map());
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [watchTargets, setWatchTargets] = useState<Map<number, WatchTarget>>(new Map());
@@ -72,10 +77,44 @@ export const OnboardingPage: React.FC = () => {
     );
   }, []);
 
+  useEffect(() => {
+    if (!user?.uid) return;
+    let cancelled = false;
+    dbGet<string>(userPath(user.uid, 'username'))
+      .then((existing) => {
+        if (cancelled || existing) return;
+        setNameEditable(true);
+        setNameValue(user.displayName || user.email?.split('@')[0] || '');
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
+
+  const persistName = useCallback(async () => {
+    const uid = user?.uid;
+    const name = nameValue.trim();
+    if (!uid || !nameEditable || name.length < 3) return;
+    try {
+      await dbRef(userPath(uid)).update({
+        displayName: name,
+        displayNameLower: name.toLowerCase(),
+        username: name,
+        usernameLower: name.toLowerCase(),
+      });
+      void syncUserSearchIndex(uid, { username: name, displayName: name });
+      void user?.updateProfile({ displayName: name }).catch(() => {});
+    } catch {
+      /* best-effort — Name lässt sich später in den Einstellungen setzen */
+    }
+  }, [user, nameValue, nameEditable]);
+
   const handleWelcomeNext = useCallback(() => {
+    void persistName();
     fetchSuggestions(selectedSlugs);
     setStep('series');
-  }, [selectedSlugs, fetchSuggestions]);
+  }, [persistName, selectedSlugs, fetchSuggestions]);
 
   const togglePending = useCallback((item: OnboardingItem) => {
     const key = `${item.type}-${item.id}`;
@@ -208,10 +247,11 @@ export const OnboardingPage: React.FC = () => {
 
   const handleSkip = useCallback(async () => {
     if (!user?.uid) return;
+    await persistName();
     await dbRef(userPath(user.uid, 'onboardingComplete')).set(true);
     setOnboardingComplete?.(true);
     navigate('/', { replace: true });
-  }, [user?.uid, setOnboardingComplete, navigate]);
+  }, [user?.uid, persistName, setOnboardingComplete, navigate]);
 
   const currentStepIndex = STEPS.indexOf(step);
   const totalSteps = STEPS.length;
@@ -244,6 +284,9 @@ export const OnboardingPage: React.FC = () => {
             <WelcomeStep
               key="welcome"
               username={user?.displayName || 'Stranger'}
+              nameEditable={nameEditable}
+              nameValue={nameValue}
+              onNameChange={setNameValue}
               selectedSlugs={selectedSlugs}
               onToggleGenre={toggleGenre}
               onNext={handleWelcomeNext}

@@ -14,6 +14,10 @@ type TmdbPosterResponse = { results?: Array<{ poster_path?: string | null }> };
 
 interface Props {
   username: string;
+  /** Social-Sign-ups ohne gewählten Namen: Eingabefeld statt statischer Begrüßung. */
+  nameEditable?: boolean;
+  nameValue?: string;
+  onNameChange?: (value: string) => void;
   selectedSlugs: string[];
   onToggleGenre: (slug: string) => void;
   onNext: () => void;
@@ -52,12 +56,16 @@ async function fetchGenrePosters(g: CuratedGenre): Promise<string[]> {
 
 export const WelcomeStep: React.FC<Props> = ({
   username,
+  nameEditable,
+  nameValue,
+  onNameChange,
   selectedSlugs,
   onToggleGenre,
   onNext,
   onSkip,
 }) => {
   const [postersBySlug, setPostersBySlug] = useState<Record<string, string[]>>({});
+  const nameTooShort = !!nameEditable && (nameValue ?? '').trim().length < 3;
 
   useEffect(() => {
     let cancelled = false;
@@ -114,15 +122,43 @@ export const WelcomeStep: React.FC<Props> = ({
           {/* Left column: hero + program */}
           <div className="ob-spread__left">
             <div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 }}
-                className="ob-mono"
-                style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
-              >
-                Willkommen, {username}.
-              </motion.div>
+              {nameEditable ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="ob-mono"
+                  style={{
+                    color: 'var(--ob-text-mute)',
+                    marginBottom: 10,
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: 10,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <label htmlFor="ob-name">Wie dürfen wir dich nennen?</label>
+                  <input
+                    id="ob-name"
+                    className="ob-name-input"
+                    value={nameValue ?? ''}
+                    onChange={(e) => onNameChange?.(e.target.value)}
+                    maxLength={24}
+                    placeholder="Dein Name"
+                    autoComplete="nickname"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="ob-mono"
+                  style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
+                >
+                  Willkommen, {username}.
+                </motion.div>
+              )}
               <h1
                 className="ob-display"
                 style={{
@@ -223,12 +259,16 @@ export const WelcomeStep: React.FC<Props> = ({
           gap: 6,
         }}
       >
-        <button onClick={onNext} disabled={selectedCount === 0} className="ob-cta">
+        <button onClick={onNext} disabled={selectedCount === 0 || nameTooShort} className="ob-cta">
           <span className="ob-cta__inner">
             <span>weiter</span>
             <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
             <span style={{ opacity: 0.55, fontSize: 11 }}>
-              {selectedCount > 0 ? `mit ${selectedCount}` : 'wähle min. 1'}
+              {nameTooShort
+                ? 'name: min. 3 zeichen'
+                : selectedCount > 0
+                  ? `mit ${selectedCount}`
+                  : 'wähle min. 1'}
             </span>
           </span>
           <span className="ob-cta__arrow">→</span>

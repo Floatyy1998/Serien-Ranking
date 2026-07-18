@@ -7,18 +7,13 @@ import { tapScaleTight } from '../../lib/motion';
 interface ProfileSectionProps {
   photoURL: string;
   displayName: string;
-  username: string;
   uploading: boolean;
   saving: boolean;
-  usernameEditable: boolean;
   displayNameEditable: boolean;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onUsernameChange: (value: string) => void;
   onDisplayNameChange: (value: string) => void;
-  onSaveUsername: () => void;
   onSaveDisplayName: () => void;
-  onEditUsername: () => void;
   onEditDisplayName: () => void;
 }
 
@@ -26,18 +21,13 @@ export const ProfileSection = memo(
   ({
     photoURL,
     displayName,
-    username,
     uploading,
     saving,
-    usernameEditable,
     displayNameEditable,
     fileInputRef,
     onImageUpload,
-    onUsernameChange,
     onDisplayNameChange,
-    onSaveUsername,
     onSaveDisplayName,
-    onEditUsername,
     onEditDisplayName,
   }: ProfileSectionProps) => {
     const { currentTheme } = useTheme();
@@ -55,7 +45,7 @@ export const ProfileSection = memo(
             {photoURL ? (
               <img
                 src={photoURL}
-                alt={`Profilbild von ${displayName || username || 'Benutzer'}`}
+                alt={`Profilbild von ${displayName || 'Benutzer'}`}
                 className="settings-avatar-image"
                 style={{ borderColor: currentTheme.primary }}
                 loading="lazy"
@@ -97,60 +87,6 @@ export const ProfileSection = memo(
           <p className="settings-avatar-hint" style={{ color: currentTheme.text.muted }}>
             Tippe auf die Kamera um ein neues Profilbild hochzuladen
           </p>
-        </div>
-
-        {/* Username Field */}
-        <div className="settings-field">
-          <div className="settings-field-row">
-            <div className="settings-field-content">
-              <label className="settings-field-label" style={{ color: currentTheme.text.muted }}>
-                Benutzername
-              </label>
-              {usernameEditable ? (
-                <div className="settings-field-edit-row">
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => onUsernameChange(e.target.value)}
-                    className="settings-field-input"
-                    style={{
-                      background: currentTheme.background.surface,
-                      borderColor: currentTheme.primary,
-                      color: currentTheme.text.primary,
-                    }}
-                    placeholder="Benutzername eingeben"
-                    autoFocus
-                  />
-                  <motion.button
-                    whileTap={tapScaleTight}
-                    onClick={onSaveUsername}
-                    disabled={saving}
-                    className="settings-field-save-btn"
-                    style={{
-                      background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
-                    }}
-                  >
-                    {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
-                  </motion.button>
-                </div>
-              ) : (
-                <span className="settings-field-value" style={{ color: currentTheme.text.primary }}>
-                  {username || 'Nicht festgelegt'}
-                </span>
-              )}
-            </div>
-            {!usernameEditable && (
-              <motion.button
-                whileTap={tapScaleTight}
-                onClick={onEditUsername}
-                aria-label="Benutzername ändern"
-                className="settings-field-edit-btn"
-                style={{ color: currentTheme.text.muted }}
-              >
-                <Edit style={{ fontSize: '18px' }} aria-hidden="true" />
-              </motion.button>
-            )}
-          </div>
         </div>
 
         {/* Display Name Field */}

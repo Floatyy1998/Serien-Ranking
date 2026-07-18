@@ -41,47 +41,39 @@ import { ProfileSection } from './ProfileSection';
 const baseProps = () => ({
   photoURL: '',
   displayName: 'Konrad',
-  username: 'floaty',
   uploading: false,
   saving: false,
-  usernameEditable: false,
   displayNameEditable: false,
   fileInputRef: createRef<HTMLInputElement>(),
   onImageUpload: vi.fn(),
-  onUsernameChange: vi.fn(),
   onDisplayNameChange: vi.fn(),
-  onSaveUsername: vi.fn(),
   onSaveDisplayName: vi.fn(),
-  onEditUsername: vi.fn(),
   onEditDisplayName: vi.fn(),
 });
 
 afterEach(() => cleanup());
 
 describe('ProfileSection', () => {
-  it('renders the current username and display name values', () => {
+  it('renders the current display name value', () => {
     render(<ProfileSection {...baseProps()} />);
-    expect(screen.getByText('floaty')).toBeInTheDocument();
     expect(screen.getByText('Konrad')).toBeInTheDocument();
   });
 
-  it('invokes the edit handlers from the edit buttons', () => {
+  it('invokes the edit handler from the edit button', () => {
     const props = baseProps();
     render(<ProfileSection {...props} />);
-    fireEvent.click(screen.getByLabelText('Benutzername ändern'));
-    expect(props.onEditUsername).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByLabelText('Anzeigename ändern'));
     expect(props.onEditDisplayName).toHaveBeenCalledTimes(1);
   });
 
-  it('shows an editable input and saves when username is editable', () => {
-    const props = { ...baseProps(), usernameEditable: true };
+  it('shows an editable input and saves when display name is editable', () => {
+    const props = { ...baseProps(), displayNameEditable: true };
     const { container } = render(<ProfileSection {...props} />);
-    const input = screen.getByPlaceholderText('Benutzername eingeben');
+    const input = screen.getByPlaceholderText('Anzeigename eingeben');
     fireEvent.change(input, { target: { value: 'newname' } });
-    expect(props.onUsernameChange).toHaveBeenCalledWith('newname');
+    expect(props.onDisplayNameChange).toHaveBeenCalledWith('newname');
     const saveBtn = container.querySelector('.settings-field-save-btn') as HTMLElement;
     fireEvent.click(saveBtn);
-    expect(props.onSaveUsername).toHaveBeenCalledTimes(1);
+    expect(props.onSaveDisplayName).toHaveBeenCalledTimes(1);
   });
 });

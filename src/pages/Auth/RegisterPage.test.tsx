@@ -116,12 +116,12 @@ describe('RegisterPage', () => {
     expect(authApi.createUserWithEmailAndPassword).not.toHaveBeenCalled();
   });
 
-  it('shows an error when the username is too short', () => {
+  it('shows an error when the display name is too short', () => {
     const { container } = render(<RegisterPage />);
     fillForm(container, { username: 'ab' });
     submit(container);
     expect(
-      screen.getByText('Benutzername muss mindestens 3 Zeichen lang sein.')
+      screen.getByText('Anzeigename muss mindestens 3 Zeichen lang sein.')
     ).toBeInTheDocument();
   });
 

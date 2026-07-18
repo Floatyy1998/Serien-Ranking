@@ -23,15 +23,11 @@ export const SettingsPage = () => {
   const { currentTheme } = useTheme();
 
   const {
-    username,
-    setUsername,
     displayName,
     setDisplayName,
     photoURL,
     uploading,
     saving,
-    usernameEditable,
-    setUsernameEditable,
     displayNameEditable,
     setDisplayNameEditable,
     fileInputRef,
@@ -43,7 +39,6 @@ export const SettingsPage = () => {
     snackbar,
     handleLogout,
     handleImageUpload,
-    saveUsername,
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,
@@ -76,18 +71,13 @@ export const SettingsPage = () => {
         <ProfileSection
           photoURL={photoURL}
           displayName={displayName}
-          username={username}
           uploading={uploading}
           saving={saving}
-          usernameEditable={usernameEditable}
           displayNameEditable={displayNameEditable}
           fileInputRef={fileInputRef}
           onImageUpload={handleImageUpload}
-          onUsernameChange={setUsername}
           onDisplayNameChange={setDisplayName}
-          onSaveUsername={saveUsername}
           onSaveDisplayName={saveDisplayName}
-          onEditUsername={() => setUsernameEditable(true)}
           onEditDisplayName={() => setDisplayNameEditable(true)}
         />
 

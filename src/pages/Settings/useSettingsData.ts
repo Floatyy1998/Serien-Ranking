@@ -12,12 +12,10 @@ export const useSettingsData = () => {
   const navigate = useNavigate();
   const { user } = useAuth() || {};
 
-  const [username, setUsername] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [photoURL, setPhotoURL] = useState(user?.photoURL || '');
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [usernameEditable, setUsernameEditable] = useState(false);
   const [displayNameEditable, setDisplayNameEditable] = useState(false);
   const [isPublicProfile, setIsPublicProfile] = useState<boolean>(false);
   const [publicProfileId, setPublicProfileId] = useState<string>('');
@@ -44,13 +42,11 @@ export const useSettingsData = () => {
         const userData = snapshot.val();
 
         if (userData) {
-          setUsername(userData.username || '');
-          setDisplayName(userData.displayName || user.displayName || '');
+          setDisplayName(userData.displayName || userData.username || user.displayName || '');
           setPhotoURL(userData.photoURL || user.photoURL || '');
           setIsPublicProfile(userData.isPublicProfile || false);
           setPublicProfileId(userData.publicProfileId || '');
         } else {
-          setUsername('');
           setDisplayName(user.displayName || '');
           setPhotoURL(user.photoURL || '');
           setIsPublicProfile(false);
@@ -120,39 +116,22 @@ export const useSettingsData = () => {
     [user, showSnackbar]
   );
 
-  const saveUsername = useCallback(async () => {
-    if (!user || !username.trim()) return;
-
-    try {
-      setSaving(true);
-      await dbRef(paths.user(user.uid)).update({ username, usernameLower: username.toLowerCase() });
-      // Such-Index spiegeln (best-effort, wirft nie)
-      void syncUserSearchIndex(user.uid, { username });
-      setUsernameEditable(false);
-      showSnackbar('Benutzername gespeichert!');
-    } catch {
-      setDialog({
-        open: true,
-        message: 'Fehler beim Speichern des Benutzernamens',
-        type: 'error',
-      });
-    } finally {
-      setSaving(false);
-    }
-  }, [user, username, showSnackbar]);
-
   const saveDisplayName = useCallback(async () => {
     if (!user || !displayName.trim()) return;
 
     try {
       setSaving(true);
       await user.updateProfile({ displayName: displayName });
+      // username spiegelt den Anzeigenamen — er ist kein eigenes UI-Feld mehr,
+      // steckt aber weiter in geteilten Daten (Suche, Leaderboard, Diskussionen).
       await dbRef(paths.user(user.uid)).update({
         displayName,
         displayNameLower: displayName.toLowerCase(),
+        username: displayName,
+        usernameLower: displayName.toLowerCase(),
       });
       // Such-Index spiegeln (best-effort, wirft nie)
-      void syncUserSearchIndex(user.uid, { displayName });
+      void syncUserSearchIndex(user.uid, { displayName, username: displayName });
       await user.reload();
       setDisplayNameEditable(false);
       showSnackbar('Anzeigename gespeichert!');
@@ -251,15 +230,11 @@ export const useSettingsData = () => {
 
   return {
     // Profile state
-    username,
-    setUsername,
     displayName,
     setDisplayName,
     photoURL,
     uploading,
     saving,
-    usernameEditable,
-    setUsernameEditable,
     displayNameEditable,
     setDisplayNameEditable,
     fileInputRef,
@@ -277,7 +252,6 @@ export const useSettingsData = () => {
     // Handlers
     handleLogout,
     handleImageUpload,
-    saveUsername,
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,

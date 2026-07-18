@@ -113,28 +113,20 @@ describe('useSettingsData – load', () => {
       publicProfileId: 'pub123',
     };
     const { result } = renderHook(() => useSettingsData());
-    await waitFor(() => expect(result.current.username).toBe('coolname'));
-    expect(result.current.displayName).toBe('Cool Name');
+    await waitFor(() => expect(result.current.displayName).toBe('Cool Name'));
     expect(result.current.isPublicProfile).toBe(true);
     expect(result.current.publicProfileId).toBe('pub123');
+  });
+
+  it('fällt ohne displayName auf den Legacy-username zurück', async () => {
+    fb.state.dataByPath['users/u1'] = { username: 'coolname' };
+    const { result } = renderHook(() => useSettingsData());
+    await waitFor(() => expect(result.current.displayName).toBe('coolname'));
   });
 });
 
 describe('useSettingsData – actions', () => {
-  it('saveUsername aktualisiert Firebase und spiegelt den Suchindex', async () => {
-    const { result } = renderHook(() => useSettingsData());
-    act(() => result.current.setUsername('neuername'));
-    await act(async () => {
-      await result.current.saveUsername();
-    });
-    const upd = fb.state.updateCalls.find((c) => c.path === 'users/u1');
-    expect((upd?.value as Record<string, unknown>)?.username).toBe('neuername');
-    expect((upd?.value as Record<string, unknown>)?.usernameLower).toBe('neuername');
-    expect(searchIndex.syncUserSearchIndex).toHaveBeenCalledWith('u1', { username: 'neuername' });
-    expect(result.current.snackbar.open).toBe(true);
-  });
-
-  it('saveDisplayName aktualisiert Profil und Firebase', async () => {
+  it('saveDisplayName aktualisiert Profil, spiegelt username und Suchindex', async () => {
     const { result } = renderHook(() => useSettingsData());
     act(() => result.current.setDisplayName('Neuer Name'));
     await act(async () => {
@@ -145,6 +137,13 @@ describe('useSettingsData – actions', () => {
       (c) => c.path === 'users/u1' && (c.value as Record<string, unknown>).displayName
     );
     expect((upd?.value as Record<string, unknown>)?.displayName).toBe('Neuer Name');
+    expect((upd?.value as Record<string, unknown>)?.username).toBe('Neuer Name');
+    expect((upd?.value as Record<string, unknown>)?.usernameLower).toBe('neuer name');
+    expect(searchIndex.syncUserSearchIndex).toHaveBeenCalledWith('u1', {
+      displayName: 'Neuer Name',
+      username: 'Neuer Name',
+    });
+    expect(result.current.snackbar.open).toBe(true);
   });
 
   it('handleLogout meldet ab und navigiert bei Bestätigung', async () => {
