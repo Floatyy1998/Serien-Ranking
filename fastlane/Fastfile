@@ -39,6 +39,13 @@ platform :ios do
       )
     end
 
+    # Die CI-Keychain ist fluechtig, cert() legt daher pro Lauf ein neues
+    # Distribution-Zertifikat an — alte vorher loeschen, sonst ist Apples
+    # Team-Limit (2) nach zwei Läufen voll. Profile werden unten neu erzeugt.
+    Spaceship::ConnectAPI::Certificate
+      .all(filter: { certificateType: "DISTRIBUTION" })
+      .each { |c| c.delete! rescue nil }
+
     cert(
       api_key: api_key,
       development: false,
