@@ -15,7 +15,6 @@ import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getStreakStatus, getShieldCooldown } from './watchStreakHelpers';
 import type { WatchStreakData, ActivePetInfo } from './watchStreakHelpers';
 import { StreakShieldDialog } from './StreakShieldDialog';
-import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 // Streak colors are resolved at render time from currentTheme
 // active = success, at_risk/shieldable = warning, lost = muted
@@ -23,7 +22,6 @@ import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 export const WatchStreakCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const ambientPulse = useAmbientPulse();
   const [streak, setStreak] = useState<WatchStreakData | null>(null);
   const [pet, setPet] = useState<ActivePetInfo | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -295,7 +293,7 @@ export const WatchStreakCard: React.FC = () => {
                   shieldEligible
                     ? {
                         scale: { type: 'spring', stiffness: 300, damping: 15 },
-                        boxShadow: { repeat: ambientPulse ? 2 : 0, duration: 2, ease: 'easeInOut' },
+                        boxShadow: { repeat: Infinity, duration: 2, ease: 'easeInOut' },
                       }
                     : { type: 'spring', stiffness: 300, damping: 15 }
                 }
@@ -359,8 +357,8 @@ export const WatchStreakCard: React.FC = () => {
                   {status === 'shieldable' ? streak.currentStreak : displayStreak}
                 </span>
                 <motion.div
-                  animate={ambientPulse ? { y: [0, -2, 0] } : { y: 0 }}
-                  transition={{ repeat: ambientPulse ? 2 : 0, duration: 1.5, ease: 'easeInOut' }}
+                  animate={{ y: [0, -2, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
                 >
                   <Whatshot style={{ fontSize: 18, color: flameColor }} />
                 </motion.div>

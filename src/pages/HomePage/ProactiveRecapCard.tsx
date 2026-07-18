@@ -7,7 +7,6 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
-import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 interface ProactiveRecapCardProps {
   recaps: ProactiveRecap[];
@@ -29,7 +28,6 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
   ({ recaps, onDismiss, onFetchRecap }) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
-    const ambientPulse = useAmbientPulse();
     const { isMobile } = useDeviceType();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [expanded, setExpanded] = useState(false);
@@ -112,12 +110,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
               }}
             >
               <motion.div
-                animate={
-                  ambientPulse
-                    ? { scale: [1, 1.15, 1], opacity: [1, 0.8, 1] }
-                    : { scale: 1, opacity: 1 }
-                }
-                transition={{ repeat: ambientPulse ? 2 : 0, duration: 2 }}
+                animate={{ scale: [1, 1.15, 1], opacity: [1, 0.8, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
                 style={{ display: 'flex', flexShrink: 0 }}
               >
                 <AutoAwesome style={{ fontSize: isMobile ? '22px' : '28px', color: accent }} />
@@ -283,8 +277,8 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
               }}
             >
               <motion.div
-                animate={ambientPulse ? { x: ['-100%', '100%'] } : { x: '-100%' }}
-                transition={{ repeat: ambientPulse ? 2 : 0, duration: 1.5, ease: 'easeInOut' }}
+                animate={{ x: ['-100%', '100%'] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
                 style={{ width: '40%', height: '100%', background: accent }}
               />
             </div>

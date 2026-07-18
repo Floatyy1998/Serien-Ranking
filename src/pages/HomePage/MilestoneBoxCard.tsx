@@ -17,7 +17,6 @@ import {
   getProgressToNextBox,
 } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
-import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 // Bewusste Akzent-Konstanten für die Mystery Box: gamifizierte Lila/Magenta-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -27,7 +26,6 @@ const BOX_MAGENTA = '#E040FB';
 export const MilestoneBoxCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const ambientPulse = useAmbientPulse();
   const stats = useWebWorkerStatsOptimized();
   const [lastOpenedBoxNumber, setLastOpenedBoxNumber] = useState<number | null>(null);
   const [showBox, setShowBox] = useState(false);
@@ -145,8 +143,8 @@ export const MilestoneBoxCard: React.FC = () => {
             }}
           >
             <motion.div
-              animate={hasBox && ambientPulse ? { scale: [1, 1.15, 1] } : { scale: 1 }}
-              transition={hasBox && ambientPulse ? { duration: 2, repeat: 1 } : {}}
+              animate={hasBox ? { scale: [1, 1.15, 1] } : {}}
+              transition={hasBox ? { duration: 2, repeat: Infinity } : {}}
               style={{ display: 'flex' }}
             >
               <Inventory2
@@ -205,8 +203,8 @@ export const MilestoneBoxCard: React.FC = () => {
                   </span>
                 )}
                 <motion.div
-                  animate={ambientPulse ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                  transition={{ duration: 1.5, repeat: ambientPulse ? 2 : 0 }}
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
                   style={{
                     width: 8,
                     height: 8,

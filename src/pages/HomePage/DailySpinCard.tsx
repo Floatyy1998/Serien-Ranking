@@ -10,7 +10,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../lib/motion';
-import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 // Bewusste Akzent-Konstanten für das Glücksrad: gamifizierte Gold/Orange-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -21,7 +20,6 @@ const SPIN_ICON_DARK = '#1a1a2e';
 export const DailySpinCard: React.FC = () => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
-  const ambientPulse = useAmbientPulse();
   const [lastSpinDate, setLastSpinDate] = useState<string | null>(null);
   const [showWheel, setShowWheel] = useState(false);
   const [streakDays, setStreakDays] = useState(0);
@@ -120,10 +118,8 @@ export const DailySpinCard: React.FC = () => {
             }}
           >
             <motion.div
-              animate={
-                available && ambientPulse ? { rotate: [0, -10, 10, -10, 10, 0] } : { rotate: 0 }
-              }
-              transition={available && ambientPulse ? { duration: 2, repeat: 1 } : {}}
+              animate={available ? { rotate: [0, -10, 10, -10, 10, 0] } : {}}
+              transition={available ? { duration: 2, repeat: Infinity, repeatDelay: 3 } : {}}
               style={{ display: 'flex' }}
             >
               <AutoAwesome
@@ -182,8 +178,8 @@ export const DailySpinCard: React.FC = () => {
             )}
             {available && (
               <motion.div
-                animate={ambientPulse ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-                transition={{ duration: 1.5, repeat: ambientPulse ? 2 : 0 }}
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
                 style={{
                   width: 8,
                   height: 8,

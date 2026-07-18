@@ -9,41 +9,37 @@ import { useNavigate } from 'react-router-dom';
 import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
-import { useAmbientPulse } from '../../hooks/usePeriodicPulse';
 
 const FloatingIcon: React.FC<{
   icon: React.ReactNode;
   delay: number;
   left: string;
   top: string;
-}> = ({ icon, delay, left, top }) => {
-  const ambientPulse = useAmbientPulse();
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0 }}
-      animate={
-        ambientPulse
-          ? { opacity: [0, 0.6, 0.6, 0], scale: [0.5, 1, 1, 0.5], y: [0, -15, -15, 0] }
-          : { opacity: 0, scale: 0.5, y: 0 }
-      }
-      transition={{
-        duration: 3,
-        delay,
-        repeat: 0,
-        ease: 'easeInOut',
-      }}
-      style={{
-        position: 'absolute',
-        left,
-        top,
-        color: 'rgba(255, 255, 255, 0.4)',
-        pointerEvents: 'none',
-      }}
-    >
-      {icon}
-    </motion.div>
-  );
-};
+}> = ({ icon, delay, left, top }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0 }}
+    animate={{
+      opacity: [0, 0.6, 0.6, 0],
+      scale: [0.5, 1, 1, 0.5],
+      y: [0, -15, -15, 0],
+    }}
+    transition={{
+      duration: 3,
+      delay,
+      repeat: Infinity,
+      ease: 'easeInOut',
+    }}
+    style={{
+      position: 'absolute',
+      left,
+      top,
+      color: 'rgba(255, 255, 255, 0.4)',
+      pointerEvents: 'none',
+    }}
+  >
+    {icon}
+  </motion.div>
+);
 
 // Memo: parent re-renders constantly on unrelated state, but the banner
 // only depends on useWrappedConfig + theme via context — skip when those
@@ -52,7 +48,6 @@ const WrappedNotificationImpl: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { enabled, year, loading } = useWrappedConfig();
-  const ambientPulse = useAmbientPulse();
 
   if (loading || !enabled) return null;
 
@@ -91,10 +86,13 @@ const WrappedNotificationImpl: React.FC = () => {
 
       {/* Shimmer Effect */}
       <motion.div
-        animate={ambientPulse ? { x: ['-100%', '200%'] } : { x: '-100%' }}
+        animate={{
+          x: ['-100%', '200%'],
+        }}
         transition={{
           duration: 2.5,
-          repeat: 0,
+          repeat: Infinity,
+          repeatDelay: 3,
           ease: 'easeInOut',
         }}
         style={{
@@ -120,12 +118,13 @@ const WrappedNotificationImpl: React.FC = () => {
       >
         {/* Animated Year Circle */}
         <motion.div
-          animate={
-            ambientPulse ? { rotate: [0, 5, -5, 0], scale: [1, 1.05, 1] } : { rotate: 0, scale: 1 }
-          }
+          animate={{
+            rotate: [0, 5, -5, 0],
+            scale: [1, 1.05, 1],
+          }}
           transition={{
             duration: 4,
-            repeat: 0,
+            repeat: Infinity,
             ease: 'easeInOut',
           }}
           style={{
