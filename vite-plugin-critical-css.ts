@@ -80,11 +80,6 @@ export function criticalCSSPlugin(): Plugin {
             text-transform: none;
           }
           
-          /* Smooth transitions */
-          * {
-            transition: color 0.2s, background-color 0.2s, border-color 0.2s;
-          }
-          
           /* Optimize font loading */
           @font-face {
             font-family: 'Inter';
