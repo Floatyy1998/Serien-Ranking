@@ -4,7 +4,10 @@
 
 default_platform(:ios)
 
+require_relative "widget_target"
+
 APP_ID = "de.tvrank.app"
+WIDGET_ID = "de.tvrank.app.TVRankWidget"
 
 platform :ios do
   desc "Build + Upload zu TestFlight"
@@ -16,6 +19,25 @@ platform :ios do
     )
 
     setup_ci
+
+    # Widget-Target zur Build-Zeit einhängen + lokales Bridge-Plugin registrieren
+    add_widget_target!("ios/App/App.xcodeproj")
+    register_widget_bridge_plugin!("ios/App/App/capacitor.config.json")
+
+    # Widget-Bundle-ID im Portal anlegen (einmalig, idempotent)
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+      key_id: ENV.fetch("APPSTORE_KEY_ID"),
+      issuer_id: ENV.fetch("APPSTORE_ISSUER_ID"),
+      filepath: ENV.fetch("APPSTORE_P8_PATH")
+    )
+    if Spaceship::ConnectAPI::BundleId.all(filter: { identifier: WIDGET_ID })
+         .none? { |b| b.identifier == WIDGET_ID }
+      Spaceship::ConnectAPI::BundleId.create(
+        name: "TVRank Widget",
+        identifier: WIDGET_ID,
+        platform: Spaceship::ConnectAPI::BundleIdPlatform::IOS
+      )
+    end
 
     cert(
       api_key: api_key,
@@ -32,15 +54,34 @@ platform :ios do
       force: true,
       output_path: "build/certs"
     )
+    app_profile_name = lane_context[SharedValues::SIGH_NAME]
+
+    sigh(
+      api_key: api_key,
+      app_identifier: WIDGET_ID,
+      force: true,
+      output_path: "build/certs"
+    )
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
 
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "ios/App/App.xcodeproj",
       team_id: ENV.fetch("APPLE_TEAM_ID"),
       code_sign_identity: "Apple Distribution",
-      profile_name: lane_context[SharedValues::SIGH_NAME],
+      profile_name: app_profile_name,
       bundle_identifier: APP_ID,
       targets: ["App"]
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/App/App.xcodeproj",
+      team_id: ENV.fetch("APPLE_TEAM_ID"),
+      code_sign_identity: "Apple Distribution",
+      profile_name: widget_profile_name,
+      bundle_identifier: WIDGET_ID,
+      targets: ["TVRankWidget"]
     )
 
     build_app(
@@ -49,6 +90,12 @@ platform :ios do
       configuration: "Release",
       output_directory: "build/ipa",
       export_method: "app-store",
+      export_options: {
+        provisioningProfiles: {
+          APP_ID => app_profile_name,
+          WIDGET_ID => widget_profile_name,
+        },
+      },
       xcargs: "MARKETING_VERSION=1.0 CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}"
     )
 

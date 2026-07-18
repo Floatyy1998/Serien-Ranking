@@ -13,6 +13,7 @@ import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
+import { WidgetDataSync } from './components/WidgetDataSync';
 import './styles/App.css';
 
 // Haupt-Tabs leben in MainTabs (Keep-Alive) — hier nur die übrigen Routen
@@ -176,6 +177,7 @@ export const MobileApp = () => {
     <div className="mobile-app">
       <ScrollToTop />
       <PushOptInPrompt />
+      <WidgetDataSync />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

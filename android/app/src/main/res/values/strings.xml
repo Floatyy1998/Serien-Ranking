@@ -4,4 +4,5 @@
     <string name="title_activity_main">TV-Rank</string>
     <string name="package_name">de.tvrank.app</string>
     <string name="custom_url_scheme">de.tvrank.app</string>
+    <string name="widget_description">Heutige Folgen deiner Serien auf einen Blick</string>
 </resources>

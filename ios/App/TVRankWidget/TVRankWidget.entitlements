@@ -6,7 +6,5 @@
 	<array>
 		<string>$(AppIdentifierPrefix)de.tvrank.app.shared</string>
 	</array>
-	<key>aps-environment</key>
-	<string>production</string>
 </dict>
 </plist>

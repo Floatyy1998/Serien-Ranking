@@ -21,6 +21,10 @@ interface CapacitorAppShortcutsPlugin {
   ) => Promise<unknown>;
 }
 
+interface CapacitorWidgetBridgePlugin {
+  setData?: (options: { json: string }) => Promise<void>;
+}
+
 interface CapacitorGlobal {
   isNativePlatform?: () => boolean;
   getPlatform?: () => string;
@@ -28,6 +32,7 @@ interface CapacitorGlobal {
     App?: CapacitorAppPlugin;
     Badge?: CapacitorBadgePlugin;
     AppShortcuts?: CapacitorAppShortcutsPlugin;
+    WidgetBridge?: CapacitorWidgetBridgePlugin;
   };
 }
 
@@ -57,6 +62,17 @@ export const setAppBadge = (count: number): void => {
     else nav.clearAppBadge?.()?.catch(() => {});
   } catch {
     /* Badging API nicht verfügbar */
+  }
+};
+
+/** Spiegelt die Widget-Daten (heutige Folgen + Countdown) in die native Hülle. */
+export const setWidgetData = (data: unknown): void => {
+  const bridge = getCapacitor()?.Plugins?.WidgetBridge;
+  if (!bridge?.setData) return;
+  try {
+    bridge.setData({ json: JSON.stringify(data) }).catch(() => {});
+  } catch {
+    /* Hülle ohne WidgetBridge (alter Build) */
   }
 };
 
