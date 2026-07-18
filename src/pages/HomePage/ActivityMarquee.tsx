@@ -70,9 +70,31 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
     isPausedRef.current = isPaused;
   }, [isPaused]);
 
+  // Unsichtbar (Tab versteckt / gescrollt / App im Hintergrund) läuft kein Loop
+  const [running, setRunning] = useState(true);
   useEffect(() => {
-    if (prefersReducedMotion || lapWidth === 0) {
-      x.set(0);
+    const el = lapRef.current;
+    const update = (inView: boolean) => setRunning(inView && !document.hidden);
+    let inView = true;
+    const io =
+      typeof IntersectionObserver !== 'undefined'
+        ? new IntersectionObserver((e) => {
+            inView = e[0]?.isIntersecting ?? true;
+            update(inView);
+          })
+        : null;
+    if (el && io) io.observe(el);
+    const onVis = () => update(inView);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      io?.disconnect();
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (prefersReducedMotion || lapWidth === 0 || !running) {
+      if (prefersReducedMotion) x.set(0);
       return;
     }
     let rafId = 0;
@@ -96,7 +118,7 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
     };
     rafId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafId);
-  }, [prefersReducedMotion, lapWidth, x]);
+  }, [prefersReducedMotion, lapWidth, x, running]);
 
   const entries = useMemo(() => {
     const sorted = [...friendActivities]
