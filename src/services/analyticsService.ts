@@ -56,17 +56,6 @@ const ALLOWED_EVENTS = new Set<AllowedAnalyticsEvent>([
 const FLUSH_INTERVAL_MS = 30_000;
 const MAX_BUFFER_SIZE = 50;
 const CONSENT_KEY = 'analytics-consent';
-const HEARTBEAT_INTERVAL_MS = 5 * 60_000;
-
-// Globale Tages-Zähler werden pro UID auf 16 Shards verteilt — RTDB serialisiert
-// Writes pro Pfad, ein einzelner increment-Pfad wird bei vielen Nutzern zum Hotspot.
-export const ANALYTICS_SHARD_COUNT = 16;
-
-export function analyticsShardOf(uid: string): number {
-  let h = 0;
-  for (let i = 0; i < uid.length; i++) h = (h + uid.charCodeAt(i)) % ANALYTICS_SHARD_COUNT;
-  return h;
-}
 
 function todayKey(): string {
   const d = new Date();
@@ -90,8 +79,6 @@ class AnalyticsService {
   private userId: string | null = null;
   private enabled = false;
   private flushing = false;
-  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
-  private sessionSince: number | null = null;
   private lifecycleListenersAttached = false;
   private visibilityHandler: (() => void) | null = null;
   private beforeUnloadHandler: (() => void) | null = null;
@@ -122,7 +109,6 @@ class AnalyticsService {
       this.setupLifecycleListeners();
     } else {
       this.stopFlushTimer();
-      this.updateRealtimePresence(false);
       this.buffer = [];
     }
   }
@@ -183,17 +169,15 @@ class AnalyticsService {
       updates[`analytics/users/${uid}/daily/${dateKey}/lastSeen`] =
         firebase.database.ServerValue.TIMESTAMP;
 
-      // Global daily counters (geshardet, Admin-Dashboard summiert die Shards)
-      const shard = analyticsShardOf(uid);
-      updates[`analytics/global/daily/${dateKey}/shards/${shard}/totalEvents`] =
+      // Global daily counters
+      updates[`analytics/global/daily/${dateKey}/totalEvents`] =
         firebase.database.ServerValue.increment(batch.length);
       for (const ev of batch) {
-        updates[`analytics/global/daily/${dateKey}/shards/${shard}/events/${ev.e}`] =
+        updates[`analytics/global/daily/${dateKey}/events/${ev.e}`] =
           firebase.database.ServerValue.increment(1);
         if (ev.e === 'page_view' && ev.p?.page) {
-          updates[
-            `analytics/global/daily/${dateKey}/shards/${shard}/pageViews/${ev.p.page as string}`
-          ] = firebase.database.ServerValue.increment(1);
+          updates[`analytics/global/daily/${dateKey}/pageViews/${ev.p.page as string}`] =
+            firebase.database.ServerValue.increment(1);
         }
       }
 
@@ -234,52 +218,22 @@ class AnalyticsService {
     }
   }
 
-  /**
-   * Real-time presence als Heartbeat: kein onDisconnect-Handler pro Nutzer
-   * (skaliert serverseitig nicht), stattdessen ts-Stempel alle 5 Min —
-   * Leser filtern auf Aktualität, ein Backend-Cron räumt veraltete Einträge ab.
-   */
+  /** Real-time presence tracking */
   private async updateRealtimePresence(online: boolean): Promise<void> {
     if (!this.userId) return;
     try {
       const ref = firebase.database().ref(`analytics/global/realtime/activeUsers/${this.userId}`);
       if (online) {
-        if (!this.sessionSince) this.sessionSince = Date.now();
         await ref.set({
-          since: this.sessionSince,
-          ts: firebase.database.ServerValue.TIMESTAMP,
+          since: firebase.database.ServerValue.TIMESTAMP,
           page: window.location.pathname,
         });
-        this.startHeartbeat();
+        ref.onDisconnect().remove();
       } else {
-        this.stopHeartbeat();
-        this.sessionSince = null;
         await ref.remove();
       }
     } catch {
       // Non-critical
-    }
-  }
-
-  private startHeartbeat(): void {
-    this.stopHeartbeat();
-    this.heartbeatTimer = setInterval(() => {
-      if (!this.userId) return;
-      firebase
-        .database()
-        .ref(`analytics/global/realtime/activeUsers/${this.userId}`)
-        .update({
-          ts: firebase.database.ServerValue.TIMESTAMP,
-          page: window.location.pathname,
-        })
-        .catch(() => {});
-    }, HEARTBEAT_INTERVAL_MS);
-  }
-
-  private stopHeartbeat(): void {
-    if (this.heartbeatTimer) {
-      clearInterval(this.heartbeatTimer);
-      this.heartbeatTimer = null;
     }
   }
 

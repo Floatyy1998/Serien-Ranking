@@ -1,11 +1,14 @@
+import { dbGet, userPath } from '../../services/db/ref';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import {
+  checkAndArchiveMonth,
   fetchGlobalLeaderboard,
   fetchLeaderboardData,
   fetchLeaderboardProfiles,
   fetchTrophyHistory,
+  forceRebuildArchive,
   seedLeaderboardStats,
 } from '../../services/leaderboardService';
 import type {
@@ -116,16 +119,47 @@ export function useLeaderboardData() {
     loadData();
   }, [loadData]);
 
-  // Trophäen laden. Archivierung + Self-Healing macht der Backend-Cron
-  // (leaderboard-aggregate.js) — vorher las jeder Seitenaufruf jedes Nutzers
-  // dafür den kompletten leaderboardStats-Baum, das skalierte nicht.
+  // Archive previous month + load trophies
   useEffect(() => {
     let cancelled = false;
 
-    const loadTrophies = async () => {
+    const loadAndHealTrophies = async () => {
       try {
-        const loaded = await fetchTrophyHistory();
+        // bewusst still: Archivierung ist Best-effort — das Self-Healing unten fängt Ausfälle ab
+        await checkAndArchiveMonth().catch(() => {});
+        let loaded = await fetchTrophyHistory();
         if (cancelled) return;
+
+        // Self-Healing: Wenn der aktuelle User in seinem History-Snapshot mehr
+        // Watchtime hat als die angezeigten Top 3, war beim ersten Archivieren
+        // etwas schief — Trophy für den Monat neu berechnen und nochmal laden.
+        if (user?.uid && loaded.length > 0) {
+          const latest = loaded[0];
+          try {
+            const hist = await dbGet<Record<string, number>>(
+              userPath(user.uid, 'leaderboard', 'history', latest.monthKey)
+            );
+            const myWatchtime = hist?.watchtimeThisMonth ?? 0;
+            const top3Score = latest.third?.score ?? 0;
+            const myUidInTop3 = [latest.first, latest.second, latest.third].some(
+              (e) => e?.uid === user.uid
+            );
+            const rebuildKey = `trophy_rebuilt_${latest.monthKey}`;
+            if (
+              myWatchtime > 0 &&
+              !myUidInTop3 &&
+              myWatchtime > top3Score &&
+              !sessionStorage.getItem(rebuildKey)
+            ) {
+              sessionStorage.setItem(rebuildKey, 'true');
+              await forceRebuildArchive(latest.monthKey);
+              loaded = await fetchTrophyHistory();
+              if (cancelled) return;
+            }
+          } catch {
+            // Healing-Fehler ignorieren — wir zeigen die geladenen Trophäen.
+          }
+        }
 
         setTrophies(loaded);
 
@@ -148,7 +182,7 @@ export function useLeaderboardData() {
       }
     };
 
-    loadTrophies();
+    loadAndHealTrophies();
 
     return () => {
       cancelled = true;

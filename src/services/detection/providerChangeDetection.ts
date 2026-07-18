@@ -30,6 +30,8 @@ interface ProviderNotificationState {
   timestamp?: number;
 }
 
+const TMDB_API_KEY = import.meta.env.VITE_API_TMDB;
+
 // Cooldowns
 // - SHOWN_COOLDOWN: nach passiver Anzeige (User hat nicht reagiert) — kurz, damit die
 //   Notification beim nächsten App-Open nicht sofort wieder springt, aber nach ein paar
@@ -73,22 +75,26 @@ const getEffectiveDismissedAt = (state: ProviderNotificationState | undefined): 
   return null;
 };
 
-/**
- * Provider aus den gemergten Katalog-Daten der Serie (statt Live-TMDB-Calls:
- * ein geteilter Client-API-Key skaliert nicht über viele Nutzer; der Backend-
- * Cron aktualisiert die Katalog-Provider ohnehin täglich).
- */
-function getCatalogProviders(series: Series): string[] {
-  const list = series.provider?.provider;
-  if (!Array.isArray(list)) return [];
-  const seen = new Set<string>();
-  return list
-    .map((p) => (typeof p?.name === 'string' ? normalizeProviderName(p.name) : null))
-    .filter((name): name is string => {
-      if (!name || seen.has(name)) return false;
-      seen.add(name);
-      return true;
-    });
+async function fetchTMDBProviders(tmdbId: number): Promise<string[]> {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/tv/${tmdbId}/watch/providers?api_key=${TMDB_API_KEY}`
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    const flatrate = data.results?.DE?.flatrate;
+    if (!Array.isArray(flatrate)) return [];
+    const seen = new Set<string>();
+    return flatrate
+      .map((p: { provider_name: string }) => normalizeProviderName(p.provider_name))
+      .filter((name): name is string => {
+        if (!name || seen.has(name)) return false;
+        seen.add(name);
+        return true;
+      });
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -126,64 +132,76 @@ export const detectProviderChanges = async (
   const now = new Date().toISOString();
   const nowMs = Date.now();
 
-  for (const series of watchlistSeries) {
-    const key = series.id.toString();
-    const currentProviders = getCatalogProviders(series);
+  // Maximal 5 parallele TMDB-Calls
+  const batchSize = 5;
+  for (let i = 0; i < watchlistSeries.length; i += batchSize) {
+    const batch = watchlistSeries.slice(i, i + batchSize);
+    const results = await Promise.all(
+      batch.map(async (series) => {
+        const key = series.id.toString();
+        const currentProviders = await fetchTMDBProviders(series.id);
 
-    const known = knownProviders[key];
+        const known = knownProviders[key];
 
-    // Katalog (noch) leer: nur als Baseline seeden, wenn wir die Serie zum
-    // ersten Mal sehen — so wird ein späteres "nichts → Provider" als Diff
-    // erkannt und benachrichtigt ("Jetzt auf X"). Bei bereits bekanntem
-    // Stand NICHTS tun: eine transiente Datenlücke darf NICHT als
-    // Provider-Entzug fehlinterpretiert werden.
-    if (currentProviders.length === 0) {
-      if (!known) updatedKnown[key] = { providers: [], lastChecked: now };
-      continue;
-    }
+        // TMDB (noch) leer: nur als Baseline seeden, wenn wir die Serie zum
+        // ersten Mal sehen — so wird ein späteres "nichts → Provider" als Diff
+        // erkannt und benachrichtigt ("Jetzt auf X"). Bei bereits bekanntem
+        // Stand NICHTS tun: eine transiente TMDB-Leere (Glitch / Rate-Limit /
+        // DE-Datenlücke) darf NICHT als Provider-Entzug fehlinterpretiert
+        // werden.
+        if (currentProviders.length === 0) {
+          if (!known) updatedKnown[key] = { providers: [], lastChecked: now };
+          return null;
+        }
 
-    // Erstmaliges Speichern mit Provider: still seeden (kein Spam für
-    // Serien, die ohnehin schon irgendwo liefen).
-    if (!known) {
-      updatedKnown[key] = { providers: currentProviders, lastChecked: now };
-      continue;
-    }
+        // Erstmaliges Speichern mit Provider: still seeden (kein Spam für
+        // Serien, die ohnehin schon irgendwo liefen).
+        if (!known) {
+          updatedKnown[key] = { providers: currentProviders, lastChecked: now };
+          return null;
+        }
 
-    // `known.providers` kann bei Legacy-/Teil-State fehlen → gegen undefined absichern.
-    const knownFiltered = (known.providers ?? [])
-      .map((p) => normalizeProviderName(p))
-      .filter((p): p is string => p !== null);
-    const addedProviders = currentProviders.filter((p) => !knownFiltered.includes(p));
-    const removedProviders = knownFiltered.filter((p) => !currentProviders.includes(p));
+        // `known.providers` kann bei Legacy-/Teil-State fehlen → gegen undefined absichern.
+        const knownFiltered = (known.providers ?? [])
+          .map((p) => normalizeProviderName(p))
+          .filter((p): p is string => p !== null);
+        const addedProviders = currentProviders.filter((p) => !knownFiltered.includes(p));
+        const removedProviders = knownFiltered.filter((p) => !currentProviders.includes(p));
 
-    // Kein Diff → silent update
-    if (addedProviders.length === 0 && removedProviders.length === 0) {
-      updatedKnown[key] = { providers: currentProviders, lastChecked: now };
-      continue;
-    }
+        // Kein Diff → silent update
+        if (addedProviders.length === 0 && removedProviders.length === 0) {
+          updatedKnown[key] = { providers: currentProviders, lastChecked: now };
+          return null;
+        }
 
-    // Diff erkannt — Cooldowns prüfen
-    const state = states[key];
-    const dismissedAt = getEffectiveDismissedAt(state);
-    if (dismissedAt !== null && nowMs - dismissedAt < DISMISSED_COOLDOWN) {
-      // Aktiv weggeklickt: akzeptiere neuen Stand, ruh.
-      updatedKnown[key] = { providers: currentProviders, lastChecked: now };
-      continue;
-    }
-    const snoozedUntil = snoozed[key];
-    if (typeof snoozedUntil === 'number' && snoozedUntil > nowMs) {
-      // User hat snoozed — knownProviders NICHT updaten, damit Diff nach Ablauf bleibt
-      continue;
-    }
-    if (state?.shownAt && nowMs - state.shownAt < SHOWN_COOLDOWN) {
-      // Wurde kürzlich passiv angezeigt — knownProviders NICHT updaten,
-      // damit der Diff nach Ablauf des Cooldowns wieder entsteht.
-      continue;
-    }
+        // Diff erkannt — Cooldowns prüfen
+        const state = states[key];
+        const dismissedAt = getEffectiveDismissedAt(state);
+        if (dismissedAt !== null && nowMs - dismissedAt < DISMISSED_COOLDOWN) {
+          // Aktiv weggeklickt: akzeptiere neuen Stand, ruh.
+          updatedKnown[key] = { providers: currentProviders, lastChecked: now };
+          return null;
+        }
+        const snoozedUntil = snoozed[key];
+        if (typeof snoozedUntil === 'number' && snoozedUntil > nowMs) {
+          // User hat snoozed — knownProviders NICHT updaten, damit Diff nach Ablauf bleibt
+          return null;
+        }
+        if (state?.shownAt && nowMs - state.shownAt < SHOWN_COOLDOWN) {
+          // Wurde kürzlich passiv angezeigt — knownProviders NICHT updaten,
+          // damit der Diff nach Ablauf des Cooldowns wieder entsteht.
+          return null;
+        }
 
-    // Diff wird gezeigt — knownProviders bleibt unverändert, damit ein
-    // Reload denselben Diff produziert (UI markiert dann shownAt/dismissedAt).
-    changes.push({ series, addedProviders, removedProviders, currentProviders });
+        // Diff wird gezeigt — knownProviders bleibt unverändert, damit ein
+        // Reload denselben Diff produziert (UI markiert dann shownAt/dismissedAt).
+        return { series, addedProviders, removedProviders, currentProviders };
+      })
+    );
+
+    results.forEach((r) => {
+      if (r) changes.push(r);
+    });
   }
 
   // Cleanup + Persistenz als Pfad-basiertes Update, damit gemischte Set/Null-Operationen
