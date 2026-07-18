@@ -1,5 +1,13 @@
 import type { ComponentType } from 'react';
-import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  memo,
+  startTransition,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_PATHS } from '../../config/navItems';
 import { useNavSlots } from '../../hooks/useNavConfig';
@@ -43,6 +51,15 @@ const TAB_COMPONENTS: Record<string, ComponentType> = {
   '/subscriptions': SubscriptionsPage,
   '/recently-watched': RecentlyWatchedPage,
 };
+
+// Stabile Element-Identität: ein Tab-Wechsel togglet nur das display der zwei
+// betroffenen Wrapper — alle anderen Tab-Bäume bailen komplett aus
+const TabHost = memo(({ path, visible }: { path: string; visible: boolean }) => {
+  const TabPage = TAB_COMPONENTS[path];
+  const child = useMemo(() => <TabPage />, [TabPage]);
+  return <div style={{ display: visible ? undefined : 'none' }}>{child}</div>;
+});
+TabHost.displayName = 'TabHost';
 
 export const MainTabs = () => {
   const { pathname } = useLocation();
@@ -113,15 +130,9 @@ export const MainTabs = () => {
 
   return (
     <>
-      {mounted.map((path) => {
-        const TabPage = TAB_COMPONENTS[path];
-        const isActiveTab = isTab && path === active;
-        return (
-          <div key={path} style={{ display: isActiveTab ? undefined : 'none' }}>
-            <TabPage />
-          </div>
-        );
-      })}
+      {mounted.map((path) => (
+        <TabHost key={path} path={path} visible={isTab && path === active} />
+      ))}
     </>
   );
 };
