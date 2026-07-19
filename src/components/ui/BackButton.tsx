@@ -64,8 +64,8 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
           icon={
             <div
               style={{
-                width: '16px',
-                height: '16px',
+                width: '18px',
+                height: '18px',
                 backgroundColor: 'var(--color-primary)',
                 WebkitMaskImage: 'url(/tv-logo.svg)',
                 maskImage: 'url(/tv-logo.svg)',
@@ -79,8 +79,8 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
             />
           }
           onClick={() => navigate(location.pathname.startsWith('/manga') ? '/manga' : '/')}
-          size={32}
-          borderRadius="10px"
+          size={40}
+          borderRadius="14px"
           variant="glass"
           ariaLabel="Zur Startseite"
           tooltip="Zur Startseite"

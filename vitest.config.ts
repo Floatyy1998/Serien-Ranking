@@ -20,9 +20,10 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     maxWorkers: 2,
     // Vitest 4: pool-Optionen top-level. Worker-Heap fuer die jsdom-Suite anheben.
-    // 6144 statt 4096: bei ~85 jsdom-Testdateien pro Fork akkumuliert der Heap
-    // und einzelne Forks starben bei 4 GB (alle Tests gruen, Exit trotzdem 1).
-    execArgv: ['--max-old-space-size=6144'],
+    // ACHTUNG: dieses execArgv ueberschreibt NODE_OPTIONS — der CI-Wert kommt
+    // sonst nie bei den Fork-Workern an (Voll-Suite starb weiter exakt bei 6 GB,
+    // obwohl der Workflow 8 GB setzte). Historie: 4096 -> 6144 -> 8192.
+    execArgv: ['--max-old-space-size=8192'],
     coverage: {
       provider: 'v8',
       reporter: ['text-summary'],
