@@ -475,14 +475,15 @@ async function withOverlays<
 }
 
 // Englische Episodennamen: catalog/en/episodes.json (Backend-Export) mappt
-// seriesId -> { episodeId -> englischer Name }. Wird NUR bei englischer
-// App-Sprache geladen und beim Ausliefern der Season-Daten im Speicher
-// angewendet — die IDB-Caches bleiben bewusst deutsch (Sprachwechsel = Reload,
-// kein Cache-Invalidieren noetig). Fehlt die Datei oder ein Eintrag, bleibt
-// der deutsche Episodenname stehen.
+// seriesId -> { tmdbSeasonNumber -> [Name je episode_number-1] }. Join ueber
+// Staffel-/Episodennummern — die Episoden-IDs in seasonsAll sind KEINE
+// TMDB-IDs (TVMaze-Altbestand), die Season-Keys dort sind 0-basiert. Wird NUR
+// bei englischer App-Sprache geladen und beim Ausliefern der Season-Daten im
+// Speicher angewendet — die IDB-Caches bleiben bewusst deutsch (Sprachwechsel
+// = Reload). Fehlt die Datei oder ein Eintrag, bleibt der deutsche Name.
 
 interface EnEpisodeNames {
-  series?: Record<string, Record<string, string>>;
+  series?: Record<string, Record<string, (string | undefined)[]>>;
 }
 
 async function getEnEpisodeNames(): Promise<EnEpisodeNames | null> {
@@ -514,17 +515,24 @@ async function getEnEpisodeNames(): Promise<EnEpisodeNames | null> {
 
 function applyEnEpisodeNames(
   seasons: Record<string, CatalogSeason>,
-  names: Record<string, string> | undefined
+  entry: Record<string, (string | undefined)[]> | undefined
 ): Record<string, CatalogSeason> {
-  if (!names) return seasons;
+  if (!entry) return seasons;
   const out: Record<string, CatalogSeason> = {};
   for (const key in seasons) {
     const season = seasons[key];
-    const episodes = Array.isArray(season?.episodes)
-      ? season.episodes.map((ep) =>
-          ep && ep.id != null && names[String(ep.id)] ? { ...ep, name: names[String(ep.id)] } : ep
-        )
-      : season?.episodes;
+    // Season-Key ist 0-basiert (Key 0 = Staffel 1); Fallback auf den Key
+    // selbst fuer etwaige 1-basierte Altbestaende.
+    const names = entry[String(Number(key) + 1)] ?? entry[String(key)];
+    const episodes =
+      names && Array.isArray(season?.episodes)
+        ? season.episodes.map((ep, idx) => {
+            if (!ep) return ep;
+            const epIndex = (ep.episodeNumber ?? idx + 1) - 1;
+            const en = names[epIndex];
+            return en ? { ...ep, name: en } : ep;
+          })
+        : season?.episodes;
     out[key] = { ...season, episodes };
   }
   return out;
