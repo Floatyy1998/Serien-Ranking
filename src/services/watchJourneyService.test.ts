@@ -120,17 +120,18 @@ describe('Genres (normalisiert)', () => {
 });
 
 describe('Provider (normalisiert & gefiltert)', () => {
-  it('remappt Ad-Tiers/Freevee, filtert " Channel"-Add-Ons und Unbekannte', async () => {
+  it('remappt Ad-Tiers/Freevee, filtert " Channel"-Add-Ons; Unbekannte zaehlen mit', async () => {
     const data = await run([
       ep({ episodeRuntime: 45, providers: ['Netflix'] }),
       ep({ episodeRuntime: 45, providers: ['Freevee'] }), // → Amazon Prime Video
       ep({ episodeRuntime: 45, providers: ['Wow Fiction Amazon Channel'] }), // → null (raus)
-      ep({ episodeRuntime: 45, providers: ['Irgendein Dienst'] }), // unbekannt → raus
+      ep({ episodeRuntime: 45, providers: ['Irgendein Dienst'] }), // durchgereicht (int. Provider)
     ]);
     expect(data.topProviders).toContain('Netflix');
     expect(data.topProviders).toContain('Amazon Prime Video');
     expect(data.topProviders).not.toContain('Wow Fiction Amazon Channel');
-    expect(data.topProviders).toHaveLength(2);
+    expect(data.topProviders).toContain('Irgendein Dienst');
+    expect(data.topProviders).toHaveLength(3);
   });
 
   it('fällt auf das provider-Einzelfeld zurück, wenn kein providers-Array vorhanden ist', async () => {

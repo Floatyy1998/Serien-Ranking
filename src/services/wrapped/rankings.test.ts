@@ -130,13 +130,13 @@ describe('calculateTopProviders', () => {
     expect(result.map((p) => p.name).sort()).toEqual(['Amazon Prime Video', 'HBO Max', 'Netflix']);
   });
 
-  it('filtert Channel-Add-Ons und unbekannte Provider raus', () => {
+  it('filtert Channel-Add-Ons; unbekannte Provider zaehlen mit', () => {
     expect(
       calculateTopProviders(
         [ep({ providers: ['Wow Fiction Amazon Channel'] }), ep({ providers: ['ARD Mediathek'] })],
         []
-      )
-    ).toEqual([]);
+      ).map((p) => p.name)
+    ).toEqual(['ARD Mediathek']);
   });
 
   it('dedupliziert innerhalb eines Events nach Normalisierung', () => {

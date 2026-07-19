@@ -379,12 +379,12 @@ describe('calculateTopProviders', () => {
     expect(result.map((p) => p.name).sort()).toEqual(['Amazon Prime Video', 'HBO Max', 'Netflix']);
   });
 
-  it("filtert Channel-Add-Ons (' Channel') und unbekannte Provider komplett raus", () => {
+  it("filtert Channel-Add-Ons (' Channel'); unbekannte Provider zaehlen mit", () => {
     const result = calculateTopProviders(
       [ep({ providers: ['Wow Fiction Amazon Channel'] }), ep({ providers: ['ARD Mediathek'] })],
       []
     );
-    expect(result).toEqual([]);
+    expect(result.map((p) => p.name)).toEqual(['ARD Mediathek']);
   });
 
   it('dedupliziert Provider innerhalb eines Events nach der Normalisierung', () => {
@@ -451,7 +451,7 @@ describe('calculateTopProviders', () => {
     const result = calculateTopProviders(
       [
         ep({ episodeRuntime: 45, providers: ['Netflix'] }),
-        ep({ episodeRuntime: 500, providers: ['Unbekannter Dienst'] }), // fällt raus
+        ep({ episodeRuntime: 500, providers: ['Wow Fiction Amazon Channel'] }), // fällt raus
       ],
       []
     );
