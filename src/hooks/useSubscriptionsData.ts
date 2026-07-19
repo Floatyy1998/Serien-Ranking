@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { SUPPORTED_PROVIDERS } from '../config/menuItems';
+import { watchRegion } from '../services/region';
 import { invalidateActiveSubscriptions } from './useActiveSubscriptions';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { mergeProviderNames } from '../lib/providerMerge';
@@ -106,7 +107,17 @@ export function useSubscriptionsData(): UseSubscriptionsDataResult {
 
   const insights = useMemo<ProviderInsight[]>(() => {
     const thresholdMs = unusedThresholdDays * DAY_MS;
-    const names = Array.from(SUPPORTED_PROVIDERS).sort();
+    // Palette: DE = kuratierte Liste; andere Regionen = alle Dienste, die im
+    // Region-Katalog der eigenen Serien vorkommen. Bereits konfigurierte Abos
+    // bleiben immer erhalten (z.B. nach einem Regionswechsel).
+    const paletteSet = new Set<string>(watchRegion === 'DE' ? Array.from(SUPPORTED_PROVIDERS) : []);
+    if (watchRegion !== 'DE') {
+      for (const series of allSeriesList) {
+        for (const p of extractSeriesProviders(series)) paletteSet.add(p);
+      }
+    }
+    for (const key of Object.keys(config.providers)) paletteSet.add(key);
+    const names = Array.from(paletteSet).sort();
 
     const activeNames = new Set(
       Object.entries(config.providers)

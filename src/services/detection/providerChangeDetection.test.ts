@@ -40,8 +40,16 @@ describe('normalizeProviderName — Alias-Mapping', () => {
     expect(normalizeProviderName('MAX')).toBe('HBO Max');
   });
 
-  it('"maximum" matcht NICHT die exakt-"max"-Regel und ist unbekannt → null', () => {
-    expect(normalizeProviderName('maximum')).toBeNull();
+  it('"maximum" matcht NICHT die exakt-"max"-Regel und wird durchgereicht', () => {
+    expect(normalizeProviderName('maximum')).toBe('maximum');
+  });
+
+  it('internationale Marken: Tarif-Varianten kollabieren auf die Marke', () => {
+    expect(normalizeProviderName('Peacock Premium')).toBe('Peacock');
+    expect(normalizeProviderName('Peacock Premium Plus')).toBe('Peacock');
+    expect(normalizeProviderName('Netflix Standard with Ads')).toBe('Netflix');
+    expect(normalizeProviderName('Hulu')).toBe('Hulu');
+    expect(normalizeProviderName('Crave')).toBe('Crave');
   });
 });
 
@@ -61,13 +69,20 @@ describe('normalizeProviderName — exakte Supported-Fallbacks', () => {
     expect(normalizeProviderName('Animation Digital Network')).toBe('Animation Digital Network');
   });
 
-  it('Whitespace wird NICHT getrimmt → exakter Fallback schlaegt fehl', () => {
-    expect(normalizeProviderName(' Crunchyroll')).toBeNull();
-    expect(normalizeProviderName('Crunchyroll ')).toBeNull();
+  it('Whitespace wird getrimmt durchgereicht', () => {
+    expect(normalizeProviderName(' Crunchyroll')).toBe('Crunchyroll');
+    expect(normalizeProviderName('Crunchyroll ')).toBe('Crunchyroll');
   });
 
-  it('unbekannter Name und leerer String → null', () => {
-    expect(normalizeProviderName('Sky Ticket')).toBeNull();
+  it('unbekannte Namen werden durchgereicht (internationale Provider), leer → null', () => {
+    expect(normalizeProviderName('Sky Ticket')).toBe('Sky Ticket');
+    expect(normalizeProviderName('Star+')).toBe('Star+');
     expect(normalizeProviderName('')).toBeNull();
+    expect(normalizeProviderName('   ')).toBeNull();
+  });
+
+  it('Ad-Tier-Suffixe werden beim Durchreichen entfernt', () => {
+    expect(normalizeProviderName('Crave Basic with Ads')).toBe('Crave');
+    expect(normalizeProviderName('Some Service with Ads')).toBe('Some Service');
   });
 });

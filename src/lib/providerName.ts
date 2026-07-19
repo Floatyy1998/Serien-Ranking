@@ -26,6 +26,16 @@ export const normalizeProviderName = (name: string): string | null => {
   if (lower.includes('apple tv')) return 'Apple TV Plus';
   if (lower.includes('joyn')) return 'Joyn Plus';
   if (lower.includes('hbo') || lower === 'max') return 'HBO Max';
+  // Internationale Marken: TMDB fuehrt Tarif-Varianten als eigene Provider
+  // ("Peacock Premium Plus", "Netflix Standard with Ads") — auf die Marke kollabieren.
+  if (lower.includes('peacock')) return 'Peacock';
+  if (lower.includes('hulu')) return 'Hulu';
+  if (lower.includes('crave')) return 'Crave';
   if (SUPPORTED_PROVIDERS.has(name)) return name;
-  return null;
+  // Unbekannte Dienste durchreichen statt verwerfen — internationale Provider
+  // sind nicht Teil der DE-Palette, aber fuer Nicht-DE-Watch-Regionen
+  // vollwertige Anbieter. Ad-Tier-Suffixe fallen dabei weg; DE-Oberflaechen
+  // filtern weiterhin separat ueber SUPPORTED_PROVIDERS/isSupportedProvider.
+  const stripped = name.replace(/\s+(?:standard\s+|basic\s+)?with\s+ads$/i, '').trim();
+  return stripped || null;
 };

@@ -92,6 +92,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
   const filterAndDedupe = (p: Provider) => {
     if (!p || !(p.provider_name || p.name || p.provider_id || p.id)) return false;
     const name = p.provider_name || p.name || '';
+    // "X Channel" = Add-on innerhalb einer anderen Plattform, kein eigenes Abo
+    if (name.toLowerCase().includes(' channel')) return false;
     const normalizedName = normalizeProviderName(name);
 
     // Check if already seen (dedupe)
