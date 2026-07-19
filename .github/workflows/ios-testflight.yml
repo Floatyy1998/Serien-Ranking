@@ -38,6 +38,10 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPSTORE_P8_PATH: /Users/runner/private_keys/AuthKey.p8
           BUILD_NUMBER: ${{ github.run_number }}
+          # xcodebuild -showBuildSettings braucht auf kalten Runnern (SPM-
+          # Aufloesung) laenger als das 3s-Default — sonst flakt build_app.
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: '180'
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: '6'
         run: fastlane ios beta
 
       - name: IPA + Zertifikate als Artifact sichern
