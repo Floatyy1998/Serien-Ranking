@@ -165,10 +165,11 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
 
   const goTo = (item: QuickResult) => {
     if (query.trim()) saveRecent(query);
-    // KEIN onClose() vor navigate: das würde die Exit-Animation abspielen und
-    // sich anfühlen wie „erst schließen, dann öffnen". Das Navigieren unmountet
-    // Home (und damit dieses Overlay) ohnehin sofort → direkter Sprung.
+    // Erst navigieren — die Detailseite rendert hinter dem Overlay —, dann
+    // kurz danach schliessen, damit das Overlay sanft ueber der bereits
+    // sichtbaren Seite ausblendet (Home bleibt gemountet).
     navigate(`/${item.type === 'series' ? 'series' : 'movie'}/${item.id}`);
+    window.setTimeout(onClose, 250);
   };
 
   // Eine Poster-Karte — identisch für Suchergebnisse und „Beliebt" (inkl.

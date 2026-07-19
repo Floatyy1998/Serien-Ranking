@@ -78,20 +78,20 @@ export const useRatingsData = (): UseRatingsDataResult => {
     [setSearchParams]
   );
 
-  // Handle browser back/forward
+  // URL → State: die Seite bleibt als Tab gemountet (Keep-Alive), deshalb
+  // laeuft die Synchronisation ueber die aktuelle URL statt ueber popstate.
+  // Wiederbetreten ohne Params = Reset (Standardverhalten), Back/Forward
+  // innerhalb der Seite stellt die Filter wieder her. Waehrend andere Routen
+  // aktiv sind, wird nichts angefasst.
   useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setActiveTab(params.get('tab') === 'movies' ? 'movies' : 'series');
-      setSortOption(params.get('sort') || 'rating-desc');
-      setSelectedGenre(params.get('genre') || 'Alle');
-      setSelectedProvider(params.get('provider') || null);
-      setQuickFilter(params.get('filter') || null);
-      setSearchQuery(params.get('search') || '');
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+    if (window.location.pathname !== '/ratings') return;
+    setActiveTab(searchParams.get('tab') === 'movies' ? 'movies' : 'series');
+    setSortOption(searchParams.get('sort') || 'rating-desc');
+    setSelectedGenre(searchParams.get('genre') || 'Alle');
+    setSelectedProvider(searchParams.get('provider') || null);
+    setQuickFilter(searchParams.get('filter') || null);
+    setSearchQuery(searchParams.get('search') || '');
+  }, [searchParams]);
 
   const handleTabChange = useCallback(
     (id: string) => {

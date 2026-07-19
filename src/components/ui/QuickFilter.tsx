@@ -43,6 +43,22 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState(initialFilters.search || '');
   const [selectedSort, setSelectedSort] = useState<string>(initialFilters.sortBy || 'rating-desc');
+
+  // Aenderungen der Eltern-Filter uebernehmen (z.B. Reset durch die Seite) —
+  // sonst zeigt der FAB einen Filter an, der laengst nicht mehr wirksam ist.
+  useEffect(() => {
+    setSelectedGenre(initialFilters.genre || '');
+    setSelectedProvider(initialFilters.provider || '');
+    setSelectedQuickFilter(initialFilters.quickFilter || '');
+    setSearchQuery(initialFilters.search || '');
+    setSelectedSort(initialFilters.sortBy || 'rating-desc');
+  }, [
+    initialFilters.genre,
+    initialFilters.provider,
+    initialFilters.quickFilter,
+    initialFilters.search,
+    initialFilters.sortBy,
+  ]);
   const quickFilters = isRatingsMode
     ? ratingsQuickFilters
     : isMovieMode
