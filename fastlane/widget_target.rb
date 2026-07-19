@@ -42,7 +42,7 @@ def add_widget_target!(project_path)
     bs['SWIFT_VERSION'] = '5.0'
     bs['TARGETED_DEVICE_FAMILY'] = '1,2'
     bs['IPHONEOS_DEPLOYMENT_TARGET'] = '17.0'
-    bs['MARKETING_VERSION'] = '1.0'
+    bs['MARKETING_VERSION'] = '1.1'
     bs['CURRENT_PROJECT_VERSION'] = '1'
     bs['SKIP_INSTALL'] = 'YES'
     bs['PRODUCT_NAME'] = '$(TARGET_NAME)'
