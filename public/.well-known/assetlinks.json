@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "de.tvrank.app",
       "sha256_cert_fingerprints": [
-        "A6:BA:E2:8D:22:7D:AD:43:DB:94:14:A0:6A:3F:5F:EB:84:44:52:E9:B8:51:7B:3F:CF:EC:8A:34:B7:8C:99:E8"
+        "A6:BA:E2:8D:22:7D:AD:43:DB:94:14:A0:6A:3F:5F:EB:84:44:52:E9:B8:51:7B:3F:CF:EC:8A:34:B7:8C:99:E8",
+        "61:78:57:A1:40:88:6A:BD:54:63:41:7F:08:4C:54:77:52:65:CB:56:44:22:B1:87:D9:0F:B8:E5:85:40:BB:18"
       ]
     }
   }
