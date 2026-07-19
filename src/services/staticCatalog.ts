@@ -50,6 +50,7 @@ const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 const LS_EN_OVERLAY_KEY = LS_PREFIX + 'enOverlay';
+const LS_EN_EPISODES_KEY = LS_PREFIX + 'enEpisodes';
 const LS_REGION_PROVIDERS_PREFIX = LS_PREFIX + 'regionProviders:';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
@@ -98,6 +99,7 @@ let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryEnOverlay: EnOverlay | null | undefined = undefined;
+let memoryEnEpisodes: EnEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
@@ -193,6 +195,7 @@ async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Prom
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemove(LS_EN_OVERLAY_KEY),
+    idbRemove(LS_EN_EPISODES_KEY),
     idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
@@ -259,7 +262,7 @@ async function applySeasonsDelta(localV: number | null, remote: number): Promise
     return false;
   }
 
-  memorySeasonsBulk = next;
+  memorySeasonsBulk = (await withEnEpisodeBulk(next)) ?? next;
   memorySeasons.clear();
   await idbSetVersioned(LS_SEASONS_BULK_KEY, remote, next);
   return true;
@@ -286,6 +289,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryEnOverlay = undefined;
+  memoryEnEpisodes = undefined;
   memoryRegionProviders = undefined;
   await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
   await setLocalVersion(remote);
@@ -470,6 +474,85 @@ async function withOverlays<
   return withRegionProviders(await withEnOverlay(data, kind), kind);
 }
 
+// Englische Episodennamen: catalog/en/episodes.json (Backend-Export) mappt
+// seriesId -> { episodeId -> englischer Name }. Wird NUR bei englischer
+// App-Sprache geladen und beim Ausliefern der Season-Daten im Speicher
+// angewendet — die IDB-Caches bleiben bewusst deutsch (Sprachwechsel = Reload,
+// kein Cache-Invalidieren noetig). Fehlt die Datei oder ein Eintrag, bleibt
+// der deutsche Episodenname stehen.
+
+interface EnEpisodeNames {
+  series?: Record<string, Record<string, string>>;
+}
+
+async function getEnEpisodeNames(): Promise<EnEpisodeNames | null> {
+  if (!isEnglish()) return null;
+  if (memoryEnEpisodes !== undefined) return memoryEnEpisodes;
+
+  const cached = await idbGetAny<EnEpisodeNames>(LS_EN_EPISODES_KEY);
+  if (cached) {
+    memoryEnEpisodes = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<EnEpisodeNames>('en/episodes.json', { version });
+    memoryEnEpisodes = data && typeof data === 'object' ? data : null;
+    if (memoryEnEpisodes) void idbSetVersioned(LS_EN_EPISODES_KEY, version, memoryEnEpisodes);
+    return memoryEnEpisodes;
+  } catch (e) {
+    // 404 = Backend-Export existiert noch nicht — deutsche Namen bleiben.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] en-episodes fetch failed', e);
+    }
+    memoryEnEpisodes = null;
+    return null;
+  }
+}
+
+function applyEnEpisodeNames(
+  seasons: Record<string, CatalogSeason>,
+  names: Record<string, string> | undefined
+): Record<string, CatalogSeason> {
+  if (!names) return seasons;
+  const out: Record<string, CatalogSeason> = {};
+  for (const key in seasons) {
+    const season = seasons[key];
+    const episodes = Array.isArray(season?.episodes)
+      ? season.episodes.map((ep) =>
+          ep && ep.id != null && names[String(ep.id)] ? { ...ep, name: names[String(ep.id)] } : ep
+        )
+      : season?.episodes;
+    out[key] = { ...season, episodes };
+  }
+  return out;
+}
+
+async function withEnEpisodeSeasons(
+  id: string,
+  seasons: Record<string, CatalogSeason> | null
+): Promise<Record<string, CatalogSeason> | null> {
+  if (!seasons || !isEnglish()) return seasons;
+  const overlay = await getEnEpisodeNames();
+  return applyEnEpisodeNames(seasons, overlay?.series?.[id]);
+}
+
+async function withEnEpisodeBulk(
+  bulk: Record<string, Record<string, CatalogSeason>> | null
+): Promise<Record<string, Record<string, CatalogSeason>> | null> {
+  if (!bulk || !isEnglish()) return bulk;
+  const overlay = await getEnEpisodeNames();
+  if (!overlay?.series) return bulk;
+  const out: Record<string, Record<string, CatalogSeason>> = {};
+  for (const sid in bulk) {
+    const names = overlay.series[sid];
+    out[sid] = names ? applyEnEpisodeNames(bulk[sid], names) : bulk[sid];
+  }
+  return out;
+}
+
 // Provider-Dedup-Expansion
 
 interface ProviderEntry {
@@ -612,7 +695,7 @@ export async function fetchStaticCatalogSeasons(
   const mem = memorySeasons.get(id);
   if (mem) return mem;
 
-  // Falls bulk-Daten geladen sind, daraus bedienen
+  // Falls bulk-Daten geladen sind, daraus bedienen (Bulk ist bereits overlayt)
   if (memorySeasonsBulk && memorySeasonsBulk[id]) {
     memorySeasons.set(id, memorySeasonsBulk[id]);
     return memorySeasonsBulk[id];
@@ -621,9 +704,10 @@ export async function fetchStaticCatalogSeasons(
   const cacheKey = LS_SEASONS_PREFIX + id;
   const cached = await idbGetAny<Record<string, CatalogSeason>>(cacheKey);
   if (cached) {
-    memorySeasons.set(id, cached.data);
+    const applied = await withEnEpisodeSeasons(id, cached.data);
+    memorySeasons.set(id, applied ?? cached.data);
     void revalidateInBackground(cached.v);
-    return cached.data;
+    return applied ?? cached.data;
   }
 
   const version = await ensureVersionFresh();
@@ -631,9 +715,10 @@ export async function fetchStaticCatalogSeasons(
     const data = await fetchJson<Record<string, CatalogSeason>>(`seasons/${id}.json`, {
       version,
     });
-    memorySeasons.set(id, data);
     void idbSetVersioned(cacheKey, version, data);
-    return data;
+    const applied = (await withEnEpisodeSeasons(id, data)) ?? data;
+    memorySeasons.set(id, applied);
+    return applied;
   } catch (e) {
     // 404 = Serie existiert nicht im Katalog — dafür hilft auch der Mirror nicht.
     if (!String(e).includes('404')) {
@@ -642,8 +727,9 @@ export async function fetchStaticCatalogSeasons(
         `catalogMirror/seasons/${id}`
       );
       if (mirror) {
-        memorySeasons.set(id, mirror);
-        return mirror;
+        const applied = (await withEnEpisodeSeasons(id, mirror)) ?? mirror;
+        memorySeasons.set(id, applied);
+        return applied;
       }
     }
     return null;
@@ -669,9 +755,9 @@ export async function fetchStaticCatalogSeasonsBulk(): Promise<Record<
   const cached =
     await idbGetAny<Record<string, Record<string, CatalogSeason>>>(LS_SEASONS_BULK_KEY);
   if (cached) {
-    memorySeasonsBulk = cached.data;
+    memorySeasonsBulk = (await withEnEpisodeBulk(cached.data)) ?? cached.data;
     void revalidateInBackground(cached.v);
-    return cached.data;
+    return memorySeasonsBulk;
   }
 
   const version = await ensureVersionFresh();
@@ -679,9 +765,9 @@ export async function fetchStaticCatalogSeasonsBulk(): Promise<Record<
     const data = await fetchJson<Record<string, Record<string, CatalogSeason>>>('seasonsAll.json', {
       version,
     });
-    memorySeasonsBulk = data;
     void idbSetVersioned(LS_SEASONS_BULK_KEY, version, data);
-    return data;
+    memorySeasonsBulk = (await withEnEpisodeBulk(data)) ?? data;
+    return memorySeasonsBulk;
   } catch (e) {
     // 404 = Bulk-File existiert noch nicht (Backend nicht aktuell). Kein Fehler-Log,
     // der Provider faellt auf einzelne Season-Fetches zurueck.
@@ -1112,10 +1198,12 @@ export function clearStaticCatalogCache(): void {
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryEnOverlay = undefined;
+  memoryEnEpisodes = undefined;
   memoryRegionProviders = undefined;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(LS_EN_OVERLAY_KEY);
+  void idbRemove(LS_EN_EPISODES_KEY);
   void idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX);
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
