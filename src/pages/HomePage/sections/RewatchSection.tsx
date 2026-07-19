@@ -9,7 +9,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
-import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { pickPreferredProvider, resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import {
   buildFillerLookup,
@@ -70,7 +70,7 @@ export const RewatchSection = React.memo(function RewatchSection({
   const navigate = useTransitionNavigate();
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.accent;
-  const { getSeriesOverride } = useActiveSubscriptions();
+  const { activeProviders, getSeriesOverride } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
   const { seriesList } = useSeriesList();
   const fillerCatalog = useAnimeFillerCatalog();
@@ -134,10 +134,14 @@ export const RewatchSection = React.memo(function RewatchSection({
                   posterAlt={item.title}
                   accentColor={accentColor}
                   posterOverlay={(() => {
+                    const preferred = pickPreferredProvider(
+                      item.provider?.provider,
+                      activeProviders
+                    );
                     const resolved = resolveProviderOverlay(
                       getSeriesOverride(item.id),
-                      item.provider?.provider?.[0]?.logo,
-                      item.provider?.provider?.[0]?.name
+                      preferred?.logo,
+                      preferred?.name
                     );
                     if (!resolved) return undefined;
                     return (

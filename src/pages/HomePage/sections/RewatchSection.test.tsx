@@ -33,7 +33,10 @@ vi.mock('../../../services/animeFillerService', () => ({
 vi.mock('../../../hooks/useAnimeFillerCatalog', () => ({
   useAnimeFillerCatalog: () => null,
 }));
-vi.mock('../../../lib/providerMerge', () => ({ resolveProviderOverlay: () => undefined }));
+vi.mock('../../../lib/providerMerge', () => ({
+  resolveProviderOverlay: () => undefined,
+  pickPreferredProvider: () => undefined,
+}));
 vi.mock('../../../components/detail/ProviderLogoLink', () => ({
   ProviderLogoLink: () => <span />,
 }));

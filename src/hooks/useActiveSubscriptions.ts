@@ -23,6 +23,9 @@ interface SubsSnapshot {
 // Modul-Cache: pro UID ein Snapshot, vermeidet doppelte Reads im selben Tab
 const cache = new Map<string, SubsSnapshot>();
 const pending = new Map<string, Promise<SubsSnapshot>>();
+// Gemountete Hooks, die bei invalidate() sofort neu laden sollen (z.B. Override
+// auf der Detailseite gesetzt → Homepage-Karten zeigen sonst den alten Provider).
+const listeners = new Set<() => void>();
 
 async function loadSubs(uid: string): Promise<SubsSnapshot> {
   const cached = cache.get(uid);
@@ -65,6 +68,7 @@ export function invalidateActiveSubscriptions(uid?: string): void {
     cache.clear();
     pending.clear();
   }
+  for (const notify of listeners) notify();
 }
 
 export interface UseActiveSubscriptionsResult {
@@ -95,12 +99,16 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    loadSubs(user.uid).then((snap) => {
-      if (cancelled) return;
-      setActiveProviders(snap.active);
-      setSeriesOverrides(snap.overrides);
-      setLoading(false);
-    });
+    const refresh = () => {
+      loadSubs(user.uid).then((snap) => {
+        if (cancelled) return;
+        setActiveProviders(snap.active);
+        setSeriesOverrides(snap.overrides);
+        setLoading(false);
+      });
+    };
+    refresh();
+    listeners.add(refresh);
     // Auch hasAnySubscription separat ermitteln (auch inaktive Abos zählen)
     dbRef(userPath(user.uid, 'subscriptions', 'providers'))
       .once('value')
@@ -112,6 +120,7 @@ export function useActiveSubscriptions(): UseActiveSubscriptionsResult {
       .catch((error) => console.error('Abo-Status konnte nicht geladen werden:', error));
     return () => {
       cancelled = true;
+      listeners.delete(refresh);
     };
   }, [user]);
 

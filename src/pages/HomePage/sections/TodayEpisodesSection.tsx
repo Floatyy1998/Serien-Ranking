@@ -9,7 +9,7 @@ import { useTheme } from '../../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
-import { resolveProviderOverlay } from '../../../lib/providerMerge';
+import { pickPreferredProvider, resolveProviderOverlay } from '../../../lib/providerMerge';
 import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import {
   buildFillerLookup,
@@ -71,7 +71,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
   const { currentTheme } = useTheme();
   const accentColor = currentTheme.status?.warning || '#f59e0b';
   const { isMobile } = useDeviceType();
-  const { getSeriesOverride } = useActiveSubscriptions();
+  const { activeProviders, getSeriesOverride } = useActiveSubscriptions();
   const { seriesList } = useSeriesList();
   const fillerCatalog = useAnimeFillerCatalog();
 
@@ -134,10 +134,14 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                   posterAlt={episode.seriesTitle}
                   accentColor={accentColor}
                   posterOverlay={(() => {
-                    const fallbackLogo =
-                      episode.providerLogo || episode.provider?.provider?.[0]?.logo;
-                    const fallbackName =
-                      episode.providerName || episode.provider?.provider?.[0]?.name || '';
+                    // Abo-Präferenz: läuft die Serie auch auf einem aktiven Abo,
+                    // zeigt die Karte dessen Logo statt des ersten TMDB-Providers.
+                    const preferred = pickPreferredProvider(
+                      episode.provider?.provider,
+                      activeProviders
+                    );
+                    const fallbackLogo = preferred?.logo || episode.providerLogo;
+                    const fallbackName = preferred?.name || episode.providerName || '';
                     const resolved = resolveProviderOverlay(
                       getSeriesOverride(episode.seriesId),
                       fallbackLogo,

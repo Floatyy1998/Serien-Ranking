@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { renderHook, waitFor } from '@testing-library/react';
+import { cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { invalidateActiveSubscriptions, useActiveSubscriptions } from './useActiveSubscriptions';
 import type { Series } from '../types/Series';
@@ -45,6 +45,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // Erst unmounten, dann invalidieren — invalidate() benachrichtigt gemountete
+  // Hooks (Neu-Laden), was sonst den Modul-Cache des naechsten Tests vergiftet.
+  cleanup();
   invalidateActiveSubscriptions();
 });
 

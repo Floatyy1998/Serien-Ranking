@@ -144,3 +144,25 @@ export function mergeProviders(input: MergeProviderInput): MergedProvider[] {
 export function mergeProviderNames(input: MergeProviderInput): string[] {
   return mergeProviders(input).map((p) => p.name);
 }
+
+/**
+ * Waehlt aus einer Provider-Liste den anzuzeigenden Eintrag: bevorzugt einen
+ * Dienst, den der User aktiv abonniert hat (Serie laeuft z.B. auf WOW UND
+ * HBO Max → zeige das eigene Abo), sonst den ersten Eintrag.
+ */
+export function pickPreferredProvider<T extends RawProvider>(
+  providers: T[] | undefined,
+  activeProviders: Set<string> | undefined
+): T | undefined {
+  if (!providers || providers.length === 0) return undefined;
+  if (activeProviders && activeProviders.size > 0) {
+    const hit = providers.find((p) => {
+      const name = p.name ?? p.provider_name;
+      if (!name) return false;
+      const normalized = normalizeProviderName(name);
+      return normalized !== null && activeProviders.has(normalized);
+    });
+    if (hit) return hit;
+  }
+  return providers[0];
+}
