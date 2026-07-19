@@ -114,7 +114,7 @@ export const useWatchNextEpisodes = (
                 : 0;
             rewatches.push({
               seriesId: series.id,
-              seriesTitle: series.title,
+              seriesTitle: series.title || '',
               poster: getImageUrl(series.poster),
               seasonIndex: seasonIndex,
               episodeIndex: rewatchEpisode.episodeIndex,
@@ -161,7 +161,7 @@ export const useWatchNextEpisodes = (
             if (!hasEpisodeAired(episode)) continue;
             episodes.push({
               seriesId: series.id,
-              seriesTitle: series.title,
+              seriesTitle: series.title || '',
               poster: getImageUrl(series.poster),
               seasonIndex,
               episodeIndex,
