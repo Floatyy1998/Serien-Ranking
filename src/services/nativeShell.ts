@@ -16,7 +16,9 @@ interface CapacitorBadgePlugin {
 }
 
 interface CapacitorAppShortcutsPlugin {
-  set?: (options: { shortcuts: { id: string; title: string }[] }) => Promise<void>;
+  set?: (options: {
+    shortcuts: { id: string; title: string; description?: string; iosIcon?: string }[];
+  }) => Promise<void>;
   addListener?: (
     event: 'click',
     handler: (payload: { shortcutId: string }) => void
@@ -96,12 +98,24 @@ const routerNavigate = (path: string): void => {
 const initAppShortcuts = (cap: CapacitorGlobal): void => {
   const shortcuts = cap.Plugins?.AppShortcuts;
   if (!shortcuts?.set) return;
+  // iOS zeigt ohne Icon nur einen generischen Punkt; iosIcon (SF Symbol)
+  // wirkt dort laut Plugin-Doku nur zusammen mit description.
   shortcuts
     .set({
       shortcuts: [
-        { id: 'watch-next', title: 'Weiter schauen' },
-        { id: 'search', title: 'Suche' },
-        { id: 'calendar', title: 'Kalender' },
+        {
+          id: 'watch-next',
+          title: 'Weiter schauen',
+          description: 'Deine nächsten Folgen',
+          iosIcon: 'play.fill',
+        },
+        {
+          id: 'search',
+          title: 'Suche',
+          description: 'Serien & Filme finden',
+          iosIcon: 'magnifyingglass',
+        },
+        { id: 'calendar', title: 'Kalender', description: 'Kommende Folgen', iosIcon: 'calendar' },
       ],
     })
     .catch(() => {});

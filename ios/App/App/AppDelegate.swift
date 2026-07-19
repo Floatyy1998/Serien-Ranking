@@ -51,6 +51,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
+    // Home-Screen-Shortcut (Long-Press aufs Icon) ans AppShortcuts-Plugin
+    // weiterreichen — ohne diesen Handler kommt der Klick nie im Web-Layer an.
+    func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("handleAppShortcutNotification"),
+            object: nil,
+            userInfo: ["shortcutItem": shortcutItem]
+        )
+        completionHandler(true)
+    }
+
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
         // Called when the app was launched with a url. Feel free to add additional processing here,
         // but if you want the App API to support tracking app url opens, make sure to keep this call
