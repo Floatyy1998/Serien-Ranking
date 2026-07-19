@@ -2,13 +2,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 
-const { seriesValue, movieValue } = vi.hoisted(() => ({
+// Stabile Identitäten sind Pflicht: ein pro Render frisches user-Objekt lässt
+// die Effect-Dependency permanent wechseln → endlose Transition-Render-Schleife.
+const { authValue, seriesValue, movieValue } = vi.hoisted(() => ({
+  authValue: { user: { uid: 'u1' } },
   seriesValue: { seriesList: [] as unknown[] },
   movieValue: { movieList: [] as unknown[] },
 }));
 
 vi.mock('firebase/compat/database', () => ({}));
-vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: { uid: 'u1' } }) }));
+vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => authValue }));
 vi.mock('../../contexts/SeriesListContext', () => ({ useSeriesList: () => seriesValue }));
 vi.mock('../../contexts/MovieListContext', () => ({ useMovieList: () => movieValue }));
 vi.mock('../../lib/rating/rating', () => ({ calculateOverallRating: () => '8.00' }));
