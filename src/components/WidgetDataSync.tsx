@@ -18,6 +18,10 @@ const dayLabel = (day: Date, today: Date): string => {
   return `${WEEKDAYS[day.getDay()]} ${day.getDate()}.`;
 };
 
+// Lokales Kalenderdatum (kein ISO/UTC — Widgets vergleichen lokal)
+const isoDay = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
 export const WidgetDataSync = () => {
   const todayEpisodes = useTodayEpisodes();
   const { countdowns } = useSeriesCountdowns();
@@ -56,7 +60,11 @@ export const WidgetDataSync = () => {
     return Array.from(byDay.entries())
       .sort(([a], [b]) => a - b)
       .slice(0, 7)
-      .map(([t, eps]) => ({ label: dayLabel(new Date(t), today), eps }));
+      .map(([t, eps]) => ({
+        label: dayLabel(new Date(t), today),
+        date: isoDay(new Date(t)),
+        eps,
+      }));
   }, [seriesList]);
 
   useEffect(() => {
@@ -77,6 +85,9 @@ export const WidgetDataSync = () => {
         poster: smallPoster(c.posterUrl),
       })),
       week,
+      // Widgets rechnen Tage/Labels beim Rendern selbst neu — generatedDate
+      // verrät ihnen, ob "today" noch von heute stammt (App war ggf. tagelang zu).
+      generatedDate: isoDay(new Date()),
     };
     const json = JSON.stringify(payload);
     if (json === lastJson.current) return;

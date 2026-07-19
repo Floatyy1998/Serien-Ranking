@@ -14,10 +14,12 @@ struct WidgetPayload: Decodable {
   struct Countdown: Decodable {
     let title: String
     let days: Int
+    let date: String?
     let poster: String?
   }
   struct Day: Decodable {
     let label: String
+    let date: String?
     let eps: [Ep2]
   }
   struct Ep2: Decodable {
@@ -29,29 +31,105 @@ struct WidgetPayload: Decodable {
   let countdown: Countdown?
   let countdowns: [Countdown]?
   let week: [Day]?
+  let generatedDate: String?
 
-  static let empty = WidgetPayload(today: [], countdown: nil, countdowns: nil, week: nil)
+  static let empty = WidgetPayload(today: [], countdown: nil, countdowns: nil, week: nil, generatedDate: nil)
   static let preview = WidgetPayload(
     today: [
       Ep(title: "One Piece", ep: "S21E135", watched: false, poster: nil),
       Ep(title: "Severance", ep: "S2E8", watched: true, poster: nil),
     ],
-    countdown: Countdown(title: "Stranger Things", days: 12, poster: nil),
+    countdown: Countdown(title: "Stranger Things", days: 12, date: nil, poster: nil),
     countdowns: [
-      Countdown(title: "Stranger Things", days: 12, poster: nil),
-      Countdown(title: "House of the Dragon", days: 40, poster: nil),
+      Countdown(title: "Stranger Things", days: 12, date: nil, poster: nil),
+      Countdown(title: "House of the Dragon", days: 40, date: nil, poster: nil),
     ],
     week: [
-      Day(label: "HEUTE", eps: [Ep2(title: "One Piece", ep: "S21E135", poster: nil)]),
-      Day(label: "MORGEN", eps: [Ep2(title: "Severance", ep: "S2E8", poster: nil)]),
-    ]
+      Day(label: "HEUTE", date: nil, eps: [Ep2(title: "One Piece", ep: "S21E135", poster: nil)]),
+      Day(label: "MORGEN", date: nil, eps: [Ep2(title: "Severance", ep: "S2E8", poster: nil)]),
+    ],
+    generatedDate: nil
   )
 
   static func loadFromStore() -> WidgetPayload {
     guard let data = WidgetStore.load(),
           let payload = try? JSONDecoder().decode(WidgetPayload.self, from: data)
     else { return .empty }
-    return payload
+    return payload.refreshed()
+  }
+
+  // MARK: Tageswechsel-Ableitung — die App schiebt Daten nur, wenn sie läuft.
+  // Damit das Widget nach Mitternacht nicht Gestriges zeigt, werden Tage/Labels
+  // beim Rendern aus den absoluten Daten neu berechnet. Felder ohne Datum
+  // (alte Payloads) bleiben unverändert.
+
+  private static func parseDay(_ s: String?) -> Date? {
+    guard let s = s, s.count >= 10 else { return nil }
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd"
+    f.timeZone = .current
+    return f.date(from: String(s.prefix(10)))
+  }
+
+  private static func isoDay(_ date: Date) -> String {
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd"
+    f.timeZone = .current
+    return f.string(from: date)
+  }
+
+  func refreshed(now: Date = Date()) -> WidgetPayload {
+    let cal = Calendar.current
+    let todayStart = cal.startOfDay(for: now)
+    let todayStr = WidgetPayload.isoDay(now)
+    let weekdays = ["SO", "MO", "DI", "MI", "DO", "FR", "SA"]
+
+    func dayDiff(_ date: Date) -> Int {
+      cal.dateComponents([.day], from: todayStart, to: cal.startOfDay(for: date)).day ?? 0
+    }
+
+    // Woche: vergangene Tage entfernen, Labels relativ zu jetzt neu setzen
+    let newWeek: [Day]? = week.map { days in
+      days.compactMap { day in
+        guard let d = WidgetPayload.parseDay(day.date) else { return day }
+        let diff = dayDiff(d)
+        if diff < 0 { return nil }
+        let label = diff == 0
+          ? "HEUTE"
+          : diff == 1
+            ? "MORGEN"
+            : "\(weekdays[cal.component(.weekday, from: d) - 1]) \(cal.component(.day, from: d))."
+        return Day(label: label, date: day.date, eps: day.eps)
+      }
+    }
+
+    // Countdowns: Tage aus dem Zieldatum neu rechnen, Vergangenes entfernen
+    func fix(_ cd: Countdown) -> Countdown? {
+      guard let d = WidgetPayload.parseDay(cd.date) else { return cd }
+      let diff = dayDiff(d)
+      if diff < 0 { return nil }
+      return Countdown(title: cd.title, days: diff, date: cd.date, poster: cd.poster)
+    }
+    let newCountdowns = countdowns.map { $0.compactMap(fix) }
+    let newCountdown = countdown.flatMap(fix)
+
+    // "Heute": stammt die Payload von einem früheren Tag, aus der Woche ableiten
+    var newToday = today
+    if let gen = generatedDate, gen != todayStr {
+      let match = newWeek?.first { day in
+        guard let d = day.date else { return false }
+        return String(d.prefix(10)) == todayStr
+      }
+      newToday = (match?.eps ?? []).map { Ep(title: $0.title, ep: $0.ep, watched: false, poster: $0.poster) }
+    }
+
+    return WidgetPayload(
+      today: newToday,
+      countdown: newCountdown,
+      countdowns: newCountdowns,
+      week: newWeek,
+      generatedDate: generatedDate
+    )
   }
 
   var allPosterURLs: [String] {
@@ -110,7 +188,15 @@ struct TodayProvider: TimelineProvider {
 
   private func entryTimeline(_ payload: WidgetPayload, _ posters: [String: UIImage]) -> Timeline<TodayEntry> {
     let entry = TodayEntry(date: Date(), payload: payload, posters: posters)
-    return Timeline(entries: [entry], policy: .after(Date().addingTimeInterval(1800)))
+    // Spätestens alle 30 Min neu — oder direkt nach Mitternacht, damit der
+    // Tageswechsel (HEUTE/Countdown) nicht bis zu 30 Min alt aussieht.
+    let now = Date()
+    let cal = Calendar.current
+    var refresh = now.addingTimeInterval(1800)
+    if let tomorrow = cal.date(byAdding: .day, value: 1, to: cal.startOfDay(for: now)) {
+      refresh = min(refresh, tomorrow.addingTimeInterval(60))
+    }
+    return Timeline(entries: [entry], policy: .after(refresh))
   }
 }
 
