@@ -31,7 +31,7 @@ afterEach(() => cleanup());
 describe('MovieActionButtons', () => {
   it('renders the add button for a read-only tmdb movie and invokes onAddMovie', () => {
     render(<MovieActionButtons {...baseProps} isReadOnlyTmdbMovie={true} />);
-    const addBtn = screen.getByText('Film hinzufugen');
+    const addBtn = screen.getByText('Film hinzufügen');
     fireEvent.click(addBtn);
     expect(baseProps.onAddMovie).toHaveBeenCalled();
   });

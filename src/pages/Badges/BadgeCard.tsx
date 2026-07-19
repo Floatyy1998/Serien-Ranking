@@ -6,19 +6,20 @@ import { BadgeIcon } from '../../features/badges/BadgeIcons';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { getRarityColor } from './badgeCardHelpers';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 type ThemeColors = ReturnType<typeof useTheme>['currentTheme'];
 
 const getRarityLabel = (rarity: string): string => {
   switch (rarity) {
     case 'common':
-      return 'Gewöhnlich';
+      return t('Gewöhnlich');
     case 'rare':
-      return 'Selten';
+      return t('Selten');
     case 'epic':
-      return 'Episch';
+      return t('Episch');
     case 'legendary':
-      return 'Legendär';
+      return t('Legendär');
     default:
       return rarity;
   }

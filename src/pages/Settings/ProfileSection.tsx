@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface ProfileSectionProps {
   photoURL: string;
@@ -45,7 +46,7 @@ export const ProfileSection = memo(
             {photoURL ? (
               <img
                 src={photoURL}
-                alt={`Profilbild von ${displayName || 'Benutzer'}`}
+                alt={t('Profilbild von {name}', { name: displayName || t('Benutzer') })}
                 className="settings-avatar-image"
                 style={{ borderColor: currentTheme.primary }}
                 loading="lazy"
@@ -65,7 +66,7 @@ export const ProfileSection = memo(
               whileTap={tapScaleTight}
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              aria-label="Profilbild hochladen"
+              aria-label={t('Profilbild hochladen')}
               className="settings-avatar-upload-btn"
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
@@ -85,7 +86,7 @@ export const ProfileSection = memo(
             style={{ display: 'none' }}
           />
           <p className="settings-avatar-hint" style={{ color: currentTheme.text.muted }}>
-            Tippe auf die Kamera um ein neues Profilbild hochzuladen
+            {t('Tippe auf die Kamera um ein neues Profilbild hochzuladen')}
           </p>
         </div>
 
@@ -94,7 +95,7 @@ export const ProfileSection = memo(
           <div className="settings-field-row">
             <div className="settings-field-content">
               <label className="settings-field-label" style={{ color: currentTheme.text.muted }}>
-                Anzeigename
+                {t('Anzeigename')}
               </label>
               {displayNameEditable ? (
                 <div className="settings-field-edit-row">
@@ -108,7 +109,7 @@ export const ProfileSection = memo(
                       borderColor: currentTheme.primary,
                       color: currentTheme.text.primary,
                     }}
-                    placeholder="Anzeigename eingeben"
+                    placeholder={t('Anzeigename eingeben')}
                     autoFocus
                   />
                   <motion.button
@@ -125,7 +126,7 @@ export const ProfileSection = memo(
                 </div>
               ) : (
                 <span className="settings-field-value" style={{ color: currentTheme.text.primary }}>
-                  {displayName || 'Nicht festgelegt'}
+                  {displayName || t('Nicht festgelegt')}
                 </span>
               )}
             </div>
@@ -133,7 +134,7 @@ export const ProfileSection = memo(
               <motion.button
                 whileTap={tapScaleTight}
                 onClick={onEditDisplayName}
-                aria-label="Anzeigename ändern"
+                aria-label={t('Anzeigename ändern')}
                 className="settings-field-edit-btn"
                 style={{ color: currentTheme.text.muted }}
               >

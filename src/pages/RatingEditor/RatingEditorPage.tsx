@@ -1,6 +1,7 @@
 import { Delete, Save, Star } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { BackButton, Dialog } from '../../components/ui';
 import { useRatingEditorData } from './useRatingEditorData';
 import { OverallRatingSection } from './OverallRatingSection';
@@ -38,7 +39,7 @@ export const RatingEditorPage = () => {
           }}
         >
           <BackButton />
-          <h1>Nicht gefunden</h1>
+          <h1>{t('Nicht gefunden')}</h1>
         </div>
       </div>
     );
@@ -69,14 +70,14 @@ export const RatingEditorPage = () => {
           className={`rate-tab-btn ${activeTab === 'overall' ? 'active' : ''}`}
           onClick={() => setActiveTab('overall')}
         >
-          Gesamtbewertung
+          {t('Gesamtbewertung')}
         </button>
         {Object.keys(genreRatings).length > 0 && (
           <button
             className={`rate-tab-btn ${activeTab === 'genre' ? 'active' : ''}`}
             onClick={() => setActiveTab('genre')}
           >
-            Genres
+            {t('Genres')}
           </button>
         )}
       </div>
@@ -107,7 +108,7 @@ export const RatingEditorPage = () => {
           disabled={isSaving}
         >
           <Delete />
-          <span>Löschen</span>
+          <span>{t('Löschen')}</span>
         </motion.button>
 
         <motion.button
@@ -117,7 +118,7 @@ export const RatingEditorPage = () => {
           disabled={isSaving}
         >
           <Save />
-          <span>Speichern</span>
+          <span>{t('Speichern')}</span>
         </motion.button>
       </div>
 
@@ -128,12 +129,12 @@ export const RatingEditorPage = () => {
       <Dialog
         open={deleteConfirmOpen}
         onClose={cancelDelete}
-        title="Bewertung löschen"
-        message={`Bewertung für "${item.title}" wirklich löschen?`}
+        title={t('Bewertung löschen')}
+        message={t('Bewertung für "{title}" wirklich löschen?', { title: item.title ?? '' })}
         type="warning"
         actions={[
-          { label: 'Abbrechen', onClick: cancelDelete, variant: 'secondary' },
-          { label: 'Löschen', onClick: confirmDelete, variant: 'danger' },
+          { label: t('Abbrechen'), onClick: cancelDelete, variant: 'secondary' },
+          { label: t('Löschen'), onClick: confirmDelete, variant: 'danger' },
         ]}
       />
     </div>

@@ -6,6 +6,7 @@ import { getFormattedDate } from '../../lib/date/date.utils';
 import { HorizontalScrollContainer } from '../ui';
 import type { CreditItem, PersonDetailsData } from './CastCrew.types';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PersonDetailsViewProps {
   personDetails: PersonDetailsData;
@@ -39,7 +40,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
           cursor: 'pointer',
         }}
       >
-        ← Zurück
+        ← {t('Zurück')}
       </button>
 
       {/* Person Info */}
@@ -108,7 +109,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                 margin: 0,
               }}
             >
-              Geboren: {getFormattedDate(personDetails.birthday)}
+              {t('Geboren:')} {getFormattedDate(personDetails.birthday)}
             </p>
           )}
         </div>
@@ -123,7 +124,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
             marginBottom: '12px',
           }}
         >
-          Bekannt aus
+          {t('Bekannt aus')}
         </h4>
 
         <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
@@ -252,7 +253,7 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                     color: currentTheme.text.muted,
                   }}
                 >
-                  als {credit.character}
+                  {t('als {rolle}', { rolle: credit.character })}
                 </p>
               )}
             </motion.div>

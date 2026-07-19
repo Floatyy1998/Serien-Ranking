@@ -6,6 +6,7 @@ import type { CSSProperties, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -50,9 +51,11 @@ export const EpisodeListItem = memo(
           className="episode-item__toggle"
           role="button"
           tabIndex={0}
-          aria-label={`Folge ${index + 1}: ${episode.name}, ${
-            episode.watched ? 'gesehen' : 'nicht gesehen'
-          }`}
+          aria-label={t('Folge {n}: {name}, {status}', {
+            n: index + 1,
+            name: episode.name,
+            status: episode.watched ? t('gesehen') : t('nicht gesehen'),
+          })}
           whileTap={tapScaleSmall}
           onClick={onEpisodeClick}
           onKeyDown={handleToggleKeyDown}
@@ -90,13 +93,13 @@ export const EpisodeListItem = memo(
         </motion.div>
 
         {/* Discussion Control: visuell getrenntes Geschwister, nicht im Toggle verschachtelt */}
-        <Tooltip title="Diskussion" arrow>
+        <Tooltip title={t('Diskussion')} arrow>
           <button
             className="episode-discussion-btn"
             aria-label={
               discussionCount > 0
-                ? `Diskussion zu Folge ${index + 1}, ${discussionCount} Beiträge`
-                : `Diskussion zu Folge ${index + 1}`
+                ? t('Diskussion zu Folge {n}, {c} Beiträge', { n: index + 1, c: discussionCount })
+                : t('Diskussion zu Folge {n}', { n: index + 1 })
             }
             onClick={(e) => {
               e.stopPropagation();

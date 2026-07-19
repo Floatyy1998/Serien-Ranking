@@ -15,17 +15,18 @@ import type { MangaDexChapterInfo } from '../../../services/mangaUpdatesService'
 import type { AniListMangaSearchResult, Manga } from '../../../types/Manga';
 import { inferStatus } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';
+import { appLocale, t } from '../../../services/i18n';
 
 // Status-Optionen als Funktion, damit "Geplant" die Theme-Secondary-Farbe nutzt
 // (Farben werden mit Hex-Alpha-Suffix kombiniert, daher kein var() möglich)
 const getStatusOptions = (
   secondaryColor: string
 ): { value: Manga['readStatus']; label: string; color: string }[] => [
-  { value: 'reading', label: 'Lese ich', color: '#3b82f6' },
-  { value: 'completed', label: 'Abgeschlossen', color: '#22c55e' },
-  { value: 'paused', label: 'Pausiert', color: '#f59e0b' },
-  { value: 'dropped', label: 'Abgebrochen', color: '#ef4444' },
-  { value: 'planned', label: 'Geplant', color: secondaryColor },
+  { value: 'reading', label: t('Lese ich'), color: '#3b82f6' },
+  { value: 'completed', label: t('Abgeschlossen'), color: '#22c55e' },
+  { value: 'paused', label: t('Pausiert'), color: '#f59e0b' },
+  { value: 'dropped', label: t('Abgebrochen'), color: '#ef4444' },
+  { value: 'planned', label: t('Geplant'), color: secondaryColor },
 ];
 
 const PLATFORM_OPTIONS = [
@@ -125,7 +126,7 @@ export const MangaDetailBody = ({
             delay={0.12}
             className="manga-detail-section--wide"
           >
-            <SectionTitle color={currentTheme.text.primary}>Kapitel-Releases</SectionTitle>
+            <SectionTitle color={currentTheme.text.primary}>{t('Kapitel-Releases')}</SectionTitle>
 
             {/* Estimated next release — nur bei echt laufenden Manga, nicht bei
                 inferred Hiatus (da macht ein Schaetzer keinen Sinn). */}
@@ -147,18 +148,23 @@ export const MangaDetailBody = ({
                   <div style={{ fontSize: 20 }}>📅</div>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: currentTheme.primary }}>
-                      Nächstes Kapitel ~
-                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString('de-DE', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
+                      {t('Nächstes Kapitel')} ~
+                      {new Date(chapterInfo.estimatedNextDate).toLocaleDateString(
+                        appLocale === 'en' ? 'en-US' : 'de-DE',
+                        {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        }
+                      )}
                     </div>
                     {chapterInfo.avgDaysBetweenReleases && (
                       <div
                         style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.7 }}
                       >
-                        Erscheint ca. alle {chapterInfo.avgDaysBetweenReleases} Tage
+                        {t('Erscheint ca. alle {n} Tage', {
+                          n: chapterInfo.avgDaysBetweenReleases,
+                        })}
                       </div>
                     )}
                   </div>
@@ -188,7 +194,7 @@ export const MangaDetailBody = ({
                         minWidth: 50,
                       }}
                     >
-                      Kap. {ch.chapter}
+                      {t('Kap.')} {ch.chapter}
                     </span>
                     <span
                       style={{
@@ -211,17 +217,20 @@ export const MangaDetailBody = ({
                         flexShrink: 0,
                       }}
                     >
-                      {new Date(ch.publishedAt).toLocaleDateString('de-DE', {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
+                      {new Date(ch.publishedAt).toLocaleDateString(
+                        appLocale === 'en' ? 'en-US' : 'de-DE',
+                        {
+                          day: 'numeric',
+                          month: 'short',
+                        }
+                      )}
                     </span>
                     {isConfirming ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                         <span
                           style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.8 }}
                         >
-                          Zurücksetzen?
+                          {t('Zurücksetzen?')}
                         </span>
                         <button
                           type="button"
@@ -235,7 +244,7 @@ export const MangaDetailBody = ({
                             color: currentTheme.primary,
                           }}
                         >
-                          Ja
+                          {t('Ja')}
                         </button>
                         <button
                           type="button"
@@ -246,7 +255,7 @@ export const MangaDetailBody = ({
                             color: currentTheme.text.secondary,
                           }}
                         >
-                          Nein
+                          {t('Nein')}
                         </button>
                       </div>
                     ) : (
@@ -255,8 +264,8 @@ export const MangaDetailBody = ({
                         className="manga-chapter-read-btn"
                         aria-label={
                           isRead
-                            ? `Fortschritt auf Kapitel ${ch.chapter} zurücksetzen`
-                            : `Bis Kapitel ${ch.chapter} als gelesen markieren`
+                            ? t('Fortschritt auf Kapitel {n} zurücksetzen', { n: ch.chapter })
+                            : t('Bis Kapitel {n} als gelesen markieren', { n: ch.chapter })
                         }
                         aria-pressed={isRead}
                         onClick={() => handleMarkReadUpTo(ch.chapter)}
@@ -298,14 +307,14 @@ export const MangaDetailBody = ({
       </Section>
 
       <Section bg={`${currentTheme.text.primary}08`} delay={0.2}>
-        <SectionTitle color={currentTheme.text.primary}>Bewertung</SectionTitle>
+        <SectionTitle color={currentTheme.text.primary}>{t('Bewertung')}</SectionTitle>
         <div className="manga-detail-rating">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => (
             <button
               key={star}
               type="button"
               className="manga-detail-star-btn"
-              aria-label={`${star} von 10 Sternen`}
+              aria-label={t('{n} von 10 Sternen', { n: star })}
               aria-pressed={star <= userRating}
               onClick={() => onRating(star)}
             >
@@ -334,7 +343,7 @@ export const MangaDetailBody = ({
       </Section>
 
       <Section bg={`${currentTheme.text.primary}08`} delay={0.25}>
-        <SectionTitle color={currentTheme.text.primary}>Lese-Plattform</SectionTitle>
+        <SectionTitle color={currentTheme.text.primary}>{t('Lese-Plattform')}</SectionTitle>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {PLATFORM_OPTIONS.map((p) => (
             <button
@@ -360,14 +369,14 @@ export const MangaDetailBody = ({
               onClick={() => setShowCustomPlatform(true)}
               style={{ color: currentTheme.text.secondary }}
             >
-              + Andere
+              {t('+ Andere')}
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 6 }}>
               <input
                 value={customPlatform}
                 onChange={(e) => setCustomPlatform(e.target.value)}
-                placeholder="Plattform..."
+                placeholder={t('Plattform...')}
                 style={{
                   padding: '6px 10px',
                   borderRadius: 8,
@@ -390,14 +399,14 @@ export const MangaDetailBody = ({
         </div>
         {manga.readingPlatform && !PLATFORM_OPTIONS.includes(manga.readingPlatform) && (
           <div style={{ marginTop: 8, fontSize: 12, color: currentTheme.primary, opacity: 0.8 }}>
-            Aktuell: {manga.readingPlatform}
+            {t('Aktuell:')} {manga.readingPlatform}
           </div>
         )}
       </Section>
 
       <Section bg={`${currentTheme.text.primary}08`} delay={0.3}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <SectionTitle color={currentTheme.text.primary}>Notizen</SectionTitle>
+          <SectionTitle color={currentTheme.text.primary}>{t('Notizen')}</SectionTitle>
           {/* F13: Autosave — kein Bearbeiten/Speichern-Umweg, nur ein dezenter Status. */}
           <span
             aria-live="polite"
@@ -409,7 +418,11 @@ export const MangaDetailBody = ({
               transition: 'opacity 0.2s',
             }}
           >
-            {notesStatus === 'saving' ? 'Speichert…' : notesStatus === 'saved' ? 'Gespeichert' : ''}
+            {notesStatus === 'saving'
+              ? t('Speichert…')
+              : notesStatus === 'saved'
+                ? t('Gespeichert')
+                : ''}
           </span>
         </div>
         <textarea
@@ -417,7 +430,7 @@ export const MangaDetailBody = ({
           onChange={(e) => onNotesChange(e.target.value)}
           onFocus={onNotesFocus}
           onBlur={onNotesBlur}
-          placeholder="Deine Notizen zu diesem Manga…"
+          placeholder={t('Deine Notizen zu diesem Manga…')}
           style={{
             width: '100%',
             minHeight: 80,
@@ -441,7 +454,7 @@ export const MangaDetailBody = ({
           delay={0.35}
           className="manga-detail-section--desc"
         >
-          <SectionTitle color={currentTheme.text.primary}>Beschreibung</SectionTitle>
+          <SectionTitle color={currentTheme.text.primary}>{t('Beschreibung')}</SectionTitle>
           <p className="manga-detail-description" style={{ color: currentTheme.text.secondary }}>
             {cleanDescription}
           </p>
@@ -450,7 +463,7 @@ export const MangaDetailBody = ({
 
       {relations.length > 0 && (
         <Section bg={`${currentTheme.text.primary}08`} delay={0.4}>
-          <SectionTitle color={currentTheme.text.primary}>Verwandte Titel</SectionTitle>
+          <SectionTitle color={currentTheme.text.primary}>{t('Verwandte Titel')}</SectionTitle>
           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
             {relations.map((rel) => (
               <div
@@ -510,7 +523,7 @@ export const MangaDetailBody = ({
 
       {recommendations.length > 0 && (
         <Section bg={`${currentTheme.text.primary}08`} delay={0.45}>
-          <SectionTitle color={currentTheme.text.primary}>Empfehlungen</SectionTitle>
+          <SectionTitle color={currentTheme.text.primary}>{t('Empfehlungen')}</SectionTitle>
           <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
             {recommendations.map((rec) => {
               const m = rec.node.mediaRecommendation;
@@ -607,7 +620,7 @@ export const MangaDetailBody = ({
             ) : (
               <VisibilityOff style={{ fontSize: 18 }} />
             )}
-            {manga.hidden ? 'Einblenden' : 'Verstecken'}
+            {manga.hidden ? t('Einblenden') : t('Verstecken')}
           </button>
 
           {!showDeleteConfirm ? (
@@ -617,19 +630,19 @@ export const MangaDetailBody = ({
               style={{ color: '#ef4444' }}
             >
               <Delete style={{ fontSize: 18 }} />
-              Entfernen
+              {t('Entfernen')}
             </button>
           ) : (
             <div className="manga-detail-delete-confirm">
               <span style={{ color: currentTheme.text.secondary, fontSize: 14 }}>
-                Wirklich entfernen?
+                {t('Wirklich entfernen?')}
               </span>
               <button
                 className="manga-detail-delete-confirm-btn"
                 onClick={onDelete}
                 style={{ background: '#ef444420', color: '#ef4444' }}
               >
-                Ja
+                {t('Ja')}
               </button>
               <button
                 className="manga-detail-delete-confirm-btn"
@@ -639,7 +652,7 @@ export const MangaDetailBody = ({
                   color: currentTheme.text.secondary,
                 }}
               >
-                Nein
+                {t('Nein')}
               </button>
             </div>
           )}

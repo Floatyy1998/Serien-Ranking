@@ -2,6 +2,7 @@ import { PlayArrow, Timer, TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { ProgressBar } from '../../components/ui';
 import { formatTime } from './useCatchUpData';
 
@@ -50,7 +51,7 @@ export const HeroStats = memo<HeroStatsProps>(({ totalEpisodes, totalMinutes, av
           </motion.div>
           <div className="cu-hero-value">{totalEpisodes}</div>
           <div className="cu-hero-label" style={{ color: currentTheme.text.muted }}>
-            Episoden
+            {t('Episoden')}
           </div>
         </div>
 
@@ -90,7 +91,7 @@ export const HeroStats = memo<HeroStatsProps>(({ totalEpisodes, totalMinutes, av
           </motion.div>
           <div className="cu-hero-value">{Math.min(99, Math.round(avgProgress))}%</div>
           <div className="cu-hero-label" style={{ color: currentTheme.text.muted }}>
-            Fortschritt
+            {t('Fortschritt')}
           </div>
         </div>
       </div>

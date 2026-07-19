@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../services/backendApi';
+import { t } from '../../services/i18n';
 import type { DiscoverItem } from './discoverItemHelpers';
 
 interface UseDiscoverActionsResult {
@@ -72,7 +73,7 @@ export const useDiscoverActions = (
       if (!user) {
         setDialog({
           open: true,
-          message: 'Bitte einloggen um Inhalte hinzuzufügen!',
+          message: t('Bitte einloggen um Inhalte hinzuzufügen!'),
           type: 'warning',
         });
         return;
@@ -98,7 +99,7 @@ export const useDiscoverActions = (
           const addedTitle = item.title || item.name;
           setSnackbar({
             open: true,
-            message: `"${addedTitle}" wurde erfolgreich hinzugefügt!`,
+            message: t('"{title}" wurde erfolgreich hinzugefügt!', { title: addedTitle ?? '' }),
           });
 
           if (item.type === 'series') {

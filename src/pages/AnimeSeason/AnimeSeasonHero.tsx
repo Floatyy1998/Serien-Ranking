@@ -34,12 +34,14 @@ import {
   formatBadgeDe,
   formatStartLong,
   isSameDay,
+  isSeriesFormat,
   shortCountdown,
   startDateToDate,
   stripDescription,
 } from './animeFormat';
 import type { TmdbProviderInfo } from './resolveTmdbId';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
+import { t } from '../../services/i18n';
 
 interface AnimeSeasonHeroProps {
   anime: SeasonAnime;
@@ -84,15 +86,15 @@ function CountdownTiles({ target }: { target: number }) {
 
   const total = Math.max(0, Math.floor((target - nowTs) / 1000));
   const tiles: { value: number; label: string }[] = [
-    { value: Math.floor(total / 86400), label: 'Tage' },
-    { value: Math.floor((total % 86400) / 3600), label: 'Std' },
+    { value: Math.floor(total / 86400), label: t('Tage') },
+    { value: Math.floor((total % 86400) / 3600), label: t('Std') },
     { value: Math.floor((total % 3600) / 60), label: 'Min' },
     // Sekunden-Kachel nur ohne reduced motion (sonst tickt nichts sichtbar).
-    ...(reducedMotion ? [] : [{ value: total % 60, label: 'Sek' }]),
+    ...(reducedMotion ? [] : [{ value: total % 60, label: t('Sek') }]),
   ];
 
   return (
-    <div className="as-countdown" role="timer" aria-label="Countdown bis zur Premiere">
+    <div className="as-countdown" role="timer" aria-label={t('Countdown bis zur Premiere')}>
       {tiles.map((tile) => (
         <div
           key={tile.label}
@@ -127,7 +129,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
   /** Beschreibung aufgeklappt (Tap auf Text/„mehr" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = anime.title.english || anime.title.romaji || 'Unbekannter Titel';
+  const title = anime.title.english || anime.title.romaji || t('Unbekannter Titel');
   const banner = anime.bannerImage || '';
   const cover = anime.coverImage?.large || '';
   const coverColor = anime.coverImage?.color || currentTheme.primary;
@@ -136,7 +138,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
   // Fortsetzungs-Info zuerst.
   const formatBadge = formatBadgeDe(anime.format);
   const metaLine = [
-    formatBadge !== 'Serie' ? formatBadge : null,
+    isSeriesFormat(anime.format) ? null : formatBadge,
     continuationLabel(anime),
     buildMetaLine(anime, undefined, tmdbRating),
   ]
@@ -153,18 +155,19 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
   let startLine: string;
   let startColor: string;
   if (startDate && isSameDay(startDate, now)) {
-    startLine = isFuture ? 'Startet HEUTE' : 'HEUTE gestartet';
+    startLine = isFuture ? t('Startet HEUTE') : t('HEUTE gestartet');
     startColor = brightAccent;
   } else if (isFuture && startDate) {
     startLine = formatStartLong(startDate, now);
     startColor = brightAccent;
   } else if (anime.nextAiringEpisode) {
-    startLine = `Läuft · Ep ${anime.nextAiringEpisode.episode} in ${shortCountdown(
-      anime.nextAiringEpisode.timeUntilAiring
-    )}`;
+    startLine = t('Läuft · Ep {n} in {rest}', {
+      n: anime.nextAiringEpisode.episode,
+      rest: shortCountdown(anime.nextAiringEpisode.timeUntilAiring),
+    });
     startColor = currentTheme.status.success;
   } else {
-    startLine = 'Läuft';
+    startLine = t('Läuft');
     startColor = currentTheme.status.success;
   }
 
@@ -221,7 +224,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
         <span
           className="as-card-inlist-badge as-hero-inlist"
           style={{ background: `${currentTheme.primary}dd` }}
-          title="In deiner Liste"
+          title={t('In deiner Liste')}
         >
           <CheckCircle
             style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
@@ -231,8 +234,8 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
         <button
           type="button"
           className="as-card-add as-card-add--hero as-hero-inlist"
-          title="Zur Liste hinzufügen"
-          aria-label={`${title} zur Liste hinzufügen`}
+          title={t('Zur Liste hinzufügen')}
+          aria-label={t('{title} zur Liste hinzufügen', { title })}
           aria-busy={adding}
           onClick={(event) => {
             event.stopPropagation();
@@ -254,7 +257,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
         {/* Scharfes 2/3-Poster als stehende Karte (themed Placeholder als Fallback) */}
         <img
           src={cover || placeholder}
-          alt={`Poster von ${title}`}
+          alt={t('Poster von {title}', { title })}
           loading="lazy"
           decoding="async"
           className="as-hero-poster"
@@ -293,7 +296,7 @@ export const AnimeSeasonHero: React.FC<AnimeSeasonHeroProps> = ({
                     setDescExpanded((value) => !value);
                   }}
                 >
-                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+                  {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
                 </button>
               )}
             </>

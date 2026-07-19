@@ -10,6 +10,7 @@ import {
   ACCENT_COLORS,
 } from './constants';
 import { GenreBar } from './GenreBar';
+import { t } from '../../services/i18n';
 
 interface GenresTabProps {
   result: TasteMatchResult;
@@ -74,8 +75,10 @@ export const GenresTab: React.FC<GenresTabProps> = React.memo(
 
         <div className="tm-genre-section-header">
           <Category style={{ fontSize: 18, color: ACCENT_COLORS.genres }} />
-          <span className="tm-genre-section-header__text">Genre-Vergleich</span>
-          <span className="tm-genre-section-header__count">{activeGenres.length} Genres</span>
+          <span className="tm-genre-section-header__text">{t('Genre-Vergleich')}</span>
+          <span className="tm-genre-section-header__count">
+            {t('{n} Genres', { n: activeGenres.length })}
+          </span>
         </div>
 
         <div className="tm-genre-bars">

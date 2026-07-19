@@ -4,6 +4,7 @@ import React from 'react';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { ACCENT_COLORS } from './constants';
 import { SharedItemCard } from './SharedItemCard';
+import { t } from '../../services/i18n';
 
 interface MoviesTabProps {
   result: TasteMatchResult;
@@ -31,7 +32,9 @@ export const MoviesTab: React.FC<MoviesTabProps> = React.memo(({ result, cardBg 
             }}
           >
             <Movie style={{ fontSize: 20, color: ACCENT_COLORS.movies }} />
-            <span className="tm-section-header__text">{sharedMovies.length} gemeinsame Filme</span>
+            <span className="tm-section-header__text">
+              {t('{n} gemeinsame Filme', { n: sharedMovies.length })}
+            </span>
             {perfectMatches.length > 0 && (
               <span
                 className="tm-section-header__badge"
@@ -41,7 +44,7 @@ export const MoviesTab: React.FC<MoviesTabProps> = React.memo(({ result, cardBg 
                 }}
               >
                 <Favorite style={{ fontSize: 12 }} />
-                {perfectMatches.length} perfekte Matches
+                {t('{n} perfekte Matches', { n: perfectMatches.length })}
               </span>
             )}
           </div>
@@ -61,8 +64,8 @@ export const MoviesTab: React.FC<MoviesTabProps> = React.memo(({ result, cardBg 
           <div className="tm-empty-state__icon" style={{ background: `${ACCENT_COLORS.movies}15` }}>
             <Movie style={{ fontSize: 36, color: ACCENT_COLORS.movies, opacity: 0.6 }} />
           </div>
-          <p className="tm-empty-state__title">Keine gemeinsamen Filme</p>
-          <p className="tm-empty-state__subtitle">Schaut ihr verschiedene Filme?</p>
+          <p className="tm-empty-state__title">{t('Keine gemeinsamen Filme')}</p>
+          <p className="tm-empty-state__subtitle">{t('Schaut ihr verschiedene Filme?')}</p>
         </motion.div>
       )}
     </motion.div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { RecapEpisode } from '../../hooks/useRecapData';
+import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
 import { SpeakButton } from './SpeakButton';
 
@@ -67,7 +68,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
       onClose={onClose}
       maxHeight="85vh"
       maxWidth="none"
-      ariaLabel="Serien-Recap"
+      ariaLabel={t('Serien-Recap')}
     >
       <div
         style={{
@@ -122,7 +123,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 flexShrink: 0,
               }}
             >
-              {daysSinceLastWatch} Tage pausiert
+              {t('{tage} Tage pausiert', { tage: daysSinceLastWatch })}
             </span>
           </div>
         </motion.div>
@@ -161,7 +162,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                     flex: 1,
                   }}
                 >
-                  KI-Recap
+                  {t('KI-Recap')}
                 </span>
                 <SpeakButton
                   state={tts.state}
@@ -262,7 +263,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                       animation: aiLoading ? 'recapSpin 1s linear infinite' : 'none',
                     }}
                   />
-                  {aiLoading ? 'Wird generiert...' : 'KI-Zusammenfassung generieren'}
+                  {aiLoading ? t('Wird generiert...') : t('KI-Zusammenfassung generieren')}
                 </button>
               </motion.div>
             )
@@ -298,7 +299,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                   marginBottom: '10px',
                 }}
               >
-                Zuletzt geschaut
+                {t('Zuletzt geschaut')}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -420,7 +421,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                                 flexShrink: 0,
                               }}
                             >
-                              Zuletzt
+                              {t('Zuletzt')}
                             </span>
                           )}
                         </div>
@@ -456,7 +457,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
-                placeholder="Was ist nochmal passiert mit...?"
+                placeholder={t('Was ist nochmal passiert mit...?')}
                 disabled={questionLoading}
                 style={{
                   flex: 1,
@@ -543,7 +544,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
                       flex: 1,
                     }}
                   >
-                    Antwort
+                    {t('Antwort')}
                   </span>
                   <SpeakButton
                     state={ttsAnswer.state}
@@ -583,7 +584,7 @@ export const RecapSheet: React.FC<RecapSheetProps> = ({
             opacity: 0.6,
           }}
         >
-          Nicht mehr anzeigen
+          {t('Nicht mehr anzeigen')}
         </button>
       </div>
 

@@ -19,6 +19,7 @@ import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
 import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
 import { PosterFrame } from '../ui/PosterFrame';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface RecommendationsSectionProps {
   id: string | number | undefined;
@@ -117,7 +118,7 @@ const SectionHeader = memo(
               letterSpacing: '-0.01em',
             }}
           >
-            Vielleicht auch was für dich
+            {t('Vielleicht auch was für dich')}
           </h3>
           <p
             style={{
@@ -127,7 +128,9 @@ const SectionHeader = memo(
               fontWeight: 500,
             }}
           >
-            {mediaType === 'tv' ? 'Ähnliche Serien' : 'Ähnliche Filme'} – noch nicht in deiner Liste
+            {mediaType === 'tv'
+              ? t('Ähnliche Serien – noch nicht in deiner Liste')
+              : t('Ähnliche Filme – noch nicht in deiner Liste')}
           </p>
         </div>
       </header>
@@ -275,7 +278,7 @@ const MagneticCard = memo(
         onClick={onClick}
         role="button"
         tabIndex={0}
-        aria-label={`${title} öffnen`}
+        aria-label={t('{titel} öffnen', { titel: title })}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -365,7 +368,7 @@ const MagneticCard = memo(
                 <motion.button
                   onClick={handleAdd}
                   disabled={isAdding || justAdded}
-                  aria-label="Zur Liste hinzufügen"
+                  aria-label={t('Zur Liste hinzufügen')}
                   initial={{ opacity: 0, y: -4, scale: 0.85 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -4, scale: 0.85 }}

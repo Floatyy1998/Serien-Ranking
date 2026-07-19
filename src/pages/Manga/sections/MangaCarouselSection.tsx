@@ -13,6 +13,7 @@ import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { MangaCarouselItem } from '../../../hooks/useMangaTrending';
 import { FORMAT_COLORS, getDisplayFormat, type AppTheme } from '../mangaUtils';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 
 interface MangaCarouselSectionProps {
   variant: 'trending' | 'popular' | 'top-rated';
@@ -73,7 +74,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
                 key={`${variant}-${item.id}`}
                 role="button"
                 tabIndex={0}
-                aria-label={`${item.title} öffnen`}
+                aria-label={t('{title} öffnen', { title: item.title })}
                 whileTap={tapScale}
                 onClick={() => navigate(`/manga/${item.id}`)}
                 onKeyDown={(e) => {

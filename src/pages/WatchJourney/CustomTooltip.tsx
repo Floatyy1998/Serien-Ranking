@@ -1,6 +1,7 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import type { TooltipEntry } from './types';
 import { formatGermanNumber } from './tooltipUtils';
+import { t } from '../../services/i18n';
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -46,7 +47,7 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({
             const formatted =
               unit === 'percent'
                 ? `${Math.round(entry.value)}%`
-                : `${formatGermanNumber(entry.value)} Stunden`;
+                : t('{n} Stunden', { n: formatGermanNumber(entry.value) });
             return (
               <div
                 key={index}
@@ -66,7 +67,7 @@ export const CustomTooltip: React.FC<CustomTooltipProps> = ({
                   }}
                 />
                 <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
-                  {entry.name}: {formatted}
+                  {t(entry.name)}: {formatted}
                 </span>
               </div>
             );

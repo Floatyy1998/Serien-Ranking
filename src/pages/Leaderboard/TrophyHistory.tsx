@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { MonthlyTrophy } from '../../types/Leaderboard';
+import { t } from '../../services/i18n';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 const MEDAL_GRADIENTS = [
@@ -12,18 +13,18 @@ const MEDAL_GRADIENTS = [
 ];
 
 const MONTH_NAMES: Record<string, string> = {
-  '01': 'Januar',
-  '02': 'Februar',
-  '03': 'März',
-  '04': 'April',
-  '05': 'Mai',
-  '06': 'Juni',
-  '07': 'Juli',
-  '08': 'August',
-  '09': 'September',
-  '10': 'Oktober',
-  '11': 'November',
-  '12': 'Dezember',
+  '01': t('Januar'),
+  '02': t('Februar'),
+  '03': t('März'),
+  '04': t('April'),
+  '05': t('Mai'),
+  '06': t('Juni'),
+  '07': t('Juli'),
+  '08': t('August'),
+  '09': t('September'),
+  '10': t('Oktober'),
+  '11': t('November'),
+  '12': t('Dezember'),
 };
 
 function formatMonthLabel(monthKey: string): string {
@@ -68,7 +69,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
             color: currentTheme.text.secondary,
           }}
         >
-          Trophäen
+          {t('Trophäen')}
         </h2>
       </div>
 
@@ -93,7 +94,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                   {formatMonthLabel(trophy.monthKey)}
                 </div>
                 <div style={{ fontSize: '12px', color: currentTheme.text.muted, marginTop: '2px' }}>
-                  Watchtime Rangliste
+                  {t('Watchtime Rangliste')}
                 </div>
               </div>
               <EmojiEvents style={{ fontSize: '24px', color: 'rgba(255, 215, 0, 0.55)' }} />
@@ -177,7 +178,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {entry.uid === currentUserId ? 'Du' : entry.displayName}
+                      {entry.uid === currentUserId ? t('Du') : entry.displayName}
                     </span>
 
                     <span

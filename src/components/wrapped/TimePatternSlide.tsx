@@ -2,6 +2,7 @@ import React from 'react';
 import { seededRandom } from '../../utils/seededRandom';
 import { motion } from 'framer-motion';
 import type { TimeOfDayStats, DayOfWeekStats } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface TimePatternSlideProps {
   favoriteTimeOfDay: TimeOfDayStats;
@@ -9,10 +10,10 @@ interface TimePatternSlideProps {
 }
 
 const TIME_LABELS: Record<string, string> = {
-  morning: 'Morgens',
-  afternoon: 'Nachmittags',
-  evening: 'Abends',
-  night: 'Nachts',
+  morning: t('Morgens'),
+  afternoon: t('Nachmittags'),
+  evening: t('Abends'),
+  night: t('Nachts'),
 };
 
 const TIME_COLORS: Record<string, string> = {
@@ -170,7 +171,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           zIndex: 1,
         }}
       >
-        Deine Watch-Gewohnheiten
+        {t('Deine Watch-Gewohnheiten')}
       </motion.p>
 
       {/* Big Time of Day Icon */}
@@ -215,7 +216,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           zIndex: 1,
         }}
       >
-        ist deine liebste Watchtime
+        {t('ist deine liebste Watchtime')}
       </motion.p>
 
       <motion.div
@@ -235,7 +236,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
         <span style={{ color: 'white', fontSize: '1.5rem', fontWeight: 'bold' }}>
           {favoriteTimeOfDay.percentage}%
         </span>
-        <span style={{ color: 'white', opacity: 0.8, marginLeft: '8px' }}>deiner Views</span>
+        <span style={{ color: 'white', opacity: 0.8, marginLeft: '8px' }}>{t('deiner Views')}</span>
       </motion.div>
 
       {/* Day of Week Card */}
@@ -273,7 +274,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           </svg>
         </motion.div>
         <p style={{ color: 'white', opacity: 0.7, marginBottom: '8px', fontSize: '0.9rem' }}>
-          Dein liebster Serien-Tag
+          {t('Dein liebster Serien-Tag')}
         </p>
         <h3
           style={{
@@ -289,7 +290,7 @@ export const TimePatternSlide: React.FC<TimePatternSlideProps> = ({
           <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>
             {favoriteDayOfWeek.percentage}%
           </span>{' '}
-          deiner Views
+          {t('deiner Views')}
         </p>
       </motion.div>
     </div>

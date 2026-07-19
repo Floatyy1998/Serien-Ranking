@@ -4,6 +4,7 @@ import { Box, Button, Divider, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { trackLogin, trackRegister } from '../../services/firebase/analytics';
+import { t } from '../../services/i18n';
 import type { SocialProvider } from '../../services/firebase/socialAuth';
 import {
   getAuthPlatform,
@@ -99,7 +100,7 @@ export const SocialLoginButtons = ({ onError, disabled }: SocialLoginButtonsProp
     <Box sx={{ mt: 3 }}>
       <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
         <Typography sx={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '0.85rem', px: 1 }}>
-          oder weiter mit
+          {t('oder weiter mit')}
         </Typography>
       </Divider>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -110,7 +111,7 @@ export const SocialLoginButtons = ({ onError, disabled }: SocialLoginButtonsProp
           onClick={() => handleClick('google')}
           sx={buttonSx}
         >
-          {busy === 'google' ? 'Anmelden…' : 'Mit Google anmelden'}
+          {busy === 'google' ? t('Anmelden…') : t('Mit Google anmelden')}
         </Button>
         {showApple && (
           <Button
@@ -120,7 +121,7 @@ export const SocialLoginButtons = ({ onError, disabled }: SocialLoginButtonsProp
             onClick={() => handleClick('apple')}
             sx={buttonSx}
           >
-            {busy === 'apple' ? 'Anmelden…' : 'Mit Apple anmelden'}
+            {busy === 'apple' ? t('Anmelden…') : t('Mit Apple anmelden')}
           </Button>
         )}
       </Box>

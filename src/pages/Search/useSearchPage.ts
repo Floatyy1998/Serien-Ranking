@@ -11,6 +11,7 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { preloadImage } from '../../lib/preloadImage';
 import { backendFetch } from '../../services/backendApi';
+import { t } from '../../services/i18n';
 import { tmdbFetch } from '../../services/tmdbClient';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { filterItemsByActiveProviders } from '../Discover/watchProviderFilter';
@@ -321,7 +322,7 @@ export const useSearchPage = (
         console.error('Search error:', error);
         setSearchResults([]);
         // Page-Level-Fehler statt irreführendem „Keine Ergebnisse"
-        setError('Suche fehlgeschlagen.');
+        setError(t('Suche fehlgeschlagen.'));
       } finally {
         setLoading(false);
       }
@@ -386,7 +387,7 @@ export const useSearchPage = (
       if (!user) {
         setDialog({
           open: true,
-          message: 'Bitte einloggen um Inhalte hinzuzufügen!',
+          message: t('Bitte einloggen um Inhalte hinzuzufügen!'),
           type: 'warning',
         });
         return;
@@ -419,7 +420,7 @@ export const useSearchPage = (
 
           setSnackbar({
             open: true,
-            message: `"${title}" wurde erfolgreich hinzugefügt!`,
+            message: t('"{title}" wurde erfolgreich hinzugefügt!', { title }),
           });
 
           const posterPath = item.poster_path;
@@ -440,7 +441,7 @@ export const useSearchPage = (
         }
       } catch (error) {
         console.error('Error adding item:', error);
-        setDialog({ open: true, message: 'Fehler beim Hinzufügen des Inhalts.', type: 'error' });
+        setDialog({ open: true, message: t('Fehler beim Hinzufügen des Inhalts.'), type: 'error' });
       } finally {
         setPendingAddIds((prev) => {
           if (!prev.has(pendingKey)) return prev;

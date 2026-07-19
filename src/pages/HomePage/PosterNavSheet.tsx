@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { BottomSheet } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
+import { t } from '../../services/i18n';
 
 interface PosterNavState {
   open: boolean;
@@ -66,7 +67,7 @@ export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClo
           }}
         >
           <PlayCircle style={{ fontSize: '20px' }} />
-          Zur Episode
+          {t('Zur Episode')}
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
@@ -89,7 +90,7 @@ export const PosterNavSheet: React.FC<PosterNavSheetProps> = ({ posterNav, onClo
           }}
         >
           <Tv style={{ fontSize: '20px' }} />
-          Zur Serie
+          {t('Zur Serie')}
         </motion.button>
       </div>
     </BottomSheet>

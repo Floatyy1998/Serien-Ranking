@@ -24,6 +24,7 @@ import { ProviderLogoLink } from '../../../components/detail/ProviderLogoLink';
 import { hasEpisodeAired } from '../../../utils/episodeDate';
 import { chipLabel, chipColor, type EpisodeChipType } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
+import { t } from '../../../services/i18n';
 
 // "Currently bingeing" window – 3 days. Covers casual binges that stretch
 // across a weekend or weekday-evening sessions, while still letting the
@@ -37,18 +38,18 @@ function formatLastWatched(lastWatchedAt: string): string | null {
   if (isNaN(then)) return null;
   const diffMs = now - then;
   const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 60) return 'Gerade eben gesehen';
+  if (diffMins < 60) return t('Gerade eben gesehen');
   const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `Vor ${diffHours}h gesehen`;
+  if (diffHours < 24) return t('Vor {n}h gesehen', { n: diffHours });
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Gestern gesehen';
-  if (diffDays < 7) return `Vor ${diffDays} Tagen gesehen`;
+  if (diffDays === 1) return t('Gestern gesehen');
+  if (diffDays < 7) return t('Vor {n} Tagen gesehen', { n: diffDays });
   const diffWeeks = Math.floor(diffDays / 7);
-  if (diffWeeks === 1) return 'Vor 1 Woche gesehen';
-  if (diffDays < 30) return `Vor ${diffWeeks} Wochen gesehen`;
+  if (diffWeeks === 1) return t('Vor 1 Woche gesehen');
+  if (diffDays < 30) return t('Vor {n} Wochen gesehen', { n: diffWeeks });
   const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths === 1) return 'Vor 1 Monat gesehen';
-  return `Vor ${diffMonths} Monaten gesehen`;
+  if (diffMonths === 1) return t('Vor 1 Monat gesehen');
+  return t('Vor {n} Monaten gesehen', { n: diffMonths });
 }
 
 interface ContinueWatchingItem {
@@ -140,7 +141,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
     if (unwatchlistedWithUnwatched === 0) return null;
     return (
       <section style={{ marginBottom: '32px' }}>
-        <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title="Weiterschauen" />
+        <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
         <div style={{ padding: '0 20px' }}>
           <button
             type="button"
@@ -169,7 +170,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   marginBottom: '2px',
                 }}
               >
-                Noch nichts zum Weiterschauen
+                {t('Noch nichts zum Weiterschauen')}
               </div>
               <div
                 style={{
@@ -178,9 +179,10 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                   lineHeight: 1.4,
                 }}
               >
-                Tippe in einer Serie auf das Lesezeichen-Symbol, damit sie hier erscheint.{' '}
-                {unwatchlistedWithUnwatched}{' '}
-                {unwatchlistedWithUnwatched === 1 ? 'Serie wartet' : 'Serien warten'} noch.
+                {t('Tippe in einer Serie auf das Lesezeichen-Symbol, damit sie hier erscheint.')}{' '}
+                {unwatchlistedWithUnwatched === 1
+                  ? t('{n} Serie wartet noch.', { n: unwatchlistedWithUnwatched })
+                  : t('{n} Serien warten noch.', { n: unwatchlistedWithUnwatched })}
               </div>
             </div>
           </button>
@@ -194,7 +196,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
       <SectionHeader
         icon={<PlayCircle />}
         iconColor={accentColor}
-        title="Weiterschauen"
+        title={t('Weiterschauen')}
         onSeeAll={() => navigate('/watchlist')}
       />
       <div

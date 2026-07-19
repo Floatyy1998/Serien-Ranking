@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticSuccess } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
 import { RatingControls } from './RatingControls';
 import { tapScale } from '../../lib/motion';
@@ -39,7 +40,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel="Schnellbewertung">
+    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel={t('Schnellbewertung')}>
       <div style={{ padding: '8px 24px 32px' }}>
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
@@ -52,7 +53,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               color: accent,
             }}
           >
-            Keine weiteren Folgen
+            {t('Keine weiteren Folgen')}
           </span>
           <h3
             style={{
@@ -62,7 +63,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               margin: '8px 0 4px',
             }}
           >
-            {seriesTitle} bewerten?
+            {t('{titel} bewerten?', { titel: seriesTitle })}
           </h3>
         </div>
 
@@ -86,7 +87,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
               transition: 'background var(--duration-fast) ease',
             }}
           >
-            Später
+            {t('Später')}
           </motion.button>
           <motion.button
             whileTap={{ scale: 0.97 }}
@@ -109,7 +110,7 @@ export const QuickRatingSheet: React.FC<QuickRatingSheetProps> = ({
             }}
           >
             <Save style={{ fontSize: '18px' }} />
-            Speichern
+            {t('Speichern')}
           </motion.button>
         </div>
       </div>

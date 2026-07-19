@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { BingeSessionStats } from '../../types/Wrapped';
 import { seededRandom } from '../../utils/seededRandom';
+import { t } from '../../services/i18n';
 
 interface BingeStatsSlideProps {
   totalBingeSessions: number;
@@ -85,9 +86,11 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
             </svg>
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '15px' }}>
-            Kein Binge-Watching
+            {t('Kein Binge-Watching')}
           </h2>
-          <p style={{ opacity: 0.8, fontSize: '1.1rem' }}>Du hast dieses Jahr gemäßigt geschaut!</p>
+          <p style={{ opacity: 0.8, fontSize: '1.1rem' }}>
+            {t('Du hast dieses Jahr gemäßigt geschaut!')}
+          </p>
         </motion.div>
       </div>
     );
@@ -229,7 +232,9 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
             <svg width="24" height="24" viewBox="0 0 24 24" fill="#ffd700">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
             </svg>
-            <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>Längste Session</p>
+            <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem' }}>
+              {t('Längste Session')}
+            </p>
           </div>
           <h3
             style={{
@@ -246,7 +251,7 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
               <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold' }}>
                 {longestBinge.episodeCount}
               </p>
-              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>Episoden</p>
+              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>{t('Episoden')}</p>
             </div>
             <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }} />
             <div>
@@ -255,7 +260,7 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
                   ? `${Math.floor(longestBinge.totalMinutes / 60)}h ${longestBinge.totalMinutes % 60 > 0 ? `${longestBinge.totalMinutes % 60}m` : ''}`
                   : `${longestBinge.totalMinutes}m`}
               </p>
-              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>am Stück</p>
+              <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem' }}>{t('am Stück')}</p>
             </div>
           </div>
         </motion.div>
@@ -276,9 +281,11 @@ export const BingeStatsSlide: React.FC<BingeStatsSlideProps> = ({
         }}
       >
         <p style={{ color: 'white', opacity: 0.8 }}>
-          Durchschnitt:{' '}
-          <strong style={{ fontSize: '1.2rem' }}>{Math.round(averageBingeLength)} Episoden</strong>{' '}
-          pro Session
+          {t('Durchschnitt:')}{' '}
+          <strong style={{ fontSize: '1.2rem' }}>
+            {t('{n} Episoden', { n: Math.round(averageBingeLength) })}
+          </strong>{' '}
+          {t('pro Session')}
         </p>
       </motion.div>
     </div>

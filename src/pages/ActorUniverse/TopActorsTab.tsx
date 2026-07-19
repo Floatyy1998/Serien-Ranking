@@ -3,6 +3,7 @@ import { HorizontalScrollContainer } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Actor } from '../../hooks/useActorUniverse';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -32,7 +33,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
           color: currentTheme.text.primary,
         }}
       >
-        Deine meistgesehenen Schauspieler
+        {t('Deine meistgesehenen Schauspieler')}
       </h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -128,7 +129,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                     fontWeight: 600,
                   }}
                 >
-                  {actor.seriesCount} Serien
+                  {t('{n} Serien', { n: actor.seriesCount })}
                 </p>
               </div>
 
@@ -161,7 +162,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
           fontFamily: 'var(--font-display)',
         }}
       >
-        Weitere Schauspieler in mehreren deiner Serien
+        {t('Weitere Schauspieler in mehreren deiner Serien')}
       </h3>
       <HorizontalScrollContainer gap={14}>
         {actors.slice(10, 50).map((actor, index) => (
@@ -214,7 +215,7 @@ export const TopActorsTab = ({ topActors, actors, onSelectActor }: TopActorsTabP
                 fontWeight: 500,
               }}
             >
-              {actor.seriesCount} Serien
+              {t('{n} Serien', { n: actor.seriesCount })}
             </p>
           </motion.div>
         ))}

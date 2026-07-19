@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { SpeakButton } from '../../components/ui/SpeakButton';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
+import { t } from '../../services/i18n';
 import type { CharacterDescription } from '../../hooks/useCharacterDescriptions';
 
 interface CharacterGuideProps {
@@ -54,8 +55,10 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
         marginBottom: '8px',
       }}
     >
-      Frage zur Serie
-      {userProgress ? ` (spoilerfrei bis S${userProgress.season}E${userProgress.episode})` : ''}
+      {t('Frage zur Serie')}
+      {userProgress
+        ? ` ${t('(spoilerfrei bis S{s}E{e})', { s: userProgress.season, e: userProgress.episode })}`
+        : ''}
     </div>
     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
       <input
@@ -63,8 +66,8 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && onAsk()}
-        placeholder="Was ist nochmal mit ... passiert?"
-        aria-label="Frage zur Serie"
+        placeholder={t('Was ist nochmal mit ... passiert?')}
+        aria-label={t('Frage zur Serie')}
         disabled={questionLoading}
         style={{
           flex: 1,
@@ -81,7 +84,7 @@ const QuestionInput: React.FC<QuestionInputProps> = ({
         type="button"
         onClick={onAsk}
         disabled={!question.trim() || questionLoading}
-        aria-label="Frage absenden"
+        aria-label={t('Frage absenden')}
         style={{
           width: '44px',
           height: '44px',
@@ -221,7 +224,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
             margin: '0 0 6px',
           }}
         >
-          Wer war das nochmal?
+          {t('Wer war das nochmal?')}
         </h3>
         <p
           style={{
@@ -231,10 +234,12 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
             lineHeight: 1.5,
           }}
         >
-          KI-Charakter-Guide spoilerfrei bis
           {userProgress
-            ? ` S${userProgress.season}E${userProgress.episode}`
-            : ' zu deinem Fortschritt'}
+            ? t('KI-Charakter-Guide spoilerfrei bis S{s}E{e}', {
+                s: userProgress.season,
+                e: userProgress.episode,
+              })
+            : t('KI-Charakter-Guide spoilerfrei bis zu deinem Fortschritt')}
         </p>
         <button
           onClick={onGenerate}
@@ -253,7 +258,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
           }}
         >
           <AutoAwesome style={{ fontSize: '18px' }} />
-          Guide generieren
+          {t('Guide generieren')}
         </button>
 
         <QuestionInput
@@ -345,7 +350,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
             cursor: 'pointer',
           }}
         >
-          Nochmal versuchen
+          {t('Nochmal versuchen')}
         </button>
         <QuestionInput
           question={question}
@@ -392,7 +397,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
               color: accent,
             }}
           >
-            KI-Guide
+            {t('KI-Guide')}
           </span>
         </div>
         {userProgress && (
@@ -405,7 +410,7 @@ export const CharacterGuide: React.FC<CharacterGuideProps> = ({
               borderRadius: '8px',
             }}
           >
-            Bis S{userProgress.season}E{userProgress.episode}
+            {t('Bis S{s}E{e}', { s: userProgress.season, e: userProgress.episode })}
           </span>
         )}
       </div>

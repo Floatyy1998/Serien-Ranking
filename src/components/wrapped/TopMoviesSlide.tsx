@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopMovieEntry } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface TopMoviesSlideProps {
   topMovies: TopMovieEntry[];
@@ -60,9 +61,9 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxIt
             </svg>
           </motion.div>
           <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', marginBottom: '15px' }}>
-            Keine Filme dieses Jahr
+            {t('Keine Filme dieses Jahr')}
           </h2>
-          <p style={{ opacity: 0.7, fontSize: '1.1rem' }}>Zeit für einen Filmabend!</p>
+          <p style={{ opacity: 0.7, fontSize: '1.1rem' }}>{t('Zeit für einen Filmabend!')}</p>
         </motion.div>
       </div>
     );
@@ -138,7 +139,7 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxIt
           zIndex: 1,
         }}
       >
-        Deine Top Filme
+        {t('Deine Top Filme')}
       </motion.p>
 
       {/* Hero Movie Poster */}

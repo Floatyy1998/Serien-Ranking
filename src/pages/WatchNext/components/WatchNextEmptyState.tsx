@@ -1,6 +1,7 @@
 import PlayCircle from '@mui/icons-material/PlayCircle';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 
 /** Empty-State, wenn keine nächsten Episoden anstehen. */
 export const WatchNextEmptyState = () => {
@@ -28,7 +29,7 @@ export const WatchNextEmptyState = () => {
           margin: '0 0 8px 0',
         }}
       >
-        Keine neuen Episoden
+        {t('Keine neuen Episoden')}
       </h2>
       <p
         style={{
@@ -39,7 +40,7 @@ export const WatchNextEmptyState = () => {
           lineHeight: 1.6,
         }}
       >
-        Schaue eine Serie an um hier die nächsten Episoden zu sehen!
+        {t('Schaue eine Serie an um hier die nächsten Episoden zu sehen!')}
       </p>
     </motion.div>
   );

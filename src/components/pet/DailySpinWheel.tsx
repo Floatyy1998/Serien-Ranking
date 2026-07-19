@@ -19,6 +19,7 @@ import {
 import type { SpinReward } from '../../services/pet/dailySpinService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface DailySpinWheelProps {
   streakDays: number;
@@ -245,7 +246,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       {/* Close button */}
       <button
         onClick={onClose}
-        aria-label="Schließen"
+        aria-label={t('Schließen')}
         style={{
           position: 'absolute',
           top: 'calc(16px + env(safe-area-inset-top, 0px))',
@@ -279,14 +280,14 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
       >
         {phase === 'result' ? (
           result?.type === 'nothing' ? (
-            'Schade!'
+            t('Schade!')
           ) : (
-            'Gewonnen!'
+            t('Gewonnen!')
           )
         ) : (
           <>
             <AutoAwesome style={{ fontSize: 22, color: '#FFD93D' }} />
-            Tägliches Glücksrad
+            {t('Tägliches Glücksrad')}
           </>
         )}
       </motion.h2>
@@ -306,7 +307,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
           }}
         >
           <Whatshot style={{ fontSize: 16 }} />
-          {streakDays} Tage Streak — bessere Belohnungen!
+          {t('{n} Tage Streak — bessere Belohnungen!', { n: streakDays })}
         </motion.p>
       )}
 
@@ -503,7 +504,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
                   boxShadow: `0 0 20px ${rarityColor}30`,
                 }}
               >
-                {RARITY_LABELS[result.rarity]}
+                {t(RARITY_LABELS[result.rarity])}
               </motion.span>
             )}
 
@@ -514,10 +515,13 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
               style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center' }}
             >
               {result.type === 'xp_boost' &&
-                `Alle XP werden ${result.xpMultiplier}x multipliziert für ${result.xpEpisodeCount} Episoden!`}
-              {result.type === 'accessory' && 'Neues Accessoire freigeschaltet!'}
-              {result.type === 'background' && 'Neuer Hintergrund freigeschaltet!'}
-              {result.type === 'nothing' && 'Morgen hast du mehr Glück!'}
+                t('Alle XP werden {x}x multipliziert für {n} Episoden!', {
+                  x: result.xpMultiplier ?? 2,
+                  n: result.xpEpisodeCount ?? 0,
+                })}
+              {result.type === 'accessory' && t('Neues Accessoire freigeschaltet!')}
+              {result.type === 'background' && t('Neuer Hintergrund freigeschaltet!')}
+              {result.type === 'nothing' && t('Morgen hast du mehr Glück!')}
             </motion.p>
           </motion.div>
         )}
@@ -545,7 +549,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
             boxShadow: canSpin ? '0 6px 24px rgba(255,152,0,0.4)' : 'none',
           }}
         >
-          {canSpin ? 'Drehen!' : 'Morgen wieder!'}
+          {canSpin ? t('Drehen!') : t('Morgen wieder!')}
         </motion.button>
       )}
 
@@ -572,7 +576,7 @@ export const DailySpinWheel: React.FC<DailySpinWheelProps> = ({ streakDays, onCl
             boxShadow: result?.type === 'nothing' ? 'none' : `0 6px 24px ${rarityColor}50`,
           }}
         >
-          {result?.type === 'nothing' ? 'Schließen' : 'Einsammeln'}
+          {result?.type === 'nothing' ? t('Schließen') : t('Einsammeln')}
         </motion.button>
       )}
     </motion.div>

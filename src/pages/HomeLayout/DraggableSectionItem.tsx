@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { ExpandableConfig } from './useHomeLayoutData';
 import { SECTION_LABELS } from './useHomeLayoutData';
 import { SectionToggleCard } from './SectionToggleCard';
+import { t } from '../../services/i18n';
 
 interface DraggableSectionItemProps {
   sectionId: string;
@@ -62,7 +63,11 @@ const DraggableSubItem = ({ subId, isSubHidden, label, onToggle }: SubItemProps)
       <SectionToggleCard
         checked={!isSubHidden}
         onChange={onToggle}
-        label={`${label} ${isSubHidden ? 'einblenden' : 'ausblenden'}`}
+        label={
+          isSubHidden
+            ? t('{name} einblenden', { name: label })
+            : t('{name} ausblenden', { name: label })
+        }
       />
     </Reorder.Item>
   );
@@ -139,7 +144,11 @@ export const DraggableSectionItem = ({
         <SectionToggleCard
           checked={!isHidden}
           onChange={onToggle}
-          label={`${SECTION_LABELS[sectionId]} ${isHidden ? 'einblenden' : 'ausblenden'}`}
+          label={
+            isHidden
+              ? t('{name} einblenden', { name: SECTION_LABELS[sectionId] })
+              : t('{name} ausblenden', { name: SECTION_LABELS[sectionId] })
+          }
         />
       </div>
 

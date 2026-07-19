@@ -4,6 +4,7 @@ import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 import { SectionHeader } from '../../components/ui';
 import { SeriesNotificationHub } from './SeriesNotificationHub';
 import { CaseOpeningOverlay } from '../../components/pet/CaseOpeningOverlay';
@@ -259,7 +260,7 @@ export const HomePage: React.FC = () => {
             <SectionHeader
               icon={<AutoAwesome />}
               iconColor={currentTheme.primary}
-              title="Für dich"
+              title={t('Für dich')}
             />
             <div
               style={{
@@ -356,7 +357,7 @@ export const HomePage: React.FC = () => {
             key="trending"
             variant="trending"
             items={deferredTrending}
-            title="Trending diese Woche"
+            title={t('Trending diese Woche')}
             loading={trendingLoading}
           />
         );
@@ -367,7 +368,7 @@ export const HomePage: React.FC = () => {
             key="top-rated"
             variant="top-rated"
             items={deferredTopRated}
-            title="Bestbewertet"
+            title={t('Bestbewertet')}
             onSeeAll={() => navigate('/ratings')}
           />
         );

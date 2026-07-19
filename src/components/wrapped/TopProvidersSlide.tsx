@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopProviderEntry } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface TopProvidersSlideProps {
   topProviders: TopProviderEntry[];
@@ -45,9 +46,9 @@ const PROVIDER_COLORS: Record<string, string> = {
 function formatMinutes(minutes: number): string {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
-  if (hours === 0) return `${mins} Min`;
-  if (mins === 0) return `${hours} Std`;
-  return `${hours} Std ${mins} Min`;
+  if (hours === 0) return t('{n} Min', { n: mins });
+  if (mins === 0) return t('{n} Std', { n: hours });
+  return t('{h} Std {m} Min', { h: hours, m: mins });
 }
 
 export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
@@ -77,9 +78,9 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
           >
             📺
           </motion.div>
-          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>Keine Streaming-Daten</h2>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>{t('Keine Streaming-Daten')}</h2>
           <p style={{ opacity: 0.6, marginTop: '10px' }}>
-            Markiere Serien mit ihrem Streaming-Dienst
+            {t('Markiere Serien mit ihrem Streaming-Dienst')}
           </p>
         </div>
       </div>
@@ -143,7 +144,7 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
           zIndex: 1,
         }}
       >
-        Dein Lieblings-Streaming-Dienst
+        {t('Dein Lieblings-Streaming-Dienst')}
       </motion.p>
 
       {/* Top Provider - Hero */}
@@ -234,14 +235,14 @@ export const TopProvidersSlide: React.FC<TopProvidersSlideProps> = ({
               {formatMinutes(topProvider.minutesWatched)}
             </span>
             <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginLeft: '8px' }}>
-              gestreamt
+              {t('gestreamt')}
             </span>
           </div>
 
           <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-            {topProvider.episodeCount > 0 && `${topProvider.episodeCount} Episoden`}
+            {topProvider.episodeCount > 0 && t('{n} Episoden', { n: topProvider.episodeCount })}
             {topProvider.episodeCount > 0 && topProvider.movieCount > 0 && ' + '}
-            {topProvider.movieCount > 0 && `${topProvider.movieCount} Filme`}
+            {topProvider.movieCount > 0 && t('{n} Filme', { n: topProvider.movieCount })}
           </p>
         </motion.div>
       </motion.div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { wjCard } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -50,7 +51,7 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
           margin: '0 0 16px',
         }}
       >
-        Top 10 Serien
+        {t('Top 10 Serien')}
       </h3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -59,7 +60,7 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
             key={series.seriesId}
             role="button"
             tabIndex={0}
-            aria-label={`${series.title} öffnen`}
+            aria-label={t('{title} öffnen', { title: series.title })}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             whileTap={{ opacity: 0.7 }}
@@ -136,7 +137,7 @@ export const SerienTabRanking: React.FC<SerienTabRankingProps> = ({
                 {series.rewatchEpisodes > 0 && (
                   <span style={{ color: currentTheme.accent }}>
                     {' '}
-                    · {series.rewatchEpisodes}× Rewatch
+                    · {t('{n}× Rewatch', { n: series.rewatchEpisodes })}
                   </span>
                 )}
               </div>

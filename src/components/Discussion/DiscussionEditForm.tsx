@@ -1,6 +1,7 @@
 import { Warning } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface DiscussionEditFormProps {
   editTitle: string;
@@ -44,7 +45,7 @@ export const DiscussionEditForm: React.FC<DiscussionEditFormProps> = ({
         type="text"
         value={editTitle}
         onChange={(e) => setEditTitle(e.target.value)}
-        placeholder="Titel"
+        placeholder={t('Titel')}
         style={{
           width: '100%',
           padding: '12px',
@@ -61,7 +62,7 @@ export const DiscussionEditForm: React.FC<DiscussionEditFormProps> = ({
       <textarea
         value={editContent}
         onChange={(e) => setEditContent(e.target.value)}
-        placeholder="Inhalt"
+        placeholder={t('Inhalt')}
         rows={4}
         style={{
           width: '100%',
@@ -124,7 +125,7 @@ export const DiscussionEditForm: React.FC<DiscussionEditFormProps> = ({
               fontWeight: 600,
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </button>
           <button
             onClick={onSave}
@@ -140,7 +141,7 @@ export const DiscussionEditForm: React.FC<DiscussionEditFormProps> = ({
               fontWeight: 600,
             }}
           >
-            {saving ? 'Speichern...' : 'Speichern'}
+            {saving ? t('Speichern...') : t('Speichern')}
           </button>
         </div>
       </div>

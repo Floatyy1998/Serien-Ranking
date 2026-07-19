@@ -3,6 +3,7 @@ import { BackButton } from '../../../components/ui';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { Manga } from '../../../types/Manga';
 import { getDisplayFormat, getStatusLabel } from '../mangaUtils';
+import { t } from '../../../services/i18n';
 
 interface MangaDetailHeroProps {
   manga: Manga;
@@ -183,7 +184,7 @@ export const MangaDetailHero = ({
           >
             <span style={{ fontWeight: 600, color: currentTheme.primary }}>{displayFormat}</span>
             {manga.status && <span>{getStatusLabel(manga)}</span>}
-            {effectiveChapters && <span>{effectiveChapters} Kapitel</span>}
+            {effectiveChapters && <span>{t('{n} Kapitel', { n: effectiveChapters })}</span>}
             {manga.averageScore && <span>⭐ {manga.averageScore}%</span>}
           </div>
 
@@ -257,7 +258,7 @@ export const MangaDetailHero = ({
                   type="button"
                   onClick={() => onChapterChange(editChapter - 1)}
                   className="manga-hero-stepper"
-                  aria-label="Ein Kapitel zurück"
+                  aria-label={t('Ein Kapitel zurück')}
                   style={{ color: 'rgba(255,255,255,0.3)' }}
                 >
                   <Remove style={{ fontSize: 20 }} />
@@ -265,7 +266,7 @@ export const MangaDetailHero = ({
                 <input
                   type="text"
                   inputMode="numeric"
-                  aria-label="Aktuelles Kapitel"
+                  aria-label={t('Aktuelles Kapitel')}
                   defaultValue={editChapter}
                   key={editChapter}
                   onFocus={(e) => e.target.select()}
@@ -295,7 +296,7 @@ export const MangaDetailHero = ({
                   type="button"
                   onClick={() => onChapterChange(editChapter + 1)}
                   className="manga-hero-stepper"
-                  aria-label="Ein Kapitel weiter"
+                  aria-label={t('Ein Kapitel weiter')}
                   style={{ color: 'rgba(255,255,255,0.3)' }}
                 >
                   <Add style={{ fontSize: 20 }} />
@@ -309,7 +310,7 @@ export const MangaDetailHero = ({
                       marginLeft: 4,
                     }}
                   >
-                    von {effectiveChapters} Kapiteln
+                    {t('von {n} Kapiteln', { n: effectiveChapters })}
                   </span>
                 )}
               </div>

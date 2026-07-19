@@ -2,6 +2,7 @@ import { Cookie } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../services/firebase/analytics';
+import { t } from '../services/i18n';
 
 // Standalone colors - no theme dependency so it works before login / without ThemeProvider
 const COLORS = {
@@ -99,7 +100,7 @@ export const CookieConsentBanner = memo(() => {
                   letterSpacing: '-0.01em',
                 }}
               >
-                Cookies & Datenschutz
+                {t('Cookies & Datenschutz')}
               </span>
             </div>
 
@@ -112,8 +113,9 @@ export const CookieConsentBanner = memo(() => {
                 lineHeight: 1.55,
               }}
             >
-              Wir erfassen anonymisierte Nutzungsdaten zur Verbesserung der App. Die Einwilligung
-              ist freiwillig und jederzeit in den{' '}
+              {t(
+                'Wir erfassen anonymisierte Nutzungsdaten zur Verbesserung der App. Die Einwilligung ist freiwillig und jederzeit in den'
+              )}{' '}
               <a
                 href="/settings"
                 style={{
@@ -122,9 +124,9 @@ export const CookieConsentBanner = memo(() => {
                   fontWeight: 600,
                 }}
               >
-                Einstellungen
-              </a>{' '}
-              widerrufbar.{' '}
+                {t('Einstellungen')}
+              </a>
+              {t(' widerrufbar.')}{' '}
               <a
                 href="/privacy"
                 style={{
@@ -133,7 +135,7 @@ export const CookieConsentBanner = memo(() => {
                   textUnderlineOffset: 2,
                 }}
               >
-                Mehr erfahren
+                {t('Mehr erfahren')}
               </a>
             </p>
 
@@ -155,7 +157,7 @@ export const CookieConsentBanner = memo(() => {
                   letterSpacing: '-0.01em',
                 }}
               >
-                Ablehnen
+                {t('Ablehnen')}
               </button>
               <button
                 onClick={handleAccept}
@@ -174,7 +176,7 @@ export const CookieConsentBanner = memo(() => {
                   letterSpacing: '-0.01em',
                 }}
               >
-                Akzeptieren
+                {t('Akzeptieren')}
               </button>
             </div>
           </div>

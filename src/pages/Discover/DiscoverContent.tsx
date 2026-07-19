@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner } from '../../components/ui';
+import { t } from '../../services/i18n';
 import { ItemCard } from './DiscoverItemCard';
 import type { DiscoverItem } from './discoverItemHelpers';
 
@@ -29,7 +30,7 @@ interface DiscoverContentProps {
 /** Zusatzzeile für Empty-States, wenn der Abo-Filter aktiv ist. */
 const AboFilterHint = ({ color }: { color: string }) => (
   <p style={{ fontSize: 'var(--text-sm)', color, marginTop: '10px', fontWeight: 500 }}>
-    Der Filter „Auf meinen Abos" ist aktiv – tippe oben rechts, um ihn auszuschalten.
+    {t('Der Filter „Auf meinen Abos" ist aktiv – tippe oben rechts, um ihn auszuschalten.')}
   </p>
 );
 
@@ -55,7 +56,7 @@ export const DiscoverContent = memo(
       if (recommendationsLoading && recommendations.length === 0) {
         return (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <LoadingSpinner size={50} text="Lade Empfehlungen..." />
+            <LoadingSpinner size={50} text={t('Lade Empfehlungen...')} />
           </motion.div>
         );
       }
@@ -87,11 +88,12 @@ export const DiscoverContent = memo(
                 fontWeight: 600,
               }}
             >
-              Keine Empfehlungen verfügbar
+              {t('Keine Empfehlungen verfügbar')}
             </p>
             <p style={{ fontSize: 'var(--text-base)', color: currentTheme.text.secondary }}>
-              Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier
-              passende Empfehlungen.
+              {t(
+                'Füge Serien oder Filme zu deiner Liste hinzu oder bewerte sie – dann findest du hier passende Empfehlungen.'
+              )}
             </p>
             {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
           </motion.div>
@@ -108,7 +110,7 @@ export const DiscoverContent = memo(
               fontWeight: 500,
             }}
           >
-            Basierend auf deiner Liste
+            {t('Basierend auf deiner Liste')}
           </p>
           <div
             className="discover-grid"
@@ -144,7 +146,7 @@ export const DiscoverContent = memo(
         <div>
           {searchLoading ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <LoadingSpinner size={50} text="Suche läuft..." />
+              <LoadingSpinner size={50} text={t('Suche läuft...')} />
             </motion.div>
           ) : searchResults.length === 0 && searchQuery.trim() ? (
             <motion.div
@@ -166,7 +168,7 @@ export const DiscoverContent = memo(
                 }}
               />
               <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                Keine Ergebnisse für "{searchQuery}"
+                {t('Keine Ergebnisse für "{query}"', { query: searchQuery })}
               </p>
               {onlyMyProviders && <AboFilterHint color={currentTheme.text.muted} />}
             </motion.div>
@@ -190,7 +192,7 @@ export const DiscoverContent = memo(
                 }}
               />
               <p style={{ color: currentTheme.text.secondary, fontSize: '15px' }}>
-                Gib einen Suchbegriff ein...
+                {t('Gib einen Suchbegriff ein...')}
               </p>
             </motion.div>
           ) : (
@@ -247,7 +249,7 @@ export const DiscoverContent = memo(
               fontWeight: 600,
             }}
           >
-            Nichts auf deinen Abos
+            {t('Nichts auf deinen Abos')}
           </p>
           <AboFilterHint color={currentTheme.text.muted} />
         </motion.div>

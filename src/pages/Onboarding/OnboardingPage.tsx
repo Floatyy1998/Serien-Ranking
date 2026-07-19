@@ -16,6 +16,7 @@ import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
+import { t } from '../../services/i18n';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];
@@ -272,7 +273,7 @@ export const OnboardingPage: React.FC = () => {
         </div>
         <div className="ob-progress-meta">
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)' }}>
-            {STEP_LABELS[step]}
+            {t(STEP_LABELS[step])}
           </span>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import { tapScaleTight } from '../../lib/motion';
 import './HiddenSeriesPage.css';
 
@@ -84,7 +85,7 @@ export const HiddenSeriesPage: React.FC = () => {
     >
       <div style={CONTENT_WRAPPER_STYLE}>
         <PageHeader
-          title="Pausiert"
+          title={t('Pausiert')}
           gradientFrom={currentTheme.text.primary}
           gradientTo={currentTheme.text.secondary}
           sticky={false}
@@ -103,7 +104,9 @@ export const HiddenSeriesPage: React.FC = () => {
                   color: currentTheme.primary,
                 }}
               >
-                {hiddenSeriesList.length} {hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'}
+                {hiddenSeriesList.length === 1
+                  ? t('1 Serie')
+                  : t('{n} Serien', { n: hiddenSeriesList.length })}
               </motion.div>
             ) : undefined
           }
@@ -130,7 +133,7 @@ export const HiddenSeriesPage: React.FC = () => {
             >
               <Visibility style={{ fontSize: '48px', color: currentTheme.primary }} />
             </motion.div>
-            <h2 style={EMPTY_TITLE_STYLE}>Alles aktiv</h2>
+            <h2 style={EMPTY_TITLE_STYLE}>{t('Alles aktiv')}</h2>
             <p
               style={{
                 margin: 0,
@@ -140,8 +143,9 @@ export const HiddenSeriesPage: React.FC = () => {
                 lineHeight: 1.5,
               }}
             >
-              Du schaust gerade alle deine Serien. Serien, die du nicht weiterschaust, erscheinen
-              hier.
+              {t(
+                'Du schaust gerade alle deine Serien. Serien, die du nicht weiterschaust, erscheinen hier.'
+              )}
             </p>
           </motion.div>
         )}
@@ -159,7 +163,7 @@ export const HiddenSeriesPage: React.FC = () => {
                   className="hidden-series-card"
                   role="button"
                   tabIndex={0}
-                  aria-label={`${series.title} öffnen`}
+                  aria-label={t('{title} öffnen', { title: series.title })}
                   layout
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -223,8 +227,11 @@ export const HiddenSeriesPage: React.FC = () => {
                       {series.title}
                     </h3>
                     <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-                      {watchedEpisodes}/{totalEpisodes} gesehen · {totalEpisodes - watchedEpisodes}{' '}
-                      offen
+                      {t('{watched}/{total} gesehen · {open} offen', {
+                        watched: watchedEpisodes,
+                        total: totalEpisodes,
+                        open: totalEpisodes - watchedEpisodes,
+                      })}
                     </span>
                     {/* Progress bar */}
                     <div
@@ -251,7 +258,7 @@ export const HiddenSeriesPage: React.FC = () => {
                   {/* Unhide button */}
                   <motion.button
                     className="hidden-series-unhide"
-                    aria-label={`${series.title} weiterschauen`}
+                    aria-label={t('{title} weiterschauen', { title: series.title })}
                     whileTap={tapScaleTight}
                     onClick={(e) => handleUnhide(series.id, e)}
                     style={{
@@ -272,7 +279,7 @@ export const HiddenSeriesPage: React.FC = () => {
                     }}
                   >
                     <Visibility style={UNHIDE_ICON_STYLE} />
-                    Weiter
+                    {t('Weiter')}
                   </motion.button>
                 </motion.div>
               );

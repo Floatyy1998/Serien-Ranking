@@ -4,6 +4,7 @@ import AutoAwesome from '@mui/icons-material/AutoAwesome';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, NavCard } from '../../components/ui';
+import { t } from '../../services/i18n';
 
 export const TasteProfileCard: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export const TasteProfileCard: React.FC = () => {
     <NavCard
       onClick={() => navigate('/taste-profile')}
       accentColor={accent}
-      aria-label="KI Geschmacksprofil: Dein Seriengeschmack analysiert"
+      aria-label={t('KI Geschmacksprofil: Dein Seriengeschmack analysiert')}
     >
       <IconContainer color={accent} secondaryColor={currentTheme.accent}>
         <AutoAwesome style={{ fontSize: 20, color: 'white' }} />
@@ -31,7 +32,7 @@ export const TasteProfileCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          KI-Empfehlungen
+          {t('KI-Empfehlungen')}
         </h2>
         <p
           style={{
@@ -41,7 +42,7 @@ export const TasteProfileCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          Personalisierte Vorschläge
+          {t('Personalisierte Vorschläge')}
         </p>
       </div>
 

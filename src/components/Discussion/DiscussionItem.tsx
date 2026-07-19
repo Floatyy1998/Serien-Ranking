@@ -12,6 +12,7 @@ import { RepliesSection } from './RepliesSection';
 import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 const DiscussionItemInner: React.FC<{
@@ -119,7 +120,7 @@ const DiscussionItemInner: React.FC<{
             </button>
             <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
               {formatRelativeTime(discussion.createdAt)}
-              {discussion.updatedAt && ' (bearb.)'}
+              {discussion.updatedAt && ` ${t('(bearb.)')}`}
             </span>
           </div>
 
@@ -139,7 +140,7 @@ const DiscussionItemInner: React.FC<{
                 }}
               >
                 <Warning style={{ fontSize: '13px' }} />
-                SPOILER
+                {t('SPOILER')}
               </span>
             )}
             {discussion.isPinned && (
@@ -153,7 +154,7 @@ const DiscussionItemInner: React.FC<{
                   fontWeight: 700,
                 }}
               >
-                ANGEPINNT
+                {t('ANGEPINNT')}
               </span>
             )}
           </div>
@@ -256,7 +257,7 @@ const DiscussionItemInner: React.FC<{
           borderTop: `1px solid ${currentTheme.border.default}`,
         }}
       >
-        <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
+        <Tooltip title={isLiked ? t('Gefällt mir nicht mehr') : t('Gefällt mir')} arrow>
           <motion.button
             whileTap={tapScale}
             onClick={() => {
@@ -282,7 +283,7 @@ const DiscussionItemInner: React.FC<{
             ) : (
               <FavoriteBorder style={{ fontSize: '20px' }} />
             )}
-            {discussion.likes.length > 0 ? discussion.likes.length : 'Gefällt mir'}
+            {discussion.likes.length > 0 ? discussion.likes.length : t('Gefällt mir')}
           </motion.button>
         </Tooltip>
       </div>

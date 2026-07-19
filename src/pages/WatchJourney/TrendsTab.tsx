@@ -22,6 +22,7 @@ import { CustomTooltip } from './CustomTooltip';
 import { TrendsYearCards } from './TrendsYearCards';
 import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
 import { wjCard, wjHeading } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 const TrendIcon = ({
   trend,
@@ -97,8 +98,8 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
     return (
       <WatchJourneyTabEmptyState
         icon={<Timeline style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />}
-        title="Keine Trend-Daten"
-        description="Schau mehr Serien und Filme, um deine Trends über die Jahre zu sehen!"
+        title={t('Keine Trend-Daten')}
+        description={t('Schau mehr Serien und Filme, um deine Trends über die Jahre zu sehen!')}
       />
     );
   }
@@ -145,21 +146,21 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             }}
           >
             {isSingleYear
-              ? `JAHRESÜBERSICHT ${data.years[0]}`
-              : `GESAMT ÜBER ${data.years.length} JAHRE`}
+              ? t('JAHRESÜBERSICHT {year}', { year: data.years[0] })
+              : t('GESAMT ÜBER {n} JAHRE', { n: data.years.length })}
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 32, fontWeight: 800 }}>
                 {data.totalEpisodes.toLocaleString()}
               </div>
-              <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
+              <div style={{ color: textSecondary, fontSize: 12 }}>{t('Episoden')}</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: ACCENT_COLORS.movies, fontSize: 32, fontWeight: 800 }}>
                 {data.totalMovies.toLocaleString()}
               </div>
-              <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
+              <div style={{ color: textSecondary, fontSize: 12 }}>{t('Filme')}</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ color: ACCENT_COLORS.time, fontSize: 32, fontWeight: 800 }}>
@@ -180,7 +181,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             transition={{ delay: 0.1 }}
             style={cardStyle}
           >
-            <h3 style={headingStyle}>Dein Jahr in Zahlen</h3>
+            <h3 style={headingStyle}>{t('Dein Jahr in Zahlen')}</h3>
             <div
               style={{
                 display: 'grid',
@@ -190,22 +191,22 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             >
               {[
                 {
-                  label: 'Ø pro Monat',
+                  label: t('Ø pro Monat'),
                   value: `${Math.round(data.totalHours / Math.max(currentMonth, 1))}h`,
                   color: ACCENT_COLORS.time,
                 },
                 {
-                  label: 'Ø pro Woche',
+                  label: t('Ø pro Woche'),
                   value: `${Math.round(((data.totalHours / Math.max(currentMonth, 1)) * 12) / 52)}h`,
                   color: ACCENT_COLORS.episodes,
                 },
                 {
-                  label: 'Ø Episoden/Monat',
+                  label: t('Ø Episoden/Monat'),
                   value: Math.round(data.totalEpisodes / Math.max(currentMonth, 1)).toString(),
                   color: ACCENT_COLORS.movies,
                 },
                 {
-                  label: 'Ø Filme/Monat',
+                  label: t('Ø Filme/Monat'),
                   value: (data.totalMovies / Math.max(currentMonth, 1)).toFixed(1),
                   color: ACCENT_COLORS.fire,
                 },
@@ -239,7 +240,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               transition={{ delay: 0.2 }}
               style={cardStyle}
             >
-              <h3 style={headingStyle}>Genre-Ranking</h3>
+              <h3 style={headingStyle}>{t('Genre-Ranking')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {singleYearGenreRanking.map((g, i) => {
                   const maxHours = singleYearGenreRanking[0].hours;
@@ -291,7 +292,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
             transition={{ delay: 0.1 }}
             style={cardStyle}
           >
-            <h3 style={headingStyle}>Aktivität pro Jahr</h3>
+            <h3 style={headingStyle}>{t('Aktivität pro Jahr')}</h3>
             <div style={{ width: '100%', height: 280 }}>
               <SafeResponsiveContainer minWidth={0} minHeight={0}>
                 <BarChart
@@ -327,7 +328,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                   <Legend
                     wrapperStyle={{ paddingTop: 20 }}
                     formatter={(value) => (
-                      <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
+                      <span style={{ color: textSecondary, fontSize: 13 }}>{t(String(value))}</span>
                     )}
                   />
                   <Bar
@@ -364,7 +365,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                 marginBottom: 20,
               }}
             >
-              <h3 style={{ ...headingStyle, margin: 0 }}>Watch-Zeit Trend</h3>
+              <h3 style={{ ...headingStyle, margin: 0 }}>{t('Watch-Zeit Trend')}</h3>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <TrendIcon
                   trend={data.hoursTrend}
@@ -385,10 +386,10 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
                   }}
                 >
                   {data.hoursTrend === 'up'
-                    ? 'Steigend'
+                    ? t('Steigend')
                     : data.hoursTrend === 'down'
-                      ? 'Fallend'
-                      : 'Stabil'}
+                      ? t('Fallend')
+                      : t('Stabil')}
                 </span>
               </div>
             </div>
@@ -437,7 +438,7 @@ export const TrendsTab: React.FC<TrendsTabProps> = ({ data }) => {
               transition={{ delay: 0.3 }}
               style={cardStyle}
             >
-              <h3 style={headingStyle}>Genre-Entwicklung</h3>
+              <h3 style={headingStyle}>{t('Genre-Entwicklung')}</h3>
               <div style={{ width: '100%', height: 280 }}>
                 <SafeResponsiveContainer minWidth={0} minHeight={0}>
                   <BarChart

@@ -8,17 +8,18 @@ import { useTheme } from '../../../contexts/ThemeContext';
 
 import { getDisplayFormat } from '../mangaUtils';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 
 function formatRelative(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'Gerade eben';
-  if (minutes < 60) return `Vor ${minutes}min`;
+  if (minutes < 1) return t('Gerade eben');
+  if (minutes < 60) return t('Vor {n}min', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `Vor ${hours}h`;
+  if (hours < 24) return t('Vor {n}h', { n: hours });
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Gestern';
-  return `Vor ${days} Tagen`;
+  if (days === 1) return t('Gestern');
+  return t('Vor {n} Tagen', { n: days });
 }
 
 export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
@@ -42,7 +43,7 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
       <SectionHeader
         icon={<LibraryAdd />}
         iconColor={currentTheme.accent}
-        title="Kürzlich hinzugefügt"
+        title={t('Kürzlich hinzugefügt')}
       />
       <HorizontalScrollContainer>
         <div style={{ display: 'flex', gap: 12, padding: '0 20px' }}>
@@ -51,7 +52,7 @@ export const RecentlyAddedMangaSection: React.FC = React.memo(() => {
               key={manga.anilistId}
               role="button"
               tabIndex={0}
-              aria-label={`${manga.title} öffnen`}
+              aria-label={t('{title} öffnen', { title: manga.title })}
               style={{
                 width: 110,
                 flexShrink: 0,

@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { DAY_NAMES } from '../../services/watchJourneyService';
 import { wjCard } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 interface HeatmapTabProps {
   data: WatchJourneyData;
@@ -95,7 +96,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               marginBottom: 8,
             }}
           >
-            DEINE PRIME TIME
+            {t('DEINE PRIME TIME')}
           </p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             <div
@@ -122,7 +123,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 {peakHourLabel}
               </h2>
               <p style={{ color: textSecondary, fontSize: 14, margin: 0 }}>
-                {DAY_NAMES[data.peakDay]} ist dein aktivster Tag
+                {t('{day} ist dein aktivster Tag', { day: t(DAY_NAMES[data.peakDay]) })}
               </p>
             </div>
           </div>
@@ -144,7 +145,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             >
               <Nightlight style={{ fontSize: 16, color: primaryColor }} />
               <span style={{ color: textPrimary, fontSize: 13 }}>
-                Nachteule - {lateNightPercent}% nach 23 Uhr
+                {t('Nachteule - {n}% nach 23 Uhr', { n: lateNightPercent })}
               </span>
             </motion.div>
           )}
@@ -166,7 +167,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             margin: '0 0 16px',
           }}
         >
-          Uhrzeitverteilung
+          {t('Uhrzeitverteilung')}
         </h3>
         <div style={{ width: '100%', height: 200 }}>
           <SafeResponsiveContainer minWidth={0} minHeight={0}>
@@ -183,7 +184,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                 axisLine={{ stroke: `${textSecondary}30` }}
                 allowDecimals={false}
                 label={{
-                  value: 'Episoden',
+                  value: t('Episoden'),
                   angle: -90,
                   position: 'insideLeft',
                   offset: 20,
@@ -211,7 +212,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                           {payload[0].payload.hour}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
-                          {payload[0].value} Sessions
+                          {t('{n} Sessions', { n: String(payload[0].value) })}
                         </p>
                       </div>
                     );
@@ -252,7 +253,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             margin: '0 0 20px',
           }}
         >
-          Wochentag x Uhrzeit
+          {t('Wochentag x Uhrzeit')}
         </h3>
 
         <AnimatePresence>
@@ -276,10 +277,10 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               }}
             >
               <p style={{ color: primaryColor, fontWeight: 700, margin: 0, fontSize: 14 }}>
-                {DAY_NAMES[hoveredCell.day]} {hoveredCell.hour}:00
+                {t(DAY_NAMES[hoveredCell.day])} {hoveredCell.hour}:00
               </p>
               <p style={{ color: textPrimary, margin: '4px 0 0', fontSize: 18, fontWeight: 700 }}>
-                {hoveredCell.count} Sessions
+                {t('{n} Sessions', { n: hoveredCell.count })}
               </p>
               {hoveredCell.minutes > 0 && (
                 <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 12 }}>
@@ -335,7 +336,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                     fontWeight: 600,
                   }}
                 >
-                  {DAY_NAMES[day]}
+                  {t(DAY_NAMES[day])}
                 </div>
                 <div style={{ display: 'flex', gap: cellGap, flex: 1 }}>
                   {Array.from({ length: 24 }, (_, hour) => {
@@ -353,8 +354,10 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
                         // Touch has no hover: tapping toggles the detail tooltip.
                         onClick={() => (isHovered ? setHoveredCell(null) : showCell())}
                         onMouseEnter={showCell}
-                        aria-label={`${DAY_NAMES[day]} ${hour}:00 – ${count} ${
-                          count === 1 ? 'Session' : 'Sessions'
+                        aria-label={`${t(DAY_NAMES[day])} ${hour}:00 – ${
+                          count === 1
+                            ? t('{n} Session', { n: count })
+                            : t('{n} Sessions', { n: count })
                         }`}
                         aria-pressed={isHovered}
                         style={{
@@ -394,7 +397,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
             marginTop: 24,
           }}
         >
-          <span style={{ fontSize: 13, color: textSecondary }}>Weniger</span>
+          <span style={{ fontSize: 13, color: textSecondary }}>{t('Weniger')}</span>
           {[0.2, 0.4, 0.6, 0.8, 1].map((opacity, i) => (
             <div
               key={i}
@@ -406,7 +409,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
               }}
             />
           ))}
-          <span style={{ fontSize: 13, color: textSecondary }}>Mehr</span>
+          <span style={{ fontSize: 13, color: textSecondary }}>{t('Mehr')}</span>
         </div>
       </motion.div>
 
@@ -437,7 +440,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           >
             <CalendarMonth style={{ color: primaryColor, fontSize: 28, marginBottom: 8 }} />
             <div style={{ color: primaryColor, fontSize: 24, fontWeight: 700 }}>{weekendCount}</div>
-            <div style={{ color: textSecondary, fontSize: 12 }}>Wochenend-Sessions</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>{t('Wochenend-Sessions')}</div>
           </motion.div>
 
           <motion.div
@@ -454,7 +457,7 @@ export const HeatmapTab: React.FC<HeatmapTabProps> = ({ data, width }) => {
           >
             <Speed style={{ color: primaryColor, fontSize: 28, marginBottom: 8 }} />
             <div style={{ color: primaryColor, fontSize: 24, fontWeight: 700 }}>{weekdayCount}</div>
-            <div style={{ color: textSecondary, fontSize: 12 }}>Wochentag-Sessions</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>{t('Wochentag-Sessions')}</div>
           </motion.div>
         </div>
       </div>

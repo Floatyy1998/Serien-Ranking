@@ -13,6 +13,7 @@
  */
 
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import { appLocale, t } from '../../services/i18n';
 
 // Reine Date-Helfer aus dem Anime-Kalender wiederverwenden (identische UI).
 export {
@@ -51,7 +52,10 @@ export function quarterRangeShort(date: Date): string {
   const q = quarterOf(date);
   const start = new Date(date.getFullYear(), q * 3, 1);
   const end = new Date(date.getFullYear(), q * 3 + 2, 1);
-  const m = (d: Date) => d.toLocaleDateString('de-DE', { month: 'short' }).replace('.', '');
+  const m = (d: Date) =>
+    d
+      .toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', { month: 'short' })
+      .replace('.', '');
   return `${m(start)}–${m(end)}`;
 }
 
@@ -74,9 +78,9 @@ export function premiereBadge(entry: TvPremiereStaticEntry): {
   isNew: boolean;
 } {
   if (entry.type === 'season' && entry.seasonNumber) {
-    return { label: `Staffel ${entry.seasonNumber}`, isNew: false };
+    return { label: t('Staffel {n}', { n: entry.seasonNumber }), isNew: false };
   }
-  return { label: 'Neu', isNew: true };
+  return { label: t('Neu'), isNew: true };
 }
 
 /** Meta-Zeile „Netflix · ★ 8.2" — Network zuerst, dann TMDB-Rating (10er). */

@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopGenreEntry } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface TopGenresSlideProps {
   topGenres: TopGenreEntry[];
@@ -70,8 +71,8 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
           >
             🎬
           </motion.div>
-          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>Keine Genre-Daten</h2>
-          <p style={{ opacity: 0.6, marginTop: '10px' }}>Schau mehr Serien und Filme!</p>
+          <h2 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.8rem)' }}>{t('Keine Genre-Daten')}</h2>
+          <p style={{ opacity: 0.6, marginTop: '10px' }}>{t('Schau mehr Serien und Filme!')}</p>
         </div>
       </div>
     );
@@ -138,7 +139,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
           zIndex: 1,
         }}
       >
-        Dein Lieblings-Genre
+        {t('Dein Lieblings-Genre')}
       </motion.p>
 
       {/* Top Genre - Hero */}
@@ -206,7 +207,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
             {topGenre.percentage}%
           </span>
           <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', marginLeft: '8px' }}>
-            deiner Watchtime
+            {t('deiner Watchtime')}
           </span>
         </motion.div>
       </motion.div>

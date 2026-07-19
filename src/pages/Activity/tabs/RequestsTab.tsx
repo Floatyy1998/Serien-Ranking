@@ -8,6 +8,7 @@ import { useState, type ReactNode } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { EmptyState } from '../../../components/ui';
 import { showUndoToast } from '../../../lib/toast';
+import { t } from '../../../services/i18n';
 import { useActivityGrouping } from '../useActivityGrouping';
 import type { FirebaseUserProfile } from '../types';
 import type { FriendRequest } from '../../../types/Friend';
@@ -80,8 +81,8 @@ export const RequestsTab = ({
       >
         <EmptyState
           icon={<MarkEmailReadRounded style={{ fontSize: 'inherit' }} />}
-          title="Keine offenen Anfragen"
-          description="Hier siehst du eingehende und gesendete Freundschaftsanfragen."
+          title={t('Keine offenen Anfragen')}
+          description={t('Hier siehst du eingehende und gesendete Freundschaftsanfragen.')}
         />
       </motion.div>
     );
@@ -97,12 +98,12 @@ export const RequestsTab = ({
       {visibleIncoming.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <SectionLabel color={currentTheme.text.secondary}>
-            Eingehend · {visibleIncoming.length}
+            {t('Eingehend')} · {visibleIncoming.length}
           </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {visibleIncoming.map((request, index) => {
               const profile = requestProfiles[request.fromUserId] || {};
-              const name = profile.displayName || request.fromUsername || 'Unbekannt';
+              const name = profile.displayName || request.fromUsername || t('Unbekannt');
               return (
                 <motion.div
                   key={request.id}
@@ -161,7 +162,7 @@ export const RequestsTab = ({
                       {name}
                     </h3>
                     <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
-                      möchte dein Freund sein ·{' '}
+                      {t('möchte dein Freund sein')} ·{' '}
                       {formatTimeAgo(request.timestamp || request.sentAt || 0)}
                     </p>
                   </div>
@@ -170,7 +171,7 @@ export const RequestsTab = ({
                     <motion.button
                       whileTap={tapScaleTight}
                       onClick={() => acceptFriendRequest(request.id)}
-                      aria-label="Annehmen"
+                      aria-label={t('Annehmen')}
                       style={{
                         width: '40px',
                         height: '40px',
@@ -190,9 +191,9 @@ export const RequestsTab = ({
                     <motion.button
                       whileTap={tapScaleTight}
                       onClick={() =>
-                        removeWithUndo(request.id, 'Anfrage abgelehnt', declineFriendRequest)
+                        removeWithUndo(request.id, t('Anfrage abgelehnt'), declineFriendRequest)
                       }
-                      aria-label="Ablehnen"
+                      aria-label={t('Ablehnen')}
                       style={{
                         width: '40px',
                         height: '40px',
@@ -219,7 +220,7 @@ export const RequestsTab = ({
       {visibleSent.length > 0 && (
         <div>
           <SectionLabel color={currentTheme.text.muted}>
-            Gesendet · {visibleSent.length}
+            {t('Gesendet')} · {visibleSent.length}
           </SectionLabel>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {visibleSent.map((request) => (
@@ -274,15 +275,15 @@ export const RequestsTab = ({
                     }}
                   >
                     <ScheduleRounded style={{ fontSize: '14px' }} />
-                    Ausstehend
+                    {t('Ausstehend')}
                   </p>
                 </div>
                 <motion.button
                   whileTap={tapScaleTight}
                   onClick={() =>
-                    removeWithUndo(request.id, 'Anfrage zurückgezogen', cancelFriendRequest)
+                    removeWithUndo(request.id, t('Anfrage zurückgezogen'), cancelFriendRequest)
                   }
-                  aria-label="Anfrage zurückziehen"
+                  aria-label={t('Anfrage zurückziehen')}
                   style={{
                     width: '40px',
                     height: '40px',

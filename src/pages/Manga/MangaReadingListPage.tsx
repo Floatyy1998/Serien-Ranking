@@ -29,19 +29,20 @@ import {
 import type { Manga } from '../../types/Manga';
 import { tapScale } from '../../lib/motion';
 import { dbRef, paths } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 type SortOption = 'name-asc' | 'name-desc' | 'progress-asc' | 'progress-desc' | 'recent-desc';
 
 const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: 'name-asc', label: 'Name A-Z' },
   { value: 'name-desc', label: 'Name Z-A' },
-  { value: 'progress-desc', label: 'Fortschritt ↓' },
-  { value: 'progress-asc', label: 'Fortschritt ↑' },
-  { value: 'recent-desc', label: 'Zuletzt gelesen' },
+  { value: 'progress-desc', label: t('Fortschritt ↓') },
+  { value: 'progress-asc', label: t('Fortschritt ↑') },
+  { value: 'recent-desc', label: t('Zuletzt gelesen') },
 ];
 
 const FORMAT_FILTERS = [
-  { key: 'all', label: 'Alle' },
+  { key: 'all', label: t('Alle') },
   { key: 'MANGA', label: 'Manga' },
   { key: 'MANHWA', label: 'Manhwa' },
   { key: 'MANHUA', label: 'Manhua' },
@@ -200,7 +201,7 @@ export const MangaReadingListPage = () => {
                     margin: 0,
                   }}
                 >
-                  Leseliste
+                  {t('Leseliste')}
                 </GradientText>
                 <p
                   style={{
@@ -209,13 +210,13 @@ export const MangaReadingListPage = () => {
                     margin: '4px 0 0 0',
                   }}
                 >
-                  {items.length} Manga zum Lesen
+                  {t('{n} Manga zum Lesen', { n: items.length })}
                 </p>
               </div>
             </div>
             <motion.button
               type="button"
-              aria-label="Filter und Sortierung"
+              aria-label={t('Filter und Sortierung')}
               aria-expanded={showFilter}
               whileTap={tapScale}
               onClick={() => setShowFilter(!showFilter)}
@@ -251,7 +252,7 @@ export const MangaReadingListPage = () => {
               >
                 <input
                   type="text"
-                  placeholder="Manga suchen..."
+                  placeholder={t('Manga suchen...')}
                   value={filterInput}
                   onChange={(e) => setFilterInput(e.target.value)}
                   style={{
@@ -361,7 +362,7 @@ export const MangaReadingListPage = () => {
                   margin: '0 0 8px',
                 }}
               >
-                Keine Manga zum Lesen
+                {t('Keine Manga zum Lesen')}
               </h2>
               <p
                 style={{
@@ -371,9 +372,9 @@ export const MangaReadingListPage = () => {
                   lineHeight: 1.5,
                 }}
               >
-                Füge Manga hinzu und setze den
+                {t('Füge Manga hinzu und setze den')}
                 <br />
-                Status auf &quot;Lese ich&quot; oder &quot;Geplant&quot;!
+                {t('Status auf "Lese ich" oder "Geplant"!')}
               </p>
             </motion.div>
           ) : (
@@ -442,7 +443,7 @@ export const MangaReadingListPage = () => {
                               textOverflow: 'ellipsis',
                             }}
                           >
-                            Kap. {manga.currentChapter}
+                            {t('Kap.')} {manga.currentChapter}
                             {effectiveTotal ? ` / ${effectiveTotal}` : ''}
                             {' · '}
                             {format}
@@ -460,7 +461,7 @@ export const MangaReadingListPage = () => {
                                   letterSpacing: '0.3px',
                                 }}
                               >
-                                Geplant
+                                {t('Geplant')}
                               </span>
                             )}
                           </p>
@@ -476,12 +477,14 @@ export const MangaReadingListPage = () => {
                             }}
                           >
                             {effectiveTotal && manga.currentChapter < effectiveTotal
-                              ? `${effectiveTotal - manga.currentChapter} Kapitel übrig`
+                              ? t('{n} Kapitel übrig', {
+                                  n: effectiveTotal - manga.currentChapter,
+                                })
                               : inferStatus(manga) === 'RELEASING'
-                                ? 'Laufend · Wartet auf neue Kapitel'
+                                ? t('Laufend · Wartet auf neue Kapitel')
                                 : inferStatus(manga) === 'HIATUS'
-                                  ? 'Hiatus · Keine neuen Kapitel'
-                                  : 'Fortschritt unbekannt'}
+                                  ? t('Hiatus · Keine neuen Kapitel')
+                                  : t('Fortschritt unbekannt')}
                           </p>
                           <div
                             style={{

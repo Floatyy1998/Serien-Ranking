@@ -12,6 +12,7 @@ const SPARKLE_DATA = Array.from({ length: 15 }, () => ({
   size: 12 + _rand() * 8,
 }));
 import type { WrappedAchievement } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface AchievementsSlideProps {
   achievements: WrappedAchievement[];
@@ -197,7 +198,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
           zIndex: 1,
         }}
       >
-        Deine Achievements
+        {t('Deine Achievements')}
       </motion.p>
 
       {/* Trophy Icon */}
@@ -229,7 +230,9 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
         <span style={{ color: 'white', fontSize: '1.3rem', fontWeight: 'bold' }}>
           {unlockedAchievements.length} / {achievements.length}
         </span>
-        <span style={{ color: 'white', opacity: 0.9, marginLeft: '8px' }}>freigeschaltet</span>
+        <span style={{ color: 'white', opacity: 0.9, marginLeft: '8px' }}>
+          {t('freigeschaltet')}
+        </span>
       </motion.div>
 
       {/* Unlocked Achievements Grid */}
@@ -326,7 +329,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
               marginBottom: '12px',
             }}
           >
-            Nächstes Jahr freischalten:
+            {t('Nächstes Jahr freischalten:')}
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             {lockedAchievements.slice(0, 5).map((achievement, index) => (

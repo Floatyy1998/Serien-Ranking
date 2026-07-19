@@ -8,6 +8,7 @@ import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
 import { wjCard } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 interface GenreTabProps {
   data: WatchJourneyData;
@@ -72,8 +73,10 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
         icon={
           <TheaterComedy style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
         }
-        title="Keine Genre-Daten"
-        description="Genres werden beim Markieren von Episoden erfasst. Schau etwas, um deine Genre-Verteilung zu sehen!"
+        title={t('Keine Genre-Daten')}
+        description={t(
+          'Genres werden beim Markieren von Episoden erfasst. Schau etwas, um deine Genre-Verteilung zu sehen!'
+        )}
       />
     );
   }
@@ -117,7 +120,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
               marginBottom: 8,
             }}
           >
-            DEIN TOP GENRE
+            {t('DEIN TOP GENRE')}
           </p>
           <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: '0 0 8px' }}>
             {topGenre?.genre}
@@ -127,14 +130,18 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
               <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>
                 {topGenre?.hours}
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Stunden</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('Stunden')}
+              </span>
             </div>
             <div style={{ width: 1, background: `${textSecondary}40` }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 700, color: topGenre?.color }}>
                 {topGenre?.percentage}%
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>deiner Zeit</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('deiner Zeit')}
+              </span>
             </div>
           </div>
         </div>
@@ -155,7 +162,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Genre-Verteilung
+          {t('Genre-Verteilung')}
         </h3>
         <div style={{ width: '100%', height: 280 }}>
           <SafeResponsiveContainer minWidth={0} minHeight={0}>
@@ -192,7 +199,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
                           {item.name}
                         </p>
                         <p style={{ color: textSecondary, margin: '4px 0 0', fontSize: 13 }}>
-                          {item.value} Stunden
+                          {t('{n} Stunden', { n: item.value })}
                         </p>
                       </div>
                     );
@@ -237,7 +244,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Genre-Entwicklung
+          {t('Genre-Entwicklung')}
         </h3>
         <div style={{ width: '100%', height: 280 }}>
           <SafeResponsiveContainer minWidth={0} minHeight={0}>
@@ -296,7 +303,7 @@ export const GenreTab: React.FC<GenreTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Alle Genres
+          {t('Alle Genres')}
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
           {genreStats.map((stat, i) => (

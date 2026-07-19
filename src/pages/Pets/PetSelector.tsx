@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PetSelectorProps {
   pets: Pet[];
@@ -81,7 +82,7 @@ export const PetSelector = memo(function PetSelector({
           }}
           disabled
         >
-          Neues Pet ab Lv.15
+          {t('Neues Pet ab Lv.15')}
         </button>
       )}
     </motion.div>

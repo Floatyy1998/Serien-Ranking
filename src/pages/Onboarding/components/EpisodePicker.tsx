@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
+import { t } from '../../../services/i18n';
 
 interface Props {
   seasons: CatalogSeason[];
@@ -38,7 +39,7 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
           textTransform: 'none',
         }}
       >
-        Tippe die letzte gesehene Episode an — alles davor wird abgehakt.
+        {t('Tippe die letzte gesehene Episode an — alles davor wird abgehakt.')}
       </p>
 
       <div ref={tabsRef} className="ob-season-tabs">
@@ -78,7 +79,7 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
               className={`ob-episode ${isCovered ? 'ob-episode--covered' : ''} ${isPicked ? 'ob-episode--picked' : ''}`}
             >
               <span className="ob-episode__num">e{String(i + 1).padStart(2, '0')}</span>
-              <h4 className="ob-episode__title">{ep.name || `Episode ${i + 1}`}</h4>
+              <h4 className="ob-episode__title">{ep.name || t('Episode {n}', { n: i + 1 })}</h4>
               {ep.airDate && !isPicked && (
                 <span className="ob-episode__date">
                   {new Date(ep.airDate)
@@ -91,7 +92,7 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
                     .join('·')}
                 </span>
               )}
-              {isPicked && <span className="ob-episode__here">hier</span>}
+              {isPicked && <span className="ob-episode__here">{t('hier')}</span>}
             </motion.button>
           );
         })}

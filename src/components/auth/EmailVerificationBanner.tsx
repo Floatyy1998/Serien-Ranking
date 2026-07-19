@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { commonStyles } from '../../theme';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
@@ -65,7 +66,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
       user
         .sendEmailVerification()
         .then(() => {
-          setMessage('Verifizierungslink wurde erneut gesendet.');
+          setMessage(t('Verifizierungslink wurde erneut gesendet.'));
           setSnackOpen(true);
         })
         .catch((error) => {
@@ -115,11 +116,11 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Warning style={{ fontSize: '20px' }} />
             <span style={{ fontWeight: '500' }}>
-              Email nicht verifiziert – bitte überprüfe dein Postfach
+              {t('Email nicht verifiziert – bitte überprüfe dein Postfach')}
             </span>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Tooltip title="Verifizierungslink erneut senden" arrow>
+            <Tooltip title={t('Verifizierungslink erneut senden')} arrow>
               <Button
                 variant="contained"
                 size="small"
@@ -132,10 +133,10 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   },
                 }}
               >
-                Erneut senden
+                {t('Erneut senden')}
               </Button>
             </Tooltip>
-            <Tooltip title="Vom Account abmelden" arrow>
+            <Tooltip title={t('Vom Account abmelden')} arrow>
               <Button
                 variant="outlined"
                 size="small"
@@ -149,7 +150,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   },
                 }}
               >
-                Abmelden
+                {t('Abmelden')}
               </Button>
             </Tooltip>
           </div>
@@ -194,16 +195,17 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                   fontWeight: 700,
                 }}
               >
-                Email-Verifizierung erforderlich
+                {t('Email-Verifizierung erforderlich')}
               </h2>
               <p
                 style={{ color: currentTheme.text.muted, marginBottom: '24px', lineHeight: '1.5' }}
               >
-                Um alle Funktionen nutzen zu können, musst du deine Email-Adresse verifizieren.
-                Überprüfe dein Postfach und klicke auf den Verifizierungslink.
+                {t(
+                  'Um alle Funktionen nutzen zu können, musst du deine Email-Adresse verifizieren. Überprüfe dein Postfach und klicke auf den Verifizierungslink.'
+                )}
               </p>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-                <Tooltip title="Verifizierungslink erneut senden" arrow>
+                <Tooltip title={t('Verifizierungslink erneut senden')} arrow>
                   <Button
                     variant="contained"
                     onClick={resendVerification}
@@ -215,10 +217,10 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
                       },
                     }}
                   >
-                    Link erneut senden
+                    {t('Link erneut senden')}
                   </Button>
                 </Tooltip>
-                <Tooltip title="Vom Account abmelden" arrow>
+                <Tooltip title={t('Vom Account abmelden')} arrow>
                   <Button
                     variant="outlined"
                     onClick={handleLogout}

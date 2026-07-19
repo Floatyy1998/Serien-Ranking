@@ -1,4 +1,5 @@
 import { dbGet, dbRef, dbUpdate, userPath } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 export const DEFAULT_INACTIVE_THRESHOLD_DAYS = 30;
 /** Erlaubte Optionen für das UI. `0` = "aus" (keine Inactive-Notifications). */
@@ -89,9 +90,9 @@ export type SnoozeOption = (typeof SNOOZE_OPTIONS)[number];
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const snoozeLabel = (days: SnoozeOption): string => {
-  if (days === 1) return '1 Tag';
-  if (days === 7) return '1 Woche';
-  return '1 Monat';
+  if (days === 1) return t('1 Tag');
+  if (days === 7) return t('1 Woche');
+  return t('1 Monat');
 };
 
 export const snoozeNotifications = async (

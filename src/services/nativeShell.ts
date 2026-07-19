@@ -1,5 +1,7 @@
 /** Brücke zur Capacitor-Hülle — läuft auch im Browser und muss dort kompletter No-op sein. */
 
+import { t } from './i18n';
+
 interface CapacitorAppPlugin {
   addListener?: ((
     event: 'backButton',
@@ -105,17 +107,22 @@ const initAppShortcuts = (cap: CapacitorGlobal): void => {
       shortcuts: [
         {
           id: 'watch-next',
-          title: 'Weiter schauen',
-          description: 'Deine nächsten Folgen',
+          title: t('Weiter schauen'),
+          description: t('Deine nächsten Folgen'),
           iosIcon: 'play.fill',
         },
         {
           id: 'search',
-          title: 'Suche',
-          description: 'Serien & Filme finden',
+          title: t('Suche'),
+          description: t('Serien & Filme finden'),
           iosIcon: 'magnifyingglass',
         },
-        { id: 'calendar', title: 'Kalender', description: 'Kommende Folgen', iosIcon: 'calendar' },
+        {
+          id: 'calendar',
+          title: t('Kalender'),
+          description: t('Kommende Folgen'),
+          iosIcon: 'calendar',
+        },
       ],
     })
     .catch(() => {});

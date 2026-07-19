@@ -20,6 +20,7 @@ import { RewatchBanner } from './RewatchBanner';
 import { SeasonTabs } from './SeasonTabs';
 import type { useSeriesData } from './useSeriesData';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface SeasonsSectionProps {
   series: NonNullable<ReturnType<typeof useSeriesData>['series']>;
@@ -65,9 +66,11 @@ function EpisodeDateMeta({
   if (!air && !seen) return null;
   return (
     <div className="episode-list-meta">
-      {air && <span style={{ color: mutedColor }}>Erstausstrahlung {air}</span>}
+      {air && (
+        <span style={{ color: mutedColor }}>{t('Erstausstrahlung {date}', { date: air })}</span>
+      )}
       {air && seen && <span style={{ color: mutedColor, opacity: 0.4 }}>·</span>}
-      {seen && <span style={{ color: accentColor }}>Gesehen {seen}</span>}
+      {seen && <span style={{ color: accentColor }}>{t('Gesehen {date}', { date: seen })}</span>}
     </div>
   );
 }
@@ -136,7 +139,7 @@ export function SeasonsSection({
           }}
         >
           <List fontSize="small" style={{ color: currentTheme.accent }} />
-          <span style={{ color: currentTheme.text.primary }}>Staffeln</span>
+          <span style={{ color: currentTheme.text.primary }}>{t('Staffeln')}</span>
         </h3>
         <motion.button
           whileTap={tapScale}
@@ -152,7 +155,7 @@ export function SeasonsSection({
             cursor: 'pointer',
           }}
         >
-          Alle verwalten
+          {t('Alle verwalten')}
         </motion.button>
       </div>
 
@@ -194,7 +197,7 @@ export function SeasonsSection({
           }}
         >
           <Repeat style={{ fontSize: '18px' }} />
-          Rewatch starten
+          {t('Rewatch starten')}
         </motion.button>
       )}
 
@@ -226,7 +229,7 @@ export function SeasonsSection({
             }}
           >
             <Repeat style={{ fontSize: '18px' }} />
-            Rewatch fortsetzen
+            {t('Rewatch fortsetzen')}
           </motion.button>
         );
       })()}
@@ -272,10 +275,13 @@ export function SeasonsSection({
           >
             <div>
               <div style={{ fontSize: '15px', fontWeight: 600, color: currentTheme.text.primary }}>
-                Staffel {selectedSeason.seasonNumber + 1}
+                {t('Staffel {n}', { n: selectedSeason.seasonNumber + 1 })}
               </div>
               <div style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-                {watchedEpisodes}/{totalEpisodes} Episoden
+                {t('{watched}/{total} Episoden', {
+                  watched: watchedEpisodes,
+                  total: totalEpisodes,
+                })}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -285,8 +291,8 @@ export function SeasonsSection({
                 onClick={() => setEpisodeView(episodeView === 'list' ? 'grid' : 'list')}
                 aria-label={
                   episodeView === 'list'
-                    ? 'Zur Grid-Ansicht wechseln'
-                    : 'Zur Listen-Ansicht wechseln'
+                    ? t('Zur Grid-Ansicht wechseln')
+                    : t('Zur Listen-Ansicht wechseln')
                 }
                 style={{
                   background: 'rgba(255,255,255,0.08)',
@@ -301,7 +307,7 @@ export function SeasonsSection({
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                title={episodeView === 'list' ? 'Grid-Ansicht' : 'Listen-Ansicht'}
+                title={episodeView === 'list' ? t('Grid-Ansicht') : t('Listen-Ansicht')}
               >
                 {episodeView === 'list' ? (
                   <GridView style={{ fontSize: '16px' }} />
@@ -359,8 +365,8 @@ export function SeasonsSection({
                     key={episode.id}
                     role="button"
                     tabIndex={0}
-                    aria-label={`Episode ${episodeIndex + 1}${episode.name ? `: ${episode.name}` : ''} — ${
-                      episode.watched ? 'gesehen, Optionen anzeigen' : 'Details öffnen'
+                    aria-label={`${t('Episode {n}', { n: episodeIndex + 1 })}${episode.name ? `: ${episode.name}` : ''} — ${
+                      episode.watched ? t('gesehen, Optionen anzeigen') : t('Details öffnen')
                     }`}
                     onClick={activateRow}
                     onKeyDown={(e) => {
@@ -383,10 +389,10 @@ export function SeasonsSection({
                     <Tooltip
                       title={
                         isRewatched
-                          ? 'Optionen anzeigen'
+                          ? t('Optionen anzeigen')
                           : episode.watched
-                            ? 'Als nicht gesehen markieren'
-                            : 'Als gesehen markieren'
+                            ? t('Als nicht gesehen markieren')
+                            : t('Als gesehen markieren')
                       }
                       arrow
                       enterDelay={400}
@@ -412,8 +418,8 @@ export function SeasonsSection({
                         }}
                         aria-label={
                           episode.watched
-                            ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
-                            : `Episode ${episodeIndex + 1} als gesehen markieren`
+                            ? t('Episode {n} als nicht gesehen markieren', { n: episodeIndex + 1 })
+                            : t('Episode {n} als gesehen markieren', { n: episodeIndex + 1 })
                         }
                         className="episode-list-number"
                         style={{
@@ -443,7 +449,9 @@ export function SeasonsSection({
 
                     {/* Episode info */}
                     <div className="episode-list-info">
-                      <div className="episode-list-title">Episode {episodeIndex + 1}</div>
+                      <div className="episode-list-title">
+                        {t('Episode {n}', { n: episodeIndex + 1 })}
+                      </div>
                       {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
                     </div>
 
@@ -519,10 +527,11 @@ export function SeasonsSection({
                     key={episode.id}
                     title={
                       (isRewatched
-                        ? `Episode ${episodeIndex + 1} – Optionen anzeigen`
+                        ? t('Episode {n} – Optionen anzeigen', { n: episodeIndex + 1 })
                         : episode.watched
-                          ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
-                          : `Episode ${episodeIndex + 1} als gesehen markieren`) + fillerLabel
+                          ? t('Episode {n} als nicht gesehen markieren', { n: episodeIndex + 1 })
+                          : t('Episode {n} als gesehen markieren', { n: episodeIndex + 1 })) +
+                      fillerLabel
                     }
                     arrow
                     enterDelay={400}
@@ -535,10 +544,11 @@ export function SeasonsSection({
                       whileTap={tapScale}
                       aria-label={
                         (isRewatched
-                          ? `Episode ${episodeIndex + 1} – Optionen anzeigen`
+                          ? t('Episode {n} – Optionen anzeigen', { n: episodeIndex + 1 })
                           : episode.watched
-                            ? `Episode ${episodeIndex + 1} als nicht gesehen markieren`
-                            : `Episode ${episodeIndex + 1} als gesehen markieren`) + fillerLabel
+                            ? t('Episode {n} als nicht gesehen markieren', { n: episodeIndex + 1 })
+                            : t('Episode {n} als gesehen markieren', { n: episodeIndex + 1 })) +
+                        fillerLabel
                       }
                       onClick={() => {
                         if (isRewatched) {

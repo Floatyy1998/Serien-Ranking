@@ -15,6 +15,7 @@ import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getStreakStatus, getShieldCooldown } from './watchStreakHelpers';
 import type { WatchStreakData, ActivePetInfo } from './watchStreakHelpers';
 import { StreakShieldDialog } from './StreakShieldDialog';
+import { t } from '../../services/i18n';
 
 // Streak colors are resolved at render time from currentTheme
 // active = success, at_risk/shieldable = warning, lost = muted
@@ -130,7 +131,7 @@ export const WatchStreakCard: React.FC = () => {
         hapticSuccess();
         setTimeout(() => setShieldJustUsed(false), 5000);
       } else {
-        showToast(result.error || 'Fehler beim Aktivieren des Shields', 3000, 'error');
+        showToast(result.error || t('Fehler beim Aktivieren des Shields'), 3000, 'error');
       }
     } finally {
       setShieldLoading(false);
@@ -170,12 +171,18 @@ export const WatchStreakCard: React.FC = () => {
   const petCanAfford = petTotalXP >= PET_CONFIG.STREAK_SHIELD_XP_COST;
 
   let shieldDisabledReason = '';
-  if (!pet) shieldDisabledReason = 'Kein Pet vorhanden';
-  else if (!pet.isAlive) shieldDisabledReason = 'Dein Pet lebt nicht';
+  if (!pet) shieldDisabledReason = t('Kein Pet vorhanden');
+  else if (!pet.isAlive) shieldDisabledReason = t('Dein Pet lebt nicht');
   else if (!petCanAfford)
-    shieldDisabledReason = `Nicht genug XP (${petTotalXP}/${PET_CONFIG.STREAK_SHIELD_XP_COST})`;
+    shieldDisabledReason = t('Nicht genug XP ({have}/{need})', {
+      have: petTotalXP,
+      need: PET_CONFIG.STREAK_SHIELD_XP_COST,
+    });
   else if (cooldown.onCooldown)
-    shieldDisabledReason = `Cooldown: noch ${cooldown.daysRemaining} ${cooldown.daysRemaining === 1 ? 'Tag' : 'Tage'}`;
+    shieldDisabledReason =
+      cooldown.daysRemaining === 1
+        ? t('Cooldown: noch {n} Tag', { n: cooldown.daysRemaining })
+        : t('Cooldown: noch {n} Tage', { n: cooldown.daysRemaining });
 
   const shieldEligible = canUseShield && !shieldDisabledReason;
   const showShieldButton = canUseShield && pet;
@@ -261,13 +268,15 @@ export const WatchStreakCard: React.FC = () => {
                   status === 'at_risk' || status === 'shieldable' || shieldJustUsed ? 600 : 400,
               }}
             >
-              {shieldJustUsed && 'Streak gerettet!'}
+              {shieldJustUsed && t('Streak gerettet!')}
               {!shieldJustUsed &&
                 status === 'active' &&
-                `${displayStreak} ${displayStreak === 1 ? 'Tag' : 'Tage'} in Folge`}
-              {!shieldJustUsed && status === 'at_risk' && 'Schau heute!'}
-              {!shieldJustUsed && status === 'shieldable' && 'Streak in Gefahr!'}
-              {!shieldJustUsed && status === 'lost' && 'Starte eine neue Streak!'}
+                (displayStreak === 1
+                  ? t('{n} Tag in Folge', { n: displayStreak })
+                  : t('{n} Tage in Folge', { n: displayStreak }))}
+              {!shieldJustUsed && status === 'at_risk' && t('Schau heute!')}
+              {!shieldJustUsed && status === 'shieldable' && t('Streak in Gefahr!')}
+              {!shieldJustUsed && status === 'lost' && t('Starte eine neue Streak!')}
             </p>
           </div>
 
@@ -304,7 +313,7 @@ export const WatchStreakCard: React.FC = () => {
                   if (shieldEligible) setShowConfirm(true);
                 }}
                 disabled={!shieldEligible}
-                title={shieldDisabledReason || 'Streak Shield aktivieren'}
+                title={shieldDisabledReason || t('Streak Shield aktivieren')}
                 style={{
                   background: shieldEligible
                     ? `linear-gradient(135deg, ${shieldColor}, ${shieldColor}cc)`
@@ -377,7 +386,7 @@ export const WatchStreakCard: React.FC = () => {
                   letterSpacing: '0.5px',
                 }}
               >
-                Rekord
+                {t('Rekord')}
               </span>
             )}
             {!isRecord && displayStreak > 0 && streak.longestStreak > displayStreak && (
@@ -388,7 +397,7 @@ export const WatchStreakCard: React.FC = () => {
                   whiteSpace: 'nowrap',
                 }}
               >
-                Best: {streak.longestStreak}
+                {t('Best: {n}', { n: streak.longestStreak })}
               </span>
             )}
           </div>
@@ -417,9 +426,12 @@ export const WatchStreakCard: React.FC = () => {
                 }}
               >
                 {[
-                  { color: streakColors.active, label: 'Heute geschaut' },
-                  { color: streakColors.at_risk, label: 'Schau heute, sonst bricht die Streak' },
-                  { color: currentTheme.text.muted, label: 'Streak verloren' },
+                  { color: streakColors.active, label: t('Heute geschaut') },
+                  {
+                    color: streakColors.at_risk,
+                    label: t('Schau heute, sonst bricht die Streak'),
+                  },
+                  { color: currentTheme.text.muted, label: t('Streak verloren') },
                 ].map(({ color, label }) => (
                   <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div

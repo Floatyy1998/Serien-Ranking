@@ -13,21 +13,22 @@ import { useContinueReading } from '../../../hooks/useContinueReading';
 import { logChapterRead } from '../../../services/readActivityService';
 import { getDisplayFormat, getEffectiveChapterCount } from '../mangaUtils';
 import { dbRef, paths } from '../../../services/db/ref';
+import { t } from '../../../services/i18n';
 
 function formatLastRead(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Gerade eben';
-  if (mins < 60) return `Vor ${mins}min`;
+  if (mins < 1) return t('Gerade eben');
+  if (mins < 60) return t('Vor {n}min', { n: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `Vor ${hours}h`;
+  if (hours < 24) return t('Vor {n}h', { n: hours });
   const days = Math.floor(hours / 24);
-  if (days === 1) return 'Gestern';
-  if (days < 7) return `Vor ${days} Tagen`;
+  if (days === 1) return t('Gestern');
+  if (days < 7) return t('Vor {n} Tagen', { n: days });
   const weeks = Math.floor(days / 7);
-  if (weeks < 5) return `Vor ${weeks} Woche${weeks > 1 ? 'n' : ''}`;
+  if (weeks < 5) return weeks > 1 ? t('Vor {n} Wochen', { n: weeks }) : t('Vor 1 Woche');
   const months = Math.floor(days / 30);
-  return `Vor ${months} Monat${months > 1 ? 'en' : ''}`;
+  return months > 1 ? t('Vor {n} Monaten', { n: months }) : t('Vor 1 Monat');
 }
 
 export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> = React.memo(
@@ -103,9 +104,9 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
         <SectionHeader
           icon={<MenuBook />}
           iconColor={accentColor}
-          title="Weiterlesen"
+          title={t('Weiterlesen')}
           onSeeAll={onFilterReading}
-          seeAllLabel="Alle"
+          seeAllLabel={t('Alle')}
         />
         <div
           style={{
@@ -173,10 +174,10 @@ export const ContinueReadingSection: React.FC<{ onFilterReading?: () => void }> 
                         textOverflow: 'ellipsis',
                       }}
                     >
-                      Kap. {item.currentChapter}
+                      {t('Kap.')} {item.currentChapter}
                       {effectiveTotal ? ` / ${effectiveTotal}` : ''}
                       {effectiveTotal && item.currentChapter < effectiveTotal
-                        ? ` · ${effectiveTotal - item.currentChapter} übrig`
+                        ? ` · ${t('{n} übrig', { n: effectiveTotal - item.currentChapter })}`
                         : ` · ${format}`}
                     </p>
                     <p

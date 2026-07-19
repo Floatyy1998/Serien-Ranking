@@ -20,6 +20,7 @@ import { exportNodeAsImage, shareOrDownload } from '../../services/share/shareCa
 import { showToast } from '../../lib/toast';
 import { BottomSheet } from '../ui';
 import { SHARE_CARD_HEIGHT, SHARE_CARD_WIDTH } from './ShareCardFrame';
+import { t } from '../../services/i18n';
 
 /** Vorschau-Maßstab: 1080×1920 → 216×384, passt auch auf kleine Phones. */
 const PREVIEW_SCALE = 0.2;
@@ -77,7 +78,7 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
           await doExport();
         } catch {
           hapticError();
-          showToast('Bild konnte nicht erstellt werden', 2500, 'error');
+          showToast(t('Bild konnte nicht erstellt werden'), 2500, 'error');
         }
       } else {
         hapticError();
@@ -136,7 +137,7 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
           whileTap={tapScale}
           onClick={handleShare}
           disabled={sharing}
-          aria-label="Karte als Bild teilen"
+          aria-label={t('Karte als Bild teilen')}
           aria-busy={sharing}
           style={{
             width: '100%',
@@ -167,12 +168,12 @@ export const ShareCardSheet: React.FC<ShareCardSheetProps> = ({
                 borderWidth={2}
                 color={currentTheme.background.default}
               />
-              <span>Bild wird erstellt…</span>
+              <span>{t('Bild wird erstellt…')}</span>
             </>
           ) : (
             <>
               <IosShare style={{ fontSize: 20 }} />
-              <span>Teilen</span>
+              <span>{t('Teilen')}</span>
             </>
           )}
         </motion.button>

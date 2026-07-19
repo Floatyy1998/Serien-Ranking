@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface Provider {
@@ -35,7 +36,7 @@ export const ProviderFilter = React.memo(
             letterSpacing: '0.5px',
           }}
         >
-          Provider
+          {t('Provider')}
         </p>
         <HorizontalScrollContainer gap={6} style={{}}>
           <motion.button
@@ -49,7 +50,7 @@ export const ProviderFilter = React.memo(
               color: !selected ? getOptimalTextColor(theme.primary) : theme.text.primary,
             }}
           >
-            Alle
+            {t('Alle')}
           </motion.button>
           {providers.map((provider) => (
             <motion.button

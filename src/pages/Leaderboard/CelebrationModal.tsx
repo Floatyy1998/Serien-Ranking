@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { seededRandom } from '../../utils/seededRandom';
 import type { CelebrationData } from './useLeaderboardData';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const PLACE_COLORS = ['', '#FFD700', '#C0C0C0', '#CD7F32'];
 const PLACE_GRADIENTS = [
@@ -14,7 +15,7 @@ const PLACE_GRADIENTS = [
   'linear-gradient(135deg, #E8E8E8, #A8A8A8, #E8E8E8)',
   'linear-gradient(135deg, #CD7F32, #E8A050, #CD7F32)',
 ];
-const PLACE_LABELS = ['', '1. Platz!', '2. Platz!', '3. Platz!'];
+const PLACE_LABELS = ['', t('1. Platz!'), t('2. Platz!'), t('3. Platz!')];
 const CONFETTI_COLORS = [
   '#FFD700',
   '#FFA500',
@@ -191,7 +192,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                   lineHeight: 1.6,
                 }}
               >
-                Watchtime-Rangliste
+                {t('Watchtime-Rangliste')}
                 <br />
                 <strong style={{ color: currentTheme.text.secondary, fontSize: '18px' }}>
                   {celebration.monthLabel}
@@ -252,7 +253,7 @@ export const CelebrationModal = React.memo(function CelebrationModal({
                   letterSpacing: '0.3px',
                 }}
               >
-                Weiter
+                {t('Weiter')}
               </motion.button>
             </motion.div>
           </motion.div>

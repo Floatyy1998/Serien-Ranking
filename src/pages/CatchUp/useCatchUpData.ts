@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -205,10 +206,10 @@ export const useCatchUpData = () => {
 
   const currentLabel = useMemo(() => {
     const labels: Record<SortOption, { desc: string; asc: string }> = {
-      episodes: { desc: 'Meiste Episoden', asc: 'Wenigste Episoden' },
-      time: { desc: 'Längste Zeit', asc: 'Kürzeste Zeit' },
-      progress: { desc: 'Fast fertig', asc: 'Am Anfang' },
-      recent: { desc: 'Zuletzt geschaut', asc: 'Am längsten her' },
+      episodes: { desc: t('Meiste Episoden'), asc: t('Wenigste Episoden') },
+      time: { desc: t('Längste Zeit'), asc: t('Kürzeste Zeit') },
+      progress: { desc: t('Fast fertig'), asc: t('Am Anfang') },
+      recent: { desc: t('Zuletzt geschaut'), asc: t('Am längsten her') },
     };
     return sortDirection === 'desc' ? labels[sortBy].desc : labels[sortBy].asc;
   }, [sortBy, sortDirection]);
@@ -288,11 +289,11 @@ export const advanceCatchUpView = (item: CatchUpSeries, advance: number): CatchU
 };
 
 export const formatTime = (minutes: number): { value: number; unit: string } => {
-  if (minutes < 60) return { value: minutes, unit: 'Min' };
+  if (minutes < 60) return { value: minutes, unit: t('Min') };
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return { value: hours, unit: 'Std' };
+  if (hours < 24) return { value: hours, unit: t('Std') };
   const days = Math.floor(hours / 24);
-  return { value: days, unit: 'Tage' };
+  return { value: days, unit: t('Tage') };
 };
 
 export const formatTimeString = (minutes: number): string => {

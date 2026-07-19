@@ -3,6 +3,7 @@ import ForumRounded from '@mui/icons-material/ForumRounded';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import { useActivityGrouping } from '../useActivityGrouping';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -62,8 +63,10 @@ export const DiscussionsTab = ({ notifications, markAsRead }: DiscussionsTabProp
       {notifications.length === 0 ? (
         <EmptyState
           icon={<ForumRounded style={{ fontSize: 'inherit' }} />}
-          title="Keine Benachrichtigungen"
-          description="Antworten, Likes und Spoiler-Meldungen aus deinen Diskussionen erscheinen hier."
+          title={t('Keine Benachrichtigungen')}
+          description={t(
+            'Antworten, Likes und Spoiler-Meldungen aus deinen Diskussionen erscheinen hier.'
+          )}
         />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

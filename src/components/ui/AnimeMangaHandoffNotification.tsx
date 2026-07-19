@@ -12,6 +12,7 @@ import {
   markAnimeMangaHandoffDismissed,
   type AnimeMangaHandoff,
 } from '../../services/detection/animeMangaHandoffDetection';
+import { t } from '../../services/i18n';
 
 interface AnimeMangaHandoffNotificationProps {
   handoffs: AnimeMangaHandoff[];
@@ -89,12 +90,12 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
             flex: 1,
           }}
         >
-          Manga-Anschluss
+          {t('Manga-Anschluss')}
         </span>
         <motion.button
           whileTap={tapScale}
           onClick={handleDismiss}
-          aria-label="Benachrichtigung schließen"
+          aria-label={t('Benachrichtigung schließen')}
           style={{
             display: 'flex',
             border: 'none',
@@ -118,7 +119,10 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
           lineHeight: 1.25,
         }}
       >
-        Staffel {h.seasonNumber} von {h.series.title} durch! 🎉
+        {t('Staffel {staffel} von {titel} durch! 🎉', {
+          staffel: h.seasonNumber,
+          titel: h.series.title,
+        })}
       </h3>
       <p
         style={{
@@ -128,9 +132,11 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
           lineHeight: 1.45,
         }}
       >
-        Lies <strong style={{ color: currentTheme.text.primary }}>{h.mangaTitle}</strong> weiter —
-        der Anime endet ca. bei Kapitel {h.estimatedChapter}.{' '}
-        <span style={{ color: currentTheme.text.muted, fontStyle: 'italic' }}>(KI-Schätzung)</span>
+        {t('Lies')} <strong style={{ color: currentTheme.text.primary }}>{h.mangaTitle}</strong>{' '}
+        {t('weiter — der Anime endet ca. bei Kapitel {kapitel}.', { kapitel: h.estimatedChapter })}{' '}
+        <span style={{ color: currentTheme.text.muted, fontStyle: 'italic' }}>
+          {t('(KI-Schätzung)')}
+        </span>
       </p>
 
       {/* Aktionen */}
@@ -156,7 +162,7 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
           }}
         >
           <MenuBook style={{ fontSize: 18 }} />
-          {tracked ? 'Weiterlesen' : 'Zum Manga'}
+          {tracked ? t('Weiterlesen') : t('Zum Manga')}
         </motion.button>
         <motion.button
           whileTap={tapScale}
@@ -174,7 +180,7 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
             cursor: 'pointer',
           }}
         >
-          Später
+          {t('Später')}
         </motion.button>
       </div>
 
@@ -187,7 +193,7 @@ export const AnimeMangaHandoffNotification: React.FC<AnimeMangaHandoffNotificati
             textAlign: 'center',
           }}
         >
-          +{remaining} {remaining === 1 ? 'weiterer Anschluss' : 'weitere Anschlüsse'}
+          +{remaining} {remaining === 1 ? t('weiterer Anschluss') : t('weitere Anschlüsse')}
         </p>
       )}
     </motion.div>

@@ -12,6 +12,7 @@ import { PET_BACKGROUNDS, getBackgroundRarity } from '../../components/pet/data/
 import type { Pet, AccessoryRarity } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PetCustomizationProps {
   pet: Pet;
@@ -110,18 +111,19 @@ export const PetCustomization = memo(function PetCustomization({
 
   const equippedAccessoryCount = sortedAccessories.filter((a) => a.equipped).length;
   const tabs: { id: Tab; label: string; count?: number; subline?: string }[] = [
-    { id: 'colors', label: 'Farben', count: Object.keys(PET_COLORS).length },
+    { id: 'colors', label: t('Farben'), count: Object.keys(PET_COLORS).length },
     {
       id: 'accessories',
-      label: 'Accessoires',
+      label: t('Accessoires'),
       count: sortedAccessories.length,
-      subline: equippedAccessoryCount > 0 ? `${equippedAccessoryCount} getragen` : undefined,
+      subline:
+        equippedAccessoryCount > 0 ? t('{n} getragen', { n: equippedAccessoryCount }) : undefined,
     },
     {
       id: 'backgrounds',
-      label: 'Hintergründe',
+      label: t('Hintergründe'),
       count: ownedBackgrounds.length,
-      subline: pet.equippedBackground ? '1 aktiv' : undefined,
+      subline: pet.equippedBackground ? t('1 aktiv') : undefined,
     },
   ];
 
@@ -134,7 +136,7 @@ export const PetCustomization = memo(function PetCustomization({
       {filterOrder.map((r) => {
         const isActive = filter === r;
         const color = r === 'all' ? currentTheme.primary : RARITY_COLORS[r];
-        const label = r === 'all' ? 'Alle' : RARITY_LABELS[r];
+        const label = r === 'all' ? t('Alle') : t(RARITY_LABELS[r]);
         const count = counts[r] ?? 0;
         const disabled = r !== 'all' && count === 0;
         return (
@@ -250,7 +252,7 @@ export const PetCustomization = memo(function PetCustomization({
                       whileTap={tapScaleTight}
                       onClick={() => onChangeColor(colorKey)}
                       className="pet-color-btn"
-                      aria-label={`Farbe ${colorKey}`}
+                      aria-label={t('Farbe {name}', { name: colorKey })}
                       aria-pressed={isSelected}
                       style={{
                         background: colorValue,
@@ -280,14 +282,16 @@ export const PetCustomization = memo(function PetCustomization({
             >
               {sortedAccessories.length === 0 ? (
                 <p className="pet-empty-state" style={{ color: currentTheme.text.secondary }}>
-                  Schau Episoden, um Accessoires zu finden!
+                  {t('Schau Episoden, um Accessoires zu finden!')}
                 </p>
               ) : (
                 <>
                   {renderRarityChips(accessoryFilter, accessoryCounts, setAccessoryFilter)}
                   {filteredAccessories.length === 0 ? (
                     <p className="pet-empty-state" style={{ color: currentTheme.text.muted }}>
-                      Noch keine {RARITY_LABELS[accessoryFilter as AccessoryRarity]} entdeckt.
+                      {t('Noch keine {rarity} entdeckt.', {
+                        rarity: t(RARITY_LABELS[accessoryFilter as AccessoryRarity]),
+                      })}
                     </p>
                   ) : (
                     <div className="pet-accessories-grid">
@@ -304,7 +308,7 @@ export const PetCustomization = memo(function PetCustomization({
                             whileTap={{ scale: 0.94 }}
                             onClick={() => onToggleAccessory(accessory.id)}
                             className={`pet-accessory-btn${equipped ? ' pet-accessory-btn--equipped' : ''}`}
-                            title={`${def?.name || accessory.name} (${RARITY_LABELS[rarity]})`}
+                            title={`${def?.name || accessory.name} (${t(RARITY_LABELS[rarity])})`}
                             style={{
                               background: equipped
                                 ? `linear-gradient(135deg, ${rarityColor}38, ${rarityColor}15)`
@@ -330,7 +334,7 @@ export const PetCustomization = memo(function PetCustomization({
                                 className="pet-new-badge"
                                 style={{ background: currentTheme.primary }}
                               >
-                                NEU
+                                {t('NEU')}
                               </span>
                             )}
                           </motion.button>
@@ -355,7 +359,7 @@ export const PetCustomization = memo(function PetCustomization({
             >
               {ownedBackgrounds.length === 0 ? (
                 <p className="pet-empty-state" style={{ color: currentTheme.text.secondary }}>
-                  Öffne Mystery Boxen oder dreh das Glücksrad, um Hintergründe zu finden!
+                  {t('Öffne Mystery Boxen oder dreh das Glücksrad, um Hintergründe zu finden!')}
                 </p>
               ) : (
                 <>
@@ -369,7 +373,7 @@ export const PetCustomization = memo(function PetCustomization({
                         whileTap={tapScale}
                         onClick={() => onEquipBackground(null)}
                         className={`pet-background-btn pet-background-btn--default${!pet.equippedBackground ? ' pet-background-btn--equipped' : ''}`}
-                        title="Standard"
+                        title={t('Standard')}
                         style={{
                           background: currentTheme.background.default,
                           border: !pet.equippedBackground
@@ -381,7 +385,7 @@ export const PetCustomization = memo(function PetCustomization({
                           color: currentTheme.text.secondary,
                         }}
                       >
-                        <span>Standard</span>
+                        <span>{t('Standard')}</span>
                       </motion.button>
                     )}
                     {filteredBackgrounds.length === 0 && backgroundFilter !== 'all' ? (
@@ -389,7 +393,9 @@ export const PetCustomization = memo(function PetCustomization({
                         className="pet-empty-state pet-empty-state--inline"
                         style={{ color: currentTheme.text.muted }}
                       >
-                        Noch keine {RARITY_LABELS[backgroundFilter as AccessoryRarity]} entdeckt.
+                        {t('Noch keine {rarity} entdeckt.', {
+                          rarity: t(RARITY_LABELS[backgroundFilter as AccessoryRarity]),
+                        })}
                       </p>
                     ) : (
                       filteredBackgrounds.map((bgId) => {
@@ -405,7 +411,7 @@ export const PetCustomization = memo(function PetCustomization({
                             whileTap={tapScale}
                             onClick={() => onEquipBackground(isEquipped ? null : bgId)}
                             className={`pet-background-btn${def.animationClass ? ` ${def.animationClass}` : ''}${isEquipped ? ' pet-background-btn--equipped' : ''}`}
-                            title={`${def.name} (${RARITY_LABELS[rarity]})`}
+                            title={`${def.name} (${t(RARITY_LABELS[rarity])})`}
                             style={{
                               background: def.background,
                               border: isEquipped

@@ -13,6 +13,7 @@ import {
   getSeriesProviderOverride,
   setSeriesProviderOverride,
 } from '../../services/providerOverride';
+import { t } from '../../services/i18n';
 
 interface ProviderOverrideButtonProps {
   seriesId: number;
@@ -86,8 +87,8 @@ export const ProviderOverrideButton = ({
         <motion.button
           whileTap={tapScaleTight}
           onClick={openDialog}
-          aria-label="Anbieter ändern"
-          title="Anbieter ändern"
+          aria-label={t('Anbieter ändern')}
+          title={t('Anbieter ändern')}
           style={{
             // Exakte Maße erzwingen — die globale .mobile-app-Button-Regel bläht kleine Buttons sonst auf
             width: chipDiameter,
@@ -117,7 +118,7 @@ export const ProviderOverrideButton = ({
         <motion.button
           whileTap={tapScaleTight}
           onClick={openDialog}
-          aria-label="Anbieter zuordnen"
+          aria-label={t('Anbieter zuordnen')}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -134,7 +135,7 @@ export const ProviderOverrideButton = ({
           }}
         >
           <Add style={{ fontSize: 16 }} />
-          Anbieter zuordnen
+          {t('Anbieter zuordnen')}
         </motion.button>
       )}
 
@@ -183,7 +184,7 @@ export const ProviderOverrideButton = ({
                     marginBottom: 2,
                   }}
                 >
-                  Anbieter zuordnen
+                  {t('Anbieter zuordnen')}
                 </div>
                 <div
                   style={{
@@ -196,8 +197,8 @@ export const ProviderOverrideButton = ({
                   }}
                 >
                   {seriesTitle
-                    ? `Wo läuft „${seriesTitle}" für dich?`
-                    : 'Wo läuft diese Serie für dich?'}
+                    ? t('Wo läuft „{titel}" für dich?', { titel: seriesTitle })
+                    : t('Wo läuft diese Serie für dich?')}
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -223,7 +224,7 @@ export const ProviderOverrideButton = ({
                     >
                       <AutoAwesome style={{ fontSize: 17 }} />
                     </span>
-                    <span style={{ flex: 1 }}>Automatisch (TMDB)</span>
+                    <span style={{ flex: 1 }}>{t('Automatisch (TMDB)')}</span>
                     {current === null && (
                       <Check style={{ fontSize: 18, color: currentTheme.primary }} />
                     )}

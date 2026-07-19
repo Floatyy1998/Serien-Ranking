@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useState } from 'react';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { RecommendSheet } from './RecommendSheet';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 interface RecommendButtonProps {
@@ -29,12 +30,12 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
 
   return (
     <>
-      <Tooltip title="An Freund empfehlen" arrow>
+      <Tooltip title={t('An Freund empfehlen')} arrow>
         <motion.button
           whileTap={tapScale}
           onClick={() => setOpen(true)}
           className={className}
-          aria-label="An Freund empfehlen"
+          aria-label={t('An Freund empfehlen')}
           // Bewusst NEUTRAL wie die anderen Sekundär-Buttons — Farbe ist in
           // der Toolbar Zustands-Signal (aktiv/destruktiv), kein Dauer-Akzent.
           style={{ ...style }}

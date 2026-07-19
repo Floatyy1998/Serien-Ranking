@@ -4,6 +4,7 @@ import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import { t } from '../../services/i18n';
 import { tmdbFetch } from '../../services/tmdbClient';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
@@ -355,7 +356,7 @@ export const useDiscoverFetch = (
         console.error('Error fetching from TMDB:', error);
         setHasMore(false);
         if (reset) {
-          setError('Inhalte konnten nicht geladen werden.');
+          setError(t('Inhalte konnten nicht geladen werden.'));
         }
       } finally {
         setLoading(false);

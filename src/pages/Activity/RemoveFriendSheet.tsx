@@ -2,6 +2,7 @@ import { PersonRemove } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 interface RemoveFriendSheetProps {
@@ -20,7 +21,7 @@ export const RemoveFriendSheet = ({
   const { currentTheme } = useTheme();
 
   return (
-    <BottomSheet isOpen={!!friend} onClose={onClose} ariaLabel="Freund entfernen">
+    <BottomSheet isOpen={!!friend} onClose={onClose} ariaLabel={t('Freund entfernen')}>
       <div style={{ padding: '0 20px 32px', textAlign: 'center' }}>
         <div
           style={{
@@ -44,7 +45,7 @@ export const RemoveFriendSheet = ({
             margin: '0 0 8px',
           }}
         >
-          Freund entfernen
+          {t('Freund entfernen')}
         </h2>
         <p
           style={{
@@ -54,8 +55,8 @@ export const RemoveFriendSheet = ({
             lineHeight: 1.5,
           }}
         >
-          Möchtest du <strong>{friend?.name}</strong> wirklich als Freund entfernen? Ihr seht dann
-          keine Aktivitäten mehr voneinander.
+          {t('Möchtest du')} <strong>{friend?.name}</strong>{' '}
+          {t('wirklich als Freund entfernen? Ihr seht dann keine Aktivitäten mehr voneinander.')}
         </p>
         <div style={{ display: 'flex', gap: '12px' }}>
           <motion.button
@@ -73,7 +74,7 @@ export const RemoveFriendSheet = ({
               cursor: 'pointer',
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </motion.button>
           <motion.button
             whileTap={tapScale}
@@ -95,7 +96,7 @@ export const RemoveFriendSheet = ({
               opacity: isRemoving ? 0.5 : 1,
             }}
           >
-            {isRemoving ? 'Entfernt...' : 'Entfernen'}
+            {isRemoving ? t('Entfernt...') : t('Entfernen')}
           </motion.button>
         </div>
       </div>

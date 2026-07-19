@@ -24,14 +24,15 @@ import { trackMovieAdded, trackSeriesAdded } from '../../../services/firebase/an
 import { logMovieAdded, logSeriesAdded } from '../../../features/badges/minimalActivityLogger';
 import { Snackbar } from '../../../components/ui';
 import { useHomeQuickSearch, type QuickResult } from './useHomeQuickSearch';
+import { t } from '../../../services/i18n';
 import './HomeSearchOverlay.css';
 
 type Filter = 'all' | 'series' | 'movies';
 
 const FILTERS: { key: Filter; label: string }[] = [
-  { key: 'all', label: 'Alle' },
-  { key: 'series', label: 'Serien' },
-  { key: 'movies', label: 'Filme' },
+  { key: 'all', label: t('Alle') },
+  { key: 'series', label: t('Serien') },
+  { key: 'movies', label: t('Filme') },
 ];
 
 interface HomeSearchOverlayProps {
@@ -90,7 +91,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
         });
         if (res.ok) {
           setAddedKeys((prev) => new Set(prev).add(key));
-          setSnack({ open: true, message: `„${item.title}" hinzugefügt` });
+          setSnack({ open: true, message: t('„{title}" hinzugefügt', { title: item.title }) });
           if (item.type === 'series') {
             trackSeriesAdded(String(item.id), item.title, 'search');
             await logSeriesAdded(user.uid, item.title, item.id, item.poster_path);
@@ -222,13 +223,13 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
             className="hso__type"
             style={{ background: `${currentTheme.primary}e6`, color: onPrimary }}
           >
-            {item.type === 'series' ? 'Serie' : 'Film'}
+            {item.type === 'series' ? t('Serie') : t('Film')}
           </span>
 
           {added ? (
             <span
               className="hso__added"
-              aria-label="In deiner Liste"
+              aria-label={t('In deiner Liste')}
               style={{ background: currentTheme.status.success, color: '#fff' }}
             >
               <Check style={{ fontSize: '18px' }} />
@@ -237,7 +238,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
             <button
               type="button"
               className="hso__add"
-              aria-label={`„${item.title}" zur Liste hinzufügen`}
+              aria-label={t('„{title}" zur Liste hinzufügen', { title: item.title })}
               disabled={pending}
               onClick={(e) => addToList(item, e)}
               style={{
@@ -346,8 +347,8 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && shown.length > 0) goTo(shown[0]);
                     }}
-                    placeholder="Serien & Filme suchen…"
-                    aria-label="Serien und Filme suchen"
+                    placeholder={t('Serien & Filme suchen…')}
+                    aria-label={t('Serien und Filme suchen')}
                     autoFocus
                     className="hso__input"
                     style={{ color: currentTheme.text.primary, outline: 'none' }}
@@ -356,7 +357,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                     <button
                       type="button"
                       className="hso__clear"
-                      aria-label="Suche leeren"
+                      aria-label={t('Suche leeren')}
                       onClick={() => setQuery('')}
                       style={{
                         color: currentTheme.text.muted,
@@ -371,10 +372,10 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                   type="button"
                   className="hso__done"
                   onClick={onClose}
-                  aria-label="Suche schließen"
+                  aria-label={t('Suche schließen')}
                   style={{ color: currentTheme.text.secondary }}
                 >
-                  Fertig
+                  {t('Fertig')}
                 </button>
               </div>
 
@@ -440,7 +441,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                     style={{ color: currentTheme.text.muted }}
                   >
                     <Search style={{ fontSize: '40px', opacity: 0.5 }} />
-                    <p>Keine Treffer für &bdquo;{query}&ldquo;</p>
+                    <p>{t('Keine Treffer für „{query}“', { query })}</p>
                   </motion.div>
                 ) : (
                   <motion.div
@@ -462,7 +463,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                   {recent.length > 0 && (
                     <div className="hso__group">
                       <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                        Zuletzt gesucht
+                        {t('Zuletzt gesucht')}
                       </div>
                       {recent.map((term) => (
                         <div key={term} className="hso__recent-row">
@@ -478,7 +479,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                           <button
                             type="button"
                             className="hso__recent-remove"
-                            aria-label={`„${term}" entfernen`}
+                            aria-label={t('„{term}" entfernen', { term })}
                             onClick={() => removeRecent(term)}
                             style={{ color: currentTheme.text.muted }}
                           >
@@ -490,7 +491,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
                   )}
                   <div className="hso__group">
                     <div className="hso__group-title" style={{ color: currentTheme.text.muted }}>
-                      Beliebt
+                      {t('Beliebt')}
                     </div>
                     {shownPopular.length > 0 ? (
                       <div className="hso__pop-row">

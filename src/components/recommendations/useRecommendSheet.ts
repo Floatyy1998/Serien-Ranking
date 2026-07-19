@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
 import { showToast } from '../../lib/toast';
+import { t } from '../../services/i18n';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 
 /** Medien-Payload, die im RecommendSheet empfohlen wird. */
@@ -100,13 +101,16 @@ export const useRecommendSheet = ({ isOpen, onClose, media }: UseRecommendSheetA
         media,
         message: message.trim() || undefined,
       });
-      showToast(count === 1 ? `Empfehlung gesendet` : `An ${count} Freunde gesendet`, 1800);
+      showToast(
+        count === 1 ? t('Empfehlung gesendet') : t('An {n} Freunde gesendet', { n: count }),
+        1800
+      );
       setSelected(new Set());
       setMessage('');
       onClose();
     } catch (err) {
       console.error('Failed to send recommendation', err);
-      showToast('Senden fehlgeschlagen', 2000, 'error');
+      showToast(t('Senden fehlgeschlagen'), 2000, 'error');
     } finally {
       setSending(false);
     }

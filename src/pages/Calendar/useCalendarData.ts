@@ -8,12 +8,13 @@ import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes'
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { appLocale, t } from '../../services/i18n';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { getImageUrl } from '../../utils/imageUrl';
 
 export function formatDate(date: Date): string {
-  return date.toLocaleDateString('de-DE', {
+  return date.toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', {
     day: 'numeric',
     month: 'short',
     timeZone: 'Europe/Berlin',
@@ -27,7 +28,7 @@ export function toDateKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-export const WEEKDAYS_SHORT = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+export const WEEKDAYS_SHORT = [t('Mo'), t('Di'), t('Mi'), t('Do'), t('Fr'), t('Sa'), t('So')];
 
 export interface SeriesGroup {
   seriesId: number;
@@ -138,7 +139,7 @@ export const useCalendarData = () => {
       const episode = series?.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
       const episodeId = episode?.id;
       if (!episodeId) {
-        showToast('Episode-ID fehlt', 2000, 'error');
+        showToast(t('Episode-ID fehlt'), 2000, 'error');
         return;
       }
       const epBase = `${paths.seriesWatchItem(user.uid, seriesId)}/seasons/${seasonIndex}/eps/${episodeId}`;
@@ -168,7 +169,7 @@ export const useCalendarData = () => {
         const label = `S${seasonIndex + 1}E${episodeIndex + 1}`;
         const title = series?.title || series?.name || '';
         await applyUserUpdate(user.uid, updates, `${title} ${label} (Kalender)`);
-        showUndoToast(`${title} ${label} als gesehen markiert`, {
+        showUndoToast(t('{title} {label} als gesehen markiert', { title, label }), {
           onUndo: async () => {
             try {
               if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
@@ -182,7 +183,7 @@ export const useCalendarData = () => {
                 });
               }
             } catch {
-              showToast('Undo fehlgeschlagen', 2000, 'error');
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
           },
           onCommit: async () => {
@@ -222,7 +223,7 @@ export const useCalendarData = () => {
         });
       } catch (error) {
         console.error('Failed to mark episode:', error);
-        showToast('Fehler beim Speichern', 3000, 'error');
+        showToast(t('Fehler beim Speichern'), 3000, 'error');
       }
     },
     [user, seriesList]

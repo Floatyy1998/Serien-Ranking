@@ -4,6 +4,7 @@ import { VisibilityOff, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export const HiddenSeriesCard: React.FC = () => {
   const navigate = useNavigate();
@@ -20,7 +21,11 @@ export const HiddenSeriesCard: React.FC = () => {
     <motion.button
       whileTap={tapScaleSmall}
       onClick={() => navigate('/hidden-series')}
-      aria-label={`Nicht weitergeschaut: ${hiddenSeriesList.length} ${hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'} ausgeblendet`}
+      aria-label={
+        hiddenSeriesList.length === 1
+          ? t('Nicht weitergeschaut: {n} Serie ausgeblendet', { n: hiddenSeriesList.length })
+          : t('Nicht weitergeschaut: {n} Serien ausgeblendet', { n: hiddenSeriesList.length })
+      }
       style={{
         margin: '0 20px',
         padding: '12px 14px',
@@ -63,7 +68,7 @@ export const HiddenSeriesCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          Nicht weitergeschaut
+          {t('Nicht weitergeschaut')}
         </h2>
         <p
           style={{
@@ -73,8 +78,9 @@ export const HiddenSeriesCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          {hiddenSeriesList.length} {hiddenSeriesList.length === 1 ? 'Serie' : 'Serien'}{' '}
-          ausgeblendet
+          {hiddenSeriesList.length === 1
+            ? t('{n} Serie ausgeblendet', { n: hiddenSeriesList.length })
+            : t('{n} Serien ausgeblendet', { n: hiddenSeriesList.length })}
         </p>
       </div>
 

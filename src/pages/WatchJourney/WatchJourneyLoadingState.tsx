@@ -2,6 +2,7 @@ import { TrendingUp } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ACCENT_COLORS } from './accentColors';
+import { t } from '../../services/i18n';
 
 export const WatchJourneyLoadingState: React.FC = () => {
   const { currentTheme } = useTheme();
@@ -54,10 +55,10 @@ export const WatchJourneyLoadingState: React.FC = () => {
           className="wj-loading-title"
           style={{ color: textPrimary }}
         >
-          Analysiere Watch-History...
+          {t('Analysiere Watch-History...')}
         </motion.p>
         <p className="wj-loading-subtitle" style={{ color: textSecondary }}>
-          Berechne deine persönlichen Trends
+          {t('Berechne deine persönlichen Trends')}
         </p>
       </div>
     </div>

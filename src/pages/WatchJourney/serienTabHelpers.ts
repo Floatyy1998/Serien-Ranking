@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
+import { isEnglish, t } from '../../services/i18n';
 
 export const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -18,15 +19,17 @@ export const MONTH_NAMES = [
   'Okt',
   'Nov',
   'Dez',
-];
+].map((m) => t(m));
+
+const dateLocale = () => (isEnglish() ? 'en-US' : 'de-DE');
 
 export const formatDateShort = (date: Date) => {
-  return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+  return date.toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short' });
 };
 
 export const formatDate = (isoDate: string) => {
   const date = new Date(isoDate);
-  return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' });
+  return date.toLocaleDateString(dateLocale(), { day: '2-digit', month: 'short' });
 };
 
 export const useSeriesPosters = (seriesStats: WatchJourneyData['seriesStats']) => {

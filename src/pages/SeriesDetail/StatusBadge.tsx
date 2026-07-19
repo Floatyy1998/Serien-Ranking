@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getEpisodeAirDate, hasEpisodeAired } from '../../utils/episodeDate';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 
 interface StatusBadgeProps {
@@ -55,10 +56,10 @@ function detectAiringRhythm(series: Series): string | null {
     if (median >= 5 && median <= 9) {
       // Weekly — show day of week from most recent episode
       const dayName = DAYS[lastDate.getDay()];
-      return `${dayName} neue Folge`;
+      return t('{day} neue Folge', { day: t(dayName) });
     }
     if (median >= 12 && median <= 16) {
-      return 'Alle 2 Wochen';
+      return t('Alle 2 Wochen');
     }
     return null;
   }
@@ -113,7 +114,7 @@ function getNextEpisodeInfo(
       const ep = season.episodes[eIdx];
       if (!ep.watched && hasEpisodeAired(ep)) {
         return {
-          label: `S${(season.seasonNumber ?? 0) + 1}E${eIdx + 1} · ${ep.name || `Episode ${eIdx + 1}`}`,
+          label: `S${(season.seasonNumber ?? 0) + 1}E${eIdx + 1} · ${ep.name || t('Episode {n}', { n: eIdx + 1 })}`,
           color: 'unwatched',
         };
       }
@@ -142,7 +143,11 @@ export const StatusBadge = memo<StatusBadgeProps>(({ series }) => {
   if (!isOngoing && !isEnded) return null;
 
   const color = isOngoing ? currentTheme.status?.success || '#22c55e' : currentTheme.text.muted;
-  const label = isOngoing ? (rhythm ? `Läuft · ${rhythm}` : 'Fortlaufend') : 'Beendet';
+  const label = isOngoing
+    ? rhythm
+      ? t('Läuft · {rhythm}', { rhythm })
+      : t('Fortlaufend')
+    : t('Beendet');
 
   return (
     <span className="status-badge" style={{ borderColor: `${color}66`, color }}>
@@ -177,7 +182,7 @@ export const NextEpisodeChip = memo<StatusBadgeProps>(({ series }) => {
         backdropFilter: 'var(--blur-sm)',
       }}
     >
-      {isUpcoming ? 'Nächste' : 'Dran'}
+      {isUpcoming ? t('Nächste') : t('Dran')}
       <span style={{ opacity: 0.85, marginLeft: 2 }}>{nextEp.label}</span>
     </span>
   );

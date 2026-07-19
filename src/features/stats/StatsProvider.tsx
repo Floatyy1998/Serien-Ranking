@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { isSupportedProvider } from '../../config/menuItems';
 import type { StatsData } from '../../types/StatsData';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { t } from '../../services/i18n';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
@@ -41,7 +42,7 @@ function secondsToString(minutes: number) {
   const result: string[] = [];
   for (const name in units) {
     const p = Math.floor(value / units[name]);
-    if (p > 0) result.push(p + ' ' + name);
+    if (p > 0) result.push(p + ' ' + t(name));
     value %= units[name];
   }
   return result;

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
+import { t } from '../../services/i18n';
 
 const MEDAL_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
 const PODIUM_HEIGHTS = [190, 148, 122];
@@ -105,7 +106,7 @@ export const PodiumSection = React.memo(function PodiumSection({
                 color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
               }}
             >
-              {entry.isCurrentUser ? 'Du' : entry.displayName.split(' ')[0]}
+              {entry.isCurrentUser ? t('Du') : entry.displayName.split(' ')[0]}
             </span>
 
             {/* Podium block */}

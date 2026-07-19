@@ -61,6 +61,7 @@ import {
   relativeDayLabel,
   shiftQuarter,
 } from './tvPremiereFormat';
+import { t } from '../../services/i18n';
 // Geteiltes CSS mit dem Anime-Season-Kalender (`as-*`-Klassen).
 import '../AnimeSeason/AnimeSeasonPage.css';
 
@@ -72,9 +73,9 @@ interface Filter {
 }
 
 const MODE_TABS: { id: FilterMode; label: string }[] = [
-  { id: 'all', label: 'Alle' },
-  { id: 'new', label: 'Serien' },
-  { id: 'season', label: 'Staffeln' },
+  { id: 'all', label: t('Alle') },
+  { id: 'new', label: t('Serien') },
+  { id: 'season', label: t('Staffeln') },
 ];
 
 const SELECTED_KEY = 'serienKalender-selected';
@@ -264,7 +265,7 @@ export const SerienKalenderPage: React.FC = () => {
       if (!group) {
         group = {
           key,
-          label: date ? dayLabel(date) : 'Termin offen',
+          label: date ? dayLabel(date) : t('Termin offen'),
           relative: date ? relativeDayLabel(date, nowDate) : null,
           isToday: !!date && sameYmd(date, nowDate),
           isPast: !!date && date.getTime() < startOfToday,
@@ -286,7 +287,7 @@ export const SerienKalenderPage: React.FC = () => {
    *  manuelles State-Setzen (Write-Rule). */
   const addEntry = async (entry: TvPremiereStaticEntry) => {
     if (!user) {
-      showToast('Bitte einloggen, um Inhalte hinzuzufügen', 2500, 'info');
+      showToast(t('Bitte einloggen, um Inhalte hinzuzufügen'), 2500, 'info');
       return;
     }
     if (addingId !== null) return;
@@ -299,11 +300,11 @@ export const SerienKalenderPage: React.FC = () => {
       });
       if (!response.ok) throw new Error(`add failed: ${response.status}`);
       hapticSuccess();
-      showToast(`„${entry.title}" hinzugefügt`, 2500, 'success');
+      showToast(t('„{title}" hinzugefügt', { title: entry.title }), 2500, 'success');
       trackSeriesAdded(String(entry.tmdbId), entry.title, 'serien-kalender');
       await logSeriesAdded(user.uid, entry.title, entry.tmdbId);
     } catch {
-      showToast('Hinzufügen fehlgeschlagen', 2500, 'error');
+      showToast(t('Hinzufügen fehlgeschlagen'), 2500, 'error');
     } finally {
       setAddingId(null);
     }
@@ -363,17 +364,19 @@ export const SerienKalenderPage: React.FC = () => {
   );
 
   const subtitle = loading
-    ? 'Neue Serien & Staffeln entdecken'
-    : `${quarterLabel(selectedDate)} · ${visible.length} Premiere${visible.length === 1 ? '' : 'n'}${
-        inListCount > 0 ? ` · ${inListCount} in deiner Liste` : ''
-      }`;
+    ? t('Neue Serien & Staffeln entdecken')
+    : `${quarterLabel(selectedDate)} · ${
+        visible.length === 1
+          ? t('{n} Premiere', { n: visible.length })
+          : t('{n} Premieren', { n: visible.length })
+      }${inListCount > 0 ? ` · ${t('{n} in deiner Liste', { n: inListCount })}` : ''}`;
 
   const sectionIconStyle = { fontSize: '20px' } as const;
 
   return (
     <PageLayout>
       <PageHeader
-        title="Serien-Kalender"
+        title={t('Serien-Kalender')}
         subtitle={subtitle}
         gradientFrom={lightenColor(currentTheme.primary, 0.2)}
         gradientTo={lightenColor(currentTheme.primary, 0.2)}
@@ -409,8 +412,8 @@ export const SerienKalenderPage: React.FC = () => {
             value={filter.genre}
             onChange={(genre) => setFilter((f) => ({ ...f, genre }))}
             icon={<Category style={{ fontSize: '18px' }} />}
-            allLabel="Alle Genres"
-            searchPlaceholder="Genre suchen …"
+            allLabel={t('Alle Genres')}
+            searchPlaceholder={t('Genre suchen …')}
           />
         )}
       </div>
@@ -423,7 +426,11 @@ export const SerienKalenderPage: React.FC = () => {
         }}
       >
         {loading && (
-          <div className="as-skeletons" role="status" aria-label="Serien-Kalender wird geladen">
+          <div
+            className="as-skeletons"
+            role="status"
+            aria-label={t('Serien-Kalender wird geladen')}
+          >
             <Skeleton
               width="100%"
               shape="card"
@@ -442,8 +449,8 @@ export const SerienKalenderPage: React.FC = () => {
             mode="error"
             error={{
               icon: <LiveTv style={{ fontSize: '48px' }} />,
-              title: 'Premieren nicht erreichbar',
-              description: 'Die Premieren-Daten konnten nicht geladen werden.',
+              title: t('Premieren nicht erreichbar'),
+              description: t('Die Premieren-Daten konnten nicht geladen werden.'),
               onRetry: () => setReloadKey((key) => key + 1),
             }}
           />
@@ -452,8 +459,10 @@ export const SerienKalenderPage: React.FC = () => {
         {!loading && !failed && visible.length === 0 && (
           <EmptyState
             icon={<CalendarMonth style={{ fontSize: '48px' }} />}
-            title="Keine Premieren"
-            description={`Für ${quarterLabel(selectedDate)} sind mit diesen Filtern keine Premieren gelistet.`}
+            title={t('Keine Premieren')}
+            description={t('Für {q} sind mit diesen Filtern keine Premieren gelistet.', {
+              q: quarterLabel(selectedDate),
+            })}
           />
         )}
 
@@ -463,7 +472,7 @@ export const SerienKalenderPage: React.FC = () => {
             {hero && (
               <SerienKalenderHero
                 entry={hero}
-                eyebrow={heroIsFuture ? 'Nächste Premiere' : 'Highlight des Monats'}
+                eyebrow={heroIsFuture ? t('Nächste Premiere') : t('Highlight des Monats')}
                 inList={inListIds.has(hero.tmdbId)}
                 onOpen={() => openEntry(hero)}
                 adding={addingId === hero.tmdbId}
@@ -475,7 +484,7 @@ export const SerienKalenderPage: React.FC = () => {
             <section>
               {renderSectionTitle(
                 <CalendarMonth style={sectionIconStyle} />,
-                `Premieren-Kalender (${visible.length})`
+                t('Premieren-Kalender ({n})', { n: visible.length })
               )}
               <div className="as-timeline">
                 {dayGroups.map((group) => (
@@ -539,7 +548,9 @@ export const SerienKalenderPage: React.FC = () => {
               </div>
               <p className="as-source-hint" style={{ color: currentTheme.text.muted }}>
                 <InfoOutlined style={{ fontSize: '14px', flexShrink: 0 }} />
-                Neue Serien & Staffeln mit deutscher Verfügbarkeit (TMDB) — täglich aktualisiert
+                {t(
+                  'Neue Serien & Staffeln mit deutscher Verfügbarkeit (TMDB) — täglich aktualisiert'
+                )}
               </p>
             </section>
           </div>

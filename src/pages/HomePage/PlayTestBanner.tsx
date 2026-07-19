@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const DISMISS_KEY = 'playTestBannerDismissed';
 
@@ -73,18 +74,19 @@ export const PlayTestBanner = () => {
               marginBottom: 2,
             }}
           >
-            Hol TV-Rank in den Play Store!
+            {t('Hol TV-Rank in den Play Store!')}
           </div>
           <div style={{ fontSize: 12.5, lineHeight: 1.45, color: currentTheme.text.muted }}>
-            Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail
-            — du wirst dann persönlich zum Test eingeladen.
+            {t(
+              'Du willst die Android-App testen? Öffne ein Feature-Ticket mit deiner Play-Store-E-Mail — du wirst dann persönlich zum Test eingeladen.'
+            )}
           </div>
         </div>
 
         <motion.button
           whileTap={tapScaleTight}
           onClick={dismiss}
-          aria-label="Hinweis ausblenden"
+          aria-label={t('Hinweis ausblenden')}
           style={{
             flexShrink: 0,
             width: 32,
@@ -127,7 +129,7 @@ export const PlayTestBanner = () => {
             cursor: 'pointer',
           }}
         >
-          Feature-Ticket öffnen
+          {t('Feature-Ticket öffnen')}
         </motion.button>
       </div>
     </motion.div>

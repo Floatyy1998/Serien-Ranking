@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
 import { EmptyState as UiEmptyState } from '../../components/ui/EmptyState';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { t } from '../../services/i18n';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import type { TimeRange } from './useRecentlyWatched';
 import { tapScale, tapScaleTight } from '../../lib/motion';
@@ -36,7 +37,7 @@ export const EpisodeDiscussionIndicator: React.FC<{
         e.stopPropagation();
         onClick?.();
       }}
-      title={`${count} Diskussion${count !== 1 ? 'en' : ''}`}
+      title={count === 1 ? t('1 Diskussion') : t('{n} Diskussionen', { n: count })}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -108,8 +109,8 @@ export const SearchBar = memo<{
     <div className="rw-search-bar">
       <input
         type="text"
-        placeholder="Serie suchen..."
-        aria-label="Serie suchen"
+        placeholder={t('Serie suchen...')}
+        aria-label={t('Serie suchen')}
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
         className="rw-search-input"
@@ -124,7 +125,7 @@ export const SearchBar = memo<{
           type="button"
           onClick={() => onSearchChange('')}
           className="rw-search-clear"
-          aria-label="Suche löschen"
+          aria-label={t('Suche löschen')}
           style={{
             background: `${currentTheme.text.muted}20`,
             color: currentTheme.text.muted,
@@ -194,13 +195,13 @@ export const EmptyState = memo<{
     <UiEmptyState
       icon={<History style={{ fontSize: '48px' }} />}
       iconColor={currentTheme.text.muted}
-      title="Keine Episoden gefunden"
+      title={t('Keine Episoden gefunden')}
       description={
         searchQuery
-          ? `Keine Ergebnisse für "${searchQuery}"`
-          : `In den letzten ${daysToShow} Tagen keine Episoden gesehen`
+          ? t('Keine Ergebnisse für "{query}"', { query: searchQuery })
+          : t('In den letzten {n} Tagen keine Episoden gesehen', { n: daysToShow })
       }
-      action={searchQuery ? { label: 'Suche löschen', onClick: onClearSearch } : undefined}
+      action={searchQuery ? { label: t('Suche löschen'), onClick: onClearSearch } : undefined}
     />
   );
 });
@@ -212,8 +213,8 @@ export const DateGroupHeader = memo<{
   episodeCount: number;
 }>(({ displayDate, episodeCount }) => {
   const { currentTheme } = useTheme();
-  const isToday = displayDate === 'Heute';
-  const isYesterday = displayDate === 'Gestern';
+  const isToday = displayDate === t('Heute');
+  const isYesterday = displayDate === t('Gestern');
 
   return (
     <div
@@ -246,7 +247,7 @@ export const DateGroupHeader = memo<{
           background: `${currentTheme.text.muted}15`,
         }}
       >
-        {episodeCount} Ep.
+        {t('{n} Ep.', { n: episodeCount })}
       </span>
     </div>
   );
@@ -294,7 +295,7 @@ export const SingleEpisodeCard = memo<{
           decoding="async"
           role="button"
           tabIndex={0}
-          aria-label={`${episode.seriesName} öffnen`}
+          aria-label={t('{title} öffnen', { title: episode.seriesName })}
           onClick={() => onNavigateToSeries(episode.seriesId)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -309,7 +310,7 @@ export const SingleEpisodeCard = memo<{
           <h3
             role="button"
             tabIndex={0}
-            aria-label={`${episode.seriesName} öffnen`}
+            aria-label={t('{title} öffnen', { title: episode.seriesName })}
             onClick={() => onNavigateToSeries(episode.seriesId)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
@@ -326,7 +327,10 @@ export const SingleEpisodeCard = memo<{
           <p
             role="button"
             tabIndex={0}
-            aria-label={`Zur Episode S${episode.seasonNumber} E${episode.episodeNumber} springen`}
+            aria-label={t('Zur Episode S{s} E{e} springen', {
+              s: episode.seasonNumber,
+              e: episode.episodeNumber,
+            })}
             onClick={() =>
               onNavigateToEpisode(episode.seriesId, episode.seasonNumber, episode.episodeNumber)
             }
@@ -357,10 +361,10 @@ export const SingleEpisodeCard = memo<{
             {episode.dateSource !== 'firstWatched' && episode.watchCount <= 1 && (
               <span className="rw-badge-date-source">
                 {episode.dateSource === 'lastWatched'
-                  ? 'zuletzt'
+                  ? t('zuletzt')
                   : episode.dateSource === 'airDate'
-                    ? 'Ausstrahlung'
-                    : 'geschätzt'}
+                    ? t('Ausstrahlung')
+                    : t('geschätzt')}
               </span>
             )}
           </div>
@@ -381,7 +385,7 @@ export const SingleEpisodeCard = memo<{
             whileTap={tapScaleTight}
             onClick={() => onRewatch(episode)}
             className="rw-rewatch-btn"
-            aria-label={isCompleting ? 'Als gesehen markiert' : 'Erneut ansehen'}
+            aria-label={isCompleting ? t('Als gesehen markiert') : t('Erneut ansehen')}
             style={{
               background: `${currentTheme.status.success}15`,
               border: `1px solid ${currentTheme.status.success}30`,

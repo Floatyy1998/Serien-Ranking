@@ -2,6 +2,7 @@ import { Tooltip } from '@mui/material';
 import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
 import { csvIncludes, parseCsv, toggleCsv } from '../../lib/filters/multiSelectFilter';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { SearchInput } from './SearchInput';
 import { GradientText } from './GradientText';
 
@@ -73,7 +74,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             margin: 0,
           }}
         >
-          Filter & Sortierung
+          {t('Filter & Sortierung')}
         </GradientText>
 
         {activeFiltersCount > 0 && (
@@ -90,7 +91,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
               cursor: 'pointer',
             }}
           >
-            Zurücksetzen
+            {t('Zurücksetzen')}
           </button>
         )}
       </div>
@@ -106,12 +107,12 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             marginBottom: '8px',
           }}
         >
-          Suche
+          {t('Suche')}
         </label>
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder={`${isMovieMode ? 'Film' : 'Serie'} suchen...`}
+          placeholder={isMovieMode ? t('Film suchen...') : t('Serie suchen...')}
         />
       </div>
 
@@ -126,7 +127,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             marginBottom: '12px',
           }}
         >
-          Schnellfilter
+          {t('Schnellfilter')}
         </label>
         <div
           style={{
@@ -182,7 +183,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
               marginBottom: '12px',
             }}
           >
-            Sortierung
+            {t('Sortierung')}
           </label>
           <select
             value={selectedSort}
@@ -204,7 +205,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                 color: 'var(--color-text-primary)',
               }}
             >
-              Beste zuerst
+              {t('Beste zuerst')}
             </option>
             <option
               value="rating-asc"
@@ -213,7 +214,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                 color: 'var(--color-text-primary)',
               }}
             >
-              Schlechteste zuerst
+              {t('Schlechteste zuerst')}
             </option>
             <option
               value="name-asc"
@@ -240,7 +241,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                 color: 'var(--color-text-primary)',
               }}
             >
-              Neueste zuerst
+              {t('Neueste zuerst')}
             </option>
           </select>
         </div>
@@ -257,7 +258,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             marginBottom: '12px',
           }}
         >
-          Genre
+          {t('Genre')}
         </label>
         <div
           style={{
@@ -298,7 +299,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               >
-                {genre.label}
+                {t(genre.label)}
               </button>
             );
           })}
@@ -316,7 +317,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
             marginBottom: '12px',
           }}
         >
-          Streaming-Anbieter
+          {t('Streaming-Anbieter')}
         </label>
         <div
           style={{
@@ -332,7 +333,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
               : csvIncludes(selectedProvider, provider.value);
 
             return (
-              <Tooltip key={provider.value} title={provider.label} arrow>
+              <Tooltip key={provider.value} title={t(provider.label)} arrow>
                 <button
                   onClick={() =>
                     setSelectedProvider(
@@ -380,7 +381,7 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
                         lineHeight: '1.2',
                       }}
                     >
-                      {provider.label}
+                      {t(provider.label)}
                     </span>
                   )}
                 </button>

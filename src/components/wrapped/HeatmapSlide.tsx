@@ -1,11 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { t } from '../../services/i18n';
 
 interface HeatmapSlideProps {
   heatmapData: number[][]; // [dayOfWeek][hour] = count
 }
 
-const DAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const DAY_LABELS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'].map((d) => t(d));
 const HOUR_LABELS = ['0', '3', '6', '9', '12', '15', '18', '21'];
 
 export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
@@ -64,7 +65,7 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
           zIndex: 1,
         }}
       >
-        Deine Watch-Zeiten
+        {t('Deine Watch-Zeiten')}
       </motion.p>
 
       {/* Grid Icon */}
@@ -163,7 +164,11 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
                     minWidth: '10px',
                     maxWidth: '18px',
                   }}
-                  title={`${DAY_LABELS[dayIndex]} ${hourIndex}:00 - ${value} Views`}
+                  title={t('{d} {h}:00 - {n} Views', {
+                    d: DAY_LABELS[dayIndex],
+                    h: hourIndex,
+                    n: value,
+                  })}
                 />
               ))}
             </div>
@@ -180,7 +185,7 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
             marginTop: '15px',
           }}
         >
-          <span style={{ color: 'white', opacity: 0.5, fontSize: '0.7rem' }}>Wenig</span>
+          <span style={{ color: 'white', opacity: 0.5, fontSize: '0.7rem' }}>{t('Wenig')}</span>
           {[0.1, 0.3, 0.5, 0.8].map((_, i) => (
             <div
               key={i}
@@ -199,7 +204,7 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
               }}
             />
           ))}
-          <span style={{ color: 'white', opacity: 0.5, fontSize: '0.7rem' }}>Viel</span>
+          <span style={{ color: 'white', opacity: 0.5, fontSize: '0.7rem' }}>{t('Viel')}</span>
         </div>
       </motion.div>
 
@@ -219,7 +224,7 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
         }}
       >
         <p style={{ color: 'white', opacity: 0.7, fontSize: '0.85rem', margin: '0 0 5px 0' }}>
-          Deine Peak-Zeit
+          {t('Deine Peak-Zeit')}
         </p>
         <p
           style={{
@@ -229,10 +234,10 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
             margin: 0,
           }}
         >
-          {peakTimeLabel} Uhr
+          {t('{time} Uhr', { time: peakTimeLabel })}
         </p>
         <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem', margin: '5px 0 0 0' }}>
-          {peakValue} Views zu dieser Zeit
+          {t('{n} Views zu dieser Zeit', { n: peakValue })}
         </p>
       </motion.div>
     </div>

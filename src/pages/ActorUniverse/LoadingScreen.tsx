@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BackButton, GradientText } from '../../components/ui';
 import './ActorUniversePage.css';
+import { t } from '../../services/i18n';
 
 interface LoadingScreenProps {
   progress: number;
@@ -61,7 +62,7 @@ export const LoadingScreen = ({ progress }: LoadingScreenProps) => {
               Actor Universe
             </GradientText>
             <p className="au-subtitle" style={{ color: currentTheme.text.muted }}>
-              Analysiere deine Serien...
+              {t('Analysiere deine Serien...')}
             </p>
           </div>
         </div>
@@ -104,7 +105,7 @@ export const LoadingScreen = ({ progress }: LoadingScreenProps) => {
           className="au-loading-text"
           style={{ color: currentTheme.text.secondary }}
         >
-          {Math.round(progress)}% - Sammle Schauspieler-Daten
+          {t('{n}% - Sammle Schauspieler-Daten', { n: Math.round(progress) })}
         </motion.p>
 
         {/* Progress bar */}

@@ -4,6 +4,7 @@ import { memo, useCallback } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { fillerLookupKey } from '../../services/animeFillerService';
+import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
 import {
   CrewSection,
@@ -147,7 +148,7 @@ export const EpisodeDiscussionPage = memo(() => {
                 }}
               >
                 <SkipNext style={{ fontSize: '16px' }} />
-                Nächste Episode
+                {t('Nächste Episode')}
               </div>
               <div
                 style={{

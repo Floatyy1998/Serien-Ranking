@@ -17,6 +17,7 @@ import { GradientText } from '../../components/ui';
 import type { StatsData, FormattedTime } from './useStatsData';
 import { formatTimeDetailed } from './useStatsData';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export { RatingsSection, TopGenresSection, TopProvidersSection } from './StatsDetailSections';
 
@@ -101,7 +102,7 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
       />
       <div className="stats-pod__label" style={{ color: theme.text.muted }}>
         <Timer style={{ fontSize: 16, color: accent }} />
-        Gesamte Watchtime
+        {t('Gesamte Watchtime')}
       </div>
 
       <div className="stats-time-display">
@@ -119,8 +120,11 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
       </div>
 
       <p className="stats-time-sub" style={{ color: theme.text.muted }}>
-        ≙ {stats.watchedEpisodes.toLocaleString('de-DE')} Episoden &amp;{' '}
-        {stats.watchedMovies.toLocaleString('de-DE')} Filme gesehen
+        ≙{' '}
+        {t('{episodes} Episoden & {movies} Filme gesehen', {
+          episodes: stats.watchedEpisodes.toLocaleString('de-DE'),
+          movies: stats.watchedMovies.toLocaleString('de-DE'),
+        })}
       </p>
 
       <div className="stats-time-medias">
@@ -130,14 +134,14 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
         >
           <Tv style={{ fontSize: 18, color: theme.primary }} />
           <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
-            Serien
+            {t('Serien')}
           </span>
           <span className="stats-time-chip__value">{formatTimeDetailed(stats.seriesMinutes)}</span>
         </div>
         <div className="stats-time-chip" style={{ boxShadow: `inset 0 0 0 1px ${accent}2a` }}>
           <Movie style={{ fontSize: 18, color: accent }} />
           <span className="stats-time-chip__label" style={{ color: theme.text.muted }}>
-            Filme
+            {t('Filme')}
           </span>
           <span className="stats-time-chip__value">{formatTimeDetailed(stats.movieMinutes)}</span>
         </div>
@@ -147,7 +151,7 @@ export const WatchtimePod = memo(({ stats, timeData, theme }: WatchtimePodProps)
         className="stats-split-bar"
         style={{ background: `${theme.text.muted}2b` }}
         role="img"
-        aria-label={`Serien ${Math.round(seriesShare)} Prozent der Watchtime`}
+        aria-label={t('Serien {n} Prozent der Watchtime', { n: Math.round(seriesShare) })}
       >
         <motion.div
           className="stats-split-fill"
@@ -175,7 +179,7 @@ export const ProgressPod = memo(({ stats, theme }: ProgressPodProps) => (
     transition={{ delay: 0.08 }}
   >
     <div className="stats-pod__label" style={{ color: theme.text.muted }}>
-      Fortschritt
+      {t('Fortschritt')}
     </div>
     <div className="stats-progress-body">
       <div className="stats-ring-wrapper">
@@ -183,7 +187,7 @@ export const ProgressPod = memo(({ stats, theme }: ProgressPodProps) => (
         <div className="stats-ring-label">
           <span className="stats-ring-percent">{Math.min(100, Math.round(stats.progress))}%</span>
           <span className="stats-ring-text" style={{ color: theme.text.muted }}>
-            geschaut
+            {t('geschaut')}
           </span>
         </div>
       </div>
@@ -198,7 +202,7 @@ export const ProgressPod = memo(({ stats, theme }: ProgressPodProps) => (
           </span>
         </div>
         <p className="stats-progress-label" style={{ color: theme.text.muted }}>
-          Episoden geschaut
+          {t('Episoden geschaut')}
         </p>
       </div>
     </div>
@@ -217,25 +221,25 @@ export const QuickPods = memo(({ stats, theme }: QuickPodsProps) => {
     {
       icon: <Tv style={{ fontSize: 20 }} />,
       value: stats.totalSeries,
-      label: 'Serien',
+      label: t('Serien'),
       color: theme.primary,
     },
     {
       icon: <Movie style={{ fontSize: 20 }} />,
       value: stats.totalMovies,
-      label: 'Filme',
+      label: t('Filme'),
       color: theme.accent || theme.primary,
     },
     {
       icon: <EmojiEvents style={{ fontSize: 20 }} />,
       value: stats.completedSeries,
-      label: 'Serien fertig',
+      label: t('Serien fertig'),
       color: theme.status.success,
     },
     {
       icon: <LocalFireDepartment style={{ fontSize: 20 }} />,
       value: stats.lastWeekWatched,
-      label: 'Episoden diese Woche',
+      label: t('Episoden diese Woche'),
       color: theme.status.warning,
     },
   ];
@@ -282,7 +286,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
   <motion.button
     type="button"
     className="stats-actor-banner liquid-glass"
-    aria-label="Actor Universe entdecken – Verbindungen zwischen Schauspielern"
+    aria-label={t('Actor Universe entdecken – Verbindungen zwischen Schauspielern')}
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.3 }}
@@ -327,7 +331,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
           Actor Universe
         </h2>
         <p className="stats-actor-subtitle" style={{ color: theme.text.secondary }}>
-          Entdecke Verbindungen zwischen Schauspielern
+          {t('Entdecke Verbindungen zwischen Schauspielern')}
         </p>
       </div>
       <div
@@ -338,7 +342,7 @@ export const ActorUniverseBanner = memo(({ theme, onNavigate }: ActorUniverseBan
           boxShadow: `inset 0 0 0 1px ${theme.primary}40`,
         }}
       >
-        Erkunden
+        {t('Erkunden')}
       </div>
     </div>
   </motion.button>

@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toLocalDateString } from '../../services/pet/dailySpinService';
 import { DailySpinWheel } from '../../components/pet/DailySpinWheel';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 // Bewusste Akzent-Konstanten für das Glücksrad: gamifizierte Gold/Orange-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -73,7 +74,7 @@ export const DailySpinCard: React.FC = () => {
           whileTap={tapScaleSmall}
           role="button"
           tabIndex={0}
-          aria-label={available ? 'Glücksrad drehen' : 'Glücksrad – morgen wieder verfügbar'}
+          aria-label={available ? t('Glücksrad drehen') : t('Glücksrad – morgen wieder verfügbar')}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
@@ -143,7 +144,7 @@ export const DailySpinCard: React.FC = () => {
                 whiteSpace: 'nowrap',
               }}
             >
-              Glücksrad
+              {t('Glücksrad')}
             </h2>
             <p
               style={{
@@ -156,7 +157,7 @@ export const DailySpinCard: React.FC = () => {
                 fontWeight: available ? 600 : 400,
               }}
             >
-              {available ? 'Jetzt drehen!' : 'Morgen wieder verfügbar'}
+              {available ? t('Jetzt drehen!') : t('Morgen wieder verfügbar')}
             </p>
           </div>
 
@@ -173,7 +174,7 @@ export const DailySpinCard: React.FC = () => {
                   borderRadius: 4,
                 }}
               >
-                <Whatshot style={{ fontSize: 12 }} /> {streakDays}d Bonus
+                <Whatshot style={{ fontSize: 12 }} /> {t('{n}d Bonus', { n: streakDays })}
               </span>
             )}
             {available && (
@@ -195,7 +196,7 @@ export const DailySpinCard: React.FC = () => {
                   color: currentTheme.text.muted,
                 }}
               >
-                {totalSpins}x gedreht
+                {t('{n}x gedreht', { n: totalSpins })}
               </span>
             )}
           </div>

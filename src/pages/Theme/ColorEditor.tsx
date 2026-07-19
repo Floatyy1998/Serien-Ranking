@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 const VALID_HEX = /^#[0-9a-fA-F]{6}$/;
 
@@ -50,7 +51,7 @@ export const ColorEditor = memo(
             value={color}
             onChange={(e) => onColorChange(category.key, e.target.value)}
             className="theme-color-picker-input"
-            aria-label={`${category.name} – Farbe wählen`}
+            aria-label={t('{name} – Farbe wählen', { name: category.name })}
           />
         </div>
         <div className="theme-color-info">
@@ -62,7 +63,7 @@ export const ColorEditor = memo(
           value={draft}
           onChange={(e) => handleTextChange(e.target.value)}
           className="theme-color-hex"
-          aria-label={`${category.name} – Hex-Wert`}
+          aria-label={t('{name} – Hex-Wert', { name: category.name })}
           style={{
             background: currentTheme.background.surface,
             border: `1px solid ${VALID_HEX.test(draft) ? currentTheme.border.default : currentTheme.status.error}`,

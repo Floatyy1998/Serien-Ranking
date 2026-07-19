@@ -5,6 +5,7 @@ import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 
@@ -58,7 +59,7 @@ export const PetCard = memo(function PetCard({
       text: `${Math.round(hungerPercentage)}%`,
     },
     {
-      label: 'Glück',
+      label: t('Glück'),
       value: happinessPercentage,
       color: currentTheme.primary,
       icon: '😊',
@@ -115,7 +116,7 @@ export const PetCard = memo(function PetCard({
               color: currentTheme.accent,
             }}
           >
-            {PET_TYPE_NAMES[pet.type]}
+            {t(PET_TYPE_NAMES[pet.type])}
           </div>
           {pet.favoriteGenre && (
             <div
@@ -185,7 +186,7 @@ export const PetCard = memo(function PetCard({
                   background: `linear-gradient(135deg, ${currentTheme.status.error}, ${currentTheme.status?.error || '#ef4444'})`,
                 }}
               >
-                Tot
+                {t('Tot')}
               </div>
             )}
             <div
@@ -255,13 +256,13 @@ export const PetCard = memo(function PetCard({
               <span className="pet-card-xp-bonus-tag">+XP</span>
               <div>
                 <div className="pet-card-xp-bonus-title pet-card-xp-bonus-title--active">
-                  XP-Bonus aktiv: +50%
+                  {t('XP-Bonus aktiv: +50%')}
                 </div>
                 <div
                   className="pet-card-xp-bonus-subtitle"
                   style={{ color: currentTheme.text.muted }}
                 >
-                  Dein gesundes Pet gibt dir mehr XP pro Episode!
+                  {t('Dein gesundes Pet gibt dir mehr XP pro Episode!')}
                 </div>
               </div>
             </div>
@@ -270,7 +271,7 @@ export const PetCard = memo(function PetCard({
               <span className="pet-card-xp-bonus-sleep-icon">💤</span>
               <div>
                 <div className="pet-card-xp-bonus-title pet-card-xp-bonus-title--inactive">
-                  XP-Bonus inaktiv
+                  {t('XP-Bonus inaktiv')}
                 </div>
                 <div
                   className="pet-card-xp-bonus-subtitle"

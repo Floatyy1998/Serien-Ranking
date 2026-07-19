@@ -5,6 +5,7 @@ import type { AniListMangaSearchResult } from '../../../types/Manga';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { ANILIST_STATUS_LABELS, getDisplayFormat } from '../mangaUtils';
 import { Section, SectionTitle } from './Section';
+import { t } from '../../../services/i18n';
 
 interface MangaDetailPreviewProps {
   anilistData: AniListMangaSearchResult;
@@ -65,10 +66,14 @@ export const MangaDetailPreview = ({
                 </span>
               )}
               {anilistData.chapters && (
-                <span className="manga-detail-meta-item">{anilistData.chapters} Kapitel</span>
+                <span className="manga-detail-meta-item">
+                  {t('{n} Kapitel', { n: anilistData.chapters })}
+                </span>
               )}
               {anilistData.volumes && (
-                <span className="manga-detail-meta-item">{anilistData.volumes} Bände</span>
+                <span className="manga-detail-meta-item">
+                  {t('{n} Bände', { n: anilistData.volumes })}
+                </span>
               )}
               {anilistData.averageScore && (
                 <span className="manga-detail-meta-item">⭐ {anilistData.averageScore}%</span>
@@ -116,12 +121,12 @@ export const MangaDetailPreview = ({
           }}
         >
           <Add style={{ fontSize: 20 }} />
-          Zur Sammlung hinzufügen
+          {t('Zur Sammlung hinzufügen')}
         </motion.button>
 
         {previewDesc && (
           <Section bg={`${currentTheme.text.primary}08`} delay={0.1}>
-            <SectionTitle color={currentTheme.text.primary}>Beschreibung</SectionTitle>
+            <SectionTitle color={currentTheme.text.primary}>{t('Beschreibung')}</SectionTitle>
             <p className="manga-detail-description" style={{ color: currentTheme.text.secondary }}>
               {previewDesc}
             </p>

@@ -29,6 +29,7 @@ import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
 import type { UnsubscribedNewSeasonEntry } from '../../hooks/useUnsubscribedNewSeasons';
 import type { Series } from '../../types/Series';
 import { ProactiveRecapCard } from './ProactiveRecapCard';
+import { t } from '../../services/i18n';
 
 type CategoryKey =
   | 'recap'
@@ -50,7 +51,7 @@ interface CategoryDef {
 
 const CATEGORY_DEFS: CategoryDef[] = [
   { key: 'recap', label: 'Recap', Icon: AutoStories, color: (t) => t.accent || t.primary },
-  { key: 'new-season', label: 'Neu', Icon: NewReleases, color: (t) => t.primary },
+  { key: 'new-season', label: t('Neu'), Icon: NewReleases, color: (t) => t.primary },
   {
     key: 'provider',
     label: 'Provider',
@@ -59,11 +60,11 @@ const CATEGORY_DEFS: CategoryDef[] = [
   },
   {
     key: 'unsubscribed',
-    label: 'Abo fehlt',
+    label: t('Abo fehlt'),
     Icon: NewReleases,
     color: (t) => t.status.warning,
   },
-  { key: 'inactive', label: 'Inaktiv', Icon: AccessTime, color: (t) => t.status.warning },
+  { key: 'inactive', label: t('Inaktiv'), Icon: AccessTime, color: (t) => t.status.warning },
   {
     key: 'inactive-rewatch',
     label: 'Rewatch',
@@ -72,11 +73,11 @@ const CATEGORY_DEFS: CategoryDef[] = [
   },
   {
     key: 'completed',
-    label: 'Fertig',
+    label: t('Fertig'),
     Icon: CheckCircle,
     color: (t) => t.status.success,
   },
-  { key: 'unrated', label: 'Bewerten', Icon: StarOutline, color: (t) => t.primary },
+  { key: 'unrated', label: t('Bewerten'), Icon: StarOutline, color: (t) => t.primary },
   {
     key: 'anime-manga',
     label: 'Manga',
@@ -249,7 +250,11 @@ export const SeriesNotificationHub: React.FC<SeriesNotificationHubProps> = ({
     <div className="notif-hub">
       {/* Tab-Bar — nur wenn mehr als 1 Kategorie aktiv */}
       {activeCategories.length > 1 && (
-        <div className="notif-hub-tabs" role="tablist" aria-label="Benachrichtigungs-Kategorien">
+        <div
+          className="notif-hub-tabs"
+          role="tablist"
+          aria-label={t('Benachrichtigungs-Kategorien')}
+        >
           {activeCategories.map((c) => {
             const isActive = c.key === currentKey;
             const tabColor = c.color(currentTheme);

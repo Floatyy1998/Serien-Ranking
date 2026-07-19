@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 
 const MAX_MESSAGE_LENGTH = 240;
 
@@ -48,7 +49,7 @@ export const RecommendMessageInput: React.FC<RecommendMessageInputProps> = ({
             color: currentTheme.text.primary,
           }}
         >
-          Nachricht{' '}
+          {t('Nachricht')}{' '}
           <span
             style={{
               opacity: 0.5,
@@ -56,7 +57,7 @@ export const RecommendMessageInput: React.FC<RecommendMessageInputProps> = ({
               letterSpacing: '0.06em',
             }}
           >
-            · optional
+            · {t('optional')}
           </span>
         </div>
       </div>
@@ -80,7 +81,7 @@ export const RecommendMessageInput: React.FC<RecommendMessageInputProps> = ({
           onFocus={() => setMessageFocused(true)}
           onBlur={() => setMessageFocused(false)}
           aria-labelledby="recommend-message-label"
-          placeholder="Sag was dazu…"
+          placeholder={t('Sag was dazu…')}
           rows={isMobile ? 2 : 3}
           style={{
             width: '100%',

@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { UnsubscribedNewSeasonEntry } from '../../hooks/useUnsubscribedNewSeasons';
+import { t } from '../../services/i18n';
 import './CarouselNotification.css';
 
 interface Props {
@@ -34,8 +35,8 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
 
   const message =
     entries.length === 1
-      ? `Neue Staffel auf ${first.providers.join(', ')}`
-      : `${entries.length} neue Staffeln auf nicht abonnierten Anbietern`;
+      ? t('Neue Staffel auf {anbieter}', { anbieter: first.providers.join(', ') })
+      : t('{anzahl} neue Staffeln auf nicht abonnierten Anbietern', { anzahl: entries.length });
 
   const cardBackground = `linear-gradient(135deg, ${color}1a 0%, rgba(15, 17, 21, 0.92) 60%), rgb(15, 17, 21)`;
   const glowGradient = `linear-gradient(135deg, ${color}80, ${color}10)`;
@@ -78,7 +79,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
               <NewReleases />
             </motion.div>
           </div>
-          <h3 className="series-notification-title">Anbieter fehlt</h3>
+          <h3 className="series-notification-title">{t('Anbieter fehlt')}</h3>
           {entries.length > 1 && (
             <span
               className="series-notification-count-pill"
@@ -92,21 +93,21 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
             </span>
           )}
           {onCollapse && (
-            <Tooltip title="Minimieren" arrow>
+            <Tooltip title={t('Minimieren')} arrow>
               <button
                 className="series-notification-collapse-btn"
                 onClick={onCollapse}
-                aria-label="Minimieren"
+                aria-label={t('Minimieren')}
               >
                 <ExpandLess />
               </button>
             </Tooltip>
           )}
-          <Tooltip title="Schließen" arrow>
+          <Tooltip title={t('Schließen')} arrow>
             <button
               className="series-notification-collapse-btn"
               onClick={onDismiss}
-              aria-label="Schließen"
+              aria-label={t('Schließen')}
             >
               <Close />
             </button>
@@ -119,7 +120,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
               {series.poster?.poster ? (
                 <img
                   src={series.poster.poster}
-                  alt={series.title || series.original_name || 'Serie'}
+                  alt={series.title || series.original_name || t('Serie')}
                   className="series-notification-poster"
                   loading="lazy"
                   decoding="async"
@@ -132,7 +133,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
             </div>
             <div className="series-notification-details">
               <h4 className="series-notification-name">
-                {series.title || series.original_name || 'Serie'}
+                {series.title || series.original_name || t('Serie')}
               </h4>
               <p className="series-notification-detail">
                 <NewReleases />
@@ -147,7 +148,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
               onClick={() => navigate('/subscriptions')}
             >
               <SettingsIcon />
-              <span>Abos</span>
+              <span>{t('Abos')}</span>
             </button>
             <button
               className="series-notification-btn series-notification-btn--primary"
@@ -157,7 +158,7 @@ export const UnsubscribedNewSeasonNotification: React.FC<Props> = ({
                 color: currentTheme.background.default,
               }}
             >
-              <span>Ansehen</span>
+              <span>{t('Ansehen')}</span>
               <ChevronRight />
             </button>
           </div>

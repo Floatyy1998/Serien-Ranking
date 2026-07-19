@@ -7,6 +7,7 @@ import { trackLogout } from '../../services/firebase/analytics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 import { shareLink } from '../../services/share/shareLink';
 
 export const useSettingsData = () => {
@@ -67,7 +68,7 @@ export const useSettingsData = () => {
   }, []);
 
   const handleLogout = useCallback(async () => {
-    if (window.confirm('Möchtest du dich wirklich abmelden?')) {
+    if (window.confirm(t('Möchtest du dich wirklich abmelden?'))) {
       try {
         trackLogout();
         await firebase.auth().signOut();
@@ -84,7 +85,7 @@ export const useSettingsData = () => {
       if (!file || !user) return;
 
       if (file.size > 100 * 1024 * 1024) {
-        setDialog({ open: true, message: 'Bild darf maximal 100MB groß sein', type: 'error' });
+        setDialog({ open: true, message: t('Bild darf maximal 100MB groß sein'), type: 'error' });
         return;
       }
 
@@ -103,11 +104,11 @@ export const useSettingsData = () => {
         await user.reload();
 
         setPhotoURL(downloadURL);
-        showSnackbar('Profilbild erfolgreich hochgeladen!');
+        showSnackbar(t('Profilbild erfolgreich hochgeladen!'));
       } catch {
         setDialog({
           open: true,
-          message: 'Fehler beim Hochladen des Bildes',
+          message: t('Fehler beim Hochladen des Bildes'),
           type: 'error',
         });
       } finally {
@@ -135,11 +136,11 @@ export const useSettingsData = () => {
       void syncUserSearchIndex(user.uid, { displayName, username: displayName });
       await user.reload();
       setDisplayNameEditable(false);
-      showSnackbar('Anzeigename gespeichert!');
+      showSnackbar(t('Anzeigename gespeichert!'));
     } catch {
       setDialog({
         open: true,
-        message: 'Fehler beim Speichern des Anzeigenamens',
+        message: t('Fehler beim Speichern des Anzeigenamens'),
         type: 'error',
       });
     } finally {
@@ -197,7 +198,7 @@ export const useSettingsData = () => {
     const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
     navigator.clipboard.writeText(publicUrl).then(() => {
       hapticSuccess();
-      showSnackbar('Link kopiert!');
+      showSnackbar(t('Link kopiert!'));
     });
   }, [publicProfileId, showSnackbar]);
 
@@ -208,15 +209,15 @@ export const useSettingsData = () => {
     const result = await shareLink({
       url: publicUrl,
       title: 'TV-Rank',
-      text: 'Schau dir mein TV-Rank-Profil an!',
+      text: t('Schau dir mein TV-Rank-Profil an!'),
     });
     if (result === 'shared') {
       hapticSuccess();
     } else if (result === 'copied') {
       hapticSuccess();
-      showSnackbar('Link kopiert!');
+      showSnackbar(t('Link kopiert!'));
     } else if (result === 'failed') {
-      showSnackbar('Teilen nicht möglich');
+      showSnackbar(t('Teilen nicht möglich'));
     }
   }, [publicProfileId, showSnackbar]);
 

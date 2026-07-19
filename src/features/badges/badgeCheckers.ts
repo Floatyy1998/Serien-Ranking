@@ -1,4 +1,5 @@
 import { dbRef, userPath } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 import type { Badge } from './badgeDefinitions';
 import type {
   BadgeCounters,
@@ -25,7 +26,7 @@ export function checkExplorerBadge(
   if (seriesCount >= (badge.requirements.series ?? 0)) {
     return {
       earned: true,
-      details: `${seriesCount} verschiedene Serien entdeckt`,
+      details: t('{n} verschiedene Serien entdeckt', { n: seriesCount }),
     };
   }
   return null;
@@ -53,7 +54,7 @@ export function checkCollectorBadge(
   if (ratingCount >= (badge.requirements.ratings ?? 0)) {
     return {
       earned: true,
-      details: `${ratingCount} Bewertungen abgegeben`,
+      details: t('{n} Bewertungen abgegeben', { n: ratingCount }),
     };
   }
   return null;
@@ -72,7 +73,7 @@ export async function checkSocialBadgeFromCounters(
   if (friendsCount >= (badge.requirements.friends ?? 0)) {
     return {
       earned: true,
-      details: `${friendsCount} Freunde hinzugefügt`,
+      details: t('{n} Freunde hinzugefügt', { n: friendsCount }),
     };
   }
   return null;
@@ -81,13 +82,13 @@ export async function checkSocialBadgeFromCounters(
 export function getTimeframeDescription(timeframe: string): string {
   switch (timeframe) {
     case '10hours':
-      return '10 Stunden';
+      return t('10 Stunden');
     case '1day':
-      return 'einem Tag';
+      return t('einem Tag');
     case '2days':
-      return 'zwei Tagen';
+      return t('zwei Tagen');
     default:
-      return 'einer Session';
+      return t('einer Session');
   }
 }
 
@@ -149,9 +150,16 @@ export function checkSeasonBadgeFromRealData(
     if (completedSeasonsInTimeframe >= (badge.requirements.seasons ?? 0)) {
       return {
         earned: true,
-        details: `${completedSeasonsInTimeframe} Staffel${
-          completedSeasonsInTimeframe > 1 ? 'n' : ''
-        } in ${badge.requirements.timeframe} komplett geschaut`,
+        details:
+          completedSeasonsInTimeframe > 1
+            ? t('{n} Staffeln in {tf} komplett geschaut', {
+                n: completedSeasonsInTimeframe,
+                tf: badge.requirements.timeframe ?? '',
+              })
+            : t('{n} Staffel in {tf} komplett geschaut', {
+                n: completedSeasonsInTimeframe,
+                tf: badge.requirements.timeframe ?? '',
+              }),
       };
     }
 
@@ -176,7 +184,10 @@ export function checkBingeBadgeFromSeries(
     if (currentBinge >= (badge.requirements.episodes ?? 0)) {
       return {
         earned: true,
-        details: `${currentBinge} Episoden in ${getTimeframeDescription(timeframe)}`,
+        details: t('{n} Episoden in {tf}', {
+          n: currentBinge,
+          tf: getTimeframeDescription(timeframe),
+        }),
       };
     }
   }
@@ -186,7 +197,7 @@ export function checkBingeBadgeFromSeries(
     if (maxBingeEpisodes >= (badge.requirements.episodes ?? 0)) {
       return {
         earned: true,
-        details: `${maxBingeEpisodes} Episoden in einer Binge-Session`,
+        details: t('{n} Episoden in einer Binge-Session', { n: maxBingeEpisodes }),
       };
     }
   }
@@ -226,7 +237,7 @@ export function checkMarathonBadgeFromSeries(
   if (maxWeeklyEpisodes >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
-      details: `${maxWeeklyEpisodes} Episoden in einer Woche (${bestWeek})`,
+      details: t('{n} Episoden in einer Woche ({week})', { n: maxWeeklyEpisodes, week: bestWeek }),
     };
   }
   return null;
@@ -241,7 +252,7 @@ export function checkStreakBadgeFromCounters(
   if (currentStreak >= (badge.requirements.days ?? 0)) {
     return {
       earned: true,
-      details: `${currentStreak} Tage Streak`,
+      details: t('{n} Tage Streak', { n: currentStreak }),
     };
   }
   return null;
@@ -256,7 +267,7 @@ export function checkQuickwatchBadgeFromCounters(
   if (quickwatchCount >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
-      details: `${quickwatchCount} Quickwatch Episoden`,
+      details: t('{n} Quickwatch Episoden', { n: quickwatchCount }),
     };
   }
   return null;
@@ -285,7 +296,7 @@ export function checkRewatchBadgeFromSeries(
   if (rewatchEpisodes >= (badge.requirements.episodes ?? 0)) {
     return {
       earned: true,
-      details: `${rewatchEpisodes} Rewatch Episoden`,
+      details: t('{n} Rewatch Episoden', { n: rewatchEpisodes }),
     };
   }
   return null;

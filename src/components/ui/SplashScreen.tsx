@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../../services/i18n';
 import {
   BackgroundMesh,
   CornerAccent,
@@ -26,7 +27,7 @@ interface SplashScreenProps {
 export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps) => {
   const [isHiding, setIsHiding] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Initialisiere System');
+  const [loadingText, setLoadingText] = useState(t('Initialisiere System'));
 
   useEffect(() => {
     const startTime = Date.now();
@@ -37,7 +38,7 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
       completed = true;
       clearInterval(checkProgress);
       setLoadingProgress(1);
-      setLoadingText('Start');
+      setLoadingText(t('Start'));
       setTimeout(() => {
         setIsHiding(true);
         setTimeout(() => {
@@ -62,17 +63,17 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
       setLoadingProgress(progress);
 
       if (progress < 0.2) {
-        setLoadingText('Initialisiere System');
+        setLoadingText(t('Initialisiere System'));
       } else if (progress < 0.4) {
-        setLoadingText('Lade Interface');
+        setLoadingText(t('Lade Interface'));
       } else if (progress < 0.6) {
-        setLoadingText('Authentifizierung');
+        setLoadingText(t('Authentifizierung'));
       } else if (progress < 0.8) {
-        setLoadingText('Synchronisiere Daten');
+        setLoadingText(t('Synchronisiere Daten'));
       } else if (progress < 1) {
-        setLoadingText('Finalisiere');
+        setLoadingText(t('Finalisiere'));
       } else {
-        setLoadingText('Start');
+        setLoadingText(t('Start'));
       }
 
       if (progress >= 1) {
@@ -129,7 +130,7 @@ export const SplashScreen = ({ onComplete, waitForCondition }: SplashScreenProps
 
       {/* Title and subtitle */}
       <Title>TV-RANK</Title>
-      <Subtitle>Serien, Filme & Manga im Blick</Subtitle>
+      <Subtitle>{t('Serien, Filme & Manga im Blick')}</Subtitle>
 
       {/* Progress section with glass effect */}
       <ProgressWrapper>

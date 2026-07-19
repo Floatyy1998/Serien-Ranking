@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { memo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 const NewDiscussionFormInner: React.FC<{
@@ -91,12 +92,12 @@ const NewDiscussionFormInner: React.FC<{
           margin: '0 0 16px 0',
         }}
       >
-        Neue Diskussion starten
+        {t('Neue Diskussion starten')}
       </h4>
 
       <input
         type="text"
-        placeholder="Gib deiner Diskussion einen Titel..."
+        placeholder={t('Gib deiner Diskussion einen Titel...')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         style={{
@@ -134,7 +135,7 @@ const NewDiscussionFormInner: React.FC<{
               <div key={i} style={{ position: 'relative' }}>
                 <img
                   src={img}
-                  alt="Bild"
+                  alt={t('Bild')}
                   style={{
                     maxWidth: '200px',
                     maxHeight: '150px',
@@ -172,8 +173,8 @@ const NewDiscussionFormInner: React.FC<{
         <textarea
           placeholder={
             previewImages.length > 0
-              ? 'Beschreibung hinzufügen (optional)...'
-              : 'Was möchtest du diskutieren? Teile deine Gedanken...'
+              ? t('Beschreibung hinzufügen (optional)...')
+              : t('Was möchtest du diskutieren? Teile deine Gedanken...')
           }
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -229,7 +230,7 @@ const NewDiscussionFormInner: React.FC<{
             }}
           >
             <AddPhotoAlternate style={{ fontSize: '20px' }} />
-            {uploadingImage ? 'Lädt...' : 'Bild'}
+            {uploadingImage ? t('Lädt...') : t('Bild')}
           </button>
 
           {/* Spoiler Toggle */}
@@ -274,7 +275,7 @@ const NewDiscussionFormInner: React.FC<{
               fontWeight: 600,
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </button>
           <motion.button
             whileTap={tapScale}
@@ -309,7 +310,7 @@ const NewDiscussionFormInner: React.FC<{
                   : 'none',
             }}
           >
-            {submitting ? 'Wird gepostet...' : 'Posten'}
+            {submitting ? t('Wird gepostet...') : t('Posten')}
           </motion.button>
         </div>
       </div>

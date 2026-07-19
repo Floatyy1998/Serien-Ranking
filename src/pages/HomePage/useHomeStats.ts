@@ -10,6 +10,7 @@ import type { Series } from '../../types/Series';
 import { isEpisodeWatched, DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { useWebWorkerStatsOptimized } from '../../hooks/useWebWorkerStatsOptimized';
+import { t } from '../../services/i18n';
 
 export function useHomeStats() {
   const { user } = useAuth() || {};
@@ -31,8 +32,8 @@ export function useHomeStats() {
         movieTimeString: '0Min',
         avgSeriesRating: '0.0',
         avgMovieRating: '0.0',
-        topGenre: 'Keine',
-        topProvider: 'Keine',
+        topGenre: t('Keine'),
+        topProvider: t('Keine'),
         lastWeekWatched: 0,
         completedSeries: 0,
       };
@@ -135,7 +136,7 @@ export function useHomeStats() {
         });
       }
     );
-    const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
+    const topGenre = Object.entries(genreCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || t('Keine');
 
     const providerCounts: Record<string, number> = {};
     ([...allSeriesList, ...movieList] as (Series | MovieType)[]).forEach(
@@ -157,7 +158,7 @@ export function useHomeStats() {
       }
     );
     const topProvider =
-      Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Keine';
+      Object.entries(providerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || t('Keine');
 
     // Date.now() ist in useMemo() durch die Deps stabilisiert (laeuft nur bei Daten-Change neu),
     // wird aber von der purity-Rule trotzdem geflaggt — pragmatisch disabled.

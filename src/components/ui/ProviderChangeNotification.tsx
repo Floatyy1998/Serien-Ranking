@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { showUndoToast } from '../../lib/toast';
 import { snoozeNotifications, type SnoozeOption } from '../../lib/settings/notificationSettings';
 import { markProviderChangesDismissed } from '../../services/detection/providerChangeDetection';
+import { t } from '../../services/i18n';
 import './CarouselNotification.css';
 
 interface ProviderChangeInfo {
@@ -104,7 +105,9 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
       days
     );
     showUndoToast(
-      `Erinnerung in ${days === 1 ? '1 Tag' : days === 7 ? '1 Woche' : '1 Monat'}`,
+      t('Erinnerung in {zeitraum}', {
+        zeitraum: days === 1 ? t('1 Tag') : days === 7 ? t('1 Woche') : t('1 Monat'),
+      }),
       async () => {
         // Undo: snoozeUntil entfernen, indem wir auf 0 setzen (= sofort wieder)
         await snoozeNotifications(
@@ -134,9 +137,9 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
     if (hasAdded && hasRemoved) {
       return `+${change.addedProviders.join(', ')} · −${change.removedProviders.join(', ')}`;
     } else if (hasAdded) {
-      return `Jetzt auf ${change.addedProviders.join(', ')}`;
+      return t('Jetzt auf {anbieter}', { anbieter: change.addedProviders.join(', ') });
     } else if (hasRemoved) {
-      return `Nicht mehr auf ${change.removedProviders.join(', ')}`;
+      return t('Nicht mehr auf {anbieter}', { anbieter: change.removedProviders.join(', ') });
     }
     return '';
   };
@@ -190,7 +193,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
             </motion.div>
           </div>
           <h3 className="series-notification-title">
-            Provider-{changes.length > 1 ? 'Änderungen' : 'Änderung'}
+            {changes.length > 1 ? t('Provider-Änderungen') : t('Provider-Änderung')}
           </h3>
           {changes.length > 1 && (
             <span
@@ -205,21 +208,21 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
             </span>
           )}
           {onCollapse && (
-            <Tooltip title="Minimieren" arrow>
+            <Tooltip title={t('Minimieren')} arrow>
               <button
                 className="series-notification-collapse-btn"
                 onClick={onCollapse}
-                aria-label="Minimieren"
+                aria-label={t('Minimieren')}
               >
                 <ExpandLess />
               </button>
             </Tooltip>
           )}
-          <Tooltip title={changes.length > 1 ? 'Alle schließen' : 'Schließen'} arrow>
+          <Tooltip title={changes.length > 1 ? t('Alle schließen') : t('Schließen')} arrow>
             <button
               className="series-notification-collapse-btn"
               onClick={handleDismissAll}
-              aria-label="Schließen"
+              aria-label={t('Schließen')}
             >
               <Close />
             </button>
@@ -258,7 +261,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                 </div>
                 <div className="series-notification-details">
                   <h4 className="series-notification-name">
-                    {current.series.title || current.series.original_name || 'Serie'}
+                    {current.series.title || current.series.original_name || t('Serie')}
                   </h4>
                   <p className="series-notification-detail">
                     <SwapHoriz />
@@ -280,19 +283,19 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                 flex: 1,
               }}
             >
-              <span>Ansehen</span>
+              <span>{t('Ansehen')}</span>
               <ChevronRight />
             </button>
 
             <div style={{ position: 'relative' }} ref={snoozeMenuRef}>
-              <Tooltip title="Später erinnern" arrow>
+              <Tooltip title={t('Später erinnern')} arrow>
                 <button
                   className="series-notification-btn series-notification-btn--icon"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSnoozeOpen((p) => !p);
                   }}
-                  aria-label="Später erinnern"
+                  aria-label={t('Später erinnern')}
                 >
                   <SnoozeOutlined />
                 </button>
@@ -306,20 +309,23 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                     exit={{ opacity: 0, y: 6, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <div className="snooze-menu-header">Erinnere mich in</div>
+                    <div className="snooze-menu-header">{t('Erinnere mich in')}</div>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(1)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">☕</span>1 Tag
+                        <span className="snooze-menu-item-emoji">☕</span>
+                        {t('1 Tag')}
                       </span>
                     </button>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(7)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">📅</span>1 Woche
+                        <span className="snooze-menu-item-emoji">📅</span>
+                        {t('1 Woche')}
                       </span>
                     </button>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(30)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">🌙</span>1 Monat
+                        <span className="snooze-menu-item-emoji">🌙</span>
+                        {t('1 Monat')}
                       </span>
                     </button>
                   </motion.div>
@@ -335,7 +341,7 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                   className="series-notification-nav-btn"
                   onClick={() => setCurrentIndex(Math.max(0, safeIndex - 1))}
                   disabled={safeIndex === 0}
-                  aria-label="Vorherige"
+                  aria-label={t('Vorherige')}
                 >
                   ‹
                 </button>
@@ -343,14 +349,14 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                   className="series-notification-dots"
                   ref={dotsContainerRef}
                   role="tablist"
-                  aria-label="Provider-Änderung auswählen"
+                  aria-label={t('Provider-Änderung auswählen')}
                 >
                   {changes.map((c, index) => (
                     <button
                       key={c.series.id}
                       role="tab"
                       aria-selected={index === safeIndex}
-                      aria-label={`${c.series.title || 'Serie'} (${index + 1}/${changes.length})`}
+                      aria-label={`${c.series.title || t('Serie')} (${index + 1}/${changes.length})`}
                       className={`series-notification-dot ${index === safeIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
                     >
@@ -364,13 +370,16 @@ export const ProviderChangeNotification: React.FC<ProviderChangeNotificationProp
                   className="series-notification-nav-btn"
                   onClick={() => setCurrentIndex(Math.min(changes.length - 1, safeIndex + 1))}
                   disabled={safeIndex === changes.length - 1}
-                  aria-label="Nächste"
+                  aria-label={t('Nächste')}
                 >
                   ›
                 </button>
               </div>
               <p className="series-notification-counter">
-                {safeIndex + 1} von {changes.length} Provider-Änderungen
+                {t('{aktuell} von {gesamt} Provider-Änderungen', {
+                  aktuell: safeIndex + 1,
+                  gesamt: changes.length,
+                })}
               </p>
             </>
           )}

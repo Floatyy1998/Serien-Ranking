@@ -19,6 +19,7 @@ import React, { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { usePersistedState } from '../../hooks/usePersistedState';
+import { t } from '../../services/i18n';
 import { QuickFilter, ScrollToTopButton, SkeletonRatingsGrid } from '../../components/ui';
 import { RatingCompactRow } from './RatingCompactRow';
 import { RatingItemCard } from './RatingItemCard';
@@ -113,13 +114,13 @@ export const RatingsPage: React.FC = () => {
       {/* Items Grid / Kompakt-Liste (D5) */}
       <div className="ratings-content">
         {itemsToRender.length > 0 && (
-          <div className="ratings-density-toggle" role="group" aria-label="Ansicht">
+          <div className="ratings-density-toggle" role="group" aria-label={t('Ansicht')}>
             <button
               type="button"
               className={`ratings-density-btn${density === 'cinematic' ? ' active' : ''}`}
               onClick={() => setDensity('cinematic')}
               aria-pressed={density === 'cinematic'}
-              title="Cinematic-Ansicht"
+              title={t('Cinematic-Ansicht')}
               style={
                 density === 'cinematic'
                   ? { background: currentTheme.primary, color: currentTheme.background.default }
@@ -133,7 +134,7 @@ export const RatingsPage: React.FC = () => {
               className={`ratings-density-btn${density === 'compact' ? ' active' : ''}`}
               onClick={() => setDensity('compact')}
               aria-pressed={density === 'compact'}
-              title="Kompakte Listen-Ansicht"
+              title={t('Kompakte Listen-Ansicht')}
               style={
                 density === 'compact'
                   ? { background: currentTheme.primary, color: currentTheme.background.default }

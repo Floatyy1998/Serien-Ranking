@@ -17,16 +17,17 @@ import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 import { tmdbLogoUrl, useProviderLogos } from '../../hooks/useProviderLogos';
 import { showUndoToast } from '../../lib/toast';
 import { getProviderBrand } from '../Subscriptions/providerBrands';
+import { t } from '../../services/i18n';
 
 const formatEuro = (value: number): string =>
   new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(value);
 
 const formatDays = (days: number | null): string => {
-  if (days === null) return 'lange nicht mehr';
-  if (days <= 1) return 'gestern';
-  if (days < 30) return `${days} Tagen`;
-  if (days < 365) return `${Math.floor(days / 30)} Monaten`;
-  return `${Math.floor(days / 365)} Jahren`;
+  if (days === null) return t('lange nicht mehr');
+  if (days <= 1) return t('gestern');
+  if (days < 30) return t('{n} Tagen', { n: days });
+  if (days < 365) return t('{n} Monaten', { n: Math.floor(days / 30) });
+  return t('{n} Jahren', { n: Math.floor(days / 365) });
 };
 
 export const StreamingReminderCard = memo(function StreamingReminderCard() {
@@ -52,7 +53,7 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
   const pauseProvider = (name: string): void => {
     // Optimistic update with undo window
     void updateProvider(name, { active: false });
-    showUndoToast(`${name} pausiert`, () => {
+    showUndoToast(t('{name} pausiert', { name }), () => {
       void updateProvider(name, { active: true });
     });
   };
@@ -116,8 +117,10 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
               }}
             >
               {wastedMonthlySpend > 0
-                ? `${formatEuro(wastedMonthlySpend)}/Monat schläft`
-                : `${unusedInsights.length} Abo${unusedInsights.length === 1 ? '' : 's'} ungenutzt`}
+                ? t('{amount}/Monat schläft', { amount: formatEuro(wastedMonthlySpend) })
+                : unusedInsights.length === 1
+                  ? t('{n} Abo ungenutzt', { n: unusedInsights.length })
+                  : t('{n} Abos ungenutzt', { n: unusedInsights.length })}
             </h2>
             <p
               style={{
@@ -126,8 +129,9 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                 color: currentTheme.text.muted,
               }}
             >
-              {unusedInsights.length} Abo{unusedInsights.length === 1 ? '' : 's'} ohne Aktivität ·
-              Tippen für Details
+              {unusedInsights.length === 1
+                ? t('{n} Abo ohne Aktivität · Tippen für Details', { n: unusedInsights.length })
+                : t('{n} Abos ohne Aktivität · Tippen für Details', { n: unusedInsights.length })}
             </p>
           </div>
         </div>
@@ -212,8 +216,11 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                     }}
                   >
                     <AccessTime style={{ fontSize: 11 }} />
-                    Seit {formatDays(insight.daysSinceLastWatch)} nichts mehr
-                    {insight.monthlyPrice > 0 && ` · ${formatEuro(insight.monthlyPrice)}/M`}
+                    {t('Seit {time} nichts mehr', {
+                      time: formatDays(insight.daysSinceLastWatch),
+                    })}
+                    {insight.monthlyPrice > 0 &&
+                      ` · ${t('{amount}/M', { amount: formatEuro(insight.monthlyPrice) })}`}
                   </p>
                 </div>
                 <motion.button
@@ -224,7 +231,7 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                     e.stopPropagation();
                     pauseProvider(insight.name);
                   }}
-                  aria-label={`${insight.name} pausieren`}
+                  aria-label={t('{name} pausieren', { name: insight.name })}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -241,7 +248,7 @@ export const StreamingReminderCard = memo(function StreamingReminderCard() {
                   }}
                 >
                   <PauseCircleOutline style={{ fontSize: 14 }} />
-                  Pausieren
+                  {t('Pausieren')}
                 </motion.button>
               </div>
             );

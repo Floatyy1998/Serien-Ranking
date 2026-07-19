@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { t } from '../../services/i18n';
 
 interface MovieActionButtonsProps {
   isMobile: boolean;
@@ -36,7 +37,7 @@ export const MovieActionButtons = memo(
               : `var(--glow-primary), 0 4px 16px -4px ${currentTheme.primary}55`,
           }}
         >
-          {isAdding ? 'Wird hinzugefugt...' : 'Film hinzufugen'}
+          {isAdding ? t('Wird hinzugefügt...') : t('Film hinzufügen')}
         </button>
       </div>
     );

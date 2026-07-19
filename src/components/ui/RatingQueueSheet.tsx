@@ -7,6 +7,7 @@ import { getImageUrl } from '../../utils/imageUrl';
 import { hapticSuccess } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';
 import type { UnratedQueueItem } from '../../hooks/useUnratedQueue';
+import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
 import { RatingControls } from './RatingControls';
 
@@ -65,7 +66,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel="Schnell-Bewertung">
+    <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Schnell-Bewertung')}>
       <div style={{ padding: '8px 24px 32px' }}>
         {current ? (
           <>
@@ -80,7 +81,10 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                   color: accent,
                 }}
               >
-                Noch offen · {Math.min(done + 1, startCount)} von {startCount}
+                {t('Noch offen · {aktuell} von {gesamt}', {
+                  aktuell: Math.min(done + 1, startCount),
+                  gesamt: startCount,
+                })}
               </span>
             </div>
 
@@ -128,7 +132,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                       color: currentTheme.text.muted,
                     }}
                   >
-                    {current.type === 'series' ? 'Serie' : 'Film'}
+                    {current.type === 'series' ? t('Serie') : t('Film')}
                   </span>
                   <h3
                     style={{
@@ -152,7 +156,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
               <motion.button
                 whileTap={tapScale}
                 onClick={handleSkip}
-                aria-label="Diesen Titel überspringen"
+                aria-label={t('Diesen Titel überspringen')}
                 style={{
                   flex: 1,
                   padding: '14px',
@@ -170,7 +174,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                 }}
               >
                 <SkipNext style={{ fontSize: '18px' }} />
-                Überspringen
+                {t('Überspringen')}
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.97 }}
@@ -193,7 +197,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                 }}
               >
                 <Save style={{ fontSize: '18px' }} />
-                Speichern
+                {t('Speichern')}
               </motion.button>
             </div>
           </>
@@ -209,10 +213,10 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                 margin: '12px 0 4px',
               }}
             >
-              Alles bewertet!
+              {t('Alles bewertet!')}
             </h3>
             <p style={{ fontSize: '14px', color: currentTheme.text.secondary, margin: '0 0 20px' }}>
-              Kein offener Titel mehr in deiner Bewertungs-Queue.
+              {t('Kein offener Titel mehr in deiner Bewertungs-Queue.')}
             </p>
             <motion.button
               whileTap={tapScale}
@@ -228,7 +232,7 @@ export const RatingQueueSheet: React.FC<RatingQueueSheetProps> = ({
                 cursor: 'pointer',
               }}
             >
-              Schließen
+              {t('Schließen')}
             </motion.button>
           </div>
         )}

@@ -7,6 +7,7 @@ import { TableOfContents } from '../components/TableOfContents';
 import { WatchStatusSheet } from '../components/WatchStatusSheet';
 import type { WatchTarget } from '../hooks/useApplyWatchProgress';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
+import { t } from '../../../services/i18n';
 
 interface Props {
   contentType: 'series' | 'movie';
@@ -93,12 +94,12 @@ export const DiscoveryStep: React.FC<Props> = ({
     }
   };
 
-  const headline = contentType === 'series' ? 'Serien' : 'Filme';
+  const headline = contentType === 'series' ? t('Serien') : t('Filme');
   const section = stepNumber === 2 ? '02' : '03';
   const subhead =
     contentType === 'series'
-      ? 'Was läuft, was schaust, was willst du verfolgen?'
-      : 'Welche Filme dürfen nicht fehlen?';
+      ? t('Was läuft, was schaust, was willst du verfolgen?')
+      : t('Welche Filme dürfen nicht fehlen?');
 
   return (
     <>
@@ -127,10 +128,10 @@ export const DiscoveryStep: React.FC<Props> = ({
           {/* Mast head */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <button onClick={onBack} className="ob-link" style={{ padding: '6px 0', fontSize: 11 }}>
-              ← zurück
+              {t('← zurück')}
             </button>
             <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)' }}>
-              {section} — {contentType === 'series' ? 'serien' : 'filme'}
+              {section} — {contentType === 'series' ? t('serien') : t('filme')}
             </span>
           </div>
 
@@ -182,8 +183,8 @@ export const DiscoveryStep: React.FC<Props> = ({
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={
                   contentType === 'series'
-                    ? 'serie suchen — auch unbekannte titel …'
-                    : 'film suchen — auch unbekannte titel …'
+                    ? t('serie suchen — auch unbekannte titel …')
+                    : t('film suchen — auch unbekannte titel …')
                 }
               />
               {isSearching && (
@@ -200,7 +201,7 @@ export const DiscoveryStep: React.FC<Props> = ({
               )}
               <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)', fontSize: 10 }}>
                 {addedCount.toString().padStart(2, '0')}
-                <span style={{ opacity: 0.5 }}> / gewählt</span>
+                <span style={{ opacity: 0.5 }}> / {t('gewählt')}</span>
               </span>
             </div>
 
@@ -236,10 +237,10 @@ export const DiscoveryStep: React.FC<Props> = ({
           <div className="ob-welcome-side">
             <div className="ob-side-label">
               <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                Programm
+                {t('Programm')}
               </span>
               <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                4 Akte
+                {t('4 Akte')}
               </span>
             </div>
             <TableOfContents
@@ -264,7 +265,7 @@ export const DiscoveryStep: React.FC<Props> = ({
                   style={{ margin: '0 auto', width: 28, height: 28 }}
                 />
                 <p className="ob-mono" style={{ marginTop: 16, fontSize: 11 }}>
-                  {isSearching ? 'die katalogwand wird durchforstet …' : 'kuration läuft …'}
+                  {isSearching ? t('die katalogwand wird durchforstet …') : t('kuration läuft …')}
                 </p>
               </div>
             ) : displayItems.length === 0 ? (
@@ -285,12 +286,12 @@ export const DiscoveryStep: React.FC<Props> = ({
                     color: 'var(--ob-paper)',
                   }}
                 >
-                  {isSearching ? 'nichts.' : 'leer.'}
+                  {isSearching ? t('nichts.') : t('leer.')}
                 </h3>
                 <p className="ob-mono" style={{ fontSize: 11, marginTop: 12 }}>
                   {isSearching
-                    ? `keine treffer für „${query}"`
-                    : 'nutze die suche, um etwas hinzuzufügen'}
+                    ? t('keine treffer für „{query}"', { query })
+                    : t('nutze die suche, um etwas hinzuzufügen')}
                 </p>
               </div>
             ) : (
@@ -335,10 +336,10 @@ export const DiscoveryStep: React.FC<Props> = ({
         >
           <button onClick={onNext} className="ob-cta">
             <span className="ob-cta__inner">
-              <span>{contentType === 'series' ? 'weiter zu filmen' : 'fertig'}</span>
+              <span>{contentType === 'series' ? t('weiter zu filmen') : t('fertig')}</span>
               <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
               <span style={{ opacity: 0.55, fontSize: 11 }}>
-                {addedCount > 0 ? `${addedCount} gewählt` : 'überspringen ok'}
+                {addedCount > 0 ? t('{n} gewählt', { n: addedCount }) : t('überspringen ok')}
               </span>
             </span>
             <span className="ob-cta__arrow">→</span>

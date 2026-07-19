@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { GradientText, NavEscapeButtons, TabSwitcher } from '../../components/ui';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { RatingsStats } from './useRatingsData';
 
 interface RatingsHeaderProps {
@@ -45,7 +46,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
             }}
           >
             <Star style={{ fontSize: 28, color: theme.accent, WebkitTextFillColor: 'initial' }} />
-            Meine Bewertungen
+            {t('Meine Bewertungen')}
           </GradientText>
         </div>
 
@@ -64,7 +65,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
           >
             <span className="ratings-stat-value">{stats.count}</span>
             <span className="ratings-stat-label" style={{ color: theme.text.muted }}>
-              bewertet
+              {t('bewertet')}
             </span>
           </div>
           <div className="ratings-stat-card ratings-stat-card--average">
@@ -73,7 +74,7 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
               {stats.average.toFixed(1)}
             </span>
             <span className="ratings-stat-label" style={{ color: theme.text.muted }}>
-              Durchschnitt
+              {t('Durchschnitt')}
             </span>
           </div>
         </motion.div>
@@ -82,8 +83,8 @@ export const RatingsHeader = React.memo<RatingsHeaderProps>(
       {/* Tab Navigation */}
       <TabSwitcher
         tabs={[
-          { id: 'series', label: 'Serien', icon: TvIcon, count: seriesCount },
-          { id: 'movies', label: 'Filme', icon: MovieIcon, count: moviesCount },
+          { id: 'series', label: t('Serien'), icon: TvIcon, count: seriesCount },
+          { id: 'movies', label: t('Filme'), icon: MovieIcon, count: moviesCount },
         ]}
         activeTab={activeTab}
         onTabChange={onTabChange}

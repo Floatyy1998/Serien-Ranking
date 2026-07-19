@@ -13,6 +13,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { AddFriendDialog } from './AddFriendDialog';
 import { RemoveFriendSheet } from './RemoveFriendSheet';
@@ -113,12 +114,12 @@ export const ActivityPage = () => {
     {
       id: 'friends' as const,
       icon: <GroupRounded style={{ fontSize: '21px' }} />,
-      label: 'Freunde',
+      label: t('Freunde'),
     },
     {
       id: 'requests' as const,
       icon: <MarkEmailUnreadRounded style={{ fontSize: '21px' }} />,
-      label: 'Anfragen',
+      label: t('Anfragen'),
       badgeCount: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
     },
     {
@@ -146,12 +147,12 @@ export const ActivityPage = () => {
 
       {/* Header */}
       <PageHeader
-        title="Aktivität"
-        subtitle="Was deine Freunde gerade schauen"
+        title={t('Aktivität')}
+        subtitle={t('Was deine Freunde gerade schauen')}
         gradientFrom={currentTheme.text.primary}
         gradientTo={currentTheme.primary}
         actions={
-          <Tooltip title="Freund hinzufügen" arrow>
+          <Tooltip title={t('Freund hinzufügen')} arrow>
             <motion.button
               whileTap={tapScaleTight}
               onClick={() => setShowAddFriend(true)}
@@ -256,13 +257,13 @@ export const ActivityPage = () => {
                   className="activity-banner__text-title"
                   style={{ color: currentTheme.text.secondary }}
                 >
-                  Diskussions-Feed
+                  {t('Diskussions-Feed')}
                 </div>
                 <div
                   className="activity-banner__text-sub"
                   style={{ color: currentTheme.text.muted }}
                 >
-                  Alle Diskussionen an einem Ort
+                  {t('Alle Diskussionen an einem Ort')}
                 </div>
               </div>
 

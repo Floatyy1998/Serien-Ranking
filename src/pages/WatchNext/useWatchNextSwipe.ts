@@ -7,6 +7,7 @@ import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { t } from '../../services/i18n';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
@@ -88,7 +89,7 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
     const ep = series.seasons?.[episode.seasonIndex]?.episodes?.[episode.episodeIndex];
     const epId = ep?.id;
     if (!epId) {
-      showToast('Episode-ID fehlt', 2000, 'error');
+      showToast(t('Episode-ID fehlt'), 2000, 'error');
       return;
     }
     const epPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${episode.seasonIndex}/eps/${epId}`;
@@ -120,61 +121,65 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
 
       hapticSuccess();
 
-      showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
-        onUndo: async () => {
-          setHiddenEpisodes((prev) => {
-            const s = new Set(prev);
-            s.delete(episodeKey);
-            return s;
-          });
-          try {
-            if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
-              await dbRef(epPath).remove();
-            } else {
-              await dbRef(epPath).set({
-                ...(prevWatched ? { w: prevWatched } : {}),
-                ...(prevCount ? { c: prevCount } : {}),
-                ...(prevFirst ? { f: prevFirst } : {}),
-                ...(prevLast ? { l: prevLast } : {}),
-              });
+      showUndoToast(
+        t('{title} {episode} als gesehen markiert', { title: episode.seriesTitle, episode: label }),
+        {
+          onUndo: async () => {
+            setHiddenEpisodes((prev) => {
+              const s = new Set(prev);
+              s.delete(episodeKey);
+              return s;
+            });
+            try {
+              if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
+                await dbRef(epPath).remove();
+              } else {
+                await dbRef(epPath).set({
+                  ...(prevWatched ? { w: prevWatched } : {}),
+                  ...(prevCount ? { c: prevCount } : {}),
+                  ...(prevFirst ? { f: prevFirst } : {}),
+                  ...(prevLast ? { l: prevLast } : {}),
+                });
+              }
+            } catch {
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
-        },
-        onCommit: async () => {
-          // Side-Effects erst nach Ablauf des Undo-Fensters
-          trackEpisodeWatched(
-            series.title || series.name || 'Unbekannte Serie',
-            episode.seasonIndex + 1,
-            episode.episodeIndex + 1,
-            {
-              tmdbId: series.id,
-              genres: series.genre?.genres,
-              runtime: episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              isRewatch: episode.isRewatch || false,
-              source: 'watch_next_swipe',
-            }
-          );
+          },
+          onCommit: async () => {
+            // Side-Effects erst nach Ablauf des Undo-Fensters
+            trackEpisodeWatched(
+              series.title || series.name || 'Unbekannte Serie',
+              episode.seasonIndex + 1,
+              episode.episodeIndex + 1,
+              {
+                tmdbId: series.id,
+                genres: series.genre?.genres,
+                runtime:
+                  episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: episode.isRewatch || false,
+                source: 'watch_next_swipe',
+              }
+            );
 
-          await runEpisodeWatchFanout({
-            userId: uid,
-            seriesId: series.id,
-            seriesTitle: series.title || series.name || 'Unbekannte Serie',
-            seasonNumber: episode.seasonIndex + 1,
-            episodeNumber: episode.episodeIndex + 1,
-            runtimeMinutes:
-              episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-            isRewatch: episode.isRewatch || false,
-            genres: series.genre?.genres,
-            providers: series.provider?.provider?.map((p) => p.name),
-            episodeAirDate: episode.airDate,
-          });
-        },
-      });
+            await runEpisodeWatchFanout({
+              userId: uid,
+              seriesId: series.id,
+              seriesTitle: series.title || series.name || 'Unbekannte Serie',
+              seasonNumber: episode.seasonIndex + 1,
+              episodeNumber: episode.episodeIndex + 1,
+              runtimeMinutes:
+                episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+              isRewatch: episode.isRewatch || false,
+              genres: series.genre?.genres,
+              providers: series.provider?.provider?.map((p) => p.name),
+              episodeAirDate: episode.airDate,
+            });
+          },
+        }
+      );
     } catch (error) {
       console.error('Failed to mark episode as watched:', error);
-      showToast('Fehler beim Speichern', 3000, 'error');
+      showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
 

@@ -18,6 +18,7 @@ import {
 } from '../../components/wrapped';
 import type { WrappedStats, WrappedSlideType } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 const useWrappedGradient = () => {
   const { currentTheme } = useTheme();
@@ -44,8 +45,8 @@ export const WrappedLoadingState = memo<WrappedLoadingStateProps>(({ year }) => 
           <div className="wrapped-loading-ring-inner" />
         </div>
 
-        <p className="wrapped-loading-title">Lade deinen Jahresrückblick...</p>
-        <p className="wrapped-loading-subtitle">Wir analysieren deine Statistiken</p>
+        <p className="wrapped-loading-title">{t('Lade deinen Jahresrückblick...')}</p>
+        <p className="wrapped-loading-subtitle">{t('Wir analysieren deine Statistiken')}</p>
       </div>
     </div>
   );
@@ -80,13 +81,13 @@ export const WrappedErrorState = memo<WrappedErrorStateProps>(({ error, onBack }
           </svg>
         </div>
         <h2 className="wrapped-error-heading">{error}</h2>
-        <p className="wrapped-error-message">Versuche es später noch einmal</p>
+        <p className="wrapped-error-message">{t('Versuche es später noch einmal')}</p>
         <button
           onClick={onBack}
           className="wrapped-error-button"
           style={{ color: 'var(--theme-primary, #667eea)' }}
         >
-          Zurück zur Startseite
+          {t('Zurück zur Startseite')}
         </button>
       </div>
     </div>
@@ -125,7 +126,7 @@ interface WrappedCloseButtonProps {
 }
 
 export const WrappedCloseButton = memo<WrappedCloseButtonProps>(({ onClick }) => (
-  <button onClick={onClick} className="wrapped-close-btn" aria-label="Schließen">
+  <button onClick={onClick} className="wrapped-close-btn" aria-label={t('Schließen')}>
     &times;
   </button>
 ));
@@ -146,7 +147,7 @@ export const WrappedNavigationHint = memo(() => (
       >
         <polyline points="6 9 12 15 18 9" />
       </svg>
-      <p className="wrapped-nav-hint-text">Wischen zum Navigieren</p>
+      <p className="wrapped-nav-hint-text">{t('Wischen zum Navigieren')}</p>
     </div>
   </div>
 ));

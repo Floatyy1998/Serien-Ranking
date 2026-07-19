@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface PetWidgetNoPetProps {
   position: { x: number; y: number };
@@ -90,7 +91,7 @@ export const PetWidgetNoPet: React.FC<PetWidgetNoPetProps> = ({
             fontFamily: 'var(--font-display)',
           }}
         >
-          Hol dir ein Pet!
+          {t('Hol dir ein Pet!')}
         </h4>
         <p
           style={{
@@ -100,7 +101,7 @@ export const PetWidgetNoPet: React.FC<PetWidgetNoPetProps> = ({
             opacity: 0.8,
           }}
         >
-          Tippe zum Starten
+          {t('Tippe zum Starten')}
         </p>
       </div>
     </motion.div>

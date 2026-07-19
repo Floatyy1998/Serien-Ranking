@@ -2,6 +2,7 @@ import React from 'react';
 import { ChevronRight } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface SectionHeaderProps {
   icon: React.ReactNode;
@@ -18,11 +19,12 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   iconColor,
   title,
   onSeeAll,
-  seeAllLabel = 'Alle',
+  seeAllLabel,
   action,
   style,
 }) => {
   const { currentTheme } = useTheme();
+  const resolvedSeeAllLabel = seeAllLabel ?? t('Alle');
 
   return (
     <div
@@ -60,7 +62,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       </h2>
       {action}
       {onSeeAll && (
-        <Tooltip title="Alle anzeigen" arrow>
+        <Tooltip title={t('Alle anzeigen')} arrow>
           <button
             onClick={onSeeAll}
             style={{
@@ -74,7 +76,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               padding: 0,
             }}
           >
-            {seeAllLabel} <ChevronRight style={{ fontSize: '16px' }} />
+            {resolvedSeeAllLabel} <ChevronRight style={{ fontSize: '16px' }} />
           </button>
         </Tooltip>
       )}

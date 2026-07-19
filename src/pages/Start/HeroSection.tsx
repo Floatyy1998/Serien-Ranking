@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { GradientText } from '../../components/ui';
 import { CoverWall } from '../../components/ui/CoverWall';
 import { HeroAppMock } from './HeroAppMock';
+import { t } from '../../services/i18n';
 
 /**
  * Marketing-Markenpalette der Start-Seite (Pre-Auth Landing).
@@ -31,7 +32,7 @@ export const HeroSection = () => (
       {/* Links: Marke + Claim + CTAs */}
       <div className="start-hero-copy">
         <div className="start-hero-subtitle" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-          Serien, Film & Manga Tracker
+          {t('Serien, Film & Manga Tracker')}
         </div>
 
         <GradientText as="h1" style={{ marginBottom: '24px' }}>
@@ -40,13 +41,14 @@ export const HeroSection = () => (
 
         <div className="start-hero-description" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
           <span style={{ fontSize: 'clamp(1.1rem, 2vw, 1.5rem)', fontWeight: 300 }}>
-            Dein ultimativer Serien, Film & Manga Tracker
+            {t('Dein ultimativer Serien, Film & Manga Tracker')}
           </span>
         </div>
         <div className="start-hero-body" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
           <span style={{ fontSize: 'clamp(0.95rem, 1.5vw, 1.05rem)' }}>
-            Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen
-            Fortschritt und teile deine Favoriten mit Freunden.
+            {t(
+              'Entdecke neue Serien, Filme und Manga, verwalte deine Watchlist, tracke deinen Fortschritt und teile deine Favoriten mit Freunden.'
+            )}
           </span>
         </div>
 
@@ -73,7 +75,7 @@ export const HeroSection = () => (
               },
             }}
           >
-            Kostenlos starten
+            {t('Kostenlos starten')}
           </Button>
           <Button
             component={Link}
@@ -96,7 +98,7 @@ export const HeroSection = () => (
               },
             }}
           >
-            Anmelden
+            {t('Anmelden')}
           </Button>
         </div>
 
@@ -126,7 +128,7 @@ export const HeroSection = () => (
               },
             }}
           >
-            Desktop App herunterladen
+            {t('Desktop App herunterladen')}
           </Button>
         )}
       </div>

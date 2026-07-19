@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import FastForwardRounded from '@mui/icons-material/FastForwardRounded';
 import HistoryRounded from '@mui/icons-material/HistoryRounded';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface FillerChipProps {
   filler?: boolean;
@@ -32,7 +33,7 @@ export const FillerChip = memo<FillerChipProps>(
     const isFiller = filler === true;
     const tone = isFiller ? currentTheme.status.warning : currentTheme.primary;
     const Icon = isFiller ? FastForwardRounded : HistoryRounded;
-    const title = isFiller ? 'Filler-Episode' : 'Recap-Episode';
+    const title = isFiller ? t('Filler-Episode') : t('Recap-Episode');
     const label = isFiller ? 'Filler' : 'Recap';
 
     // Shared outline surface — faint tinted fill + a crisp tone-coloured border.

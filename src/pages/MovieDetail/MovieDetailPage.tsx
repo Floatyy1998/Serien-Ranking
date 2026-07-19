@@ -11,6 +11,7 @@ import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';
 import { MovieInfoTab } from './MovieInfoTab';
 import { useMovieData } from './useMovieData';
+import { t } from '../../services/i18n';
 import './MovieDetailPage.css';
 
 export const MovieDetailPage = memo(() => {
@@ -50,11 +51,12 @@ export const MovieDetailPage = memo(() => {
     const apiKey = import.meta.env.VITE_API_TMDB;
     return (
       <div className="md-not-found">
-        <h2 className="md-not-found__title">Film nicht gefunden</h2>
+        <h2 className="md-not-found__title">{t('Film nicht gefunden')}</h2>
         {!apiKey && (
           <p className="md-not-found__text" style={{ color: currentTheme.text.secondary }}>
-            Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB
-            API-Schlüssel benötigt.
+            {t(
+              'Dieser Film ist nicht in deiner Liste. Um Filme von Freunden anzuzeigen, wird ein TMDB API-Schlüssel benötigt.'
+            )}
           </p>
         )}
         <button
@@ -66,7 +68,7 @@ export const MovieDetailPage = memo(() => {
             color: currentTheme.text.primary,
           }}
         >
-          Zurück
+          {t('Zurück')}
         </button>
       </div>
     );
@@ -76,7 +78,7 @@ export const MovieDetailPage = memo(() => {
   if (loading || !movie) {
     return (
       <div className="md-loading">
-        <p>Lade...</p>
+        <p>{t('Lade...')}</p>
       </div>
     );
   }
@@ -155,17 +157,20 @@ export const MovieDetailPage = memo(() => {
       <Dialog
         open={showDeleteConfirm && !isReadOnlyTmdbMovie}
         onClose={() => setShowDeleteConfirm(false)}
-        title="Film löschen?"
-        message={`Möchtest du "${movie?.title}" wirklich aus deiner Sammlung entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`}
+        title={t('Film löschen?')}
+        message={t(
+          'Möchtest du "{title}" wirklich aus deiner Sammlung entfernen? Diese Aktion kann nicht rückgängig gemacht werden.',
+          { title: movie?.title ?? '' }
+        )}
         type="warning"
         actions={[
           {
-            label: 'Abbrechen',
+            label: t('Abbrechen'),
             onClick: () => setShowDeleteConfirm(false),
             variant: 'secondary',
           },
           {
-            label: 'Löschen',
+            label: t('Löschen'),
             onClick: handleDeleteMovie,
             variant: 'danger',
           },
@@ -205,7 +210,7 @@ interface MovieTabBarProps {
 const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: MovieTabBarProps) => (
   <div
     role="tablist"
-    aria-label="Film-Bereiche"
+    aria-label={t('Film-Bereiche')}
     className={`md-tabs ${isMobile ? 'md-tabs--mobile' : ''}`}
   >
     <button
@@ -230,7 +235,7 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       }}
     >
       <Info aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-      Info
+      {t('Info')}
     </button>
 
     <button
@@ -254,7 +259,7 @@ const MovieTabBar = memo(({ activeTab, isMobile, currentTheme, onTabChange }: Mo
       }}
     >
       <People aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-      Besetzung
+      {t('Besetzung')}
     </button>
   </div>
 ));

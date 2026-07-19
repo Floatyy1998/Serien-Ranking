@@ -18,6 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useNavSlots } from '../../hooks/useNavConfig';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import { resetNavSlots, setNavSlots } from '../../services/navConfig';
 import type { ExpandableConfig } from './useHomeLayoutData';
 import { SECTION_LABELS, useHomeLayoutData } from './useHomeLayoutData';
@@ -155,7 +156,11 @@ const CanvasSection = ({ id, hidden, onToggle, expandable }: CanvasSectionProps)
           whileTap={tapScaleTight}
           className="hl-cv-eye"
           onClick={onToggle}
-          aria-label={`${SECTION_LABELS[id]} ${hidden ? 'einblenden' : 'ausblenden'}`}
+          aria-label={
+            hidden
+              ? t('{name} einblenden', { name: SECTION_LABELS[id] })
+              : t('{name} ausblenden', { name: SECTION_LABELS[id] })
+          }
           style={{ color: hidden ? currentTheme.text.muted : currentTheme.primary }}
         >
           {hidden ? <VisibilityOff /> : <Visibility />}
@@ -244,20 +249,22 @@ export const HomeLayoutPage = () => {
 
   return (
     <PageLayout>
-      <PageHeader title="Layout anpassen" subtitle="Die Vorschau ist der Editor" />
+      <PageHeader title={t('Layout anpassen')} subtitle={t('Die Vorschau ist der Editor')} />
 
       <div className="hl-content">
         <div className="hl-stage">
           <div className="hl-guide liquid-glass">
             <GradientText as="h2" style={{ margin: 0 }}>
               <span className="hl-guide-title">
-                Dein Zuhause.
+                {t('Dein Zuhause.')}
                 <br />
-                Deine Regeln.
+                {t('Deine Regeln.')}
               </span>
             </GradientText>
             <p className="hl-guide-sub" style={{ color: currentTheme.text.muted }}>
-              Was du hier anfasst, ist sofort deine App — keine Vorschau, das Original in klein.
+              {t(
+                'Was du hier anfasst, ist sofort deine App — keine Vorschau, das Original in klein.'
+              )}
             </p>
 
             <ul className="hl-guide-list">
@@ -265,19 +272,19 @@ export const HomeLayoutPage = () => {
                 <span className="hl-guide-chip">
                   <DragIndicator />
                 </span>
-                Halten und ziehen ändert die Reihenfolge
+                {t('Halten und ziehen ändert die Reihenfolge')}
               </li>
               <li className="hl-guide-row" style={{ color: currentTheme.text.secondary }}>
                 <span className="hl-guide-chip">
                   <Visibility />
                 </span>
-                Das Auge blendet eine Sektion aus
+                {t('Das Auge blendet eine Sektion aus')}
               </li>
               <li className="hl-guide-row" style={{ color: currentTheme.text.secondary }}>
                 <span className="hl-guide-chip">
                   <Add />
                 </span>
-                Die untere Leiste belegst du selbst — bis zu {MAX_NAV_SLOTS} Ziele
+                {t('Die untere Leiste belegst du selbst — bis zu {n} Ziele', { n: MAX_NAV_SLOTS })}
               </li>
             </ul>
 
@@ -294,7 +301,7 @@ export const HomeLayoutPage = () => {
               }}
             >
               <RestartAlt className="hl-reset-icon" />
-              Zurücksetzen
+              {t('Zurücksetzen')}
             </motion.button>
           </div>
 
@@ -366,10 +373,12 @@ export const HomeLayoutPage = () => {
                         if (!dockDragRef.current) removeSlot(id);
                       }}
                       role="button"
-                      aria-label={`${NAV_SLOT_LABELS[id]} aus der Navigation entfernen`}
+                      aria-label={t('{name} aus der Navigation entfernen', {
+                        name: t(NAV_SLOT_LABELS[id]),
+                      })}
                     >
                       <span className="hl-dock-icon">{NAV_SLOT_ICONS[id]}</span>
-                      <span className="hl-dock-label">{NAV_SLOT_LABELS[id]}</span>
+                      <span className="hl-dock-label">{t(NAV_SLOT_LABELS[id])}</span>
                       <span className="hl-dock-remove" aria-hidden>
                         <Close style={{ fontSize: 11 }} />
                       </span>
@@ -384,7 +393,7 @@ export const HomeLayoutPage = () => {
                   <span className="hl-dock-icon">
                     <MoreHoriz />
                   </span>
-                  <span className="hl-dock-label">Mehr</span>
+                  <span className="hl-dock-label">{t('Mehr')}</span>
                 </span>
               </div>
             </div>
@@ -411,8 +420,9 @@ export const HomeLayoutPage = () => {
               </span>
             </div>
             <p className="hl-description" style={{ color: currentTheme.text.muted }}>
-              Antippen legt ein Ziel in die untere Leiste — Tippen in der Leiste entfernt es wieder,
-              Ziehen sortiert.
+              {t(
+                'Antippen legt ein Ziel in die untere Leiste — Tippen in der Leiste entfernt es wieder, Ziehen sortiert.'
+              )}
             </p>
 
             <div className="hl-nav-palette">
@@ -422,18 +432,20 @@ export const HomeLayoutPage = () => {
                   whileTap={tapScaleTight}
                   className={`hl-pal-chip ${slotsFull ? 'hl-pal-chip--full' : ''}`}
                   onClick={() => addSlot(o.id)}
-                  aria-label={`${o.label} zur Navigation hinzufügen`}
+                  aria-label={t('{name} zur Navigation hinzufügen', { name: t(o.label) })}
                   style={{ color: currentTheme.text.secondary }}
                 >
                   <span className="hl-pal-icon">{NAV_SLOT_ICONS[o.id]}</span>
-                  {o.label}
+                  {t(o.label)}
                   <Add className="hl-pal-add" style={{ color: currentTheme.primary }} />
                 </motion.button>
               ))}
             </div>
             {slotsFull && (
               <p className="hl-palette-hint" style={{ color: currentTheme.text.muted }}>
-                Alle {MAX_NAV_SLOTS} Plätze belegt — entferne erst ein Ziel in der Leiste.
+                {t('Alle {n} Plätze belegt — entferne erst ein Ziel in der Leiste.', {
+                  n: MAX_NAV_SLOTS,
+                })}
               </p>
             )}
           </aside>

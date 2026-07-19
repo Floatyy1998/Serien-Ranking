@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { GradientText } from '../../components/ui';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -53,7 +54,7 @@ export const EmptyState = memo(() => {
           to={currentTheme.primary}
           style={{ margin: '0 0 12px 0', fontSize: '28px', fontWeight: 800 }}
         >
-          Alles aufgeholt!
+          {t('Alles aufgeholt!')}
         </GradientText>
       </motion.div>
 
@@ -64,7 +65,7 @@ export const EmptyState = memo(() => {
         className="cu-empty-text"
         style={{ color: currentTheme.text.secondary }}
       >
-        Du bist bei allen Serien up-to-date. Zeit für etwas Neues!
+        {t('Du bist bei allen Serien up-to-date. Zeit für etwas Neues!')}
       </motion.p>
 
       <motion.button
@@ -81,7 +82,7 @@ export const EmptyState = memo(() => {
         }}
       >
         <AutoAwesome style={{ fontSize: 20 }} />
-        Neue Serie entdecken
+        {t('Neue Serie entdecken')}
         <ArrowForward style={{ fontSize: 20 }} />
       </motion.button>
     </motion.div>

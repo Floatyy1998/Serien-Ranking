@@ -2,7 +2,8 @@
  * Zentraler TMDB-Client. Ersetzt ~27 Stellen mit rohem
  * `fetch('https://api.themoviedb.org/3/…?api_key=…&language=de-DE')`.
  *
- * - `api_key` + `language=de-DE` werden zentral gesetzt (Sprache pro Call
+ * - `api_key` + Sprache (de-DE, bei englischer App-Sprache en-US) werden
+ *   zentral gesetzt (Sprache pro Call
  *   überschreibbar via `{ language: 'en-US' }` oder abschaltbar via
  *   `{ language: undefined }` — z.B. `watch/providers`).
  * - `undefined`/`null`/`''`-Params werden weggelassen.
@@ -13,6 +14,8 @@
  * Layer: services/ (I/O). Reines Provider-Normalisieren bleibt in
  * `lib/providerName.ts`.
  */
+
+import { isEnglish } from './i18n';
 
 const TMDB_BASE = 'https://api.themoviedb.org/3';
 
@@ -26,7 +29,7 @@ export function getTmdbApiKey(): string {
 export function buildTmdbUrl(path: string, params: TmdbParams = {}): string {
   const url = new URL(`${TMDB_BASE}/${path.replace(/^\/+/, '')}`);
   url.searchParams.set('api_key', getTmdbApiKey());
-  const merged: TmdbParams = { language: 'de-DE', ...params };
+  const merged: TmdbParams = { language: isEnglish() ? 'en-US' : 'de-DE', ...params };
   for (const [key, value] of Object.entries(merged)) {
     if (value === undefined || value === null || value === '') continue;
     url.searchParams.set(key, String(value));

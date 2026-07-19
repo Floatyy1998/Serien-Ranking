@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { hapticTap } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import type { GroupedSchedule } from './useCalendarData';
 import { WEEKDAYS_SHORT } from './useCalendarData';
@@ -224,7 +225,7 @@ export const CalendarGrid = memo(
     return (
       <div className="cal-mobile-view">
         {/* Tages-Selector */}
-        <div className="cal-day-selector" role="tablist" aria-label="Tag wählen">
+        <div className="cal-day-selector" role="tablist" aria-label={t('Tag wählen')}>
           {entries.map(([k, g], i) => {
             const d = new Date(k + 'T00:00:00');
             const active = i === clampedIdx;
@@ -237,8 +238,12 @@ export const CalendarGrid = memo(
                 type="button"
                 role="tab"
                 aria-selected={active}
-                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${isToday ? ' (heute)' : ''}${
-                  allWatched ? ' — alles geschaut' : g.length > 0 ? ` — ${g.length} Serien` : ''
+                aria-label={`${WEEKDAYS_SHORT[i]} ${d.getDate()}.${isToday ? ` (${t('heute')})` : ''}${
+                  allWatched
+                    ? ` — ${t('alles geschaut')}`
+                    : g.length > 0
+                      ? ` — ${t('{n} Serien', { n: g.length })}`
+                      : ''
                 }`}
                 className={`cal-day-chip ${active ? 'is-active' : ''} ${isToday ? 'is-today' : ''} ${allWatched ? 'is-complete' : ''}`}
                 onClick={() => goToDay(i)}
@@ -292,7 +297,7 @@ export const CalendarGrid = memo(
             ) : (
               <div className="cal-mobile-empty">
                 <span className="cal-mobile-empty__dash">&mdash;</span>
-                Keine Folgen an diesem Tag
+                {t('Keine Folgen an diesem Tag')}
               </div>
             )}
           </motion.div>

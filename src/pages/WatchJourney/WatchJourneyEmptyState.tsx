@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { BackButton } from '../../components/ui';
 import { WatchJourneyYearPicker } from './WatchJourneyYearPicker';
+import { t } from '../../services/i18n';
 
 interface WatchJourneyEmptyStateProps {
   selectedYear: number;
@@ -56,11 +57,13 @@ export const WatchJourneyEmptyState: React.FC<WatchJourneyEmptyStateProps> = ({
 
       <div className="wj-empty-content">
         <TrendingUp style={{ fontSize: 80, color: `${textSecondary}30`, marginBottom: 24 }} />
-        <h2 style={{ color: textPrimary }}>Keine Daten für {selectedYear}</h2>
+        <h2 style={{ color: textPrimary }}>
+          {t('Keine Daten für {year}', { year: selectedYear })}
+        </h2>
         <p style={{ color: textSecondary }}>
           {isCurrentYear
-            ? 'Schau Serien und Filme, um deine persönliche Watch Journey zu sehen!'
-            : 'Wähle ein anderes Jahr oder schau mehr Content!'}
+            ? t('Schau Serien und Filme, um deine persönliche Watch Journey zu sehen!')
+            : t('Wähle ein anderes Jahr oder schau mehr Content!')}
         </p>
         {isCurrentYear && (
           <button
@@ -79,7 +82,7 @@ export const WatchJourneyEmptyState: React.FC<WatchJourneyEmptyStateProps> = ({
               color: getOptimalTextColor(currentTheme.primary),
             }}
           >
-            Serien &amp; Filme entdecken
+            {t('Serien & Filme entdecken')}
           </button>
         )}
       </div>

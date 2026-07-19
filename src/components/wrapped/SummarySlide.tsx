@@ -11,6 +11,7 @@ import type { WrappedStats } from '../../types/Wrapped';
 import { hapticTap } from '../../lib/haptics';
 import { tapScale } from '../../lib/motion';
 import { WrappedShareSheet } from './WrappedShareCard';
+import { t } from '../../services/i18n';
 
 interface SummarySlideProps {
   stats: WrappedStats;
@@ -194,9 +195,9 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             marginBottom: '5px',
           }}
         >
-          Dein {stats.year}
+          {t('Dein {year}', { year: stats.year })}
         </GradientText>
-        <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>in Zahlen</p>
+        <p style={{ color: 'white', opacity: 0.8, fontSize: '1.1rem' }}>{t('in Zahlen')}</p>
       </motion.div>
 
       {/* Stats Grid */}
@@ -250,7 +251,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
               {stat.value.toLocaleString()}
             </p>
             <p style={{ color: 'white', opacity: 0.7, fontSize: '0.75rem', margin: 0 }}>
-              {stat.label}
+              {t(stat.label)}
             </p>
           </motion.div>
         ))}
@@ -303,13 +304,13 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             )}
             <div style={{ flex: 1 }}>
               <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', marginBottom: '4px' }}>
-                Deine #1 Serie
+                {t('Deine #1 Serie')}
               </p>
               <h3 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 'bold' }}>
                 {topSerie.title}
               </h3>
               <p style={{ color: '#f5af19', fontSize: '0.9rem', marginTop: '4px' }}>
-                {topSerie.episodesWatched} Episoden
+                {t('{n} Episoden', { n: topSerie.episodesWatched })}
               </p>
             </div>
             <div
@@ -344,8 +345,8 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
       >
         <StarIcon size={28} />
         <p style={{ color: 'white', opacity: 0.9 }}>
-          <strong>{stats.achievements.filter((a) => a.unlocked).length}</strong> Achievements
-          freigeschaltet
+          <strong>{stats.achievements.filter((a) => a.unlocked).length}</strong>{' '}
+          {t('Achievements freigeschaltet')}
         </p>
       </motion.div>
 
@@ -367,7 +368,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             whileHover={{ scale: 1.05 }}
             whileTap={tapScale}
             onClick={onShare}
-            aria-label="Jahresrückblick als Text teilen"
+            aria-label={t('Jahresrückblick als Text teilen')}
             style={{
               padding: '15px 50px',
               minHeight: '48px',
@@ -384,7 +385,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
               gap: '10px',
             }}
           >
-            <span>Teilen</span>
+            <span>{t('Teilen')}</span>
             <ShareIcon />
           </motion.button>
         )}
@@ -398,7 +399,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             hapticTap();
             setShareCardOpen(true);
           }}
-          aria-label="Jahresrückblick als Bild teilen"
+          aria-label={t('Jahresrückblick als Bild teilen')}
           style={{
             padding: '13px 40px',
             minHeight: '48px',
@@ -416,7 +417,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
             gap: '10px',
           }}
         >
-          <span>Als Bild teilen</span>
+          <span>{t('Als Bild teilen')}</span>
           <ImageIcon />
         </motion.button>
       </div>
@@ -449,7 +450,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
           zIndex: 1,
         }}
       >
-        Danke für ein tolles Jahr!
+        {t('Danke für ein tolles Jahr!')}
       </motion.p>
     </div>
   );

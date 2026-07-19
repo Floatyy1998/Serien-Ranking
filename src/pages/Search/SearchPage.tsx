@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import {
   Dialog,
@@ -59,19 +60,19 @@ export const SearchPage = memo(() => {
   }[] = [
     {
       key: 'all',
-      label: 'Alle',
+      label: t('Alle'),
       icon: null,
       gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'series',
-      label: 'Serien',
+      label: t('Serien'),
       icon: CalendarToday,
       gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
     {
       key: 'movies',
-      label: 'Filme',
+      label: t('Filme'),
       icon: Movie,
       gradient: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
     },
@@ -93,7 +94,7 @@ export const SearchPage = memo(() => {
       {/* Search Header */}
       <div className="search-header" style={{ background: `${currentTheme.background.default}ee` }}>
         <PageHeader
-          title="Suche"
+          title={t('Suche')}
           gradientFrom={currentTheme.text.primary}
           gradientTo={currentTheme.primary}
           sticky={false}
@@ -120,8 +121,8 @@ export const SearchPage = memo(() => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Suche nach Serien & Filmen..."
-              aria-label="Suche nach Serien und Filmen"
+              placeholder={t('Suche nach Serien & Filmen...')}
+              aria-label={t('Suche nach Serien und Filmen')}
               autoFocus
               className="search-input"
               style={{ color: currentTheme.text.primary, outline: 'none' }}
@@ -130,7 +131,7 @@ export const SearchPage = memo(() => {
               type="button"
               onClick={() => searchQuery && setSearchQuery('')}
               className="search-clear-btn"
-              aria-label="Suche löschen"
+              aria-label={t('Suche löschen')}
               style={{
                 background: searchQuery ? `${currentTheme.text.muted}20` : 'transparent',
                 color: currentTheme.text.muted,
@@ -158,7 +159,7 @@ export const SearchPage = memo(() => {
               className="search-filter-btn"
               onClick={() => setSearchType(tab.key)}
               aria-pressed={searchType === tab.key}
-              aria-label={`Filter: ${tab.label}`}
+              aria-label={t('Filter: {label}', { label: tab.label })}
               style={{
                 background: searchType === tab.key ? tab.gradient : currentTheme.background.surface,
                 border:
@@ -184,11 +185,11 @@ export const SearchPage = memo(() => {
             }}
             disabled={!canFilterByProviders}
             aria-pressed={providerFilterActive}
-            aria-label="Nur Titel auf meinen aktiven Abos anzeigen"
+            aria-label={t('Nur Titel auf meinen aktiven Abos anzeigen')}
             title={
               canFilterByProviders
-                ? 'Nur was ich streamen kann'
-                : 'Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen'
+                ? t('Nur was ich streamen kann')
+                : t('Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen')
             }
             style={{
               background: providerFilterActive
@@ -204,7 +205,7 @@ export const SearchPage = memo(() => {
             }}
           >
             <Subscriptions style={{ fontSize: '16px' }} />
-            Abos
+            {t('Abos')}
           </button>
         </motion.div>
       </div>
@@ -232,7 +233,7 @@ export const SearchPage = memo(() => {
                 >
                   {searchResults.length}
                 </span>{' '}
-                Ergebnisse für "{searchQuery}"
+                {t('Ergebnisse für "{query}"', { query: searchQuery })}
               </p>
 
               {/* Results Grid */}
@@ -257,7 +258,7 @@ export const SearchPage = memo(() => {
               <PageState
                 mode="error"
                 error={{
-                  title: 'Suche fehlgeschlagen',
+                  title: t('Suche fehlgeschlagen'),
                   description: error,
                   onRetry: retrySearch,
                 }}
@@ -267,16 +268,22 @@ export const SearchPage = memo(() => {
             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <EmptyState
                 icon={<Search style={{ fontSize: '48px' }} />}
-                title="Keine Ergebnisse"
+                title={t('Keine Ergebnisse')}
                 description={
                   providerFilterActive
-                    ? `Keine Treffer für „${searchQuery}" auf deinen aktiven Abos. Schalte den Abo-Filter „Abos" aus, um alle Treffer zu sehen.`
-                    : `Keine Treffer für „${searchQuery}". Prüfe die Schreibweise oder suche nach etwas anderem.`
+                    ? t(
+                        'Keine Treffer für „{query}" auf deinen aktiven Abos. Schalte den Abo-Filter „Abos" aus, um alle Treffer zu sehen.',
+                        { query: searchQuery }
+                      )
+                    : t(
+                        'Keine Treffer für „{query}". Prüfe die Schreibweise oder suche nach etwas anderem.',
+                        { query: searchQuery }
+                      )
                 }
                 action={
                   providerFilterActive
-                    ? { label: 'Abo-Filter aus', onClick: () => setOnlyMyProviders(false) }
-                    : { label: 'Suche löschen', onClick: () => setSearchQuery('') }
+                    ? { label: t('Abo-Filter aus'), onClick: () => setOnlyMyProviders(false) }
+                    : { label: t('Suche löschen'), onClick: () => setSearchQuery('') }
                 }
               />
             </motion.div>

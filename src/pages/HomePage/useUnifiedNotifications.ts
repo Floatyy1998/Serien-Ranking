@@ -6,6 +6,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
+import { t } from '../../services/i18n';
 
 export interface RecommendationCardData {
   recId: string;
@@ -272,8 +273,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       items.push({
         id: ann.id,
         kind: 'announcement',
-        title: ann.title,
-        message: ann.message,
+        title: t(ann.title),
+        message: t(ann.message),
         timestamp: ann.timestamp,
         read: lastReadAnnouncementsTime !== null && ann.timestamp <= lastReadAnnouncementsTime,
         navigateTo: ann.navigateTo,
@@ -298,11 +299,17 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       const isWatchlist =
         act.type === 'series_added_to_watchlist' || act.type === 'movie_added_to_watchlist';
 
+      const itemTitle = act.itemTitle || t('Unbekannt');
+      const baseMessage = isRating
+        ? t('hat "{title}" bewertet', { title: itemTitle })
+        : isWatchlist
+          ? t('hat "{title}" auf die Watchlist gesetzt', { title: itemTitle })
+          : t('hat "{title}" hinzugef\u00fcgt', { title: itemTitle });
       items.push({
         id: `act_${act.id}`,
         kind: 'activity',
-        title: act.userName || 'Freund',
-        message: `hat "${act.itemTitle || 'Unbekannt'}" ${isRating ? 'bewertet' : isWatchlist ? 'auf die Watchlist gesetzt' : 'hinzugef\u00fcgt'}${isRating && act.rating ? ` (${act.rating}/10)` : ''}`,
+        title: act.userName || t('Freund'),
+        message: `${baseMessage}${isRating && act.rating ? ` (${act.rating}/10)` : ''}`,
         timestamp: act.timestamp,
         // Pro-Eintrag-Read-State statt „alle-oder-keiner": ein Eintrag gilt als
         // gelesen, wenn er älter ist als der letzte Lese-Zeitpunkt.
@@ -316,8 +323,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       items.push({
         id: `req_${req.id}`,
         kind: 'request',
-        title: 'Freundschaftsanfrage',
-        message: req.fromUsername || 'Unbekannt',
+        title: t('Freundschaftsanfrage'),
+        message: req.fromUsername || t('Unbekannt'),
         timestamp: req.timestamp || req.sentAt || 0,
         read: unreadRequestsCount === 0,
         requestId: req.id,
@@ -398,7 +405,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         id: `rec_${rec.id}`,
         kind: 'recommendation',
         title: rec.senderName,
-        message: `empfiehlt dir "${rec.mediaTitle}"`,
+        message: t('empfiehlt dir "{title}"', { title: rec.mediaTitle }),
         timestamp: rec.timestamp,
         read: false,
         navigateTo: rec.mediaType === 'movie' ? `/movie/${rec.mediaId}` : `/series/${rec.mediaId}`,
@@ -508,10 +515,10 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
 export function formatNotificationTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'gerade eben';
-  if (minutes < 60) return `vor ${minutes} Min`;
+  if (minutes < 1) return t('gerade eben');
+  if (minutes < 60) return t('vor {n} Min', { n: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `vor ${hours} Std`;
+  if (hours < 24) return t('vor {n} Std', { n: hours });
   const days = Math.floor(hours / 24);
-  return `vor ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
+  return days === 1 ? t('vor {n} Tag', { n: days }) : t('vor {n} Tagen', { n: days });
 }

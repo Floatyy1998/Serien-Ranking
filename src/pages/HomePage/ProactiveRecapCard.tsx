@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTextToSpeech } from '../../hooks/useTextToSpeech';
 import type { ProactiveRecap } from '../../hooks/useProactiveRecaps';
+import { t } from '../../services/i18n';
 
 interface ProactiveRecapCardProps {
   recaps: ProactiveRecap[];
@@ -38,10 +39,11 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
     const current = recaps[Math.min(currentIndex, recaps.length - 1)];
     if (!current) return null;
 
+    const when = current.startsToday ? t('heute') : t('morgen');
     const triggerLabel =
       current.triggerType === 'new-season'
-        ? `Staffel ${current.seasonNumber} startet ${current.startsToday ? 'heute' : 'morgen'}!`
-        : `Staffel ${current.seasonNumber} wird ${current.startsToday ? 'heute' : 'morgen'} fortgesetzt!`;
+        ? t('Staffel {n} startet {when}!', { n: current.seasonNumber, when })
+        : t('Staffel {n} wird {when} fortgesetzt!', { n: current.seasonNumber, when });
 
     const hasContent = current.recap && !current.loading;
     const points = hasContent ? parseBulletPoints(current.recap ?? '') : [];
@@ -186,10 +188,10 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                   }}
                 >
                   {current.loading
-                    ? 'Recap wird generiert...'
+                    ? t('Recap wird generiert...')
                     : current.triggerType === 'new-season'
-                      ? 'Recap der vorherigen Staffel'
-                      : 'Recap vor der Fortsetzung'}
+                      ? t('Recap der vorherigen Staffel')
+                      : t('Recap vor der Fortsetzung')}
                 </p>
               </div>
               {/* Buttons: Desktop rechts als Spalte; Mobile als volle
@@ -223,7 +225,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                     color: currentTheme.background.default,
                   }}
                 >
-                  <span>Zur Serie</span>
+                  <span>{t('Zur Serie')}</span>
                   <ChevronRight style={{ fontSize: '20px' }} />
                 </button>
                 {!current.loading && (
@@ -255,7 +257,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
                       WebkitBackdropFilter: 'var(--blur-sm)',
                     }}
                   >
-                    <span>{expanded ? 'Einklappen' : 'Recap lesen'}</span>
+                    <span>{expanded ? t('Einklappen') : t('Recap lesen')}</span>
                     {expanded ? (
                       <ExpandLess style={{ fontSize: '18px' }} />
                     ) : (
@@ -376,7 +378,7 @@ export const ProactiveRecapCard: React.FC<ProactiveRecapCardProps> = memo(
               }}
             >
               <span style={{ fontSize: '0.85rem', opacity: 0.7, color: currentTheme.text.muted }}>
-                {currentIndex + 1} von {recaps.length}
+                {t('{current} von {total}', { current: currentIndex + 1, total: recaps.length })}
               </span>
               <div style={{ display: 'flex', gap: '8px' }}>
                 {recaps.map((_, i) => (

@@ -2,6 +2,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import type { Pet } from '../../types/pet.types';
 import { PET_CONFIG } from './petConstants';
 import { toLocalDateString } from '../../lib/date/date.utils';
+import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
 
 // Fuettere das Pet
@@ -181,15 +182,18 @@ export async function activateStreakShield(
 }> {
   try {
     const pet = await getUserPet(userId, petId);
-    if (!pet) return { success: false, error: 'Pet nicht gefunden' };
-    if (!pet.isAlive) return { success: false, error: 'Dein Pet lebt nicht' };
+    if (!pet) return { success: false, error: t('Pet nicht gefunden') };
+    if (!pet.isAlive) return { success: false, error: t('Dein Pet lebt nicht') };
 
     // Check if pet can afford it (including level-down)
     const totalXP = (pet.level - 1) * PET_CONFIG.XP_PER_LEVEL + pet.experience;
     if (totalXP < PET_CONFIG.STREAK_SHIELD_XP_COST) {
       return {
         success: false,
-        error: `Nicht genug XP (${pet.experience} XP, Level ${pet.level})`,
+        error: t('Nicht genug XP ({xp} XP, Level {level})', {
+          xp: pet.experience,
+          level: pet.level,
+        }),
       };
     }
 
@@ -235,6 +239,6 @@ export async function activateStreakShield(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[PetService] Streak Shield activation failed: ${message}`);
-    return { success: false, error: 'Unbekannter Fehler' };
+    return { success: false, error: t('Unbekannter Fehler') };
   }
 }

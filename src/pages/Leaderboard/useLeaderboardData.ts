@@ -15,20 +15,21 @@ import type {
   LeaderboardStats,
   MonthlyTrophy,
 } from '../../types/Leaderboard';
+import { t } from '../../services/i18n';
 
 const MONTH_NAMES: Record<string, string> = {
-  '01': 'Januar',
-  '02': 'Februar',
-  '03': 'März',
-  '04': 'April',
-  '05': 'Mai',
-  '06': 'Juni',
-  '07': 'Juli',
-  '08': 'August',
-  '09': 'September',
-  '10': 'Oktober',
-  '11': 'November',
-  '12': 'Dezember',
+  '01': t('Januar'),
+  '02': t('Februar'),
+  '03': t('März'),
+  '04': t('April'),
+  '05': t('Mai'),
+  '06': t('Juni'),
+  '07': t('Juli'),
+  '08': t('August'),
+  '09': t('September'),
+  '10': t('Oktober'),
+  '11': t('November'),
+  '12': t('Dezember'),
 };
 
 export interface CelebrationData {
@@ -171,7 +172,7 @@ export function useLeaderboardData() {
         displayName:
           typeof e.displayName === 'string' && e.displayName.trim().length > 0
             ? e.displayName
-            : 'Unbekannt',
+            : t('Unbekannt'),
         photoURL: e.photoURL,
         username: e.username,
         value: e[activeCategory] || 0,
@@ -189,7 +190,7 @@ export function useLeaderboardData() {
       return {
         uid,
         displayName:
-          typeof rawName === 'string' && rawName.trim().length > 0 ? rawName : 'Unbekannt',
+          typeof rawName === 'string' && rawName.trim().length > 0 ? rawName : t('Unbekannt'),
         photoURL: profiles[uid]?.photoURL,
         username: profiles[uid]?.username,
         value: stats[activeCategory] || 0,

@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { Bookmark, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { formatDate } from './useCalendarData';
 
 interface WeekNavProps {
@@ -31,22 +32,22 @@ const WeekNav = memo(
 
     return (
       <div className="cal-week-switcher">
-        <button className="cal-arrow-btn" onClick={onPrev} aria-label="Vorherige Woche">
+        <button className="cal-arrow-btn" onClick={onPrev} aria-label={t('Vorherige Woche')}>
           <ChevronLeft style={{ fontSize: '20px' }} />
         </button>
         <button
           className={`cal-week-chip ${weekOffset === 0 ? 'is-current' : ''}`}
           onClick={onReset}
-          aria-label="Zur aktuellen Woche"
+          aria-label={t('Zur aktuellen Woche')}
           style={
             weekOffset === 0
               ? { borderColor: `${currentTheme.primary}60`, color: currentTheme.primary }
               : {}
           }
         >
-          KW {kwNumber} &middot; {formatDate(monday)} – {formatDate(sunday)}
+          {t('KW {n}', { n: kwNumber })} &middot; {formatDate(monday)} – {formatDate(sunday)}
         </button>
-        <button className="cal-arrow-btn" onClick={onNext} aria-label="Nächste Woche">
+        <button className="cal-arrow-btn" onClick={onNext} aria-label={t('Nächste Woche')}>
           <ChevronRight style={{ fontSize: '20px' }} />
         </button>
       </div>
@@ -79,7 +80,7 @@ const FilterChips = memo(({ watchlistOnly, onToggle }: FilterChipsProps) => {
                 : {}
             }
           >
-            {label}
+            {t(label)}
           </button>
         );
       })}
@@ -96,7 +97,7 @@ const MobileWatchlistToggle = memo(({ watchlistOnly, onToggle }: FilterChipsProp
       type="button"
       className="cal-wl-toggle"
       aria-pressed={watchlistOnly}
-      aria-label={watchlistOnly ? 'Alle Serien anzeigen' : 'Nur Watchlist anzeigen'}
+      aria-label={watchlistOnly ? t('Alle Serien anzeigen') : t('Nur Watchlist anzeigen')}
       onClick={() => onToggle(!watchlistOnly)}
       style={
         watchlistOnly
@@ -124,7 +125,7 @@ const StatItems = memo(({ totalEpisodes, watchedCount }: StatsProps) => {
         className="cal-stat-item"
         style={{ background: `${currentTheme.primary}15`, color: currentTheme.primary }}
       >
-        {totalEpisodes} gesamt
+        {t('{n} gesamt', { n: totalEpisodes })}
       </div>
       <div
         className="cal-stat-item"
@@ -133,9 +134,9 @@ const StatItems = memo(({ totalEpisodes, watchedCount }: StatsProps) => {
           color: currentTheme.status.success,
         }}
       >
-        {watchedCount} gesehen
+        {t('{n} gesehen', { n: watchedCount })}
       </div>
-      <div className="cal-stat-item">{totalEpisodes - watchedCount} offen</div>
+      <div className="cal-stat-item">{t('{n} offen', { n: totalEpisodes - watchedCount })}</div>
     </>
   );
 });

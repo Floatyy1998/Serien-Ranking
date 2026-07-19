@@ -9,6 +9,7 @@ import {
   ProfileStats,
 } from './ProfileComponents';
 import { useProfileData } from './useProfileData';
+import { t } from '../../services/i18n';
 import './ProfilePage.css';
 
 export const ProfilePage = memo(() => {
@@ -77,7 +78,7 @@ export const ProfilePage = memo(() => {
       </div>
 
       <ProfileFeaturedNav
-        title="Schnellzugriff"
+        title={t('Schnellzugriff')}
         items={menuItems}
         currentTheme={currentTheme}
         onNavigate={goTo}
@@ -85,7 +86,7 @@ export const ProfilePage = memo(() => {
       />
 
       <ProfileMenuGroup
-        title="Deine Aktivitäten"
+        title={t('Deine Aktivitäten')}
         items={secondaryMenuItems}
         currentTheme={currentTheme}
         onNavigate={goTo}
@@ -103,7 +104,7 @@ export const ProfilePage = memo(() => {
       )}
 
       <ProfileMenuGroup
-        title="Einstellungen"
+        title={t('Einstellungen')}
         items={settingsItems}
         currentTheme={currentTheme}
         onNavigate={goTo}

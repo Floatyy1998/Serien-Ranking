@@ -8,28 +8,29 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { getDisplayFormat, type AppTheme } from './mangaUtils';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 type TabType = 'activity' | 'genres' | 'insights';
 
 const TABS: { id: TabType; label: string; icon: React.ReactNode }[] = [
-  { id: 'activity', label: 'Aktivität', icon: <TrendingUp style={{ fontSize: 16 }} /> },
+  { id: 'activity', label: t('Aktivität'), icon: <TrendingUp style={{ fontSize: 16 }} /> },
   { id: 'genres', label: 'Genres', icon: <Category style={{ fontSize: 16 }} /> },
   { id: 'insights', label: 'Insights', icon: <AutoGraph style={{ fontSize: 16 }} /> },
 ];
 
 const MONTH_NAMES = [
-  'Jan',
-  'Feb',
-  'Mär',
-  'Apr',
-  'Mai',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Okt',
-  'Nov',
-  'Dez',
+  t('Jan'),
+  t('Feb'),
+  t('Mär'),
+  t('Apr'),
+  t('Mai'),
+  t('Jun'),
+  t('Jul'),
+  t('Aug'),
+  t('Sep'),
+  t('Okt'),
+  t('Nov'),
+  t('Dez'),
 ];
 
 export const MangaReadJourneyPage = () => {
@@ -137,7 +138,7 @@ export const MangaReadJourneyPage = () => {
         title="Read Journey"
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
-        subtitle="Deine Lese-Trends & Insights"
+        subtitle={t('Deine Lese-Trends & Insights')}
         icon={<TrendingUp />}
       />
 
@@ -214,7 +215,7 @@ export const MangaReadJourneyPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  Kapitel pro Monat
+                  {t('Kapitel pro Monat')}
                 </div>
                 <div
                   style={{
@@ -301,7 +302,7 @@ export const MangaReadJourneyPage = () => {
                       marginBottom: 12,
                     }}
                   >
-                    Meistgelesene Manga
+                    {t('Meistgelesene Manga')}
                   </div>
                   {journeyData.topManga.map((m, i) => (
                     <div
@@ -342,7 +343,7 @@ export const MangaReadJourneyPage = () => {
                         <div
                           style={{ fontSize: 11, color: currentTheme.text.secondary, opacity: 0.6 }}
                         >
-                          {m.currentChapter} Kapitel
+                          {t('{n} Kapitel', { n: m.currentChapter })}
                         </div>
                       </div>
                     </div>
@@ -383,7 +384,7 @@ export const MangaReadJourneyPage = () => {
                     marginBottom: 16,
                   }}
                 >
-                  Genre-Verteilung
+                  {t('Genre-Verteilung')}
                 </div>
                 {journeyData.topGenres.map(([name, count], i) => (
                   <div
@@ -444,7 +445,7 @@ export const MangaReadJourneyPage = () => {
                       marginBottom: 12,
                     }}
                   >
-                    Formate
+                    {t('Formate')}
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {journeyData.formats.map(([name, count]) => (
@@ -492,29 +493,33 @@ export const MangaReadJourneyPage = () => {
               }}
             >
               <InsightCard
-                label="Lese-Streak"
-                value={`${journeyData.streak} Tage`}
+                label={t('Lese-Streak')}
+                value={t('{n} Tage', { n: journeyData.streak })}
                 icon={<Schedule style={{ fontSize: 20 }} />}
                 color={currentTheme.status?.success || '#22c55e'}
                 theme={currentTheme}
               />
               <InsightCard
-                label="Ø Kapitel pro Manga"
+                label={t('Ø Kapitel pro Manga')}
                 value={journeyData.avgChaptersPerManga.toFixed(0)}
                 icon={<AutoGraph style={{ fontSize: 20 }} />}
                 color={currentTheme.primary}
                 theme={currentTheme}
               />
               <InsightCard
-                label="Ø Bewertung"
+                label={t('Ø Bewertung')}
                 value={journeyData.avgRating > 0 ? journeyData.avgRating.toFixed(1) : '—'}
                 icon={<TrendingUp style={{ fontSize: 20 }} />}
                 color="#f59e0b"
                 theme={currentTheme}
-                sub={journeyData.ratedCount > 0 ? `${journeyData.ratedCount} bewertet` : undefined}
+                sub={
+                  journeyData.ratedCount > 0
+                    ? t('{n} bewertet', { n: journeyData.ratedCount })
+                    : undefined
+                }
               />
               <InsightCard
-                label="Gesamt Kapitel"
+                label={t('Gesamt Kapitel')}
                 value={journeyData.totalChapters.toLocaleString()}
                 icon={<Category style={{ fontSize: 20 }} />}
                 color={currentTheme.accent}

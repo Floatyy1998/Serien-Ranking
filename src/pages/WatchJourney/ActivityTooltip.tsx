@@ -1,6 +1,7 @@
 import { useTheme } from '../../contexts/ThemeContext';
 import type { TooltipEntry } from './types';
 import { formatGermanNumber } from './tooltipUtils';
+import { t } from '../../services/i18n';
 
 interface ActivityTooltipProps {
   active?: boolean;
@@ -43,8 +44,10 @@ export const ActivityTooltip: React.FC<ActivityTooltipProps> = ({
         {payload
           .filter((entry: TooltipEntry) => entry.value > 0)
           .map((entry: TooltipEntry, index: number) => {
-            const suffix = unit === 'hours' ? ' Stunden' : ' Episoden';
-            const formatted = `${formatGermanNumber(entry.value)}${suffix}`;
+            const formatted =
+              unit === 'hours'
+                ? t('{n} Stunden', { n: formatGermanNumber(entry.value) })
+                : t('{n} Episoden', { n: formatGermanNumber(entry.value) });
             return (
               <div
                 key={index}
@@ -64,7 +67,7 @@ export const ActivityTooltip: React.FC<ActivityTooltipProps> = ({
                   }}
                 />
                 <span style={{ color: currentTheme.text.muted, fontSize: 13 }}>
-                  {entry.name}: {formatted}
+                  {t(entry.name)}: {formatted}
                 </span>
               </div>
             );

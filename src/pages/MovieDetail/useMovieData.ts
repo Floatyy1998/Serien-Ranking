@@ -12,6 +12,7 @@ import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 import { backendFetch } from '../../services/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 interface TMDBGenre {
   id: number;
@@ -235,7 +236,7 @@ export const useMovieData = () => {
         await logMovieAdded(user.uid, movie.title || 'Unbekannter Film', movie.id, posterPath);
 
         trackMovieAdded(String(movie.id), movie.title || '', 'detail_page');
-        setSnackbar({ open: true, message: 'Film erfolgreich hinzugefügt!' });
+        setSnackbar({ open: true, message: t('Film erfolgreich hinzugefügt!') });
         setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
         navigate(`/movie/${movie.id}`);
@@ -244,7 +245,7 @@ export const useMovieData = () => {
         if (data.error === 'Film bereits vorhanden') {
           setDialog({
             open: true,
-            message: 'Film ist bereits in deiner Liste!',
+            message: t('Film ist bereits in deiner Liste!'),
             type: 'info',
           });
         } else {
@@ -254,7 +255,7 @@ export const useMovieData = () => {
     } catch {
       setDialog({
         open: true,
-        message: 'Fehler beim Hinzufügen des Films.',
+        message: t('Fehler beim Hinzufügen des Films.'),
         type: 'error',
       });
     } finally {
@@ -284,7 +285,7 @@ export const useMovieData = () => {
       // best-effort: bei Fehler kurz informieren, State kommt vom Listener
       setDialog({
         open: true,
-        message: 'Der Gesehen-Status konnte nicht gespeichert werden.',
+        message: t('Der Gesehen-Status konnte nicht gespeichert werden.'),
         type: 'error',
       });
     }
@@ -299,14 +300,14 @@ export const useMovieData = () => {
       const movieRef = dbRef(paths.movieItem(user.uid, movie.id));
       await movieRef.remove();
       trackMovieDeleted(String(movie.id), movie.title || '');
-      setSnackbar({ open: true, message: 'Film erfolgreich gelöscht!' });
+      setSnackbar({ open: true, message: t('Film erfolgreich gelöscht!') });
       setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
 
       setShowDeleteConfirm(false);
     } catch {
       setDialog({
         open: true,
-        message: 'Fehler beim Löschen des Films.',
+        message: t('Fehler beim Löschen des Films.'),
         type: 'error',
       });
     } finally {

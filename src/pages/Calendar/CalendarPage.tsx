@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PageHeader, PageLayout, EmptyState, SkeletonListRow } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import { useCalendarData } from './useCalendarData';
 import { CalendarToolbar } from './CalendarToolbar';
 import { CalendarGrid } from './CalendarGrid';
@@ -38,7 +39,7 @@ export const CalendarPage = () => {
     <PageLayout>
       <div className="calendar-page">
         <PageHeader
-          title="TV-Kalender"
+          title={t('TV-Kalender')}
           actions={
             totalEpisodes > 0 ? (
               <span style={{ fontSize: '13px', fontWeight: 600, color: currentTheme.text.muted }}>
@@ -71,14 +72,14 @@ export const CalendarPage = () => {
               hapticTap();
               navigate('/anime-season');
             }}
-            aria-label="Anime-Season-Kalender öffnen"
+            aria-label={t('Anime-Season-Kalender öffnen')}
             className="cal-entry-btn cal-entry-btn--first"
           >
             <LiveTv className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
             <span className="cal-entry-btn__body">
-              <span className="cal-entry-btn__title">Anime-Season</span>
+              <span className="cal-entry-btn__title">{t('Anime-Season')}</span>
               <span className="cal-entry-btn__sub">
-                Was läuft diese Season? Airing-Tage & Countdown
+                {t('Was läuft diese Season? Airing-Tage & Countdown')}
               </span>
             </span>
             <ChevronRight className="cal-entry-btn__chevron" />
@@ -90,13 +91,13 @@ export const CalendarPage = () => {
               hapticTap();
               navigate('/serien-kalender');
             }}
-            aria-label="Serien-Kalender öffnen"
+            aria-label={t('Serien-Kalender öffnen')}
             className="cal-entry-btn"
           >
             <CalendarMonth className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
             <span className="cal-entry-btn__body">
-              <span className="cal-entry-btn__title">Serien-Kalender</span>
-              <span className="cal-entry-btn__sub">Neue Serien & Staffeln entdecken</span>
+              <span className="cal-entry-btn__title">{t('Serien-Kalender')}</span>
+              <span className="cal-entry-btn__sub">{t('Neue Serien & Staffeln entdecken')}</span>
             </span>
             <ChevronRight className="cal-entry-btn__chevron" />
           </motion.button>
@@ -106,7 +107,7 @@ export const CalendarPage = () => {
           <div
             className="cal-loading"
             role="status"
-            aria-label="Kalender wird geladen"
+            aria-label={t('Kalender wird geladen')}
             aria-busy="true"
           >
             {Array.from({ length: 5 }, (_, i) => (
@@ -116,12 +117,14 @@ export const CalendarPage = () => {
         ) : totalEpisodes === 0 ? (
           <EmptyState
             icon={<CalendarMonth style={{ fontSize: 48 }} />}
-            title="Keine Episoden in dieser Woche"
-            description="In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an."
+            title={t('Keine Episoden in dieser Woche')}
+            description={t(
+              'In dieser Woche stehen keine Folgen aus deiner Liste an. Wechsle die Woche oder passe den Filter an.'
+            )}
             iconColor={currentTheme.text.secondary}
             action={
               weekOffset !== 0
-                ? { label: 'Zur aktuellen Woche', onClick: goToCurrentWeek }
+                ? { label: t('Zur aktuellen Woche'), onClick: goToCurrentWeek }
                 : undefined
             }
           />

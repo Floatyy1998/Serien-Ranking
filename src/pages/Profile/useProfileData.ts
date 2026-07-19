@@ -38,6 +38,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useBadges } from '../../features/badges/BadgeContext';
 import { useEnhancedFirebaseCache } from '../../hooks/useEnhancedFirebaseCache';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { t } from '../../services/i18n';
 import type { Movie as MovieType } from '../../types/Movie';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 
@@ -136,13 +137,13 @@ function computeStats(
   const hours = Math.floor((remainingAfterMonths % 1440) / 60);
   const minutes = remainingAfterMonths % 60;
 
-  let timeString = '';
-  if (years > 0) timeString += `${years}J `;
-  if (months > 0) timeString += `${months}M `;
-  if (days > 0) timeString += `${days}T `;
-  if (hours > 0) timeString += `${hours}S `;
-  if (minutes > 0) timeString += `${Math.floor(minutes)}Min`;
-  if (!timeString) timeString = '0Min';
+  const timeParts: string[] = [];
+  if (years > 0) timeParts.push(t('{n}J', { n: years }));
+  if (months > 0) timeParts.push(t('{n}M', { n: months }));
+  if (days > 0) timeParts.push(t('{n}T', { n: days }));
+  if (hours > 0) timeParts.push(t('{n}S', { n: hours }));
+  if (minutes > 0) timeParts.push(t('{n}Min', { n: Math.floor(minutes) }));
+  const timeString = timeParts.length > 0 ? timeParts.join(' ') : t('0Min');
 
   return {
     totalSeries,
@@ -202,14 +203,14 @@ export const useProfileData = (): UseProfileDataResult => {
   const menuItems: ProfileMenuItem[] = useMemo(
     () => [
       {
-        label: 'Meine Bewertungen',
+        label: t('Meine Bewertungen'),
         icon: Star,
         color: currentTheme.status.warning,
         path: '/ratings',
         featured: true,
       },
       {
-        label: 'Aktivität & Freunde',
+        label: t('Aktivität & Freunde'),
         icon: Group,
         color: currentTheme.primary,
         path: '/activity',
@@ -217,7 +218,7 @@ export const useProfileData = (): UseProfileDataResult => {
         featured: true,
       },
       {
-        label: 'Hinzufügen & Suchen',
+        label: t('Hinzufügen & Suchen'),
         icon: Search,
         color: currentTheme.status.error,
         path: '/discover',
@@ -231,7 +232,7 @@ export const useProfileData = (): UseProfileDataResult => {
     () => [
       { label: 'Manga Home', icon: AutoStories, color: currentTheme.secondary, path: '/manga' },
       {
-        label: 'Entdecken',
+        label: t('Entdecken'),
         icon: Explore,
         color: currentTheme.status.error,
         path: '/manga/discover',
@@ -239,25 +240,25 @@ export const useProfileData = (): UseProfileDataResult => {
       ...(mangaList.length > 0
         ? [
             {
-              label: 'Leseliste',
+              label: t('Leseliste'),
               icon: MenuBook,
               color: currentTheme.primary,
               path: '/manga/reading-list',
             },
             {
-              label: 'Manga-Bewertungen',
+              label: t('Manga-Bewertungen'),
               icon: BarChart,
               color: currentTheme.status.warning,
               path: '/manga/ratings',
             },
             {
-              label: 'Manga-Statistiken',
+              label: t('Manga-Statistiken'),
               icon: TrendingUp,
               color: currentTheme.accent,
               path: '/manga/stats',
             },
             {
-              label: 'Zuletzt gelesen',
+              label: t('Zuletzt gelesen'),
               icon: History,
               color: currentTheme.status.success,
               path: '/manga/recently-read',
@@ -276,30 +277,30 @@ export const useProfileData = (): UseProfileDataResult => {
 
   const secondaryMenuItems: ProfileMenuItem[] = useMemo(
     () => [
-      { label: 'Rangliste', icon: Leaderboard, color: '#f59e0b', path: '/leaderboard' },
-      { label: 'Statistiken', icon: TrendingUp, color: currentTheme.primary, path: '/stats' },
+      { label: t('Rangliste'), icon: Leaderboard, color: '#f59e0b', path: '/leaderboard' },
+      { label: t('Statistiken'), icon: TrendingUp, color: currentTheme.primary, path: '/stats' },
       {
-        label: 'Verlauf',
+        label: t('Verlauf'),
         icon: History,
         color: currentTheme.status.success,
         path: '/recently-watched',
       },
       {
-        label: 'Erfolge',
+        label: t('Erfolge'),
         icon: EmojiEvents,
         color: currentTheme.status.warning,
         path: '/badges',
         badge: unreadBadgesCount || 0,
       },
-      { label: 'Haustiere', icon: Pets, color: '#ec4899', path: '/pets' },
+      { label: t('Haustiere'), icon: Pets, color: '#ec4899', path: '/pets' },
       {
-        label: 'KI-Empfehlungen',
+        label: t('KI-Empfehlungen'),
         icon: AutoAwesome,
         color: currentTheme.secondary,
         path: '/taste-profile',
       },
       {
-        label: 'Serien-Kalender',
+        label: t('Serien-Kalender'),
         icon: LiveTv,
         color: currentTheme.primary,
         path: '/serien-kalender',
@@ -326,19 +327,19 @@ export const useProfileData = (): UseProfileDataResult => {
         path: '/home-layout',
       },
       {
-        label: 'Streaming-Abos',
+        label: t('Streaming-Abos'),
         icon: Subscriptions,
         color: '#00A8E1',
         path: '/subscriptions',
       },
       {
-        label: 'Einstellungen',
+        label: t('Einstellungen'),
         icon: Settings,
         color: currentTheme.text.secondary,
         path: '/settings',
       },
       {
-        label: 'Ideen & Probleme',
+        label: t('Ideen & Probleme'),
         icon: Forum,
         color: '#3b82f6',
         path: '/bug-report',

@@ -1,3 +1,5 @@
+import { t } from '../../services/i18n';
+
 export interface Greeting {
   text: string;
   lang: string;
@@ -12,7 +14,8 @@ const morningGreetings: Greeting[] = [
   { text: 'Moin moin', lang: 'Norddeutsch' },
   { text: 'Servus', lang: 'Süddeutsch' },
   { text: 'Grüß Gott', lang: 'Süddeutsch' },
-  { text: 'Morgen', lang: 'Deutsch' },
+  // Key „Morgen" ist im en-Wörterbuch als „Tomorrow" (Countdown) belegt
+  { text: 'Schönen guten Morgen', lang: 'Deutsch' },
   { text: 'Guten Morgen, Sonnenschein', lang: 'Deutsch' },
   { text: 'Na, schon wach', lang: 'Deutsch' },
   { text: 'Gut geschlafen', lang: 'Deutsch' },
@@ -572,5 +575,6 @@ export function getGreeting(hour: number): Greeting {
   const shuffled = seededShuffle(greetings, daySeed * 7 + slotStart);
   const offsetHour = hour - slotStart;
   const index = ((offsetHour % shuffled.length) + shuffled.length) % shuffled.length;
-  return shuffled[index];
+  const g = shuffled[index];
+  return { ...g, text: t(g.text), lang: t(g.lang) };
 }

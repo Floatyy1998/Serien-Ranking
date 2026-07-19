@@ -8,6 +8,7 @@ import {
 } from '@mui/icons-material';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { SortOption, SortDirection } from './useCatchUpData';
 
 interface SortToolbarProps {
@@ -26,26 +27,26 @@ const SORT_OPTIONS: {
   {
     value: 'episodes',
     icon: <MovieFilter style={{ fontSize: 18 }} />,
-    label: 'Nach Episoden sortieren',
-    short: 'Episoden',
+    label: t('Nach Episoden sortieren'),
+    short: t('Episoden'),
   },
   {
     value: 'time',
     icon: <Timer style={{ fontSize: 18 }} />,
-    label: 'Nach verbleibender Zeit sortieren',
-    short: 'Zeit',
+    label: t('Nach verbleibender Zeit sortieren'),
+    short: t('Zeit'),
   },
   {
     value: 'progress',
     icon: <TrendingUp style={{ fontSize: 18 }} />,
-    label: 'Nach Fortschritt sortieren',
-    short: 'Fortschritt',
+    label: t('Nach Fortschritt sortieren'),
+    short: t('Fortschritt'),
   },
   {
     value: 'recent',
     icon: <Bolt style={{ fontSize: 18 }} />,
-    label: 'Nach zuletzt geschaut sortieren',
-    short: 'Zuletzt',
+    label: t('Nach zuletzt geschaut sortieren'),
+    short: t('Zuletzt'),
   },
 ];
 

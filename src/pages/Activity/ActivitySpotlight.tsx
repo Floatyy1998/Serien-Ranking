@@ -10,6 +10,7 @@ import StarRounded from '@mui/icons-material/StarRounded';
 import TvRounded from '@mui/icons-material/TvRounded';
 import { motion } from 'framer-motion';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import { getActivityMeta, type ActivityTheme } from './activityMeta';
 import type { FriendActivity } from '../../types/Friend';
 
@@ -48,8 +49,8 @@ export const ActivitySpotlight = ({
   const hasRating = meta.isRating && typeof rating === 'number' && rating > 0;
 
   const sentence = meta.suffix
-    ? `${meta.verb} ${itemTitle} ${meta.suffix}`
-    : `${itemTitle} ${meta.verb}`;
+    ? t(`${meta.verb} {title} ${meta.suffix}`, { title: itemTitle })
+    : t(`{title} ${meta.verb}`, { title: itemTitle });
 
   return (
     <motion.div
@@ -87,7 +88,7 @@ export const ActivitySpotlight = ({
           {/* Eyebrow */}
           <div className="activity-spotlight__eyebrow" style={{ color: accent }}>
             <span className="activity-spotlight__live-dot" style={{ background: accent }} />
-            ZULETZT · {timeLabel}
+            {t('ZULETZT')} · {timeLabel}
           </div>
 
           {/* Who */}
@@ -130,7 +131,7 @@ export const ActivitySpotlight = ({
               ) : (
                 <TvRounded style={{ fontSize: 15 }} />
               )}
-              <span>{meta.isMovie ? 'Film' : 'Serie'}</span>
+              <span>{meta.isMovie ? t('Film') : t('Serie')}</span>
             </span>
             {hasRating && (
               <span

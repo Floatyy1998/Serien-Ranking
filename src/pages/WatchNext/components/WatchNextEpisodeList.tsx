@@ -11,6 +11,7 @@ import type { useEpisodeDragDrop } from '../../../hooks/useEpisodeDragDrop';
 import type { NextEpisode } from '../../../hooks/useWatchNextEpisodes';
 import type { FillerEpisode } from '../../../services/animeFillerService';
 import { fillerLookupKey } from '../../../services/animeFillerService';
+import { t } from '../../../services/i18n';
 import { chipColor, chipLabel } from '../../../utils/episodeChips';
 import type { useWatchNextSwipe } from '../useWatchNextSwipe';
 
@@ -83,7 +84,7 @@ export const WatchNextEpisodeList = ({
                   <div className="swipe-hint-overlay">
                     <span className="swipe-hint-label">
                       <ChevronLeft style={{ fontSize: '16px' }} />
-                      Swipen
+                      {t('Swipen')}
                     </span>
                   </div>
                 )}
@@ -113,7 +114,7 @@ export const WatchNextEpisodeList = ({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      Weiterschauen
+                      {t('Weiterschauen')}
                     </span>
                     <div
                       style={{
@@ -249,10 +250,10 @@ export const WatchNextEpisodeList = ({
                         }}
                       >
                         {episode.remainingEpisodes > 0
-                          ? `${episode.currentSeasonOf} · ${episode.remainingEpisodes} übrig${episode.estimatedMinutesLeft >= 60 ? ` · ~${Math.round(episode.estimatedMinutesLeft / 60)}h` : episode.estimatedMinutesLeft > 0 ? ` · ~${episode.estimatedMinutesLeft}min` : ''}`
+                          ? `${episode.currentSeasonOf} · ${t('{n} übrig', { n: episode.remainingEpisodes })}${episode.estimatedMinutesLeft >= 60 ? ` · ~${Math.round(episode.estimatedMinutesLeft / 60)}h` : episode.estimatedMinutesLeft > 0 ? ` · ~${episode.estimatedMinutesLeft}min` : ''}`
                           : episode.isRewatch
                             ? episode.currentSeasonOf
-                            : 'Wartet auf neue Folgen'}
+                            : t('Wartet auf neue Folgen')}
                       </p>
                       <div
                         style={{

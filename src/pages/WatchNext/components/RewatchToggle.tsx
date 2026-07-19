@@ -4,6 +4,7 @@ import Repeat from '@mui/icons-material/Repeat';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 
 interface RewatchToggleProps {
   activeRewatchCount: number;
@@ -25,9 +26,15 @@ export const RewatchToggle = ({
       whileTap={tapScaleSmall}
       onClick={onToggle}
       aria-expanded={showRewatches}
-      aria-label={`${activeRewatchCount} aktive ${
-        activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'
-      } ${showRewatches ? 'ausblenden' : 'anzeigen'}`}
+      aria-label={
+        activeRewatchCount === 1
+          ? showRewatches
+            ? t('{n} aktive Rewatch ausblenden', { n: activeRewatchCount })
+            : t('{n} aktive Rewatch anzeigen', { n: activeRewatchCount })
+          : showRewatches
+            ? t('{n} aktive Rewatches ausblenden', { n: activeRewatchCount })
+            : t('{n} aktive Rewatches anzeigen', { n: activeRewatchCount })
+      }
       className="watch-next-rewatch-toggle"
       style={{
         background: showRewatches
@@ -39,7 +46,9 @@ export const RewatchToggle = ({
       <span className="watch-next-rewatch-toggle__content">
         <span className="watch-next-rewatch-toggle__label">
           <Repeat style={{ fontSize: '15px', color: currentTheme.accent || '#f59e0b' }} />
-          {activeRewatchCount} aktive {activeRewatchCount === 1 ? 'Rewatch' : 'Rewatches'}
+          {activeRewatchCount === 1
+            ? t('{n} aktive Rewatch', { n: activeRewatchCount })
+            : t('{n} aktive Rewatches', { n: activeRewatchCount })}
         </span>
         {showRewatches ? (
           <ExpandLess style={{ fontSize: '18px', color: currentTheme.text.muted }} />

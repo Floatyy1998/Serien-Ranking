@@ -10,6 +10,7 @@ import { Star } from '@mui/icons-material';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { PLACEHOLDER_SVG } from '../../lib/posterPlaceholder';
+import { t } from '../../services/i18n';
 import { PosterFrame } from './PosterFrame';
 import './ProfileItemCard.css';
 
@@ -263,7 +264,7 @@ export const ProfileItemCard = React.memo<ProfileItemCardProps>(
                     className="pic-card-progress-text"
                     style={{ color: progress === 100 ? successColor : currentTheme.primary }}
                   >
-                    {progress === 100 ? 'Fertig' : `${Math.round(progress)}%`}
+                    {progress === 100 ? t('Fertig') : `${Math.round(progress)}%`}
                   </span>
                 </div>
               )}

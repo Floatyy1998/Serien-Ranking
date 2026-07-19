@@ -4,6 +4,7 @@ import TrendingUp from '@mui/icons-material/TrendingUp';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, NavCard } from '../../components/ui';
+import { t } from '../../services/i18n';
 
 export const WatchJourneyCard: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export const WatchJourneyCard: React.FC = () => {
     <NavCard
       onClick={() => navigate('/watch-journey')}
       accentColor={primaryColor}
-      aria-label="Watch Journey: Trends und Entwicklung anzeigen"
+      aria-label={t('Watch Journey: Trends und Entwicklung anzeigen')}
     >
       <IconContainer color={primaryColor} secondaryColor={currentTheme.accent}>
         <TrendingUp style={{ fontSize: 20, color: 'white' }} />
@@ -41,7 +42,7 @@ export const WatchJourneyCard: React.FC = () => {
             whiteSpace: 'nowrap',
           }}
         >
-          Trends & Entwicklung
+          {t('Trends & Entwicklung')}
         </p>
       </div>
 

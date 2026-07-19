@@ -24,6 +24,7 @@ import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/serie
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 
 interface DialogState {
   open: boolean;
@@ -88,18 +89,22 @@ export function useSeriesActions(
         );
         trackSeriesAdded(String(series.id), series.name || series.title || '', 'detail_page');
         await refetchAfterAdd(series.id);
-        showSnackbar('Serie erfolgreich hinzugefügt!');
+        showSnackbar(t('Serie erfolgreich hinzugefügt!'));
         navigate(`/series/${series.id}`, { replace: true });
       } else {
         const data = await response.json();
         if (data.error === 'Serie bereits vorhanden') {
-          setDialog({ open: true, message: 'Serie ist bereits in deiner Liste!', type: 'warning' });
+          setDialog({
+            open: true,
+            message: t('Serie ist bereits in deiner Liste!'),
+            type: 'warning',
+          });
         } else {
           throw new Error('Fehler beim Hinzufügen');
         }
       }
     } catch {
-      setDialog({ open: true, message: 'Fehler beim Hinzufügen der Serie.', type: 'error' });
+      setDialog({ open: true, message: t('Fehler beim Hinzufügen der Serie.'), type: 'error' });
     } finally {
       setIsAdding(false);
     }
@@ -109,7 +114,7 @@ export function useSeriesActions(
     if (!series || !userId) return;
     setDialog({
       open: true,
-      message: 'Möchtest du diese Serie wirklich löschen?',
+      message: t('Möchtest du diese Serie wirklich löschen?'),
       type: 'warning',
       onConfirm: async () => {
         setIsDeleting(true);
@@ -118,9 +123,9 @@ export function useSeriesActions(
           await dbRef(paths.seriesWatchItem(userId, series.id)).remove();
           bumpSeriesVersion(userId);
           trackSeriesDeleted(String(series.id), series.title || '');
-          showSnackbar('Serie erfolgreich gelöscht!');
+          showSnackbar(t('Serie erfolgreich gelöscht!'));
         } catch {
-          setDialog({ open: true, message: 'Fehler beim Löschen der Serie.', type: 'error' });
+          setDialog({ open: true, message: t('Fehler beim Löschen der Serie.'), type: 'error' });
         } finally {
           setIsDeleting(false);
         }
@@ -138,7 +143,11 @@ export function useSeriesActions(
         await logWatchlistAdded(userId, series.title, series.id);
       }
     } catch {
-      setDialog({ open: true, message: 'Fehler beim Aktualisieren der Watchlist.', type: 'error' });
+      setDialog({
+        open: true,
+        message: t('Fehler beim Aktualisieren der Watchlist.'),
+        type: 'error',
+      });
     }
   }, [series, userId]);
 
@@ -147,9 +156,9 @@ export function useSeriesActions(
     const newHiddenStatus = !series.hidden;
     try {
       await toggleHideSeries(series.id, newHiddenStatus);
-      showSnackbar(newHiddenStatus ? 'Nicht weiterschauen' : 'Serie wieder aktiv');
+      showSnackbar(newHiddenStatus ? t('Nicht weiterschauen') : t('Serie wieder aktiv'));
     } catch {
-      setDialog({ open: true, message: 'Fehler beim Ändern des Status.', type: 'error' });
+      setDialog({ open: true, message: t('Fehler beim Ändern des Status.'), type: 'error' });
     }
   }, [series, userId, toggleHideSeries, showSnackbar]);
 
@@ -240,13 +249,13 @@ export function useSeriesActions(
           if (allDone) {
             await dbRef(`${paths.seriesItem(userId, series.id)}/rewatch`).remove();
             bumpSeriesVersion(userId);
-            showSnackbar(`Rewatch #${series.rewatch?.round} abgeschlossen!`);
+            showSnackbar(t('Rewatch #{n} abgeschlossen!', { n: series.rewatch?.round ?? '' }));
             rewatchRemoved = true;
           }
         }
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
-        showUndoToast(`S${seasonNumber}E${episodeIndex + 1} Rewatch markiert`, {
+        showUndoToast(t('S{s}E{e} Rewatch markiert', { s: seasonNumber, e: episodeIndex + 1 }), {
           onUndo: async () => {
             try {
               const undoUpdates: Record<string, unknown> = {
@@ -270,7 +279,7 @@ export function useSeriesActions(
               }
               await dbUpdate(undoUpdates);
             } catch {
-              showToast('Undo fehlgeschlagen', 2000, 'error');
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
           },
           onCommit: async () => {
@@ -290,7 +299,7 @@ export function useSeriesActions(
           },
         });
       } catch {
-        setDialog({ open: true, message: 'Fehler beim Rewatch der Episode.', type: 'error' });
+        setDialog({ open: true, message: t('Fehler beim Rewatch der Episode.'), type: 'error' });
       }
     },
     [series, userId, showSnackbar]
@@ -348,7 +357,7 @@ export function useSeriesActions(
         setShowRewatchDialog({ show: false, type: 'episode', item: null });
 
         showUndoToast(
-          `S${seasonNumber}E${episodeIndex + 1} als nicht gesehen markiert`,
+          t('S{s}E{e} als nicht gesehen markiert', { s: seasonNumber, e: episodeIndex + 1 }),
           async () => {
             try {
               const undoUpdates: Record<string, unknown> = {
@@ -366,14 +375,14 @@ export function useSeriesActions(
               }
               await dbUpdate(undoUpdates);
             } catch {
-              showToast('Undo fehlgeschlagen', 2000, 'error');
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
           }
         );
       } catch {
         setDialog({
           open: true,
-          message: 'Fehler beim Markieren als nicht gesehen.',
+          message: t('Fehler beim Markieren als nicht gesehen.'),
           type: 'error',
         });
       }
@@ -389,7 +398,7 @@ export function useSeriesActions(
       if (!season || !episode) return;
       const epId = episode.id;
       if (!epId) {
-        showToast('Episode-ID fehlt', 2000, 'error');
+        showToast(t('Episode-ID fehlt'), 2000, 'error');
         return;
       }
 
@@ -435,7 +444,9 @@ export function useSeriesActions(
         const newWatched = !prevWatched;
         if (newWatched) hapticSuccess();
         const label = `S${seasonNumber}E${epNumber}`;
-        const actionLabel = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
+        const actionLabel = newWatched
+          ? t('als gesehen markiert')
+          : t('als nicht gesehen markiert');
 
         showUndoToast(`${series.title} ${label} ${actionLabel}`, {
           onUndo: async () => {
@@ -457,7 +468,7 @@ export function useSeriesActions(
               }
               await dbUpdate(undoUpdates);
             } catch {
-              showToast('Undo fehlgeschlagen', 2000, 'error');
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
           },
           onCommit: async () => {
@@ -494,7 +505,7 @@ export function useSeriesActions(
           },
         });
       } catch {
-        setDialog({ open: true, message: 'Fehler beim Speichern.', type: 'error' });
+        setDialog({ open: true, message: t('Fehler beim Speichern.'), type: 'error' });
       }
     },
     [series, userId]
@@ -523,12 +534,14 @@ export function useSeriesActions(
         }
 
         showSnackbar(
-          continueExisting ? `Rewatch #${newRound} fortgesetzt!` : `Rewatch #${newRound} gestartet!`
+          continueExisting
+            ? t('Rewatch #{n} fortgesetzt!', { n: newRound })
+            : t('Rewatch #{n} gestartet!', { n: newRound })
         );
       } catch {
         setDialog({
           open: true,
-          message: 'Fehler beim Starten des Rewatches.',
+          message: t('Fehler beim Starten des Rewatches.'),
           type: 'error',
         });
       }
@@ -541,9 +554,9 @@ export function useSeriesActions(
     try {
       await dbRef(`${paths.seriesItem(userId, series.id)}/rewatch`).remove();
       bumpSeriesVersion(userId);
-      showSnackbar('Rewatch beendet.');
+      showSnackbar(t('Rewatch beendet.'));
     } catch {
-      setDialog({ open: true, message: 'Fehler beim Beenden des Rewatches.', type: 'error' });
+      setDialog({ open: true, message: t('Fehler beim Beenden des Rewatches.'), type: 'error' });
     }
   }, [series, userId, showSnackbar]);
 

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { ACCENT_COLORS } from './constants';
+import { t } from '../../services/i18n';
 
 interface OverviewTabProps {
   result: TasteMatchResult;
@@ -13,14 +14,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
   const stats = [
     {
       value: result.seriesOverlap.sharedSeries.length,
-      label: 'Gemeinsame Serien',
+      label: t('Gemeinsame Serien'),
       color: ACCENT_COLORS.series,
       icon: <Tv style={{ fontSize: 20 }} />,
       delay: 0.1,
     },
     {
       value: result.movieOverlap.sharedMovies.length,
-      label: 'Gemeinsame Filme',
+      label: t('Gemeinsame Filme'),
       color: ACCENT_COLORS.movies,
       icon: <Movie style={{ fontSize: 20 }} />,
       delay: 0.15,
@@ -29,14 +30,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
       value: result.genreMatch.sharedGenres.filter(
         (g) => g.userPercentage > 0 && g.friendPercentage > 0
       ).length,
-      label: 'Gemeinsame Genres',
+      label: t('Gemeinsame Genres'),
       color: ACCENT_COLORS.genres,
       icon: <Category style={{ fontSize: 20 }} />,
       delay: 0.2,
     },
     {
       value: result.ratingMatch.sameRatingCount,
-      label: 'Gleiche Bewertungen',
+      label: t('Gleiche Bewertungen'),
       color: ACCENT_COLORS.ratings,
       icon: <Star style={{ fontSize: 20 }} />,
       delay: 0.25,
@@ -69,7 +70,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = React.memo(({ result, car
           />
           <div className="tm-providers-card__title" style={{ color: ACCENT_COLORS.providers }}>
             <Tv style={{ fontSize: 18 }} />
-            Gemeinsame Streaming-Dienste
+            {t('Gemeinsame Streaming-Dienste')}
           </div>
           <div className="tm-providers-card__list">
             {result.providerMatch.sharedProviders.map((provider, idx) => (

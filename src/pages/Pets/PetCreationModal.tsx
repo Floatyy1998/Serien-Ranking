@@ -4,6 +4,7 @@ import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PET_TYPE_NAMES, PET_TYPES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
+import { t } from '../../services/i18n';
 import './PetsPage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 
@@ -58,7 +59,7 @@ export const PetCreationModal = memo(function PetCreationModal({
               marginBottom: '24px',
             }}
           >
-            Erschaffe dein Pet!
+            {t('Erschaffe dein Pet!')}
           </GradientText>
 
           <input
@@ -76,7 +77,7 @@ export const PetCreationModal = memo(function PetCreationModal({
 
           <div style={{ marginBottom: '24px' }}>
             <h2 className="pet-create-type-label" style={{ color: currentTheme.text.primary }}>
-              Wähle deinen Typ:
+              {t('Wähle deinen Typ:')}
             </h2>
             <div className="pet-create-type-grid">
               {(Object.keys(PET_TYPES) as Pet['type'][]).map((type) => (
@@ -100,7 +101,7 @@ export const PetCreationModal = memo(function PetCreationModal({
                       selectedType === type ? `0 4px 15px ${currentTheme.primary}40` : 'none',
                   }}
                 >
-                  {PET_TYPE_NAMES[type]}
+                  {t(PET_TYPE_NAMES[type])}
                 </motion.button>
               ))}
             </div>
@@ -120,7 +121,7 @@ export const PetCreationModal = memo(function PetCreationModal({
               boxShadow: petName.trim() ? `0 8px 24px ${currentTheme.accent}40` : 'none',
             }}
           >
-            Pet erschaffen!
+            {t('Pet erschaffen!')}
           </motion.button>
         </motion.div>
       </div>

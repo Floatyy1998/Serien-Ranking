@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ACCENT_COLORS } from './accentColors';
+import { t } from '../../services/i18n';
 
 interface YearlyDataItem {
   year: number;
@@ -37,7 +38,7 @@ export const TrendsYearCards: React.FC<TrendsYearCardsProps> = memo(
             margin: '0 0 16px',
           }}
         >
-          Jahr für Jahr
+          {t('Jahr für Jahr')}
         </h3>
 
         {yearlyData
@@ -92,7 +93,7 @@ export const TrendsYearCards: React.FC<TrendsYearCardsProps> = memo(
                       {yd.year}
                     </div>
                     <div style={{ color: textSecondary, fontSize: 13 }}>
-                      {yd.totalHours}h Watchtime
+                      {t('{n}h Watchtime', { n: yd.totalHours })}
                     </div>
                   </div>
                 </div>
@@ -109,7 +110,7 @@ export const TrendsYearCards: React.FC<TrendsYearCardsProps> = memo(
                   <div style={{ color: ACCENT_COLORS.episodes, fontSize: 20, fontWeight: 700 }}>
                     {yd.episodes}
                   </div>
-                  <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
+                  <div style={{ color: textSecondary, fontSize: 12 }}>{t('Episoden')}</div>
                 </div>
                 <div
                   style={{
@@ -121,7 +122,7 @@ export const TrendsYearCards: React.FC<TrendsYearCardsProps> = memo(
                   <div style={{ color: ACCENT_COLORS.movies, fontSize: 20, fontWeight: 700 }}>
                     {yd.movies}
                   </div>
-                  <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
+                  <div style={{ color: textSecondary, fontSize: 12 }}>{t('Filme')}</div>
                 </div>
               </div>
 

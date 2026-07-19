@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { FirstLastWatch } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface FirstLastSlideProps {
   firstWatch: FirstLastWatch | null;
@@ -51,7 +52,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           color: 'white',
         }}
       >
-        <p>Keine Daten verfügbar</p>
+        <p>{t('Keine Daten verfügbar')}</p>
       </div>
     );
   }
@@ -102,7 +103,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
           zIndex: 1,
         }}
       >
-        Dein {year} - Start bis Ende
+        {t('Dein {year} - Start bis Ende', { year })}
       </motion.p>
 
       {/* First Watch */}
@@ -140,7 +141,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
             </div>
             <div>
               <p style={{ color: '#00d9ff', fontSize: '0.8rem', fontWeight: 'bold', margin: 0 }}>
-                ERSTES
+                {t('ERSTES')}
               </p>
               <p style={{ color: 'white', opacity: 0.7, fontSize: '0.85rem', margin: 0 }}>
                 {firstWatch.date}
@@ -229,7 +230,7 @@ export const FirstLastSlide: React.FC<FirstLastSlideProps> = ({ firstWatch, last
             </div>
             <div>
               <p style={{ color: '#b388ff', fontSize: '0.8rem', fontWeight: 'bold', margin: 0 }}>
-                LETZTES
+                {t('LETZTES')}
               </p>
               <p style={{ color: 'white', opacity: 0.7, fontSize: '0.85rem', margin: 0 }}>
                 {lastWatch.date}

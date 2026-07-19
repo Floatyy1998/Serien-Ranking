@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { FriendSeriesProgress } from './useFriendsSeriesProgress';
 
 interface Props {
@@ -62,7 +63,7 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
         style={{ color: currentTheme.text.primary }}
         aria-expanded={open}
       >
-        <span className="friends-progress-title">Freunde</span>
+        <span className="friends-progress-title">{t('Freunde')}</span>
         <span className="friends-progress-count-inline" style={{ color: currentTheme.text.muted }}>
           {entries.length}
         </span>
@@ -103,11 +104,15 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
                 const diffLabel =
                   epDiff === 0
                     ? entry.completed
-                      ? 'Beide durch'
-                      : 'Gleichauf'
+                      ? t('Beide durch')
+                      : t('Gleichauf')
                     : epDiff > 0
-                      ? `${epDiff} ${epDiff === 1 ? 'Folge' : 'Folgen'} voraus`
-                      : `${Math.abs(epDiff)} ${Math.abs(epDiff) === 1 ? 'Folge' : 'Folgen'} hinter`;
+                      ? epDiff === 1
+                        ? t('1 Folge voraus')
+                        : t('{n} Folgen voraus', { n: epDiff })
+                      : Math.abs(epDiff) === 1
+                        ? t('1 Folge hinter')
+                        : t('{n} Folgen hinter', { n: Math.abs(epDiff) });
 
                 return (
                   <motion.button

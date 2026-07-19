@@ -9,6 +9,7 @@ import { ImagePreview } from './ImagePreview';
 import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
+import { t } from '../../services/i18n';
 
 const ReplyItemInner: React.FC<{
   reply: DiscussionReply;
@@ -103,7 +104,7 @@ const ReplyItemInner: React.FC<{
           </button>
           <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
             {formatRelativeTime(reply.createdAt)}
-            {reply.updatedAt && ' (bearb.)'}
+            {reply.updatedAt && ` ${t('(bearb.)')}`}
           </span>
           {reply.isSpoiler && (
             <span
@@ -120,7 +121,7 @@ const ReplyItemInner: React.FC<{
               }}
             >
               <Warning style={{ fontSize: '13px' }} />
-              SPOILER
+              {t('SPOILER')}
             </span>
           )}
         </div>
@@ -195,7 +196,7 @@ const ReplyItemInner: React.FC<{
                     fontSize: '13px',
                   }}
                 >
-                  Abbrechen
+                  {t('Abbrechen')}
                 </button>
                 <button
                   onClick={handleSaveEdit}
@@ -210,7 +211,7 @@ const ReplyItemInner: React.FC<{
                     fontSize: '13px',
                   }}
                 >
-                  {saving ? '...' : 'Speichern'}
+                  {saving ? '...' : t('Speichern')}
                 </button>
               </div>
             </div>
@@ -254,7 +255,7 @@ const ReplyItemInner: React.FC<{
         {/* Actions */}
         {!isEditing && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <Tooltip title={isLiked ? 'Gefällt mir nicht mehr' : 'Gefällt mir'} arrow>
+            <Tooltip title={isLiked ? t('Gefällt mir nicht mehr') : t('Gefällt mir')} arrow>
               <button
                 onClick={() => {
                   onToggleLike();
@@ -286,7 +287,7 @@ const ReplyItemInner: React.FC<{
             {/* Antworten – belegt das Eingabefeld mit @Name vor (leichter Bezug
                 statt echter Verschachtelung). */}
             {currentUserId && onReplyTo && (
-              <Tooltip title={`@${reply.username} antworten`} arrow>
+              <Tooltip title={t('@{name} antworten', { name: reply.username })} arrow>
                 <button
                   onClick={() => onReplyTo(reply.username)}
                   style={{
@@ -309,7 +310,7 @@ const ReplyItemInner: React.FC<{
 
             {/* Flag as Spoiler (non-owners only, if not already spoiler) */}
             {!isOwner && !reply.isSpoiler && currentUserId && !showSpoilerConfirm && (
-              <Tooltip title="Als Spoiler melden" arrow>
+              <Tooltip title={t('Als Spoiler melden')} arrow>
                 <button
                   onClick={() => setShowSpoilerConfirm(true)}
                   style={{
@@ -334,7 +335,7 @@ const ReplyItemInner: React.FC<{
             {showSpoilerConfirm && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '12px', color: currentTheme.status.warning }}>
-                  Als Spoiler?
+                  {t('Als Spoiler?')}
                 </span>
                 <button
                   onClick={handleFlagAsSpoiler}
@@ -349,7 +350,7 @@ const ReplyItemInner: React.FC<{
                     fontWeight: 600,
                   }}
                 >
-                  Ja
+                  {t('Ja')}
                 </button>
                 <button
                   onClick={() => setShowSpoilerConfirm(false)}
@@ -363,14 +364,14 @@ const ReplyItemInner: React.FC<{
                     fontSize: '12px',
                   }}
                 >
-                  Nein
+                  {t('Nein')}
                 </button>
               </div>
             )}
 
             {/* Edit Button (owner only) */}
             {isOwner && !showDeleteConfirm && (
-              <Tooltip title="Bearbeiten" arrow>
+              <Tooltip title={t('Bearbeiten')} arrow>
                 <button
                   onClick={() => setIsEditing(true)}
                   style={{
@@ -393,7 +394,7 @@ const ReplyItemInner: React.FC<{
 
             {/* Delete Button (owner only) */}
             {isOwner && !showDeleteConfirm && (
-              <Tooltip title="Löschen" arrow>
+              <Tooltip title={t('Löschen')} arrow>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   style={{
@@ -417,7 +418,9 @@ const ReplyItemInner: React.FC<{
             {/* Delete Confirm - inline */}
             {showDeleteConfirm && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '12px', color: currentTheme.status.error }}>Löschen?</span>
+                <span style={{ fontSize: '12px', color: currentTheme.status.error }}>
+                  {t('Löschen?')}
+                </span>
                 <button
                   onClick={handleDelete}
                   style={{
@@ -431,7 +434,7 @@ const ReplyItemInner: React.FC<{
                     fontWeight: 600,
                   }}
                 >
-                  Ja
+                  {t('Ja')}
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
@@ -445,7 +448,7 @@ const ReplyItemInner: React.FC<{
                     fontSize: '12px',
                   }}
                 >
-                  Nein
+                  {t('Nein')}
                 </button>
               </div>
             )}

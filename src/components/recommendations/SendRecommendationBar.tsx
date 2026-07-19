@@ -2,6 +2,7 @@ import Send from '@mui/icons-material/Send';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 
 interface SendRecommendationBarProps {
   selectedCount: number;
@@ -77,12 +78,12 @@ export const SendRecommendationBar: React.FC<SendRecommendationBarProps> = ({
         </motion.span>
         <span style={{ position: 'relative' }}>
           {sending
-            ? 'Wird gesendet…'
+            ? t('Wird gesendet…')
             : selectedCount === 0
-              ? 'Freunde auswählen'
+              ? t('Freunde auswählen')
               : selectedCount === 1
-                ? 'Empfehlung senden'
-                : `An ${selectedCount} Freunde senden`}
+                ? t('Empfehlung senden')
+                : t('An {n} Freunde senden', { n: selectedCount })}
         </span>
       </motion.button>
     </div>

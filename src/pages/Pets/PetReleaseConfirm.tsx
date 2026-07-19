@@ -8,6 +8,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PetReleaseConfirmProps {
   pet: Pet;
@@ -47,10 +48,12 @@ export const PetReleaseConfirm = memo(function PetReleaseConfirm({
           >
             <div className="pet-release-emoji">😢</div>
             <h2 className="pet-release-title" style={{ color: currentTheme.text.primary }}>
-              {pet.name} zur Adoption freigeben?
+              {t('{name} zur Adoption freigeben?', { name: pet.name })}
             </h2>
             <p className="pet-release-desc" style={{ color: currentTheme.text.muted }}>
-              Dein Pet wird unwiderruflich entfernt. Level, XP und alle Fortschritte gehen verloren.
+              {t(
+                'Dein Pet wird unwiderruflich entfernt. Level, XP und alle Fortschritte gehen verloren.'
+              )}
             </p>
             <div className="pet-release-actions">
               <motion.button
@@ -63,14 +66,14 @@ export const PetReleaseConfirm = memo(function PetReleaseConfirm({
                   color: currentTheme.text.primary,
                 }}
               >
-                Behalten
+                {t('Behalten')}
               </motion.button>
               <motion.button
                 whileTap={tapScale}
                 onClick={onConfirm}
                 className="pet-release-btn pet-release-btn--confirm"
               >
-                Freigeben
+                {t('Freigeben')}
               </motion.button>
             </div>
           </motion.div>

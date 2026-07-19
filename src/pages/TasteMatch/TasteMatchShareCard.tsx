@@ -20,6 +20,7 @@ import {
   getCompatibilityColors,
 } from './constants';
 import { getScoreMessage } from './useTasteMatchData';
+import { t } from '../../services/i18n';
 
 interface AvatarProps {
   name: string;
@@ -201,9 +202,9 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
 
       {/* Gemeinsame Zahlen */}
       <div style={{ display: 'flex', gap: 20 }}>
-        <CountTile value={result.seriesOverlap.sharedSeries.length} label="Serien" />
-        <CountTile value={result.movieOverlap.sharedMovies.length} label="Filme" />
-        <CountTile value={result.genreMatch.sharedGenres.length} label="Genres" />
+        <CountTile value={result.seriesOverlap.sharedSeries.length} label={t('Serien')} />
+        <CountTile value={result.movieOverlap.sharedMovies.length} label={t('Filme')} />
+        <CountTile value={result.genreMatch.sharedGenres.length} label={t('Genres')} />
       </div>
 
       {sharedGenres.length > 0 && (
@@ -217,7 +218,7 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
               color: currentTheme.text.muted,
             }}
           >
-            Gemeinsame Genres
+            {t('Gemeinsame Genres')}
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             {sharedGenres.map((g) => (
@@ -251,7 +252,7 @@ const TasteMatchShareCard: React.FC<TasteMatchShareCardProps> = ({
               color: currentTheme.text.muted,
             }}
           >
-            Gemeinsame Serien
+            {t('Gemeinsame Serien')}
           </span>
           <div style={{ display: 'flex', gap: 20 }}>
             {sharedSeries.map((s) => (
@@ -336,16 +337,21 @@ export const TasteMatchShareSheet: React.FC<TasteMatchShareSheetProps> = ({
   friendName,
   friendPhoto,
 }) => {
-  const shareText =
-    `Mein Taste Match mit ${friendName}: ${result.overallMatch}% – ` +
-    `${result.seriesOverlap.sharedSeries.length} gemeinsame Serien und ` +
-    `${result.movieOverlap.sharedMovies.length} gemeinsame Filme! tv-rank.de`;
+  const shareText = t(
+    'Mein Taste Match mit {friend}: {score}% – {series} gemeinsame Serien und {movies} gemeinsame Filme! tv-rank.de',
+    {
+      friend: friendName,
+      score: result.overallMatch,
+      series: result.seriesOverlap.sharedSeries.length,
+      movies: result.movieOverlap.sharedMovies.length,
+    }
+  );
 
   return (
     <ShareCardSheet
       isOpen={isOpen}
       onClose={onClose}
-      sheetTitle="Taste Match teilen"
+      sheetTitle={t('Taste Match teilen')}
       filename="tv-rank-taste-match.png"
       shareText={shareText}
       renderCard={(showImages) => (

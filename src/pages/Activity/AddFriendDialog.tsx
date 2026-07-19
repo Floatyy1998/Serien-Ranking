@@ -13,6 +13,7 @@ import {
   LoadingSpinner,
 } from '../../components/ui';
 import { db, dbRef } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 import { tapScaleSmall } from '../../lib/motion';
 
 interface UserSearchResult {
@@ -208,7 +209,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel="Freund hinzufügen">
+    <BottomSheet isOpen={isOpen} onClose={handleClose} ariaLabel={t('Freund hinzufügen')}>
       {/* Header */}
       <div
         style={{
@@ -242,7 +243,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 margin: 0,
               }}
             >
-              Neue Freunde
+              {t('Neue Freunde')}
             </GradientText>
             <p
               style={{
@@ -251,7 +252,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 margin: '2px 0 0 0',
               }}
             >
-              Finde andere Serien-Fans
+              {t('Finde andere Serien-Fans')}
             </p>
           </div>
         </div>
@@ -261,7 +262,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
           onClick={handleClose}
           size={36}
           variant="surface"
-          tooltip="Schließen"
+          tooltip={t('Schließen')}
         />
       </div>
 
@@ -270,7 +271,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder="Suche nach Benutzername..."
+          placeholder={t('Suche nach Benutzername...')}
           autoFocus
         />
       </div>
@@ -285,14 +286,14 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         }}
       >
         {/* Loading State */}
-        {searching && <LoadingSpinner text="Suche läuft..." />}
+        {searching && <LoadingSpinner text={t('Suche läuft...')} />}
 
         {/* No Query State */}
         {!searchQuery && !searching && (
           <EmptyState
             icon={<Star style={{ fontSize: '48px' }} />}
-            title="Bereit für neue Freundschaften?"
-            description="Gib einen Benutzernamen ein, um zu starten"
+            title={t('Bereit für neue Freundschaften?')}
+            description={t('Gib einen Benutzernamen ein, um zu starten')}
           />
         )}
 
@@ -300,8 +301,8 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
         {searchQuery && !searching && searchResults.length === 0 && (
           <EmptyState
             icon={<Person style={{ fontSize: '48px' }} />}
-            title="Keine Ergebnisse"
-            description="Versuche einen anderen Benutzernamen"
+            title={t('Keine Ergebnisse')}
+            description={t('Versuche einen anderen Benutzernamen')}
             iconColor={currentTheme.text.secondary}
           />
         )}
@@ -320,7 +321,9 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 letterSpacing: '0.5px',
               }}
             >
-              {searchResults.length} {searchResults.length === 1 ? 'Person' : 'Personen'} gefunden
+              {searchResults.length === 1
+                ? t('{n} Person gefunden', { n: searchResults.length })
+                : t('{n} Personen gefunden', { n: searchResults.length })}
             </h2>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -410,7 +413,10 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                           color: currentTheme.text.muted,
                         }}
                       >
-                        {result.seriesCount || 0} Serien • {result.moviesCount || 0} Filme
+                        {t('{s} Serien • {m} Filme', {
+                          s: result.seriesCount || 0,
+                          m: result.moviesCount || 0,
+                        })}
                       </div>
                     )}
                   </div>
@@ -433,7 +439,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                           color: currentTheme.primary,
                         }}
                       >
-                        Angefragt
+                        {t('Angefragt')}
                       </div>
                     )}
                     {!result.isAlreadyFriend && !result.hasPendingRequest && (
@@ -468,7 +474,7 @@ export const AddFriendDialog: React.FC<AddFriendDialogProps> = ({ isOpen, onClos
                 zIndex: 1001,
               }}
             >
-              ✓ Freundschaftsanfrage gesendet!
+              {t('✓ Freundschaftsanfrage gesendet!')}
             </motion.div>
           )}
         </AnimatePresence>

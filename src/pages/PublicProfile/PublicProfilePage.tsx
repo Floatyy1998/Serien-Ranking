@@ -13,6 +13,7 @@ import {
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import { PublicProfileHeader } from './PublicProfileHeader';
 import {
   calculateProgress,
@@ -34,7 +35,7 @@ const LoadingState = memo<{ theme: ReturnType<typeof usePublicProfileData>['curr
       <div className="pp-loading__content">
         <div
           role="status"
-          aria-label="Lade Profil"
+          aria-label={t('Lade Profil')}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -84,11 +85,11 @@ const NotFoundState = memo<{
         }}
       />
     </motion.div>
-    <h2 className="pp-not-found__title">Profil nicht gefunden</h2>
+    <h2 className="pp-not-found__title">{t('Profil nicht gefunden')}</h2>
     <p className="pp-not-found__text" style={{ color: theme.text.secondary }}>
-      Dieses öffentliche Profil existiert nicht
+      {t('Dieses öffentliche Profil existiert nicht')}
       <br />
-      oder ist nicht mehr öffentlich zugänglich.
+      {t('oder ist nicht mehr öffentlich zugänglich.')}
     </p>
     <motion.button
       className="pp-not-found__btn"
@@ -98,7 +99,7 @@ const NotFoundState = memo<{
         background: `linear-gradient(135deg, ${theme.primary}, ${theme.primary}cc)`,
       }}
     >
-      Zur Startseite
+      {t('Zur Startseite')}
     </motion.button>
   </div>
 ));
@@ -132,8 +133,6 @@ export const PublicProfilePage: React.FC = () => {
     return <NotFoundState theme={currentTheme} onNavigateHome={() => navigate('/')} />;
   }
 
-  const label = activeTab === 'series' ? 'Serien' : 'Filme';
-
   return (
     <PageLayout>
       <div ref={scrollRef}>
@@ -153,8 +152,8 @@ export const PublicProfilePage: React.FC = () => {
 
         <TabSwitcher
           tabs={[
-            { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
-            { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
+            { id: 'series', label: t('Serien'), icon: TvIcon, count: ratedSeries.length },
+            { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },
           ]}
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
@@ -171,8 +170,10 @@ export const PublicProfilePage: React.FC = () => {
               >
                 <EmptyState
                   icon={<Star style={{ fontSize: '56px' }} />}
-                  title={`Keine ${label} gefunden`}
-                  description="Versuche andere Filter oder entferne sie."
+                  title={
+                    activeTab === 'series' ? t('Keine Serien gefunden') : t('Keine Filme gefunden')
+                  }
+                  description={t('Versuche andere Filter oder entferne sie.')}
                   iconColor={currentTheme.primary}
                 />
               </motion.div>

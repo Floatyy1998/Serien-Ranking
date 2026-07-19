@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
+import { t } from '../../services/i18n';
 
 interface NowPlayingIndicatorProps {
   color?: string;
@@ -22,7 +23,8 @@ const STAGGER_SECONDS = 0.22;
  * quirks. The cycle/stagger constants above are the only knobs.
  */
 export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
-  ({ color, size = 'sm', position = 'top-left', label = 'Aktuell am Schauen' }) => {
+  ({ color, size = 'sm', position = 'top-left', label }) => {
+    const resolvedLabel = label ?? t('Aktuell am Schauen');
     const prefersReducedMotion = useReducedMotion();
     const tint = color ?? 'var(--theme-primary, #00d123)';
     const dim = size === 'sm' ? 22 : 28;
@@ -42,7 +44,7 @@ export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
     return (
       <div
         role="status"
-        aria-label={label}
+        aria-label={resolvedLabel}
         style={{
           position: 'absolute',
           ...offsets[position],

@@ -4,6 +4,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussionCount } from '../../hooks/discussionCountHooks';
+import { t } from '../../services/i18n';
 
 export const EpisodeDiscussionButton: React.FC<{
   seriesId: number;
@@ -15,7 +16,16 @@ export const EpisodeDiscussionButton: React.FC<{
   const count = useDiscussionCount('episode', seriesId, seasonNumber, episodeNumber);
 
   return (
-    <Tooltip title={count > 0 ? `${count} Diskussion${count > 1 ? 'en' : ''}` : 'Diskussion'} arrow>
+    <Tooltip
+      title={
+        count > 1
+          ? t('{n} Diskussionen', { n: count })
+          : count === 1
+            ? t('{n} Diskussion', { n: count })
+            : t('Diskussion')
+      }
+      arrow
+    >
       <button
         onClick={(e) => {
           e.stopPropagation();

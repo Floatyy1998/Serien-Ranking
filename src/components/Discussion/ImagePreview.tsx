@@ -2,6 +2,7 @@ import { Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
   src,
@@ -23,7 +24,7 @@ export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
       >
         <img
           src={src}
-          alt="Bild"
+          alt={t('Bild')}
           style={{
             width: '100%',
             height: 'auto',
@@ -87,7 +88,7 @@ export const ImagePreview: React.FC<{ src: string; onRemove?: () => void }> = ({
               animate={{ scale: 1 }}
               exit={{ scale: 0.8 }}
               src={src}
-              alt="Bild"
+              alt={t('Bild')}
               style={{
                 maxWidth: '100%',
                 maxHeight: '100%',

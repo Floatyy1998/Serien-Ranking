@@ -10,6 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useUnratedQueue } from '../../hooks/useUnratedQueue';
 import { IconContainer, NavCard } from '../../components/ui';
 import { RatingQueueSheet } from '../../components/ui/RatingQueueSheet';
+import { t } from '../../services/i18n';
 
 export const RatingQueueCard: React.FC = memo(() => {
   const { currentTheme } = useTheme();
@@ -31,7 +32,7 @@ export const RatingQueueCard: React.FC = memo(() => {
       <NavCard
         onClick={() => setOpen(true)}
         accentColor={accentColor}
-        aria-label={`Schnell bewerten: ${count} gesehene Titel ohne Bewertung`}
+        aria-label={t('Schnell bewerten: {n} gesehene Titel ohne Bewertung', { n: count })}
       >
         <IconContainer color={accentColor}>
           <StarRate style={{ fontSize: 20, color: 'white' }} />
@@ -48,7 +49,7 @@ export const RatingQueueCard: React.FC = memo(() => {
               whiteSpace: 'nowrap',
             }}
           >
-            Bewerten
+            {t('Bewerten')}
           </h2>
           <p
             style={{
@@ -58,7 +59,9 @@ export const RatingQueueCard: React.FC = memo(() => {
               whiteSpace: 'nowrap',
             }}
           >
-            {count} {count === 1 ? 'Titel wartet' : 'Titel warten'} auf deine Bewertung
+            {count === 1
+              ? t('{n} Titel wartet auf deine Bewertung', { n: count })
+              : t('{n} Titel warten auf deine Bewertung', { n: count })}
           </p>
         </div>
 

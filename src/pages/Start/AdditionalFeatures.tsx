@@ -2,6 +2,7 @@ import { Paper } from '@mui/material';
 import { Speed, CloudSync, Notifications, Analytics } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import type { SvgIconComponent } from '@mui/icons-material';
+import { t } from '../../services/i18n';
 
 interface HighlightItem {
   icon: SvgIconComponent;
@@ -54,10 +55,10 @@ const HighlightRow = ({ item, index }: { item: HighlightItem; index: number }) =
         </div>
         <div>
           <div className="start-highlight-title" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>
-            {item.title}
+            {t(item.title)}
           </div>
           <div className="start-highlight-desc" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-            {item.desc}
+            {t(item.desc)}
           </div>
         </div>
       </div>
@@ -81,7 +82,7 @@ export const AdditionalFeatures = () => (
         }}
       >
         <h2 className="start-highlights-heading" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-          Weitere Highlights
+          {t('Weitere Highlights')}
         </h2>
 
         <div className="start-highlights-grid">

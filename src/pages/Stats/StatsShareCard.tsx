@@ -12,6 +12,7 @@ import { ShareCardSheet } from '../../components/share/ShareCardSheet';
 import { GradientText } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { FormattedTime, StatsData } from './useStatsData';
+import { t } from '../../services/i18n';
 
 // Karten-Bausteine
 const tileStyle: React.CSSProperties = {
@@ -119,7 +120,7 @@ const StatsShareCard: React.FC<StatsShareCardProps> = ({ stats, timeData }) => {
   const { currentTheme } = useTheme();
 
   return (
-    <ShareCardFrame title="Meine Stats" subtitle="Mein Viewing-Universum in Zahlen">
+    <ShareCardFrame title={t('Meine Stats')} subtitle={t('Mein Viewing-Universum in Zahlen')}>
       {/* Hero: Watchtime */}
       <div style={{ textAlign: 'center' }}>
         <GradientText
@@ -154,21 +155,21 @@ const StatsShareCard: React.FC<StatsShareCardProps> = ({ stats, timeData }) => {
             color: currentTheme.text.muted,
           }}
         >
-          Watchtime gesamt
+          {t('Watchtime gesamt')}
         </div>
       </div>
 
       {/* Kern-Zahlen */}
       <div style={{ display: 'flex', gap: 24 }}>
-        <StatTile value={stats.watchedEpisodes.toLocaleString('de-DE')} label="Episoden" />
-        <StatTile value={stats.totalSeries.toLocaleString('de-DE')} label="Serien" />
-        <StatTile value={stats.totalMovies.toLocaleString('de-DE')} label="Filme" />
+        <StatTile value={stats.watchedEpisodes.toLocaleString('de-DE')} label={t('Episoden')} />
+        <StatTile value={stats.totalSeries.toLocaleString('de-DE')} label={t('Serien')} />
+        <StatTile value={stats.totalMovies.toLocaleString('de-DE')} label={t('Filme')} />
       </div>
 
       {/* Top-Genre & Top-Provider */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <TopRow label="Top-Genre" value={stats.topGenres[0]?.name || '–'} />
-        <TopRow label="Top-Provider" value={stats.topProviders[0]?.name || '–'} />
+        <TopRow label={t('Top-Genre')} value={stats.topGenres[0]?.name || '–'} />
+        <TopRow label={t('Top-Provider')} value={stats.topProviders[0]?.name || '–'} />
       </div>
     </ShareCardFrame>
   );
@@ -188,16 +189,21 @@ export const StatsShareSheet: React.FC<StatsShareSheetProps> = ({
   stats,
   timeData,
 }) => {
-  const shareText =
-    `Meine TV-Rank Stats: ${stats.watchedEpisodes.toLocaleString('de-DE')} Episoden, ` +
-    `${timeData.value} ${timeData.unit} Watchtime, ${stats.totalSeries} Serien & ` +
-    `${stats.totalMovies} Filme. tv-rank.de`;
+  const shareText = t(
+    'Meine TV-Rank Stats: {episodes} Episoden, {time} Watchtime, {series} Serien & {movies} Filme. tv-rank.de',
+    {
+      episodes: stats.watchedEpisodes.toLocaleString('de-DE'),
+      time: `${timeData.value} ${timeData.unit}`,
+      series: stats.totalSeries,
+      movies: stats.totalMovies,
+    }
+  );
 
   return (
     <ShareCardSheet
       isOpen={isOpen}
       onClose={onClose}
-      sheetTitle="Stats teilen"
+      sheetTitle={t('Stats teilen')}
       filename="tv-rank-stats.png"
       shareText={shareText}
       renderCard={() => <StatsShareCard stats={stats} timeData={timeData} />}

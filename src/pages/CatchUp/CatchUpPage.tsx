@@ -5,6 +5,7 @@
 
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useCatchUpData } from './useCatchUpData';
@@ -110,7 +111,7 @@ const HeaderBadge: React.FC<{ count: number }> = ({ count }) => {
         boxShadow: `0 0 20px ${currentTheme.primary}10`,
       }}
     >
-      {count} Serien
+      {t('{n} Serien', { n: count })}
     </motion.div>
   );
 };

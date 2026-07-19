@@ -23,6 +23,7 @@ import { hapticTap } from '../../lib/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
 import { formatStartLong, isSameDay, parsePremiereDate } from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import { t } from '../../services/i18n';
 
 interface SerienKalenderHeroProps {
   entry: TvPremiereStaticEntry;
@@ -47,14 +48,14 @@ function CountdownTiles({ target }: { target: number }) {
 
   const total = Math.max(0, Math.floor((target - nowTs) / 1000));
   const tiles: { value: number; label: string }[] = [
-    { value: Math.floor(total / 86400), label: 'Tage' },
-    { value: Math.floor((total % 86400) / 3600), label: 'Std' },
+    { value: Math.floor(total / 86400), label: t('Tage') },
+    { value: Math.floor((total % 86400) / 3600), label: t('Std') },
     { value: Math.floor((total % 3600) / 60), label: 'Min' },
-    ...(reducedMotion ? [] : [{ value: total % 60, label: 'Sek' }]),
+    ...(reducedMotion ? [] : [{ value: total % 60, label: t('Sek') }]),
   ];
 
   return (
-    <div className="as-countdown" role="timer" aria-label="Countdown bis zur Premiere">
+    <div className="as-countdown" role="timer" aria-label={t('Countdown bis zur Premiere')}>
       {tiles.map((tile) => (
         <div
           key={tile.label}
@@ -84,7 +85,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
   const [now] = useState(() => new Date());
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = entry.title || 'Unbekannter Titel';
+  const title = entry.title || t('Unbekannter Titel');
   const backdrop = entry.backdrop || '';
   const cover = entry.poster || '';
   const description = entry.overviewDe || '';
@@ -93,7 +94,9 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
   );
 
   const metaLine = [
-    entry.type === 'season' && entry.seasonNumber ? `Staffel ${entry.seasonNumber}` : null,
+    entry.type === 'season' && entry.seasonNumber
+      ? t('Staffel {n}', { n: entry.seasonNumber })
+      : null,
     entry.networks?.[0] ?? null,
     typeof entry.rating === 'number' && entry.rating > 0 ? `★ ${entry.rating.toFixed(1)}` : null,
     entry.genres?.slice(0, 2).join(' · ') || null,
@@ -109,13 +112,13 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
   let startLine: string;
   let startColor: string;
   if (startDate && isSameDay(startDate, now)) {
-    startLine = isFuture ? 'Startet HEUTE' : 'HEUTE gestartet';
+    startLine = isFuture ? t('Startet HEUTE') : t('HEUTE gestartet');
     startColor = brightAccent;
   } else if (isFuture && startDate) {
     startLine = formatStartLong(startDate, now);
     startColor = brightAccent;
   } else {
-    startLine = 'Bereits gestartet';
+    startLine = t('Bereits gestartet');
     startColor = currentTheme.status.success;
   }
 
@@ -159,7 +162,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
         <span
           className="as-card-inlist-badge as-hero-inlist"
           style={{ background: `${currentTheme.primary}dd` }}
-          title="In deiner Liste"
+          title={t('In deiner Liste')}
         >
           <CheckCircle
             style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
@@ -169,8 +172,8 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
         <button
           type="button"
           className="as-card-add as-card-add--hero as-hero-inlist"
-          title="Zur Liste hinzufügen"
-          aria-label={`${title} zur Liste hinzufügen`}
+          title={t('Zur Liste hinzufügen')}
+          aria-label={t('{title} zur Liste hinzufügen', { title })}
           aria-busy={adding}
           onClick={(event) => {
             event.stopPropagation();
@@ -191,7 +194,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
       <div className="as-hero-content">
         <img
           src={cover || placeholder}
-          alt={`Poster von ${title}`}
+          alt={t('Poster von {title}', { title })}
           loading="lazy"
           decoding="async"
           className="as-hero-poster"
@@ -223,7 +226,7 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
                     setDescExpanded((value) => !value);
                   }}
                 >
-                  {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+                  {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
                 </button>
               )}
             </>

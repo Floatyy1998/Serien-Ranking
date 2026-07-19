@@ -5,6 +5,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { GradientText } from '../ui';
+import { t } from '../../services/i18n';
 
 interface IntroSlideProps {
   year: number;
@@ -88,7 +89,7 @@ export const IntroSlide: React.FC<IntroSlideProps> = ({ year, username }) => {
             letterSpacing: '4px',
           }}
         >
-          Dein Jahr in Serien & Filmen
+          {t('Dein Jahr in Serien & Filmen')}
         </motion.h2>
 
         <motion.div

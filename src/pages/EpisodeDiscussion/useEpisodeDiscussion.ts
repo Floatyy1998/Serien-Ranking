@@ -7,6 +7,7 @@ import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 
 export interface TMDBEpisodeDetails {
@@ -374,7 +375,7 @@ export const useEpisodeDiscussion = () => {
         await runEpisodeWatchFanout({
           userId: user.uid,
           seriesId: series.id,
-          seriesTitle: series.title || series.name || 'Unbekannte Serie',
+          seriesTitle: series.title || series.name || t('Unbekannte Serie'),
           seasonNumber: Number(seasonNumber),
           episodeNumber: Number(episodeNumber),
           runtimeMinutes:

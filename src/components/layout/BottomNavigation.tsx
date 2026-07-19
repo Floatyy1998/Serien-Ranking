@@ -13,6 +13,7 @@ import { useNavSlots } from '../../hooks/useNavConfig';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
 import { setAppBadge } from '../../services/nativeShell';
+import { t } from '../../services/i18n';
 import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
 import { NAV_SLOT_ICONS } from './navSlotIcons';
@@ -55,7 +56,7 @@ export const BottomNavigation = () => {
       .map((o) => ({
         id: o.id,
         path: o.path,
-        label: o.label,
+        label: t(o.label),
         icon: NAV_SLOT_ICONS[o.id],
         badge: o.id === 'calendar' && unwatchedToday > 0 ? unwatchedToday : undefined,
       }));
@@ -89,7 +90,7 @@ export const BottomNavigation = () => {
         id: 'more',
         path: '/profile',
         icon: <MoreHoriz />,
-        label: 'Mehr',
+        label: t('Mehr'),
         badge: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
       },
     ];
@@ -166,10 +167,10 @@ export const BottomNavigation = () => {
   const getAriaLabel = (item: NavItem, active: boolean) => {
     let label = item.label;
     if (item.badge && typeof item.badge === 'number') {
-      label += `, ${item.badge} neue Benachrichtigungen`;
+      label += `, ${t('{anzahl} neue Benachrichtigungen', { anzahl: item.badge })}`;
     }
     if (active) {
-      label += ' (aktuelle Seite)';
+      label += ` (${t('aktuelle Seite')})`;
     }
     return label;
   };
@@ -178,11 +179,11 @@ export const BottomNavigation = () => {
     <>
       <PetWidget />
 
-      <nav className="mobile-bottom-navigation" aria-label="Hauptnavigation">
+      <nav className="mobile-bottom-navigation" aria-label={t('Hauptnavigation')}>
         <div
           className="nav-container"
           role="tablist"
-          aria-label="Seitennavigation"
+          aria-label={t('Seitennavigation')}
           onKeyDown={handleNavKeyDown}
           ref={containerRef}
           onMouseLeave={() => setHoveredIndex(null)}

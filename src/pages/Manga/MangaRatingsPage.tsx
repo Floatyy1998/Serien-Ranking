@@ -10,6 +10,7 @@ import type { Manga } from '../../types/Manga';
 import { getDisplayFormat, getEffectiveChapterCount } from './mangaUtils';
 import './MangaPage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 type SortBy = 'rating-desc' | 'rating-asc' | 'name-asc' | 'name-desc' | 'progress-desc';
 type QuickFilterType =
@@ -23,11 +24,11 @@ type QuickFilterType =
   | 'manhua';
 
 const SORT_OPTIONS: { value: SortBy; label: string }[] = [
-  { value: 'rating-desc', label: 'Bewertung ↓' },
-  { value: 'rating-asc', label: 'Bewertung ↑' },
+  { value: 'rating-desc', label: t('Bewertung ↓') },
+  { value: 'rating-asc', label: t('Bewertung ↑') },
   { value: 'name-asc', label: 'Name A-Z' },
   { value: 'name-desc', label: 'Name Z-A' },
-  { value: 'progress-desc', label: 'Fortschritt ↓' },
+  { value: 'progress-desc', label: t('Fortschritt ↓') },
 ];
 
 // Static inline styles hoisted out of render (no per-render allocation in the grid loop)
@@ -78,11 +79,11 @@ const PROGRESS_TRACK_STYLE: React.CSSProperties = {
 };
 
 const QUICK_FILTERS: { id: QuickFilterType; label: string }[] = [
-  { id: 'all', label: 'Alle' },
-  { id: 'rated', label: 'Bewertet' },
-  { id: 'unrated', label: 'Unbewertet' },
-  { id: 'reading', label: 'Lese ich' },
-  { id: 'completed', label: 'Fertig' },
+  { id: 'all', label: t('Alle') },
+  { id: 'rated', label: t('Bewertet') },
+  { id: 'unrated', label: t('Unbewertet') },
+  { id: 'reading', label: t('Lese ich') },
+  { id: 'completed', label: t('Fertig') },
   { id: 'manga', label: 'Manga' },
   { id: 'manhwa', label: 'Manhwa' },
   { id: 'manhua', label: 'Manhua' },
@@ -162,12 +163,12 @@ export const MangaRatingsPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Manga Bewertungen"
+        title={t('Manga Bewertungen')}
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
         subtitle={
           stats.count > 0
-            ? `${stats.count} bewertet · Ø ${stats.average.toFixed(1)}`
+            ? t('{n} bewertet · Ø {avg}', { n: stats.count, avg: stats.average.toFixed(1) })
             : `${mangaList.length} Manga`
         }
         icon={<BarChart />}
@@ -258,7 +259,7 @@ export const MangaRatingsPage = () => {
                 className="manga-ratings-item"
                 role="button"
                 tabIndex={0}
-                aria-label={`${manga.title} öffnen`}
+                aria-label={t('{title} öffnen', { title: manga.title })}
                 onClick={() => navigate(`/manga/${manga.anilistId}`)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -312,8 +313,10 @@ export const MangaRatingsPage = () => {
         {items.length === 0 && (
           <EmptyState
             icon={<Star style={{ fontSize: 40 }} />}
-            title="Keine Manga gefunden"
-            description="Mit diesem Filter gibt es gerade nichts. Wähle einen anderen Filter oder füge neue Manga hinzu."
+            title={t('Keine Manga gefunden')}
+            description={t(
+              'Mit diesem Filter gibt es gerade nichts. Wähle einen anderen Filter oder füge neue Manga hinzu.'
+            )}
           />
         )}
       </div>

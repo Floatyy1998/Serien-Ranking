@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../services/i18n';
 import { EmptyState } from './EmptyState';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -58,7 +59,9 @@ export const PageState: React.FC<PageStateProps> = ({ mode, message, empty, erro
           icon={error.icon ?? '!'}
           title={error.title}
           description={error.description}
-          action={error.onRetry ? { label: 'Erneut versuchen', onClick: error.onRetry } : undefined}
+          action={
+            error.onRetry ? { label: t('Erneut versuchen'), onClick: error.onRetry } : undefined
+          }
         />
       </div>
     );

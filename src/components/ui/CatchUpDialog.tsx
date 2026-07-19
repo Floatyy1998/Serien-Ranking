@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { BottomSheet } from './BottomSheet';
 
@@ -52,10 +53,14 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
   })();
 
   const previewText = (() => {
-    if (episodesToMark === 0) return 'Keine neuen Episoden zu markieren';
+    if (episodesToMark === 0) return t('Keine neuen Episoden zu markieren');
     const parts: string[] = [];
     if (selectedSeason > 0) {
-      parts.push(selectedSeason === 1 ? 'S1 komplett' : `S1-S${selectedSeason} komplett`);
+      parts.push(
+        selectedSeason === 1
+          ? t('S1 komplett')
+          : t('S1-S{staffel} komplett', { staffel: selectedSeason })
+      );
     }
     if (selectedEpisode > 0) {
       parts.push(
@@ -64,7 +69,10 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
           : `S${selectedSeason + 1}E01-E${String(selectedEpisode).padStart(2, '0')}`
       );
     }
-    return `Markiert ${episodesToMark} Episoden als gesehen (${parts.join(' + ')})`;
+    return t('Markiert {anzahl} Episoden als gesehen ({teile})', {
+      anzahl: episodesToMark,
+      teile: parts.join(' + '),
+    });
   })();
 
   const selectStyle: CSSProperties = {
@@ -93,7 +101,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
       isOpen={open}
       onClose={onClose}
       maxWidth="400px"
-      ariaLabel="Aktuellen Stand wählen"
+      ariaLabel={t('Aktuellen Stand wählen')}
     >
       <div style={{ padding: '8px 24px 24px' }}>
         <h3
@@ -105,12 +113,12 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
             color: currentTheme.text.primary,
           }}
         >
-          Ich bin bei...
+          {t('Ich bin bei...')}
         </h3>
 
         {/* Season Picker */}
         <div style={{ marginBottom: '14px' }}>
-          <label style={labelStyle}>Staffel</label>
+          <label style={labelStyle}>{t('Staffel')}</label>
           <select
             value={selectedSeason}
             onChange={(e) => {
@@ -121,7 +129,10 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
           >
             {seasons.map((season, idx) => (
               <option key={idx} value={idx}>
-                Staffel {season.seasonNumber + 1} ({season.episodes?.length || 0} Episoden)
+                {t('Staffel {staffel} ({anzahl} Episoden)', {
+                  staffel: season.seasonNumber + 1,
+                  anzahl: season.episodes?.length || 0,
+                })}
               </option>
             ))}
           </select>
@@ -129,7 +140,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
 
         {/* Episode Picker */}
         <div style={{ marginBottom: '18px' }}>
-          <label style={labelStyle}>Episode</label>
+          <label style={labelStyle}>{t('Episode')}</label>
           <select
             value={selectedEpisode}
             onChange={(e) => setSelectedEpisode(Number(e.target.value))}
@@ -137,7 +148,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
           >
             {currentSeasonEpisodes.map((ep, idx) => (
               <option key={idx} value={idx + 1}>
-                Episode {idx + 1}
+                {t('Episode {nummer}', { nummer: idx + 1 })}
                 {ep.name ? ` - ${ep.name}` : ''}
               </option>
             ))}
@@ -185,7 +196,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </button>
           <button
             onClick={() => {
@@ -211,7 +222,7 @@ export const CatchUpDialog = ({ open, onClose, series, onConfirm }: CatchUpDialo
               opacity: episodesToMark > 0 ? 1 : 0.5,
             }}
           >
-            Markieren
+            {t('Markieren')}
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CalendarMonth } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesCountdowns } from '../../hooks/useSeriesCountdowns';
+import { t } from '../../services/i18n';
 import { PageHeader, SkeletonListRow, EmptyState, PageLayout } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { CountdownHeroCard } from './CountdownHeroCard';
@@ -26,7 +27,11 @@ export const CountdownPage: React.FC = () => {
 
       <div className="cd-content">
         {loading && (
-          <div style={{ padding: '0 16px' }} role="status" aria-label="Countdowns werden geladen">
+          <div
+            style={{ padding: '0 16px' }}
+            role="status"
+            aria-label={t('Countdowns werden geladen')}
+          >
             {Array.from({ length: 5 }, (_, i) => (
               <SkeletonListRow key={i} avatarShape="card" />
             ))}
@@ -36,8 +41,10 @@ export const CountdownPage: React.FC = () => {
         {!loading && countdowns.length === 0 && (
           <EmptyState
             icon={<CalendarMonth style={{ fontSize: 48 }} />}
-            title="Keine kommenden Staffeln"
-            description="Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier"
+            title={t('Keine kommenden Staffeln')}
+            description={t(
+              'Sobald Serien in deiner Liste neue Staffeln ankündigen, siehst du sie hier'
+            )}
             iconColor={currentTheme.text.secondary}
           />
         )}
@@ -65,7 +72,7 @@ export const CountdownPage: React.FC = () => {
                   className="cd-section-label"
                   style={{ color: currentTheme.text.muted }}
                 >
-                  Weitere ({rest.length})
+                  {t('Weitere ({n})', { n: rest.length })}
                 </motion.p>
                 {rest.map((item, i) => (
                   <motion.div key={item.seriesId} variants={staggerItem}>

@@ -7,6 +7,7 @@ import { petService } from '../../services/petService';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { PET_CONFIG } from '../../services/pet/petConstants';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
+import { t } from '../../services/i18n';
 import type { Pet } from '../../types/pet.types';
 
 export function usePetsData() {
@@ -40,8 +41,8 @@ export function usePetsData() {
 
   const xpBonusHint = pet
     ? pet.hunger >= PET_CONFIG.HEALTHY_HUNGER_THRESHOLD
-      ? 'Füttere dein Pet um den +50% XP-Bonus zu aktivieren!'
-      : 'Spiele mit deinem Pet um den +50% XP-Bonus zu aktivieren!'
+      ? t('Füttere dein Pet um den +50% XP-Bonus zu aktivieren!')
+      : t('Spiele mit deinem Pet um den +50% XP-Bonus zu aktivieren!')
     : '';
 
   // Pets beim Mount laden

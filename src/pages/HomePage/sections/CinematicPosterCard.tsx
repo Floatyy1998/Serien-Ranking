@@ -7,6 +7,7 @@ import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { tapScale } from '../../../lib/motion';
 import { MiniProviderBadges } from './MiniProviderBadges';
 import type { MediaItem } from './mediaCarouselTypes';
+import { t } from '../../../services/i18n';
 
 interface CinematicPosterCardProps {
   item: MediaItem;
@@ -136,7 +137,7 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
                       fontSize: isMobile ? '10px' : '12px',
                     }}
                   />
-                  Film
+                  {t('Film')}
                 </>
               ) : (
                 <>
@@ -145,7 +146,7 @@ export function CinematicPosterCard({ item, cardWidth }: CinematicPosterCardProp
                       fontSize: isMobile ? '10px' : '12px',
                     }}
                   />
-                  Serie
+                  {t('Serie')}
                 </>
               )}
             </div>

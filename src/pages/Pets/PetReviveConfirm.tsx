@@ -11,6 +11,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PetReviveConfirmProps {
   pet: Pet;
@@ -51,12 +52,16 @@ export const PetReviveConfirm = memo(function PetReviveConfirm({
           >
             <div className="pet-release-emoji">💫</div>
             <h2 className="pet-release-title" style={{ color: currentTheme.text.primary }}>
-              {pet.name} wiederbeleben?
+              {t('{name} wiederbeleben?', { name: pet.name })}
             </h2>
             <p className="pet-release-desc" style={{ color: currentTheme.text.muted }}>
               {losesLevel
-                ? `Das kostet 1 Level: ${pet.name} fällt von Level ${pet.level} auf Level ${pet.level - 1}.`
-                : `${pet.name} kehrt frisch gestärkt zurück.`}
+                ? t('Das kostet 1 Level: {name} fällt von Level {von} auf Level {auf}.', {
+                    name: pet.name,
+                    von: pet.level,
+                    auf: pet.level - 1,
+                  })
+                : t('{name} kehrt frisch gestärkt zurück.', { name: pet.name })}
             </p>
             <div className="pet-release-actions">
               <motion.button
@@ -69,14 +74,14 @@ export const PetReviveConfirm = memo(function PetReviveConfirm({
                   color: currentTheme.text.primary,
                 }}
               >
-                Abbrechen
+                {t('Abbrechen')}
               </motion.button>
               <motion.button
                 whileTap={tapScale}
                 onClick={onConfirm}
                 className="pet-release-btn pet-release-btn--confirm"
               >
-                {losesLevel ? 'Wiederbeleben (−1 Level)' : 'Wiederbeleben'}
+                {losesLevel ? t('Wiederbeleben (−1 Level)') : t('Wiederbeleben')}
               </motion.button>
             </div>
           </motion.div>

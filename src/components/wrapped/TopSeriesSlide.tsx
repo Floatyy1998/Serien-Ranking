@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { TopSeriesEntry } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface TopSeriesSlideProps {
   topSeries: TopSeriesEntry[];
@@ -49,7 +50,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
               <path d="M8 21h8M12 17v4" strokeLinecap="round" />
             </svg>
           </div>
-          <h2 style={{ fontSize: '1.5rem' }}>Keine Serien dieses Jahr</h2>
+          <h2 style={{ fontSize: '1.5rem' }}>{t('Keine Serien dieses Jahr')}</h2>
         </div>
       </div>
     );
@@ -105,7 +106,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
           marginBottom: '20px',
         }}
       >
-        Deine #1 Serie
+        {t('Deine #1 Serie')}
       </motion.p>
 
       {/* #1 Serie - Hero Display */}
@@ -188,7 +189,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
             <p style={{ color: 'white', fontSize: '1.4rem', fontWeight: 'bold' }}>
               {topOne?.episodesWatched}
             </p>
-            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>Episoden</p>
+            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>{t('Episoden')}</p>
           </div>
           <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }} />
           <div style={{ textAlign: 'center' }}>
@@ -197,7 +198,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
                 ? `${Math.floor(topOne.minutesWatched / 60)}h`
                 : `${topOne?.minutesWatched}m`}
             </p>
-            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>geschaut</p>
+            <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem' }}>{t('geschaut')}</p>
           </div>
         </motion.div>
       </motion.div>
@@ -316,7 +317,7 @@ export const TopSeriesSlide: React.FC<TopSeriesSlideProps> = ({ topSeries, maxIt
                 opacity: 0.5,
               }}
             >
-              {series.episodesWatched} Ep. ·{' '}
+              {t('{n} Ep.', { n: series.episodesWatched })} ·{' '}
               {series.minutesWatched >= 60
                 ? `${Math.floor(series.minutesWatched / 60)}h`
                 : `${series.minutesWatched}m`}

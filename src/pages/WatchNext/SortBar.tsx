@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { HorizontalScrollContainer } from '../../components/ui';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
 interface SortOption {
@@ -12,11 +13,15 @@ interface SortOption {
 }
 
 const SORT_OPTIONS: SortOption[] = [
-  { key: 'custom', label: 'Benutzerdefiniert', icon: <DragHandle style={{ fontSize: '16px' }} /> },
-  { key: 'name', label: 'Name' },
-  { key: 'date', label: 'Datum' },
-  { key: 'progress', label: 'Fortschritt' },
-  { key: 'remaining', label: '\u00dcbrig' },
+  {
+    key: 'custom',
+    label: t('Benutzerdefiniert'),
+    icon: <DragHandle style={{ fontSize: '16px' }} />,
+  },
+  { key: 'name', label: t('Name') },
+  { key: 'date', label: t('Datum') },
+  { key: 'progress', label: t('Fortschritt') },
+  { key: 'remaining', label: t('\u00dcbrig') },
 ];
 
 interface SortBarProps {

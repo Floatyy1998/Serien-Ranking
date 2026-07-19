@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { SkeletonPosterRow } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -68,7 +69,7 @@ export const RecommendationsTab = ({
             color: currentTheme.text.primary,
           }}
         >
-          Basierend auf deinen Lieblings-Schauspielern
+          {t('Basierend auf deinen Lieblings-Schauspielern')}
         </h2>
       </div>
 
@@ -90,7 +91,7 @@ export const RecommendationsTab = ({
             style={{ fontSize: '48px', color: currentTheme.text.muted, marginBottom: '16px' }}
           />
           <p style={{ color: currentTheme.text.muted, fontSize: '15px', margin: 0 }}>
-            Keine Empfehlungen gefunden
+            {t('Keine Empfehlungen gefunden')}
           </p>
         </motion.div>
       ) : (
@@ -201,7 +202,7 @@ export const RecommendationsTab = ({
                     fontWeight: 600,
                   }}
                 >
-                  {rec.actors.length} deiner Schauspieler
+                  {t('{n} deiner Schauspieler', { n: rec.actors.length })}
                 </p>
 
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>

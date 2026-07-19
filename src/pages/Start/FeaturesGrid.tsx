@@ -1,6 +1,7 @@
 import { Star, TrendingUp, People, EmojiEvents, Movie, Tv, AutoStories } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { FeatureCard } from './FeatureCard';
+import { t } from '../../services/i18n';
 
 // Pro-Feature-Akzentfarben: bewusste Marketing-Palette der Pre-Auth-Landing,
 // entkoppelt vom Theme-System (die Landing rendert ausgeloggt). Nicht auf
@@ -68,16 +69,21 @@ export const FeaturesGrid = () => (
       transition={{ delay: 0.2, duration: 0.4 }}
     >
       <h2 className="start-features-heading" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-        Alles was du brauchst
+        {t('Alles was du brauchst')}
       </h2>
       <p className="start-features-subheading" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-        Features für das beste Tracking-Erlebnis
+        {t('Features für das beste Tracking-Erlebnis')}
       </p>
     </motion.div>
 
     <div className="start-features-grid">
       {FEATURES.map((feature) => (
-        <FeatureCard key={feature.title} {...feature} />
+        <FeatureCard
+          key={feature.title}
+          {...feature}
+          title={t(feature.title)}
+          description={t(feature.description)}
+        />
       ))}
     </div>
   </div>

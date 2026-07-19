@@ -12,6 +12,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 import type { FriendActivity } from '../../types/Friend';
+import { t } from '../../services/i18n';
 
 // Leisurely reading pace – px per second. Lower = slower.
 const MARQUEE_PIXELS_PER_SECOND = 48;
@@ -19,26 +20,30 @@ const MARQUEE_PIXELS_PER_SECOND = 48;
 const MAX_ENTRIES = 14;
 
 function formatActivity(a: FriendActivity): string | null {
-  const who = a.userName || 'Jemand';
+  const who = a.userName || t('Jemand');
   switch (a.type) {
     case 'series_added':
-      return `${who} hat „${a.itemTitle}" hinzugefügt`;
+      return t('{who} hat „{title}" hinzugefügt', { who, title: a.itemTitle });
     case 'movie_added':
-      return `${who} hat „${a.itemTitle}" hinzugefügt`;
+      return t('{who} hat „{title}" hinzugefügt', { who, title: a.itemTitle });
     case 'series_added_to_watchlist':
     case 'movie_added_to_watchlist':
-      return `${who} hat „${a.itemTitle}" auf die Watchlist gesetzt`;
+      return t('{who} hat „{title}" auf die Watchlist gesetzt', { who, title: a.itemTitle });
     case 'episode_watched':
-      return `${who} hat eine Folge von „${a.itemTitle}" gesehen`;
+      return t('{who} hat eine Folge von „{title}" gesehen', { who, title: a.itemTitle });
     case 'episodes_watched':
-      return `${who} bingt gerade „${a.itemTitle}"`;
+      return t('{who} bingt gerade „{title}"', { who, title: a.itemTitle });
     case 'series_rated':
     case 'movie_rated':
     case 'rating_updated':
     case 'rating_updated_movie':
       return typeof a.rating === 'number'
-        ? `${who} hat „${a.itemTitle}" mit ${a.rating.toFixed(1)} bewertet`
-        : `${who} hat „${a.itemTitle}" bewertet`;
+        ? t('{who} hat „{title}" mit {rating} bewertet', {
+            who,
+            title: a.itemTitle,
+            rating: a.rating.toFixed(1),
+          })
+        : t('{who} hat „{title}" bewertet', { who, title: a.itemTitle });
     case 'series_deleted':
     case 'movie_deleted':
     case 'series_removed_from_watchlist':
@@ -176,7 +181,7 @@ export const ActivityMarquee = memo(function ActivityMarquee() {
       onMouseLeave={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
       onBlur={() => setIsPaused(false)}
-      aria-label="Aktivitäten deiner Freunde anzeigen"
+      aria-label={t('Aktivitäten deiner Freunde anzeigen')}
       style={{
         position: 'relative',
         width: 'calc(100% - 40px)',

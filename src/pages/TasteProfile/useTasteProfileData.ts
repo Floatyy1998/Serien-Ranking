@@ -12,6 +12,7 @@ import type { TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 import type { WatchJourneyData } from '../../services/watchJourneyTypes';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
+import { t } from '../../services/i18n';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 const MIN_RATED_ITEMS = 5;
@@ -540,12 +541,12 @@ export const useTasteProfileData = () => {
         sessionStorage.setItem(`taste-profile-${user.uid}`, JSON.stringify(profileResult));
       } else if (res.status === 429) {
         const data = await res.json();
-        setError(data.error || 'Zu viele Anfragen – bitte warte kurz.');
+        setError(data.error || t('Zu viele Anfragen – bitte warte kurz.'));
       } else {
-        setError('Empfehlungen konnten nicht erstellt werden.');
+        setError(t('Empfehlungen konnten nicht erstellt werden.'));
       }
     } catch {
-      setError('Empfehlungen konnten nicht erstellt werden.');
+      setError(t('Empfehlungen konnten nicht erstellt werden.'));
     } finally {
       setGenerating(false);
     }

@@ -32,6 +32,7 @@ import {
 import { markMultipleSeasonsAsNotified } from '../../services/detection/newSeasonDetection';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { formatSeasonDate } from '../../lib/date';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import './CarouselNotification.css';
 
@@ -59,9 +60,9 @@ const getNewestSeasonStart = (series: Series): Date | null => {
 
 /** Detail-Zeile der NewSeason-Karte: Staffelnummer + wann sie startet bzw. läuft. */
 const newSeasonDetailLabel = (series: Series): string => {
-  const base = `Staffel ${series.seasonCount}`;
+  const base = t('Staffel {staffel}', { staffel: series.seasonCount ?? '' });
   const start = getNewestSeasonStart(series);
-  if (!start) return `${base} · Starttermin noch offen`;
+  if (!start) return `${base} · ${t('Starttermin noch offen')}`;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -69,11 +70,12 @@ const newSeasonDetailLabel = (series: Series): string => {
   startDay.setHours(0, 0, 0, 0);
   const days = Math.round((startDay.getTime() - today.getTime()) / NOTIF_DAY_MS);
 
-  if (days > 30) return `${base} · ab ${formatSeasonDate(start)}`;
-  if (days > 1) return `${base} · in ${days} Tagen (${formatSeasonDate(start)})`;
-  if (days === 1) return `${base} · morgen (${formatSeasonDate(start)})`;
-  if (days === 0) return `${base} · ab heute`;
-  return `${base} · läuft seit ${formatSeasonDate(start)}`;
+  if (days > 30) return `${base} · ${t('ab {datum}', { datum: formatSeasonDate(start) })}`;
+  if (days > 1)
+    return `${base} · ${t('in {tage} Tagen ({datum})', { tage: days, datum: formatSeasonDate(start) })}`;
+  if (days === 1) return `${base} · ${t('morgen ({datum})', { datum: formatSeasonDate(start) })}`;
+  if (days === 0) return `${base} · ${t('ab heute')}`;
+  return `${base} · ${t('läuft seit {datum}', { datum: formatSeasonDate(start) })}`;
 };
 
 type Variant = 'new-season' | 'completed' | 'inactive' | 'inactive-rewatch' | 'unrated';
@@ -100,12 +102,13 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.primary,
     HeaderIcon: NewReleases,
     DetailIcon: Tv,
-    headerText: (n) => `${n > 1 ? n + ' neue Staffeln' : 'Neue Staffel'} angekündigt`,
+    headerText: (n) =>
+      n > 1 ? t('{n} neue Staffeln angekündigt', { n }) : t('Neue Staffel angekündigt'),
     detailText: (s) => newSeasonDetailLabel(s),
-    actionLabel: 'Watchlist',
-    actionDoneLabel: 'Hinzugefügt',
+    actionLabel: t('Watchlist'),
+    actionDoneLabel: t('Hinzugefügt'),
     ActionIcon: PlaylistAdd,
-    counterSuffix: 'neue Staffeln',
+    counterSuffix: t('neue Staffeln'),
     dismissFirebasePath: '',
     watchlistValue: true,
   },
@@ -114,12 +117,12 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.status.success,
     HeaderIcon: CheckCircle,
     DetailIcon: CheckCircle,
-    headerText: (n) => `${n > 1 ? n + ' Serien' : 'Serie'} abgeschlossen`,
-    detailText: () => 'Komplett geschaut, keine neuen Folgen',
-    actionLabel: 'Entfernen',
-    actionDoneLabel: 'Entfernt',
+    headerText: (n) => (n > 1 ? t('{n} Serien abgeschlossen', { n }) : t('Serie abgeschlossen')),
+    detailText: () => t('Komplett geschaut, keine neuen Folgen'),
+    actionLabel: t('Entfernen'),
+    actionDoneLabel: t('Entfernt'),
     ActionIcon: PlaylistRemove,
-    counterSuffix: 'abgeschlossene Serien',
+    counterSuffix: t('abgeschlossene Serien'),
     dismissFirebasePath: 'completedSeriesNotifications',
     watchlistValue: false,
   },
@@ -128,12 +131,15 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.status.warning,
     HeaderIcon: AccessTime,
     DetailIcon: AccessTime,
-    headerText: (n) => `${n > 1 ? n + ' inaktive Serien' : 'Inaktive Serie'} auf der Watchlist`,
-    detailText: () => 'Länger nicht geschaut',
-    actionLabel: 'Entfernen',
-    actionDoneLabel: 'Entfernt',
+    headerText: (n) =>
+      n > 1
+        ? t('{n} inaktive Serien auf der Watchlist', { n })
+        : t('Inaktive Serie auf der Watchlist'),
+    detailText: () => t('Länger nicht geschaut'),
+    actionLabel: t('Entfernen'),
+    actionDoneLabel: t('Entfernt'),
     ActionIcon: PlaylistRemove,
-    counterSuffix: 'inaktive Serien',
+    counterSuffix: t('inaktive Serien'),
     dismissFirebasePath: 'inactiveSeriesNotifications',
     watchlistValue: false,
   },
@@ -142,12 +148,12 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.status.warning,
     HeaderIcon: AccessTime,
     DetailIcon: AccessTime,
-    headerText: (n) => (n > 1 ? `${n} inaktive Rewatches` : 'Inaktiver Rewatch'),
-    detailText: () => 'Längere Zeit nicht rewatcht',
-    actionLabel: 'Beenden',
-    actionDoneLabel: 'Beendet',
+    headerText: (n) => (n > 1 ? t('{n} inaktive Rewatches', { n }) : t('Inaktiver Rewatch')),
+    detailText: () => t('Längere Zeit nicht rewatcht'),
+    actionLabel: t('Beenden'),
+    actionDoneLabel: t('Beendet'),
     ActionIcon: Stop,
-    counterSuffix: 'inaktive Rewatches',
+    counterSuffix: t('inaktive Rewatches'),
     dismissFirebasePath: 'inactiveRewatchNotifications',
   },
   unrated: {
@@ -155,12 +161,12 @@ const variantConfigs: Record<Variant, VariantConfig> = {
     themeColor: (t) => t.primary,
     HeaderIcon: StarOutline,
     DetailIcon: Star,
-    headerText: (n) => (n > 1 ? `${n} Serien zum Bewerten` : 'Noch nicht bewertet'),
-    detailText: () => 'Staffel fertig — wie war sie?',
-    actionLabel: 'Bewerten',
-    actionDoneLabel: 'Bewertet',
+    headerText: (n) => (n > 1 ? t('{n} Serien zum Bewerten', { n }) : t('Noch nicht bewertet')),
+    detailText: () => t('Staffel fertig — wie war sie?'),
+    actionLabel: t('Bewerten'),
+    actionDoneLabel: t('Bewertet'),
     ActionIcon: Star,
-    counterSuffix: 'unbewertete Serien',
+    counterSuffix: t('unbewertete Serien'),
     dismissFirebasePath: 'unratedSeriesNotifications',
   },
 };
@@ -212,7 +218,7 @@ const InlineRatingPicker: React.FC<{
         onChange={(e) => setValue(parseFloat(e.target.value))}
         disabled={saving}
         className="inline-rating-range"
-        aria-label="Bewertung"
+        aria-label={t('Bewertung')}
         style={{
           background: `linear-gradient(to right, ${themeColor} 0%, ${themeColor} ${value * 10}%, rgba(255,255,255,0.1) ${value * 10}%, rgba(255,255,255,0.1) 100%)`,
         }}
@@ -227,7 +233,7 @@ const InlineRatingPicker: React.FC<{
               / 10
             </>
           ) : (
-            'Zieh den Regler zum Bewerten'
+            t('Zieh den Regler zum Bewerten')
           )}
         </div>
         <button
@@ -241,7 +247,7 @@ const InlineRatingPicker: React.FC<{
             cursor: saving || value <= 0 ? 'not-allowed' : 'pointer',
           }}
         >
-          {saving ? '…' : 'Speichern'}
+          {saving ? '…' : t('Speichern')}
         </button>
       </div>
     </div>
@@ -251,11 +257,13 @@ const InlineRatingPicker: React.FC<{
 const formatRelative = (ts: number): string => {
   const diff = Date.now() - ts;
   const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-  if (days < 1) return 'heute erkannt';
-  if (days === 1) return 'gestern erkannt';
-  if (days < 30) return `vor ${days} Tagen erkannt`;
+  if (days < 1) return t('heute erkannt');
+  if (days === 1) return t('gestern erkannt');
+  if (days < 30) return t('vor {tage} Tagen erkannt', { tage: days });
   const months = Math.floor(days / 30);
-  return `vor ${months} Monat${months > 1 ? 'en' : ''} erkannt`;
+  return months > 1
+    ? t('vor {monate} Monaten erkannt', { monate: months })
+    : t('vor 1 Monat erkannt');
 };
 
 export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
@@ -384,7 +392,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
         // Undo-Toast (außer für new-season "Hinzufügen" — da ist Undo unklar)
         if (variant !== 'new-season') {
-          showUndoToast(`${seriesItem.title} entfernt`, async () => {
+          showUndoToast(t('{titel} entfernt', { titel: seriesItem.title }), async () => {
             await dbRef(userPath(user.uid, 'series', seriesItem.id, 'watchlist')).set(prevValue);
             setActionedIds((prev) => {
               const next = new Set(prev);
@@ -426,7 +434,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
 
       setActionedIds((prev) => new Set(prev).add(seriesItem.id));
       await markAsDismissed([seriesItem.id]);
-      showUndoToast(`Bewertet: ${rating}/10`, async () => {
+      showUndoToast(t('Bewertet: {rating}/10', { rating }), async () => {
         await ratingRef.remove();
         setActionedIds((prev) => {
           const next = new Set(prev);
@@ -587,21 +595,21 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
             </span>
           )}
           {onCollapse && (
-            <Tooltip title="Minimieren" arrow>
+            <Tooltip title={t('Minimieren')} arrow>
               <button
                 className="series-notification-collapse-btn"
                 onClick={onCollapse}
-                aria-label="Minimieren"
+                aria-label={t('Minimieren')}
               >
                 <ExpandLess />
               </button>
             </Tooltip>
           )}
-          <Tooltip title={series.length > 1 ? 'Alle schließen' : 'Schließen'} arrow>
+          <Tooltip title={series.length > 1 ? t('Alle schließen') : t('Schließen')} arrow>
             <button
               className="series-notification-collapse-btn"
               onClick={handleDismissAll}
-              aria-label="Schließen"
+              aria-label={t('Schließen')}
             >
               <Close />
             </button>
@@ -662,7 +670,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                 </div>
                 <div className="series-notification-details">
                   <h4 className="series-notification-name">
-                    {currentSeries.title || currentSeries.original_name || 'Serie'}
+                    {currentSeries.title || currentSeries.original_name || t('Serie')}
                   </h4>
                   <p className="series-notification-detail">
                     <DetailIcon />
@@ -715,7 +723,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                     color: currentTheme.background.default,
                   }}
                 >
-                  <span>Ansehen</span>
+                  <span>{t('Ansehen')}</span>
                   <ChevronRight />
                 </button>
               </>
@@ -730,21 +738,21 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   flex: 1,
                 }}
               >
-                <span>Details</span>
+                <span>{t('Details')}</span>
                 <ChevronRight />
               </button>
             )}
 
             {/* Snooze-Button */}
             <div style={{ position: 'relative' }} ref={snoozeMenuRef}>
-              <Tooltip title="Später erinnern" arrow>
+              <Tooltip title={t('Später erinnern')} arrow>
                 <button
                   className="series-notification-btn series-notification-btn--icon"
                   onClick={(e) => {
                     e.stopPropagation();
                     setSnoozeOpen((p) => !p);
                   }}
-                  aria-label="Später erinnern"
+                  aria-label={t('Später erinnern')}
                 >
                   <SnoozeOutlined />
                 </button>
@@ -758,20 +766,23 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                     exit={{ opacity: 0, y: 6, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    <div className="snooze-menu-header">Erinnere mich in</div>
+                    <div className="snooze-menu-header">{t('Erinnere mich in')}</div>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(1)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">☕</span>1 Tag
+                        <span className="snooze-menu-item-emoji">☕</span>
+                        {t('1 Tag')}
                       </span>
                     </button>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(7)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">📅</span>1 Woche
+                        <span className="snooze-menu-item-emoji">📅</span>
+                        {t('1 Woche')}
                       </span>
                     </button>
                     <button className="snooze-menu-item" onClick={() => handleSnooze(30)}>
                       <span>
-                        <span className="snooze-menu-item-emoji">🌙</span>1 Monat
+                        <span className="snooze-menu-item-emoji">🌙</span>
+                        {t('1 Monat')}
                       </span>
                     </button>
                   </motion.div>
@@ -788,7 +799,7 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   className="series-notification-nav-btn"
                   onClick={() => setCurrentIndex(Math.max(0, safeIndex - 1))}
                   disabled={safeIndex === 0}
-                  aria-label="Vorherige"
+                  aria-label={t('Vorherige')}
                 >
                   ‹
                 </button>
@@ -796,14 +807,14 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   className="series-notification-dots"
                   ref={dotsContainerRef}
                   role="tablist"
-                  aria-label="Serie auswählen"
+                  aria-label={t('Serie auswählen')}
                 >
                   {series.map((s, index) => (
                     <button
                       key={index}
                       role="tab"
                       aria-selected={index === safeIndex}
-                      aria-label={`${s.title || 'Serie'} (${index + 1}/${series.length})`}
+                      aria-label={`${s.title || t('Serie')} (${index + 1}/${series.length})`}
                       className={`series-notification-dot ${index === safeIndex ? 'active' : ''}`}
                       onClick={() => setCurrentIndex(index)}
                       style={
@@ -822,13 +833,14 @@ export const CarouselNotification: React.FC<CarouselNotificationProps> = ({
                   className="series-notification-nav-btn"
                   onClick={() => setCurrentIndex(Math.min(series.length - 1, safeIndex + 1))}
                   disabled={safeIndex === series.length - 1}
-                  aria-label="Nächste"
+                  aria-label={t('Nächste')}
                 >
                   ›
                 </button>
               </div>
               <p className="series-notification-counter">
-                {safeIndex + 1} von {series.length} {config.counterSuffix}
+                {t('{aktuell} von {gesamt}', { aktuell: safeIndex + 1, gesamt: series.length })}{' '}
+                {config.counterSuffix}
               </p>
             </>
           )}

@@ -14,6 +14,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { getDisplayFormat, getEffectiveChapterCount, type AppTheme } from './mangaUtils';
+import { t } from '../../services/i18n';
 
 export const MangaStatsPage = () => {
   const { currentTheme } = useTheme();
@@ -107,9 +108,9 @@ export const MangaStatsPage = () => {
   if (mangaList.length === 0) {
     return (
       <PageLayout>
-        <PageHeader title="Manga Statistiken" icon={<TrendingUp />} />
+        <PageHeader title={t('Manga Statistiken')} icon={<TrendingUp />} />
         <div style={{ textAlign: 'center', padding: 60, opacity: 0.5 }}>
-          Noch keine Manga in deiner Sammlung.
+          {t('Noch keine Manga in deiner Sammlung.')}
         </div>
       </PageLayout>
     );
@@ -125,10 +126,10 @@ export const MangaStatsPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Manga Statistiken"
+        title={t('Manga Statistiken')}
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
-        subtitle="Dein Lese-Universum in Zahlen"
+        subtitle={t('Dein Lese-Universum in Zahlen')}
         icon={<TrendingUp />}
       />
 
@@ -178,7 +179,7 @@ export const MangaStatsPage = () => {
                 {stats.totalChapters.toLocaleString()}
               </GradientText>
               <div style={{ fontSize: 14, color: currentTheme.text.secondary, marginTop: 4 }}>
-                Kapitel gelesen
+                {t('Kapitel gelesen')}
               </div>
               {stats.totalVolumes > 0 && (
                 <div
@@ -189,7 +190,7 @@ export const MangaStatsPage = () => {
                     marginTop: 2,
                   }}
                 >
-                  {stats.totalVolumes} Bände
+                  {t('{n} Bände', { n: stats.totalVolumes })}
                 </div>
               )}
             </div>
@@ -283,14 +284,14 @@ export const MangaStatsPage = () => {
             />
             <QuickStat
               icon={<CheckCircle style={{ fontSize: 16 }} />}
-              label="Fertig"
+              label={t('Fertig')}
               value={stats.completed}
               color="#22c55e"
               theme={currentTheme}
             />
             <QuickStat
               icon={<Star style={{ fontSize: 16 }} />}
-              label="Ø Rating"
+              label={t('Ø Rating')}
               value={stats.avgRating > 0 ? stats.avgRating.toFixed(1) : '—'}
               color="#f59e0b"
               theme={currentTheme}
@@ -313,18 +314,18 @@ export const MangaStatsPage = () => {
         >
           {/* ─── Status Breakdown ──────────────────────── */}
           <StatSection
-            title="Status-Verteilung"
+            title={t('Status-Verteilung')}
             icon={<CollectionsBookmark />}
             theme={currentTheme}
             delay={0.1}
           >
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
-                { label: 'Lese ich', value: stats.reading, color: '#3b82f6' },
-                { label: 'Abgeschlossen', value: stats.completed, color: '#22c55e' },
-                { label: 'Geplant', value: stats.planned, color: currentTheme.secondary },
-                { label: 'Pausiert', value: stats.paused, color: '#f59e0b' },
-                { label: 'Abgebrochen', value: stats.dropped, color: '#ef4444' },
+                { label: t('Lese ich'), value: stats.reading, color: '#3b82f6' },
+                { label: t('Abgeschlossen'), value: stats.completed, color: '#22c55e' },
+                { label: t('Geplant'), value: stats.planned, color: currentTheme.secondary },
+                { label: t('Pausiert'), value: stats.paused, color: '#f59e0b' },
+                { label: t('Abgebrochen'), value: stats.dropped, color: '#ef4444' },
               ]
                 .filter((s) => s.value > 0)
                 .map((s) => (
@@ -361,7 +362,12 @@ export const MangaStatsPage = () => {
 
           {/* ─── Format Distribution ───────────────────── */}
           {stats.formats.length > 1 && (
-            <StatSection title="Formate" icon={<AutoStories />} theme={currentTheme} delay={0.15}>
+            <StatSection
+              title={t('Formate')}
+              icon={<AutoStories />}
+              theme={currentTheme}
+              delay={0.15}
+            >
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {stats.formats.map(([name, count]) => (
                   <div
@@ -429,7 +435,7 @@ export const MangaStatsPage = () => {
           {/* ─── Platforms ─────────────────────────────── */}
           {stats.topPlatforms.length > 0 && (
             <StatSection
-              title="Lese-Plattformen"
+              title={t('Lese-Plattformen')}
               icon={<AutoStories />}
               theme={currentTheme}
               delay={0.25}
@@ -455,7 +461,12 @@ export const MangaStatsPage = () => {
           )}
 
           {/* ─── This Week ─────────────────────────────── */}
-          <StatSection title="Diese Woche" icon={<TrendingUp />} theme={currentTheme} delay={0.3}>
+          <StatSection
+            title={t('Diese Woche')}
+            icon={<TrendingUp />}
+            theme={currentTheme}
+            delay={0.3}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div
                 style={{
@@ -467,7 +478,9 @@ export const MangaStatsPage = () => {
               >
                 {stats.activeThisWeek}
               </div>
-              <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>Manga gelesen</div>
+              <div style={{ fontSize: 13, color: currentTheme.text.secondary }}>
+                {t('Manga gelesen')}
+              </div>
             </div>
           </StatSection>
         </div>

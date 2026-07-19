@@ -20,6 +20,7 @@ import { showToast, showUndoToast } from '../lib/toast';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
 import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
+import { t } from '../services/i18n';
 
 interface NextEpisodeInfo {
   seasonIndex: number;
@@ -105,7 +106,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
     hapticSuccess();
     const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
 
-    showUndoToast(`${series.title} ${label} als gesehen markiert`, {
+    showUndoToast(t('{title} {label} als gesehen markiert', { title: series.title, label }), {
       onUndo: async () => {
         try {
           const updates = buildEpisodeUnwatchUpdates(
@@ -123,7 +124,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
           }
           await dbUpdate(updates);
         } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
+          showToast(t('Undo fehlgeschlagen'), 2000, 'error');
         }
       },
       onCommit: async () => {
@@ -155,7 +156,7 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
     return true;
   } catch (error) {
     console.error('Error marking next episode as watched:', error);
-    showToast('Fehler beim Speichern', 3000, 'error');
+    showToast(t('Fehler beim Speichern'), 3000, 'error');
     return false;
   }
 }

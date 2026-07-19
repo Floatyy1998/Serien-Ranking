@@ -16,6 +16,7 @@ import {
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
+import { t } from '../../services/i18n';
 import type { PreparedItem } from './useRatingsData';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 // Aus lib/ importieren + fuer bestehende Importer (RatingCompactRow) re-exportieren.
@@ -95,8 +96,8 @@ export function ProviderBadgeArea({
     const style: React.CSSProperties = { background: bgColor };
     const content = <img src={p.logo} alt={p.name} loading="lazy" decoding="async" />;
     const tooltip = providerNeedsClipboardCopy(p.name)
-      ? `${p.name}: Titel kopieren + Suche öffnen`
-      : `${p.name} öffnen`;
+      ? t('{name}: Titel kopieren + Suche öffnen', { name: p.name })
+      : t('{name} öffnen', { name: p.name });
     if (!url) {
       return (
         <div className={className} style={style} title={p.name}>
@@ -134,7 +135,7 @@ export function ProviderBadgeArea({
           className="ratings-provider-badge ratings-provider-count-badge"
           style={{ background: bgColor, color: textColor }}
           onClick={openPopup}
-          aria-label={`${overflow} weitere Anbieter`}
+          aria-label={t('{n} weitere Anbieter', { n: overflow })}
           aria-expanded={showPopup}
         >
           +{overflow}
@@ -264,7 +265,7 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
               {/* Right: watchlist badge */}
               <div className="ratings-card-top-right">
                 {item.watchlist && (
-                  <Tooltip title="Auf deiner Watchlist" arrow>
+                  <Tooltip title={t('Auf deiner Watchlist')} arrow>
                     <div
                       className="ratings-card-watchlist-badge"
                       style={{ background: `${theme.status.info}dd` }}
@@ -308,7 +309,7 @@ export const RatingItemCard = React.memo<RatingItemCardProps>(({ item, theme }) 
                       color: item.progress === 100 ? theme.status.success : theme.primary,
                     }}
                   >
-                    {item.progress === 100 ? 'Fertig' : `${Math.round(item.progress)}%`}
+                    {item.progress === 100 ? t('Fertig') : `${Math.round(item.progress)}%`}
                   </span>
                 </div>
               )}

@@ -12,6 +12,7 @@ import Refresh from '@mui/icons-material/Refresh';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { AnimeFillerData } from '../../services/animeFillerService';
 
 interface AnimeFillerBannerProps {
@@ -41,7 +42,7 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
               border: `1px dashed color-mix(in srgb, ${currentTheme.primary} 25%, transparent)`,
             }}
           >
-            Suche Filler-Infos …
+            {t('Suche Filler-Infos …')}
           </div>
         </div>
       );
@@ -65,7 +66,9 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
           >
             <FilterListAlt style={{ fontSize: 16, opacity: 0.7 }} />
             <span style={{ flex: 1 }}>
-              Filler-Infos konnten nicht geladen werden (kein MAL-Treffer oder Netzwerk-Hänger).
+              {t(
+                'Filler-Infos konnten nicht geladen werden (kein MAL-Treffer oder Netzwerk-Hänger).'
+              )}
             </span>
             {onReload && (
               <button
@@ -83,7 +86,7 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
                 }}
               >
                 <Refresh style={{ fontSize: 14 }} />
-                Neu laden
+                {t('Neu laden')}
               </button>
             )}
           </div>
@@ -110,7 +113,9 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
           >
             <FilterListAlt style={{ fontSize: 16, color: currentTheme.status.success }} />
             <span style={{ flex: 1 }}>
-              Komplett Canon – {data.totalEpisodes ?? '?'} Folgen ohne Filler oder Recap.
+              {t('Komplett Canon – {n} Folgen ohne Filler oder Recap.', {
+                n: data.totalEpisodes ?? '?',
+              })}
             </span>
           </div>
         </div>
@@ -190,7 +195,7 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
                     fontSize: '0.92em',
                   }}
                 >
-                  · {data.totalEpisodes ?? '?'} Folgen gesamt
+                  {t('· {n} Folgen gesamt', { n: data.totalEpisodes ?? '?' })}
                 </span>
               </span>
             </button>
@@ -198,7 +203,7 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
               <button
                 type="button"
                 onClick={onReload}
-                aria-label="Filler-Infos neu laden"
+                aria-label={t('Filler-Infos neu laden')}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -221,7 +226,7 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              aria-label={expanded ? 'Details einklappen' : 'Details ausklappen'}
+              aria-label={expanded ? t('Details einklappen') : t('Details ausklappen')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -335,8 +340,9 @@ export const AnimeFillerBanner = memo<AnimeFillerBannerProps>(
                     color: currentTheme.text.muted,
                   }}
                 >
-                  Quelle: Jikan/MyAnimeList · F = Filler, R = Recap · Folgen sind durchgehend
-                  nummeriert
+                  {t(
+                    'Quelle: Jikan/MyAnimeList · F = Filler, R = Recap · Folgen sind durchgehend nummeriert'
+                  )}
                 </p>
               </motion.div>
             )}

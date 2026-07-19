@@ -6,6 +6,7 @@ import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { tapScale } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
+import { t } from '../../../services/i18n';
 
 interface RecommendationCardProps {
   item: UnifiedNotification;
@@ -110,7 +111,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
               }}
             >
               <Send style={{ fontSize: 11, color: currentTheme.primary }} />
-              empfiehlt dir · {formatNotificationTime(item.timestamp)}
+              {t('empfiehlt dir')} · {formatNotificationTime(item.timestamp)}
             </div>
           </div>
         </div>
@@ -154,7 +155,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
                 marginBottom: 4,
               }}
             >
-              {data.mediaType === 'movie' ? 'Film' : 'Serie'}
+              {data.mediaType === 'movie' ? t('Film') : t('Serie')}
             </div>
             <div
               style={{
@@ -218,7 +219,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
             }}
           >
             <PlayCircle style={{ fontSize: 17 }} />
-            Anschauen
+            {t('Anschauen')}
           </motion.button>
           <motion.button
             whileTap={tapScale}

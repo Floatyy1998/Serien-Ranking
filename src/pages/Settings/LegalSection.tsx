@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../../services/firebase/analytics';
 import { hapticSelect } from '../../lib/haptics';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const DATA_SOURCES = [
   { label: 'Streaming-Anbieter', link: 'https://www.justwatch.com', name: 'JustWatch' },
@@ -41,7 +42,7 @@ export const LegalSection = memo(
           className="settings-section-title settings-section-title--tight"
           style={{ color: currentTheme.text.primary }}
         >
-          Rechtliches & Datenquellen
+          {t('Rechtliches & Datenquellen')}
         </h2>
 
         <div className="settings-legal-links">
@@ -55,7 +56,7 @@ export const LegalSection = memo(
               color: currentTheme.text.primary,
             }}
           >
-            <span>Datenschutzerkl&auml;rung</span>
+            <span>{t('Datenschutzerklärung')}</span>
             <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
           </motion.button>
           <motion.button
@@ -68,7 +69,7 @@ export const LegalSection = memo(
               color: currentTheme.text.primary,
             }}
           >
-            <span>Impressum</span>
+            <span>{t('Impressum')}</span>
             <ChevronRight style={{ fontSize: '20px', color: currentTheme.text.muted }} />
           </motion.button>
         </div>
@@ -81,7 +82,7 @@ export const LegalSection = memo(
           }}
         >
           <h3 className="settings-datasources-title" style={{ color: currentTheme.text.primary }}>
-            Analyse & Cookies
+            {t('Analyse & Cookies')}
           </h3>
           <div
             style={{
@@ -96,7 +97,7 @@ export const LegalSection = memo(
                 Firebase Analytics
               </div>
               <div style={{ color: currentTheme.text.muted, fontSize: '12px', marginTop: '2px' }}>
-                Anonymisierte Nutzungsdaten zur Verbesserung der App
+                {t('Anonymisierte Nutzungsdaten zur Verbesserung der App')}
               </div>
             </div>
             <label className="settings-toggle-switch" style={{ flexShrink: 0, marginLeft: '12px' }}>
@@ -129,12 +130,12 @@ export const LegalSection = memo(
           style={{ background: currentTheme.background.default }}
         >
           <h3 className="settings-datasources-title" style={{ color: currentTheme.text.primary }}>
-            Datenquellen
+            {t('Datenquellen')}
           </h3>
           <div className="settings-datasources-list" style={{ color: currentTheme.text.muted }}>
             {DATA_SOURCES.map((item) => (
               <div key={item.name} className="settings-datasource-row">
-                <span>{item.label}:</span>
+                <span>{t(item.label)}:</span>
                 <a
                   href={item.link}
                   target="_blank"

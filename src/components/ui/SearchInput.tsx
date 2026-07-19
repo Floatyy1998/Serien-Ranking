@@ -3,6 +3,7 @@ import { Search, Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { scaleButton, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface SearchInputProps {
   value: string;
@@ -14,9 +15,10 @@ interface SearchInputProps {
 export const SearchInput: React.FC<SearchInputProps> = ({
   value,
   onChange,
-  placeholder = 'Suchen...',
+  placeholder,
   autoFocus = false,
 }) => {
+  const resolvedPlaceholder = placeholder ?? t('Suchen...');
   const { currentTheme } = useTheme();
 
   return (
@@ -36,8 +38,8 @@ export const SearchInput: React.FC<SearchInputProps> = ({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        aria-label={placeholder || 'Suchen'}
+        placeholder={resolvedPlaceholder}
+        aria-label={resolvedPlaceholder || t('Suchen')}
         autoFocus={autoFocus}
         style={{
           width: '100%',
@@ -82,7 +84,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
               exit="exit"
               whileTap={tapScaleTight}
               onClick={() => onChange('')}
-              aria-label="Suchfeld leeren"
+              aria-label={t('Suchfeld leeren')}
               style={{
                 pointerEvents: 'auto',
                 background: 'rgba(255, 255, 255, 0.1)',

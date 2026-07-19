@@ -7,6 +7,7 @@ import { useMangaList } from '../../contexts/MangaListContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export const HiddenMangaPage = () => {
   const { currentTheme } = useTheme();
@@ -29,10 +30,12 @@ export const HiddenMangaPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Versteckte Manga"
+        title={t('Versteckte Manga')}
         gradientFrom={currentTheme.text.secondary}
         subtitle={
-          hiddenMangaList.length > 0 ? `${hiddenMangaList.length} Manga versteckt` : undefined
+          hiddenMangaList.length > 0
+            ? t('{n} Manga versteckt', { n: hiddenMangaList.length })
+            : undefined
         }
         icon={<VisibilityOff />}
       />
@@ -45,7 +48,7 @@ export const HiddenMangaPage = () => {
               layout
               role="button"
               tabIndex={0}
-              aria-label={`${manga.title} öffnen`}
+              aria-label={t('{title} öffnen', { title: manga.title })}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, height: 0 }}
@@ -94,7 +97,7 @@ export const HiddenMangaPage = () => {
                   {manga.title}
                 </div>
                 <div style={{ fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}>
-                  Kap. {manga.currentChapter}
+                  {t('Kap.')} {manga.currentChapter}
                   {totalChapters ? ` / ${totalChapters}` : ''} ·{' '}
                   {totalChapters ? `${Math.round(progress)}%` : '—'}
                 </div>
@@ -142,7 +145,7 @@ export const HiddenMangaPage = () => {
                 }}
               >
                 <Visibility style={{ fontSize: 16 }} />
-                Weiter
+                {t('Weiter')}
               </motion.button>
             </motion.div>
           ))}
@@ -152,7 +155,7 @@ export const HiddenMangaPage = () => {
           <div style={{ textAlign: 'center', padding: 60 }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👁️</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: currentTheme.text.primary }}>
-              Keine versteckten Manga
+              {t('Keine versteckten Manga')}
             </div>
             <div
               style={{
@@ -162,7 +165,7 @@ export const HiddenMangaPage = () => {
                 marginTop: 4,
               }}
             >
-              Verstecke Manga über die Detail-Seite, wenn du eine Pause machen möchtest.
+              {t('Verstecke Manga über die Detail-Seite, wenn du eine Pause machen möchtest.')}
             </div>
           </div>
         )}

@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 import { hasPasswordProvider, linkPasswordToAccount } from '../../services/firebase/socialAuth';
+import { t } from '../../services/i18n';
 
 export const SecuritySection = () => {
   const { currentTheme } = useTheme();
@@ -27,11 +28,11 @@ export const SecuritySection = () => {
     if (busy) return;
     setError('');
     if (password.length < 6) {
-      setError('Passwort muss mindestens 6 Zeichen lang sein.');
+      setError(t('Passwort muss mindestens 6 Zeichen lang sein.'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwörter stimmen nicht überein.');
+      setError(t('Passwörter stimmen nicht überein.'));
       return;
     }
     setBusy(true);
@@ -41,11 +42,11 @@ export const SecuritySection = () => {
     } catch (e) {
       const code = (e as { code?: string }).code || '';
       if (code === 'auth/weak-password') {
-        setError('Passwort ist zu schwach.');
+        setError(t('Passwort ist zu schwach.'));
       } else if (code === 'auth/provider-already-linked') {
         setDone(true);
       } else {
-        setError('Passwort konnte nicht gespeichert werden. Bitte erneut versuchen.');
+        setError(t('Passwort konnte nicht gespeichert werden. Bitte erneut versuchen.'));
       }
     } finally {
       setBusy(false);
@@ -60,19 +61,21 @@ export const SecuritySection = () => {
       className="settings-card"
     >
       <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
-        Anmeldung & Sicherheit
+        {t('Anmeldung & Sicherheit')}
       </h2>
 
       {done ? (
         <p style={{ color: currentTheme.status.success, margin: 0 }}>
-          Passwort gesetzt — du kannst dich jetzt zusätzlich mit E-Mail & Passwort anmelden (z. B.
-          in der Browser-Extension).
+          {t(
+            'Passwort gesetzt — du kannst dich jetzt zusätzlich mit E-Mail & Passwort anmelden (z. B. in der Browser-Extension).'
+          )}
         </p>
       ) : (
         <>
           <p style={{ color: currentTheme.text.muted, marginTop: 0 }}>
-            Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich
-            auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.
+            {t(
+              'Du meldest dich mit Google oder Apple an. Lege zusätzlich ein Passwort fest, um dich auch mit E-Mail & Passwort anzumelden — nötig z. B. für die Browser-Extension.'
+            )}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -80,7 +83,7 @@ export const SecuritySection = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Neues Passwort"
+              placeholder={t('Neues Passwort')}
               className="glass-input"
               autoComplete="new-password"
             />
@@ -88,7 +91,7 @@ export const SecuritySection = () => {
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Passwort wiederholen"
+              placeholder={t('Passwort wiederholen')}
               className="glass-input"
               autoComplete="new-password"
             />
@@ -111,7 +114,7 @@ export const SecuritySection = () => {
               }}
             >
               <Key style={{ fontSize: 20, color: currentTheme.primary }} />
-              {busy ? 'Wird gespeichert…' : 'Passwort festlegen'}
+              {busy ? t('Wird gespeichert…') : t('Passwort festlegen')}
             </motion.button>
           </div>
         </>

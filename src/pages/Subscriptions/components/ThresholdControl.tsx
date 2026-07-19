@@ -1,4 +1,5 @@
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 
 interface ThresholdControlProps {
   unusedThresholdDays: number;
@@ -26,16 +27,16 @@ export const ThresholdControl = ({
       }}
     >
       <div style={{ flex: 1 }}>
-        <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Schwellenwert</p>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>{t('Schwellenwert')}</p>
         <p style={{ margin: '2px 0 0 0', fontSize: 12, color: muted }}>
-          Abo gilt als ungenutzt nach
+          {t('Abo gilt als ungenutzt nach')}
         </p>
       </div>
       <input
         type="number"
         min={7}
         max={365}
-        aria-label="Schwellenwert in Tagen, ab denen ein Abo als ungenutzt gilt"
+        aria-label={t('Schwellenwert in Tagen, ab denen ein Abo als ungenutzt gilt')}
         value={unusedThresholdDays}
         onChange={(e) => {
           const v = parseInt(e.target.value, 10);
@@ -44,7 +45,7 @@ export const ThresholdControl = ({
         className="sub-threshold-input"
         style={{ color: currentTheme.text.primary, borderColor: border }}
       />
-      <span style={{ fontSize: 13, color: muted }}>Tagen</span>
+      <span style={{ fontSize: 13, color: muted }}>{t('Tagen')}</span>
     </div>
   );
 };

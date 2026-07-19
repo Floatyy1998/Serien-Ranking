@@ -44,6 +44,7 @@ import {
 } from './animeFormat';
 import type { TmdbProviderInfo } from './resolveTmdbId';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
+import { t } from '../../services/i18n';
 
 /**
  * Provider-Logo-Strip im MiniProviderBadges-Look (Logo + Radius 5px +
@@ -79,8 +80,8 @@ function ProviderLogos({
       {visible.map((provider) => {
         const url = getProviderSearchUrl(provider.name, searchTitle);
         const titleAttr = providerNeedsClipboardCopy(provider.name)
-          ? `${provider.name}: Titel kopieren + Suche öffnen`
-          : `${provider.name} öffnen`;
+          ? t('{name}: Titel kopieren + Suche öffnen', { name: provider.name })
+          : t('{title} öffnen', { title: provider.name });
         const img = (
           <img
             src={provider.logo}
@@ -178,7 +179,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   /** Beschreibung aufgeklappt („mehr lesen" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = anime.title.english || anime.title.romaji || 'Unbekannter Titel';
+  const title = anime.title.english || anime.title.romaji || t('Unbekannter Titel');
   const cover = anime.coverImage?.large || '';
   const tint = anime.coverImage?.color || null;
   const providers = tmdbProviders ?? [];
@@ -212,10 +213,10 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
   if (sinceLabel) {
     pillText = anime.nextAiringEpisode
       ? `Ep ${anime.nextAiringEpisode.episode} · in ${shortCountdown(anime.nextAiringEpisode.timeUntilAiring)}`
-      : 'läuft';
+      : t('läuft');
     pillBg = anime.nextAiringEpisode ? currentTheme.accent : currentTheme.status.success;
   } else if (hasFullDate && startDate && isSameDay(startDate, nowDate)) {
-    pillText = 'HEUTE';
+    pillText = t('HEUTE');
     pillBg = currentTheme.accent;
   } else if (hasFullDate && startDate && startDate.getTime() >= startOfTomorrow) {
     // Zukünftiger STARTTAG schlägt den AniList-Status: bei JST-Vorpremieren
@@ -228,10 +229,10 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
     pillText = hasFullDate && startDate ? datePillText(startDate) : 'TBA';
     pillBg = hasFullDate ? currentTheme.accent : currentTheme.background.surfaceElevated;
   } else if (anime.status === 'FINISHED') {
-    pillText = 'BEENDET';
+    pillText = t('BEENDET');
     pillBg = currentTheme.background.surfaceElevated;
   } else if (anime.status === 'RELEASING' || (startDate && startDate.getTime() <= now)) {
-    pillText = 'LÄUFT';
+    pillText = t('LÄUFT');
     pillBg = currentTheme.status.success;
   } else {
     pillText = 'TBA';
@@ -277,7 +278,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
         {/* Poster links, volle Kartenhöhe (themed Placeholder als Fallback) */}
         <img
           src={cover || placeholder}
-          alt={`Cover von ${title}`}
+          alt={t('Cover von {title}', { title })}
           loading="lazy"
           decoding="async"
           className="as-card-poster"
@@ -330,7 +331,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
                     color: lightenColor(currentTheme.primary, 0.3),
                   }}
                 >
-                  Neu
+                  {t('Neu')}
                 </span>
               )}
             </span>
@@ -338,7 +339,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
               <span
                 className="as-card-inlist-badge"
                 style={{ background: `${currentTheme.primary}dd` }}
-                title="In deiner Liste"
+                title={t('In deiner Liste')}
               >
                 <CheckCircle
                   style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
@@ -348,8 +349,8 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
               <button
                 type="button"
                 className="as-card-add"
-                title="Zur Liste hinzufügen"
-                aria-label={`${title} zur Liste hinzufügen`}
+                title={t('Zur Liste hinzufügen')}
+                aria-label={t('{title} zur Liste hinzufügen', { title })}
                 aria-busy={adding}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -404,7 +405,7 @@ export const AnimeSeasonCard: React.FC<AnimeSeasonCardProps> = ({
               setDescExpanded((value) => !value);
             }}
           >
-            {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+            {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
           </button>
           <div className="as-card-providers as-fade" key={providers.length ? 'prov' : 'prov-none'}>
             <ProviderLogos providers={providers} size={20} searchTitle={title} />

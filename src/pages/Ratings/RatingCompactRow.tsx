@@ -16,6 +16,7 @@ import { Check } from '@mui/icons-material';
 import React, { useMemo, useState } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { findNextEpisode, markNextEpisodeWatched } from '../../hooks/markNextEpisode';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { PLACEHOLDER_SVG, ProviderBadgeArea } from './RatingItemCard';
 import type { PreparedItem } from './useRatingsData';
@@ -96,12 +97,14 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
             <span className="ratings-row-status">
               {next && (
                 <span className="ratings-row-next" style={{ color: theme.text.muted }}>
-                  {`Weiter: S${next.seasonNumber} E${next.episodeNumber}${next.episodeName ? ` „${next.episodeName}"` : ''}`}
+                  {t('Weiter: {episode}', {
+                    episode: `S${next.seasonNumber} E${next.episodeNumber}${next.episodeName ? ` „${next.episodeName}"` : ''}`,
+                  })}
                 </span>
               )}
               {isComplete && (
                 <span className="ratings-row-done" style={{ color: theme.status.success }}>
-                  ✓ Komplett gesehen
+                  {t('✓ Komplett gesehen')}
                 </span>
               )}
               {inProgress && (
@@ -123,7 +126,7 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
                     background: `${theme.status.info.main}14`,
                   }}
                 >
-                  Watchlist
+                  {t('Watchlist')}
                 </span>
               )}
             </span>
@@ -144,7 +147,11 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
         <span
           className="ratings-row-score"
           style={{ color: item.rating > 0 ? 'var(--theme-accent)' : theme.text.muted }}
-          aria-label={item.rating > 0 ? `Bewertung ${item.rating.toFixed(1)}` : 'Unbewertet'}
+          aria-label={
+            item.rating > 0
+              ? t('Bewertung {rating}', { rating: item.rating.toFixed(1) })
+              : t('Unbewertet')
+          }
         >
           {item.rating > 0 ? (
             <>
@@ -162,7 +169,10 @@ export const RatingCompactRow = React.memo<RatingCompactRowProps>(
             className="ratings-row-mark"
             onClick={handleMark}
             disabled={busy || !uid}
-            aria-label={`S${next.seasonNumber} E${next.episodeNumber} als gesehen markieren`}
+            aria-label={t('S{s} E{e} als gesehen markieren', {
+              s: next.seasonNumber,
+              e: next.episodeNumber,
+            })}
             style={{
               color: theme.primary,
               borderColor: `${theme.primary}66`,

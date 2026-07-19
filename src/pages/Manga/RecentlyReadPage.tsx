@@ -9,11 +9,12 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { tapScaleSmall } from '../../lib/motion';
+import { appLocale, t } from '../../services/i18n';
 
 const TIME_RANGES = [
-  { days: 7, label: '7 Tage' },
-  { days: 30, label: '30 Tage' },
-  { days: 90, label: '3 Monate' },
+  { days: 7, label: t('7 Tage') },
+  { days: 30, label: t('30 Tage') },
+  { days: 90, label: t('3 Monate') },
 ] as const;
 
 interface DateGroup {
@@ -31,11 +32,15 @@ function formatGroupDate(date: Date): string {
   const diff = today.getTime() - d.getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (days === 0) return 'Heute';
-  if (days === 1) return 'Gestern';
-  if (days < 7) return `Vor ${days} Tagen`;
+  if (days === 0) return t('Heute');
+  if (days === 1) return t('Gestern');
+  if (days < 7) return t('Vor {n} Tagen', { n: days });
 
-  return d.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  return d.toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
 }
 
 export const RecentlyReadPage = () => {
@@ -81,10 +86,10 @@ export const RecentlyReadPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Lese-Verlauf"
+        title={t('Lese-Verlauf')}
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
-        subtitle={totalRead > 0 ? `${totalRead} Manga gelesen` : undefined}
+        subtitle={totalRead > 0 ? t('{n} Manga gelesen', { n: totalRead }) : undefined}
         icon={<History />}
       />
 
@@ -156,7 +161,7 @@ export const RecentlyReadPage = () => {
                     key={manga.anilistId}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${manga.title} öffnen`}
+                    aria-label={t('{title} öffnen', { title: manga.title })}
                     onClick={() => navigate(`/manga/${manga.anilistId}`)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
@@ -204,7 +209,7 @@ export const RecentlyReadPage = () => {
                       <div
                         style={{ fontSize: 11, color: currentTheme.text.secondary, marginTop: 2 }}
                       >
-                        Kap. {manga.currentChapter}
+                        {t('Kap.')} {manga.currentChapter}
                         {getEffectiveChapterCount(manga)
                           ? ` / ${getEffectiveChapterCount(manga)}`
                           : ''}
@@ -227,8 +232,10 @@ export const RecentlyReadPage = () => {
         {dateGroups.length === 0 && (
           <EmptyState
             icon={<History style={{ fontSize: 40 }} />}
-            title="Kein Lese-Verlauf"
-            description="Hier siehst du deine zuletzt gelesenen Manga, sobald du Kapitel als gelesen markierst."
+            title={t('Kein Lese-Verlauf')}
+            description={t(
+              'Hier siehst du deine zuletzt gelesenen Manga, sobald du Kapitel als gelesen markierst.'
+            )}
           />
         )}
       </div>

@@ -19,6 +19,7 @@ import {
 import { useAnimeFillerCatalog } from '../../../hooks/useAnimeFillerCatalog';
 import { chipLabel, chipColor } from '../../../utils/episodeChips';
 import type { Series } from '../../../types/Series';
+import { t } from '../../../services/i18n';
 
 interface TodayEpisode {
   seriesId: string;
@@ -100,7 +101,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
       <SectionHeader
         icon={<NewReleases />}
         iconColor={currentTheme.accent}
-        title="Heute Neu"
+        title={t('Heute Neu')}
         onSeeAll={() => navigate('/calendar')}
       />
       <div

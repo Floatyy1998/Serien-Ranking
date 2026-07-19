@@ -1,5 +1,6 @@
 import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
+import { t } from '../../services/i18n';
 import type { EarnedBadge } from './badgeDefinitions';
 import { BadgeIcon } from './BadgeIcons';
 
@@ -76,7 +77,7 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
                 '&:hover': { opacity: 0.8 },
               }}
             >
-              Alle ansehen
+              {t('Alle ansehen')}
             </Typography>
           )
         }

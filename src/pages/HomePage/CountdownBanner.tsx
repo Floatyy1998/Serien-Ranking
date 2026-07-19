@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 
 interface CountdownBannerProps {
   countdown: { title: string; posterUrl?: string; daysUntil: number; seasonNumber: number };
@@ -16,10 +17,10 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
   const countdownColor = _ct.accent;
   const daysText =
     countdown.daysUntil === 0
-      ? 'Heute!'
+      ? t('Heute!')
       : countdown.daysUntil === 1
-        ? 'Morgen'
-        : `in ${countdown.daysUntil} Tagen`;
+        ? t('Morgen')
+        : t('in {n} Tagen', { n: countdown.daysUntil });
 
   return (
     <motion.div
@@ -27,7 +28,11 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
       onClick={() => navigate('/countdowns')}
       role="button"
       tabIndex={0}
-      aria-label={`Countdown: ${countdown.title}, Staffel ${countdown.seasonNumber} ${daysText}`}
+      aria-label={t('Countdown: {title}, Staffel {season} {days}', {
+        title: countdown.title,
+        season: countdown.seasonNumber,
+        days: daysText,
+      })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -138,7 +143,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
             color: _ct.text.secondary,
           }}
         >
-          Staffel {countdown.seasonNumber} &middot; {daysText}
+          {t('Staffel {n}', { n: countdown.seasonNumber })} &middot; {daysText}
         </p>
       </div>
       <div
@@ -167,7 +172,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
               letterSpacing: '0.5px',
             }}
           >
-            Heute
+            {t('Heute')}
           </span>
         ) : (
           <>
@@ -189,7 +194,7 @@ function CountdownBannerImpl({ countdown, totalCount, navigate }: CountdownBanne
                 textTransform: 'uppercase',
               }}
             >
-              {countdown.daysUntil === 1 ? 'Tag' : 'Tage'}
+              {countdown.daysUntil === 1 ? t('Tag') : t('Tage')}
             </span>
           </>
         )}

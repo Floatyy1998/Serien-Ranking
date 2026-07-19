@@ -5,6 +5,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { BugTicket } from '../types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 
 const autoResize = (el: HTMLTextAreaElement) => {
   el.style.height = 'auto';
@@ -192,7 +193,7 @@ export function TicketCard({
                         fontWeight: 600,
                       }}
                     >
-                      Titel
+                      {t('Titel')}
                     </label>
                     <input
                       type="text"
@@ -221,7 +222,7 @@ export function TicketCard({
                         fontWeight: 600,
                       }}
                     >
-                      Beschreibung
+                      {t('Beschreibung')}
                     </label>
                     <textarea
                       value={editDesc}
@@ -260,7 +261,7 @@ export function TicketCard({
                         cursor: 'pointer',
                       }}
                     >
-                      Abbrechen
+                      {t('Abbrechen')}
                     </button>
                     <button
                       onClick={async () => {
@@ -286,7 +287,7 @@ export function TicketCard({
                         cursor: editTitle.trim() && editDesc.trim() ? 'pointer' : 'default',
                       }}
                     >
-                      Speichern
+                      {t('Speichern')}
                     </button>
                   </div>
                 </div>
@@ -301,7 +302,7 @@ export function TicketCard({
                     }}
                   >
                     <div style={{ fontSize: '11px', color: theme.text.muted, fontWeight: 600 }}>
-                      Beschreibung
+                      {t('Beschreibung')}
                     </div>
                     {canEdit && (
                       <button
@@ -315,7 +316,7 @@ export function TicketCard({
                           padding: '2px 6px',
                         }}
                       >
-                        Bearbeiten
+                        {t('Bearbeiten')}
                       </button>
                     )}
                   </div>
@@ -341,7 +342,7 @@ export function TicketCard({
                       fontWeight: 600,
                     }}
                   >
-                    Schritte zum Reproduzieren
+                    {t('Schritte zum Reproduzieren')}
                   </div>
                   <div
                     style={{
@@ -399,7 +400,7 @@ export function TicketCard({
                       fontWeight: 600,
                     }}
                   >
-                    Kommentare
+                    {t('Kommentare')}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {comments.map((c) => (
@@ -475,12 +476,12 @@ export function TicketCard({
                         fontFamily: 'inherit',
                       }}
                     >
-                      Wiedereroeffnung beantragen
+                      {t('Wiedereroeffnung beantragen')}
                     </motion.button>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       <div style={{ fontSize: '12px', color: theme.text.muted }}>
-                        Begruendung fuer die Wiedereroeffnung:
+                        {t('Begruendung fuer die Wiedereroeffnung:')}
                       </div>
                       <textarea
                         value={commentText}
@@ -488,7 +489,7 @@ export function TicketCard({
                           setCommentText(e.target.value);
                           autoResize(e.target);
                         }}
-                        placeholder="Warum soll das Ticket wieder geoeffnet werden?"
+                        placeholder={t('Warum soll das Ticket wieder geoeffnet werden?')}
                         rows={2}
                         style={{
                           padding: '8px 12px',
@@ -522,7 +523,7 @@ export function TicketCard({
                             fontFamily: 'inherit',
                           }}
                         >
-                          Abbrechen
+                          {t('Abbrechen')}
                         </motion.button>
                         <motion.button
                           whileTap={tapScale}
@@ -530,7 +531,9 @@ export function TicketCard({
                             if (!commentText.trim()) return;
                             setSending(true);
                             const success = await onAddComment(
-                              `[Antrag auf Wiedereroeffnung] ${commentText.trim()}`
+                              t('[Antrag auf Wiedereroeffnung] {text}', {
+                                text: commentText.trim(),
+                              })
                             );
                             if (success) {
                               setCommentText('');
@@ -553,7 +556,7 @@ export function TicketCard({
                             fontFamily: 'inherit',
                           }}
                         >
-                          Antrag senden
+                          {t('Antrag senden')}
                         </motion.button>
                       </div>
                     </div>
@@ -575,7 +578,7 @@ export function TicketCard({
                         ta.style.height = 'auto';
                       }
                     }}
-                    placeholder="Kommentar schreiben..."
+                    placeholder={t('Kommentar schreiben...')}
                     rows={1}
                     style={{
                       flex: 1,

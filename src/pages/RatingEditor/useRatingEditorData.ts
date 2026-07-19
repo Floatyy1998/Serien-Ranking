@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import { genreMenuItems, genreMenuItemsForMovies } from '../../config/menuItems';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
@@ -182,10 +183,10 @@ export const useRatingEditorData = (): UseRatingDataResult => {
         }
 
         trackRatingSaved(String(item.id), type || 'unknown', overallRating);
-        showSnackbar(`Bewertung für "${item.title}" wurde gespeichert!`);
+        showSnackbar(t('Bewertung für "{title}" wurde gespeichert!', { title: item.title ?? '' }));
       }
     } catch {
-      showSnackbar('Fehler beim Speichern der Bewertung.');
+      showSnackbar(t('Fehler beim Speichern der Bewertung.'));
     } finally {
       setIsSaving(false);
     }
@@ -213,9 +214,9 @@ export const useRatingEditorData = (): UseRatingDataResult => {
 
       await ratingRef.remove();
       trackRatingDeleted(String(item.id), type || 'unknown');
-      showSnackbar(`Bewertung für "${item.title}" wurde gelöscht!`);
+      showSnackbar(t('Bewertung für "{title}" wurde gelöscht!', { title: item.title ?? '' }));
     } catch {
-      showSnackbar('Fehler beim Löschen der Bewertung.');
+      showSnackbar(t('Fehler beim Löschen der Bewertung.'));
     } finally {
       setIsSaving(false);
     }

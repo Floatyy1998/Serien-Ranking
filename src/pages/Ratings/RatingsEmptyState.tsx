@@ -9,6 +9,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface RatingsEmptyStateProps {
   theme: ReturnType<typeof useTheme>['currentTheme'];
@@ -25,12 +26,14 @@ export const RatingsEmptyState = React.memo<RatingsEmptyStateProps>(
           <Star style={{ fontSize: 48, color: theme.text.muted }} />
         </div>
         <h2 className="ratings-empty-title">
-          Noch keine {activeTab === 'series' ? 'Serien' : 'Filme'}
+          {activeTab === 'series' ? t('Noch keine Serien') : t('Noch keine Filme')}
         </h2>
         <p className="ratings-empty-text" style={{ color: theme.text.muted }}>
           {hasQuickFilter
-            ? 'Keine Ergebnisse für diesen Filter'
-            : `Bewerte ${activeTab === 'series' ? 'Serien' : 'Filme'} um sie hier zu sehen!`}
+            ? t('Keine Ergebnisse für diesen Filter')
+            : activeTab === 'series'
+              ? t('Bewerte Serien um sie hier zu sehen!')
+              : t('Bewerte Filme um sie hier zu sehen!')}
         </p>
         {!hasQuickFilter && (
           <button
@@ -49,7 +52,7 @@ export const RatingsEmptyState = React.memo<RatingsEmptyStateProps>(
               color: getOptimalTextColor(theme.primary),
             }}
           >
-            {activeTab === 'series' ? 'Serien entdecken' : 'Filme entdecken'}
+            {activeTab === 'series' ? t('Serien entdecken') : t('Filme entdecken')}
           </button>
         )}
       </div>

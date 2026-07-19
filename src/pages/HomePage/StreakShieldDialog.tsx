@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Close } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { PET_CONFIG } from '../../services/pet/petConstants';
+import { t } from '../../services/i18n';
 import type { ActivePetInfo, WatchStreakData } from './watchStreakHelpers';
 
 interface StreakShieldDialogProps {
@@ -102,7 +103,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
               <button
                 onClick={onClose}
                 disabled={shieldLoading}
-                aria-label="Schließen"
+                aria-label={t('Schließen')}
                 style={{
                   background: 'none',
                   border: 'none',
@@ -124,11 +125,13 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                 lineHeight: 1.5,
               }}
             >
-              <strong style={{ color: currentTheme.text.primary }}>{pet.name}</strong> opfert{' '}
+              <strong style={{ color: currentTheme.text.primary }}>{pet.name}</strong> {t('opfert')}{' '}
               <strong style={{ color: shieldColor }}>{PET_CONFIG.STREAK_SHIELD_XP_COST} XP</strong>{' '}
-              um deine{' '}
-              <strong style={{ color: flameColor }}>{streak.currentStreak}-Tage-Streak</strong> zu
-              retten.
+              {t('um deine')}{' '}
+              <strong style={{ color: flameColor }}>
+                {t('{n}-Tage-Streak', { n: streak.currentStreak })}
+              </strong>
+              {t(' zu retten.')}
             </p>
 
             {/* Cost breakdown */}
@@ -143,7 +146,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span>XP-Kosten</span>
+                <span>{t('XP-Kosten')}</span>
                 <span style={{ fontWeight: 600, color: currentTheme.text.primary }}>
                   -{PET_CONFIG.STREAK_SHIELD_XP_COST} XP
                 </span>
@@ -164,7 +167,10 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                     color: currentTheme.status?.warning || '#f59e0b',
                   }}
                 >
-                  {pet.name} wird auf Level {pet.level - 1} fallen
+                  {t('{name} wird auf Level {level} fallen', {
+                    name: pet.name,
+                    level: pet.level - 1,
+                  })}
                 </div>
               )}
             </div>
@@ -186,7 +192,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                Abbrechen
+                {t('Abbrechen')}
               </button>
               <button
                 onClick={onActivate}
@@ -204,7 +210,7 @@ export const StreakShieldDialog: React.FC<StreakShieldDialogProps> = ({
                   opacity: shieldLoading ? 0.7 : 1,
                 }}
               >
-                {shieldLoading ? 'Aktiviere...' : 'Aktivieren'}
+                {shieldLoading ? t('Aktiviere...') : t('Aktivieren')}
               </button>
             </div>
           </motion.div>

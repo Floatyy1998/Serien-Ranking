@@ -6,6 +6,7 @@ import { HorizontalScrollContainer } from '../ui';
 import type { CharacterMediaEdge, VoiceActorDetailsData } from './CastCrew.types';
 import { tapScale } from '../../lib/motion';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 
 interface VoiceActorDetailsViewProps {
   voiceActorDetails: VoiceActorDetailsData;
@@ -70,12 +71,12 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
           cursor: 'pointer',
         }}
       >
-        ← Zurück
+        ← {t('Zurück')}
       </button>
 
       {voiceActorLoading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <div style={{ color: currentTheme.text.muted }}>Lade Sprecher-Details...</div>
+          <div style={{ color: currentTheme.text.muted }}>{t('Lade Sprecher-Details...')}</div>
         </div>
       ) : (
         <>
@@ -154,7 +155,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                     margin: 0,
                   }}
                 >
-                  Geboren: {voiceActorDetails.dateOfBirth.day || '??'}.
+                  {t('Geboren:')} {voiceActorDetails.dateOfBirth.day || '??'}.
                   {voiceActorDetails.dateOfBirth.month || '??'}.
                   {voiceActorDetails.dateOfBirth.year || '????'}
                 </p>
@@ -171,7 +172,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                 marginBottom: '12px',
               }}
             >
-              Bekannt aus
+              {t('Bekannt aus')}
             </h4>
 
             <HorizontalScrollContainer gap={12} style={{ paddingBottom: '8px' }}>
@@ -299,7 +300,7 @@ export const VoiceActorDetailsView: React.FC<VoiceActorDetailsViewProps> = ({
                         color: currentTheme.text.muted,
                       }}
                     >
-                      als {edge.characters[0].name.full}
+                      {t('als {rolle}', { rolle: edge.characters[0].name.full })}
                     </p>
                   )}
                 </motion.div>

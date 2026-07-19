@@ -11,6 +11,7 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { getProviderBrand } from '../Subscriptions/providerBrands';
 import type { SeriesGroup } from './useCalendarData';
@@ -101,11 +102,11 @@ function formatAirTime(airstamp?: string): string | null {
 }
 
 function premiereLabel(type: WeeklyEpisode['premiereType']): string {
-  return type === 'season-start' ? 'Staffelstart' : 'Rückkehr';
+  return type === 'season-start' ? t('Staffelstart') : t('Rückkehr');
 }
 
 function breakLabel(type: NonNullable<WeeklyEpisode['breakType']>): string {
-  return type === 'season-finale' ? 'Staffelende' : 'Staffelpause';
+  return type === 'season-finale' ? t('Staffelende') : t('Staffelpause');
 }
 
 /** Fixed violet colors for break chips */
@@ -134,8 +135,8 @@ const ProviderBadge = memo(
     const url = normalized ? getProviderSearchUrl(normalized, searchTitle) : null;
     const tooltip =
       normalized && providerNeedsClipboardCopy(normalized)
-        ? `${provider.name}: Titel kopieren + Suche öffnen`
-        : `${provider.name} öffnen`;
+        ? t('{name}: Titel kopieren + Suche öffnen', { name: provider.name })
+        : t('{title} öffnen', { title: provider.name });
     const img = (
       <img
         src={src}
@@ -202,7 +203,7 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
       <div
         className={`cal-ep-status${small ? ' small' : ''}`}
         role="img"
-        aria-label="Gesehen"
+        aria-label={t('Gesehen')}
         style={{
           background: `${currentTheme.status.success}18`,
           color: currentTheme.status.success,
@@ -216,7 +217,7 @@ const WatchIndicator = memo(({ watched, onMark, small }: WatchIndicatorProps) =>
   return (
     <button
       type="button"
-      aria-label="Als gesehen markieren"
+      aria-label={t('Als gesehen markieren')}
       className={`cal-ep-mark${small ? ' small' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
@@ -277,7 +278,7 @@ const PosterWrap = memo(
           <div
             className="cal-ep-status-overlay"
             role="img"
-            aria-label="Gesehen"
+            aria-label={t('Gesehen')}
             style={{
               background: `${currentTheme.status.success}cc`,
               color: currentTheme.text.secondary,
@@ -288,7 +289,7 @@ const PosterWrap = memo(
         ) : onMark ? (
           <button
             type="button"
-            aria-label="Als gesehen markieren"
+            aria-label={t('Als gesehen markieren')}
             className="cal-ep-mark-overlay"
             onClick={(e) => {
               e.stopPropagation();
@@ -382,7 +383,10 @@ export const SingleEpisodeCard = memo(
         }}
         role="button"
         tabIndex={0}
-        aria-label={`${ep.seriesTitle} ${formatEpisodeCode(ep.seasonNumber, ep.episodeNumber)} – Details öffnen`}
+        aria-label={t('{title} {code} – Details öffnen', {
+          title: ep.seriesTitle,
+          code: formatEpisodeCode(ep.seasonNumber, ep.episodeNumber),
+        })}
         onClick={handleClick}
         onKeyDown={activateOnKey(handleClick)}
       >
@@ -532,7 +536,10 @@ export const EpisodeGroupCard = memo(
     const borderColor = stripColor ?? currentTheme.primary;
 
     const episodeRange = `S${String(firstEp.seasonNumber).padStart(2, '0')} E${String(firstEp.episodeNumber).padStart(2, '0')}–E${String(lastEp.episodeNumber).padStart(2, '0')}`;
-    const countLabel = `${group.episodes.length} Folgen · ${watchedInGroup} gesehen`;
+    const countLabel = t('{n} Folgen · {w} gesehen', {
+      n: group.episodes.length,
+      w: watchedInGroup,
+    });
     const provider = displayProvider ?? undefined;
 
     return (
@@ -553,7 +560,7 @@ export const EpisodeGroupCard = memo(
           role="button"
           tabIndex={0}
           aria-expanded={isExpanded}
-          aria-label={`${group.seriesTitle}, ${countLabel} – ${isExpanded ? 'einklappen' : 'ausklappen'}`}
+          aria-label={`${group.seriesTitle}, ${countLabel} – ${isExpanded ? t('einklappen') : t('ausklappen')}`}
           onClick={onToggle}
           onKeyDown={activateOnKey(onToggle)}
         >
@@ -644,7 +651,7 @@ export const EpisodeGroupCard = memo(
               <div
                 className="cal-ep-status"
                 role="img"
-                aria-label="Alle gesehen"
+                aria-label={t('Alle gesehen')}
                 style={{
                   background: `${currentTheme.status.success}18`,
                   color: currentTheme.status.success,
@@ -675,7 +682,10 @@ export const EpisodeGroupCard = memo(
                   className="cal-ep-sub"
                   role="button"
                   tabIndex={0}
-                  aria-label={`E${String(ep.episodeNumber).padStart(2, '0')} ${ep.episodeName} – Details öffnen`}
+                  aria-label={t('{code} {name} – Details öffnen', {
+                    code: `E${String(ep.episodeNumber).padStart(2, '0')}`,
+                    name: ep.episodeName,
+                  })}
                   onClick={openEpisode}
                   onKeyDown={activateOnKey(openEpisode)}
                 >

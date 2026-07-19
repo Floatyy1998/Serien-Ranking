@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
@@ -37,7 +38,7 @@ export const FriendsTab = ({
         const profile = friendProfiles[friend.uid] || friend;
         return {
           friend,
-          displayName: profile.displayName || profile.username || 'Unbekannt',
+          displayName: profile.displayName || profile.username || t('Unbekannt'),
           username: profile.username || '',
           photoURL: profile.photoURL,
           isOnline: friend.isOnline,
@@ -64,9 +65,11 @@ export const FriendsTab = ({
       >
         <EmptyState
           icon={<GroupRounded style={{ fontSize: 'inherit' }} />}
-          title="Noch keine Freunde"
-          description="Füge Freunde hinzu, um ihre Aktivitäten, Bewertungen und Watchlists zu verfolgen."
-          action={{ label: 'Freund hinzufügen', onClick: onAddFriend }}
+          title={t('Noch keine Freunde')}
+          description={t(
+            'Füge Freunde hinzu, um ihre Aktivitäten, Bewertungen und Watchlists zu verfolgen.'
+          )}
+          action={{ label: t('Freund hinzufügen'), onClick: onAddFriend }}
         />
       </motion.div>
     );
@@ -97,7 +100,11 @@ export const FriendsTab = ({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={`${friends.length} ${friends.length === 1 ? 'Freund' : 'Freunde'} durchsuchen`}
+          placeholder={
+            friends.length === 1
+              ? t('{n} Freund durchsuchen', { n: friends.length })
+              : t('{n} Freunde durchsuchen', { n: friends.length })
+          }
           style={{
             flex: 1,
             background: 'transparent',
@@ -118,7 +125,7 @@ export const FriendsTab = ({
             fontSize: '15px',
           }}
         >
-          Keine Treffer für „{query}“
+          {t('Keine Treffer für „{query}“', { query })}
         </div>
       ) : (
         <div
@@ -209,7 +216,7 @@ export const FriendsTab = ({
                   {displayName}
                 </h3>
                 <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
-                  {username ? `@${username}` : isOnline ? 'Online' : 'Freund'}
+                  {username ? `@${username}` : isOnline ? t('Online') : t('Freund')}
                 </p>
               </div>
 
@@ -219,7 +226,7 @@ export const FriendsTab = ({
                   e.stopPropagation();
                   onRemoveFriend({ uid: friend.uid, name: displayName });
                 }}
-                aria-label={`${displayName} entfernen`}
+                aria-label={t('{name} entfernen', { name: displayName })}
                 style={{
                   width: '36px',
                   height: '36px',

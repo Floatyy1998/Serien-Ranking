@@ -4,6 +4,7 @@ import { Refresh } from '@mui/icons-material';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface ResetSectionProps {
   currentTheme: ReturnType<typeof useTheme>['currentTheme'];
@@ -48,8 +49,8 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
           >
             <Refresh style={{ fontSize: 20 }} />
             <div>
-              <h3>Theme zurücksetzen</h3>
-              <p>Alle Farben auf Standard</p>
+              <h3>{t('Theme zurücksetzen')}</h3>
+              <p>{t('Alle Farben auf Standard')}</p>
             </div>
           </motion.button>
         ) : (
@@ -69,7 +70,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
                 color: currentTheme.text.secondary,
               }}
             >
-              Zurücksetzen
+              {t('Zurücksetzen')}
             </motion.button>
             <motion.button
               whileTap={tapScale}
@@ -81,7 +82,7 @@ export const ResetSection = memo(({ currentTheme, onReset }: ResetSectionProps) 
                 color: currentTheme.text.secondary,
               }}
             >
-              Abbrechen
+              {t('Abbrechen')}
             </motion.button>
           </motion.div>
         )}

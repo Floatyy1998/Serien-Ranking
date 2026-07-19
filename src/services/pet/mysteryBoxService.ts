@@ -2,6 +2,7 @@ import { dbRef, userPath } from '../../services/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { t } from '../i18n';
 import { getUserPets } from './petCore';
 
 /** Interval: alle X Episoden gibt es eine Mystery Box */
@@ -307,7 +308,7 @@ async function generateMysteryReward(
   const boost = BOOST_EPISODES[rarity];
   return {
     type: 'xp_boost',
-    label: `${boost.multiplier}x XP — ${boost.episodes} Episoden`,
+    label: t('{x}x XP — {n} Episoden', { x: boost.multiplier, n: boost.episodes }),
     icon: '\u26A1',
     rarity,
     xpMultiplier: boost.multiplier,

@@ -7,6 +7,7 @@ import { useDeviceType } from '../../../hooks/useDeviceType';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { getGreeting } from '../../../lib/text/greetings';
+import { t } from '../../../services/i18n';
 import { tmdbFetch } from '../../../services/tmdbClient';
 import { LiveClock } from '../LiveClock';
 import { tapScaleSmall } from '../../../lib/motion';
@@ -45,17 +46,25 @@ export const GreetingSection = React.memo(function GreetingSection({
   // Daten-Pods im Deck: einheitliches Glas statt vierfarbiger Chips.
   const statPods = useMemo(
     () => [
-      { key: 'eps', value: watchedEpisodes, label: 'Episoden', to: '/stats', highlight: false },
+      { key: 'eps', value: watchedEpisodes, label: t('Episoden'), to: '/stats', highlight: false },
       {
         key: 'movies',
         value: totalMovies,
-        label: 'Filme',
+        label: t('Filme'),
         to: '/ratings?tab=movies',
         highlight: false,
       },
-      { key: 'active', value: `${progress}%`, label: 'Aktiv', to: '/stats', highlight: false },
+      { key: 'active', value: `${progress}%`, label: t('Aktiv'), to: '/stats', highlight: false },
       ...(todayEpisodes > 0
-        ? [{ key: 'today', value: todayEpisodes, label: 'Heute', to: '/calendar', highlight: true }]
+        ? [
+            {
+              key: 'today',
+              value: todayEpisodes,
+              label: t('Heute'),
+              to: '/calendar',
+              highlight: true,
+            },
+          ]
         : []),
     ],
     [watchedEpisodes, totalMovies, progress, todayEpisodes]
@@ -234,7 +243,7 @@ export const GreetingSection = React.memo(function GreetingSection({
                   className="greeting-text"
                   role="button"
                   tabIndex={0}
-                  aria-label="Sprache des Grußes anzeigen"
+                  aria-label={t('Sprache des Grußes anzeigen')}
                   onClick={(e) => {
                     e.stopPropagation();
                     setGreetingInfo(greetingInfo ? null : greeting.lang);
@@ -299,7 +308,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               type="button"
               whileTap={tapScaleSmall}
               onClick={() => setSearchOpen(true)}
-              aria-label="Suche öffnen"
+              aria-label={t('Suche öffnen')}
               style={{
                 flex: isMobile ? '1 1 100%' : '1 1 auto',
                 minWidth: 0,
@@ -319,7 +328,7 @@ export const GreetingSection = React.memo(function GreetingSection({
             >
               <Search style={{ fontSize: '20px', color: currentTheme.primary }} />
               <span style={{ color: currentTheme.text.muted, fontSize: '15px' }}>
-                Suche nach Serien oder Filmen
+                {t('Suche nach Serien oder Filmen')}
               </span>
             </motion.button>
 

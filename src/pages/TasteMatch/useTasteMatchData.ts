@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { calculateTasteMatch } from '../../services/tasteMatchService';
+import { t } from '../../services/i18n';
 
 export const getScoreColor = (score: number): string => {
   if (score >= 80) return '#00cec9';
@@ -14,10 +15,10 @@ export const getScoreColor = (score: number): string => {
 };
 
 export const getScoreMessage = (score: number): string => {
-  if (score >= 80) return 'Seelenverwandte!';
-  if (score >= 60) return 'Starke Verbindung';
-  if (score >= 40) return 'Interessante Mischung';
-  return 'Gegensätze ziehen sich an';
+  if (score >= 80) return t('Seelenverwandte!');
+  if (score >= 60) return t('Starke Verbindung');
+  if (score >= 40) return t('Interessante Mischung');
+  return t('Gegensätze ziehen sich an');
 };
 
 export interface TasteMatchData {
@@ -40,7 +41,7 @@ export const useTasteMatchData = (): TasteMatchData => {
   const [result, setResult] = useState<TasteMatchResult | null>(null);
   const [friendName, setFriendName] = useState('Friend');
   const [friendPhoto, setFriendPhoto] = useState<string | null>(null);
-  const [userName, setUserName] = useState('Du');
+  const [userName, setUserName] = useState(t('Du'));
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'series' | 'movies' | 'genres'>(
     'overview'
@@ -63,7 +64,7 @@ export const useTasteMatchData = (): TasteMatchData => {
 
         const currentUserData = currentUserSnapshot.val();
         setUserName(
-          currentUserData?.displayName?.split(' ')[0] || user.displayName?.split(' ')[0] || 'Du'
+          currentUserData?.displayName?.split(' ')[0] || user.displayName?.split(' ')[0] || t('Du')
         );
         setUserPhoto(currentUserData?.photoURL || user.photoURL || null);
 
@@ -84,7 +85,15 @@ export const useTasteMatchData = (): TasteMatchData => {
 
   const handleShare = async () => {
     if (!result) return;
-    const text = `Mein Taste Match mit ${friendName}: ${result.overallMatch}% - ${result.seriesOverlap.sharedSeries.length} gemeinsame Serien und ${result.movieOverlap.sharedMovies.length} gemeinsame Filme!`;
+    const text = t(
+      'Mein Taste Match mit {friend}: {score}% - {series} gemeinsame Serien und {movies} gemeinsame Filme!',
+      {
+        friend: friendName,
+        score: result.overallMatch,
+        series: result.seriesOverlap.sharedSeries.length,
+        movies: result.movieOverlap.sharedMovies.length,
+      }
+    );
 
     if (navigator.share) {
       try {

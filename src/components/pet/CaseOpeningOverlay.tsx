@@ -11,6 +11,7 @@ import { seededRandom } from '../../utils/seededRandom';
 import './CaseOpeningOverlay.css';
 import { tapScale } from '../../lib/motion';
 import { dbRef, userPath } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 interface CaseOpeningOverlayProps {
   dropData: { dropId: string; accessoryId: string; rarity: string } | null;
@@ -334,7 +335,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
               animate={{ opacity: 1, y: 0 }}
               style={{ color: currentTheme.text.primary }}
             >
-              {phase === 'spinning' ? '🎁 Accessoire-Drop!' : ''}
+              {phase === 'spinning' ? t('🎁 Accessoire-Drop!') : ''}
             </motion.h2>
 
             {/* Carousel (spinning phase) */}
@@ -417,7 +418,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
                     boxShadow: `0 0 20px ${rarityColor}30`,
                   }}
                 >
-                  {RARITY_LABELS[rarity]}
+                  {t(RARITY_LABELS[rarity])}
                 </motion.span>
 
                 <motion.button
@@ -434,7 +435,7 @@ export const CaseOpeningOverlay = React.memo(function CaseOpeningOverlay({
                     boxShadow: `0 6px 24px ${rarityColor}50`,
                   }}
                 >
-                  {alreadyClaimed ? 'Schließen' : 'Einsammeln'}
+                  {alreadyClaimed ? t('Schließen') : t('Einsammeln')}
                 </motion.button>
               </motion.div>
             )}

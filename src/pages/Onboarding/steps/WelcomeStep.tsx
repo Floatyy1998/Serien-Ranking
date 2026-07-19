@@ -6,6 +6,7 @@ import { LetterReveal } from '../components/LetterReveal';
 import { TableOfContents } from '../components/TableOfContents';
 import { CURATED_GENRES, type CuratedGenre } from '../genres';
 import { getTmdbApiKey, tmdbFetch } from '../../../services/tmdbClient';
+import { t } from '../../../services/i18n';
 
 const MAX_GENRES = 4;
 
@@ -110,7 +111,7 @@ export const WelcomeStep: React.FC<Props> = ({
         {/* Editorial mast head */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.55)' }}>
-            01 — Kuration
+            {t('01 — Kuration')}
           </span>
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)' }}>
             tv-rank · onboarding
@@ -137,14 +138,14 @@ export const WelcomeStep: React.FC<Props> = ({
                     flexWrap: 'wrap',
                   }}
                 >
-                  <label htmlFor="ob-name">Wie dürfen wir dich nennen?</label>
+                  <label htmlFor="ob-name">{t('Wie dürfen wir dich nennen?')}</label>
                   <input
                     id="ob-name"
                     className="ob-name-input"
                     value={nameValue ?? ''}
                     onChange={(e) => onNameChange?.(e.target.value)}
                     maxLength={24}
-                    placeholder="Dein Name"
+                    placeholder={t('Dein Name')}
                     autoComplete="nickname"
                   />
                 </motion.div>
@@ -156,7 +157,7 @@ export const WelcomeStep: React.FC<Props> = ({
                   className="ob-mono"
                   style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
                 >
-                  Willkommen, {username}.
+                  {t('Willkommen, {name}.', { name: username })}
                 </motion.div>
               )}
               <h1
@@ -168,7 +169,7 @@ export const WelcomeStep: React.FC<Props> = ({
                   maxWidth: '14ch',
                 }}
               >
-                <LetterReveal text="Was läuft" delay={0.18} stagger={0.04} />
+                <LetterReveal text={t('Was läuft')} delay={0.18} stagger={0.04} />
                 <br />
                 <span
                   style={{
@@ -177,7 +178,7 @@ export const WelcomeStep: React.FC<Props> = ({
                     fontWeight: 900,
                   }}
                 >
-                  <LetterReveal text="bei dir?" delay={0.55} stagger={0.04} />
+                  <LetterReveal text={t('bei dir?')} delay={0.55} stagger={0.04} />
                 </span>
               </h1>
               <motion.p
@@ -191,17 +192,18 @@ export const WelcomeStep: React.FC<Props> = ({
                   fontSize: 12,
                 }}
               >
-                wähle bis zu {MAX_GENRES} richtungen · {selectedCount}/{MAX_GENRES}
+                {t('wähle bis zu {max} richtungen', { max: MAX_GENRES })} · {selectedCount}/
+                {MAX_GENRES}
               </motion.p>
             </div>
 
             <div className="ob-welcome-side">
               <div className="ob-side-label">
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                  Programm
+                  {t('Programm')}
                 </span>
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  4 Akte
+                  {t('4 Akte')}
                 </span>
               </div>
               <TableOfContents currentStep="welcome" variant="horizontal" delay={1.1} />
@@ -230,7 +232,7 @@ export const WelcomeStep: React.FC<Props> = ({
                     }}
                   >
                     <GenreTile
-                      label={g.label}
+                      label={t(g.label)}
                       index={i}
                       posters={postersBySlug[g.slug] || []}
                       selected={selected}
@@ -261,21 +263,21 @@ export const WelcomeStep: React.FC<Props> = ({
       >
         <button onClick={onNext} disabled={selectedCount === 0 || nameTooShort} className="ob-cta">
           <span className="ob-cta__inner">
-            <span>weiter</span>
+            <span>{t('weiter')}</span>
             <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
             <span style={{ opacity: 0.55, fontSize: 11 }}>
               {nameTooShort
-                ? 'name: min. 3 zeichen'
+                ? t('name: min. 3 zeichen')
                 : selectedCount > 0
-                  ? `mit ${selectedCount}`
-                  : 'wähle min. 1'}
+                  ? t('mit {n}', { n: selectedCount })
+                  : t('wähle min. 1')}
             </span>
           </span>
           <span className="ob-cta__arrow">→</span>
         </button>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <button onClick={onSkip} className="ob-link">
-            jetzt nicht
+            {t('jetzt nicht')}
           </button>
         </div>
       </motion.div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SearchResult } from './useSearchPage';
 
@@ -30,7 +31,7 @@ export const SearchResultCard = memo(
     }, [item.release_date, item.first_air_date]);
 
     const label = item.title || item.name || '';
-    const typeLabel = item.type === 'series' ? 'Serie' : 'Film';
+    const typeLabel = item.type === 'series' ? t('Serie') : t('Film');
     const accentGradient = `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
     // WCAG-optimale Textfarbe auf der Primär-/Akzent-Gradientfläche (Type-Badge, Add-/Check-Button)
     const onAccent = useMemo(
@@ -45,7 +46,7 @@ export const SearchResultCard = memo(
             type="button"
             className="search-result-poster-btn"
             onClick={() => onItemClick(item)}
-            aria-label={`${typeLabel} „${label}" öffnen`}
+            aria-label={t('{type} „{title}" öffnen', { type: typeLabel, title: label })}
           >
             {/* PosterFrame ohne onClick: der native Button bleibt das interaktive
                 Element (Add/Check ist bewusst ein Geschwister — nie interaktive
@@ -97,7 +98,7 @@ export const SearchResultCard = memo(
                 onAddToList(item);
               }}
               disabled={isPending}
-              aria-label={`„${label}" zur Liste hinzufügen`}
+              aria-label={t('„{title}" zur Liste hinzufügen', { title: label })}
               style={{
                 background: accentGradient,
                 boxShadow: `0 4px 12px ${currentTheme.primary}50`,
@@ -129,7 +130,7 @@ export const SearchResultCard = memo(
             <div
               className={`search-check-badge ${isDesktop ? 'search-check-badge--desktop' : ''}`}
               role="img"
-              aria-label={`„${label}" ist in deiner Liste`}
+              aria-label={t('„{title}" ist in deiner Liste', { title: label })}
               style={{
                 background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.status.success})`,
                 boxShadow: `0 4px 12px ${currentTheme.status.success}50`,

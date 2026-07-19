@@ -7,6 +7,7 @@ import { memo, useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { IconContainer, NavCard } from '../../components/ui';
+import { t } from '../../services/i18n';
 
 // Memo: parent re-renders frequently on notification + friend updates, but
 // this card only depends on seriesList + currentTheme via context. memo skips
@@ -52,11 +53,11 @@ export const CatchUpCard: React.FC = memo(() => {
   }, [seriesList]);
 
   const formatTime = (minutes: number): string => {
-    if (minutes < 60) return `${minutes} Min`;
+    if (minutes < 60) return t('{n} Min', { n: minutes });
     const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} Std`;
+    if (hours < 24) return t('{n} Std', { n: hours });
     const days = Math.floor(hours / 24);
-    return `${days}+ Tage`;
+    return t('{n}+ Tage', { n: days });
   };
 
   if (stats.seriesCount === 0) return null;
@@ -67,7 +68,10 @@ export const CatchUpCard: React.FC = memo(() => {
     <NavCard
       onClick={() => navigate('/catch-up')}
       accentColor={accentColor}
-      aria-label={`Backlog: ${stats.seriesCount} Serien, ${stats.totalEpisodes} Episoden`}
+      aria-label={t('Backlog: {series} Serien, {episodes} Episoden', {
+        series: stats.seriesCount,
+        episodes: stats.totalEpisodes,
+      })}
     >
       <IconContainer color={accentColor}>
         <Schedule style={{ fontSize: 20, color: 'white' }} />
@@ -94,7 +98,10 @@ export const CatchUpCard: React.FC = memo(() => {
             whiteSpace: 'nowrap',
           }}
         >
-          {stats.seriesCount} Serien · {stats.totalEpisodes} Ep.
+          {t('{series} Serien · {episodes} Ep.', {
+            series: stats.seriesCount,
+            episodes: stats.totalEpisodes,
+          })}
         </p>
       </div>
 

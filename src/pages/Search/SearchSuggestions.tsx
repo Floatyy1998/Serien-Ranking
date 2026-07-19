@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import type { useTheme } from '../../contexts/ThemeContext';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export interface SearchSuggestionsProps {
   popularSearches: string[];
@@ -33,7 +34,7 @@ export const SearchSuggestions = memo(
         <section className="search-suggestions-section">
           <h2 className="search-suggestions-heading" style={{ color: currentTheme.text.primary }}>
             <TrendingUp style={{ fontSize: '20px', color: currentTheme.primary }} />
-            Beliebte Suchen
+            {t('Beliebte Suchen')}
           </h2>
 
           <div className="search-popular-tags">
@@ -64,7 +65,7 @@ export const SearchSuggestions = memo(
           <section>
             <h2 className="search-suggestions-heading" style={{ color: currentTheme.text.primary }}>
               <History style={{ fontSize: '20px', color: currentTheme.text.muted }} />
-              Zuletzt gesucht
+              {t('Zuletzt gesucht')}
             </h2>
 
             <div
@@ -92,7 +93,7 @@ export const SearchSuggestions = memo(
                     type="button"
                     onClick={() => onSelectTerm(term)}
                     className="search-recent-item"
-                    aria-label={`Nach „${term}" suchen`}
+                    aria-label={t('Nach „{term}" suchen', { term })}
                     style={{ color: currentTheme.text.primary }}
                   >
                     <span className="search-recent-item-content">
@@ -106,7 +107,7 @@ export const SearchSuggestions = memo(
                     whileTap={tapScaleTight}
                     onClick={() => onRemoveRecent(term)}
                     className="search-recent-remove-btn"
-                    aria-label={`„${term}" entfernen`}
+                    aria-label={t('„{term}" entfernen', { term })}
                     style={{ background: `${currentTheme.text.muted}15` }}
                   >
                     <Close style={{ fontSize: '16px', color: currentTheme.text.muted }} />

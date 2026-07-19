@@ -2,6 +2,7 @@ import { Movie, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { DiscussionThread } from '../../components/Discussion';
+import { t } from '../../services/i18n';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 
@@ -45,7 +46,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
       </div>
       <div className="ed-nav-text">
         <p className="ed-nav-label" style={{ color: currentTheme.text.muted }}>
-          Vorherige
+          {t('Vorherige')}
         </p>
         <p className="ed-nav-episode" style={{ color: currentTheme.text.primary }}>
           {navigation.prevEpisodeLabel}
@@ -72,7 +73,7 @@ export const EpisodeNavigation = memo(({ currentTheme, navigation }: EpisodeNavi
     >
       <div className="ed-nav-text">
         <p className="ed-nav-label" style={{ color: currentTheme.text.muted }}>
-          Nächste
+          {t('Nächste')}
         </p>
         <p className="ed-nav-episode" style={{ color: currentTheme.text.primary }}>
           {navigation.nextEpisodeLabel}
@@ -130,7 +131,7 @@ export const OverviewSection = memo(({ currentTheme, episodeOverview }: Overview
           >
             <Movie className="ed-overview-icon" style={{ color: currentTheme.primary }} />
           </div>
-          Handlung
+          {t('Handlung')}
         </h3>
         <p className="ed-overview-text" style={{ color: currentTheme.text.secondary }}>
           {episodeOverview}
@@ -166,7 +167,7 @@ export const CrewSection = memo(({ currentTheme, directors, writers }: CrewSecti
           }}
         >
           <h4 className="ed-crew-label" style={{ color: currentTheme.text.muted }}>
-            Regie
+            {t('Regie')}
           </h4>
           {directors.slice(0, 2).map((d, i) => (
             <p
@@ -191,7 +192,7 @@ export const CrewSection = memo(({ currentTheme, directors, writers }: CrewSecti
           }}
         >
           <h4 className="ed-crew-label" style={{ color: currentTheme.text.muted }}>
-            Drehbuch
+            {t('Drehbuch')}
           </h4>
           {writers.slice(0, 2).map((w, i) => (
             <p
@@ -234,7 +235,7 @@ export const GuestStarsSection = memo(
         }}
       >
         <h3 className="ed-guest-stars-header" style={{ color: currentTheme.text.primary }}>
-          Gaststars
+          {t('Gaststars')}
           <span
             className="ed-guest-stars-count"
             style={{
@@ -326,7 +327,7 @@ export const DiscussionSection = memo(
         itemType="episode"
         seasonNumber={Number(seasonNumber)}
         episodeNumber={Number(episodeNumber)}
-        title="Episoden-Diskussion"
+        title={t('Episoden-Diskussion')}
         isWatched={isWatched}
         feedMetadata={{
           itemTitle: seriesTitle,

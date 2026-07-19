@@ -17,6 +17,7 @@ import {
 } from './badgesPageHelpers';
 import './BadgesPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export const BadgesPage = () => {
   const { user } = useAuth() || {};
@@ -172,7 +173,7 @@ export const BadgesPage = () => {
         }}
       >
         <PageHeader
-          title="Erfolge"
+          title={t('Erfolge')}
           gradientFrom={currentTheme.text.primary}
           gradientTo={currentTheme.status.warning}
           sticky={false}
@@ -198,7 +199,7 @@ export const BadgesPage = () => {
               }}
             >
               <Refresh style={{ fontSize: '18px' }} />
-              Prüfen
+              {t('Prüfen')}
             </motion.button>
           }
         />
@@ -229,7 +230,7 @@ export const BadgesPage = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <EmojiEvents style={{ fontSize: '24px', color: currentTheme.status.warning }} />
               <span style={{ fontSize: '15px', fontWeight: 600, color: currentTheme.text.primary }}>
-                Gesamtfortschritt
+                {t('Gesamtfortschritt')}
               </span>
             </div>
             <span
@@ -248,7 +249,10 @@ export const BadgesPage = () => {
             toColor={currentTheme.accent}
           />
           <p style={{ fontSize: '13px', color: currentTheme.text.muted, marginTop: '8px' }}>
-            {earnedBadges.length} von {BADGE_DEFINITIONS.length} Badges freigeschaltet
+            {t('{a} von {b} Badges freigeschaltet', {
+              a: earnedBadges.length,
+              b: BADGE_DEFINITIONS.length,
+            })}
           </p>
         </motion.div>
 
@@ -337,7 +341,7 @@ export const BadgesPage = () => {
             <LoadingSpinner
               size={56}
               color={currentTheme.status.warning}
-              text="Badges werden geladen..."
+              text={t('Badges werden geladen...')}
             />
 
             {loadingProgress && (
@@ -356,7 +360,10 @@ export const BadgesPage = () => {
                     marginTop: '8px',
                   }}
                 >
-                  Schritt {loadingProgress.current} von {loadingProgress.total}
+                  {t('Schritt {a} von {b}', {
+                    a: loadingProgress.current,
+                    b: loadingProgress.total,
+                  })}
                 </p>
               </div>
             )}

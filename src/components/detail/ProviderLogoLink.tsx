@@ -5,6 +5,7 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
 import { normalizeProviderName } from '../../services/detection/providerChangeDetection';
+import { t } from '../../services/i18n';
 
 interface ProviderLogoLinkProps {
   /** Image URL (already a full https URL, the caller resolved it). */
@@ -39,7 +40,9 @@ export const ProviderLogoLink = React.memo(function ProviderLogoLink({
   const normalized = normalizeProviderName(name);
   const url = normalized ? getProviderSearchUrl(normalized, searchTitle) : null;
   const needsClipboard = normalized ? providerNeedsClipboardCopy(normalized) : false;
-  const titleAttr = needsClipboard ? `${name}: Titel kopieren + Suche öffnen` : `${name} öffnen`;
+  const titleAttr = needsClipboard
+    ? t('{anbieter}: Titel kopieren + Suche öffnen', { anbieter: name })
+    : t('{anbieter} öffnen', { anbieter: name });
   const img = (
     <img src={src} alt={name} loading="lazy" decoding="async" style={style} title={titleAttr} />
   );

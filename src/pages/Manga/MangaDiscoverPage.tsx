@@ -13,6 +13,7 @@ import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const CATEGORIES: {
   id: DiscoverCategory;
@@ -22,27 +23,27 @@ const CATEGORIES: {
 }[] = [
   {
     id: 'trending',
-    label: 'Trend',
+    label: t('Trend'),
     icon: <TrendingUp style={{ fontSize: 18 }} />,
     colorKey: 'primary',
   },
   {
     id: 'popular',
-    label: 'Beliebt',
+    label: t('Beliebt'),
     icon: <Whatshot style={{ fontSize: 18 }} />,
     colorKey: 'error',
   },
   { id: 'top_rated', label: 'Top', icon: <Star style={{ fontSize: 18 }} />, colorKey: 'accent' },
   {
     id: 'upcoming',
-    label: 'Neu',
+    label: t('Neu'),
     icon: <NewReleases style={{ fontSize: 18 }} />,
     colorKey: 'success',
   },
 ];
 
 const COUNTRY_FILTERS = [
-  { key: 'all', label: 'Alle' },
+  { key: 'all', label: t('Alle') },
   { key: 'JP', label: 'Manga' },
   { key: 'KR', label: 'Manhwa' },
   { key: 'CN', label: 'Manhua' },
@@ -203,12 +204,12 @@ export const MangaDiscoverPage = () => {
                 margin: 0,
               }}
             >
-              Entdecken
+              {t('Entdecken')}
             </GradientText>
             <div style={{ flex: 1 }} />
             <motion.button
               type="button"
-              aria-label="Manga suchen"
+              aria-label={t('Manga suchen')}
               whileTap={tapScaleTight}
               onClick={() => navigate('/manga/search')}
               style={{
@@ -309,7 +310,7 @@ export const MangaDiscoverPage = () => {
       <div style={{ padding: '16px 20px', paddingBottom: 100 }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
-            Laden...
+            {t('Laden...')}
           </div>
         ) : filteredResults.length > 0 ? (
           <>
@@ -332,7 +333,9 @@ export const MangaDiscoverPage = () => {
                     key={result.id}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${result.title.english || result.title.romaji} öffnen`}
+                    aria-label={t('{title} öffnen', {
+                      title: result.title.english || result.title.romaji,
+                    })}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => navigate(`/manga/${result.id}`)}
                     onKeyDown={(e) => {
@@ -428,7 +431,9 @@ export const MangaDiscoverPage = () => {
                       {/* Add button */}
                       <motion.button
                         type="button"
-                        aria-label={`${result.title.english || result.title.romaji} zur Sammlung hinzufügen`}
+                        aria-label={t('{title} zur Sammlung hinzufügen', {
+                          title: result.title.english || result.title.romaji,
+                        })}
                         whileTap={{ scale: 0.85 }}
                         onClick={(e) => handleAdd(e, result)}
                         style={{
@@ -492,7 +497,7 @@ export const MangaDiscoverPage = () => {
                         }}
                       >
                         {result.startDate?.year || ''}
-                        {result.chapters ? ` · ${result.chapters} Kap.` : ''}
+                        {result.chapters ? ` · ${t('{n} Kap.', { n: result.chapters })}` : ''}
                       </div>
                     </div>
                   </motion.div>
@@ -502,7 +507,7 @@ export const MangaDiscoverPage = () => {
 
             {loadingMore && (
               <div style={{ textAlign: 'center', padding: 20, opacity: 0.5, fontSize: 14 }}>
-                Mehr laden...
+                {t('Mehr laden...')}
               </div>
             )}
           </>
@@ -510,7 +515,7 @@ export const MangaDiscoverPage = () => {
           <div style={{ textAlign: 'center', padding: 60 }}>
             <div style={{ fontSize: 40, marginBottom: 12, opacity: 0.3 }}>📚</div>
             <div style={{ fontSize: 15, fontWeight: 600, color: currentTheme.text.primary }}>
-              Keine neuen Manga
+              {t('Keine neuen Manga')}
             </div>
             <div
               style={{
@@ -520,7 +525,7 @@ export const MangaDiscoverPage = () => {
                 marginTop: 4,
               }}
             >
-              Alle Manga in dieser Kategorie sind bereits in deiner Sammlung.
+              {t('Alle Manga in dieser Kategorie sind bereits in deiner Sammlung.')}
             </div>
           </div>
         )}

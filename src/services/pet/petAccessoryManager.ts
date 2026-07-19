@@ -9,6 +9,7 @@ import { PET_COLORS } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
 import { PET_CONFIG } from './petConstants';
+import { t } from '../i18n';
 import { getUserPet, getUserPets } from './petCore';
 
 // Fetch remote drop config fresh from Firebase each time
@@ -241,8 +242,8 @@ export async function rollAccessoryDrop(userId: string): Promise<AccessoryDrop |
     dropRef.set({ accessoryId, name: def.name, icon: def.icon, rarity, timestamp: now }),
     notifRef.set({
       type: 'pending_accessory_drop',
-      title: '🎁 Neues Accessoire gefunden!',
-      message: 'Tippe hier zum Öffnen',
+      title: t('🎁 Neues Accessoire gefunden!'),
+      message: t('Tippe hier zum Öffnen'),
       timestamp: now,
       read: false,
       data: { dropId: dropRef.key, accessoryId, rarity },

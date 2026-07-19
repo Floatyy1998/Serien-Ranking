@@ -12,9 +12,10 @@ import {
 import { createElement } from 'react';
 import type { Badge, BadgeCategory, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
+import { t } from '../../services/i18n';
 
 export const categories: { key: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
-  { key: 'all', label: 'Alle', icon: createElement(EmojiEvents) },
+  { key: 'all', label: t('Alle'), icon: createElement(EmojiEvents) },
   { key: 'binge', label: 'Binge', icon: createElement(Movie) },
   { key: 'quickwatch', label: 'Quick', icon: createElement(Speed) },
   { key: 'marathon', label: 'Marathon', icon: createElement(LocalFireDepartment) },

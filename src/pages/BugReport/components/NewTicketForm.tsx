@@ -5,6 +5,7 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import type { TicketPriority, TicketType } from '../types';
 import { PRIORITY_CONFIG, TYPE_CONFIG } from '../types';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 
 interface NewTicketFormProps {
   theme: ThemeContextType['currentTheme'];
@@ -107,7 +108,7 @@ export function NewTicketForm({
         }}
       >
         <h3 style={{ margin: 0, fontSize: '15px', color: theme.text.secondary, fontWeight: 600 }}>
-          Neues Ticket
+          {t('Neues Ticket')}
         </h3>
         <button
           onClick={onCancel}
@@ -169,7 +170,7 @@ export function NewTicketForm({
               display: 'block',
             }}
           >
-            Priorität
+            {t('Priorität')}
           </label>
           <div style={{ display: 'flex', gap: '6px' }}>
             {(['low', 'medium', 'high'] as const).map((p) => {
@@ -212,7 +213,7 @@ export function NewTicketForm({
               display: 'block',
             }}
           >
-            Titel *
+            {t('Titel *')}
           </label>
           <input
             type="text"
@@ -220,8 +221,8 @@ export function NewTicketForm({
             onChange={(e) => setTitle(e.target.value)}
             placeholder={
               ticketType === 'bug'
-                ? 'Kurze Beschreibung des Problems'
-                : 'Kurze Beschreibung des Features'
+                ? t('Kurze Beschreibung des Problems')
+                : t('Kurze Beschreibung des Features')
             }
             className="glass-input"
           />
@@ -236,15 +237,15 @@ export function NewTicketForm({
               display: 'block',
             }}
           >
-            Beschreibung *
+            {t('Beschreibung *')}
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={
               ticketType === 'bug'
-                ? 'Was genau ist passiert? Was hast du erwartet?'
-                : 'Was soll das Feature können? Warum wäre es nützlich?'
+                ? t('Was genau ist passiert? Was hast du erwartet?')
+                : t('Was soll das Feature können? Warum wäre es nützlich?')
             }
             rows={4}
             className="glass-input"
@@ -261,15 +262,15 @@ export function NewTicketForm({
               display: 'block',
             }}
           >
-            {ticketType === 'bug' ? 'Schritte zum Reproduzieren' : 'Beschreibung des Ablaufs'}
+            {ticketType === 'bug' ? t('Schritte zum Reproduzieren') : t('Beschreibung des Ablaufs')}
           </label>
           <textarea
             value={steps}
             onChange={(e) => setSteps(e.target.value)}
             placeholder={
               ticketType === 'bug'
-                ? '1. Gehe zu ...\n2. Klicke auf ...\n3. Der Fehler tritt auf ...'
-                : '1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...'
+                ? t('1. Gehe zu ...\n2. Klicke auf ...\n3. Der Fehler tritt auf ...')
+                : t('1. User öffnet ...\n2. User klickt auf ...\n3. Es passiert ...')
             }
             rows={3}
             className="glass-input"
@@ -361,7 +362,7 @@ export function NewTicketForm({
               ) : (
                 <>
                   <PhotoCamera style={{ fontSize: 20 }} />
-                  Bild
+                  {t('Bild')}
                 </>
               )}
             </motion.button>
@@ -378,7 +379,7 @@ export function NewTicketForm({
                 display: 'block',
               }}
             >
-              Fehlermeldungen aus der Konsole (optional)
+              {t('Fehlermeldungen aus der Konsole (optional)')}
             </label>
             <textarea
               ref={(el) => {
@@ -394,7 +395,9 @@ export function NewTicketForm({
                 el.style.height = 'auto';
                 el.style.height = `${Math.max(el.scrollHeight, 66)}px`;
               }}
-              placeholder="Falls vorhanden: Fehlermeldungen aus der Browser-Konsole (F12) hier einfügen"
+              placeholder={t(
+                'Falls vorhanden: Fehlermeldungen aus der Browser-Konsole (F12) hier einfügen'
+              )}
               rows={3}
               className="glass-input"
               style={{
@@ -423,7 +426,7 @@ export function NewTicketForm({
               cursor: 'pointer',
             }}
           >
-            Abbrechen
+            {t('Abbrechen')}
           </button>
           <motion.button
             whileTap={{ scale: 0.97 }}
@@ -454,7 +457,7 @@ export function NewTicketForm({
             }}
           >
             <AttachFile style={{ fontSize: 16 }} />
-            {submitting ? 'Wird gesendet...' : 'Absenden'}
+            {submitting ? t('Wird gesendet...') : t('Absenden')}
           </motion.button>
         </div>
       </div>

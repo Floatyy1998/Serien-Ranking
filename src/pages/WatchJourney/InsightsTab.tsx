@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { wjCard, wjHero } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 interface InsightsTabProps {
   data: WatchJourneyData;
@@ -98,10 +99,10 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                   margin: 0,
                 }}
               >
-                BINGE-STATISTIKEN
+                {t('BINGE-STATISTIKEN')}
               </p>
               <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
-                {data.bingeSessionCount} Sessions
+                {t('{n} Sessions', { n: data.bingeSessionCount })}
               </h2>
             </div>
           </div>
@@ -118,7 +119,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.bingeEpisodeCount}
               </div>
-              <div style={{ color: textSecondary, fontSize: 11 }}>Episoden gebinged</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>{t('Episoden gebinged')}</div>
             </div>
             <div
               style={{
@@ -131,7 +132,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.avgBingeLength}
               </div>
-              <div style={{ color: textSecondary, fontSize: 11 }}>Ø pro Session</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>{t('Ø pro Session')}</div>
             </div>
             <div
               style={{
@@ -144,14 +145,14 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               <div style={{ color: bingeColor, fontSize: 24, fontWeight: 700 }}>
                 {data.longestBinge}
               </div>
-              <div style={{ color: textSecondary, fontSize: 11 }}>Längste Session</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>{t('Längste Session')}</div>
             </div>
           </div>
 
           {topBinged.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
-                MEIST GEBINGED
+                {t('MEIST GEBINGED')}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {topBinged.map((series, index) => (
@@ -173,7 +174,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       {series.title}
                     </span>
                     <span style={{ color: bingeColor, fontWeight: 600, fontSize: 13 }}>
-                      {series.bingeEpisodes} Ep.
+                      {t('{n} Ep.', { n: series.bingeEpisodes })}
                     </span>
                   </div>
                 ))}
@@ -224,10 +225,10 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                   margin: 0,
                 }}
               >
-                REWATCH-STATISTIKEN
+                {t('REWATCH-STATISTIKEN')}
               </p>
               <h2 style={{ color: textPrimary, fontSize: 24, fontWeight: 800, margin: 0 }}>
-                {data.rewatchCount} Rewatches
+                {t('{n} Rewatches', { n: data.rewatchCount })}
               </h2>
             </div>
           </div>
@@ -244,7 +245,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               <div style={{ color: rewatchColor, fontSize: 24, fontWeight: 700 }}>
                 {Math.round(data.rewatchMinutes / 60)}h
               </div>
-              <div style={{ color: textSecondary, fontSize: 11 }}>Rewatch-Zeit</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>{t('Rewatch-Zeit')}</div>
             </div>
             <div
               style={{
@@ -257,14 +258,14 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
               <div style={{ color: rewatchColor, fontSize: 24, fontWeight: 700 }}>
                 {data.rewatchPercentage}%
               </div>
-              <div style={{ color: textSecondary, fontSize: 11 }}>deiner Zeit</div>
+              <div style={{ color: textSecondary, fontSize: 11 }}>{t('deiner Zeit')}</div>
             </div>
           </div>
 
           {topRewatched.length > 0 && (
             <div style={{ marginTop: 20 }}>
               <p style={{ color: textSecondary, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
-                COMFORT-SERIEN
+                {t('COMFORT-SERIEN')}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {topRewatched.map((series, index) => (
@@ -286,7 +287,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                       {series.title}
                     </span>
                     <span style={{ color: rewatchColor, fontWeight: 600, fontSize: 13 }}>
-                      {series.rewatchEpisodes}× rewatch
+                      {t('{n}× rewatch', { n: series.rewatchEpisodes })}
                     </span>
                   </div>
                 ))}
@@ -314,10 +315,11 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
                 margin: 0,
               }}
             >
-              Episodenlängen-Verteilung
+              {t('Episodenlängen-Verteilung')}
             </h3>
             <p style={{ color: textSecondary, fontSize: 12, margin: 0 }}>
-              Ø {data.avgEpisodeRuntime} Min · {data.shortestEpisode}–{data.longestEpisode} Min
+              Ø {t('{n} Min', { n: data.avgEpisodeRuntime })} · {data.shortestEpisode}–
+              {t('{n} Min', { n: data.longestEpisode })}
             </p>
           </div>
         </div>
@@ -344,13 +346,15 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             <div key={bucket.label} style={{ flex: 1, textAlign: 'center' }}>
               <div style={{ color: textSecondary, fontSize: 11 }}>{bucket.label}</div>
               <div style={{ color: runtimeColor, fontSize: 12, fontWeight: 600 }}>
-                {bucket.count} {bucket.count === 1 ? 'Serie' : 'Serien'}
+                {bucket.count === 1
+                  ? t('{n} Serie', { n: bucket.count })
+                  : t('{n} Serien', { n: bucket.count })}
               </div>
             </div>
           ))}
         </div>
         <div style={{ textAlign: 'center', color: textSecondary, fontSize: 11, marginTop: 8 }}>
-          Minuten pro Episode
+          {t('Minuten pro Episode')}
         </div>
       </motion.div>
 
@@ -369,7 +373,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Deine Rekorde
+          {t('Deine Rekorde')}
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
@@ -385,7 +389,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             <div style={{ color: recordAccent, fontSize: 28, fontWeight: 700 }}>
               {data.totalEpisodes}
             </div>
-            <div style={{ color: textSecondary, fontSize: 12 }}>Episoden insgesamt</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>{t('Episoden insgesamt')}</div>
           </div>
 
           <div
@@ -415,7 +419,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             <div style={{ color: recordSecondary, fontSize: 28, fontWeight: 700 }}>
               {data.uniqueSeriesCount}
             </div>
-            <div style={{ color: textSecondary, fontSize: 12 }}>Verschiedene Serien</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>{t('Verschiedene Serien')}</div>
           </div>
 
           <div
@@ -430,7 +434,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({ data }) => {
             <div style={{ color: bingeColor, fontSize: 28, fontWeight: 700 }}>
               {data.longestBinge}
             </div>
-            <div style={{ color: textSecondary, fontSize: 12 }}>Längste Binge-Session</div>
+            <div style={{ color: textSecondary, fontSize: 12 }}>{t('Längste Binge-Session')}</div>
           </div>
         </div>
       </motion.div>

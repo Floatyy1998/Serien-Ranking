@@ -2,13 +2,14 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendAnticipationItem } from './useFriendAnticipation';
 
 function formatCountdown(days: number, dateStr: string): string {
-  if (days <= 0) return 'heute';
-  if (days === 1) return 'morgen';
-  if (days <= 7) return `in ${days} Tagen`;
+  if (days <= 0) return t('heute');
+  if (days === 1) return t('morgen');
+  if (days <= 7) return t('in {n} Tagen', { n: days });
   const d = new Date(dateStr);
   const sameYear = d.getFullYear() === new Date().getFullYear();
   return d.toLocaleDateString('de-DE', {
@@ -34,7 +35,9 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
 
   return (
     <div className="fp-anticipation">
-      <div className="fp-anticipation-header">Worauf {friendName} wartet</div>
+      <div className="fp-anticipation-header">
+        {t('Worauf {name} wartet', { name: friendName })}
+      </div>
 
       <div className="fp-anticipation-list">
         {items.map((item, idx) => (
@@ -76,7 +79,7 @@ export const FriendAnticipationSection = memo(function FriendAnticipationSection
                       color: currentTheme.secondary,
                     }}
                   >
-                    Ihr beide
+                    {t('Ihr beide')}
                   </span>
                 )}
               </div>

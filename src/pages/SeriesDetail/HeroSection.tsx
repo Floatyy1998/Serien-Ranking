@@ -38,6 +38,7 @@ import type { TMDBWatchProvider } from '../MovieDetail/useMovieData';
 import { RatingsCard } from './RatingsCard';
 import { StatusBadge, NextEpisodeChip } from './StatusBadge';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface HeroSectionProps {
   series: Series;
@@ -132,7 +133,7 @@ export const HeroSection = memo<HeroSectionProps>(
     const warningColor = fullTheme.status?.warning || '#f59e0b';
     const copyTitle = () => {
       navigator.clipboard.writeText(series.title);
-      showToast('Titel kopiert');
+      showToast(t('Titel kopiert'));
     };
     const mergedDisplayProviders = useMemo(
       () =>
@@ -244,14 +245,14 @@ export const HeroSection = memo<HeroSectionProps>(
           }}
         >
           <PlayCircle style={{ fontSize: iconSize }} />
-          <span>Episoden</span>
+          <span>{t('Episoden')}</span>
         </motion.button>
 
         <motion.button
           whileTap={tapScale}
           onClick={onNavigateRating}
           className="hero-actions__btn"
-          aria-label="Bewerten"
+          aria-label={t('Bewerten')}
           style={
             hasRating
               ? {
@@ -263,15 +264,17 @@ export const HeroSection = memo<HeroSectionProps>(
           }
         >
           <Star style={{ fontSize: iconSize }} />
-          {!isMobile && <span>Bewerten</span>}
+          {!isMobile && <span>{t('Bewerten')}</span>}
         </motion.button>
 
-        <Tooltip title={series.watchlist ? 'Von Watchlist entfernen' : 'Watchlist'} arrow>
+        <Tooltip title={series.watchlist ? t('Von Watchlist entfernen') : t('Watchlist')} arrow>
           <motion.button
             whileTap={tapScale}
             onClick={onWatchlistToggle}
             className="hero-actions__btn"
-            aria-label={series.watchlist ? 'Von Watchlist entfernen' : 'Zur Watchlist hinzufügen'}
+            aria-label={
+              series.watchlist ? t('Von Watchlist entfernen') : t('Zur Watchlist hinzufügen')
+            }
             style={
               series.watchlist
                 ? {
@@ -302,12 +305,12 @@ export const HeroSection = memo<HeroSectionProps>(
           }}
         />
 
-        <Tooltip title={series.hidden ? 'Einblenden' : 'Ausblenden'} arrow>
+        <Tooltip title={series.hidden ? t('Einblenden') : t('Ausblenden')} arrow>
           <motion.button
             whileTap={tapScale}
             onClick={onHideToggle}
             className="hero-actions__btn"
-            aria-label={series.hidden ? 'Einblenden' : 'Ausblenden'}
+            aria-label={series.hidden ? t('Einblenden') : t('Ausblenden')}
             style={
               series.hidden
                 ? {
@@ -326,12 +329,12 @@ export const HeroSection = memo<HeroSectionProps>(
           </motion.button>
         </Tooltip>
 
-        <Tooltip title="Löschen" arrow>
+        <Tooltip title={t('Löschen')} arrow>
           <motion.button
             whileTap={{ scale: isDeleting ? 1 : 0.96 }}
             onClick={onDelete}
             disabled={isDeleting}
-            aria-label="Löschen"
+            aria-label={t('Löschen')}
             className="hero-actions__btn hero-actions__btn--danger"
             style={{ opacity: isDeleting ? 0.4 : 1 }}
           >
@@ -408,11 +411,11 @@ export const HeroSection = memo<HeroSectionProps>(
 
         {/* Add button for TMDB-only series */}
         {isReadOnlyTmdbSeries && (
-          <Tooltip title="Zur Sammlung hinzufugen" arrow>
+          <Tooltip title={t('Zur Sammlung hinzufügen')} arrow>
             <button
               onClick={onAddSeries}
               disabled={isAdding}
-              aria-label="Zur Sammlung hinzufügen"
+              aria-label={t('Zur Sammlung hinzufügen')}
               className="hero-section__add-btn"
               style={{
                 top: isMobile
@@ -494,7 +497,7 @@ export const HeroSection = memo<HeroSectionProps>(
             <h1
               className="hero-section__title"
               tabIndex={0}
-              title="Titel kopieren"
+              title={t('Titel kopieren')}
               style={{
                 // Kino-Titel: groß, WEISS über dem Artwork (Poster-Logik) mit
                 // Theme-Glow — kein Fließtext-Grün in Link-Größe.
@@ -537,14 +540,16 @@ export const HeroSection = memo<HeroSectionProps>(
                   ).getFullYear()}
                 </span>
               )}
-              {series.seasons && <span>&bull; {series.seasons.length} Staffeln</span>}
+              {series.seasons && (
+                <span>&bull; {t('{n} Staffeln', { n: series.seasons.length })}</span>
+              )}
               {series.status && (
                 <span>
                   &bull;{' '}
                   {series.status === 'Returning Series' || series.status === 'ongoing'
-                    ? 'Wird fortgesetzt'
+                    ? t('Wird fortgesetzt')
                     : series.status === 'Ended' || series.status === 'Canceled'
-                      ? 'Beendet'
+                      ? t('Beendet')
                       : series.status}
                 </span>
               )}
@@ -770,7 +775,7 @@ export const HeroSection = memo<HeroSectionProps>(
                           color: fullTheme.text.muted,
                         }}
                       >
-                        Episoden
+                        {t('Episoden')}
                       </div>
                     </div>
                   </div>
@@ -785,21 +790,24 @@ export const HeroSection = memo<HeroSectionProps>(
                         : null;
                     const pods: { value: string; label: string }[] = pace.isPaused
                       ? [
-                          { value: 'Pausiert', label: 'Status' },
-                          { value: String(pace.remainingEpisodes), label: 'Ep. offen' },
+                          { value: t('Pausiert'), label: t('Status') },
+                          { value: String(pace.remainingEpisodes), label: t('Ep. offen') },
                         ]
                       : [
-                          { value: String(pace.remainingEpisodes), label: 'Ep. offen' },
-                          { value: `~${Math.round(pace.remainingHours)} Std.`, label: 'übrig' },
+                          { value: String(pace.remainingEpisodes), label: t('Ep. offen') },
+                          {
+                            value: t('~{h} Std.', { h: Math.round(pace.remainingHours) }),
+                            label: t('übrig'),
+                          },
                           {
                             value: `~${(pace.episodesPerWeek / 7).toFixed(1).replace('.', ',')}`,
-                            label: 'Ep. / Tag',
+                            label: t('Ep. / Tag'),
                           },
                           ...(fmt(pace.estimatedCompletionDate)
                             ? [
                                 {
                                   value: fmt(pace.estimatedCompletionDate) as string,
-                                  label: 'Fertig ca.',
+                                  label: t('Fertig ca.'),
                                 },
                               ]
                             : []),
@@ -879,8 +887,11 @@ export const HeroSection = memo<HeroSectionProps>(
                       marginTop: 6,
                     }}
                   >
-                    {progressStats.watched} von {progressStats.total} Episoden &middot;{' '}
-                    {progressStats.percentage}&thinsp;%
+                    {t('{watched} von {total} Episoden', {
+                      watched: progressStats.watched,
+                      total: progressStats.total,
+                    })}{' '}
+                    &middot; {progressStats.percentage}&thinsp;%
                   </p>
                   {paceInfo && (
                     <p

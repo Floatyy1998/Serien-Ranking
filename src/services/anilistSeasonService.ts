@@ -8,6 +8,8 @@
  * Requests auslösen.
  */
 
+import { t } from './i18n';
+
 const ANILIST_API = 'https://graphql.anilist.co';
 
 export type AniListSeason = 'WINTER' | 'SPRING' | 'SUMMER' | 'FALL';
@@ -109,9 +111,9 @@ export function seasonKey(ref: SeasonRef): string {
   return `${ref.season}-${ref.year}`;
 }
 
-/** Deutsches Label, z. B. "Sommer 2026". */
+/** Sprachabhängiges Label, z. B. "Sommer 2026" / "Summer 2026". */
 export function seasonLabel(ref: SeasonRef): string {
-  return `${SEASON_LABELS_DE[ref.season]} ${ref.year}`;
+  return `${t(SEASON_LABELS_DE[ref.season])} ${ref.year}`;
 }
 
 /** Gemeinsame Media-Felder beider Queries (Season-Liste + „Fortlaufend"). */

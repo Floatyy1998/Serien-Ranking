@@ -7,6 +7,7 @@ import { dbRef, paths } from '../../services/db/ref';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { hapticSelect, hapticWarning } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 
 export const DEFAULT_SECTION_ORDER = [
   'activity-marquee',
@@ -38,41 +39,41 @@ export const DEFAULT_QUICK_ACTIONS_ORDER = ['ratings', 'discover', 'history', 'f
 export const DEFAULT_SECONDARY_ACTIONS_ORDER = ['leaderboard', 'badges', 'pets'];
 
 export const SECTION_LABELS: Record<string, string> = {
-  'activity-marquee': 'Freunde-Aktivitäten',
-  'quick-actions': 'Schnellzugriff',
-  'secondary-actions': 'Extras',
-  countdown: 'Countdown',
-  'continue-watching': 'Weiterschauen',
-  rewatches: 'Rewatches',
-  'today-episodes': 'Heute Neu',
-  seasonal: 'Saisonale Empfehlungen',
-  trending: 'Trending',
-  'top-rated': 'Bestbewertet',
-  'for-you': 'Für dich',
-  stats: 'Statistiken',
+  'activity-marquee': t('Freunde-Aktivitäten'),
+  'quick-actions': t('Schnellzugriff'),
+  'secondary-actions': t('Extras'),
+  countdown: t('Countdown'),
+  'continue-watching': t('Weiterschauen'),
+  rewatches: t('Rewatches'),
+  'today-episodes': t('Heute Neu'),
+  seasonal: t('Saisonale Empfehlungen'),
+  trending: t('Trending'),
+  'top-rated': t('Bestbewertet'),
+  'for-you': t('Für dich'),
+  stats: t('Statistiken'),
 };
 
 export const FOR_YOU_LABELS: Record<string, string> = {
-  'watch-streak': 'Watch Streak',
-  'taste-profile': 'KI-Empfehlungen',
-  'taste-match': 'Taste Match',
-  'watch-journey': 'Watch Journey',
-  'rating-queue': 'Bewertungs-Queue',
-  'catch-up': 'Backlog',
-  'hidden-series': 'Nicht weitergeschaut',
+  'watch-streak': t('Watch Streak'),
+  'taste-profile': t('KI-Empfehlungen'),
+  'taste-match': t('Taste Match'),
+  'watch-journey': t('Watch Journey'),
+  'rating-queue': t('Bewertungs-Queue'),
+  'catch-up': t('Backlog'),
+  'hidden-series': t('Nicht weitergeschaut'),
 };
 
 export const QUICK_ACTIONS_LABELS: Record<string, string> = {
-  ratings: 'Ratings',
-  discover: 'Entdecken',
-  history: 'Verlauf',
-  friends: 'Freunde',
+  ratings: t('Ratings'),
+  discover: t('Entdecken'),
+  history: t('Verlauf'),
+  friends: t('Freunde'),
 };
 
 export const SECONDARY_ACTIONS_LABELS: Record<string, string> = {
-  leaderboard: 'Rangliste',
-  badges: 'Badges',
-  pets: 'Pets',
+  leaderboard: t('Rangliste'),
+  badges: t('Badges'),
+  pets: t('Pets'),
 };
 
 export interface HomeConfig {

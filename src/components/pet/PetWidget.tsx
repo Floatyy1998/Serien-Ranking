@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { showToast } from '../../lib/toast';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { pickReaction } from '../../hooks/usePetReactions';
 import { usePetReactions, triggerPetReaction } from '../../hooks/usePetReactions';
 import { PET_CONFIG } from '../../services/pet/petConstants';
@@ -61,12 +62,15 @@ export const PetWidget: React.FC = () => {
     if (wasAlive === true && !updatedPet.isAlive) {
       const causeText =
         updatedPet.deathCause === 'hunger'
-          ? 'ist verhungert'
+          ? t('ist verhungert')
           : updatedPet.deathCause === 'sadness'
-            ? 'ist vor Kummer gestorben'
-            : 'wurde zu lange vernachlässigt';
+            ? t('ist vor Kummer gestorben')
+            : t('wurde zu lange vernachlässigt');
       showToast(
-        `${updatedPet.name || 'Dein Haustier'} ${causeText} 😢 – tippe es an, um es wiederzubeleben`,
+        t('{name} {cause} 😢 – tippe es an, um es wiederzubeleben', {
+          name: updatedPet.name || t('Dein Haustier'),
+          cause: causeText,
+        }),
         8000,
         'error'
       );
@@ -449,7 +453,7 @@ export const PetWidget: React.FC = () => {
               </AnimatePresence>
 
               {pet.isAlive && (
-                <Tooltip title={`Sättigung: ${hungerBarPercent}%`} arrow>
+                <Tooltip title={t('Sättigung: {n}%', { n: hungerBarPercent })} arrow>
                   <div
                     style={{
                       position: 'absolute',
@@ -476,7 +480,7 @@ export const PetWidget: React.FC = () => {
               )}
 
               {healthy && (
-                <Tooltip title="Gesundes Pet: +50% XP-Bonus aktiv" arrow>
+                <Tooltip title={t('Gesundes Pet: +50% XP-Bonus aktiv')} arrow>
                   <motion.div
                     animate={{ opacity: [0.8, 1, 0.8] }}
                     transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -500,7 +504,7 @@ export const PetWidget: React.FC = () => {
               )}
 
               {!pet.isAlive && (
-                <Tooltip title="Pet ist verstorben – Tippe zum Wiederbeleben" arrow>
+                <Tooltip title={t('Pet ist verstorben – Tippe zum Wiederbeleben')} arrow>
                   <motion.div
                     animate={{ rotate: [0, 10, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
@@ -517,7 +521,7 @@ export const PetWidget: React.FC = () => {
               )}
 
               {pet.isAlive && pet.hunger > 70 && (
-                <Tooltip title="Dein Pet hat Hunger!" arrow>
+                <Tooltip title={t('Dein Pet hat Hunger!')} arrow>
                   <motion.div
                     animate={{ scale: [1, 1.2, 1], opacity: [0.8, 1, 0.8] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
@@ -550,15 +554,15 @@ export const PetWidget: React.FC = () => {
                     borderRadius: '8px',
                   }}
                 >
-                  {currentMood === 'festive' && '🎄 Festlich'}
-                  {currentMood === 'sleepy' && '😴 Müde'}
-                  {currentMood === 'playful' && '🎮 Spielfreudig'}
-                  {currentMood === 'excited' && '✨ Aufgeregt'}
-                  {currentMood === 'happy' && '😊 Glücklich'}
-                  {currentMood === 'hungry' && '🍖 Hungrig'}
-                  {currentMood === 'sad' && '😢 Traurig'}
-                  {currentMood === 'loved' && '💕 Geliebt'}
-                  {currentMood === 'scared' && '😨 Ängstlich'}
+                  {currentMood === 'festive' && t('🎄 Festlich')}
+                  {currentMood === 'sleepy' && t('😴 Müde')}
+                  {currentMood === 'playful' && t('🎮 Spielfreudig')}
+                  {currentMood === 'excited' && t('✨ Aufgeregt')}
+                  {currentMood === 'happy' && t('😊 Glücklich')}
+                  {currentMood === 'hungry' && t('🍖 Hungrig')}
+                  {currentMood === 'sad' && t('😢 Traurig')}
+                  {currentMood === 'loved' && t('💕 Geliebt')}
+                  {currentMood === 'scared' && t('😨 Ängstlich')}
                 </motion.div>
               )}
             </div>

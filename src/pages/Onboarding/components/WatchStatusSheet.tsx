@@ -4,6 +4,7 @@ import { fetchStaticCatalogSeasons } from '../../../services/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
 import type { WatchTarget } from '../hooks/useApplyWatchProgress';
 import { EpisodePicker } from './EpisodePicker';
+import { t } from '../../../services/i18n';
 
 interface Props {
   open: boolean;
@@ -99,7 +100,7 @@ export const WatchStatusSheet: React.FC<Props> = ({
 
               <div className="ob-sheet__title">
                 <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.55)' }}>
-                  Wo bist du bei
+                  {t('Wo bist du bei')}
                 </span>
                 <h2
                   className="ob-display"
@@ -127,15 +128,15 @@ export const WatchStatusSheet: React.FC<Props> = ({
                   >
                     <ChoiceRow
                       index="01"
-                      title="Noch nicht gesehen"
-                      sub="Steht auf der Watchlist"
+                      title={t('Noch nicht gesehen')}
+                      sub={t('Steht auf der Watchlist')}
                       selected={target.kind === 'none'}
                       onClick={() => choose({ kind: 'none' })}
                     />
                     <ChoiceRow
                       index="02"
-                      title="Bin mittendrin"
-                      sub="Episode auswählen"
+                      title={t('Bin mittendrin')}
+                      sub={t('Episode auswählen')}
                       selected={target.kind === 'upToEpisode'}
                       onClick={() =>
                         choose(
@@ -147,8 +148,8 @@ export const WatchStatusSheet: React.FC<Props> = ({
                     />
                     <ChoiceRow
                       index="03"
-                      title="Komplett gesehen"
-                      sub="Alle Episoden abhaken"
+                      title={t('Komplett gesehen')}
+                      sub={t('Alle Episoden abhaken')}
                       selected={target.kind === 'total'}
                       onClick={() => choose({ kind: 'total' })}
                     />
@@ -168,7 +169,7 @@ export const WatchStatusSheet: React.FC<Props> = ({
                       className="ob-link"
                       style={{ padding: 0, marginBottom: 14, fontSize: 11 }}
                     >
-                      ← andere option
+                      {t('← andere option')}
                     </button>
                     {seasons === null ? (
                       <div style={{ textAlign: 'center', padding: 40 }}>
@@ -177,7 +178,7 @@ export const WatchStatusSheet: React.FC<Props> = ({
                           style={{ margin: '0 auto', width: 24, height: 24 }}
                         />
                         <p className="ob-mono" style={{ marginTop: 14, fontSize: 10 }}>
-                          lade episoden …
+                          {t('lade episoden …')}
                         </p>
                       </div>
                     ) : seasons.length === 0 ? (
@@ -193,8 +194,9 @@ export const WatchStatusSheet: React.FC<Props> = ({
                           letterSpacing: 0,
                         }}
                       >
-                        Diese Serie ist noch nicht im Katalog. Wir notieren sie als watchlist —
-                        Episoden-Status kannst du später setzen.
+                        {t(
+                          'Diese Serie ist noch nicht im Katalog. Wir notieren sie als watchlist — Episoden-Status kannst du später setzen.'
+                        )}
                       </p>
                     ) : (
                       <EpisodePicker
@@ -214,7 +216,7 @@ export const WatchStatusSheet: React.FC<Props> = ({
             <div className="ob-sheet__footer">
               <button onClick={confirm} className="ob-cta">
                 <span className="ob-cta__inner">
-                  <span>übernehmen</span>
+                  <span>{t('übernehmen')}</span>
                 </span>
                 <span className="ob-cta__arrow">✓</span>
               </button>

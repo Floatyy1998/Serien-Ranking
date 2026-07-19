@@ -2,6 +2,7 @@ import { FilterList } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { BottomSheet } from './BottomSheet';
 import { seriesQuickFilters, movieQuickFilters, ratingsQuickFilters } from './QuickFilterConstants';
 import { QuickFilterPanel } from './QuickFilterPanel';
@@ -122,7 +123,7 @@ export const QuickFilter: React.FC<QuickFilterProps> = ({
   return (
     <>
       {/* Filter Button */}
-      <Tooltip title="Filter & Sortierung" arrow>
+      <Tooltip title={t('Filter & Sortierung')} arrow>
         <button
           onClick={() => setIsOpen(true)}
           style={{

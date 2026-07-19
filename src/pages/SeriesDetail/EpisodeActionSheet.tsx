@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
 import type { SeriesEpisode } from './types';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface EpisodeActionSheetProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
   const warningColor = currentTheme.status?.warning || '#f59e0b';
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel="Episode bearbeiten">
+    <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Episode bearbeiten')}>
       <div style={{ padding: '0 20px 32px' }}>
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <p
@@ -55,7 +56,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
               margin: 0,
             }}
           >
-            S{seasonNumber} E{episodeNumber} &middot; {watchCount}x gesehen
+            S{seasonNumber} E{episodeNumber} &middot; {t('{n}x gesehen', { n: watchCount })}
           </p>
         </div>
 
@@ -79,7 +80,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             }}
           >
             <Repeat style={{ fontSize: '18px' }} />
-            Nochmal gesehen ({watchCount + 1}x)
+            {t('Nochmal gesehen ({n}x)', { n: watchCount + 1 })}
           </motion.button>
 
           <motion.button
@@ -102,10 +103,10 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           >
             <RemoveCircle style={{ fontSize: '18px' }} />
             {watchCount > 2
-              ? `Auf ${watchCount - 1}x reduzieren`
+              ? t('Auf {n}x reduzieren', { n: watchCount - 1 })
               : watchCount === 2
-                ? 'Auf 1x reduzieren'
-                : 'Als nicht gesehen markieren'}
+                ? t('Auf 1x reduzieren')
+                : t('Als nicht gesehen markieren')}
           </motion.button>
 
           <motion.button
@@ -127,7 +128,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             }}
           >
             <ChatBubbleOutline style={{ fontSize: '18px' }} />
-            Zur Diskussion
+            {t('Zur Diskussion')}
           </motion.button>
         </div>
       </div>

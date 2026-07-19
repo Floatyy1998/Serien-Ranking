@@ -10,6 +10,7 @@ import type { Movie as MovieType } from '../../types/Movie';
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
+import { t } from '../../services/i18n';
 
 export interface StatsData {
   totalSeries: number;
@@ -65,7 +66,7 @@ export const formatTime = (minutes: number): FormattedTime => {
   let remaining = minutes;
 
   if (totalYears > 0) {
-    breakdown.push({ value: totalYears, unit: totalYears === 1 ? 'Jahr' : 'Jahre' });
+    breakdown.push({ value: totalYears, unit: totalYears === 1 ? t('Jahr') : t('Jahre') });
     remaining -= totalYears * 12 * 30 * 24 * 60;
   }
 
@@ -73,14 +74,14 @@ export const formatTime = (minutes: number): FormattedTime => {
   if (remainingMonths > 0) {
     breakdown.push({
       value: remainingMonths,
-      unit: remainingMonths === 1 ? 'Monat' : 'Monate',
+      unit: remainingMonths === 1 ? t('Monat') : t('Monate'),
     });
     remaining -= remainingMonths * 30 * 24 * 60;
   }
 
   const remainingDays = Math.floor(remaining / (24 * 60));
   if (remainingDays > 0) {
-    breakdown.push({ value: remainingDays, unit: remainingDays === 1 ? 'Tag' : 'Tage' });
+    breakdown.push({ value: remainingDays, unit: remainingDays === 1 ? t('Tag') : t('Tage') });
     remaining -= remainingDays * 24 * 60;
   }
 
@@ -88,36 +89,36 @@ export const formatTime = (minutes: number): FormattedTime => {
   if (remainingHours > 0 && totalDays < 30) {
     breakdown.push({
       value: remainingHours,
-      unit: remainingHours === 1 ? 'Stunde' : 'Stunden',
+      unit: remainingHours === 1 ? t('Stunde') : t('Stunden'),
     });
   }
 
   if (minutes < 60) {
-    return { value: String(minutes), unit: 'Min', details: '', breakdown };
+    return { value: String(minutes), unit: t('Min'), details: '', breakdown };
   }
   if (totalHours < 24) {
-    return { value: String(totalHours), unit: 'Stunden', details: '', breakdown };
+    return { value: String(totalHours), unit: t('Stunden'), details: '', breakdown };
   }
   if (totalDays < 30) {
-    const details = remainingHours > 0 ? `${remainingHours} Stunden` : '';
-    return { value: String(totalDays), unit: 'Tage', details, breakdown };
+    const details = remainingHours > 0 ? t('{n} Stunden', { n: remainingHours }) : '';
+    return { value: String(totalDays), unit: t('Tage'), details, breakdown };
   }
   if (totalMonths < 12) {
     const daysLeft = Math.floor((remaining + remainingMonths * 30 * 24 * 60) / (24 * 60)) % 30;
-    const details = daysLeft > 0 ? `${daysLeft} Tage` : '';
-    return { value: String(totalMonths), unit: 'Monate', details, breakdown };
+    const details = daysLeft > 0 ? t('{n} Tage', { n: daysLeft }) : '';
+    return { value: String(totalMonths), unit: t('Monate'), details, breakdown };
   }
 
   const detailParts: string[] = [];
   if (remainingMonths > 0)
-    detailParts.push(`${remainingMonths} ${remainingMonths === 1 ? 'Monat' : 'Monate'}`);
+    detailParts.push(`${remainingMonths} ${remainingMonths === 1 ? t('Monat') : t('Monate')}`);
   if (remainingDays > 0)
-    detailParts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tage'}`);
+    detailParts.push(`${remainingDays} ${remainingDays === 1 ? t('Tag') : t('Tage')}`);
   const details = detailParts.join(', ');
 
   return {
     value: String(totalYears),
-    unit: totalYears === 1 ? 'Jahr' : 'Jahre',
+    unit: totalYears === 1 ? t('Jahr') : t('Jahre'),
     details,
     breakdown,
   };
@@ -125,7 +126,7 @@ export const formatTime = (minutes: number): FormattedTime => {
 
 /** Format minutes into a compact detailed string (e.g. "3d 5h") */
 export const formatTimeDetailed = (minutes: number): string => {
-  if (minutes < 60) return `${minutes} Min`;
+  if (minutes < 60) return t('{n} Min', { n: minutes });
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   if (hours < 24) return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;

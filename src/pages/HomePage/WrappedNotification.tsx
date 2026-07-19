@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { PlayCircle, Theaters, Star, TrendingUp } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
+import { t } from '../../services/i18n';
 
 const FloatingIcon: React.FC<{
   icon: React.ReactNode;
@@ -57,7 +58,7 @@ const WrappedNotificationImpl: React.FC = () => {
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 200 }}
       onClick={() => navigate('/wrapped')}
-      aria-label={`Dein ${year} Wrapped ist da – Entdecke deinen Jahresrückblick`}
+      aria-label={t('Dein {year} Wrapped ist da – Entdecke deinen Jahresrückblick', { year })}
       style={{
         margin: '16px',
         marginBottom: '8px',
@@ -169,7 +170,7 @@ const WrappedNotificationImpl: React.FC = () => {
               letterSpacing: '-0.5px',
             }}
           >
-            Dein Wrapped ist da
+            {t('Dein Wrapped ist da')}
           </motion.h3>
           <motion.p
             initial={{ opacity: 0, x: -10 }}
@@ -181,7 +182,7 @@ const WrappedNotificationImpl: React.FC = () => {
               color: 'rgba(255, 255, 255, 0.9)',
             }}
           >
-            Entdecke deinen Jahresrückblick
+            {t('Entdecke deinen Jahresrückblick')}
           </motion.p>
         </div>
       </div>

@@ -4,6 +4,7 @@ import { EmptyState, PageHeader, PageLayout, Skeleton } from '../../components/u
 import { useTheme } from '../../contexts/ThemeContext';
 import { useProviderLogos } from '../../hooks/useProviderLogos';
 import { useSubscriptionsData } from '../../hooks/useSubscriptionsData';
+import { t } from '../../services/i18n';
 import { ActiveSubscriptionCard } from './components/ActiveSubscriptionCard';
 import { CostOptimizerSection } from './components/CostOptimizerSection';
 import { InactiveProvidersSection } from './components/InactiveProvidersSection';
@@ -50,7 +51,7 @@ export const SubscriptionsPage = () => {
       />
 
       <PageHeader
-        title="Streaming-Abos"
+        title={t('Streaming-Abos')}
         gradientFrom={currentTheme.text.primary}
         gradientTo={currentTheme.primary}
         icon={<SubscriptionsIcon style={{ fontSize: 26, color: accent }} />}
@@ -88,15 +89,15 @@ export const SubscriptionsPage = () => {
         <div className="sub-section">
           <div className="sub-section-head">
             <h2 className="sub-section-title" style={{ color: currentTheme.text.primary }}>
-              Deine Abos
+              {t('Deine Abos')}
             </h2>
             <span className="sub-section-count" style={{ color: muted }}>
-              {activeInsights.length} aktiv
+              {t('{n} aktiv', { n: activeInsights.length })}
             </span>
           </div>
 
           {loading && (
-            <div className="sub-skeleton-list" role="status" aria-label="Abos werden geladen">
+            <div className="sub-skeleton-list" role="status" aria-label={t('Abos werden geladen')}>
               {Array.from({ length: 3 }, (_, i) => (
                 <div key={i} className="sub-skeleton-card">
                   <Skeleton width={42} height={42} shape="card" />
@@ -113,8 +114,8 @@ export const SubscriptionsPage = () => {
           {!loading && activeInsights.length === 0 && (
             <EmptyState
               icon={<SubscriptionsIcon style={{ fontSize: 48 }} />}
-              title="Noch keine Abos markiert"
-              description="Wähle unten aus, welche Streaming-Dienste du gerade abonniert hast."
+              title={t('Noch keine Abos markiert')}
+              description={t('Wähle unten aus, welche Streaming-Dienste du gerade abonniert hast.')}
               iconColor={currentTheme.text.secondary}
             />
           )}

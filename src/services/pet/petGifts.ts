@@ -1,4 +1,5 @@
 import { dbRef, userPath } from '../../services/db/ref';
+import { t } from '../i18n';
 import { queuePush } from '../pushQueue';
 
 export type PetGiftType = 'snack' | 'toy';
@@ -22,8 +23,8 @@ const GIFT_PRESETS: Record<
   PetGiftType,
   { hungerDelta: number; happinessDelta: number; label: string }
 > = {
-  snack: { hungerDelta: -10, happinessDelta: 5, label: 'Snack' },
-  toy: { hungerDelta: 0, happinessDelta: 10, label: 'Spielzeug' },
+  snack: { hungerDelta: -10, happinessDelta: 5, label: t('Snack') },
+  toy: { hungerDelta: 0, happinessDelta: 10, label: t('Spielzeug') },
 };
 
 const COOLDOWN_LS_PREFIX = 'petGiftSentAt:';
@@ -53,8 +54,11 @@ export async function sendPetGift(opts: {
 
   const payload: PetGiftPayload = {
     type: 'pet_gift',
-    title: `${fromName} schickt ${preset.label}`,
-    message: `Dein Pet freut sich (+${preset.happinessDelta} Glück${preset.hungerDelta < 0 ? `, ${preset.hungerDelta} Hunger` : ''})`,
+    title: t('{name} schickt {gift}', { name: fromName, gift: preset.label }),
+    message: t('Dein Pet freut sich (+{h} Glück{rest})', {
+      h: preset.happinessDelta,
+      rest: preset.hungerDelta < 0 ? t(', {n} Hunger', { n: preset.hungerDelta }) : '',
+    }),
     timestamp: Date.now(),
     read: false,
     data: {
@@ -83,7 +87,7 @@ export async function sendPetGift(opts: {
 export function formatCooldownRemaining(nextAvailableAt: number): string {
   const remainingMs = Math.max(0, nextAvailableAt - Date.now());
   const hours = Math.ceil(remainingMs / (60 * 60 * 1000));
-  if (hours <= 1) return 'in unter 1 Stunde';
-  if (hours < 24) return `in ${hours} h`;
-  return 'morgen';
+  if (hours <= 1) return t('in unter 1 Stunde');
+  if (hours < 24) return t('in {n} h', { n: hours });
+  return t('morgen');
 }

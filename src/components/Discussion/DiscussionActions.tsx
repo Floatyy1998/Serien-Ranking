@@ -1,6 +1,7 @@
 import { Delete, Edit, Flag } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface DiscussionActionsProps {
   isOwner: boolean;
@@ -33,7 +34,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
     <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
       {/* Spoiler Flag Button */}
       {!isOwner && !isSpoiler && currentUserId && !showSpoilerConfirm && (
-        <Tooltip title="Als Spoiler melden" arrow>
+        <Tooltip title={t('Als Spoiler melden')} arrow>
           <button
             onClick={() => setShowSpoilerConfirm(true)}
             style={{
@@ -57,7 +58,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
       {showSpoilerConfirm && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontSize: '13px', color: currentTheme.status.warning, fontWeight: 500 }}>
-            Spoiler?
+            {t('Spoiler?')}
           </span>
           <button
             onClick={onFlagAsSpoiler}
@@ -72,7 +73,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
               fontWeight: 600,
             }}
           >
-            Ja
+            {t('Ja')}
           </button>
           <button
             onClick={() => setShowSpoilerConfirm(false)}
@@ -86,7 +87,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
               fontSize: '12px',
             }}
           >
-            Nein
+            {t('Nein')}
           </button>
         </div>
       )}
@@ -94,7 +95,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
       {/* Edit/Delete Buttons */}
       {isOwner && !showDeleteConfirm && !showSpoilerConfirm && (
         <>
-          <Tooltip title="Bearbeiten" arrow>
+          <Tooltip title={t('Bearbeiten')} arrow>
             <button
               onClick={onEdit}
               style={{
@@ -112,7 +113,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
               <Edit style={{ fontSize: '18px' }} />
             </button>
           </Tooltip>
-          <Tooltip title="Löschen" arrow>
+          <Tooltip title={t('Löschen')} arrow>
             <button
               onClick={() => setShowDeleteConfirm(true)}
               style={{
@@ -137,7 +138,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
       {showDeleteConfirm && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ fontSize: '13px', color: currentTheme.status.error, fontWeight: 500 }}>
-            Löschen?
+            {t('Löschen?')}
           </span>
           <button
             onClick={onDelete}
@@ -152,7 +153,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
               fontWeight: 600,
             }}
           >
-            Ja
+            {t('Ja')}
           </button>
           <button
             onClick={() => setShowDeleteConfirm(false)}
@@ -166,7 +167,7 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
               fontSize: '12px',
             }}
           >
-            Nein
+            {t('Nein')}
           </button>
         </div>
       )}

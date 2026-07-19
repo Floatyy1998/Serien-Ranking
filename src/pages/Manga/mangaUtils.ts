@@ -1,4 +1,5 @@
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 /** Theme type alias to avoid `typeof import()` in component props */
 export type AppTheme = ReturnType<typeof useTheme>['currentTheme'];
@@ -33,11 +34,11 @@ export const FORMAT_COLORS: Record<string, string> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
-  reading: 'Lese ich',
-  completed: 'Abgeschlossen',
-  paused: 'Pausiert',
-  dropped: 'Abgebrochen',
-  planned: 'Geplant',
+  reading: t('Lese ich'),
+  completed: t('Abgeschlossen'),
+  paused: t('Pausiert'),
+  dropped: t('Abgebrochen'),
+  planned: t('Geplant'),
 };
 
 export const STATUS_COLORS: Record<string, string> = {
@@ -49,11 +50,11 @@ export const STATUS_COLORS: Record<string, string> = {
 };
 
 export const ANILIST_STATUS_LABELS: Record<string, string> = {
-  RELEASING: 'Laufend',
-  FINISHED: 'Abgeschlossen',
-  CANCELLED: 'Abgebrochen',
+  RELEASING: t('Laufend'),
+  FINISHED: t('Abgeschlossen'),
+  CANCELLED: t('Abgebrochen'),
   HIATUS: 'Hiatus',
-  NOT_YET_RELEASED: 'Noch nicht erschienen',
+  NOT_YET_RELEASED: t('Noch nicht erschienen'),
 };
 
 /** Wenn ein RELEASING-Manga laenger als das hier kein neues Chapter hatte,

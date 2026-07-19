@@ -9,6 +9,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Manga } from '../../types/Manga';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface CatchUpManga {
   manga: Manga;
@@ -75,12 +76,15 @@ export const MangaCatchUpPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Manga Aufholen"
+        title={t('Manga Aufholen')}
         gradientFrom={currentTheme.accent}
         gradientTo={currentTheme.primary}
         subtitle={
           catchUpData.length > 0
-            ? `${catchUpData.length} Manga · ${totals.totalChapters} Kapitel offen`
+            ? t('{n} Manga · {m} Kapitel offen', {
+                n: catchUpData.length,
+                m: totals.totalChapters,
+              })
             : undefined
         }
         icon={<Schedule />}
@@ -100,9 +104,13 @@ export const MangaCatchUpPage = () => {
             }}
           >
             <HeroStat label="Manga" value={catchUpData.length} theme={currentTheme} />
-            <HeroStat label="Kapitel offen" value={totals.totalChapters} theme={currentTheme} />
             <HeroStat
-              label="Ø Fortschritt"
+              label={t('Kapitel offen')}
+              value={totals.totalChapters}
+              theme={currentTheme}
+            />
+            <HeroStat
+              label={t('Ø Fortschritt')}
               value={`${Math.round(totals.avgProgress)}%`}
               theme={currentTheme}
             />
@@ -112,9 +120,9 @@ export const MangaCatchUpPage = () => {
         {/* Sort */}
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           {[
-            { key: 'chapters' as SortKey, label: 'Kapitel' },
-            { key: 'progress' as SortKey, label: 'Fortschritt' },
-            { key: 'recent' as SortKey, label: 'Zuletzt gelesen' },
+            { key: 'chapters' as SortKey, label: t('Kapitel') },
+            { key: 'progress' as SortKey, label: t('Fortschritt') },
+            { key: 'recent' as SortKey, label: t('Zuletzt gelesen') },
           ].map((s) => (
             <button
               key={s.key}
@@ -153,7 +161,7 @@ export const MangaCatchUpPage = () => {
               key={item.manga.anilistId}
               role="button"
               tabIndex={0}
-              aria-label={`${item.manga.title} öffnen`}
+              aria-label={t('{title} öffnen', { title: item.manga.title })}
               onClick={() => navigate(`/manga/${item.manga.anilistId}`)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
@@ -199,8 +207,8 @@ export const MangaCatchUpPage = () => {
                   {item.manga.title}
                 </div>
                 <div style={{ fontSize: 12, color: currentTheme.text.secondary, marginTop: 2 }}>
-                  Kap. {item.manga.currentChapter} / {getEffectiveChapterCount(item.manga)} ·{' '}
-                  {item.remainingChapters} offen
+                  {t('Kap.')} {item.manga.currentChapter} / {getEffectiveChapterCount(item.manga)} ·{' '}
+                  {t('{n} offen', { n: item.remainingChapters })}
                 </div>
                 <div
                   style={{
@@ -239,7 +247,7 @@ export const MangaCatchUpPage = () => {
           <div style={{ textAlign: 'center', padding: 60 }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
             <div style={{ fontSize: 16, fontWeight: 600, color: currentTheme.text.primary }}>
-              Alles aufgeholt!
+              {t('Alles aufgeholt!')}
             </div>
             <div
               style={{
@@ -249,7 +257,7 @@ export const MangaCatchUpPage = () => {
                 marginTop: 4,
               }}
             >
-              Du bist bei allen Manga auf dem aktuellen Stand.
+              {t('Du bist bei allen Manga auf dem aktuellen Stand.')}
             </div>
           </div>
         )}

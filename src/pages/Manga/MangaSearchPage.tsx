@@ -12,9 +12,10 @@ import type { AniListMangaSearchResult } from '../../types/Manga';
 import { addMangaToList } from './addMangaToList';
 import { FORMAT_COLORS, getDisplayFormat, getDisplayFormatKey } from './mangaUtils';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const FORMAT_FILTERS = [
-  { key: 'all', label: 'Alle' },
+  { key: 'all', label: t('Alle') },
   { key: 'JP', label: 'Manga' },
   { key: 'KR', label: 'Manhwa' },
   { key: 'CN', label: 'Manhua' },
@@ -127,7 +128,7 @@ export const MangaSearchPage = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
             <motion.button
               type="button"
-              aria-label="Suche schließen"
+              aria-label={t('Suche schließen')}
               whileTap={tapScaleTight}
               onClick={() => navigate('/manga')}
               style={{
@@ -161,7 +162,7 @@ export const MangaSearchPage = () => {
                 ref={inputRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Manga, Manhwa, Manhua suchen..."
+                placeholder={t('Manga, Manhwa, Manhua suchen...')}
                 style={{
                   width: '100%',
                   padding: '12px 14px 12px 40px',
@@ -228,7 +229,7 @@ export const MangaSearchPage = () => {
                 letterSpacing: '0.05em',
               }}
             >
-              Letzte Suchen
+              {t('Letzte Suchen')}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {recentSearches.map((s) => (
@@ -257,7 +258,7 @@ export const MangaSearchPage = () => {
 
         {searching && (
           <div style={{ textAlign: 'center', padding: 60, opacity: 0.5, fontSize: 14 }}>
-            Suche...
+            {t('Suche...')}
           </div>
         )}
 
@@ -282,7 +283,9 @@ export const MangaSearchPage = () => {
                   key={result.id}
                   role="button"
                   tabIndex={0}
-                  aria-label={`${result.title.english || result.title.romaji} öffnen`}
+                  aria-label={t('{title} öffnen', {
+                    title: result.title.english || result.title.romaji,
+                  })}
                   whileTap={{ scale: 0.97 }}
                   onClick={() => navigate(`/manga/${result.id}`)}
                   onKeyDown={(e) => {
@@ -377,7 +380,9 @@ export const MangaSearchPage = () => {
                     {/* Add button */}
                     <motion.button
                       type="button"
-                      aria-label={`${result.title.english || result.title.romaji} zur Sammlung hinzufügen`}
+                      aria-label={t('{title} zur Sammlung hinzufügen', {
+                        title: result.title.english || result.title.romaji,
+                      })}
                       whileTap={{ scale: 0.85 }}
                       onClick={(e) => handleAdd(e, result)}
                       style={{
@@ -441,7 +446,7 @@ export const MangaSearchPage = () => {
                       }}
                     >
                       {result.startDate?.year || ''}
-                      {result.chapters ? ` · ${result.chapters} Kap.` : ''}
+                      {result.chapters ? ` · ${t('{n} Kap.', { n: result.chapters })}` : ''}
                     </div>
                   </div>
                 </motion.div>
@@ -461,10 +466,10 @@ export const MangaSearchPage = () => {
                 marginBottom: 4,
               }}
             >
-              Keine Ergebnisse
+              {t('Keine Ergebnisse')}
             </div>
             <div style={{ fontSize: 13, color: currentTheme.text.secondary, opacity: 0.6 }}>
-              Versuche einen anderen Suchbegriff
+              {t('Versuche einen anderen Suchbegriff')}
             </div>
           </div>
         )}
@@ -480,7 +485,7 @@ export const MangaSearchPage = () => {
                 marginBottom: 4,
               }}
             >
-              Manga entdecken
+              {t('Manga entdecken')}
             </div>
             <div
               style={{
@@ -492,7 +497,7 @@ export const MangaSearchPage = () => {
                 lineHeight: 1.5,
               }}
             >
-              Suche nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.
+              {t('Suche nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.')}
             </div>
           </div>
         )}

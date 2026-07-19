@@ -1,3 +1,5 @@
+import { t } from '../../services/i18n';
+
 export type TicketStatus = 'open' | 'in-progress' | 'done' | 'rejected' | 'obsolete';
 export type TicketPriority = 'low' | 'medium' | 'high';
 export type TicketType = 'bug' | 'feature';
@@ -31,17 +33,17 @@ export interface BugTicket {
 }
 
 export const STATUS_CONFIG: Record<TicketStatus, { label: string; color: string }> = {
-  open: { label: 'Offen', color: '#f59e0b' },
-  'in-progress': { label: 'In Bearbeitung', color: '#3b82f6' },
-  done: { label: 'Erledigt', color: '#22c55e' },
-  rejected: { label: 'Abgelehnt', color: '#ef4444' },
-  obsolete: { label: 'Hinfällig', color: '#78716c' },
+  open: { label: t('Offen'), color: '#f59e0b' },
+  'in-progress': { label: t('In Bearbeitung'), color: '#3b82f6' },
+  done: { label: t('Erledigt'), color: '#22c55e' },
+  rejected: { label: t('Abgelehnt'), color: '#ef4444' },
+  obsolete: { label: t('Hinfällig'), color: '#78716c' },
 };
 
 export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: string }> = {
-  low: { label: 'Niedrig', color: '#6b7280' },
-  medium: { label: 'Mittel', color: '#f59e0b' },
-  high: { label: 'Hoch', color: '#ef4444' },
+  low: { label: t('Niedrig'), color: '#6b7280' },
+  medium: { label: t('Mittel'), color: '#f59e0b' },
+  high: { label: t('Hoch'), color: '#ef4444' },
 };
 
 export const TYPE_CONFIG: Record<TicketType, { label: string; color: string; icon: string }> = {

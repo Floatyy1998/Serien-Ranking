@@ -2,6 +2,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { memo, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import type { OnboardingItem } from '../hooks/useOnboardingSearch';
+import { t } from '../../../services/i18n';
 
 export type WatchSummary =
   | { kind: 'none' }
@@ -19,8 +20,8 @@ interface Props {
 
 function summaryLabel(s: WatchSummary | undefined): string | null {
   if (!s || s.kind === 'none') return null;
-  if (s.kind === 'total') return 'gesehen · komplett';
-  return `bei s${s.seasonNumber} · e${s.episodeNumber}`;
+  if (s.kind === 'total') return t('gesehen · komplett');
+  return t('bei s{s} · e{e}', { s: s.seasonNumber, e: s.episodeNumber });
 }
 
 const Plus = (
@@ -152,7 +153,7 @@ export const ContentCard: React.FC<Props> = memo(
             className="ob-link"
             style={{ padding: '4px 0', alignSelf: 'flex-start', fontSize: 10 }}
           >
-            entfernen
+            {t('entfernen')}
           </button>
         )}
       </motion.div>

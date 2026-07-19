@@ -5,6 +5,7 @@ import {
   providerNeedsClipboardCopy,
 } from '../../../lib/providerLinks';
 import type { MediaProvider } from './mediaCarouselTypes';
+import { t } from '../../../services/i18n';
 
 interface MiniProviderBadgesProps {
   providers: MediaProvider[];
@@ -86,8 +87,8 @@ export function MiniProviderBadges({
   const renderLogo = (p: MediaProvider, extraEl?: React.ReactNode) => {
     const url = getProviderSearchUrl(p.name, searchTitle);
     const titleAttr = providerNeedsClipboardCopy(p.name)
-      ? `${p.name}: Titel kopieren + Suche öffnen`
-      : `${p.name} öffnen`;
+      ? t('{name}: Titel kopieren + Suche öffnen', { name: p.name })
+      : t('{name} öffnen', { name: p.name });
     const wrap = (children: React.ReactNode) =>
       url ? (
         <a

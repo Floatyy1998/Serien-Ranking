@@ -2,6 +2,7 @@ import { dbRef, dbGet, userPath } from '../../services/db/ref';
 import type { AccessoryRarity, PetAccessory } from '../../types/pet.types';
 import { ACCESSORIES } from '../../components/pet/data/accessories';
 import { PET_BACKGROUNDS } from '../../components/pet/data/petBackgrounds';
+import { t } from '../i18n';
 import { getUserPets } from './petCore';
 
 export type SpinRewardType = 'xp_boost' | 'accessory' | 'nothing' | 'background';
@@ -78,7 +79,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 0: 3x XP 5 Episoden (Epic Booster)
     {
       type: 'xp_boost',
-      label: '3x XP — 5 Episoden',
+      label: t('3x XP — 5 Episoden'),
       icon: '💎',
       color: '#E040FB',
       rarity: 'epic',
@@ -88,7 +89,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 1: 2x XP 2 Episoden
     {
       type: 'xp_boost',
-      label: '2x XP — 2 Episoden',
+      label: t('2x XP — 2 Episoden'),
       icon: '⚡',
       color: '#FFD93D',
       rarity: 'common',
@@ -98,7 +99,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 2: 3x XP 10 Episoden (Legendary Booster)
     {
       type: 'xp_boost',
-      label: '3x XP — 10 Episoden',
+      label: t('3x XP — 10 Episoden'),
       icon: '👑',
       color: '#FFD700',
       rarity: 'legendary',
@@ -108,7 +109,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 3: 2x XP 5 Episoden
     {
       type: 'xp_boost',
-      label: '2x XP — 5 Episoden',
+      label: t('2x XP — 5 Episoden'),
       icon: '🔥',
       color: '#FF9800',
       rarity: 'uncommon',
@@ -118,7 +119,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 4: Common Accessoire
     {
       type: 'accessory',
-      label: 'Accessoire',
+      label: t('Accessoire'),
       icon: '🎁',
       color: '#2196F3',
       rarity: 'common',
@@ -126,7 +127,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 5: 2x XP 10 Episoden
     {
       type: 'xp_boost',
-      label: '2x XP — 10 Episoden',
+      label: t('2x XP — 10 Episoden'),
       icon: '💥',
       color: '#4CAF50',
       rarity: 'rare',
@@ -136,7 +137,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 6: Seltenes Accessoire
     {
       type: 'accessory',
-      label: 'Seltenes Accessoire',
+      label: t('Seltenes Accessoire'),
       icon: '✨',
       color: '#9C27B0',
       rarity: 'rare',
@@ -144,7 +145,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 7: Episches Accessoire
     {
       type: 'accessory',
-      label: 'Episches Accessoire',
+      label: t('Episches Accessoire'),
       icon: '💎',
       color: '#E040FB',
       rarity: 'epic',
@@ -152,7 +153,7 @@ export function buildSpinSegments(_streakDays: number): SpinReward[] {
     // 8: Legendäres Accessoire
     {
       type: 'accessory',
-      label: 'Legendäres Accessoire',
+      label: t('Legendäres Accessoire'),
       icon: '👑',
       color: '#FFD700',
       rarity: 'legendary',
@@ -247,7 +248,7 @@ export async function performDailySpin(
       } else {
         // Fallback to XP boost if all accessories owned
         reward.type = 'xp_boost';
-        reward.label = '2x XP — 5 Episoden';
+        reward.label = t('2x XP — 5 Episoden');
         reward.icon = '🔥';
         reward.xpMultiplier = 2;
         reward.xpEpisodeCount = 5;

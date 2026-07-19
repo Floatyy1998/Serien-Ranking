@@ -1,6 +1,7 @@
 import { Info } from '@mui/icons-material';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { Movie } from '../../types/Movie';
 
 interface MovieInfoTabProps {
@@ -23,7 +24,7 @@ export const MovieInfoTab = memo(({ movie, isMobile, tmdbOverview }: MovieInfoTa
             style={{ color: currentTheme.text.primary }}
           >
             <Info style={{ fontSize: isMobile ? '16px' : '18px', color: currentTheme.accent }} />
-            Handlung
+            {t('Handlung')}
           </h3>
           <p
             className={`md-info__text md-info__text${mobileClass}`}

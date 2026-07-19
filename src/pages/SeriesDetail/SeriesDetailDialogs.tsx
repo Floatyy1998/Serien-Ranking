@@ -3,6 +3,7 @@ import { Dialog } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { calculateSeriesMetrics } from '../../lib/episode/seriesMetrics';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
+import { t } from '../../services/i18n';
 
 import type { DynamicTheme } from '../../theme/dynamicTheme';
 import type { Series } from '../../types/Series';
@@ -90,10 +91,10 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
       onClose={() => setDialog({ ...dialog, open: false })}
       title={
         dialog.type === 'warning'
-          ? 'Bestätigung'
+          ? t('Bestätigung')
           : dialog.type === 'error'
-            ? 'Fehler'
-            : 'Information'
+            ? t('Fehler')
+            : t('Information')
       }
       message={dialog.message}
       type={dialog.type}
@@ -101,11 +102,11 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
         dialog.onConfirm
           ? [
               {
-                label: 'Abbrechen',
+                label: t('Abbrechen'),
                 onClick: () => setDialog({ ...dialog, open: false }),
                 variant: 'secondary',
               },
-              { label: 'Bestätigen', onClick: dialog.onConfirm, variant: 'primary' },
+              { label: t('Bestätigen'), onClick: dialog.onConfirm, variant: 'primary' },
             ]
           : []
       }

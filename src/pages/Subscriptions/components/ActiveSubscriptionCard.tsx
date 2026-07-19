@@ -10,15 +10,17 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { UseSubscriptionsDataResult } from '../../../hooks/useSubscriptionsData';
+import { t } from '../../../services/i18n';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';
 import { ProviderLogo } from './ProviderLogo';
 
 const formatLastWatched = (insight: ProviderInsight, thresholdDays: number): string => {
-  if (insight.daysSinceLastWatch === null) return `seit ${thresholdDays}+ Tagen nichts geschaut`;
-  if (insight.daysSinceLastWatch === 0) return 'heute geschaut';
-  if (insight.daysSinceLastWatch === 1) return 'gestern geschaut';
-  return `vor ${insight.daysSinceLastWatch} Tagen geschaut`;
+  if (insight.daysSinceLastWatch === null)
+    return t('seit {n}+ Tagen nichts geschaut', { n: thresholdDays });
+  if (insight.daysSinceLastWatch === 0) return t('heute geschaut');
+  if (insight.daysSinceLastWatch === 1) return t('gestern geschaut');
+  return t('vor {n} Tagen geschaut', { n: insight.daysSinceLastWatch });
 };
 
 const formatDateShort = (ts: number): string => {
@@ -97,7 +99,7 @@ export const ActiveSubscriptionCard = ({
               {insight.lastWatchTitle ? `${insight.lastWatchTitle} · ` : ''}
               {formatLastWatched(insight, unusedThresholdDays)}
               {insight.recentCount > 0 &&
-                ` · ${insight.recentCount} Aufruf${insight.recentCount === 1 ? '' : 'e'}`}
+                ` · ${insight.recentCount === 1 ? t('1 Aufruf') : t('{n} Aufrufe', { n: insight.recentCount })}`}
             </span>
           </p>
         </div>
@@ -123,11 +125,11 @@ export const ActiveSubscriptionCard = ({
               });
             }}
             className="sub-price-input"
-            aria-label={`Monatspreis für ${insight.name}`}
+            aria-label={t('Monatspreis für {name}', { name: insight.name })}
           />
         </div>
 
-        <Tooltip title="Kündigen wenn ungenutzt" arrow>
+        <Tooltip title={t('Kündigen wenn ungenutzt')} arrow>
           <span
             className={`sub-cancel-icon-btn${insight.cancelIfUnused ? ' sub-cancel-icon-btn--on' : ''}`}
             style={{
@@ -137,7 +139,7 @@ export const ActiveSubscriptionCard = ({
             role="button"
             tabIndex={0}
             aria-pressed={insight.cancelIfUnused}
-            aria-label="Kündigen wenn ungenutzt umschalten"
+            aria-label={t('Kündigen wenn ungenutzt umschalten')}
             onClick={() =>
               updateProvider(insight.name, {
                 cancelIfUnused: !insight.cancelIfUnused,
@@ -160,7 +162,7 @@ export const ActiveSubscriptionCard = ({
           </span>
         </Tooltip>
 
-        <label className="sub-toggle" aria-label={`${insight.name} deaktivieren`}>
+        <label className="sub-toggle" aria-label={t('{name} deaktivieren', { name: insight.name })}>
           <input
             type="checkbox"
             className="sub-toggle-input"
@@ -176,7 +178,7 @@ export const ActiveSubscriptionCard = ({
           className={`sub-expand-btn${expanded ? ' sub-expand-btn--open' : ''}`}
           onClick={onToggleExpand}
           aria-expanded={expanded}
-          aria-label="Letzte Aufrufe anzeigen"
+          aria-label={t('Letzte Aufrufe anzeigen')}
         >
           {expanded ? (
             <ExpandLess style={{ fontSize: 20 }} />
@@ -200,11 +202,13 @@ export const ActiveSubscriptionCard = ({
             }}
           >
             <p className="sub-diag-title" style={{ color: muted }}>
-              Zuletzt zugeordnet
+              {t('Zuletzt zugeordnet')}
             </p>
             {insight.recentWatches.length === 0 ? (
               <p className="sub-diag-empty">
-                Keine erfassten Aufrufe – beim Abhaken war vermutlich kein Provider hinterlegt.
+                {t(
+                  'Keine erfassten Aufrufe – beim Abhaken war vermutlich kein Provider hinterlegt.'
+                )}
               </p>
             ) : (
               <div className="sub-diag-list">
@@ -215,16 +219,16 @@ export const ActiveSubscriptionCard = ({
                   return (
                     <div key={`${w.timestamp}-${idx}`}>
                       <div className="sub-diag-item">
-                        <span className="sub-diag-item-title">{w.title || '(ohne Titel)'}</span>
+                        <span className="sub-diag-item-title">{w.title || t('(ohne Titel)')}</span>
                         <span className="sub-diag-item-date">{formatDateShort(w.timestamp)}</span>
                         {sid != null && activeInsights.length > 1 && (
                           <button
                             type="button"
                             className="sub-diag-move-btn"
                             onClick={() => onMoveMenuChange(isMenuOpen ? null : sid)}
-                            aria-label="Diese Serie einem anderen Anbieter zuordnen"
+                            aria-label={t('Diese Serie einem anderen Anbieter zuordnen')}
                           >
-                            {hasOverride ? '✓ fest' : 'verschieben'}
+                            {hasOverride ? t('✓ fest') : t('verschieben')}
                           </button>
                         )}
                       </div>
@@ -258,7 +262,7 @@ export const ActiveSubscriptionCard = ({
                                 onMoveMenuChange(null);
                               }}
                             >
-                              Auto-Zuordnung
+                              {t('Auto-Zuordnung')}
                             </button>
                           )}
                         </div>

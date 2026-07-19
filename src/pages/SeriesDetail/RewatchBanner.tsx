@@ -9,6 +9,7 @@ import {
   getRewatchRound,
 } from '../../lib/validation/rewatch.utils';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface RewatchBannerProps {
   series: Series;
@@ -57,7 +58,9 @@ export function RewatchBanner({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Repeat style={{ fontSize: '16px', color: warningColor }} />
-          <span style={{ fontSize: '15px', fontWeight: 600 }}>Rewatch #{rewatchRound}</span>
+          <span style={{ fontSize: '15px', fontWeight: 600 }}>
+            {t('Rewatch #{n}', { n: rewatchRound })}
+          </span>
         </div>
         <span
           style={{
@@ -65,7 +68,10 @@ export function RewatchBanner({
             color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
           }}
         >
-          {rewatchProgress.current}/{rewatchProgress.total} Episoden
+          {t('{current}/{total} Episoden', {
+            current: rewatchProgress.current,
+            total: rewatchProgress.total,
+          })}
         </span>
       </div>
       <ProgressBar value={rewatchPercent} color={warningColor} toColor={warningColor} height={6} />
@@ -101,7 +107,11 @@ export function RewatchBanner({
             gap: '6px',
           }}
         >
-          Nächste: S{nextEp.seasonNumber + 1} E{nextEp.episodeIndex + 1} — {nextEp.name}
+          {t('Nächste: S{s} E{e} — {name}', {
+            s: nextEp.seasonNumber + 1,
+            e: nextEp.episodeIndex + 1,
+            name: nextEp.name,
+          })}
         </motion.button>
       )}
       <motion.button
@@ -118,7 +128,7 @@ export function RewatchBanner({
           alignSelf: 'flex-end',
         }}
       >
-        Rewatch beenden
+        {t('Rewatch beenden')}
       </motion.button>
     </div>
   );

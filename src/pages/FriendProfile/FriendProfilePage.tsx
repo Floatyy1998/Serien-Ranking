@@ -26,6 +26,7 @@ import {
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import {
   calculateFriendRating,
   calculateProgress,
@@ -122,7 +123,7 @@ export const FriendProfilePage = memo(() => {
   };
 
   if (restricted) {
-    const shownName = restrictedProfile?.displayName || restrictedProfile?.username || 'Profil';
+    const shownName = restrictedProfile?.displayName || restrictedProfile?.username || t('Profil');
     return (
       <PageLayout>
         <PageHeader title={shownName} sticky={false} />
@@ -145,7 +146,9 @@ export const FriendProfilePage = memo(() => {
           />
           <h2 style={{ margin: 0, color: currentTheme.text.primary, fontSize: 20 }}>{shownName}</h2>
           <p style={{ margin: 0, color: currentTheme.text.muted, maxWidth: 320, lineHeight: 1.5 }}>
-            Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.
+            {t(
+              'Dieses Profil ist privat. Bibliothek, Bewertungen und Aktivität sehen nur Freunde.'
+            )}
           </p>
           <motion.button
             whileTap={tapScale}
@@ -169,12 +172,12 @@ export const FriendProfilePage = memo(() => {
           >
             <span style={{ color: alreadyRequested ? currentTheme.text.muted : '#000' }}>
               {alreadyRequested
-                ? 'Anfrage gesendet ✓'
+                ? t('Anfrage gesendet ✓')
                 : requestState === 'sending'
-                  ? 'Sende…'
+                  ? t('Sende…')
                   : requestState === 'error'
-                    ? 'Fehler — nochmal versuchen'
-                    : 'Freundschaftsanfrage senden'}
+                    ? t('Fehler — nochmal versuchen')
+                    : t('Freundschaftsanfrage senden')}
             </span>
           </motion.button>
         </div>
@@ -194,7 +197,7 @@ export const FriendProfilePage = memo(() => {
       >
         <div
           role="status"
-          aria-label="Lade Profil"
+          aria-label={t('Lade Profil')}
           style={{
             display: 'flex',
             flexDirection: 'column',
@@ -213,8 +216,6 @@ export const FriendProfilePage = memo(() => {
     );
   }
 
-  const label = activeTab === 'series' ? 'Serien' : 'Filme';
-
   return (
     <PageLayout>
       <div ref={scrollRef}>
@@ -222,7 +223,10 @@ export const FriendProfilePage = memo(() => {
         <PageHeader
           title={friendName}
           sticky={false}
-          subtitle={`\u00D8 ${averageRating.toFixed(1)} | ${itemsWithRatingCount} bewertet`}
+          subtitle={t('\u00D8 {avg} | {n} bewertet', {
+            avg: averageRating.toFixed(1),
+            n: itemsWithRatingCount,
+          })}
           actions={
             <motion.button
               whileTap={tapScale}
@@ -246,7 +250,7 @@ export const FriendProfilePage = memo(() => {
               onClick={toggleInsights}
               style={{ color: currentTheme.text.muted }}
             >
-              <span>{insightsOpen ? 'Insights ausblenden' : 'Insights einblenden'}</span>
+              <span>{insightsOpen ? t('Insights ausblenden') : t('Insights einblenden')}</span>
               {insightsOpen ? (
                 <ExpandLess style={{ fontSize: 18 }} />
               ) : (
@@ -272,11 +276,15 @@ export const FriendProfilePage = memo(() => {
                         />
                       ) : (
                         <div className="fp-insights-placeholder">
-                          <div className="fp-insights-placeholder-title">Nichts Aktuelles</div>
+                          <div className="fp-insights-placeholder-title">
+                            {t('Nichts Aktuelles')}
+                          </div>
                           <div className="fp-insights-placeholder-text">
                             {currentlyWatching.loading
-                              ? 'Lade Aktivität …'
-                              : `${friendName} hat in den letzten 14 Tagen nichts geschaut.`}
+                              ? t('Lade Aktivität …')
+                              : t('{name} hat in den letzten 14 Tagen nichts geschaut.', {
+                                  name: friendName,
+                                })}
                           </div>
                         </div>
                       )}
@@ -284,11 +292,11 @@ export const FriendProfilePage = memo(() => {
                         <FriendPetCard friendUid={friendId} pet={friendPet.pet} />
                       ) : (
                         <div className="fp-insights-placeholder">
-                          <div className="fp-insights-placeholder-title">Kein Pet</div>
+                          <div className="fp-insights-placeholder-title">{t('Kein Pet')}</div>
                           <div className="fp-insights-placeholder-text">
                             {friendPet.loading
-                              ? 'Lade Pet …'
-                              : `${friendName} hat noch kein aktives Pet.`}
+                              ? t('Lade Pet …')
+                              : t('{name} hat noch kein aktives Pet.', { name: friendName })}
                           </div>
                         </div>
                       )}
@@ -302,10 +310,12 @@ export const FriendProfilePage = memo(() => {
                       !anticipation.loading && (
                         <div className="fp-insights-placeholder fp-insights-placeholder--wide">
                           <div className="fp-insights-placeholder-title">
-                            Keine kommenden Folgen
+                            {t('Keine kommenden Folgen')}
                           </div>
                           <div className="fp-insights-placeholder-text">
-                            Auf {friendName}s Liste sind keine Folgen mit Termin in Sicht.
+                            {t('Auf {name}s Liste sind keine Folgen mit Termin in Sicht.', {
+                              name: friendName,
+                            })}
                           </div>
                         </div>
                       )
@@ -328,8 +338,8 @@ export const FriendProfilePage = memo(() => {
         {/* Tab Switcher */}
         <TabSwitcher
           tabs={[
-            { id: 'series', label: 'Serien', icon: TvIcon, count: ratedSeries.length },
-            { id: 'movies', label: 'Filme', icon: MovieIcon, count: ratedMovies.length },
+            { id: 'series', label: t('Serien'), icon: TvIcon, count: ratedSeries.length },
+            { id: 'movies', label: t('Filme'), icon: MovieIcon, count: ratedMovies.length },
           ]}
           activeTab={activeTab}
           onTabChange={(id) => setActiveTab(id as 'series' | 'movies')}
@@ -347,8 +357,14 @@ export const FriendProfilePage = memo(() => {
               >
                 <EmptyState
                   icon={<Star style={{ fontSize: '56px' }} />}
-                  title={`Keine ${label} gefunden`}
-                  description={`${friendName} hat noch keine ${label} bewertet`}
+                  title={
+                    activeTab === 'series' ? t('Keine Serien gefunden') : t('Keine Filme gefunden')
+                  }
+                  description={
+                    activeTab === 'series'
+                      ? t('{name} hat noch keine Serien bewertet', { name: friendName })
+                      : t('{name} hat noch keine Filme bewertet', { name: friendName })
+                  }
                   iconColor={currentTheme.text.muted}
                 />
               </motion.div>

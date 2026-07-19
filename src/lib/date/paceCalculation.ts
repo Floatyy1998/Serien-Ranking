@@ -1,5 +1,6 @@
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { t } from '../../services/i18n';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../episode/seriesMetrics';
 
 export interface WatchingPace {
@@ -141,16 +142,16 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
   const parts: string[] = [];
 
   if (pace.episodesPerWeek === 0 && !pace.isPaused) {
-    return `Nicht genügend Daten · ${pace.remainingEpisodes} Ep. offen`;
+    return t('Nicht genügend Daten · {n} Ep. offen', { n: pace.remainingEpisodes });
   } else if (pace.isPaused) {
-    return `Pausiert · ${pace.remainingEpisodes} Ep. offen`;
+    return t('Pausiert · {n} Ep. offen', { n: pace.remainingEpisodes });
   } else {
     // Pace
     if (pace.episodesPerWeek >= 7) {
       const perDay = Math.round((pace.episodesPerWeek / 7) * 10) / 10;
-      parts.push(`~${perDay} Ep./Tag`);
+      parts.push(t('~{n} Ep./Tag', { n: perDay }));
     } else {
-      parts.push(`~${pace.episodesPerWeek} Ep./Woche`);
+      parts.push(t('~{n} Ep./Woche', { n: pace.episodesPerWeek }));
     }
 
     // Estimated completion
@@ -162,23 +163,23 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
       if (compact) {
         // Compact format for homepage cards
         if (daysRemaining <= 1) {
-          parts.push('noch ~1 Tag');
+          parts.push(t('noch ~1 Tag'));
         } else if (daysRemaining < 7) {
-          parts.push(`noch ~${daysRemaining} Tage`);
+          parts.push(t('noch ~{n} Tage', { n: daysRemaining }));
         } else {
           const weeks = Math.round(daysRemaining / 7);
-          parts.push(`noch ~${weeks} ${weeks === 1 ? 'Woche' : 'Wochen'}`);
+          parts.push(weeks === 1 ? t('noch ~1 Woche') : t('noch ~{n} Wochen', { n: weeks }));
         }
       } else {
         // Full format for detail page
         if (daysRemaining <= 1) {
-          parts.push('Fertig ca. heute');
+          parts.push(t('Fertig ca. heute'));
         } else if (daysRemaining <= 14) {
-          parts.push(`noch ~${daysRemaining} Tage`);
+          parts.push(t('noch ~{n} Tage', { n: daysRemaining }));
         } else {
           const day = pace.estimatedCompletionDate.getDate().toString().padStart(2, '0');
           const month = (pace.estimatedCompletionDate.getMonth() + 1).toString().padStart(2, '0');
-          parts.push(`Fertig ca. am ${day}.${month}.`);
+          parts.push(t('Fertig ca. am {day}.{month}.', { day, month }));
         }
       }
     }
@@ -187,15 +188,15 @@ export function formatPaceLine(pace: WatchingPace, compact = false): string {
   // Remaining hours (only in full format)
   if (!compact && pace.remainingHours > 0) {
     if (pace.remainingHours >= 1) {
-      parts.push(`~${Math.round(pace.remainingHours)} Std. übrig`);
+      parts.push(t('~{n} Std. übrig', { n: Math.round(pace.remainingHours) }));
     } else {
-      parts.push(`~${Math.round(pace.remainingHours * 60)} Min. übrig`);
+      parts.push(t('~{n} Min. übrig', { n: Math.round(pace.remainingHours * 60) }));
     }
   }
 
   // Remaining episodes am Ende
   if (pace.remainingEpisodes > 0) {
-    parts.push(`${pace.remainingEpisodes} Ep. offen`);
+    parts.push(t('{n} Ep. offen', { n: pace.remainingEpisodes }));
   }
 
   return parts.join(' · ');

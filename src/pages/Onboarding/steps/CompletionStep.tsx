@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Confetti } from '../components/Confetti';
 import { CoverWall } from '../components/CoverWall';
 import { LetterReveal } from '../components/LetterReveal';
+import { t } from '../../../services/i18n';
 
 interface Props {
   seriesCount: number;
@@ -72,7 +73,7 @@ export const CompletionStep: React.FC<Props> = ({
             }}
           />
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.7)', fontSize: 11 }}>
-            Setup läuft …
+            {t('Setup läuft …')}
           </span>
           <h2
             className="ob-display"
@@ -84,9 +85,9 @@ export const CompletionStep: React.FC<Props> = ({
               lineHeight: 0.9,
             }}
           >
-            Wir bereiten
+            {t('Wir bereiten')}
             <br />
-            deine Bühne vor.
+            {t('deine Bühne vor.')}
           </h2>
           <div
             style={{
@@ -167,10 +168,10 @@ export const CompletionStep: React.FC<Props> = ({
           }}
         >
           <button onClick={onBack} className="ob-link" style={{ padding: '6px 0', fontSize: 11 }}>
-            ← zurück
+            {t('← zurück')}
           </button>
           <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.55 }}>
-            04 — Premiere
+            {t('04 — Premiere')}
           </span>
         </div>
 
@@ -181,7 +182,7 @@ export const CompletionStep: React.FC<Props> = ({
           className="ob-mono"
           style={{ color: 'rgba(244,237,224,0.55)' }}
         >
-          Kapitel 04 — Premiere
+          {t('Kapitel 04 — Premiere')}
         </motion.span>
 
         <h1
@@ -194,7 +195,7 @@ export const CompletionStep: React.FC<Props> = ({
             letterSpacing: '-0.05em',
           }}
         >
-          <LetterReveal text="Vorhang" delay={0.15} stagger={0.05} />
+          <LetterReveal text={t('Vorhang')} delay={0.15} stagger={0.05} />
           <br />
           <span
             style={{
@@ -203,7 +204,7 @@ export const CompletionStep: React.FC<Props> = ({
               fontWeight: 900,
             }}
           >
-            <LetterReveal text="auf." delay={0.5} stagger={0.06} />
+            <LetterReveal text={t('auf.')} delay={0.5} stagger={0.06} />
           </span>
         </h1>
 
@@ -220,8 +221,9 @@ export const CompletionStep: React.FC<Props> = ({
             lineHeight: 1.5,
           }}
         >
-          Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist
-          bereit.
+          {t(
+            'Deine Mediathek ist eingerichtet. Vom ersten Pilot bis zum letzten Abspann — alles ist bereit.'
+          )}
         </motion.p>
 
         {/* Stats — magazine style */}
@@ -239,9 +241,9 @@ export const CompletionStep: React.FC<Props> = ({
             borderTop: '1px solid var(--ob-line)',
           }}
         >
-          <StatCell value={series} label="Serien" />
-          {watchedSeriesCount > 0 && <StatCell value={watched} label="fortgesetzt" />}
-          <StatCell value={movies} label="Filme" />
+          <StatCell value={series} label={t('Serien')} />
+          {watchedSeriesCount > 0 && <StatCell value={watched} label={t('fortgesetzt')} />}
+          <StatCell value={movies} label={t('Filme')} />
         </motion.div>
 
         {/* Curtain-call: user's selected posters fly in */}
@@ -260,7 +262,7 @@ export const CompletionStep: React.FC<Props> = ({
             }}
           >
             <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', fontSize: 10 }}>
-              Deine Auswahl
+              {t('Deine Auswahl')}
             </span>
             <div
               style={{
@@ -310,7 +312,7 @@ export const CompletionStep: React.FC<Props> = ({
         >
           <button onClick={onFinish} className="ob-cta">
             <span className="ob-cta__inner">
-              <span>los geht's</span>
+              <span>{t("los geht's")}</span>
             </span>
             <span className="ob-cta__arrow">→</span>
           </button>

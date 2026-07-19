@@ -1,6 +1,7 @@
 import { Category, Star, Stream } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
+import { t } from '../../services/i18n';
 
 interface ThemeColors {
   primary: string;
@@ -22,8 +23,8 @@ export const RatingsSection = memo(
   ({ avgSeriesRating, avgMovieRating, theme }: RatingsSectionProps) => {
     const accent = theme.accent || theme.primary;
     const items = [
-      { value: avgSeriesRating, label: 'Ø Serien-Rating' },
-      { value: avgMovieRating, label: 'Ø Film-Rating' },
+      { value: avgSeriesRating, label: t('Ø Serien-Rating') },
+      { value: avgMovieRating, label: t('Ø Film-Rating') },
     ];
 
     return (
@@ -88,7 +89,7 @@ export const TopGenresSection = memo(({ genres, theme, wide }: TopGenresProps) =
     >
       <h2 className="stats-pod__label stats-panel__title" style={{ color: theme.text.muted }}>
         <Category style={{ fontSize: 16, color: accent }} />
-        Top Genres
+        {t('Top Genres')}
       </h2>
       <div className="stats-genre-list">
         {genres.map((genre, i) => (
@@ -164,7 +165,7 @@ export const TopProvidersSection = memo(({ providers, theme, wide }: TopProvider
     >
       <h2 className="stats-pod__label stats-panel__title" style={{ color: theme.text.muted }}>
         <Stream style={{ fontSize: 16, color: accent }} />
-        Streaming-Dienste
+        {t('Streaming-Dienste')}
       </h2>
       <div className="stats-provider-list">
         {providers.map((provider, i) => (

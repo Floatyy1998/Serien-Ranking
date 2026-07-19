@@ -6,6 +6,7 @@ import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 const AUTO_DELETE_DAYS = 5;
 
@@ -68,7 +69,8 @@ export function useBugReportData() {
       if (!user) return false;
       try {
         const ticketId = dbRef('bugTickets').push().key ?? crypto.randomUUID();
-        const displayName = user.displayName || (await getUserDisplayName(user.uid)) || 'Unbekannt';
+        const displayName =
+          user.displayName || (await getUserDisplayName(user.uid)) || t('Unbekannt');
         const isBug = data.ticketType === 'bug';
 
         const ticket: BugTicket = {
@@ -94,7 +96,7 @@ export function useBugReportData() {
         // Notification an Admin
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
-          title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
+          title: isBug ? t('Neues Bug-Ticket') : t('Neuer Feature-Wunsch'),
           message: `${displayName}: "${data.title}"`,
           data: { ticketId, ticketType: data.ticketType },
         });
@@ -113,7 +115,8 @@ export function useBugReportData() {
       if (!user) return false;
       try {
         const commentId = dbRef().push().key ?? crypto.randomUUID();
-        const displayName = user.displayName || (await getUserDisplayName(user.uid)) || 'Unbekannt';
+        const displayName =
+          user.displayName || (await getUserDisplayName(user.uid)) || t('Unbekannt');
 
         const comment: TicketComment = {
           id: commentId,
@@ -134,8 +137,11 @@ export function useBugReportData() {
         const ticketType = ticketData?.ticketType || 'bug';
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
-          title: 'Neuer Kommentar',
-          message: `${displayName} hat auf "${ticketTitle}" geantwortet`,
+          title: t('Neuer Kommentar'),
+          message: t('{name} hat auf "{title}" geantwortet', {
+            name: displayName,
+            title: ticketTitle,
+          }),
           data: { ticketId, ticketType },
         });
 

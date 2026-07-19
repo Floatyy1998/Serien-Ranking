@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
+import { t } from '../../services/i18n';
 import { ReplyItem } from './ReplyItem';
 
 export const RepliesSection: React.FC<{
@@ -121,14 +122,16 @@ export const RepliesSection: React.FC<{
           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
           opacity: isSpoilerHidden ? 0.7 : 1,
         }}
-        title={isSpoilerHidden ? 'Zeige zuerst den Spoiler an, um Antworten zu sehen' : undefined}
+        title={
+          isSpoilerHidden ? t('Zeige zuerst den Spoiler an, um Antworten zu sehen') : undefined
+        }
       >
         {isSpoilerHidden ? (
           <VisibilityOff style={{ fontSize: '18px' }} />
         ) : (
           <ChatBubbleOutline style={{ fontSize: '18px' }} />
         )}
-        {replyCount > 0 ? `${replyCount} Antworten` : 'Antworten'}
+        {replyCount > 0 ? t('{n} Antworten', { n: replyCount }) : t('Antworten')}
         {!isSpoilerHidden &&
           (isExpanded ? (
             <ExpandLess style={{ fontSize: '20px' }} />
@@ -158,7 +161,7 @@ export const RepliesSection: React.FC<{
                     textAlign: 'center',
                   }}
                 >
-                  Lädt Antworten...
+                  {t('Lädt Antworten...')}
                 </div>
               ) : (
                 replies.map((reply) => (
@@ -206,7 +209,7 @@ export const RepliesSection: React.FC<{
                           <div key={i} style={{ position: 'relative' }}>
                             <img
                               src={img}
-                              alt="Bild"
+                              alt={t('Bild')}
                               loading="lazy"
                               decoding="async"
                               style={{
@@ -245,8 +248,8 @@ export const RepliesSection: React.FC<{
                       ref={replyInputRef}
                       placeholder={
                         replyImages.length > 0
-                          ? 'Beschreibung (optional)...'
-                          : 'Antwort schreiben...'
+                          ? t('Beschreibung (optional)...')
+                          : t('Antwort schreiben...')
                       }
                       value={newReply}
                       onChange={(e) => setNewReply(e.target.value)}
@@ -294,8 +297,8 @@ export const RepliesSection: React.FC<{
                         onClick={() => setNewReplyIsSpoiler(!newReplyIsSpoiler)}
                         title={
                           newReplyIsSpoiler
-                            ? 'Spoiler-Markierung entfernen'
-                            : 'Als Spoiler markieren'
+                            ? t('Spoiler-Markierung entfernen')
+                            : t('Als Spoiler markieren')
                         }
                         style={{
                           background: newReplyIsSpoiler

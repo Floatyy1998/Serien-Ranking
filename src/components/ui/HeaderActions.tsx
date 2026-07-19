@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface HeaderActionsProps {
   totalUnreadBadge: number;
@@ -25,8 +26,8 @@ export const HeaderActions = React.memo(function HeaderActions({
       onClick={onNotificationsOpen}
       aria-label={
         totalUnreadBadge > 0
-          ? `Benachrichtigungen öffnen, ${totalUnreadBadge} ungelesen`
-          : 'Benachrichtigungen öffnen'
+          ? t('Benachrichtigungen öffnen, {anzahl} ungelesen', { anzahl: totalUnreadBadge })
+          : t('Benachrichtigungen öffnen')
       }
       style={{
         width: 44,
@@ -66,7 +67,7 @@ export const HeaderActions = React.memo(function HeaderActions({
       <motion.button
         whileTap={{ scale: 0.9 }}
         onClick={() => navigate('/profile')}
-        aria-label="Profil und weitere Bereiche öffnen"
+        aria-label={t('Profil und weitere Bereiche öffnen')}
         style={{
           width: 44,
           height: 44,

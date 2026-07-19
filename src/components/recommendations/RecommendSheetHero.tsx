@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { getImageUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import type { RecommendSheetMedia } from './useRecommendSheet';
 
 interface RecommendSheetHeroProps {
@@ -147,7 +148,7 @@ export const RecommendSheetHero: React.FC<RecommendSheetHeroProps> = ({ media })
                 opacity: 0.85,
               }}
             >
-              Du empfiehlst
+              {t('Du empfiehlst')}
             </div>
           </div>
           <h2
@@ -190,7 +191,7 @@ export const RecommendSheetHero: React.FC<RecommendSheetHeroProps> = ({ media })
               letterSpacing: '0.12em',
             }}
           >
-            {media.type === 'movie' ? 'Film' : 'Serie'}
+            {media.type === 'movie' ? t('Film') : t('Serie')}
           </div>
         </div>
       </div>

@@ -5,15 +5,19 @@
  */
 
 import type { SeasonAnime } from '../../services/anilistSeasonService';
+import { appLocale, t } from '../../services/i18n';
+
+/** Datumsformatierung folgt der App-Sprache (Boot-fixiert wie t()). */
+const DATE_LOCALE = appLocale === 'en' ? 'en-US' : 'de-DE';
 
 const FORMAT_LABELS_DE: Record<string, string> = {
   TV: 'TV',
-  TV_SHORT: 'Kurzserie',
-  MOVIE: 'Film',
+  TV_SHORT: t('Kurzserie'),
+  MOVIE: t('Film'),
   SPECIAL: 'Special',
   OVA: 'OVA',
   ONA: 'ONA',
-  MUSIC: 'Musik',
+  MUSIC: t('Musik'),
 };
 
 export function formatLabelDe(format: string | null): string | null {
@@ -25,13 +29,18 @@ export function formatLabelDe(format: string | null): string | null {
  *  für Nutzer dasselbe), sonst deutsches Label („Film", „OVA", „Special",
  *  „Kurzserie"). Im FILTER zählt alles außer MOVIE als Serie. */
 export function formatBadgeDe(format: string | null): string {
-  if (!format || format === 'TV' || format === 'ONA') return 'Serie';
+  if (!format || format === 'TV' || format === 'ONA') return t('Serie');
   return FORMAT_LABELS_DE[format] ?? format;
+}
+
+/** TV/ONA/unbekannt = Serie — sprachunabhängiger Check (kein Label-Vergleich). */
+export function isSeriesFormat(format: string | null): boolean {
+  return !format || format === 'TV' || format === 'ONA';
 }
 
 /** Kompakter Countdown: „2d", „4h", „12min". */
 export function shortCountdown(seconds: number): string {
-  if (seconds <= 0) return 'jetzt';
+  if (seconds <= 0) return t('jetzt');
   const days = Math.floor(seconds / 86400);
   if (days > 0) return `${days}d`;
   const hours = Math.floor((seconds % 86400) / 3600);
@@ -85,7 +94,9 @@ export function buildMetaLine(
         ? anime.averageScore / 10
         : null;
   return [
-    sinceLabel ? `seit ${sinceLabel}` : (anime.studios?.nodes?.[0]?.name ?? null),
+    sinceLabel
+      ? t('seit {label}', { label: sinceLabel })
+      : (anime.studios?.nodes?.[0]?.name ?? null),
     anime.episodes && anime.format !== 'MOVIE' ? `${anime.episodes} Ep.` : null,
     rating ? `★ ${rating.toFixed(1)}` : null,
   ]
@@ -115,13 +126,13 @@ export function continuationLabel(anime: SeasonAnime): string | null {
 
   const season = title.match(/season\s*(\d+)/i) || title.match(/(\d+)(?:st|nd|rd|th)\s+season/i);
   if (season) {
-    parts.push(`Staffel ${season[1]}`);
+    parts.push(t('Staffel {n}', { n: season[1] }));
   } else if (/final\s+season/i.test(title)) {
-    parts.push('Finale Staffel');
+    parts.push(t('Finale Staffel'));
   } else {
     // Römische Staffel-Ziffer am Titelende („Overlord IV").
     const roman = title.match(/\s(II|III|IV|V|VI|VII|VIII|IX)$/);
-    if (roman) parts.push(`Staffel ${ROMAN_SEASONS[roman[1]]}`);
+    if (roman) parts.push(t('Staffel {n}', { n: ROMAN_SEASONS[roman[1]] }));
   }
 
   const part = title.match(/part\s*(\d+)/i) || title.match(/cour\s*(\d+)/i);
@@ -130,7 +141,7 @@ export function continuationLabel(anime: SeasonAnime): string | null {
   if (parts.length) return parts.join(' · ');
 
   const hasPrequel = anime.relations?.edges?.some((edge) => edge.relationType === 'PREQUEL');
-  return hasPrequel ? 'Fortsetzung' : null;
+  return hasPrequel ? t('Fortsetzung') : null;
 }
 
 /**
@@ -166,8 +177,8 @@ export function franchiseTitle(title: string): string | null {
 
 /** Timeline-Tages-Label: „FREITAG · 3. JULI". */
 export function dayLabel(date: Date): string {
-  const weekday = date.toLocaleDateString('de-DE', { weekday: 'long' }).toUpperCase();
-  const month = date.toLocaleDateString('de-DE', { month: 'long' }).toUpperCase();
+  const weekday = date.toLocaleDateString(DATE_LOCALE, { weekday: 'long' }).toUpperCase();
+  const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
   return `${weekday} · ${date.getDate()}. ${month}`;
 }
 
@@ -175,30 +186,32 @@ export function dayLabel(date: Date): string {
 export function relativeDayLabel(date: Date, now: Date): string | null {
   const startOf = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   const diffDays = Math.round((startOf(date) - startOf(now)) / 86400000);
-  if (diffDays === -1) return 'Gestern';
-  if (diffDays === 0) return 'Heute';
-  if (diffDays === 1) return 'Morgen';
-  if (diffDays > 1 && diffDays <= 13) return `in ${diffDays} Tagen`;
+  if (diffDays === -1) return t('Gestern');
+  if (diffDays === 0) return t('Heute');
+  if (diffDays === 1) return t('Morgen');
+  if (diffDays > 1 && diffDays <= 13) return t('in {n} Tagen', { n: diffDays });
   return null;
 }
 
 /** Prominentes Datums-Band für die Poster-Pill: „SA · 4. JULI". */
 export function datePillText(date: Date): string {
   const weekday = date
-    .toLocaleDateString('de-DE', { weekday: 'short' })
+    .toLocaleDateString(DATE_LOCALE, { weekday: 'short' })
     .replace('.', '')
     .toUpperCase();
-  const month = date.toLocaleDateString('de-DE', { month: 'long' }).toUpperCase();
+  const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
   return `${weekday} · ${date.getDate()}. ${month}`;
 }
 
 /** Große Hero-Startzeile: „Startet Samstag, 4. Juli" (+Jahr falls fremd). */
 export function formatStartLong(date: Date, now: Date): string {
   const withYear = date.getFullYear() !== now.getFullYear();
-  return `Startet ${date.toLocaleDateString('de-DE', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    ...(withYear ? { year: 'numeric' as const } : {}),
-  })}`;
+  return t('Startet {datum}', {
+    datum: date.toLocaleDateString(DATE_LOCALE, {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      ...(withYear ? { year: 'numeric' as const } : {}),
+    }),
+  });
 }

@@ -16,6 +16,7 @@ import { Check, KeyboardArrowDown, Search } from '@mui/icons-material';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { hapticSelect } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 
 interface SerienKalenderFilterProps {
   options: string[];
@@ -216,7 +217,7 @@ export const SerienKalenderFilter: React.FC<SerienKalenderFilterProps> = ({
                     color: currentTheme.text.muted,
                   }}
                 >
-                  Nichts gefunden
+                  {t('Nichts gefunden')}
                 </div>
               )}
             </div>

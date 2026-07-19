@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { GradientText, NavEscapeButtons } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { ProviderFilter } from '../ProviderFilter';
 import { SortBar } from '../SortBar';
@@ -80,7 +81,7 @@ export const WatchNextHeader = ({
               margin: 0,
             }}
           >
-            Als Nächstes
+            {t('Als Nächstes')}
           </GradientText>
           <p
             style={{
@@ -89,17 +90,17 @@ export const WatchNextHeader = ({
               margin: '4px 0 0 0',
             }}
           >
-            {episodeCount} nächste Episoden
+            {t('{n} nächste Episoden', { n: episodeCount })}
           </p>
         </div>
 
         <div className="watch-next-header__actions">
           {customOrderActive && (
-            <Tooltip title="Reihenfolge bearbeiten" arrow>
+            <Tooltip title={t('Reihenfolge bearbeiten')} arrow>
               <motion.button
                 whileTap={tapScale}
                 onClick={onToggleEditMode}
-                aria-label="Reihenfolge bearbeiten"
+                aria-label={t('Reihenfolge bearbeiten')}
                 aria-pressed={editModeActive}
                 className={`watch-next-header__btn${editModeActive ? ' watch-next-header__btn--active' : ''}`}
                 style={
@@ -119,11 +120,11 @@ export const WatchNextHeader = ({
             </Tooltip>
           )}
 
-          <Tooltip title="Filter" arrow>
+          <Tooltip title={t('Filter')} arrow>
             <motion.button
               whileTap={tapScale}
               onClick={onToggleFilter}
-              aria-label="Filter"
+              aria-label={t('Filter')}
               aria-expanded={showFilter}
               className={`watch-next-header__btn${showFilter ? ' watch-next-header__btn--active' : ''}`}
               style={
@@ -154,8 +155,8 @@ export const WatchNextHeader = ({
           >
             <input
               type="text"
-              placeholder="Serie suchen..."
-              aria-label="Serie suchen"
+              placeholder={t('Serie suchen...')}
+              aria-label={t('Serie suchen')}
               value={filterInput}
               onChange={(e) => onFilterInputChange(e.target.value)}
               className="watch-next-filter__input"
@@ -201,7 +202,7 @@ export const WatchNextHeader = ({
                   cursor: 'pointer',
                 }}
                 aria-pressed={onlyMySubs}
-                aria-label="Nur meine Abos anzeigen"
+                aria-label={t('Nur meine Abos anzeigen')}
               >
                 <span
                   style={{
@@ -213,7 +214,7 @@ export const WatchNextHeader = ({
                       : currentTheme.text.muted,
                   }}
                 />
-                Nur meine Abos
+                {t('Nur meine Abos')}
               </motion.button>
             )}
           </motion.div>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { IconContainer, NavCard } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 
 export const HiddenMangaCard: React.FC = React.memo(() => {
   const { hiddenMangaList } = useMangaList();
@@ -29,10 +30,10 @@ export const HiddenMangaCard: React.FC = React.memo(() => {
               fontFamily: 'var(--font-display)',
             }}
           >
-            Versteckte Manga
+            {t('Versteckte Manga')}
           </div>
           <div style={{ fontSize: 12, color: currentTheme.text.secondary, opacity: 0.7 }}>
-            {count} Manga pausiert
+            {t('{n} Manga pausiert', { n: count })}
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ import {
   handleProviderLinkClick,
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
+import { t } from '../../services/i18n';
 
 interface Provider {
   provider_id?: number;
@@ -217,8 +218,8 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
         // Wenn Deep Link vorhanden, als klickbares Element rendern
         if (deepLink) {
           const tooltipText = providerNeedsClipboardCopy(normalizedName)
-            ? `${providerName}: Titel kopieren + Suche öffnen`
-            : `${providerName} öffnen`;
+            ? t('{anbieter}: Titel kopieren + Suche öffnen', { anbieter: providerName })
+            : t('{anbieter} öffnen', { anbieter: providerName });
           return (
             <Tooltip key={providerId} title={tooltipText} arrow>
               <a

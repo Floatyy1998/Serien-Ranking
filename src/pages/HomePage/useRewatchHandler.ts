@@ -6,6 +6,7 @@ import { useRewatchEpisodes } from '../../hooks/useRewatchEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { normalizeEpisodes } from '../../lib/episode/seriesMetrics';
 import { showToast, showUndoToast } from '../../lib/toast';
+import { t } from '../../services/i18n';
 
 export function useRewatchHandler() {
   const { user } = useAuth() || {};
@@ -64,7 +65,7 @@ export function useRewatchHandler() {
     const itemEp = itemSeries?.seasons?.[item.seasonIndex]?.episodes?.[item.episodeIndex];
     const epId = itemEp?.id;
     if (!epId) {
-      showToast('Episode-ID fehlt', 2000, 'error');
+      showToast(t('Episode-ID fehlt'), 2000, 'error');
       setCompletingRewatches((prev) => {
         const s = new Set(prev);
         s.delete(key);
@@ -152,59 +153,65 @@ export function useRewatchHandler() {
         }
       }
 
-      showUndoToast(`${item.title} ${label} Rewatch als gesehen markiert`, {
-        onUndo: async () => {
-          setHiddenRewatches((prev) => {
-            const s = new Set(prev);
-            s.delete(key);
-            return s;
-          });
-          try {
-            if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
-              await dbRef(epPath).remove();
-            } else {
-              await dbRef(epPath).set({
-                ...(prevWatched ? { w: prevWatched } : {}),
-                ...(prevCount ? { c: prevCount } : {}),
-                ...(prevFirst ? { f: prevFirst } : {}),
-                ...(prevLast ? { l: prevLast } : {}),
-              });
-            }
-            if (rewatchRemoved && series?.rewatch) {
-              // rewatch wurde komplett entfernt — original wiederherstellen
-              await dbRef(rewatchPath).set(series.rewatch);
-            } else {
-              // rewatchedEps-Flag fuer diese Episode zuruecknehmen
-              await dbRef(rewatchEpsPath).remove();
-              if (prevRewatchLastWatchedAt) {
-                await dbRef(rewatchLastWatchedAtPath).set(prevRewatchLastWatchedAt);
+      showUndoToast(
+        t('{title} {episode} Rewatch als gesehen markiert', {
+          title: item.title,
+          episode: label,
+        }),
+        {
+          onUndo: async () => {
+            setHiddenRewatches((prev) => {
+              const s = new Set(prev);
+              s.delete(key);
+              return s;
+            });
+            try {
+              if (!prevWatched && prevCount === 0 && !prevFirst && !prevLast) {
+                await dbRef(epPath).remove();
               } else {
-                await dbRef(rewatchLastWatchedAtPath).remove();
+                await dbRef(epPath).set({
+                  ...(prevWatched ? { w: prevWatched } : {}),
+                  ...(prevCount ? { c: prevCount } : {}),
+                  ...(prevFirst ? { f: prevFirst } : {}),
+                  ...(prevLast ? { l: prevLast } : {}),
+                });
               }
+              if (rewatchRemoved && series?.rewatch) {
+                // rewatch wurde komplett entfernt — original wiederherstellen
+                await dbRef(rewatchPath).set(series.rewatch);
+              } else {
+                // rewatchedEps-Flag fuer diese Episode zuruecknehmen
+                await dbRef(rewatchEpsPath).remove();
+                if (prevRewatchLastWatchedAt) {
+                  await dbRef(rewatchLastWatchedAtPath).set(prevRewatchLastWatchedAt);
+                } else {
+                  await dbRef(rewatchLastWatchedAtPath).remove();
+                }
+              }
+              await dbRef(paths.serienVersion(user.uid)).set(serverTimestamp());
+            } catch {
+              showToast(t('Undo fehlgeschlagen'), 2000, 'error');
             }
-            await dbRef(paths.serienVersion(user.uid)).set(serverTimestamp());
-          } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
-          }
-        },
-        onCommit: async () => {
-          // Kein airDate (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
-          await runEpisodeWatchFanout({
-            userId: user.uid,
-            seriesId: item.id,
-            seriesTitle: item.title,
-            seasonNumber: item.seasonNumber,
-            episodeNumber: item.episodeNumber,
-            runtimeMinutes: item.episodeRuntime,
-            isRewatch: true,
-            genres: item.genre?.genres,
-            providers: item.provider?.provider?.map((p: { name: string }) => p.name),
-          });
-        },
-      });
+          },
+          onCommit: async () => {
+            // Kein airDate (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
+            await runEpisodeWatchFanout({
+              userId: user.uid,
+              seriesId: item.id,
+              seriesTitle: item.title,
+              seasonNumber: item.seasonNumber,
+              episodeNumber: item.episodeNumber,
+              runtimeMinutes: item.episodeRuntime,
+              isRewatch: true,
+              genres: item.genre?.genres,
+              providers: item.provider?.provider?.map((p: { name: string }) => p.name),
+            });
+          },
+        }
+      );
     } catch (error) {
       console.error('Error completing rewatch episode:', error);
-      showToast('Fehler beim Speichern', 3000, 'error');
+      showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
 

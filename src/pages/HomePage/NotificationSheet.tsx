@@ -10,6 +10,7 @@ import { NotificationItem } from './notifications/NotificationItem';
 import { RecommendationCard } from './notifications/RecommendationCard';
 import type { UnifiedNotification } from './useUnifiedNotifications';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface NotificationSheetProps {
   isOpen: boolean;
@@ -57,9 +58,9 @@ export const NotificationSheet = React.memo(function NotificationSheet({
       }
     }
     return [
-      { label: 'Freunde', items: friends },
-      { label: 'Neues in TV-Rank', items: news },
-      { label: 'Für dich', items: personal },
+      { label: t('Freunde'), items: friends },
+      { label: t('Neues in TV-Rank'), items: news },
+      { label: t('Für dich'), items: personal },
     ].filter((g) => g.items.length > 0);
   }, [notifications]);
 
@@ -118,7 +119,12 @@ export const NotificationSheet = React.memo(function NotificationSheet({
   };
 
   return (
-    <BottomSheet isOpen={isOpen} onClose={onClose} maxHeight="75vh" ariaLabel="Benachrichtigungen">
+    <BottomSheet
+      isOpen={isOpen}
+      onClose={onClose}
+      maxHeight="75vh"
+      ariaLabel={t('Benachrichtigungen')}
+    >
       <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         {/* Header */}
         <div style={{ padding: '0 20px 16px', position: 'relative' }}>
@@ -153,11 +159,11 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                Benachrichtigungen
+                {t('Benachrichtigungen')}
               </h2>
               {notifications.length > 0 && (
                 <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>
-                  {hasUnread ? `${unreadCount} ungelesen` : 'Alles gelesen'}
+                  {hasUnread ? t('{n} ungelesen', { n: unreadCount }) : t('Alles gelesen')}
                 </span>
               )}
             </div>
@@ -165,7 +171,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
               <motion.button
                 whileTap={tapScaleTight}
                 onClick={onMarkAllRead}
-                aria-label="Alle als gelesen markieren"
+                aria-label={t('Alle als gelesen markieren')}
                 style={{
                   width: '44px',
                   height: '44px',
@@ -217,10 +223,10 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   color: currentTheme.text.primary,
                 }}
               >
-                Alles ruhig hier
+                {t('Alles ruhig hier')}
               </h3>
               <p style={{ color: currentTheme.text.muted, fontSize: '14px', margin: 0 }}>
-                Keine neuen Benachrichtigungen
+                {t('Keine neuen Benachrichtigungen')}
               </p>
             </div>
           ) : isDesktop ? (
@@ -282,7 +288,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
               }}
             >
               <Group style={{ fontSize: '18px' }} />
-              Alle Aktivitäten anzeigen
+              {t('Alle Aktivitäten anzeigen')}
             </motion.button>
           </div>
         </div>

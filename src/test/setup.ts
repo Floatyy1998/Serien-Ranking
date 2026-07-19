@@ -4,6 +4,11 @@
 // `// @vitest-environment jsdom` als Datei-Pragma (Default bleibt node).
 import '@testing-library/jest-dom/vitest';
 
+// Tests laufen immer auf Deutsch (Quellsprache) — Node UND jsdom melden en-US
+// als navigator.language; ohne Pin würde t() englische Texte liefern und alle
+// deutschen Assertions brechen.
+(globalThis as { __TVRANK_TEST_LOCALE__?: string }).__TVRANK_TEST_LOCALE__ = 'de';
+
 // jsdom-Polyfills, die viele Komponenten brauchen (framer-motion/useReducedMotion
 // → matchMedia; recharts/ResizeObserver). Nur im jsdom-Env aktiv (node hat kein
 // window). Einzeln geschützt, damit ein Test sie bei Bedarf überschreiben kann.

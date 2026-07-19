@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
+import { t } from '../../services/i18n';
 
 interface CountdownListItemProps {
   item: SeriesCountdown;
@@ -12,16 +13,16 @@ interface CountdownListItemProps {
 }
 
 function countdownText(daysUntil: number): string {
-  if (daysUntil === 0) return 'startet heute';
-  if (daysUntil === 1) return 'in 1 Tag';
-  return `in ${daysUntil} Tagen`;
+  if (daysUntil === 0) return t('startet heute');
+  if (daysUntil === 1) return t('in 1 Tag');
+  return t('in {n} Tagen', { n: daysUntil });
 }
 
 export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, index, onClick }) => {
   const { currentTheme } = useTheme();
 
   const seasonLabel =
-    item.type === 'mid-season-return' ? 'Rückkehr' : `Staffel ${item.seasonNumber}`;
+    item.type === 'mid-season-return' ? t('Rückkehr') : t('Staffel {n}', { n: item.seasonNumber });
 
   return (
     <motion.button
@@ -30,7 +31,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       transition={{ delay: index * 0.05, duration: 0.3 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
-      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. Details öffnen`}
+      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-item"
       style={{
         border: `1px solid ${currentTheme.border.default}`,
@@ -41,7 +42,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       {item.posterUrl ? (
         <img
           src={item.posterUrl}
-          alt={`Poster von ${item.title}`}
+          alt={t('Poster von {title}', { title: item.title })}
           decoding="async"
           className="cd-item-poster"
           loading="lazy"
@@ -61,8 +62,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
           {item.title}
         </h3>
         <p className="cd-item-meta" style={{ color: currentTheme.text.secondary }}>
-          {item.type === 'mid-season-return' ? 'Rückkehr' : 'Staffel ' + item.seasonNumber} &middot;{' '}
-          {formatSeasonDate(item.nextDate)}
+          {seasonLabel} &middot; {formatSeasonDate(item.nextDate)}
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
       <div className="cd-item-days">
         {item.daysUntil === 0 ? (
           <span className="cd-item-days-today" style={{ color: currentTheme.accent }}>
-            Heute
+            {t('Heute')}
           </span>
         ) : (
           <>
@@ -78,7 +78,7 @@ export const CountdownListItem: React.FC<CountdownListItemProps> = ({ item, inde
               {item.daysUntil}
             </span>
             <span className="cd-item-days-label" style={{ color: currentTheme.text.muted }}>
-              {item.daysUntil === 1 ? 'Tag' : 'Tage'}
+              {item.daysUntil === 1 ? t('Tag') : t('Tage')}
             </span>
           </>
         )}

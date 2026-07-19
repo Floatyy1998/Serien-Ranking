@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { NewTicketForm } from './components/NewTicketForm';
 import { TicketCard } from './components/TicketCard';
 import { useBugReportData } from './useBugReportData';
+import { t } from '../../services/i18n';
 
 export const BugReportPage = memo(() => {
   const { currentTheme } = useTheme();
@@ -22,7 +23,7 @@ export const BugReportPage = memo(() => {
       <PageHeader
         title="Feedback & Bugs"
         gradientFrom={currentTheme.primary}
-        subtitle="Bugs melden oder Features vorschlagen"
+        subtitle={t('Bugs melden oder Features vorschlagen')}
         icon={<Feedback />}
         sticky
       />
@@ -51,7 +52,7 @@ export const BugReportPage = memo(() => {
             }}
           >
             <Add style={{ fontSize: 20 }} />
-            Neues Ticket erstellen
+            {t('Neues Ticket erstellen')}
           </motion.button>
         )}
 
@@ -86,12 +87,12 @@ export const BugReportPage = memo(() => {
             fontWeight: 600,
           }}
         >
-          Meine Tickets ({tickets.length})
+          {t('Meine Tickets')} ({tickets.length})
         </h3>
 
         {loading && (
           <div style={{ textAlign: 'center', padding: '40px', color: currentTheme.text.muted }}>
-            Laden...
+            {t('Laden...')}
           </div>
         )}
 
@@ -104,7 +105,7 @@ export const BugReportPage = memo(() => {
               fontSize: '14px',
             }}
           >
-            Du hast noch keine Tickets erstellt.
+            {t('Du hast noch keine Tickets erstellt.')}
           </div>
         )}
 

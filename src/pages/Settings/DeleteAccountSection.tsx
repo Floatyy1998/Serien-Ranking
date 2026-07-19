@@ -7,6 +7,7 @@ import { hapticWarning } from '../../lib/haptics';
 import { tapScaleSmall } from '../../lib/motion';
 import { deleteAccount } from '../../services/accountDeletion';
 import { hasPasswordProvider } from '../../services/firebase/socialAuth';
+import { t } from '../../services/i18n';
 
 /** Endgültige Konto-Löschung mit Passwort-Bestätigung (Store-Pflicht). */
 export const DeleteAccountSection = () => {
@@ -32,13 +33,13 @@ export const DeleteAccountSection = () => {
     } catch (e) {
       const code = (e as { code?: string }).code || '';
       if (code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
-        setError('Falsches Passwort.');
+        setError(t('Falsches Passwort.'));
       } else if (code === 'auth/too-many-requests') {
-        setError('Zu viele Versuche — bitte später erneut versuchen.');
+        setError(t('Zu viele Versuche — bitte später erneut versuchen.'));
       } else if (code === 'auth/popup-closed-by-user' || code === 'auth/user-cancelled') {
-        setError('Bestätigung abgebrochen.');
+        setError(t('Bestätigung abgebrochen.'));
       } else {
-        setError('Löschen fehlgeschlagen. Bitte erneut versuchen.');
+        setError(t('Löschen fehlgeschlagen. Bitte erneut versuchen.'));
       }
       setBusy(false);
     }
@@ -59,7 +60,7 @@ export const DeleteAccountSection = () => {
         className="settings-delete-btn"
         style={{ color: currentTheme.text.muted }}
       >
-        Konto löschen
+        {t('Konto löschen')}
       </motion.button>
 
       <AnimatePresence>
@@ -77,9 +78,10 @@ export const DeleteAccountSection = () => {
             <div className="settings-delete-warning" style={{ color: currentTheme.text.secondary }}>
               <Warning style={{ fontSize: 20, color: errorColor, flexShrink: 0 }} />
               <span>
-                Dein Konto und <strong>alle Daten</strong> (Serien, Filme, Manga, Bewertungen,
-                Statistiken, Freundschaften) werden <strong>endgültig gelöscht</strong>. Das kann
-                nicht rückgängig gemacht werden.
+                {t('Dein Konto und')} <strong>{t('alle Daten')}</strong>{' '}
+                {t('(Serien, Filme, Manga, Bewertungen, Statistiken, Freundschaften) werden')}{' '}
+                <strong>{t('endgültig gelöscht')}</strong>
+                {t('. Das kann nicht rückgängig gemacht werden.')}
               </span>
             </div>
 
@@ -88,7 +90,7 @@ export const DeleteAccountSection = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Passwort zur Bestätigung"
+                placeholder={t('Passwort zur Bestätigung')}
                 className="glass-input"
                 autoComplete="current-password"
               />
@@ -97,7 +99,7 @@ export const DeleteAccountSection = () => {
                 className="settings-delete-warning"
                 style={{ color: currentTheme.text.muted, margin: 0 }}
               >
-                Zur Bestätigung meldest du dich gleich noch einmal mit Google bzw. Apple an.
+                {t('Zur Bestätigung meldest du dich gleich noch einmal mit Google bzw. Apple an.')}
               </p>
             )}
 
@@ -119,7 +121,7 @@ export const DeleteAccountSection = () => {
               }}
             >
               <DeleteForever style={{ fontSize: 20 }} />
-              {busy ? 'Wird gelöscht…' : 'Konto endgültig löschen'}
+              {busy ? t('Wird gelöscht…') : t('Konto endgültig löschen')}
             </motion.button>
           </motion.div>
         )}

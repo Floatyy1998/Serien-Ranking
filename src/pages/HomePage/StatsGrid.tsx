@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { SectionHeader } from '../../components/ui';
 import { staggerContainer, staggerItem } from '../../lib/motion';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 import { useTheme } from '../../contexts/ThemeContext';
 import { colors } from '../../theme';
 import { StatCard } from './StatCard';
@@ -64,12 +65,12 @@ export const StatsGrid = () => {
       <SectionHeader
         icon={<BarChart />}
         iconColor={currentTheme.primary}
-        title="Deine Statistiken"
+        title={t('Deine Statistiken')}
         action={
           <IconButton
             onClick={() => setExpanded(!expanded)}
             size="small"
-            aria-label={expanded ? 'Statistiken einklappen' : 'Statistiken ausklappen'}
+            aria-label={expanded ? t('Statistiken einklappen') : t('Statistiken ausklappen')}
             sx={{ color: currentTheme.text.muted, padding: '4px' }}
           >
             {expanded ? <ExpandLess sx={{ fontSize: 20 }} /> : <ExpandMore sx={{ fontSize: 20 }} />}
@@ -201,7 +202,7 @@ export const StatsGrid = () => {
                 opacity: 0.7,
               }}
             >
-              Eps. (begonnen, nicht abgebr.)
+              {t('Eps. (begonnen, nicht abgebr.)')}
             </Typography>
           </Paper>
         </motion.div>
@@ -210,10 +211,14 @@ export const StatsGrid = () => {
         <motion.div variants={staggerItem}>
           <StatCard
             icon={<Tv sx={{ fontSize: 20 }} />}
-            label="Serien"
+            label={t('Serien')}
             value={stats.totalSeries}
             iconColor={currentTheme.primary}
-            subValue={stats.completedSeries > 0 ? `${stats.completedSeries} komplett` : undefined}
+            subValue={
+              stats.completedSeries > 0
+                ? t('{n} komplett', { n: stats.completedSeries })
+                : undefined
+            }
             onClick={handleSeriesClick}
           />
         </motion.div>
@@ -222,10 +227,10 @@ export const StatsGrid = () => {
         <motion.div variants={staggerItem}>
           <StatCard
             icon={<Movie sx={{ fontSize: 20 }} />}
-            label="Filme"
+            label={t('Filme')}
             value={stats.totalMovies}
             iconColor={currentTheme.primary}
-            subValue={`${stats.watchedMovies} geschaut`}
+            subValue={t('{n} geschaut', { n: stats.watchedMovies })}
             onClick={handleMoviesClick}
           />
         </motion.div>
@@ -236,7 +241,7 @@ export const StatsGrid = () => {
             <motion.div variants={staggerItem}>
               <StatCard
                 icon={<Timer sx={{ fontSize: 20 }} />}
-                label="Gesamte Watchzeit"
+                label={t('Gesamte Watchzeit')}
                 value={stats.timeString}
                 iconColor={currentTheme.primary}
               />
@@ -244,10 +249,10 @@ export const StatsGrid = () => {
             <motion.div variants={staggerItem}>
               <StatCard
                 icon={<TrendingUp sx={{ fontSize: 20 }} />}
-                label="Diese Woche"
-                value={`${stats.lastWeekWatched} Ep.`}
+                label={t('Diese Woche')}
+                value={t('{n} Ep.', { n: stats.lastWeekWatched })}
                 iconColor={currentTheme.primary}
-                subValue="neu geschaut"
+                subValue={t('neu geschaut')}
                 onClick={handleWeeklyEpisodesClick}
               />
             </motion.div>
@@ -275,7 +280,7 @@ export const StatsGrid = () => {
               <motion.div variants={staggerItem}>
                 <StatCard
                   icon={<Timer sx={{ fontSize: 20 }} />}
-                  label="Gesamte Watchzeit"
+                  label={t('Gesamte Watchzeit')}
                   value={stats.timeString}
                   iconColor={currentTheme.primary}
                 />
@@ -284,10 +289,10 @@ export const StatsGrid = () => {
               <motion.div variants={staggerItem}>
                 <StatCard
                   icon={<TrendingUp sx={{ fontSize: 20 }} />}
-                  label="Diese Woche"
-                  value={`${stats.lastWeekWatched} Ep.`}
+                  label={t('Diese Woche')}
+                  value={t('{n} Ep.', { n: stats.lastWeekWatched })}
                   iconColor={currentTheme.primary}
-                  subValue="neu geschaut"
+                  subValue={t('neu geschaut')}
                   onClick={handleWeeklyEpisodesClick}
                 />
               </motion.div>
@@ -297,7 +302,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Tv sx={{ fontSize: 20 }} />}
-              label="Zeit mit Serien"
+              label={t('Zeit mit Serien')}
               value={stats.seriesTimeString}
               iconColor={currentTheme.primary}
             />
@@ -306,7 +311,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Movie sx={{ fontSize: 20 }} />}
-              label="Zeit mit Filmen"
+              label={t('Zeit mit Filmen')}
               value={stats.movieTimeString}
               iconColor={currentTheme.primary}
             />
@@ -315,7 +320,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Star sx={{ fontSize: 20 }} />}
-              label="Ø Serien-Rating"
+              label={t('Ø Serien-Rating')}
               value={stats.avgSeriesRating}
               iconColor={currentTheme.primary}
               onClick={handleSeriesRatingClick}
@@ -325,7 +330,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Star sx={{ fontSize: 20 }} />}
-              label="Ø Film-Rating"
+              label={t('Ø Film-Rating')}
               value={stats.avgMovieRating}
               iconColor={currentTheme.primary}
               onClick={handleMovieRatingClick}
@@ -335,7 +340,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Category sx={{ fontSize: 20 }} />}
-              label="Lieblingsgenre"
+              label={t('Lieblingsgenre')}
               value={stats.topGenre}
               iconColor={currentTheme.primary}
             />
@@ -344,7 +349,7 @@ export const StatsGrid = () => {
           <motion.div variants={staggerItem}>
             <StatCard
               icon={<Stream sx={{ fontSize: 20 }} />}
-              label="Hauptprovider"
+              label={t('Hauptprovider')}
               value={stats.topProvider}
               iconColor={currentTheme.primary}
             />

@@ -17,6 +17,7 @@ import {
   getProgressToNextBox,
 } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
+import { t } from '../../services/i18n';
 
 // Bewusste Akzent-Konstanten für die Mystery Box: gamifizierte Lila/Magenta-
 // Markenoptik, absichtlich theme-unabhängig (nicht an --theme-primary koppeln).
@@ -102,7 +103,7 @@ export const MilestoneBoxCard: React.FC = () => {
           {...(hasBox && {
             role: 'button',
             tabIndex: 0,
-            'aria-label': `Mystery Box öffnen – ${availableBoxes} verfügbar`,
+            'aria-label': t('Mystery Box öffnen – {n} verfügbar', { n: availableBoxes }),
             onKeyDown: (e: React.KeyboardEvent) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -179,8 +180,10 @@ export const MilestoneBoxCard: React.FC = () => {
               }}
             >
               {hasBox
-                ? `${availableBoxes} Box${availableBoxes > 1 ? 'en' : ''} verfügbar!`
-                : `Nächste in ${nextThreshold - totalEpisodes} Episoden`}
+                ? availableBoxes > 1
+                  ? t('{n} Boxen verfügbar!', { n: availableBoxes })
+                  : t('{n} Box verfügbar!', { n: availableBoxes })
+                : t('Nächste in {n} Episoden', { n: nextThreshold - totalEpisodes })}
             </p>
           </div>
 

@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useMemo } from 'react';
 import type { FriendActivity } from '../../types/Friend';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface ResolvedUser {
   name: string;
@@ -67,7 +68,7 @@ export const ActiveFriendsRow = ({
             whileTap={tapScaleTight}
             className="activity-pulse-item"
             onClick={() => onSelect(userId)}
-            aria-label={`Profil von ${user.name}`}
+            aria-label={t('Profil von {name}', { name: user.name })}
           >
             <span
               className="activity-pulse-ring"

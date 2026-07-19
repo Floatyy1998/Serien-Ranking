@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PublicProfileSectionProps {
   isPublicProfile: boolean;
@@ -34,7 +35,7 @@ export const PublicProfileSection = memo(
         className="settings-card"
       >
         <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
-          Öffentliches Profil
+          {t('Öffentliches Profil')}
         </h2>
 
         {/* Toggle */}
@@ -49,10 +50,10 @@ export const PublicProfileSection = memo(
             <Public style={{ fontSize: '22px', color: currentTheme.primary }} />
             <div>
               <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
-                Profil öffentlich teilen
+                {t('Profil öffentlich teilen')}
               </h3>
               <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
-                Andere können deine Serien und Filme sehen
+                {t('Andere können deine Serien und Filme sehen')}
               </p>
             </div>
           </div>
@@ -62,7 +63,7 @@ export const PublicProfileSection = memo(
               checked={isPublicProfile}
               onChange={(e) => onToggle(e.target.checked)}
               disabled={isLoadingProfile}
-              aria-label="Profil öffentlich teilen"
+              aria-label={t('Profil öffentlich teilen')}
               className="settings-toggle-input"
             />
             <span
@@ -89,7 +90,7 @@ export const PublicProfileSection = memo(
             style={{ background: currentTheme.background.default }}
           >
             <h3 className="settings-public-link-title" style={{ color: currentTheme.text.primary }}>
-              Dein öffentlicher Link
+              {t('Dein öffentlicher Link')}
             </h3>
             <div
               className="settings-public-link-display"
@@ -117,7 +118,7 @@ export const PublicProfileSection = memo(
                 }}
               >
                 <IosShare style={{ fontSize: '16px' }} />
-                Teilen
+                {t('Teilen')}
               </motion.button>
               <motion.button
                 whileTap={tapScale}
@@ -131,7 +132,7 @@ export const PublicProfileSection = memo(
                 }}
               >
                 <ContentCopy style={{ fontSize: '16px' }} />
-                Kopieren
+                {t('Kopieren')}
               </motion.button>
               <motion.button
                 whileTap={tapScale}
@@ -145,7 +146,7 @@ export const PublicProfileSection = memo(
                 }}
               >
                 <Refresh style={{ fontSize: '16px' }} />
-                Neu
+                {t('Neu')}
               </motion.button>
             </div>
           </div>
@@ -155,8 +156,9 @@ export const PublicProfileSection = memo(
         <div className="settings-info-box" style={{ background: currentTheme.background.default }}>
           <Public style={{ fontSize: '18px', color: currentTheme.primary, flexShrink: 0 }} />
           <p className="settings-info-text" style={{ color: currentTheme.text.muted }}>
-            Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung
-            sehen
+            {t(
+              'Wenn aktiviert, können andere deine bewerteten Serien und Filme auch ohne Anmeldung sehen'
+            )}
           </p>
         </div>
       </motion.div>

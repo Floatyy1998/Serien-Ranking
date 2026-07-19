@@ -5,6 +5,7 @@ import { EmptyState } from '../../../components/ui';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { WatchlistGap } from '../../../hooks/useSubscriptionsData';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 import { getProviderBrand } from '../providerBrands';
 
 interface WatchlistGapsSectionProps {
@@ -27,33 +28,35 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
     <div className="sub-section">
       <div className="sub-section-head">
         <h2 className="sub-section-title" style={{ color: currentTheme.text.primary }}>
-          Lücken in deiner Watchlist
+          {t('Lücken in deiner Watchlist')}
         </h2>
         {watchlistGaps.length > 0 && (
           <span className="sub-section-count" style={{ color: muted }}>
-            {watchlistGaps.length} Serien
+            {t('{n} Serien', { n: watchlistGaps.length })}
           </span>
         )}
       </div>
       <p className="sub-section-hint" style={{ color: bodyColor }}>
-        Diese Watchlist-Serien laufen nur bei Anbietern, die du gerade nicht abonniert hast.
+        {t('Diese Watchlist-Serien laufen nur bei Anbietern, die du gerade nicht abonniert hast.')}
       </p>
 
       {watchlistGaps.length === 0 ? (
         <EmptyState
           icon={<PlaylistAddCheck style={{ fontSize: 48 }} />}
-          title={activeCount === 0 ? 'Noch keine Lücken' : 'Keine Lücken'}
+          title={activeCount === 0 ? t('Noch keine Lücken') : t('Keine Lücken')}
           description={
             activeCount === 0
-              ? 'Sobald du Abos markierst, zeigen wir hier Serien, die du sonst nirgends streamen kannst.'
-              : 'Alle Watchlist-Serien laufen auf deinen aktiven Abos.'
+              ? t(
+                  'Sobald du Abos markierst, zeigen wir hier Serien, die du sonst nirgends streamen kannst.'
+                )
+              : t('Alle Watchlist-Serien laufen auf deinen aktiven Abos.')
           }
           iconColor={bodyColor}
         />
       ) : (
         <div className="sub-gap-list">
           {watchlistGaps.slice(0, 30).map(({ series, providers }) => {
-            const gapTitle = series.title || series.original_name || 'Unbekannt';
+            const gapTitle = series.title || series.original_name || t('Unbekannt');
             return (
               <motion.button
                 key={series.id}
@@ -68,7 +71,7 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
                   color: currentTheme.text.primary,
                 }}
                 onClick={() => navigate(`/series/${series.id}`)}
-                aria-label={`${gapTitle} öffnen`}
+                aria-label={t('{title} öffnen', { title: gapTitle })}
               >
                 {series.poster?.poster && (
                   <img
@@ -105,7 +108,7 @@ export const WatchlistGapsSection = ({ watchlistGaps, activeCount }: WatchlistGa
           })}
           {watchlistGaps.length > 30 && (
             <p style={{ fontSize: 12, textAlign: 'center', color: muted, marginTop: 4 }}>
-              + {watchlistGaps.length - 30} weitere
+              {t('+ {n} weitere', { n: watchlistGaps.length - 30 })}
             </p>
           )}
         </div>

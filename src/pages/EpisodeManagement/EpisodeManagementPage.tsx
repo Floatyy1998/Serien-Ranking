@@ -3,6 +3,7 @@ import { Tooltip } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { t } from '../../services/i18n';
 import { PageHeader, CatchUpDialog } from '../../components/ui';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { BulkActionBar } from './BulkActionBar';
@@ -46,7 +47,7 @@ export const EpisodeManagementPage = () => {
   if (!series) {
     return (
       <div className="mobile-episode-page">
-        <PageHeader title="Serie nicht gefunden" sticky={false} />
+        <PageHeader title={t('Serie nicht gefunden')} sticky={false} />
       </div>
     );
   }
@@ -54,7 +55,7 @@ export const EpisodeManagementPage = () => {
   return (
     <div className="mobile-episode-page">
       {/* Header */}
-      <PageHeader title={series.title} subtitle="Episoden verwalten" sticky={false} />
+      <PageHeader title={series.title} subtitle={t('Episoden verwalten')} sticky={false} />
 
       {/* Pull to Refresh Indicator */}
       <RefreshIndicator isRefreshing={isRefreshing} />
@@ -176,7 +177,7 @@ function SeasonTabs({
 }) {
   return (
     <div className="season-tabs">
-      <Tooltip title="Vorherige Staffel" arrow>
+      <Tooltip title={t('Vorherige Staffel')} arrow>
         <span>
           <button className="tab-nav-button" onClick={onPrev} disabled={selectedSeason === 0}>
             <ExpandLess />
@@ -200,7 +201,7 @@ function SeasonTabs({
         ))}
       </div>
 
-      <Tooltip title="Nächste Staffel" arrow>
+      <Tooltip title={t('Nächste Staffel')} arrow>
         <span>
           <button
             className="tab-nav-button"
@@ -250,18 +251,18 @@ function WatchCountDialog({
       >
         <div className="dialog-header">
           <h3 id="watch-dialog-title">{episode.name}</h3>
-          <p id="watch-dialog-desc">Aktuell: {episode.watchCount || 1}x gesehen</p>
+          <p id="watch-dialog-desc">{t('Aktuell: {n}x gesehen', { n: episode.watchCount || 1 })}</p>
         </div>
 
         <div className="dialog-buttons">
           <button className="dialog-button increase" onClick={onIncrease}>
-            +1 (nochmal gesehen)
+            {t('+1 (nochmal gesehen)')}
           </button>
           <button className="dialog-button decrease" onClick={onDecrease}>
-            -1 (weniger gesehen)
+            {t('-1 (weniger gesehen)')}
           </button>
           <button className="dialog-button cancel" onClick={onClose}>
-            Abbrechen
+            {t('Abbrechen')}
           </button>
         </div>
       </motion.div>

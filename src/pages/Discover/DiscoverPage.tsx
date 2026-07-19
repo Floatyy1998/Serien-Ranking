@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { useDiscoverFetch } from './useDiscoverFetch';
 import { useDiscoverFilters } from './useDiscoverFilters';
@@ -69,10 +70,10 @@ export const DiscoverPage = memo(() => {
   const canFilterByProviders = activeProviders.size > 0;
   const providerFilterActive = onlyMyProviders && canFilterByProviders;
   const providerToggleTitle = !canFilterByProviders
-    ? 'Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen'
+    ? t('Aktiviere zuerst ein Streaming-Abo in den Abo-Einstellungen')
     : providerFilterActive
-      ? 'Filter „Auf meinen Abos" aktiv'
-      : 'Nur was ich streamen kann';
+      ? t('Filter „Auf meinen Abos" aktiv')
+      : t('Nur was ich streamen kann');
 
   const {
     results,
@@ -116,18 +117,18 @@ export const DiscoverPage = memo(() => {
   }, [setupScrollListener, activeCategory]);
 
   const categories = [
-    { id: 'trending', label: 'Trend', icon: TrendingUp, color: currentTheme.primary },
-    { id: 'popular', label: 'Beliebt', icon: Whatshot, color: currentTheme.status.error },
-    { id: 'top_rated', label: 'Top', icon: Star, color: currentTheme.accent },
+    { id: 'trending', label: t('Trend'), icon: TrendingUp, color: currentTheme.primary },
+    { id: 'popular', label: t('Beliebt'), icon: Whatshot, color: currentTheme.status.error },
+    { id: 'top_rated', label: t('Top'), icon: Star, color: currentTheme.accent },
     {
       id: 'upcoming',
-      label: activeTab === 'movies' ? 'Neu' : 'Läuft',
+      label: activeTab === 'movies' ? t('Neu') : t('Läuft'),
       icon: NewReleases,
       color: currentTheme.status.success,
     },
     {
       id: 'recommendations',
-      label: 'Für dich',
+      label: t('Für dich'),
       icon: Recommend,
       color: currentTheme.accent,
     },
@@ -180,7 +181,7 @@ export const DiscoverPage = memo(() => {
                     margin: 0,
                   }}
                 >
-                  Entdecken
+                  {t('Entdecken')}
                 </GradientText>
               </div>
 
@@ -194,7 +195,7 @@ export const DiscoverPage = memo(() => {
                   }}
                   disabled={!canFilterByProviders}
                   aria-pressed={providerFilterActive}
-                  aria-label="Nur Titel auf meinen aktiven Abos anzeigen"
+                  aria-label={t('Nur Titel auf meinen aktiven Abos anzeigen')}
                   title={providerToggleTitle}
                   style={{
                     background: providerFilterActive
@@ -220,7 +221,7 @@ export const DiscoverPage = memo(() => {
                   <motion.button
                     whileTap={tapScaleTight}
                     onClick={() => setShowFilters(!showFilters)}
-                    aria-label="Genre filtern"
+                    aria-label={t('Genre filtern')}
                     aria-expanded={showFilters}
                     style={{
                       padding: '10px',
@@ -241,7 +242,7 @@ export const DiscoverPage = memo(() => {
                     title={
                       selectedGenre
                         ? genres.find((g) => g.id === selectedGenre)?.name
-                        : 'Genre Filter'
+                        : t('Genre Filter')
                     }
                   >
                     <FilterList style={{ fontSize: '20px' }} />
@@ -257,7 +258,7 @@ export const DiscoverPage = memo(() => {
                       setShowFilters(false);
                     }
                   }}
-                  aria-label={showSearch ? 'Suche schließen' : 'Suche öffnen'}
+                  aria-label={showSearch ? t('Suche schließen') : t('Suche öffnen')}
                   aria-expanded={showSearch}
                   style={{
                     padding: '10px',
@@ -291,8 +292,10 @@ export const DiscoverPage = memo(() => {
                 <input
                   type="text"
                   className="discover-search-input"
-                  aria-label={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen`}
-                  placeholder={`${activeTab === 'series' ? 'Serien' : 'Filme'} suchen...`}
+                  aria-label={activeTab === 'series' ? t('Serien suchen') : t('Filme suchen')}
+                  placeholder={
+                    activeTab === 'series' ? t('Serien suchen...') : t('Filme suchen...')
+                  }
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -319,8 +322,8 @@ export const DiscoverPage = memo(() => {
           {/* Tab switcher */}
           <TabSwitcher
             tabs={[
-              { id: 'series', label: 'Serien', icon: CalendarToday },
-              { id: 'movies', label: 'Filme', icon: MovieIcon },
+              { id: 'series', label: t('Serien'), icon: CalendarToday },
+              { id: 'movies', label: t('Filme'), icon: MovieIcon },
             ]}
             activeTab={activeTab}
             onTabChange={(id) => {
@@ -414,7 +417,7 @@ export const DiscoverPage = memo(() => {
                       textAlign: 'center',
                     }}
                   >
-                    Alle
+                    {t('Alle')}
                   </motion.button>
                   {genres.map((genre) => (
                     <motion.button
@@ -480,7 +483,7 @@ export const DiscoverPage = memo(() => {
             <PageState
               mode="error"
               error={{
-                title: 'Laden fehlgeschlagen',
+                title: t('Laden fehlgeschlagen'),
                 description: error,
                 onRetry: () => fetchFromTMDB(true),
               }}

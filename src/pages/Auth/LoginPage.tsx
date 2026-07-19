@@ -24,6 +24,7 @@ import { GradientText } from '../../components/ui';
 import { CoverWall } from '../../components/ui/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackLogin } from '../../services/firebase/analytics';
+import { t } from '../../services/i18n';
 import { SocialLoginButtons } from './SocialLoginButtons';
 
 export const LoginPage = () => {
@@ -39,23 +40,23 @@ export const LoginPage = () => {
   const handlePasswordReset = async () => {
     if (!email) {
       setInfo('');
-      setError('Bitte gib zuerst deine E-Mail-Adresse ein.');
+      setError(t('Bitte gib zuerst deine E-Mail-Adresse ein.'));
       return;
     }
     setError('');
     setInfo('');
     try {
       await firebase.auth().sendPasswordResetEmail(email);
-      setInfo('Wir haben dir eine E-Mail zum Zurücksetzen deines Passworts geschickt.');
+      setInfo(t('Wir haben dir eine E-Mail zum Zurücksetzen deines Passworts geschickt.'));
     } catch (err: unknown) {
       const firebaseError = err as { code?: string };
       if (firebaseError.code === 'auth/invalid-email') {
-        setError('Ungültige E-Mail-Adresse.');
+        setError(t('Ungültige E-Mail-Adresse.'));
       } else if (firebaseError.code === 'auth/user-not-found') {
         // Aus Datenschutzgründen keine Konto-Existenz preisgeben.
-        setInfo('Falls ein Konto existiert, haben wir dir eine E-Mail geschickt.');
+        setInfo(t('Falls ein Konto existiert, haben wir dir eine E-Mail geschickt.'));
       } else {
-        setError('E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.');
+        setError(t('E-Mail konnte nicht gesendet werden. Bitte versuche es später erneut.'));
       }
     }
   };
@@ -72,16 +73,18 @@ export const LoginPage = () => {
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
       if (firebaseError.code === 'auth/user-not-found') {
-        setError('Kein Benutzer mit dieser E-Mail-Adresse gefunden.');
+        setError(t('Kein Benutzer mit dieser E-Mail-Adresse gefunden.'));
       } else if (firebaseError.code === 'auth/wrong-password') {
-        setError('Falsches Passwort.');
+        setError(t('Falsches Passwort.'));
       } else if (firebaseError.code === 'auth/invalid-email') {
-        setError('Ungültige E-Mail-Adresse.');
+        setError(t('Ungültige E-Mail-Adresse.'));
       } else if (firebaseError.code === 'auth/invalid-credential') {
-        setError('E-Mail oder Passwort ist falsch.');
+        setError(t('E-Mail oder Passwort ist falsch.'));
       } else {
         setError(
-          `Ein Fehler ist aufgetreten: ${firebaseError.code || firebaseError.message || 'Unbekannter Fehler'}`
+          t('Ein Fehler ist aufgetreten: {code}', {
+            code: firebaseError.code || firebaseError.message || t('Unbekannter Fehler'),
+          })
         );
       }
     } finally {
@@ -127,10 +130,10 @@ export const LoginPage = () => {
               letterSpacing: '-0.02em',
             }}
           >
-            Dein Kino. Dein Ranking.
+            {t('Dein Kino. Dein Ranking.')}
           </GradientText>
           <Typography sx={{ mt: 1.5, color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.05rem' }}>
-            Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.
+            {t('Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.')}
           </Typography>
         </Box>
       </Box>
@@ -187,7 +190,7 @@ export const LoginPage = () => {
                   fontWeight: 300,
                 }}
               >
-                Willkommen zurück
+                {t('Willkommen zurück')}
               </Typography>
             </Box>
 
@@ -232,7 +235,7 @@ export const LoginPage = () => {
               <form onSubmit={handleSubmit}>
                 <TextField
                   fullWidth
-                  label="E-Mail"
+                  label={t('E-Mail')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -275,7 +278,7 @@ export const LoginPage = () => {
 
                 <TextField
                   fullWidth
-                  label="Passwort"
+                  label={t('Passwort')}
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -292,13 +295,15 @@ export const LoginPage = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <Tooltip
-                          title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
                           arrow
                         >
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
-                            aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                            aria-label={
+                              showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
+                            }
                             aria-pressed={showPassword}
                             sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                           >
@@ -363,7 +368,7 @@ export const LoginPage = () => {
                     },
                   }}
                 >
-                  {loading ? 'Anmelden...' : 'Anmelden'}
+                  {loading ? t('Anmelden...') : t('Anmelden')}
                 </Button>
               </form>
 
@@ -382,7 +387,7 @@ export const LoginPage = () => {
                     },
                   }}
                 >
-                  Passwort vergessen?
+                  {t('Passwort vergessen?')}
                 </Button>
               </Box>
 
@@ -391,7 +396,7 @@ export const LoginPage = () => {
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                Noch kein Konto?{' '}
+                {t('Noch kein Konto?')}{' '}
                 <Link
                   to="/register"
                   style={{
@@ -407,7 +412,7 @@ export const LoginPage = () => {
                     e.currentTarget.style.textDecoration = 'none';
                   }}
                 >
-                  Jetzt registrieren
+                  {t('Jetzt registrieren')}
                 </Link>
               </Typography>
             </Box>

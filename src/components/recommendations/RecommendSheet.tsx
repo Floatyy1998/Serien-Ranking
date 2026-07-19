@@ -5,6 +5,7 @@ import { FriendPicker } from './FriendPicker';
 import { RecommendMessageInput } from './RecommendMessageInput';
 import { RecommendSheetHero } from './RecommendSheetHero';
 import { SendRecommendationBar } from './SendRecommendationBar';
+import { t } from '../../services/i18n';
 import { useRecommendSheet } from './useRecommendSheet';
 
 interface RecommendSheetProps {
@@ -46,7 +47,7 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
       onClose={handleClose}
       maxHeight="78vh"
       maxWidth={isMobile ? '640px' : 'min(1180px, 94vw)'}
-      ariaLabel="Empfehlung senden"
+      ariaLabel={t('Empfehlung senden')}
     >
       <div
         style={{

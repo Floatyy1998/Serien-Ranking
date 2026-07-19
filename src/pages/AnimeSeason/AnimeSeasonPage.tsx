@@ -111,6 +111,7 @@ import {
 } from './animeSeasonUtils';
 import type { DecoratedAnime } from './animeSeasonUtils';
 import { useAnimeListMatch } from './useAnimeListMatch';
+import { t } from '../../services/i18n';
 import './AnimeSeasonPage.css';
 
 /** Max. parallele TMDB-Auflösungen der progressiven Hydration. */
@@ -132,9 +133,9 @@ interface SeasonFilter {
 }
 
 const FORMAT_TABS = [
-  { id: 'all', label: 'Alle' },
-  { id: 'series', label: 'Serien' },
-  { id: 'movies', label: 'Filme' },
+  { id: 'all', label: t('Alle') },
+  { id: 'series', label: t('Serien') },
+  { id: 'movies', label: t('Filme') },
 ];
 
 export const AnimeSeasonPage: React.FC = () => {
@@ -450,7 +451,7 @@ export const AnimeSeasonPage: React.FC = () => {
           // Seite 1 war da — zeigen, was wir haben.
           setItems(collected);
         } else {
-          setError(err instanceof Error ? err.message : 'AniList ist gerade nicht erreichbar.');
+          setError(err instanceof Error ? err.message : t('AniList ist gerade nicht erreichbar.'));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -770,7 +771,7 @@ export const AnimeSeasonPage: React.FC = () => {
     const known = infoFor(entry.anime.id);
     if (known) {
       if (known.tmdbId) navigate(detailPath(known));
-      else showToast('Auf TMDB nicht gefunden', 2000, 'info');
+      else showToast(t('Auf TMDB nicht gefunden'), 2000, 'info');
       return;
     }
     // Noch nicht aufgelöst → on-demand (Spinner-Overlay, Klicksperre).
@@ -782,10 +783,10 @@ export const AnimeSeasonPage: React.FC = () => {
       if (info.tmdbId) {
         navigate(detailPath(info));
       } else {
-        showToast('Auf TMDB nicht gefunden', 2000, 'info');
+        showToast(t('Auf TMDB nicht gefunden'), 2000, 'info');
       }
     } catch {
-      showToast('Auf TMDB nicht gefunden', 2000, 'error');
+      showToast(t('Auf TMDB nicht gefunden'), 2000, 'error');
     } finally {
       setResolvingId(null);
     }
@@ -801,7 +802,7 @@ export const AnimeSeasonPage: React.FC = () => {
    *  automatisch; State wird NICHT manuell gesetzt (Write-Rule). */
   const addEntry = async (entry: DecoratedAnime) => {
     if (!user) {
-      showToast('Bitte einloggen, um Inhalte hinzuzufügen', 2500, 'info');
+      showToast(t('Bitte einloggen, um Inhalte hinzuzufügen'), 2500, 'info');
       return;
     }
     if (addingId !== null) return;
@@ -815,7 +816,7 @@ export const AnimeSeasonPage: React.FC = () => {
         info = fresh;
       }
       if (!info.tmdbId) {
-        showToast('Auf TMDB nicht gefunden', 2000, 'info');
+        showToast(t('Auf TMDB nicht gefunden'), 2000, 'info');
         return;
       }
       const isMovie = info.mediaType === 'movie';
@@ -826,9 +827,9 @@ export const AnimeSeasonPage: React.FC = () => {
       });
       if (!response.ok) throw new Error(`add failed: ${response.status}`);
 
-      const title = entry.anime.title.english || entry.anime.title.romaji || 'Unbekannter Titel';
+      const title = entry.anime.title.english || entry.anime.title.romaji || t('Unbekannter Titel');
       hapticSuccess();
-      showToast(`„${title}" hinzugefügt`, 2500, 'success');
+      showToast(t('„{title}" hinzugefügt', { title }), 2500, 'success');
       if (isMovie) {
         trackMovieAdded(String(info.tmdbId), title, 'anime-season');
         await logMovieAdded(user.uid, title, info.tmdbId);
@@ -837,7 +838,7 @@ export const AnimeSeasonPage: React.FC = () => {
         await logSeriesAdded(user.uid, title, info.tmdbId);
       }
     } catch {
-      showToast('Hinzufügen fehlgeschlagen', 2500, 'error');
+      showToast(t('Hinzufügen fehlgeschlagen'), 2500, 'error');
     } finally {
       setAddingId(null);
     }
@@ -950,9 +951,9 @@ export const AnimeSeasonPage: React.FC = () => {
     : false;
 
   const subtitle = loading
-    ? 'Was läuft diese Anime-Season?'
+    ? t('Was läuft diese Anime-Season?')
     : `${seasonLabel(selected)} · ${totalCount} Anime${
-        inListCount > 0 ? ` · ${inListCount} in deiner Liste` : ''
+        inListCount > 0 ? ` · ${t('{n} in deiner Liste', { n: inListCount })}` : ''
       }`;
 
   const sectionIconStyle = { fontSize: '20px' } as const;
@@ -962,7 +963,7 @@ export const AnimeSeasonPage: React.FC = () => {
       {/* Titel solid in aufgehelltem Primary (from = to) — der Default-
           Gradient lief in den dunklen Accent aus und war schlecht lesbar. */}
       <PageHeader
-        title="Anime-Season"
+        title={t('Anime-Season')}
         subtitle={subtitle}
         gradientFrom={lightenColor(currentTheme.primary, 0.2)}
         gradientTo={lightenColor(currentTheme.primary, 0.2)}
@@ -1030,7 +1031,7 @@ export const AnimeSeasonPage: React.FC = () => {
             }}
           >
             <SmartDisplay style={{ fontSize: '18px' }} />
-            Mit Provider
+            {t('Mit Provider')}
           </motion.button>
         </div>
 
@@ -1052,7 +1053,7 @@ export const AnimeSeasonPage: React.FC = () => {
         }}
       >
         {(loading || !serverSeasonalReady || hydration.active) && (
-          <div className="as-skeletons" role="status" aria-label="Anime-Season wird geladen">
+          <div className="as-skeletons" role="status" aria-label={t('Anime-Season wird geladen')}>
             <Skeleton
               width="100%"
               shape="card"
@@ -1068,7 +1069,8 @@ export const AnimeSeasonPage: React.FC = () => {
                   color: currentTheme.text.muted,
                 }}
               >
-                Termine, Provider & Bewertungen werden geladen … {hydration.done}/{hydration.total}
+                {t('Termine, Provider & Bewertungen werden geladen …')} {hydration.done}/
+                {hydration.total}
               </p>
             )}
             <div className="as-grid">
@@ -1084,7 +1086,7 @@ export const AnimeSeasonPage: React.FC = () => {
             mode="error"
             error={{
               icon: <Animation style={{ fontSize: '48px' }} />,
-              title: 'AniList nicht erreichbar',
+              title: t('AniList nicht erreichbar'),
               description: error,
               onRetry: () => setReloadKey((key) => key + 1),
             }}
@@ -1094,8 +1096,10 @@ export const AnimeSeasonPage: React.FC = () => {
         {!loading && !error && totalCount === 0 && (
           <EmptyState
             icon={<Animation style={{ fontSize: '48px' }} />}
-            title="Keine Anime gefunden"
-            description={`Für ${seasonLabel(selected)} liegen bei AniList noch keine Einträge vor.`}
+            title={t('Keine Anime gefunden')}
+            description={t('Für {season} liegen bei AniList noch keine Einträge vor.', {
+              season: seasonLabel(selected),
+            })}
           />
         )}
 
@@ -1108,7 +1112,7 @@ export const AnimeSeasonPage: React.FC = () => {
                 return (
                   <AnimeSeasonHero
                     anime={hero.anime}
-                    eyebrow={heroIsFuture ? 'Nächste große Premiere' : 'Season-Highlight'}
+                    eyebrow={heroIsFuture ? t('Nächste große Premiere') : t('Season-Highlight')}
                     inList={!!hero.match}
                     resolving={resolvingId === hero.anime.id}
                     overviewDe={overviewDe}
@@ -1126,7 +1130,7 @@ export const AnimeSeasonPage: React.FC = () => {
               <section>
                 {renderSectionTitle(
                   <CalendarMonth style={sectionIconStyle} />,
-                  `Premieren-Kalender (${timelineCount})`,
+                  t('Premieren-Kalender ({n})', { n: timelineCount }),
                   undefined,
                   visibleContinuing.length > 0 ? (
                     <button
@@ -1136,7 +1140,7 @@ export const AnimeSeasonPage: React.FC = () => {
                       style={{ color: currentTheme.text.secondary }}
                     >
                       <Autorenew style={{ fontSize: '14px' }} />
-                      Fortlaufend
+                      {t('Fortlaufend')}
                       <ArrowDownward style={{ fontSize: '14px' }} />
                     </button>
                   ) : undefined
@@ -1211,8 +1215,9 @@ export const AnimeSeasonPage: React.FC = () => {
                 {/* Fußnote: Datums-Priorität Liste → TVMaze → AniList. */}
                 <p className="as-source-hint" style={{ color: currentTheme.text.muted }}>
                   <InfoOutlined style={{ fontSize: '14px', flexShrink: 0 }} />
-                  Termine aus deinem Kalender bzw. TVMaze — ohne Treffer: japanische
-                  Erstausstrahlung (AniList)
+                  {t(
+                    'Termine aus deinem Kalender bzw. TVMaze — ohne Treffer: japanische Erstausstrahlung (AniList)'
+                  )}
                 </p>
               </section>
             )}
@@ -1222,7 +1227,7 @@ export const AnimeSeasonPage: React.FC = () => {
               <section ref={continuingRef} className="as-continuing">
                 {renderSectionTitle(
                   <Autorenew style={sectionIconStyle} />,
-                  `Fortlaufend (${visibleContinuing.length})`
+                  t('Fortlaufend ({n})', { n: visibleContinuing.length })
                 )}
                 {renderGrid(visibleContinuing)}
               </section>
@@ -1233,7 +1238,7 @@ export const AnimeSeasonPage: React.FC = () => {
               <section>
                 {renderSectionTitle(
                   <TaskAlt style={sectionIconStyle} />,
-                  `Bereits beendet (${visibleFinished.length})`
+                  t('Bereits beendet ({n})', { n: visibleFinished.length })
                 )}
                 {renderGrid(visibleFinished)}
               </section>

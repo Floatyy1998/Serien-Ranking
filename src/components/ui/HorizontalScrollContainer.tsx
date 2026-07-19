@@ -2,6 +2,7 @@ import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 
 interface HorizontalScrollContainerProps {
   children: React.ReactNode;
@@ -83,7 +84,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
     <div style={{ position: 'relative', ...style }} className={className}>
       {/* Left Arrow */}
       {shouldShowArrows && canScrollLeft && (
-        <Tooltip title="Nach links scrollen" arrow>
+        <Tooltip title={t('Nach links scrollen')} arrow>
           <button
             onClick={() => scroll('left')}
             style={{
@@ -134,7 +135,7 @@ export const HorizontalScrollContainer: React.FC<HorizontalScrollContainerProps>
 
       {/* Right Arrow */}
       {shouldShowArrows && canScrollRight && (
-        <Tooltip title="Nach rechts scrollen" arrow>
+        <Tooltip title={t('Nach rechts scrollen')} arrow>
           <button
             onClick={() => scroll('right')}
             style={{

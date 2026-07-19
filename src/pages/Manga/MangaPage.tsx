@@ -36,6 +36,7 @@ import {
 } from './mangaUtils';
 import './MangaPage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 export const MangaPage = () => {
   const { currentTheme } = useTheme();
@@ -141,8 +142,8 @@ export const MangaPage = () => {
               }}
             >
               {mangaList.length > 0
-                ? `${mangaList.length} Titel in deiner Sammlung`
-                : 'Deine Manga-Sammlung'}
+                ? t('{n} Titel in deiner Sammlung', { n: mangaList.length })
+                : t('Deine Manga-Sammlung')}
             </p>
           </div>
 
@@ -160,7 +161,7 @@ export const MangaPage = () => {
           type="button"
           whileTap={tapScaleSmall}
           onClick={() => navigate('/manga/search')}
-          aria-label="Manga suchen"
+          aria-label={t('Manga suchen')}
           style={{
             width: '100%',
             maxWidth: 860,
@@ -181,7 +182,7 @@ export const MangaPage = () => {
         >
           <Search style={{ fontSize: 16, color: currentTheme.text.secondary, opacity: 0.5 }} />
           <span style={{ color: currentTheme.text.secondary, fontSize: 14, opacity: 0.5 }}>
-            Manga, Manhwa, Manhua suchen...
+            {t('Manga, Manhwa, Manhua suchen...')}
           </span>
         </motion.button>
       </div>
@@ -191,30 +192,30 @@ export const MangaPage = () => {
         <div className="manga-quick-grid">
           <QuickTile
             icon={<MenuBook style={{ fontSize: 16 }} />}
-            label="Leseliste"
-            stat={`${quickStats.reading} aktiv`}
+            label={t('Leseliste')}
+            stat={t('{n} aktiv', { n: quickStats.reading })}
             onClick={() => navigate('/manga/reading-list')}
             theme={currentTheme}
             accent={currentTheme.primary}
           />
           <QuickTile
             icon={<Explore style={{ fontSize: 16 }} />}
-            label="Entdecken"
+            label={t('Entdecken')}
             onClick={() => navigate('/manga/discover')}
             theme={currentTheme}
             accent="#3b82f6"
           />
           <QuickTile
             icon={<BarChart style={{ fontSize: 16 }} />}
-            label="Bewertungen"
+            label={t('Bewertungen')}
             onClick={() => navigate('/manga/ratings')}
             theme={currentTheme}
             accent={currentTheme.accent}
           />
           <QuickTile
             icon={<TrendingUp style={{ fontSize: 16 }} />}
-            label="Statistiken"
-            stat={`${quickStats.totalChapters} Kap.`}
+            label={t('Statistiken')}
+            stat={t('{n} Kap.', { n: quickStats.totalChapters })}
             onClick={() => navigate('/manga/stats')}
             theme={currentTheme}
             accent={currentTheme.status?.warning || '#f59e0b'}
@@ -228,7 +229,7 @@ export const MangaPage = () => {
           />
           <QuickTile
             icon={<History style={{ fontSize: 16 }} />}
-            label="Verlauf"
+            label={t('Verlauf')}
             onClick={() => navigate('/manga/recently-read')}
             theme={currentTheme}
             accent="rgba(255,255,255,0.5)"
@@ -255,7 +256,7 @@ export const MangaPage = () => {
       <MangaCarouselSection
         variant="popular"
         items={popularItems}
-        title="Beliebt"
+        title={t('Beliebt')}
         onSeeAll={() => navigate('/manga/discover')}
         iconColor={currentTheme.status?.error || '#ef4444'}
       />
@@ -264,7 +265,7 @@ export const MangaPage = () => {
       <MangaCarouselSection
         variant="top-rated"
         items={topRatedItems}
-        title="Top bewertet"
+        title={t('Top bewertet')}
         onSeeAll={() => navigate('/manga/discover')}
         iconColor={currentTheme.accent}
       />
@@ -275,7 +276,7 @@ export const MangaPage = () => {
           <SectionHeader
             icon={<AutoStories />}
             iconColor={currentTheme.status?.warning || '#f59e0b'}
-            title="Für dich"
+            title={t('Für dich')}
           />
           {/* wie Home „Für dich": auto-fill-Grid, die NavCard-Eigenmargins (20px)
               dienen als Gutter — Karten bleiben bei wenigen Einträgen kompakt */}
@@ -297,10 +298,14 @@ export const MangaPage = () => {
 
       {/* Collection Grid */}
       {loading ? (
-        <LoadingSpinner text="Sammlung wird geladen …" />
+        <LoadingSpinner text={t('Sammlung wird geladen …')} />
       ) : mangaList.length > 0 ? (
         <section ref={collectionRef} style={{ marginBottom: 32 }}>
-          <SectionHeader icon={<AutoStories />} iconColor={currentTheme.accent} title="Sammlung" />
+          <SectionHeader
+            icon={<AutoStories />}
+            iconColor={currentTheme.accent}
+            title={t('Sammlung')}
+          />
 
           {/* Filter Tabs */}
           <div className="manga-filter-tabs" style={{ padding: '0 20px' }}>
@@ -313,7 +318,7 @@ export const MangaPage = () => {
                   : {}
               }
             >
-              Alle ({mangaList.length})
+              {t('Alle')} ({mangaList.length})
             </button>
             {Object.entries(STATUS_LABELS).map(
               ([key, label]) =>
@@ -356,7 +361,9 @@ export const MangaPage = () => {
                 opacity: 0.6,
               }}
             >
-              Keine Manga mit Filter &quot;{STATUS_LABELS[collectionFilter]}&quot;
+              {t('Keine Manga mit Filter "{filter}"', {
+                filter: STATUS_LABELS[collectionFilter],
+              })}
             </div>
           )}
         </section>
@@ -364,10 +371,10 @@ export const MangaPage = () => {
         <div className="manga-empty">
           <div className="manga-empty-icon">📚</div>
           <div className="manga-empty-title" style={{ color: currentTheme.text.primary }}>
-            Deine Manga-Sammlung
+            {t('Deine Manga-Sammlung')}
           </div>
           <div className="manga-empty-text" style={{ color: currentTheme.text.secondary }}>
-            Suche oben nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.
+            {t('Suche oben nach Manga, Manhwa oder Manhua und füge sie zu deiner Sammlung hinzu.')}
           </div>
         </div>
       )}

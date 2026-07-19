@@ -25,6 +25,7 @@ import { GenresTab } from './GenresTab';
 import { useTasteMatchData } from './useTasteMatchData';
 import './TasteMatchPage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
   bgDefault,
@@ -84,9 +85,9 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
           marginBottom: '8px',
         }}
       >
-        Berechne Match...
+        {t('Berechne Match...')}
       </motion.p>
-      <p className="tm-loading-text__subtitle">Analysiere eure Geschmäcker</p>
+      <p className="tm-loading-text__subtitle">{t('Analysiere eure Geschmäcker')}</p>
     </div>
   </div>
 );
@@ -94,19 +95,19 @@ const LoadingState: React.FC<{ bgDefault: string; textPrimary: string }> = ({
 const TAB_CONFIG = (primaryColor: string, seriesCount: number, moviesCount: number) => [
   {
     id: 'overview' as const,
-    label: 'Übersicht',
+    label: t('Übersicht'),
     color: primaryColor,
     icon: <Category style={{ fontSize: 16 }} />,
   },
   {
     id: 'series' as const,
-    label: `Serien (${seriesCount})`,
+    label: t('Serien ({n})', { n: seriesCount }),
     color: ACCENT_COLORS.series,
     icon: <Tv style={{ fontSize: 16 }} />,
   },
   {
     id: 'movies' as const,
-    label: `Filme (${moviesCount})`,
+    label: t('Filme ({n})', { n: moviesCount }),
     color: ACCENT_COLORS.movies,
     icon: <Movie style={{ fontSize: 16 }} />,
   },
@@ -188,7 +189,7 @@ export const TasteMatchPage: React.FC = () => {
                   setShareCardOpen(true);
                 }}
                 className="tm-header__share-btn"
-                aria-label="Taste Match als Bild teilen"
+                aria-label={t('Taste Match als Bild teilen')}
                 style={{
                   background: `linear-gradient(135deg, ${ACCENT_COLORS.match}20, ${primaryColor}20)`,
                   border: `1px solid ${ACCENT_COLORS.match}30`,
@@ -202,7 +203,7 @@ export const TasteMatchPage: React.FC = () => {
                 whileTap={tapScaleTight}
                 onClick={handleShare}
                 className="tm-header__share-btn"
-                aria-label="Taste Match als Text teilen"
+                aria-label={t('Taste Match als Text teilen')}
                 style={{
                   background: `linear-gradient(135deg, ${primaryColor}20, ${ACCENT_COLORS.match}20)`,
                   border: `1px solid ${primaryColor}30`,
@@ -227,21 +228,21 @@ export const TasteMatchPage: React.FC = () => {
         <div className="tm-stat-rings">
           <StatRing
             icon={<Tv style={{ fontSize: 22 }} />}
-            label="Serien"
+            label={t('Serien')}
             score={result.seriesOverlap.score}
             color={ACCENT_COLORS.series}
             delay={0.1}
             bgColor={cardBg}
-            hint={`${result.seriesOverlap.sharedSeries.length} gemeinsame Serien`}
+            hint={t('{n} gemeinsame Serien', { n: result.seriesOverlap.sharedSeries.length })}
           />
           <StatRing
             icon={<Movie style={{ fontSize: 22 }} />}
-            label="Filme"
+            label={t('Filme')}
             score={result.movieOverlap.score}
             color={ACCENT_COLORS.movies}
             delay={0.2}
             bgColor={cardBg}
-            hint={`${result.movieOverlap.sharedMovies.length} gemeinsame Filme`}
+            hint={t('{n} gemeinsame Filme', { n: result.movieOverlap.sharedMovies.length })}
           />
           <StatRing
             icon={<Category style={{ fontSize: 22 }} />}
@@ -250,7 +251,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.genres}
             delay={0.3}
             bgColor={cardBg}
-            hint={`${result.genreMatch.sharedGenres.length} gemeinsame Genres`}
+            hint={t('{n} gemeinsame Genres', { n: result.genreMatch.sharedGenres.length })}
           />
           <StatRing
             icon={<Star style={{ fontSize: 22 }} />}
@@ -259,7 +260,7 @@ export const TasteMatchPage: React.FC = () => {
             color={ACCENT_COLORS.ratings}
             delay={0.4}
             bgColor={cardBg}
-            hint={`${result.ratingMatch.sameRatingCount}× ähnlich bewertet`}
+            hint={t('{n}× ähnlich bewertet', { n: result.ratingMatch.sameRatingCount })}
           />
         </div>
 

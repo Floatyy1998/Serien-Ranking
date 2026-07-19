@@ -30,6 +30,7 @@ import {
   idbRemove,
   idbRemovePrefix,
 } from './catalogIDB';
+import { isEnglish } from './i18n';
 
 // Vite injiziert process.env.VITE_* via define() in vite.config.ts
 declare const process: { env: Record<string, string | undefined> };
@@ -47,6 +48,7 @@ const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
 const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
+const LS_EN_OVERLAY_KEY = LS_PREFIX + 'enOverlay';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
 // haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
@@ -93,6 +95,7 @@ let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
+let memoryEnOverlay: EnOverlay | null | undefined = undefined;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
@@ -186,6 +189,7 @@ async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Prom
     idbRemove(LS_ANIME_FILLER_KEY),
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
+    idbRemove(LS_EN_OVERLAY_KEY),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
 }
@@ -277,6 +281,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryAnimeFiller = null;
   memoryAnimeManga = null;
   memoryTvPremieres = null;
+  memoryEnOverlay = undefined;
   await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
   await setLocalVersion(remote);
 }
@@ -311,6 +316,78 @@ async function ensureVersionFresh(): Promise<number | null> {
   }
   await setLocalVersion(remote);
   return remote;
+}
+
+// Englisch-Overlay: catalog/en/overlay.json (Backend-Export) mappt tmdbId auf
+// {t: Titel, o: Beschreibung} für Serien und Filme. Wird NUR bei englischer
+// App-Sprache geladen und über die deutschen Meta-Felder gelegt — fehlt die
+// Datei (404) oder ein Eintrag, bleibt der deutsche Text stehen. Deutsche
+// Nutzer laden die Datei nie (0 Mehrkosten).
+
+interface EnOverlayEntry {
+  t?: string;
+  o?: string;
+}
+
+interface EnOverlay {
+  series?: Record<string, EnOverlayEntry>;
+  movies?: Record<string, EnOverlayEntry>;
+}
+
+async function getEnOverlay(): Promise<EnOverlay | null> {
+  if (!isEnglish()) return null;
+  if (memoryEnOverlay !== undefined) return memoryEnOverlay;
+
+  const cached = await idbGetAny<EnOverlay>(LS_EN_OVERLAY_KEY);
+  if (cached) {
+    memoryEnOverlay = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<EnOverlay>('en/overlay.json', { version });
+    memoryEnOverlay = data && typeof data === 'object' ? data : null;
+    if (memoryEnOverlay) void idbSetVersioned(LS_EN_OVERLAY_KEY, version, memoryEnOverlay);
+    return memoryEnOverlay;
+  } catch (e) {
+    // 404 = Backend-Export existiert noch nicht — deutscher Text bleibt.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] en-overlay fetch failed', e);
+    }
+    memoryEnOverlay = null;
+    return null;
+  }
+}
+
+function applyEnOverlay<T extends { title: string; beschreibung?: string }>(
+  data: Record<string, T>,
+  entries: Record<string, EnOverlayEntry> | undefined
+): Record<string, T> {
+  if (!entries) return data;
+  const out: Record<string, T> = {};
+  for (const key in data) {
+    const en = entries[key];
+    out[key] = en
+      ? {
+          ...data[key],
+          title: en.t || data[key].title,
+          beschreibung: en.o || data[key].beschreibung,
+        }
+      : data[key];
+  }
+  return out;
+}
+
+async function withEnOverlay<T extends { title: string; beschreibung?: string }>(
+  data: Record<string, T> | null,
+  kind: 'series' | 'movies'
+): Promise<Record<string, T> | null> {
+  if (!data || !isEnglish()) return data;
+  const overlay = await getEnOverlay();
+  if (!overlay) return data;
+  return applyEnOverlay(data, kind === 'series' ? overlay.series : overlay.movies);
 }
 
 // Provider-Dedup-Expansion
@@ -386,9 +463,9 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
   // Stale-While-Revalidate: IDB sofort lesen, ohne Versions-Roundtrip abzuwarten
   const cached = await idbGetAny<Record<string, CatalogSeries>>(LS_META_KEY);
   if (cached) {
-    memoryMeta = cached.data;
+    memoryMeta = await withEnOverlay(cached.data, 'series');
     void revalidateInBackground(cached.v);
-    return cached.data;
+    return memoryMeta;
   }
 
   // Cold path: Version + Daten holen
@@ -396,16 +473,16 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
   try {
     const raw = await fetchJson<unknown>('seriesMeta.json', { version });
     const data = expandProviders<CatalogSeries>(raw);
-    memoryMeta = data;
     void idbSetVersioned(LS_META_KEY, version, data);
-    return data;
+    memoryMeta = await withEnOverlay(data, 'series');
+    return memoryMeta;
   } catch (e) {
     console.warn('[staticCatalog] seriesMeta fetch failed, trying RTDB mirror', e);
     const mirror = await readCatalogMirror<unknown>('catalogMirror/seriesMeta');
     if (mirror) {
       const data = expandProviders<CatalogSeries>(mirror);
-      memoryMeta = data;
-      return data;
+      memoryMeta = await withEnOverlay(data, 'series');
+      return memoryMeta;
     }
     return null;
   }
@@ -419,25 +496,25 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
 
   const cached = await idbGetAny<Record<string, CatalogMovie>>(LS_MOVIES_KEY);
   if (cached) {
-    memoryMovies = cached.data;
+    memoryMovies = await withEnOverlay(cached.data, 'movies');
     void revalidateInBackground(cached.v);
-    return cached.data;
+    return memoryMovies;
   }
 
   const version = await ensureVersionFresh();
   try {
     const raw = await fetchJson<unknown>('moviesMeta.json', { version });
     const data = expandProviders<CatalogMovie>(raw);
-    memoryMovies = data;
     void idbSetVersioned(LS_MOVIES_KEY, version, data);
-    return data;
+    memoryMovies = await withEnOverlay(data, 'movies');
+    return memoryMovies;
   } catch (e) {
     console.warn('[staticCatalog] moviesMeta fetch failed, trying RTDB mirror', e);
     const mirror = await readCatalogMirror<unknown>('catalogMirror/moviesMeta');
     if (mirror) {
       const data = expandProviders<CatalogMovie>(mirror);
-      memoryMovies = data;
-      return data;
+      memoryMovies = await withEnOverlay(data, 'movies');
+      return memoryMovies;
     }
     return null;
   }
@@ -903,10 +980,10 @@ export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
       if (!res.ok) return null;
       const raw = await res.json();
       const data = expandProviders<CatalogSeries>(raw);
-      memoryMeta = data;
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
-      return data;
+      memoryMeta = await withEnOverlay(data, 'series');
+      return memoryMeta;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -933,10 +1010,10 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
       if (!res.ok) return null;
       const raw = await res.json();
       const data = expandProviders<CatalogMovie>(raw);
-      memoryMovies = data;
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
-      return data;
+      memoryMovies = await withEnOverlay(data, 'movies');
+      return memoryMovies;
     } finally {
       clearTimeout(timeoutId);
     }
@@ -954,8 +1031,10 @@ export function clearStaticCatalogCache(): void {
   memoryAnimeFiller = null;
   memoryAnimeManga = null;
   memoryTvPremieres = null;
+  memoryEnOverlay = undefined;
   cachedVersion = null;
   localVersionCache = undefined;
+  void idbRemove(LS_EN_OVERLAY_KEY);
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
   void idbRemove(LS_VERSION_KEY);

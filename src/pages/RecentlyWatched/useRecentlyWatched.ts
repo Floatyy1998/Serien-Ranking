@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { t } from '../../services/i18n';
 import { EpisodeDataManager } from './EpisodeDataManager';
 import type { DateGroup, WatchedEpisode } from './EpisodeDataManager';
 
@@ -17,10 +18,10 @@ export interface TimeRange {
 }
 
 export const TIME_RANGES: TimeRange[] = [
-  { days: 7, label: '7 Tage' },
-  { days: 30, label: '30 Tage' },
-  { days: 90, label: '3 Monate' },
-  { days: 365, label: '1 Jahr' },
+  { days: 7, label: t('7 Tage') },
+  { days: 30, label: t('30 Tage') },
+  { days: 90, label: t('3 Monate') },
+  { days: 365, label: t('1 Jahr') },
 ];
 
 export interface UseRecentlyWatchedResult {
@@ -298,13 +299,13 @@ export const useRecentlyWatched = (): UseRecentlyWatchedResult => {
   };
 
   const getRelativeDateLabel = (episode: WatchedEpisode) => {
-    if (episode.daysAgo === 0) return 'Heute';
-    if (episode.daysAgo === 1) return 'Gestern';
-    if (episode.daysAgo === 2) return 'Vorgestern';
-    if (episode.daysAgo <= 7) return `Vor ${episode.daysAgo} Tagen`;
-    if (episode.daysAgo <= 14) return 'Letzte Woche';
-    if (episode.daysAgo <= 30) return `Vor ${Math.floor(episode.daysAgo / 7)} Wochen`;
-    return `Vor ${Math.floor(episode.daysAgo / 30)} Monaten`;
+    if (episode.daysAgo === 0) return t('Heute');
+    if (episode.daysAgo === 1) return t('Gestern');
+    if (episode.daysAgo === 2) return t('Vorgestern');
+    if (episode.daysAgo <= 7) return t('Vor {n} Tagen', { n: episode.daysAgo });
+    if (episode.daysAgo <= 14) return t('Letzte Woche');
+    if (episode.daysAgo <= 30) return t('Vor {n} Wochen', { n: Math.floor(episode.daysAgo / 7) });
+    return t('Vor {n} Monaten', { n: Math.floor(episode.daysAgo / 30) });
   };
 
   const groupEpisodesBySeries = (episodes: WatchedEpisode[]) => {

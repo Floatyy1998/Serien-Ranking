@@ -3,6 +3,7 @@ import { memo } from 'react';
 import type { Pet } from '../../types/pet.types';
 import './PetsPage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface PetActionsProps {
   pet: Pet;
@@ -33,7 +34,7 @@ export const PetActions = memo(function PetActions({
               onClick={onFeed}
               className="pet-action-btn pet-action-btn--feed"
             >
-              🍖 Füttern
+              🍖 {t('Füttern')}
             </motion.button>
             <motion.button
               key="play"
@@ -41,7 +42,7 @@ export const PetActions = memo(function PetActions({
               onClick={onPlay}
               className="pet-action-btn pet-action-btn--play"
             >
-              🎮 Spielen
+              🎮 {t('Spielen')}
             </motion.button>
           </>
         ) : (
@@ -53,7 +54,7 @@ export const PetActions = memo(function PetActions({
             onClick={onRevive}
             className="pet-action-btn pet-action-btn--revive"
           >
-            Wiederbeleben
+            {t('Wiederbeleben')}
           </motion.button>
         )}
       </AnimatePresence>

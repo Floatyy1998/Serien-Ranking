@@ -7,6 +7,7 @@ import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { tapScale } from '../../../lib/motion';
 import { MiniProviderBadges } from './MiniProviderBadges';
 import type { MediaItem } from './mediaCarouselTypes';
+import { t } from '../../../services/i18n';
 
 interface TrendingRankCardProps {
   item: MediaItem;
@@ -27,7 +28,7 @@ export function TrendingRankCard({ item, index, cardWidth }: TrendingRankCardPro
       onClick={() => navigate(`/${item.type}/${item.id}`)}
       role="button"
       tabIndex={0}
-      aria-label={`Platz ${index + 1}: ${item.title}`}
+      aria-label={t('Platz {rank}: {title}', { rank: index + 1, title: item.title })}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -176,12 +177,12 @@ export function TrendingRankCard({ item, index, cardWidth }: TrendingRankCardPro
               {item.type === 'movie' ? (
                 <>
                   <MovieIcon style={{ fontSize: isMobile ? '10px' : '12px' }} />
-                  Film
+                  {t('Film')}
                 </>
               ) : (
                 <>
                   <Tv style={{ fontSize: isMobile ? '10px' : '12px' }} />
-                  Serie
+                  {t('Serie')}
                 </>
               )}
             </div>

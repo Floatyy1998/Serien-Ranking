@@ -31,6 +31,7 @@ import { SeriesDetailDialogs } from './SeriesDetailDialogs';
 import { useFriendsSeriesProgress } from './useFriendsSeriesProgress';
 import { useSeriesActions } from './useSeriesActions';
 import { useSeriesData } from './useSeriesData';
+import { t } from '../../services/i18n';
 import './SeriesDetailPage.css';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -226,7 +227,7 @@ export const SeriesDetailPage = memo(() => {
           textAlign: 'center',
         }}
       >
-        <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>Serie nicht gefunden</h2>
+        <h2 style={{ fontSize: '24px', marginBottom: '16px' }}>{t('Serie nicht gefunden')}</h2>
         <button
           onClick={() => navigate('/')}
           style={{
@@ -240,7 +241,7 @@ export const SeriesDetailPage = memo(() => {
             cursor: 'pointer',
           }}
         >
-          Zurück
+          {t('Zurück')}
         </button>
       </div>
     );
@@ -249,7 +250,7 @@ export const SeriesDetailPage = memo(() => {
   if (loading || !series) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <p>Lade...</p>
+        <p>{t('Lade...')}</p>
       </div>
     );
   }
@@ -292,7 +293,10 @@ export const SeriesDetailPage = memo(() => {
             type="button"
             onClick={handleWatchNext}
             disabled={markingNext}
-            aria-label={`Nächste Folge S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber} als gesehen markieren`}
+            aria-label={t('Nächste Folge S{s} E{e} als gesehen markieren', {
+              s: nextEpisode.seasonNumber,
+              e: nextEpisode.episodeNumber,
+            })}
             style={{
               // Kompakter Pill-CTA statt 2500px-Streifen — DIE eine laute
               // Aktion der Seite, links verankert. Mobile darf voll wachsen.
@@ -314,8 +318,11 @@ export const SeriesDetailPage = memo(() => {
               boxShadow: `0 10px 30px -10px ${currentTheme.primary}80`,
             }}
           >
-            ▶ Weiter: S{nextEpisode.seasonNumber} E{nextEpisode.episodeNumber}
-            {nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : ''} — gesehen
+            {t('▶ Weiter: S{s} E{e}{name} — gesehen', {
+              s: nextEpisode.seasonNumber,
+              e: nextEpisode.episodeNumber,
+              name: nextEpisode.episodeName ? ` · ${nextEpisode.episodeName}` : '',
+            })}
           </button>
         </div>
       )}
@@ -337,7 +344,7 @@ export const SeriesDetailPage = memo(() => {
           }}
         >
           <VisibilityOff style={{ fontSize: '16px' }} />
-          Du schaust diese Serie nicht mehr
+          {t('Du schaust diese Serie nicht mehr')}
         </div>
       )}
 
@@ -361,19 +368,19 @@ export const SeriesDetailPage = memo(() => {
             {
               key: 'info' as const,
               icon: <List style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-              label: 'Info & Episoden',
+              label: t('Info & Episoden'),
             },
             {
               key: 'cast' as const,
               icon: <People style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-              label: 'Besetzung',
+              label: t('Besetzung'),
             },
             ...(!isReadOnlyTmdbSeries && characterGuide.userProgress
               ? [
                   {
                     key: 'characters' as const,
                     icon: <Info style={{ fontSize: isMobile ? '16px' : '18px' }} />,
-                    label: 'KI-Guide',
+                    label: t('KI-Guide'),
                   },
                 ]
               : []),
@@ -453,8 +460,9 @@ export const SeriesDetailPage = memo(() => {
                   style={{ fontSize: isMobile ? '18px' : '20px', color: currentTheme.primary }}
                 />
                 <span style={{ flex: 1 }}>
-                  Recap der letzten {recap.recapEpisodes.length} Folge
-                  {recap.recapEpisodes.length === 1 ? '' : 'n'}
+                  {recap.recapEpisodes.length === 1
+                    ? t('Recap der letzten Folge')
+                    : t('Recap der letzten {n} Folgen', { n: recap.recapEpisodes.length })}
                   {recap.daysSinceLastWatch > 0 && (
                     <span
                       style={{
@@ -463,8 +471,9 @@ export const SeriesDetailPage = memo(() => {
                         marginLeft: 6,
                       }}
                     >
-                      · zuletzt vor {recap.daysSinceLastWatch} Tag
-                      {recap.daysSinceLastWatch === 1 ? '' : 'en'}
+                      {recap.daysSinceLastWatch === 1
+                        ? t('· zuletzt vor 1 Tag')
+                        : t('· zuletzt vor {n} Tagen', { n: recap.daysSinceLastWatch })}
                     </span>
                   )}
                 </span>
@@ -489,7 +498,7 @@ export const SeriesDetailPage = memo(() => {
                 <Info
                   style={{ fontSize: isMobile ? '16px' : '20px', color: currentTheme.accent }}
                 />
-                <span style={{ color: currentTheme.text.primary }}>Beschreibung</span>
+                <span style={{ color: currentTheme.text.primary }}>{t('Beschreibung')}</span>
               </h3>
               <p
                 style={{
@@ -566,7 +575,7 @@ export const SeriesDetailPage = memo(() => {
               opacity: isAdding ? 0.6 : 1,
             }}
           >
-            {isAdding ? 'Wird hinzugefügt...' : 'Serie hinzufügen'}
+            {isAdding ? t('Wird hinzugefügt...') : t('Serie hinzufügen')}
           </motion.button>
         </div>
       )}

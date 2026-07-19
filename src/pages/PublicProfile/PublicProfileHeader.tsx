@@ -2,6 +2,7 @@ import { Public, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { BackButton, GradientText } from '../../components/ui';
+import { t } from '../../services/i18n';
 import type { PublicTheme } from './usePublicProfileData';
 
 interface PublicProfileHeaderProps {
@@ -39,10 +40,10 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
           <div className="pp-header__meta" style={{ color: currentTheme.text.secondary }}>
             <span className="pp-header__meta-item">
               <Public style={{ fontSize: '14px', color: currentTheme.primary }} />
-              Öffentlich
+              {t('Öffentlich')}
             </span>
             <span className="pp-header__meta-dot">•</span>
-            <span>{itemsWithRatingCount} bewertet</span>
+            <span>{t('{n} bewertet', { n: itemsWithRatingCount })}</span>
           </div>
         </div>
 

@@ -30,6 +30,10 @@ export const setAppLanguageSetting = (value: AppLanguage): void => {
 };
 
 const detect = (): 'de' | 'en' => {
+  // Test-Umgebung (Vitest-Setup) pinnt Deutsch — Node/jsdom melden en-US,
+  // und sämtliche Test-Assertions sind gegen die deutschen Quelltexte.
+  const testLocale = (globalThis as { __TVRANK_TEST_LOCALE__?: string }).__TVRANK_TEST_LOCALE__;
+  if (testLocale === 'de' || testLocale === 'en') return testLocale;
   const setting = getAppLanguageSetting();
   if (setting !== 'auto') return setting;
   try {

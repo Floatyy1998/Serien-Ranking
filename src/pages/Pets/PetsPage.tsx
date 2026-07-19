@@ -3,6 +3,7 @@
 import React from 'react';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { PetActions } from './PetActions';
 import { PetCard } from './PetCard';
 import { PetCreationModal } from './PetCreationModal';
@@ -82,7 +83,7 @@ export const PetsPage: React.FC = () => {
     <div className="pet-page" style={{ background: currentTheme.background.default }}>
       {/* Header */}
       <PageHeader
-        title="Meine Pets"
+        title={t('Meine Pets')}
         gradientFrom={currentTheme.accent}
         gradientTo={currentTheme.primary}
         actions={<XpBoostHeaderButton />}
@@ -128,7 +129,7 @@ export const PetsPage: React.FC = () => {
           className="pet-release-trigger"
           style={{ color: currentTheme.text.muted }}
         >
-          Zur Adoption freigeben
+          {t('Zur Adoption freigeben')}
         </button>
       </div>
 

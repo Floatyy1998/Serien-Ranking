@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 import { getImageUrl } from '../../utils/imageUrl';
 import type { FriendActivity } from '../../types/Friend';
 import type { ActivityFilterType } from './types';
@@ -44,7 +45,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
       if (!series) {
         return {
           id: tmdbId,
-          title: activity.itemTitle || 'Unbekannte Serie',
+          title: activity.itemTitle || t('Unbekannte Serie'),
           poster: activity.posterPath || activity.poster,
         };
       }
@@ -54,7 +55,7 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
       if (!movie) {
         return {
           id: tmdbId,
-          title: activity.itemTitle || 'Unbekannter Film',
+          title: activity.itemTitle || t('Unbekannter Film'),
           poster: activity.posterPath || activity.poster,
         };
       }
@@ -69,10 +70,10 @@ export const useActivityGrouping = (friendActivities: FriendActivity[]) => {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'gerade eben';
-    if (minutes < 60) return `vor ${minutes}m`;
-    if (hours < 24) return `vor ${hours}h`;
-    if (days < 7) return `vor ${days}d`;
+    if (minutes < 1) return t('gerade eben');
+    if (minutes < 60) return t('vor {n}m', { n: minutes });
+    if (hours < 24) return t('vor {n}h', { n: hours });
+    if (days < 7) return t('vor {n}d', { n: days });
 
     return new Date(timestamp).toLocaleDateString('de-DE', {
       day: '2-digit',

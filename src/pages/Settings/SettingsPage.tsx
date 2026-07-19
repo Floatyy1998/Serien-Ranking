@@ -8,6 +8,7 @@ import type { ThemeContextType } from '../../contexts/ThemeContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Dialog, PageHeader } from '../../components/ui';
 import { useSettingsData } from './useSettingsData';
+import { t } from '../../services/i18n';
 import { isNativeApp } from '../../services/nativeShell';
 import { ProfileSection } from './ProfileSection';
 import { PublicProfileSection } from './PublicProfileSection';
@@ -63,7 +64,7 @@ export const SettingsPage = () => {
 
       {/* Header */}
       <PageHeader
-        title="Einstellungen"
+        title={t('Einstellungen')}
         gradientFrom={currentTheme.text.primary}
         gradientTo={currentTheme.primary}
       />
@@ -119,7 +120,7 @@ export const SettingsPage = () => {
               <div className="settings-nav-btn-text">
                 <h2 className="settings-nav-btn-title">Desktop App</h2>
                 <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-                  TV-Rank für Windows herunterladen
+                  {t('TV-Rank für Windows herunterladen')}
                 </p>
               </div>
             </motion.a>
@@ -151,7 +152,7 @@ export const SettingsPage = () => {
               <div className="settings-nav-btn-text">
                 <h2 className="settings-nav-btn-title">Android App</h2>
                 <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-                  APK direkt herunterladen und installieren
+                  {t('APK direkt herunterladen und installieren')}
                 </p>
               </div>
             </motion.a>
@@ -194,7 +195,7 @@ export const SettingsPage = () => {
           }}
         >
           <Logout style={{ fontSize: '20px' }} />
-          Abmelden
+          {t('Abmelden')}
         </motion.button>
 
         <DeleteAccountSection />
@@ -265,7 +266,7 @@ const AutoStartToggle = ({ currentTheme }: { currentTheme: ThemeContextType['cur
       <div className="settings-nav-btn-text">
         <h2 className="settings-nav-btn-title">Autostart</h2>
         <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-          TV-Rank beim Hochfahren starten
+          {t('TV-Rank beim Hochfahren starten')}
         </p>
       </div>
       <Switch

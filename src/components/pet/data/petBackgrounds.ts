@@ -1,4 +1,5 @@
 import type { AccessoryRarity, PetBackgroundDefinition } from '../../../types/pet.types';
+import { t } from '../../../services/i18n';
 
 /** Wraps an inline SVG in a data URI CSS background value. */
 function bgUrl(svg: string): string {
@@ -1927,7 +1928,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── COMMON ────────────────────────────────────────────────
   clearSky: {
     id: 'clearSky',
-    name: 'Klarer Himmel',
+    name: t('Klarer Himmel'),
     description: 'Blauer Himmel mit Wolken',
     rarity: 'common',
     background: bgUrl(SVG_CLEAR_SKY),
@@ -1936,7 +1937,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   flowerMeadow: {
     id: 'flowerMeadow',
-    name: 'Blumenwiese',
+    name: t('Blumenwiese'),
     description: 'Gruene Wiese voller Blueten',
     rarity: 'common',
     background: bgUrl(SVG_FLOWER_MEADOW),
@@ -1945,7 +1946,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   sunnyBeach: {
     id: 'sunnyBeach',
-    name: 'Sonniger Strand',
+    name: t('Sonniger Strand'),
     description: 'Meer, Sand und Sonnenschein',
     rarity: 'common',
     background: bgUrl(SVG_SUNNY_BEACH),
@@ -1954,7 +1955,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   rollingHills: {
     id: 'rollingHills',
-    name: 'Sanfte Huegel',
+    name: t('Sanfte Huegel'),
     description: 'Weites Huegelland',
     rarity: 'common',
     background: bgUrl(SVG_ROLLING_HILLS),
@@ -1963,7 +1964,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   summerPark: {
     id: 'summerPark',
-    name: 'Sommerpark',
+    name: t('Sommerpark'),
     description: 'Grosser Baum im Stadtpark',
     rarity: 'common',
     background: bgUrl(SVG_SUMMER_PARK),
@@ -1972,7 +1973,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   riverside: {
     id: 'riverside',
-    name: 'Flussufer',
+    name: t('Flussufer'),
     description: 'Sanfter Fluss zwischen Wiesen',
     rarity: 'common',
     background: bgUrl(SVG_RIVERSIDE),
@@ -1981,7 +1982,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   puffyClouds: {
     id: 'puffyClouds',
-    name: 'Bauschige Wolken',
+    name: t('Bauschige Wolken'),
     description: 'Dicke Sommerwolken am Himmel',
     rarity: 'common',
     background: bgUrl(SVG_PUFFY_CLOUDS),
@@ -1990,7 +1991,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   springBlossoms: {
     id: 'springBlossoms',
-    name: 'Fruehlingszweige',
+    name: t('Fruehlingszweige'),
     description: 'Bluehende Zweige am Himmel',
     rarity: 'common',
     background: bgUrl(SVG_SPRING_BLOSSOMS),
@@ -1999,7 +2000,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   bambooGrove: {
     id: 'bambooGrove',
-    name: 'Bambushain',
+    name: t('Bambushain'),
     description: 'Dichter Bambuswald',
     rarity: 'common',
     background: bgUrl(SVG_BAMBOO_GROVE),
@@ -2008,7 +2009,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   dandelionField: {
     id: 'dandelionField',
-    name: 'Loewenzahnwiese',
+    name: t('Loewenzahnwiese'),
     description: 'Wiese voller Pusteblumen',
     rarity: 'common',
     background: bgUrl(SVG_DANDELION_FIELD),
@@ -2017,7 +2018,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   countryRoad: {
     id: 'countryRoad',
-    name: 'Landstrasse',
+    name: t('Landstrasse'),
     description: 'Geschlungene Strasse durchs Land',
     rarity: 'common',
     background: bgUrl(SVG_COUNTRY_ROAD),
@@ -2026,7 +2027,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   picnicLawn: {
     id: 'picnicLawn',
-    name: 'Picknickwiese',
+    name: t('Picknickwiese'),
     description: 'Rote Decke auf gruener Wiese',
     rarity: 'common',
     background: bgUrl(SVG_PICNIC_LAWN),
@@ -2037,7 +2038,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── UNCOMMON ──────────────────────────────────────────────
   autumnField: {
     id: 'autumnField',
-    name: 'Herbstfeld',
+    name: t('Herbstfeld'),
     description: 'Goldenes Getreidefeld',
     rarity: 'uncommon',
     background: bgUrl(SVG_AUTUMN_FIELD),
@@ -2046,7 +2047,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   sunset: {
     id: 'sunset',
-    name: 'Sonnenuntergang',
+    name: t('Sonnenuntergang'),
     description: 'Warmer Abendhimmel ueberm Meer',
     rarity: 'uncommon',
     background: bgUrl(SVG_SUNSET),
@@ -2055,7 +2056,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   mountainLake: {
     id: 'mountainLake',
-    name: 'Bergsee',
+    name: t('Bergsee'),
     description: 'Stiller See vor Bergketten',
     rarity: 'uncommon',
     background: bgUrl(SVG_MOUNTAIN_LAKE),
@@ -2064,7 +2065,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   cherryTrees: {
     id: 'cherryTrees',
-    name: 'Kirschbluete',
+    name: t('Kirschbluete'),
     description: 'Sakura-Baeume im Fruehling',
     rarity: 'uncommon',
     background: bgUrl(SVG_CHERRY_TREES),
@@ -2073,7 +2074,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   lavenderField: {
     id: 'lavenderField',
-    name: 'Lavendelfeld',
+    name: t('Lavendelfeld'),
     description: 'Endloses Lavendelfeld bei Sonnenuntergang',
     rarity: 'uncommon',
     background: bgUrl(SVG_LAVENDER_FIELD),
@@ -2082,7 +2083,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   lakeDock: {
     id: 'lakeDock',
-    name: 'Holzsteg',
+    name: t('Holzsteg'),
     description: 'Holzsteg am stillen Abendsee',
     rarity: 'uncommon',
     background: bgUrl(SVG_LAKE_DOCK),
@@ -2091,7 +2092,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   pumpkinPatch: {
     id: 'pumpkinPatch',
-    name: 'Kuerbisfeld',
+    name: t('Kuerbisfeld'),
     description: 'Herbstliches Kuerbisfeld',
     rarity: 'uncommon',
     background: bgUrl(SVG_PUMPKIN_PATCH),
@@ -2100,7 +2101,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   morningMist: {
     id: 'morningMist',
-    name: 'Morgennebel',
+    name: t('Morgennebel'),
     description: 'Nebelige Daemmerung am Fluss',
     rarity: 'uncommon',
     background: bgUrl(SVG_MORNING_MIST),
@@ -2109,7 +2110,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   vineyard: {
     id: 'vineyard',
-    name: 'Weinberg',
+    name: t('Weinberg'),
     description: 'Weinreben im Abendlicht',
     rarity: 'uncommon',
     background: bgUrl(SVG_VINEYARD),
@@ -2118,7 +2119,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   appleOrchard: {
     id: 'appleOrchard',
-    name: 'Apfelgarten',
+    name: t('Apfelgarten'),
     description: 'Apfelbaeume voller Fruechte',
     rarity: 'uncommon',
     background: bgUrl(SVG_APPLE_ORCHARD),
@@ -2127,7 +2128,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   windmill: {
     id: 'windmill',
-    name: 'Windmuehle',
+    name: t('Windmuehle'),
     description: 'Alte Windmuehle auf gruenem Feld',
     rarity: 'uncommon',
     background: bgUrl(SVG_WINDMILL),
@@ -2136,7 +2137,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   oldBridge: {
     id: 'oldBridge',
-    name: 'Alte Holzbruecke',
+    name: t('Alte Holzbruecke'),
     description: 'Bogenbruecke im Abendlicht',
     rarity: 'uncommon',
     background: bgUrl(SVG_OLD_BRIDGE),
@@ -2145,7 +2146,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   hotAirBalloon: {
     id: 'hotAirBalloon',
-    name: 'Heissluftballon',
+    name: t('Heissluftballon'),
     description: 'Ballonfahrt ueber gruene Felder',
     rarity: 'uncommon',
     background: bgUrl(SVG_HOT_AIR_BALLOON),
@@ -2156,7 +2157,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── RARE ──────────────────────────────────────────────────
   desertDunes: {
     id: 'desertDunes',
-    name: 'Wuestenduenen',
+    name: t('Wuestenduenen'),
     description: 'Goldene Duenen im Abendlicht',
     rarity: 'rare',
     background: bgUrl(SVG_DESERT_DUNES),
@@ -2165,7 +2166,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   tropicalIsland: {
     id: 'tropicalIsland',
-    name: 'Tropeninsel',
+    name: t('Tropeninsel'),
     description: 'Palme am tuerkisen Meer',
     rarity: 'rare',
     background: bgUrl(SVG_TROPICAL_ISLAND),
@@ -2174,7 +2175,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   foggyValley: {
     id: 'foggyValley',
-    name: 'Nebeltal',
+    name: t('Nebeltal'),
     description: 'Nebelige Bergketten',
     rarity: 'rare',
     background: bgUrl(SVG_FOGGY_VALLEY),
@@ -2183,7 +2184,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   cityNight: {
     id: 'cityNight',
-    name: 'Stadt bei Nacht',
+    name: t('Stadt bei Nacht'),
     description: 'Skyline unter Sternenhimmel',
     rarity: 'rare',
     background: bgUrl(SVG_CITY_NIGHT),
@@ -2192,7 +2193,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   pineForest: {
     id: 'pineForest',
-    name: 'Kiefernwald',
+    name: t('Kiefernwald'),
     description: 'Verschneiter Tannenwald',
     rarity: 'rare',
     background: bgUrl(SVG_PINE_FOREST),
@@ -2201,7 +2202,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   snowyVillage: {
     id: 'snowyVillage',
-    name: 'Schneedorf',
+    name: t('Schneedorf'),
     description: 'Verschneite Haeuser mit warmen Lichtern',
     rarity: 'rare',
     background: bgUrl(SVG_SNOWY_VILLAGE),
@@ -2210,7 +2211,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   waterfall: {
     id: 'waterfall',
-    name: 'Wasserfall',
+    name: t('Wasserfall'),
     description: 'Rauschender Wasserfall im Wald',
     rarity: 'rare',
     background: bgUrl(SVG_WATERFALL),
@@ -2219,7 +2220,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   canyon: {
     id: 'canyon',
-    name: 'Canyon',
+    name: t('Canyon'),
     description: 'Roter Canyon im Abendlicht',
     rarity: 'rare',
     background: bgUrl(SVG_CANYON),
@@ -2228,7 +2229,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   goldenWheat: {
     id: 'goldenWheat',
-    name: 'Goldenes Weizenfeld',
+    name: t('Goldenes Weizenfeld'),
     description: 'Weizenfeld zur goldenen Stunde',
     rarity: 'rare',
     background: bgUrl(SVG_GOLDEN_WHEAT),
@@ -2237,7 +2238,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   zenGarden: {
     id: 'zenGarden',
-    name: 'Zen-Garten',
+    name: t('Zen-Garten'),
     description: 'Japanischer Garten mit Sakura',
     rarity: 'rare',
     background: bgUrl(SVG_ZEN_GARDEN),
@@ -2246,7 +2247,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   lighthouseCliff: {
     id: 'lighthouseCliff',
-    name: 'Leuchtturm',
+    name: t('Leuchtturm'),
     description: 'Leuchtturm auf steiler Klippe',
     rarity: 'rare',
     background: bgUrl(SVG_LIGHTHOUSE),
@@ -2255,7 +2256,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   fireflyForest: {
     id: 'fireflyForest',
-    name: 'Gluehwuermchen-Wald',
+    name: t('Gluehwuermchen-Wald'),
     description: 'Wald voller tanzender Lichter',
     rarity: 'rare',
     background: bgUrl(SVG_FIREFLY_FOREST),
@@ -2264,7 +2265,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   redwoodForest: {
     id: 'redwoodForest',
-    name: 'Mammutbaeume',
+    name: t('Mammutbaeume'),
     description: 'Riesige Redwoods im Goldlicht',
     rarity: 'rare',
     background: bgUrl(SVG_REDWOOD_FOREST),
@@ -2273,7 +2274,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   templeRuins: {
     id: 'templeRuins',
-    name: 'Tempelruinen',
+    name: t('Tempelruinen'),
     description: 'Antike Saeulen im Dschungel',
     rarity: 'rare',
     background: bgUrl(SVG_TEMPLE_RUINS),
@@ -2282,7 +2283,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   hotSprings: {
     id: 'hotSprings',
-    name: 'Heisse Quellen',
+    name: t('Heisse Quellen'),
     description: 'Dampfende Onsen im Schnee',
     rarity: 'rare',
     background: bgUrl(SVG_HOT_SPRINGS),
@@ -2291,7 +2292,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   rainyWindow: {
     id: 'rainyWindow',
-    name: 'Regen am Fenster',
+    name: t('Regen am Fenster'),
     description: 'Regentropfen am Fensterglas',
     rarity: 'rare',
     background: bgUrl(SVG_RAINY_WINDOW),
@@ -2302,7 +2303,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── EPIC ──────────────────────────────────────────────────
   alpineSnow: {
     id: 'alpineSnow',
-    name: 'Alpengipfel',
+    name: t('Alpengipfel'),
     description: 'Schneebedeckte Berggipfel',
     rarity: 'epic',
     background: bgUrl(SVG_ALPINE_SNOW),
@@ -2311,7 +2312,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   lavaValley: {
     id: 'lavaValley',
-    name: 'Vulkantal',
+    name: t('Vulkantal'),
     description: 'Ausbrechender Vulkan ueber Lavafluss',
     rarity: 'epic',
     background: bgUrl(SVG_LAVA_VALLEY),
@@ -2320,7 +2321,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   mysticForest: {
     id: 'mysticForest',
-    name: 'Mystischer Wald',
+    name: t('Mystischer Wald'),
     description: 'Leuchtende Gluehwuermchen im Dunkel',
     rarity: 'epic',
     background: bgUrl(SVG_MYSTIC_FOREST),
@@ -2329,7 +2330,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   underwaterReef: {
     id: 'underwaterReef',
-    name: 'Korallenriff',
+    name: t('Korallenriff'),
     description: 'Unterwasserwelt mit Lichtstrahlen',
     rarity: 'epic',
     background: bgUrl(SVG_UNDERWATER_REEF),
@@ -2338,7 +2339,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   northernLights: {
     id: 'northernLights',
-    name: 'Polarlichter',
+    name: t('Polarlichter'),
     description: 'Nordlichter ueber verschneiten Bergen',
     rarity: 'epic',
     background: bgUrl(SVG_NORTHERN_LIGHTS),
@@ -2347,7 +2348,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   savannah: {
     id: 'savannah',
-    name: 'Savanne',
+    name: t('Savanne'),
     description: 'Akazie vor orangenem Horizont',
     rarity: 'epic',
     background: bgUrl(SVG_SAVANNAH),
@@ -2356,7 +2357,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   crystalCave: {
     id: 'crystalCave',
-    name: 'Kristallhoehle',
+    name: t('Kristallhoehle'),
     description: 'Leuchtende Kristalle im Untergrund',
     rarity: 'epic',
     background: bgUrl(SVG_CRYSTAL_CAVE),
@@ -2365,7 +2366,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   stormSea: {
     id: 'stormSea',
-    name: 'Sturmsee',
+    name: t('Sturmsee'),
     description: 'Gewitter ueber aufgewuehltem Meer',
     rarity: 'epic',
     background: bgUrl(SVG_STORM_SEA),
@@ -2374,7 +2375,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   glacialBay: {
     id: 'glacialBay',
-    name: 'Gletscherbucht',
+    name: t('Gletscherbucht'),
     description: 'Eisberge treiben in stiller Bucht',
     rarity: 'epic',
     background: bgUrl(SVG_GLACIAL_BAY),
@@ -2383,7 +2384,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   balloonFiesta: {
     id: 'balloonFiesta',
-    name: 'Ballon-Festival',
+    name: t('Ballon-Festival'),
     description: 'Heissluftballone bei Sonnenaufgang',
     rarity: 'epic',
     background: bgUrl(SVG_BALLOON_FIESTA),
@@ -2392,7 +2393,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   chineseMountains: {
     id: 'chineseMountains',
-    name: 'Nebelberge',
+    name: t('Nebelberge'),
     description: 'Chinesische Berggipfel im Nebel',
     rarity: 'epic',
     background: bgUrl(SVG_CHINESE_MOUNTAINS),
@@ -2403,7 +2404,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   // ── LEGENDARY ─────────────────────────────────────────────
   cosmicSpace: {
     id: 'cosmicSpace',
-    name: 'Kosmischer Nebel',
+    name: t('Kosmischer Nebel'),
     description: 'Farbenpraechtiger Weltraumnebel',
     rarity: 'legendary',
     background: bgUrl(SVG_COSMIC_SPACE),
@@ -2412,7 +2413,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   milkyWay: {
     id: 'milkyWay',
-    name: 'Milchstrasse',
+    name: t('Milchstrasse'),
     description: 'Milchstrasse ueber dem Horizont',
     rarity: 'legendary',
     background: bgUrl(SVG_MILKY_WAY),
@@ -2421,7 +2422,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   galaxyCore: {
     id: 'galaxyCore',
-    name: 'Galaxienkern',
+    name: t('Galaxienkern'),
     description: 'Leuchtendes Zentrum einer Spiralgalaxie',
     rarity: 'legendary',
     background: bgUrl(SVG_GALAXY_CORE),
@@ -2430,7 +2431,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   saturnView: {
     id: 'saturnView',
-    name: 'Saturn',
+    name: t('Saturn'),
     description: 'Saturn mit seinen majestaetischen Ringen',
     rarity: 'legendary',
     background: bgUrl(SVG_SATURN_VIEW),
@@ -2439,7 +2440,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   earthFromMoon: {
     id: 'earthFromMoon',
-    name: 'Erdaufgang',
+    name: t('Erdaufgang'),
     description: 'Erde ueber der Mondoberflaeche',
     rarity: 'legendary',
     background: bgUrl(SVG_EARTH_FROM_MOON),
@@ -2448,7 +2449,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   blackHoleDisk: {
     id: 'blackHoleDisk',
-    name: 'Schwarzes Loch',
+    name: t('Schwarzes Loch'),
     description: 'Akkretionsscheibe um den Ereignishorizont',
     rarity: 'legendary',
     background: bgUrl(SVG_BLACK_HOLE_DISK),
@@ -2457,7 +2458,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   supernova: {
     id: 'supernova',
-    name: 'Supernova',
+    name: t('Supernova'),
     description: 'Explodierender Stern im All',
     rarity: 'legendary',
     background: bgUrl(SVG_SUPERNOVA),
@@ -2466,7 +2467,7 @@ export const PET_BACKGROUNDS: Record<string, PetBackgroundDefinition> = {
   },
   deepSeaAbyss: {
     id: 'deepSeaAbyss',
-    name: 'Tiefsee-Abgrund',
+    name: t('Tiefsee-Abgrund'),
     description: 'Anglerfisch im schwarzen Abgrund',
     rarity: 'legendary',
     background: bgUrl(SVG_DEEP_SEA_ABYSS),

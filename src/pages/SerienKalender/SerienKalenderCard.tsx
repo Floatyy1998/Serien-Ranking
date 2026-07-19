@@ -31,6 +31,7 @@ import {
   premiereBadge,
 } from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
+import { t } from '../../services/i18n';
 
 /** Provider-Logo mit sicherer (nicht-null) Logo-URL. */
 type LogoProvider = { name: string; logo: string };
@@ -69,8 +70,8 @@ function ProviderLogos({
       {visible.map((provider) => {
         const url = getProviderSearchUrl(provider.name, searchTitle);
         const titleAttr = providerNeedsClipboardCopy(provider.name)
-          ? `${provider.name}: Titel kopieren + Suche öffnen`
-          : `${provider.name} öffnen`;
+          ? t('{name}: Titel kopieren + Suche öffnen', { name: provider.name })
+          : t('{title} öffnen', { title: provider.name });
         const img = (
           <img
             src={provider.logo}
@@ -150,7 +151,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
   /** Beschreibung aufgeklappt („mehr lesen" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = entry.title || 'Unbekannter Titel';
+  const title = entry.title || t('Unbekannter Titel');
   const cover = entry.poster || '';
   const providers = (entry.providers || []).filter(
     (p): p is LogoProvider => typeof p.logo === 'string' && p.logo.length > 0
@@ -172,7 +173,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
   let pillText: string;
   let pillBg: string;
   if (startDate && isSameDay(startDate, nowDate)) {
-    pillText = 'HEUTE';
+    pillText = t('HEUTE');
     pillBg = currentTheme.accent;
   } else if (startDate && startDate.getTime() >= startOfTomorrow) {
     // Zukünftige Premiere: prominentes Datums-Band in Accent.
@@ -212,7 +213,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
         {/* Poster links, volle Kartenhöhe (themed Placeholder als Fallback) */}
         <img
           src={cover || placeholder}
-          alt={`Poster von ${title}`}
+          alt={t('Poster von {title}', { title })}
           loading="lazy"
           decoding="async"
           className="as-card-poster"
@@ -249,7 +250,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
               <span
                 className="as-card-inlist-badge"
                 style={{ background: `${currentTheme.primary}dd` }}
-                title="In deiner Liste"
+                title={t('In deiner Liste')}
               >
                 <CheckCircle
                   style={{ fontSize: '13px', color: getOptimalTextColor(currentTheme.primary) }}
@@ -259,8 +260,8 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
               <button
                 type="button"
                 className="as-card-add"
-                title="Zur Liste hinzufügen"
-                aria-label={`${title} zur Liste hinzufügen`}
+                title={t('Zur Liste hinzufügen')}
+                aria-label={t('{title} zur Liste hinzufügen', { title })}
                 aria-busy={adding}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -308,7 +309,7 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
               setDescExpanded((value) => !value);
             }}
           >
-            {descExpanded ? 'weniger anzeigen' : 'mehr lesen'}
+            {descExpanded ? t('weniger anzeigen') : t('mehr lesen')}
           </button>
           <div className="as-card-providers">
             <ProviderLogos providers={providers} size={20} searchTitle={title} />

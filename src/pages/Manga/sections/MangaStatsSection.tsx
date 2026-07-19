@@ -7,6 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useDeviceType } from '../../../hooks/useDeviceType';
 import type { Manga } from '../../../types/Manga';
 import { getEffectiveChapterCount } from '../mangaUtils';
+import { t } from '../../../services/i18n';
 
 export const MangaStatsSection: React.FC = React.memo(() => {
   const { mangaList } = useMangaList();
@@ -89,9 +90,9 @@ export const MangaStatsSection: React.FC = React.memo(() => {
       <SectionHeader
         icon={<CollectionsBookmark />}
         iconColor={currentTheme.primary}
-        title="Statistiken"
+        title={t('Statistiken')}
         onSeeAll={isDesktop ? undefined : () => setExpanded((p) => !p)}
-        seeAllLabel={expanded ? 'Weniger' : 'Mehr'}
+        seeAllLabel={expanded ? t('Weniger') : t('Mehr')}
       />
 
       {/* Bento Grid — Layout in MangaPage.css (.manga-stats-grid) */}
@@ -162,8 +163,8 @@ export const MangaStatsSection: React.FC = React.memo(() => {
               }}
             >
               {stats.totalChaptersKnown > 0
-                ? `${stats.readChaptersInKnown} / ${stats.totalChaptersKnown} Kap.`
-                : `${stats.completed} / ${stats.total} fertig`}
+                ? t('{a} / {b} Kap.', { a: stats.readChaptersInKnown, b: stats.totalChaptersKnown })
+                : t('{a} / {b} fertig', { a: stats.completed, b: stats.total })}
             </div>
           </div>
         )}
@@ -181,7 +182,7 @@ export const MangaStatsSection: React.FC = React.memo(() => {
         <StatTile
           icon={<CheckCircle style={{ fontSize: 18 }} />}
           iconColor={currentTheme.accent}
-          label="Kapitel gelesen"
+          label={t('Kapitel gelesen')}
           value={stats.totalChapters}
           theme={currentTheme}
         />
@@ -191,7 +192,7 @@ export const MangaStatsSection: React.FC = React.memo(() => {
           <StatTile
             icon={<Star style={{ fontSize: 18 }} />}
             iconColor="#f59e0b"
-            label="Am Lesen"
+            label={t('Am Lesen')}
             value={stats.reading}
             theme={currentTheme}
           />
@@ -203,14 +204,14 @@ export const MangaStatsSection: React.FC = React.memo(() => {
             <StatTile
               icon={<Star style={{ fontSize: 18 }} />}
               iconColor="#f59e0b"
-              label="Ø Bewertung"
+              label={t('Ø Bewertung')}
               value={stats.avgRating}
               theme={currentTheme}
             />
             <StatTile
               icon={<CheckCircle style={{ fontSize: 18 }} />}
               iconColor="#22c55e"
-              label="Abgeschlossen"
+              label={t('Abgeschlossen')}
               value={stats.completed}
               theme={currentTheme}
             />
@@ -244,7 +245,7 @@ export const MangaStatsSection: React.FC = React.memo(() => {
             <StatTile
               icon={<CollectionsBookmark style={{ fontSize: 18 }} />}
               iconColor={currentTheme.primary}
-              label="Lieblingsgenre"
+              label={t('Lieblingsgenre')}
               value={stats.topGenre}
               theme={currentTheme}
             />

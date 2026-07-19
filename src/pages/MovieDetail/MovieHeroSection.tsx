@@ -11,6 +11,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale } from '../../lib/motion';
 import { mergeProviders } from '../../lib/providerMerge';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { t } from '../../services/i18n';
 import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
@@ -176,8 +177,8 @@ export const MovieHeroSection = memo(
                 type="button"
                 onClick={onAddMovie}
                 disabled={isAdding}
-                aria-label="Zur Sammlung hinzufügen"
-                title="Zur Sammlung hinzufügen"
+                aria-label={t('Zur Sammlung hinzufügen')}
+                title={t('Zur Sammlung hinzufügen')}
                 className="md-hero__action-btn md-hero__action-btn--add"
                 style={{
                   background: isAdding
@@ -261,9 +262,9 @@ export const MovieHeroSection = memo(
                   <span>
                     &bull;{' '}
                     {isWatched
-                      ? 'Gesehen'
+                      ? t('Gesehen')
                       : movie.status === 'Released'
-                        ? 'Veröffentlicht'
+                        ? t('Veröffentlicht')
                         : movie.status}
                   </span>
                 )}
@@ -385,7 +386,9 @@ export const MovieHeroSection = memo(
                     whileTap={tapScale}
                     onClick={onToggleWatched}
                     aria-pressed={isWatched}
-                    aria-label={isWatched ? 'Als nicht gesehen markieren' : 'Als gesehen markieren'}
+                    aria-label={
+                      isWatched ? t('Als nicht gesehen markieren') : t('Als gesehen markieren')
+                    }
                     className={`md-rate-btn md-seen-btn ${isMobile ? 'md-rate-btn--mobile' : ''} ${
                       isWatched ? 'md-seen-btn--active' : ''
                     }`}
@@ -403,7 +406,7 @@ export const MovieHeroSection = memo(
                     }}
                   >
                     <Check aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
-                    {isWatched ? 'Gesehen' : 'Als gesehen'}
+                    {isWatched ? t('Gesehen') : t('Als gesehen')}
                   </motion.button>
 
                   <motion.button
@@ -428,7 +431,7 @@ export const MovieHeroSection = memo(
                         color: isWatched ? currentTheme.accent : currentTheme.text.secondary,
                       }}
                     />
-                    Bewerten
+                    {t('Bewerten')}
                   </motion.button>
 
                   <RecommendButton
@@ -450,7 +453,7 @@ export const MovieHeroSection = memo(
                     }}
                   />
 
-                  <Tooltip title="Film löschen" arrow>
+                  <Tooltip title={t('Film löschen')} arrow>
                     <motion.button
                       whileTap={tapScale}
                       onClick={onDeleteClick}

@@ -5,6 +5,7 @@
 
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { t } from '../i18n';
 
 export type SocialProvider = 'google' | 'apple';
 
@@ -76,7 +77,7 @@ const toFirebaseCredential = (
   result: NativeSignInResult
 ): firebase.auth.AuthCredential => {
   const idToken = result.credential?.idToken;
-  if (!idToken) throw new Error('Kein ID-Token vom nativen Login erhalten.');
+  if (!idToken) throw new Error(t('Kein ID-Token vom nativen Login erhalten.'));
   if (provider === 'google') {
     return firebase.auth.GoogleAuthProvider.credential(idToken, result.credential?.accessToken);
   }
@@ -91,7 +92,7 @@ const nativeSignIn = async (
   plugin: FirebaseAuthenticationPlugin
 ): Promise<firebase.auth.UserCredential> => {
   const call = provider === 'google' ? plugin.signInWithGoogle : plugin.signInWithApple;
-  if (!call) throw new Error('Login in dieser App-Version noch nicht verfügbar.');
+  if (!call) throw new Error(t('Login in dieser App-Version noch nicht verfügbar.'));
   const result = await call({ skipNativeAuth: true });
   const userCredential = await firebase
     .auth()
@@ -133,17 +134,17 @@ export const signInWithSocial = async (
 };
 
 const methodLabel = (methods: string[]): string => {
-  if (methods.includes('password')) return 'E-Mail & Passwort';
+  if (methods.includes('password')) return t('E-Mail & Passwort');
   if (methods.includes('google.com')) return 'Google';
   if (methods.includes('apple.com')) return 'Apple';
-  return methods[0] || 'einer anderen Methode';
+  return methods[0] || t('einer anderen Methode');
 };
 
 /** Firebase-Fehler in eine deutsche, anzeigbare Meldung übersetzen. */
 export const socialAuthErrorMessage = async (err: unknown): Promise<string> => {
   const e = err as { code?: string; message?: string; email?: string };
   if (e.code === 'auth/account-exists-with-different-credential') {
-    let label = 'einer anderen Methode';
+    let label = t('einer anderen Methode');
     if (e.email) {
       try {
         label = methodLabel(await firebase.auth().fetchSignInMethodsForEmail(e.email));
@@ -151,18 +152,27 @@ export const socialAuthErrorMessage = async (err: unknown): Promise<string> => {
         /* Label-Fallback reicht */
       }
     }
-    return `Für diese E-Mail existiert bereits ein Konto mit ${label}. Bitte melde dich damit an.`;
+    return t(
+      'Für diese E-Mail existiert bereits ein Konto mit {label}. Bitte melde dich damit an.',
+      {
+        label,
+      }
+    );
   }
   if (e.code === 'auth/operation-not-allowed') {
-    return 'Diese Anmeldemethode ist noch nicht freigeschaltet. Bitte versuche es später erneut.';
+    return t(
+      'Diese Anmeldemethode ist noch nicht freigeschaltet. Bitte versuche es später erneut.'
+    );
   }
   if (e.code === 'auth/network-request-failed') {
-    return 'Netzwerkfehler — bitte prüfe deine Internetverbindung.';
+    return t('Netzwerkfehler — bitte prüfe deine Internetverbindung.');
   }
   if (e.code === 'auth/too-many-requests') {
-    return 'Zu viele Versuche — bitte warte einen Moment.';
+    return t('Zu viele Versuche — bitte warte einen Moment.');
   }
-  return `Anmeldung fehlgeschlagen: ${e.code || e.message || 'Unbekannter Fehler'}`;
+  return t('Anmeldung fehlgeschlagen: {code}', {
+    code: e.code || e.message || t('Unbekannter Fehler'),
+  });
 };
 
 /** True, wenn das Konto ein Passwort hat (Extension-Login funktioniert). */
@@ -181,11 +191,11 @@ export const getSocialProvider = (user: firebase.User | null): SocialProvider | 
 /** Re-Auth über den Social-Provider (für sensible Aktionen wie Konto-Löschung). */
 export const reauthenticateSocial = async (user: firebase.User): Promise<void> => {
   const provider = getSocialProvider(user);
-  if (!provider) throw new Error('Kein Social-Login-Konto.');
+  if (!provider) throw new Error(t('Kein Social-Login-Konto.'));
   const plugin = getCapacitor()?.Plugins?.FirebaseAuthentication;
   if (plugin) {
     const call = provider === 'google' ? plugin.signInWithGoogle : plugin.signInWithApple;
-    if (!call) throw new Error('Login in dieser App-Version noch nicht verfügbar.');
+    if (!call) throw new Error(t('Login in dieser App-Version noch nicht verfügbar.'));
     const result = await call({ skipNativeAuth: true });
     await user.reauthenticateWithCredential(toFirebaseCredential(provider, result));
     return;
@@ -203,7 +213,7 @@ export const reauthenticateSocial = async (user: firebase.User): Promise<void> =
  */
 export const linkPasswordToAccount = async (password: string): Promise<void> => {
   const user = firebase.auth().currentUser;
-  if (!user?.email) throw new Error('Kein angemeldeter Nutzer mit E-Mail.');
+  if (!user?.email) throw new Error(t('Kein angemeldeter Nutzer mit E-Mail.'));
   const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
   try {
     await user.linkWithCredential(credential);

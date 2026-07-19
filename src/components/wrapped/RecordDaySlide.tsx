@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';
 import type { DayStats } from '../../types/Wrapped';
+import { isEnglish, t } from '../../services/i18n';
 
 interface RecordDaySlideProps {
   mostActiveDay: DayStats;
@@ -32,7 +33,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
 
   // Formatiere das Datum schöner
   const dateObj = new Date(mostActiveDay.date);
-  const formattedDate = dateObj.toLocaleDateString('de-DE', {
+  const formattedDate = dateObj.toLocaleDateString(isEnglish() ? 'en-US' : 'de-DE', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -96,7 +97,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           zIndex: 1,
         }}
       >
-        Dein Rekord-Tag
+        {t('Dein Rekord-Tag')}
       </motion.p>
 
       {/* Trophy */}
@@ -173,7 +174,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
             {mostActiveDay.episodesWatched}
           </p>
-          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>Episoden</p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Episoden')}
+          </p>
         </motion.div>
 
         {/* Movies */}
@@ -205,7 +208,9 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
           <p style={{ color: 'white', fontSize: '1.8rem', fontWeight: 'bold', margin: '0' }}>
             {mostActiveDay.moviesWatched}
           </p>
-          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>Filme</p>
+          <p style={{ color: 'white', opacity: 0.7, fontSize: '0.8rem', margin: 0 }}>
+            {t('Filme')}
+          </p>
         </motion.div>
 
         {/* Hours */}
@@ -264,7 +269,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
             margin: '0 0 5px 0',
           }}
         >
-          Insgesamt
+          {t('Insgesamt')}
         </p>
         <p
           style={{
@@ -276,7 +281,7 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
             textShadow: '0 0 30px rgba(255,215,0,0.5)',
           }}
         >
-          {totalItems} Titel
+          {t('{n} Titel', { n: totalItems })}
         </p>
       </motion.div>
     </div>

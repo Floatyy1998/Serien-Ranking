@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { seededRandom } from '../../utils/seededRandom';
 import type { LateNightStats } from '../../types/Wrapped';
+import { t } from '../../services/i18n';
 
 interface LateNightSlideProps {
   lateNightStats: LateNightStats;
@@ -76,8 +77,8 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
               <path d="M12 6v6l4 2" strokeLinecap="round" />
             </svg>
           </div>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>Früh ins Bett?</h2>
-          <p style={{ opacity: 0.7 }}>Du hast dieses Jahr nicht nach 22 Uhr geschaut!</p>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '10px' }}>{t('Früh ins Bett?')}</h2>
+          <p style={{ opacity: 0.7 }}>{t('Du hast dieses Jahr nicht nach 22 Uhr geschaut!')}</p>
         </motion.div>
       </div>
     );
@@ -136,7 +137,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
           zIndex: 1,
         }}
       >
-        Nachtschwärmer
+        {t('Nachtschwärmer')}
       </motion.p>
 
       {/* Moon Icon */}
@@ -177,7 +178,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
           Late-Night Sessions
         </p>
         <p style={{ color: '#ffd700', fontSize: '1rem', marginTop: '5px' }}>
-          {lateNightStats.percentage}% deiner Views
+          {t('{n}% deiner Views', { n: lateNightStats.percentage })}
         </p>
       </motion.div>
 
@@ -228,7 +229,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
             {lateNightStats.midnightWatches}
           </p>
           <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem', margin: 0 }}>
-            Nach Mitternacht
+            {t('Nach Mitternacht')}
           </p>
         </motion.div>
 
@@ -270,7 +271,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
               {lateNightStats.latestWatch.time}
             </p>
             <p style={{ color: 'white', opacity: 0.6, fontSize: '0.8rem', margin: 0 }}>
-              Späteste Uhrzeit
+              {t('Späteste Uhrzeit')}
             </p>
           </motion.div>
         )}
@@ -299,7 +300,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
               margin: 0,
             }}
           >
-            Spätester Watch:{' '}
+            {t('Spätester Watch:')}{' '}
             <strong style={{ color: '#ffd700' }}>{lateNightStats.latestWatch.title}</strong>
           </p>
         </motion.div>

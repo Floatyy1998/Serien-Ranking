@@ -9,6 +9,7 @@ import { useTasteProfileData } from './useTasteProfileData';
 import type { Recommendation } from './useTasteProfileData';
 import './TasteProfilePage.css';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index }) => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const RecCard: React.FC<{ rec: Recommendation; index: number }> = ({ rec, index 
         )}
         <div className="tp-card__type-badge" style={{ color: currentTheme.text.secondary }}>
           {isMovie ? <Movie style={{ fontSize: 12 }} /> : <Tv style={{ fontSize: 12 }} />}
-          <span>{isMovie ? 'Film' : 'Serie'}</span>
+          <span>{isMovie ? t('Film') : t('Serie')}</span>
         </div>
       </div>
 
@@ -142,7 +143,7 @@ const LoadingState: React.FC = () => {
         className="tp-loading__text"
         style={{ color: currentTheme.text.muted }}
       >
-        Suche passende Empfehlungen...
+        {t('Suche passende Empfehlungen...')}
       </motion.p>
     </div>
   );
@@ -159,8 +160,8 @@ export const TasteProfilePage: React.FC = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Für dich"
-        subtitle={count > 0 ? `${count} Empfehlungen` : 'KI-gestützte Empfehlungen'}
+        title={t('Für dich')}
+        subtitle={count > 0 ? t('{n} Empfehlungen', { n: count }) : t('KI-gestützte Empfehlungen')}
         icon={<AutoAwesome style={{ fontSize: 22, color: currentTheme.primary }} />}
         gradientFrom={currentTheme.primary}
         gradientTo={currentTheme.accent}
@@ -192,10 +193,12 @@ export const TasteProfilePage: React.FC = () => {
               <AutoAwesome style={{ fontSize: 32, color: currentTheme.primary }} />
             </div>
             <p className="tp-empty__title" style={{ color: currentTheme.text.secondary }}>
-              Noch nicht genug Daten
+              {t('Noch nicht genug Daten')}
             </p>
             <p className="tp-empty__text" style={{ color: currentTheme.text.muted }}>
-              Bewerte mindestens 5 Serien oder Filme, damit die KI Empfehlungen generieren kann.
+              {t(
+                'Bewerte mindestens 5 Serien oder Filme, damit die KI Empfehlungen generieren kann.'
+              )}
             </p>
           </motion.div>
         )}
@@ -216,10 +219,10 @@ export const TasteProfilePage: React.FC = () => {
               }}
             >
               <AutoAwesome style={{ fontSize: 20 }} />
-              Empfehlungen generieren
+              {t('Empfehlungen generieren')}
             </motion.button>
             <p className="tp-cta-sub" style={{ color: currentTheme.text.muted }}>
-              Basierend auf deinen Bewertungen und Watch-Patterns
+              {t('Basierend auf deinen Bewertungen und Watch-Patterns')}
             </p>
             {error && (
               <p className="tp-error" style={{ color: currentTheme.status.error }}>
@@ -243,10 +246,10 @@ export const TasteProfilePage: React.FC = () => {
               ) : (
                 <div className="tp-empty">
                   <p className="tp-empty__title" style={{ color: currentTheme.text.secondary }}>
-                    Keine Empfehlungen
+                    {t('Keine Empfehlungen')}
                   </p>
                   <p className="tp-empty__text" style={{ color: currentTheme.text.muted }}>
-                    Versuche es erneut.
+                    {t('Versuche es erneut.')}
                   </p>
                 </div>
               )}

@@ -1,6 +1,7 @@
 import { ErrorOutline } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 import type { ProviderInsight } from '../../../types/Subscription';
 
 const formatEuro = (value: number): string =>
@@ -42,11 +43,11 @@ export const SubscriptionInsights = ({
         }}
       >
         <p className="sub-insight-label" style={{ color: muted }}>
-          Aktive Abos
+          {t('Aktive Abos')}
         </p>
         <p className="sub-insight-value">{activeCount}</p>
         <p className="sub-insight-sub" style={{ color: currentTheme.text.secondary }}>
-          {formatEuro(totalMonthlySpend)} pro Monat
+          {t('{amount} pro Monat', { amount: formatEuro(totalMonthlySpend) })}
         </p>
       </motion.div>
 
@@ -65,7 +66,7 @@ export const SubscriptionInsights = ({
         }}
       >
         <p className="sub-insight-label" style={{ color: muted }}>
-          Ungenutzt / Monat
+          {t('Ungenutzt / Monat')}
         </p>
         <p
           className="sub-insight-value"
@@ -75,8 +76,10 @@ export const SubscriptionInsights = ({
         </p>
         <p className="sub-insight-sub" style={{ color: currentTheme.text.secondary }}>
           {unusedInsights.length === 0
-            ? 'Alles wird genutzt 🎉'
-            : `${unusedInsights.length} Abo${unusedInsights.length === 1 ? '' : 's'} schläft`}
+            ? t('Alles wird genutzt 🎉')
+            : unusedInsights.length === 1
+              ? t('1 Abo schläft')
+              : t('{n} Abos schläft', { n: unusedInsights.length })}
         </p>
       </motion.div>
 
@@ -97,13 +100,15 @@ export const SubscriptionInsights = ({
             style={{ color: warning, display: 'flex', alignItems: 'center', gap: 6 }}
           >
             <ErrorOutline style={{ fontSize: 16 }} />
-            Vorschlag
+            {t('Vorschlag')}
           </p>
           <p className="sub-insight-suggestion" style={{ color: currentTheme.text.primary }}>
-            Du zahlst aktuell{' '}
-            <strong style={{ color: warning }}>{formatEuro(wastedMonthlySpend)}</strong> pro Monat
-            für Anbieter, die du seit über <strong>{unusedThresholdDays} Tagen</strong> nicht
-            genutzt hast: {unusedInsights.map((i) => i.name).join(', ')}.
+            {t('Du zahlst aktuell')}{' '}
+            <strong style={{ color: warning }}>{formatEuro(wastedMonthlySpend)}</strong>{' '}
+            {t('pro Monat für Anbieter, die du seit über {n} Tagen nicht genutzt hast: {list}.', {
+              n: unusedThresholdDays,
+              list: unusedInsights.map((i) => i.name).join(', '),
+            })}
           </p>
         </motion.div>
       )}

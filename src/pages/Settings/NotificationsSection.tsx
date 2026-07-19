@@ -27,8 +27,9 @@ import {
   setProviderNotificationsEnabled,
   type InactiveThresholdOption,
 } from '../../lib/settings/notificationSettings';
+import { t } from '../../services/i18n';
 
-const thresholdLabel = (days: number) => (days === 0 ? 'Aus' : `${days} T.`);
+const thresholdLabel = (days: number) => (days === 0 ? t('Aus') : t('{days} T.', { days }));
 
 export const NotificationsSection = memo(() => {
   const { currentTheme } = useTheme();
@@ -106,7 +107,7 @@ export const NotificationsSection = memo(() => {
       className="settings-card"
     >
       <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
-        Benachrichtigungen
+        {t('Benachrichtigungen')}
       </h2>
 
       {pushAvailable && (
@@ -121,10 +122,10 @@ export const NotificationsSection = memo(() => {
             <PhoneIphone style={{ fontSize: '22px', color: currentTheme.primary }} />
             <div>
               <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
-                Push-Benachrichtigungen
+                {t('Push-Benachrichtigungen')}
               </h3>
               <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
-                Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy
+                {t('Neue Folgen deiner Serien und Freundschaftsanfragen direkt aufs Handy')}
               </p>
             </div>
           </div>
@@ -134,7 +135,7 @@ export const NotificationsSection = memo(() => {
               checked={pushEnabled}
               onChange={(e) => handlePushToggle(e.target.checked)}
               disabled={pushBusy}
-              aria-label="Push-Benachrichtigungen"
+              aria-label={t('Push-Benachrichtigungen')}
               className="settings-toggle-input"
             />
             <span
@@ -170,10 +171,10 @@ export const NotificationsSection = memo(() => {
           <NotificationsActive style={{ fontSize: '22px', color: currentTheme.primary }} />
           <div>
             <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
-              Inaktive Serien
+              {t('Inaktive Serien')}
             </h3>
             <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
-              Erinnerung nach X Tagen ohne neue Episode
+              {t('Erinnerung nach X Tagen ohne neue Episode')}
             </p>
           </div>
         </div>
@@ -215,10 +216,10 @@ export const NotificationsSection = memo(() => {
           <SwapHoriz style={{ fontSize: '22px', color: currentTheme.primary }} />
           <div>
             <h3 className="settings-toggle-title" style={{ color: currentTheme.text.primary }}>
-              Provider-Änderungen
+              {t('Provider-Änderungen')}
             </h3>
             <p className="settings-toggle-subtitle" style={{ color: currentTheme.text.muted }}>
-              Benachrichtigung wenn ein Streaming-Anbieter wechselt
+              {t('Benachrichtigung wenn ein Streaming-Anbieter wechselt')}
             </p>
           </div>
         </div>
@@ -228,7 +229,7 @@ export const NotificationsSection = memo(() => {
             checked={providerEnabled}
             onChange={(e) => handleProviderToggle(e.target.checked)}
             disabled={loading || saving}
-            aria-label="Provider-Änderungs-Benachrichtigungen"
+            aria-label={t('Provider-Änderungs-Benachrichtigungen')}
             className="settings-toggle-input"
           />
           <span
@@ -253,9 +254,9 @@ export const NotificationsSection = memo(() => {
           style={{ fontSize: '18px', color: currentTheme.primary, flexShrink: 0 }}
         />
         <p className="settings-info-text" style={{ color: currentTheme.text.muted }}>
-          Erinnerungen kommen frühestens 30 Tage nach der letzten Anzeige wieder — selbst wenn die
-          Serie weiter inaktiv ist. Schaust du eine Episode, wird die Erinnerung beim nächsten
-          Inaktivwerden direkt wieder freigeschaltet.
+          {t(
+            'Erinnerungen kommen frühestens 30 Tage nach der letzten Anzeige wieder — selbst wenn die Serie weiter inaktiv ist. Schaust du eine Episode, wird die Erinnerung beim nächsten Inaktivwerden direkt wieder freigeschaltet.'
+          )}
         </p>
       </div>
     </motion.div>

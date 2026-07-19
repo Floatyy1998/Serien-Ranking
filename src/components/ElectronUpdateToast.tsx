@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { t } from '../services/i18n';
 
 /**
  * Toast unten rechts, der erscheint sobald electron-updater ein Update
@@ -68,7 +69,7 @@ export const ElectronUpdateToast = () => {
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
             <span style={{ fontSize: 20 }}>🚀</span>
-            <strong style={{ fontSize: 14, fontWeight: 700 }}>Update bereit</strong>
+            <strong style={{ fontSize: 14, fontWeight: 700 }}>{t('Update bereit')}</strong>
           </div>
           <p
             style={{
@@ -78,8 +79,8 @@ export const ElectronUpdateToast = () => {
               lineHeight: 1.4,
             }}
           >
-            Version <strong>{readyVersion}</strong> wurde heruntergeladen. Installation startet die
-            App neu.
+            {t('Version')} <strong>{readyVersion}</strong>{' '}
+            {t('wurde heruntergeladen. Installation startet die App neu.')}
           </p>
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button
@@ -96,7 +97,7 @@ export const ElectronUpdateToast = () => {
                 fontFamily: 'inherit',
               }}
             >
-              Später
+              {t('Später')}
             </button>
             <button
               onClick={handleInstall}
@@ -114,7 +115,7 @@ export const ElectronUpdateToast = () => {
                 fontFamily: 'inherit',
               }}
             >
-              {installing ? 'Installiere…' : 'Jetzt installieren'}
+              {installing ? t('Installiere…') : t('Jetzt installieren')}
             </button>
           </div>
         </motion.div>

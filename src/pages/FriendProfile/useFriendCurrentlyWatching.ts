@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import { fetchStaticCatalogSeries, subscribeCatalogChange } from '../../services/staticCatalog';
 import { readEventUniversal } from '../../services/watchActivity/compactEvent';
+import { t } from '../../services/i18n';
 import type { CatalogSeries } from '../../types/CatalogTypes';
 import type { EpisodeWatchEvent } from '../../types/WatchActivity';
 
@@ -60,18 +61,21 @@ function computeSpoilerDiff(
   if (!userLast) {
     return {
       kind: 'unknown',
-      message: 'Noch nicht angeschaut',
+      message: t('Noch nicht angeschaut'),
       warning: friendSeason > 1 || friendEpisode > 1,
     };
   }
   if (friendSeason === userLast.season && friendEpisode === userLast.episode) {
-    return { kind: 'equal', message: 'Ihr seid gleichauf 🎉', warning: false };
+    return { kind: 'equal', message: t('Ihr seid gleichauf 🎉'), warning: false };
   }
   if (friendSeason > userLast.season) {
     const seasonDiff = friendSeason - userLast.season;
     return {
       kind: 'friend-ahead',
-      message: `${seasonDiff} Staffel${seasonDiff > 1 ? 'n' : ''} voraus — Spoiler-Alarm`,
+      message:
+        seasonDiff > 1
+          ? t('{n} Staffeln voraus — Spoiler-Alarm', { n: seasonDiff })
+          : t('1 Staffel voraus — Spoiler-Alarm'),
       warning: true,
     };
   }
@@ -79,7 +83,7 @@ function computeSpoilerDiff(
     const diff = friendEpisode - userLast.episode;
     return {
       kind: 'friend-ahead',
-      message: `${diff} Folge${diff > 1 ? 'n' : ''} voraus`,
+      message: diff > 1 ? t('{n} Folgen voraus', { n: diff }) : t('1 Folge voraus'),
       warning: diff >= 2,
     };
   }
@@ -87,14 +91,17 @@ function computeSpoilerDiff(
     const seasonDiff = userLast.season - friendSeason;
     return {
       kind: 'user-ahead',
-      message: `Du bist ${seasonDiff} Staffel${seasonDiff > 1 ? 'n' : ''} voraus`,
+      message:
+        seasonDiff > 1
+          ? t('Du bist {n} Staffeln voraus', { n: seasonDiff })
+          : t('Du bist 1 Staffel voraus'),
       warning: false,
     };
   }
   const diff = userLast.episode - friendEpisode;
   return {
     kind: 'user-ahead',
-    message: `Du bist ${diff} Folge${diff > 1 ? 'n' : ''} voraus`,
+    message: diff > 1 ? t('Du bist {n} Folgen voraus', { n: diff }) : t('Du bist 1 Folge voraus'),
     warning: false,
   };
 }
@@ -279,7 +286,7 @@ export function useFriendCurrentlyWatching(friendUid: string | undefined): {
     const ownSeries = seriesList.find((s) => s.id === bestId);
     const userLast = findUserLastWatched(ownSeries);
     const spoilerDiff: SpoilerDiff = isRewatchSession
-      ? { kind: 'rewatch', message: 'Rewatch — kein Spoiler-Risiko', warning: false }
+      ? { kind: 'rewatch', message: t('Rewatch — kein Spoiler-Risiko'), warning: false }
       : computeSpoilerDiff(bestEntry.latestSeason, bestEntry.latestEpisode, userLast);
 
     return {

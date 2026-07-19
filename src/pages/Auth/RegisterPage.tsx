@@ -25,6 +25,7 @@ import { GradientText } from '../../components/ui';
 import { CoverWall } from '../../components/ui/CoverWall';
 import { useTheme } from '../../contexts/ThemeContext';
 import { trackRegister } from '../../services/firebase/analytics';
+import { t } from '../../services/i18n';
 import { SocialLoginButtons } from './SocialLoginButtons';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
@@ -46,17 +47,17 @@ export const RegisterPage = () => {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwörter stimmen nicht überein.');
+      setError(t('Passwörter stimmen nicht überein.'));
       return;
     }
 
     if (password.length < 6) {
-      setError('Passwort muss mindestens 6 Zeichen lang sein.');
+      setError(t('Passwort muss mindestens 6 Zeichen lang sein.'));
       return;
     }
 
     if (username.length < 3) {
-      setError('Anzeigename muss mindestens 3 Zeichen lang sein.');
+      setError(t('Anzeigename muss mindestens 3 Zeichen lang sein.'));
       return;
     }
 
@@ -102,13 +103,13 @@ export const RegisterPage = () => {
     } catch (error: unknown) {
       const firebaseError = error as { code?: string; message?: string };
       if (firebaseError.code === 'auth/email-already-in-use') {
-        setError('Diese E-Mail-Adresse wird bereits verwendet.');
+        setError(t('Diese E-Mail-Adresse wird bereits verwendet.'));
       } else if (firebaseError.code === 'auth/invalid-email') {
-        setError('Ungültige E-Mail-Adresse.');
+        setError(t('Ungültige E-Mail-Adresse.'));
       } else if (firebaseError.code === 'auth/weak-password') {
-        setError('Passwort ist zu schwach.');
+        setError(t('Passwort ist zu schwach.'));
       } else {
-        setError('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.');
+        setError(t('Ein Fehler ist aufgetreten. Bitte versuche es später erneut.'));
       }
     } finally {
       setLoading(false);
@@ -153,10 +154,10 @@ export const RegisterPage = () => {
               letterSpacing: '-0.02em',
             }}
           >
-            Dein Kino. Dein Ranking.
+            {t('Dein Kino. Dein Ranking.')}
           </GradientText>
           <Typography sx={{ mt: 1.5, color: 'rgba(255, 255, 255, 0.6)', fontSize: '1.05rem' }}>
-            Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.
+            {t('Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.')}
           </Typography>
         </Box>
       </Box>
@@ -213,7 +214,7 @@ export const RegisterPage = () => {
                   fontWeight: 300,
                 }}
               >
-                Erstelle dein Konto
+                {t('Erstelle dein Konto')}
               </Typography>
             </Box>
 
@@ -245,7 +246,7 @@ export const RegisterPage = () => {
               <form onSubmit={handleSubmit}>
                 <TextField
                   fullWidth
-                  label="Anzeigename"
+                  label={t('Anzeigename')}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   margin="normal"
@@ -287,7 +288,7 @@ export const RegisterPage = () => {
 
                 <TextField
                   fullWidth
-                  label="E-Mail"
+                  label={t('E-Mail')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -330,7 +331,7 @@ export const RegisterPage = () => {
 
                 <TextField
                   fullWidth
-                  label="Passwort"
+                  label={t('Passwort')}
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -347,13 +348,15 @@ export const RegisterPage = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <Tooltip
-                          title={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          title={showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')}
                           arrow
                         >
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
-                            aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                            aria-label={
+                              showPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
+                            }
                             aria-pressed={showPassword}
                             sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
                           >
@@ -391,7 +394,7 @@ export const RegisterPage = () => {
 
                 <TextField
                   fullWidth
-                  label="Passwort bestätigen"
+                  label={t('Passwort bestätigen')}
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -408,14 +411,16 @@ export const RegisterPage = () => {
                     endAdornment: (
                       <InputAdornment position="end">
                         <Tooltip
-                          title={showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                          title={
+                            showConfirmPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
+                          }
                           arrow
                         >
                           <IconButton
                             onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             edge="end"
                             aria-label={
-                              showConfirmPassword ? 'Passwort verbergen' : 'Passwort anzeigen'
+                              showConfirmPassword ? t('Passwort verbergen') : t('Passwort anzeigen')
                             }
                             aria-pressed={showConfirmPassword}
                             sx={{ color: 'rgba(255, 255, 255, 0.5)' }}
@@ -481,7 +486,7 @@ export const RegisterPage = () => {
                     },
                   }}
                 >
-                  {loading ? 'Registrieren...' : 'Registrieren'}
+                  {loading ? t('Registrieren...') : t('Registrieren')}
                 </Button>
               </form>
 
@@ -490,7 +495,7 @@ export const RegisterPage = () => {
 
             <Box sx={{ mt: 3, textAlign: 'center' }}>
               <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                Bereits ein Konto?{' '}
+                {t('Bereits ein Konto?')}{' '}
                 <Link
                   to="/login"
                   style={{
@@ -506,7 +511,7 @@ export const RegisterPage = () => {
                     e.currentTarget.style.textDecoration = 'none';
                   }}
                 >
-                  Jetzt anmelden
+                  {t('Jetzt anmelden')}
                 </Link>
               </Typography>
             </Box>

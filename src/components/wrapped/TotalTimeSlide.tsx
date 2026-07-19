@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { t } from '../../services/i18n';
 
 interface TotalTimeSlideProps {
   totalMinutes: number;
@@ -18,8 +19,8 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
 }) => {
   const displayTime =
     totalDays >= 1
-      ? { value: totalDays.toFixed(1), unit: 'Tage' }
-      : { value: Math.round(totalHours).toString(), unit: 'Stunden' };
+      ? { value: totalDays.toFixed(1), unit: t('Tage') }
+      : { value: Math.round(totalHours).toString(), unit: t('Stunden') };
 
   return (
     <div
@@ -80,7 +81,7 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
           zIndex: 1,
         }}
       >
-        Du hast dieses Jahr
+        {t('Du hast dieses Jahr')}
       </motion.p>
 
       <motion.div
@@ -131,7 +132,7 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
           zIndex: 1,
         }}
       >
-        mit Serien & Filmen verbracht
+        {t('mit Serien & Filmen verbracht')}
       </motion.p>
 
       {/* Stats Grid */}
@@ -149,9 +150,13 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
         }}
       >
         {[
-          { value: totalEpisodes, label: 'Episoden', iconType: 'tv' },
-          { value: totalMovies, label: 'Filme', iconType: 'film' },
-          { value: Math.round(totalMinutes).toLocaleString(), label: 'Minuten', iconType: 'clock' },
+          { value: totalEpisodes, label: t('Episoden'), iconType: 'tv' },
+          { value: totalMovies, label: t('Filme'), iconType: 'film' },
+          {
+            value: Math.round(totalMinutes).toLocaleString(),
+            label: t('Minuten'),
+            iconType: 'clock',
+          },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}

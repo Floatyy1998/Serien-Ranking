@@ -4,6 +4,7 @@ import { SUPPORTED_PROVIDERS } from '../../../config/menuItems';
 import { getProviderBrand } from '../../Subscriptions/providerBrands';
 import { getProviderLogoUrl } from '../../../lib/providerMerge';
 import { TableOfContents } from '../components/TableOfContents';
+import { t } from '../../../services/i18n';
 
 interface Props {
   stepNumber: number;
@@ -47,7 +48,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
         {/* Mast head */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.55)' }}>
-            {String(stepNumber).padStart(2, '0')} — Abos
+            {String(stepNumber).padStart(2, '0')} — {t('Abos')}
           </span>
           <span className="ob-mono" style={{ color: 'rgba(244,237,224,0.4)' }}>
             tv-rank · onboarding
@@ -65,7 +66,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                 className="ob-mono"
                 style={{ color: 'var(--ob-text-mute)', marginBottom: 10 }}
               >
-                Was streamst du?
+                {t('Was streamst du?')}
               </motion.div>
               <h1
                 className="ob-display"
@@ -77,7 +78,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
                   lineHeight: 0.95,
                 }}
               >
-                Deine Abos.
+                {t('Deine Abos.')}
               </h1>
               <motion.p
                 initial={{ opacity: 0, y: 8 }}
@@ -91,9 +92,10 @@ export const SubscriptionsStep: React.FC<Props> = ({
                   lineHeight: 1.5,
                 }}
               >
-                Damit zeigen wir dir welche Serien du direkt schauen kannst – und welche dir fehlen.
-                Optional, kannst du auch später unter <em>Profil → Streaming-Abos</em>
-                pflegen.
+                {t(
+                  'Damit zeigen wir dir welche Serien du direkt schauen kannst – und welche dir fehlen. Optional, kannst du auch später unter'
+                )}{' '}
+                <em>{t('Profil → Streaming-Abos')}</em> {t('pflegen.')}
               </motion.p>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -102,17 +104,17 @@ export const SubscriptionsStep: React.FC<Props> = ({
                 className="ob-mono"
                 style={{ color: 'var(--ob-text-mute)', marginTop: 14, fontSize: 12 }}
               >
-                {count} ausgewählt
+                {t('{n} ausgewählt', { n: count })}
               </motion.p>
             </div>
 
             <div className="ob-welcome-side">
               <div className="ob-side-label">
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                  Programm
+                  {t('Programm')}
                 </span>
                 <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  5 Akte
+                  {t('5 Akte')}
                 </span>
               </div>
               <TableOfContents currentStep="subscriptions" variant="horizontal" delay={0.4} />
@@ -252,7 +254,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
               cursor: 'pointer',
             }}
           >
-            ← zurück
+            {t('← zurück')}
           </button>
           <button
             type="button"
@@ -269,7 +271,11 @@ export const SubscriptionsStep: React.FC<Props> = ({
               cursor: 'pointer',
             }}
           >
-            {count > 0 ? `weiter · ${count} Abo${count === 1 ? '' : 's'}` : 'überspringen'}
+            {count > 0
+              ? count === 1
+                ? t('weiter · 1 Abo')
+                : t('weiter · {n} Abos', { n: count })
+              : t('überspringen')}
           </button>
         </div>
       </div>

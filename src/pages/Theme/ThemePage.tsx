@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getContrastRatio } from '../../theme/colorUtils';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { hapticTap } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 import { ThemePreviewCard, type PresetTheme } from './ThemePreviewCard';
 import { ColorEditor, type ColorCategory } from './ColorEditor';
 import { ResetSection } from './ResetSection';
@@ -72,24 +73,29 @@ const presetThemes: PresetTheme[] = [
 const colorCategories: ColorCategory[] = [
   {
     key: 'primaryColor',
-    name: 'Primär',
+    name: t('Primär'),
     icon: <ColorLens />,
-    description: 'Hauptfarbe für Buttons',
+    description: t('Hauptfarbe für Buttons'),
   },
   {
     key: 'backgroundColor',
-    name: 'Hintergrund',
+    name: t('Hintergrund'),
     icon: <Brightness6 />,
-    description: 'Hintergrundfarbe',
+    description: t('Hintergrundfarbe'),
   },
   {
     key: 'textColor',
-    name: 'Text',
+    name: t('Text'),
     icon: <FormatColorText />,
-    description: 'Textfarbe',
+    description: t('Textfarbe'),
   },
-  { key: 'surfaceColor', name: 'Oberfläche', icon: <Wallpaper />, description: 'Kartenfarben' },
-  { key: 'accentColor', name: 'Akzent', icon: <Palette />, description: 'Akzentfarbe' },
+  {
+    key: 'surfaceColor',
+    name: t('Oberfläche'),
+    icon: <Wallpaper />,
+    description: t('Kartenfarben'),
+  },
+  { key: 'accentColor', name: t('Akzent'), icon: <Palette />, description: t('Akzentfarbe') },
 ];
 
 const isHexColor = (c: string): boolean => /^#?[0-9a-fA-F]{6}$/.test(c);
@@ -106,8 +112,8 @@ export const ThemePage = () => {
     const ratio = getContrastRatio(textColor, bgColor);
     if (ratio >= 4.5) return null;
     return ratio < 3
-      ? 'Sehr geringer Kontrast zwischen Text und Hintergrund – Text ist kaum lesbar.'
-      : 'Geringer Kontrast zwischen Text und Hintergrund (unter WCAG-AA 4.5:1).';
+      ? t('Sehr geringer Kontrast zwischen Text und Hintergrund – Text ist kaum lesbar.')
+      : t('Geringer Kontrast zwischen Text und Hintergrund (unter WCAG-AA 4.5:1).');
   }, [userConfig.textColor, userConfig.backgroundColor]);
 
   const handleColorChange = useCallback(
@@ -187,7 +193,7 @@ export const ThemePage = () => {
           }}
         >
           <h2 className="theme-section-title" style={{ color: currentTheme.text.primary }}>
-            Farben anpassen
+            {t('Farben anpassen')}
           </h2>
           {contrastWarning && (
             <div

@@ -5,6 +5,7 @@ import { IconContainer, NavCard } from '../../../components/ui';
 import { useMangaList } from '../../../contexts/MangaListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getEffectiveChapterCount } from '../mangaUtils';
+import { t } from '../../../services/i18n';
 
 export const MangaCatchUpCard: React.FC = React.memo(() => {
   const { mangaList } = useMangaList();
@@ -43,10 +44,10 @@ export const MangaCatchUpCard: React.FC = React.memo(() => {
               fontFamily: 'var(--font-display)',
             }}
           >
-            Aufholen
+            {t('Aufholen')}
           </div>
           <div style={{ fontSize: 12, color: currentTheme.text.secondary, opacity: 0.7 }}>
-            {seriesCount} Manga · {totalChapters} Kapitel offen
+            {t('{n} Manga · {m} Kapitel offen', { n: seriesCount, m: totalChapters })}
           </div>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { scaleIn, tapScale } from '../../lib/motion';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { t } from '../../services/i18n';
 import { IconButton } from './IconButton';
 
 interface MobileDialogProps {
@@ -119,7 +120,7 @@ export const Dialog = memo(
                 onClick={onClose}
                 variant="transparent"
                 size={32}
-                tooltip="Schließen"
+                tooltip={t('Schließen')}
                 style={{ position: 'absolute', top: '14px', right: '14px' }}
               />
 

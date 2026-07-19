@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { t } from '../../../services/i18n';
 import { EmptyState } from '../../../components/ui';
 import { ActiveFriendsRow } from '../ActiveFriendsRow';
 import { ActivityEntryCard } from '../ActivityEntryCard';
@@ -29,9 +30,9 @@ interface ActivityFeedTabProps {
 }
 
 const FILTERS: { key: ActivityFilterType; label: string }[] = [
-  { key: 'all', label: 'Alle' },
-  { key: 'series', label: 'Serien' },
-  { key: 'movies', label: 'Filme' },
+  { key: 'all', label: t('Alle') },
+  { key: 'series', label: t('Serien') },
+  { key: 'movies', label: t('Filme') },
 ];
 
 const DATE_ORDER = ['Heute', 'Gestern', 'Diese Woche', 'Älter'];
@@ -68,7 +69,7 @@ export const ActivityFeedTab = ({
       const friendObj = friends.find((f) => f.uid === userId);
       const profile = friendObj ? friendProfiles[friendObj.uid] || friendObj : undefined;
       return {
-        name: profile?.displayName || profile?.username || fallbackNames[userId] || 'Unbekannt',
+        name: profile?.displayName || profile?.username || fallbackNames[userId] || t('Unbekannt'),
         photoURL: profile?.photoURL,
       };
     },
@@ -95,7 +96,7 @@ export const ActivityFeedTab = ({
 
   const titleOf = useCallback(
     (activity: FriendActivity) =>
-      activity.itemTitle || getItemDetails(activity)?.title || 'Unbekannt',
+      activity.itemTitle || getItemDetails(activity)?.title || t('Unbekannt'),
     [getItemDetails]
   );
 
@@ -133,7 +134,7 @@ export const ActivityFeedTab = ({
       icon: <BoltRounded style={{ fontSize: 17 }} />,
       value: stats.total,
       decimals: 0 as const,
-      label: 'Aktivitäten',
+      label: t('Aktivitäten'),
       color: currentTheme.primary,
     },
     {
@@ -141,7 +142,7 @@ export const ActivityFeedTab = ({
       icon: <GroupRounded style={{ fontSize: 17 }} />,
       value: stats.activeFriends,
       decimals: 0 as const,
-      label: 'aktiv',
+      label: t('aktiv'),
       color: currentTheme.accent,
     },
     {
@@ -149,7 +150,7 @@ export const ActivityFeedTab = ({
       icon: <WhatshotRounded style={{ fontSize: 17 }} />,
       value: stats.today,
       decimals: 0 as const,
-      label: 'Heute',
+      label: t('Heute'),
       color: currentTheme.status.warning,
     },
   ];
@@ -251,11 +252,15 @@ export const ActivityFeedTab = ({
       {filteredActivities.length === 0 ? (
         <EmptyState
           icon={<TimelineRounded style={{ fontSize: 'inherit' }} />}
-          title="Noch keine Aktivitäten"
+          title={t('Noch keine Aktivitäten')}
           description={
             filterType !== 'all'
-              ? `Keine ${filterType === 'movies' ? 'Film' : 'Serien'}-Aktivitäten deiner Freunde.`
-              : 'Sobald deine Freunde etwas schauen, bewerten oder hinzufügen, erscheint es hier.'
+              ? filterType === 'movies'
+                ? t('Keine Film-Aktivitäten deiner Freunde.')
+                : t('Keine Serien-Aktivitäten deiner Freunde.')
+              : t(
+                  'Sobald deine Freunde etwas schauen, bewerten oder hinzufügen, erscheint es hier.'
+                )
           }
         />
       ) : (
@@ -267,7 +272,7 @@ export const ActivityFeedTab = ({
                   className="activity-date-head__label"
                   style={{ color: currentTheme.text.muted }}
                 >
-                  {group}
+                  {t(group)}
                 </span>
                 <span
                   className="activity-date-head__line"

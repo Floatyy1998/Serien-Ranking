@@ -2,6 +2,7 @@ import { Add } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { tapScale } from '../../../lib/motion';
+import { t } from '../../../services/i18n';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';
 import { ProviderLogo } from './ProviderLogo';
@@ -27,10 +28,10 @@ export const InactiveProvidersSection = ({
     <div className="sub-section">
       <div className="sub-section-head">
         <h2 className="sub-section-title" style={{ color: currentTheme.text.primary }}>
-          Andere Anbieter
+          {t('Andere Anbieter')}
         </h2>
         <span className="sub-section-count" style={{ color: muted }}>
-          Tippen zum Aktivieren
+          {t('Tippen zum Aktivieren')}
         </span>
       </div>
 

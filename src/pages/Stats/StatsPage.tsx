@@ -20,6 +20,7 @@ import {
 } from './StatsComponents';
 import { StatsShareSheet } from './StatsShareCard';
 import { formatTime, useStatsData } from './useStatsData';
+import { t } from '../../services/i18n';
 import './StatsPage.css';
 
 export const StatsPage = () => {
@@ -42,17 +43,19 @@ export const StatsPage = () => {
     return (
       <PageLayout>
         <PageHeader
-          title="Statistiken"
+          title={t('Statistiken')}
           gradientFrom={currentTheme.text.primary}
-          subtitle="Dein Viewing-Universum in Zahlen"
+          subtitle={t('Dein Viewing-Universum in Zahlen')}
           sticky={false}
         />
         <EmptyState
           icon={<InsightsRounded style={{ fontSize: 52 }} />}
-          title="Noch keine Statistiken"
-          description="Sobald du Serien und Filme trackst, entsteht hier dein persönliches Viewing-Universum – Watchtime, Fortschritt, Top-Genres und mehr."
+          title={t('Noch keine Statistiken')}
+          description={t(
+            'Sobald du Serien und Filme trackst, entsteht hier dein persönliches Viewing-Universum – Watchtime, Fortschritt, Top-Genres und mehr.'
+          )}
           action={{
-            label: 'Serien entdecken',
+            label: t('Serien entdecken'),
             onClick: () => navigate('/discover'),
           }}
         />
@@ -63,9 +66,9 @@ export const StatsPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Statistiken"
+        title={t('Statistiken')}
         gradientFrom={currentTheme.text.primary}
-        subtitle="Dein Viewing-Universum in Zahlen"
+        subtitle={t('Dein Viewing-Universum in Zahlen')}
         sticky={false}
         actions={
           <IconButton
@@ -76,7 +79,7 @@ export const StatsPage = () => {
             }}
             size={44}
             variant="glass"
-            ariaLabel="Statistiken als Bild teilen"
+            ariaLabel={t('Statistiken als Bild teilen')}
           />
         }
       />

@@ -12,6 +12,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { WrappedStats } from '../../types/Wrapped';
 import { ShareCardFrame } from '../share/ShareCardFrame';
 import { ShareCardSheet } from '../share/ShareCardSheet';
+import { isEnglish, t } from '../../services/i18n';
 
 // Karten-Bausteine
 
@@ -70,9 +71,13 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
   const { currentTheme } = useTheme();
   const topSerie = stats.topSeries[0];
   const unlockedAchievements = stats.achievements.filter((a) => a.unlocked).length;
+  const numberLocale = isEnglish() ? 'en-US' : 'de-DE';
 
   return (
-    <ShareCardFrame title={`Mein ${stats.year}`} subtitle="Mein Jahr in Serien & Filmen">
+    <ShareCardFrame
+      title={t('Mein {year}', { year: stats.year })}
+      subtitle={t('Mein Jahr in Serien & Filmen')}
+    >
       {/* Kern-Zahlen 2×2 */}
       <div
         style={{
@@ -81,13 +86,22 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
           gap: 24,
         }}
       >
-        <StatTile value={stats.totalEpisodesWatched.toLocaleString('de-DE')} label="Episoden" />
-        <StatTile value={stats.totalMoviesWatched.toLocaleString('de-DE')} label="Filme" />
         <StatTile
-          value={Math.round(stats.totalHoursWatched).toLocaleString('de-DE')}
-          label="Stunden"
+          value={stats.totalEpisodesWatched.toLocaleString(numberLocale)}
+          label={t('Episoden')}
         />
-        <StatTile value={stats.uniqueSeriesWatched.toLocaleString('de-DE')} label="Serien" />
+        <StatTile
+          value={stats.totalMoviesWatched.toLocaleString(numberLocale)}
+          label={t('Filme')}
+        />
+        <StatTile
+          value={Math.round(stats.totalHoursWatched).toLocaleString(numberLocale)}
+          label={t('Stunden')}
+        />
+        <StatTile
+          value={stats.uniqueSeriesWatched.toLocaleString(numberLocale)}
+          label={t('Serien')}
+        />
       </div>
 
       {/* Top-Serie */}
@@ -138,7 +152,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
                 color: currentTheme.text.muted,
               }}
             >
-              Meine #1 Serie
+              {t('Meine #1 Serie')}
             </div>
             <div
               style={{
@@ -164,7 +178,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
                 color: currentTheme.primary,
               }}
             >
-              {topSerie.episodesWatched} Episoden
+              {t('{n} Episoden', { n: topSerie.episodesWatched })}
             </div>
           </div>
         </div>
@@ -196,7 +210,7 @@ const WrappedShareCard: React.FC<WrappedShareCardProps> = ({ stats, showImages }
           }}
         />
         <strong style={{ fontWeight: 900 }}>{unlockedAchievements}</strong>
-        Achievements freigeschaltet
+        {t('Achievements freigeschaltet')}
       </div>
     </ShareCardFrame>
   );
@@ -211,15 +225,21 @@ interface WrappedShareSheetProps {
 }
 
 export const WrappedShareSheet: React.FC<WrappedShareSheetProps> = ({ isOpen, onClose, stats }) => {
-  const shareText =
-    `Mein ${stats.year} in Zahlen: ${stats.totalEpisodesWatched} Episoden, ` +
-    `${stats.totalMoviesWatched} Filme, ${Math.round(stats.totalHoursWatched)} Stunden. tv-rank.de`;
+  const shareText = t(
+    'Mein {year} in Zahlen: {episodes} Episoden, {movies} Filme, {hours} Stunden. tv-rank.de',
+    {
+      year: stats.year,
+      episodes: stats.totalEpisodesWatched,
+      movies: stats.totalMoviesWatched,
+      hours: Math.round(stats.totalHoursWatched),
+    }
+  );
 
   return (
     <ShareCardSheet
       isOpen={isOpen}
       onClose={onClose}
-      sheetTitle={`Wrapped ${stats.year} teilen`}
+      sheetTitle={t('Wrapped {year} teilen', { year: stats.year })}
       filename={`tv-rank-wrapped-${stats.year}.png`}
       shareText={shareText}
       renderCard={(showImages) => <WrappedShareCard stats={stats} showImages={showImages} />}

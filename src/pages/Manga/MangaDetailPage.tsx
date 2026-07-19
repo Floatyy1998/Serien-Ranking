@@ -16,6 +16,7 @@ import { useMangaLiveData } from './detail/useMangaLiveData';
 import { addMangaToList } from './addMangaToList';
 import { getEffectiveChapterCount } from './mangaUtils';
 import { dbRef, paths, userPath } from '../../services/db/ref';
+import { t } from '../../services/i18n';
 
 export const MangaDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -211,7 +212,7 @@ export const MangaDetailPage = () => {
       return (
         <PageLayout>
           <PageHeader title="Manga" />
-          <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Laden...</div>
+          <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>{t('Laden...')}</div>
         </PageLayout>
       );
     }

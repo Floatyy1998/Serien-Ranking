@@ -11,6 +11,7 @@
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { GradientText } from '../ui';
+import { t } from '../../services/i18n';
 
 export const SHARE_CARD_WIDTH = 1080;
 export const SHARE_CARD_HEIGHT = 1920;
@@ -172,7 +173,7 @@ export const ShareCardFrame: React.FC<ShareCardFrameProps> = ({ title, subtitle,
             }}
           />
           <span style={{ color: currentTheme.text.muted, fontWeight: 500, fontSize: 32 }}>
-            Dein Serien-Tracker
+            {t('Dein Serien-Tracker')}
           </span>
         </div>
       </div>

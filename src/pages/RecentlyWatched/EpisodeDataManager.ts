@@ -5,6 +5,7 @@ import {
   normalizeEpisodes,
 } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
+import { appLocale, t } from '../../services/i18n';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -65,11 +66,11 @@ export class EpisodeDataManager {
   }
 
   private getDisplayDate(date: Date, daysAgo: number): string {
-    if (daysAgo === 0) return 'Heute';
-    if (daysAgo === 1) return 'Gestern';
-    if (daysAgo === 2) return 'Vorgestern';
+    if (daysAgo === 0) return t('Heute');
+    if (daysAgo === 1) return t('Gestern');
+    if (daysAgo === 2) return t('Vorgestern');
 
-    return date.toLocaleDateString('de-DE', {
+    return date.toLocaleDateString(appLocale === 'en' ? 'en-US' : 'de-DE', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',

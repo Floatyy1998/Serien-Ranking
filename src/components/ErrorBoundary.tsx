@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
+import { t } from '../services/i18n';
 
 interface Props {
   children: ReactNode;
@@ -119,7 +120,7 @@ export class ErrorBoundary extends Component<Props, State> {
               fontFamily: 'var(--font-display, inherit)',
             }}
           >
-            Etwas ist schiefgelaufen
+            {t('Etwas ist schiefgelaufen')}
           </h1>
           <p
             style={{
@@ -129,8 +130,9 @@ export class ErrorBoundary extends Component<Props, State> {
               lineHeight: 1.5,
             }}
           >
-            Die App ist auf einen unerwarteten Fehler gestossen. Du kannst den Fehler kopieren und
-            als Bug-Ticket einreichen.
+            {t(
+              'Die App ist auf einen unerwarteten Fehler gestossen. Du kannst den Fehler kopieren und als Bug-Ticket einreichen.'
+            )}
           </p>
 
           {/* Error Details */}
@@ -150,7 +152,7 @@ export class ErrorBoundary extends Component<Props, State> {
               fontFamily: 'monospace',
             }}
           >
-            {this.state.errorInfo || this.state.error?.message || 'Unbekannter Fehler'}
+            {this.state.errorInfo || this.state.error?.message || t('Unbekannter Fehler')}
           </pre>
 
           {/* Actions */}
@@ -172,7 +174,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 transition: 'background var(--duration-fast, 0.15s) ease',
               }}
             >
-              Fehler kopieren
+              {t('Fehler kopieren')}
             </button>
             <button
               onClick={this.handleReload}
@@ -191,7 +193,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 boxShadow: 'var(--glow-soft, 0 0 24px rgba(0,209,35,0.25))',
               }}
             >
-              Neu laden
+              {t('Neu laden')}
             </button>
           </div>
 
@@ -223,7 +225,7 @@ export class ErrorBoundary extends Component<Props, State> {
               textDecoration: 'none',
             }}
           >
-            Bug-Ticket erstellen
+            {t('Bug-Ticket erstellen')}
           </a>
         </div>
       </div>

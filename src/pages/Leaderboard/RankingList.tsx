@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
+import { t } from '../../services/i18n';
 
 interface RankingListProps {
   entries: LeaderboardEntry[];
@@ -40,7 +41,9 @@ export const RankingList = React.memo(function RankingList({
             onClick={openProfile}
             role={clickable ? 'button' : undefined}
             tabIndex={clickable ? 0 : undefined}
-            aria-label={clickable ? `Profil von ${entry.displayName} öffnen` : undefined}
+            aria-label={
+              clickable ? t('Profil von {name} öffnen', { name: entry.displayName }) : undefined
+            }
             onKeyDown={
               clickable
                 ? (e) => {
@@ -79,7 +82,7 @@ export const RankingList = React.memo(function RankingList({
                   color: entry.isCurrentUser ? currentTheme.primary : currentTheme.text.secondary,
                 }}
               >
-                {entry.isCurrentUser ? 'Du' : entry.displayName}
+                {entry.isCurrentUser ? t('Du') : entry.displayName}
               </span>
               {entry.username && !entry.isCurrentUser && (
                 <span className="lb-rank-username" style={{ color: currentTheme.text.muted }}>

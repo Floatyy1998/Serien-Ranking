@@ -5,19 +5,20 @@ import { EvolvingPixelPet } from '../../components/pet';
 import { useTheme } from '../../contexts/ThemeContext';
 import { petMoodService } from '../../services/pet/petMoodService';
 import { canSendGiftTo, formatCooldownRemaining, sendPetGift } from '../../services/pet/petGifts';
+import { t } from '../../services/i18n';
 import { PET_TYPE_NAMES } from '../../types/pet.types';
 import type { Pet } from '../../types/pet.types';
 
 const MOOD_LABEL: Record<string, string> = {
-  happy: 'Glücklich',
-  excited: 'Aufgedreht',
-  playful: 'Verspielt',
-  sleepy: 'Müde',
-  hungry: 'Hungrig',
-  sad: 'Traurig',
-  festive: 'Festlich',
-  scared: 'Ängstlich',
-  loved: 'Verliebt',
+  happy: t('Glücklich'),
+  excited: t('Aufgedreht'),
+  playful: t('Verspielt'),
+  sleepy: t('Müde'),
+  hungry: t('Hungrig'),
+  sad: t('Traurig'),
+  festive: t('Festlich'),
+  scared: t('Ängstlich'),
+  loved: t('Verliebt'),
 };
 
 interface Props {
@@ -51,7 +52,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
       const fromName =
         (user.displayName as string | undefined) ||
         (user.email as string | undefined) ||
-        'Ein Freund';
+        t('Ein Freund');
       await sendPetGift({
         fromUid: user.uid,
         fromName,
@@ -68,12 +69,14 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
   };
 
   const buttonLabel = (() => {
-    if (sending) return 'Wird verschickt …';
-    if (sentJustNow) return 'Snack unterwegs';
-    if (!pet.isAlive) return 'Pet ist nicht mehr';
+    if (sending) return t('Wird verschickt …');
+    if (sentJustNow) return t('Snack unterwegs');
+    if (!pet.isAlive) return t('Pet ist nicht mehr');
     if (!cooldown.allowed && cooldown.nextAvailableAt)
-      return `Schon verwöhnt — wieder ${formatCooldownRemaining(cooldown.nextAvailableAt)}`;
-    return 'Snack schicken';
+      return t('Schon verwöhnt — wieder {rest}', {
+        rest: formatCooldownRemaining(cooldown.nextAvailableAt),
+      });
+    return t('Snack schicken');
   })();
 
   return (
@@ -102,7 +105,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
         <div className="fp-pet-stats">
           <div className="fp-pet-stat">
             <div className="fp-pet-stat-label">
-              <span>Hunger</span>
+              <span>{t('Hunger')}</span>
               <span>{hungerPct}%</span>
             </div>
             <div className="fp-pet-stat-track">
@@ -117,7 +120,7 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
           </div>
           <div className="fp-pet-stat">
             <div className="fp-pet-stat-label">
-              <span>Glück</span>
+              <span>{t('Glück')}</span>
               <span>{happinessPct}%</span>
             </div>
             <div className="fp-pet-stat-track">

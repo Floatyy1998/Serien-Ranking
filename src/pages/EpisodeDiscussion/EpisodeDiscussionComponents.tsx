@@ -17,6 +17,7 @@ import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
@@ -40,7 +41,7 @@ export const LoadingState = memo(({ currentTheme }: { currentTheme: Theme }) => 
     />
     <div
       role="status"
-      aria-label="Lade Episodendetails"
+      aria-label={t('Lade Episodendetails')}
       style={{
         position: 'relative',
         zIndex: 1,
@@ -83,10 +84,10 @@ export const NotFoundState = memo(
       >
         <Movie className="ed-not-found-icon" style={{ color: currentTheme.text.muted }} />
         <h2 className="ed-not-found-title" style={{ color: currentTheme.text.primary }}>
-          Episode nicht gefunden
+          {t('Episode nicht gefunden')}
         </h2>
         <p className="ed-not-found-text" style={{ color: currentTheme.text.muted }}>
-          Diese Episode konnte nicht geladen werden.
+          {t('Diese Episode konnte nicht geladen werden.')}
         </p>
         <motion.button
           whileTap={tapScale}
@@ -97,7 +98,7 @@ export const NotFoundState = memo(
             boxShadow: `0 4px 15px ${currentTheme.primary}40`,
           }}
         >
-          Zurück
+          {t('Zurück')}
         </motion.button>
       </motion.div>
     </div>
@@ -236,7 +237,7 @@ export const HeroSection = memo(
               }}
             >
               <Check className="ed-watched-badge-icon" />
-              Gesehen
+              {t('Gesehen')}
             </span>
           )}
 
@@ -270,7 +271,7 @@ export const HeroSection = memo(
           style={{ color: currentTheme.text.secondary }}
         >
           {episodeAirDate && formattedAirDate && (
-            <Tooltip title="Erstausstrahlung" arrow>
+            <Tooltip title={t('Erstausstrahlung')} arrow>
               <span className="ed-meta-item">
                 <DateRange className="ed-meta-icon" style={{ color: currentTheme.primary }} />
                 {formattedAirDate}
@@ -278,7 +279,7 @@ export const HeroSection = memo(
             </Tooltip>
           )}
           {isWatched && formattedFirstWatchedAt && (
-            <Tooltip title="Erstmals gesehen" arrow>
+            <Tooltip title={t('Erstmals gesehen')} arrow>
               <span className="ed-meta-item">
                 <Visibility
                   className="ed-meta-icon"
@@ -304,7 +305,7 @@ export const HeroSection = memo(
             </Tooltip>
           )}
           {isWatched && formattedLastWatchedAt && (
-            <Tooltip title="Zuletzt gesehen" arrow>
+            <Tooltip title={t('Zuletzt gesehen')} arrow>
               <span className="ed-meta-item">
                 <Replay className="ed-meta-icon" style={{ color: currentTheme.accent }} />
                 {formattedLastWatchedAt}
@@ -312,10 +313,10 @@ export const HeroSection = memo(
             </Tooltip>
           )}
           {episodeRuntime && (
-            <Tooltip title="Episodenlänge" arrow>
+            <Tooltip title={t('Episodenlänge')} arrow>
               <span className="ed-meta-item">
                 <PlayCircle className="ed-meta-icon" style={{ color: currentTheme.accent }} />
-                {episodeRuntime} Min.
+                {t('{n} Min.', { n: episodeRuntime })}
               </span>
             </Tooltip>
           )}
@@ -369,12 +370,12 @@ export const QuickActions = memo(
           {isWatched ? (
             <>
               <Visibility className="ed-watch-btn-icon" />
-              Gesehen
+              {t('Gesehen')}
             </>
           ) : (
             <>
               <VisibilityOff className="ed-watch-btn-icon" />
-              Als gesehen markieren
+              {t('Als gesehen markieren')}
             </>
           )}
         </motion.button>

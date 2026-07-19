@@ -11,6 +11,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { IconButton, IconContainer, NavCard } from '../../components/ui';
 import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface FriendProfile {
   photoURL?: string;
@@ -67,7 +68,7 @@ export const TasteMatchCard: React.FC = () => {
       <NavCard
         onClick={() => setShowSelector(true)}
         accentColor={currentTheme.primary}
-        aria-label="Taste Match: Geschmack mit Freunden vergleichen"
+        aria-label={t('Taste Match: Geschmack mit Freunden vergleichen')}
       >
         <IconContainer color={currentTheme.primary} secondaryColor={currentTheme.accent}>
           <CompareArrows style={{ fontSize: 20, color: 'white' }} />
@@ -96,7 +97,7 @@ export const TasteMatchCard: React.FC = () => {
               textOverflow: 'ellipsis',
             }}
           >
-            Geschmack vergleichen
+            {t('Geschmack vergleichen')}
           </p>
         </div>
 
@@ -124,7 +125,10 @@ export const TasteMatchCard: React.FC = () => {
               {friendProfiles[friend.uid]?.photoURL || friend.photoURL ? (
                 <img
                   src={friendProfiles[friend.uid]?.photoURL || friend.photoURL}
-                  alt={`Profilbild von ${friendProfiles[friend.uid]?.displayName || friend.displayName || 'Freund'}`}
+                  alt={t('Profilbild von {name}', {
+                    name:
+                      friendProfiles[friend.uid]?.displayName || friend.displayName || t('Freund'),
+                  })}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   loading="lazy"
                   decoding="async"
@@ -218,14 +222,14 @@ export const TasteMatchCard: React.FC = () => {
                     color: currentTheme.text.primary,
                   }}
                 >
-                  Freund auswählen
+                  {t('Freund auswählen')}
                 </h2>
                 <IconButton
                   icon={<Close style={{ fontSize: '20px' }} />}
                   onClick={() => setShowSelector(false)}
                   size={36}
                   variant="surface"
-                  tooltip="Schließen"
+                  tooltip={t('Schließen')}
                 />
               </div>
 

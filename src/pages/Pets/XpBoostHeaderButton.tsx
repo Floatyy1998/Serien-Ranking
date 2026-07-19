@@ -11,6 +11,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { getXpBoostInventory, activateXpBoost } from '../../services/pet/dailySpinService';
 import type { XpBoostItem } from '../../services/pet/dailySpinService';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 /** Color based on total boost value (multiplier × episodes) */
 function getBoostColor(multiplier: number, episodes: number): string {
@@ -24,11 +25,11 @@ function getBoostColor(multiplier: number, episodes: number): string {
 
 function getBoostLabel(multiplier: number, episodes: number): string {
   const value = multiplier * episodes;
-  if (value >= 45) return 'Legendär';
-  if (value >= 30) return 'Episch';
-  if (value >= 20) return 'Selten';
-  if (value >= 10) return 'Ungewöhnlich';
-  return 'Gewöhnlich';
+  if (value >= 45) return t('Legendär');
+  if (value >= 30) return t('Episch');
+  if (value >= 20) return t('Selten');
+  if (value >= 10) return t('Ungewöhnlich');
+  return t('Gewöhnlich');
 }
 
 export const XpBoostHeaderButton: React.FC = () => {
@@ -117,7 +118,7 @@ export const XpBoostHeaderButton: React.FC = () => {
       <motion.button
         whileTap={tapScaleTight}
         onClick={() => setOpen((v) => !v)}
-        aria-label="Streak-Shield & XP-Boost"
+        aria-label={t('Streak-Shield & XP-Boost')}
         aria-expanded={open}
         style={{
           position: 'relative',
@@ -323,11 +324,12 @@ export const XpBoostHeaderButton: React.FC = () => {
                       color: getBoostColor(activeBoost.multiplier, activeBoost.originalEpisodes),
                     }}
                   >
-                    {activeBoost.multiplier}x XP aktiv
+                    {t('{x}x XP aktiv', { x: activeBoost.multiplier })}
                   </div>
                   <div style={{ fontSize: 11, color: currentTheme.text.muted }}>
-                    Noch {activeBoost.remainingEpisodes}{' '}
-                    {activeBoost.remainingEpisodes === 1 ? 'Episode' : 'Episoden'}
+                    {activeBoost.remainingEpisodes === 1
+                      ? t('Noch 1 Episode')
+                      : t('Noch {n} Episoden', { n: activeBoost.remainingEpisodes })}
                   </div>
                 </div>
                 <Check
@@ -350,10 +352,10 @@ export const XpBoostHeaderButton: React.FC = () => {
                     fontSize: 13,
                   }}
                 >
-                  Keine Boosts vorhanden.
+                  {t('Keine Boosts vorhanden.')}
                   <br />
                   <span style={{ fontSize: 11, opacity: 0.7 }}>
-                    Boosts gibt's beim Daily Spin & in Mystery Boxen!
+                    {t("Boosts gibt's beim Daily Spin & in Mystery Boxen!")}
                   </span>
                 </div>
               )}

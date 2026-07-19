@@ -4,6 +4,7 @@ import { dbGet, dbRef, paths, userPath } from '../services/db/ref';
 import { queuePush } from '../services/pushQueue';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { t } from '../services/i18n';
 import type {
   Recommendation,
   RecommendationMediaType,
@@ -85,7 +86,7 @@ export function useRecommendations(): UseRecommendationsReturn {
         dbName ||
         (user.displayName && user.displayName.trim()) ||
         (user.email && user.email.split('@')[0]) ||
-        'Unbekannt';
+        t('Unbekannt');
       const senderPhoto = dbPhoto || user.photoURL;
 
       const base: Omit<Recommendation, 'id'> = {
@@ -106,10 +107,16 @@ export function useRecommendations(): UseRecommendationsReturn {
         recipientUids.map((uid) => dbRef(userPath(uid, 'recommendations')).push(base))
       );
       const pushBody =
-        message && message.trim() ? `${media.title} — „${message.trim()}“` : media.title;
+        message && message.trim()
+          ? t('{title} — „{message}“', { title: media.title, message: message.trim() })
+          : media.title;
       await Promise.all(
         recipientUids.map((uid) =>
-          queuePush(uid, { title: `🎬 Empfehlung von ${senderName}`, body: pushBody, url: '/' })
+          queuePush(uid, {
+            title: t('🎬 Empfehlung von {name}', { name: senderName }),
+            body: pushBody,
+            url: '/',
+          })
         )
       );
       return recipientUids.length;

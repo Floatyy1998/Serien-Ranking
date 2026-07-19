@@ -1,5 +1,6 @@
 import { tmdbLogoUrl } from '../../../hooks/useProviderLogos';
 import { getProviderSearchUrl } from '../../../lib/providerLinks';
+import { t } from '../../../services/i18n';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import type { ProviderBrand } from '../providerBrands';
 
@@ -57,7 +58,7 @@ export const ProviderLogo: React.FC<ProviderLogoProps> = ({
         href={providerUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${name} öffnen`}
+        aria-label={t('{title} öffnen', { title: name })}
         onClick={(e) => e.stopPropagation()}
         style={{
           background,

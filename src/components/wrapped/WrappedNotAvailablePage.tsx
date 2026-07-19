@@ -11,6 +11,7 @@ import Theaters from '@mui/icons-material/Theaters';
 import TrendingUp from '@mui/icons-material/TrendingUp';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface Props {
   year: number;
@@ -139,7 +140,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           letterSpacing: '-0.5px',
         }}
       >
-        Kommt bald
+        {t('Kommt bald')}
       </motion.h1>
 
       {/* Description */}
@@ -155,8 +156,9 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
           marginBottom: '40px',
         }}
       >
-        Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende
-        des Jahres zeigen wir dir deine persönlichen Highlights!
+        {t(
+          'Dein Jahresrückblick ist noch nicht verfügbar. Schau weiter fleißig Serien und Filme – Ende des Jahres zeigen wir dir deine persönlichen Highlights!'
+        )}
       </motion.p>
 
       {/* Stats Preview */}
@@ -171,9 +173,9 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         }}
       >
         {[
-          { icon: <PlayCircle />, label: 'Episoden' },
-          { icon: <Theaters />, label: 'Filme' },
-          { icon: <Star />, label: 'Bewertungen' },
+          { icon: <PlayCircle />, label: t('Episoden') },
+          { icon: <Theaters />, label: t('Filme') },
+          { icon: <Star />, label: t('Bewertungen') },
         ].map((item, i) => (
           <motion.div
             key={i}
@@ -225,7 +227,7 @@ export const WrappedNotAvailablePage: React.FC<Props> = ({ year, onBack }) => {
         }}
       >
         <ArrowBack style={{ fontSize: 20 }} />
-        Zurück zur Startseite
+        {t('Zurück zur Startseite')}
       </motion.button>
     </div>
   );

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { MonthStats } from '../../types/Wrapped';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface MonthlyBreakdownSlideProps {
   monthlyBreakdown: MonthStats[];
@@ -31,7 +32,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
     'Okt',
     'Nov',
     'Dez',
-  ];
+  ].map((m) => t(m));
 
   return (
     <div
@@ -73,7 +74,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
           zIndex: 1,
         }}
       >
-        Dein Jahr im Überblick
+        {t('Dein Jahr im Überblick')}
       </motion.p>
 
       {/* Calendar Icon */}
@@ -115,7 +116,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
         }}
       >
         <p style={{ color: 'white', opacity: 0.8, fontSize: '0.9rem', marginBottom: '8px' }}>
-          Dein aktivster Monat
+          {t('Dein aktivster Monat')}
         </p>
         <h3
           style={{
@@ -129,7 +130,8 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
           {mostActiveMonth.monthName}
         </h3>
         <p style={{ color: 'white', opacity: 0.9 }}>
-          {mostActiveMonth.episodesWatched} Episoden • {mostActiveMonth.moviesWatched} Filme
+          {t('{n} Episoden', { n: mostActiveMonth.episodesWatched })} •{' '}
+          {t('{n} Filme', { n: mostActiveMonth.moviesWatched })}
         </p>
       </motion.div>
 
@@ -217,7 +219,7 @@ export const MonthlyBreakdownSlide: React.FC<MonthlyBreakdownSlideProps> = ({
           zIndex: 1,
         }}
       >
-        Watchtime pro Monat
+        {t('Watchtime pro Monat')}
       </motion.p>
     </div>
   );

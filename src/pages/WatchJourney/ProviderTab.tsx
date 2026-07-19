@@ -8,6 +8,7 @@ import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { CustomTooltip } from './CustomTooltip';
 import { WatchJourneyTabEmptyState } from './WatchJourneyTabEmptyState';
 import { wjCard } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 interface ProviderTabProps {
   data: WatchJourneyData;
@@ -71,8 +72,10 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
     return (
       <WatchJourneyTabEmptyState
         icon={<Subscriptions style={{ fontSize: 64, color: `${textMuted}30`, marginBottom: 16 }} />}
-        title="Keine Provider-Daten"
-        description="Streaming-Dienste werden beim Markieren von Episoden erfasst. Schau etwas, um deine Streaming-Verteilung zu sehen!"
+        title={t('Keine Provider-Daten')}
+        description={t(
+          'Streaming-Dienste werden beim Markieren von Episoden erfasst. Schau etwas, um deine Streaming-Verteilung zu sehen!'
+        )}
       />
     );
   }
@@ -116,7 +119,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
               marginBottom: 8,
             }}
           >
-            DEIN TOP STREAMING-DIENST
+            {t('DEIN TOP STREAMING-DIENST')}
           </p>
           <h2 style={{ color: textPrimary, fontSize: 28, fontWeight: 800, margin: '0 0 8px' }}>
             {topProvider?.provider}
@@ -126,14 +129,18 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
               <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
                 {topProvider?.hours}
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Stunden</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('Stunden')}
+              </span>
             </div>
             <div style={{ width: 1, background: `${textSecondary}40` }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 700, color: topProvider?.color }}>
                 {topProvider?.percentage}%
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>deiner Zeit</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('deiner Zeit')}
+              </span>
             </div>
           </div>
         </div>
@@ -154,7 +161,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Stunden pro Streaming-Dienst
+          {t('Stunden pro Streaming-Dienst')}
         </h3>
         <div style={{ width: '100%', height: barData.length * 50 + 20 }}>
           <SafeResponsiveContainer minWidth={0} minHeight={0}>
@@ -206,7 +213,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
                             fontSize: 13,
                           }}
                         >
-                          {data.hours} Stunden
+                          {t('{n} Stunden', { n: data.hours })}
                         </p>
                       </div>
                     );
@@ -240,7 +247,7 @@ export const ProviderTab: React.FC<ProviderTabProps> = ({ data }) => {
             margin: '0 0 16px',
           }}
         >
-          Streaming-Verlauf
+          {t('Streaming-Verlauf')}
         </h3>
         <div style={{ width: '100%', height: 280 }}>
           <SafeResponsiveContainer minWidth={0} minHeight={0}>

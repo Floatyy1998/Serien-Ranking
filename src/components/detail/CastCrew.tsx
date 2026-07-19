@@ -13,6 +13,7 @@ import { CastCrewListView } from './CastCrewListView';
 import { PersonDetailsView } from './PersonDetailsView';
 import { VoiceActorDetailsView } from './VoiceActorDetailsView';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 
 export const CastCrew: React.FC<CastCrewProps> = ({
   tmdbId,
@@ -139,7 +140,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
               native: edge.node.name.native,
               image: edge.node.image?.large,
             },
-            role: edge.role === 'MAIN' ? 'Hauptrolle' : 'Nebenrolle',
+            role: edge.role === 'MAIN' ? t('Hauptrolle') : t('Nebenrolle'),
             voice_actors: edge.voiceActors?.map((va) => ({
               person: {
                 id: va.id,
@@ -317,7 +318,7 @@ export const CastCrew: React.FC<CastCrewProps> = ({
   if (loading) {
     return (
       <div style={{ padding: '20px', textAlign: 'center' }}>
-        <div style={{ color: currentTheme.text.muted }}>Lade Cast & Crew...</div>
+        <div style={{ color: currentTheme.text.muted }}>{t('Lade Cast & Crew...')}</div>
       </div>
     );
   }

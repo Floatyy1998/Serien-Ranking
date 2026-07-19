@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import type { FriendActivity } from '../../types/Friend';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
+import { t } from '../../services/i18n';
 import { getActivityMeta, type ActivityTheme } from './activityMeta';
 
 interface ActivityEntryCardProps {
@@ -52,6 +53,11 @@ export const ActivityEntryCard = React.memo(
     const hasRating = meta.isRating && typeof rating === 'number' && rating > 0;
     const showPoster = posterUrl && !isPlaceholderUrl(posterUrl);
     const { Icon } = meta;
+    // Ganzen Satz übersetzen (Wortstellung!), dann am {title}-Platzhalter splitten.
+    const sentenceTemplate = meta.suffix
+      ? t(`hat ${meta.verb} {title} ${meta.suffix}`)
+      : t(`hat {title} ${meta.verb}`);
+    const [sentenceBefore, sentenceAfter = ''] = sentenceTemplate.split('{title}');
 
     return (
       <motion.div
@@ -85,7 +91,7 @@ export const ActivityEntryCard = React.memo(
                 onAvatarClick();
               }
             }}
-            aria-label={`Profil von ${userName}`}
+            aria-label={t('Profil von {name}', { name: userName })}
             style={{
               width: '44px',
               height: '44px',
@@ -188,19 +194,9 @@ export const ActivityEntryCard = React.memo(
               overflow: 'hidden',
             }}
           >
-            {meta.suffix ? (
-              <>
-                hat {meta.verb}{' '}
-                <span style={{ fontWeight: 700, color: theme.text.secondary }}>{itemTitle}</span>{' '}
-                {meta.suffix}
-              </>
-            ) : (
-              <>
-                hat{' '}
-                <span style={{ fontWeight: 700, color: theme.text.secondary }}>{itemTitle}</span>{' '}
-                {meta.verb}
-              </>
-            )}
+            {sentenceBefore}
+            <span style={{ fontWeight: 700, color: theme.text.secondary }}>{itemTitle}</span>
+            {sentenceAfter}
           </div>
 
           <div
@@ -231,7 +227,7 @@ export const ActivityEntryCard = React.memo(
               ) : (
                 <TvRounded style={{ fontSize: '13px' }} />
               )}
-              {meta.isMovie ? 'Film' : 'Serie'}
+              {meta.isMovie ? t('Film') : t('Serie')}
             </span>
 
             {hasRating && (

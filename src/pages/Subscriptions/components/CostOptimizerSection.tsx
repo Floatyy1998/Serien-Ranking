@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import type { UseSubscriptionsDataResult } from '../../../hooks/useSubscriptionsData';
+import { t } from '../../../services/i18n';
 import type { ProviderInsight } from '../../../types/Subscription';
 import { getProviderBrand } from '../providerBrands';
 import { ProviderLogo } from './ProviderLogo';
@@ -90,11 +91,11 @@ export const CostOptimizerSection = ({
     .sort((a, b) => (a.costPerHour as number) - (b.costPerHour as number))[0];
 
   const tierMeta: Record<Tier, { label: string; color: string }> = {
-    great: { label: 'Top-Wert', color: success },
-    solid: { label: 'Solide', color: currentTheme.primary },
-    expensive: { label: 'Teuer/Std.', color: warning },
-    unused: { label: 'Ungenutzt', color: danger },
-    noprice: { label: 'Preis fehlt', color: muted },
+    great: { label: t('Top-Wert'), color: success },
+    solid: { label: t('Solide'), color: currentTheme.primary },
+    expensive: { label: t('Teuer/Std.'), color: warning },
+    unused: { label: t('Ungenutzt'), color: danger },
+    noprice: { label: t('Preis fehlt'), color: muted },
   };
 
   return (
@@ -107,11 +108,11 @@ export const CostOptimizerSection = ({
       >
         <h2 className="sub-section-title" style={{ color: currentTheme.text.primary }}>
           <Bolt style={{ fontSize: 18, color: currentTheme.accent || currentTheme.primary }} />
-          Kosten-Optimizer
+          {t('Kosten-Optimizer')}
         </h2>
         <span className="sub-opt-toggle-right">
           <span className="sub-section-count" style={{ color: muted }}>
-            letzte {unusedThresholdDays} Tage
+            {t('letzte {n} Tage', { n: unusedThresholdDays })}
           </span>
           <motion.span
             animate={{ rotate: open ? 180 : 0 }}
@@ -148,19 +149,21 @@ export const CostOptimizerSection = ({
                 }}
               >
                 <p className="sub-opt-tile-label" style={{ color: muted }}>
-                  <TrendingDown style={{ fontSize: 15 }} /> Sparpotenzial
+                  <TrendingDown style={{ fontSize: 15 }} /> {t('Sparpotenzial')}
                 </p>
                 <p
                   className="sub-opt-tile-value"
                   style={{ color: potentialSavings > 0 ? warning : success }}
                 >
                   {formatEuro(potentialSavings)}
-                  <span className="sub-opt-tile-unit"> / Monat</span>
+                  <span className="sub-opt-tile-unit"> {t('/ Monat')}</span>
                 </p>
                 <p className="sub-opt-tile-sub" style={{ color: currentTheme.text.secondary }}>
                   {actionable.length === 0
-                    ? 'Deine Abos sind gut ausgelastet 🎉'
-                    : `${actionable.length} Abo${actionable.length === 1 ? '' : 's'} mit schwachem Wert`}
+                    ? t('Deine Abos sind gut ausgelastet 🎉')
+                    : actionable.length === 1
+                      ? t('1 Abo mit schwachem Wert')
+                      : t('{n} Abos mit schwachem Wert', { n: actionable.length })}
                 </p>
               </motion.div>
 
@@ -176,11 +179,11 @@ export const CostOptimizerSection = ({
                   }}
                 >
                   <p className="sub-opt-tile-label" style={{ color: muted }}>
-                    <TrendingUp style={{ fontSize: 15 }} /> Bester Wert
+                    <TrendingUp style={{ fontSize: 15 }} /> {t('Bester Wert')}
                   </p>
                   <p className="sub-opt-tile-value" style={{ color: success }}>
                     {formatEuro(best.costPerHour as number)}
-                    <span className="sub-opt-tile-unit"> / Std.</span>
+                    <span className="sub-opt-tile-unit"> {t('/ Std.')}</span>
                   </p>
                   <p className="sub-opt-tile-sub" style={{ color: currentTheme.text.secondary }}>
                     {best.name}
@@ -224,14 +227,18 @@ export const CostOptimizerSection = ({
                       </div>
                       <p className="sub-opt-row-meta" style={{ color: muted }}>
                         {tier === 'noprice' ? (
-                          'Trage den Monatspreis ein, um den Wert zu sehen'
+                          t('Trage den Monatspreis ein, um den Wert zu sehen')
                         ) : tier === 'unused' ? (
-                          <>Im Zeitraum nicht geschaut · {formatEuro(insight.monthlyPrice)}/Monat</>
+                          t('Im Zeitraum nicht geschaut · {amount}/Monat', {
+                            amount: formatEuro(insight.monthlyPrice),
+                          })
                         ) : (
                           <>
-                            {formatHours(insight.monthlyWatchHours)} Std./Monat ·{' '}
+                            {t('{h} Std./Monat', { h: formatHours(insight.monthlyWatchHours) })} ·{' '}
                             <strong style={{ color: meta.color }}>
-                              {formatEuro(insight.costPerHour as number)}/Std.
+                              {t('{amount}/Std.', {
+                                amount: formatEuro(insight.costPerHour as number),
+                              })}
                             </strong>
                           </>
                         )}
@@ -245,7 +252,7 @@ export const CostOptimizerSection = ({
                         style={{ borderColor: `${meta.color}66`, color: meta.color }}
                         onClick={() => updateProvider(insight.name, { active: false })}
                       >
-                        Pausieren
+                        {t('Pausieren')}
                       </button>
                     )}
                   </div>

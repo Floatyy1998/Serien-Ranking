@@ -1,5 +1,6 @@
 import { PlaylistAddCheck } from '@mui/icons-material';
 import { memo } from 'react';
+import { t } from '../../services/i18n';
 import type { SeasonProgress } from './useEpisodeManagement';
 
 interface BulkActionBarProps {
@@ -25,7 +26,7 @@ export const BulkActionBar = memo(
     return (
       <div className="season-progress">
         <div className="progress-header">
-          <h2>Staffel {seasonNumber}</h2>
+          <h2>{t('Staffel {n}', { n: seasonNumber })}</h2>
           <span className="progress-text">{Math.round(progress)}%</span>
         </div>
         <div className="progress-bar">
@@ -39,24 +40,24 @@ export const BulkActionBar = memo(
               style={{ flex: 1 }}
               onClick={() => onSeasonToggle(selectedSeason, 'rewatch')}
             >
-              Alle als {seasonMinWatchCount + 1}x gesehen
+              {t('Alle als {n}x gesehen', { n: seasonMinWatchCount + 1 })}
             </button>
             <button
               className="mark-all-button em-bulk-button-muted"
               style={{ flex: 1 }}
               onClick={() => onSeasonToggle(selectedSeason, 'unwatch')}
             >
-              Alle als ungesehen
+              {t('Alle als ungesehen')}
             </button>
           </div>
         ) : (
           <div className="em-bulk-buttons-column">
             <button className="mark-all-button" onClick={() => onMarkAll(selectedSeason)}>
-              Alle als gesehen markieren
+              {t('Alle als gesehen markieren')}
             </button>
             <button className="catch-up-button" onClick={onCatchUp}>
               <PlaylistAddCheck style={{ fontSize: '16px' }} />
-              Ich bin bei...
+              {t('Ich bin bei...')}
             </button>
           </div>
         )}

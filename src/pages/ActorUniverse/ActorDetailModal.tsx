@@ -6,6 +6,7 @@ import { GradientText, HorizontalScrollContainer } from '../../components/ui';
 import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import './ActorUniversePage.css';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -96,7 +97,7 @@ export const ActorDetailModal = ({
                 >
                   <Star style={{ fontSize: '18px', color: currentTheme.accent }} />
                   <span style={{ fontSize: '15px', fontWeight: 600 }}>
-                    {selectedActor.seriesCount} Serien
+                    {t('{n} Serien', { n: selectedActor.seriesCount })}
                   </span>
                 </div>
               </div>
@@ -104,7 +105,7 @@ export const ActorDetailModal = ({
 
             {/* Series list */}
             <h2 className="au-modal-section-title" style={{ color: currentTheme.text.primary }}>
-              In deiner Sammlung
+              {t('In deiner Sammlung')}
             </h2>
             <div className="au-modal-series-list">
               {selectedActor.series.map((series) => (
@@ -142,7 +143,7 @@ export const ActorDetailModal = ({
                       className="au-modal-series-character"
                       style={{ color: currentTheme.primary }}
                     >
-                      als {series.character}
+                      {t('als {character}', { character: series.character })}
                     </p>
                   </div>
                 </motion.div>
@@ -153,7 +154,7 @@ export const ActorDetailModal = ({
             {selectedActor.recommendations && selectedActor.recommendations.length > 0 && (
               <>
                 <h2 className="au-modal-section-title" style={{ color: currentTheme.text.primary }}>
-                  Weitere Serien mit {selectedActor.name.split(' ')[0]}
+                  {t('Weitere Serien mit {name}', { name: selectedActor.name.split(' ')[0] })}
                 </h2>
                 <HorizontalScrollContainer gap={14}>
                   {selectedActor.recommendations.map((rec) => (
@@ -213,7 +214,7 @@ export const ActorDetailModal = ({
                   className="au-modal-section-title au-modal-section-title--connected"
                   style={{ color: currentTheme.text.primary }}
                 >
-                  Spielt zusammen mit
+                  {t('Spielt zusammen mit')}
                 </h2>
                 <div className="au-modal-connections">
                   {getActorConnections(selectedActor.id)

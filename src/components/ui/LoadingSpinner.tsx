@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { VisuallyHidden } from './VisuallyHidden';
 
 interface LoadingSpinnerProps {
@@ -111,7 +112,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           {text}
         </p>
       ) : (
-        <VisuallyHidden>Daten werden geladen</VisuallyHidden>
+        <VisuallyHidden>{t('Daten werden geladen')}</VisuallyHidden>
       )}
     </div>
   );

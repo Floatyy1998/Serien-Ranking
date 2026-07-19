@@ -8,6 +8,7 @@ import { useDiscussions } from '../../hooks/useDiscussions';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
@@ -48,7 +49,11 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   // Wall nur zeigen, wenn der Aufrufer explizit "nicht gesehen" meldet.
   const showSpoilerProtection = !!spoilerKey && isWatched === false && !spoilerRevealed;
   const spoilerSubject =
-    itemType === 'movie' ? 'diesen Film' : itemType === 'series' ? 'diese Serie' : 'diese Episode';
+    itemType === 'movie'
+      ? t('diesen Film')
+      : itemType === 'series'
+        ? t('diese Serie')
+        : t('diese Episode');
 
   const {
     discussions,
@@ -127,7 +132,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               margin: '0 0 12px 0',
             }}
           >
-            Spoiler-Warnung
+            {t('Spoiler-Warnung')}
           </h3>
 
           <p
@@ -139,7 +144,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               lineHeight: 1.6,
             }}
           >
-            Du hast {spoilerSubject} noch nicht gesehen.
+            {t('Du hast {subject} noch nicht gesehen.', { subject: spoilerSubject })}
           </p>
           <p
             style={{
@@ -149,7 +154,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               maxWidth: '300px',
             }}
           >
-            Die Diskussionen könnten Spoiler enthalten.
+            {t('Die Diskussionen könnten Spoiler enthalten.')}
           </p>
 
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -171,7 +176,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               }}
             >
               <Visibility style={{ fontSize: '18px' }} />
-              Trotzdem anzeigen
+              {t('Trotzdem anzeigen')}
             </motion.button>
           </div>
 
@@ -183,8 +188,9 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                 marginTop: '20px',
               }}
             >
-              {discussions.length} {discussions.length === 1 ? 'Diskussion' : 'Diskussionen'}{' '}
-              versteckt
+              {discussions.length === 1
+                ? t('{n} Diskussion versteckt', { n: discussions.length })
+                : t('{n} Diskussionen versteckt', { n: discussions.length })}
             </p>
           )}
         </div>
@@ -223,7 +229,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             gap: '10px',
           }}
         >
-          {title || 'Diskussionen'}
+          {title || t('Diskussionen')}
           {discussions.length > 0 && (
             <span
               style={{
@@ -256,7 +262,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
             }}
           >
-            + Neue Diskussion
+            {t('+ Neue Diskussion')}
           </motion.button>
         )}
       </div>
@@ -292,7 +298,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
       {/* Loading */}
       {loading ? (
-        <LoadingSpinner size={32} text="Diskussionen werden geladen..." />
+        <LoadingSpinner size={32} text={t('Diskussionen werden geladen...')} />
       ) : discussions.length === 0 ? (
         <div
           style={{
@@ -305,10 +311,12 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           }}
         >
           <ChatBubbleOutline style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.4 }} />
-          <p style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>Noch keine Diskussionen</p>
+          <p style={{ margin: 0, fontSize: '16px', fontWeight: 600 }}>
+            {t('Noch keine Diskussionen')}
+          </p>
           {user && (
             <p style={{ margin: '8px 0 0 0', fontSize: '15px', opacity: 0.8 }}>
-              Sei der Erste und starte eine Diskussion!
+              {t('Sei der Erste und starte eine Diskussion!')}
             </p>
           )}
         </div>

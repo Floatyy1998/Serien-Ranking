@@ -20,6 +20,7 @@ import { RankingList } from './RankingList';
 import { TrophyHistory } from './TrophyHistory';
 import { useLeaderboardData } from './useLeaderboardData';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const CATEGORIES: {
   id: LeaderboardCategory;
@@ -29,23 +30,28 @@ const CATEGORIES: {
 }[] = [
   {
     id: 'episodesThisMonth',
-    label: 'Episoden',
+    label: t('Episoden'),
     icon: <PlayCircle sx={{ fontSize: 16 }} />,
-    unit: 'Ep.',
+    unit: t('Ep.'),
   },
-  { id: 'moviesThisMonth', label: 'Filme', icon: <Movie sx={{ fontSize: 16 }} />, unit: 'Filme' },
+  {
+    id: 'moviesThisMonth',
+    label: t('Filme'),
+    icon: <Movie sx={{ fontSize: 16 }} />,
+    unit: t('Filme'),
+  },
   { id: 'watchtimeThisMonth', label: 'Watchtime', icon: <Timer sx={{ fontSize: 16 }} />, unit: '' },
   {
     id: 'streakThisMonth',
-    label: 'Monats-Streak',
+    label: t('Monats-Streak'),
     icon: <LocalFireDepartment sx={{ fontSize: 16 }} />,
-    unit: 'Tage',
+    unit: t('Tage'),
   },
   {
     id: 'streakAllTime',
-    label: 'Längste Streak',
+    label: t('Längste Streak'),
     icon: <EmojiEvents sx={{ fontSize: 16 }} />,
-    unit: 'Tage',
+    unit: t('Tage'),
   },
 ];
 
@@ -101,10 +107,10 @@ export const LeaderboardPage = () => {
         </motion.div>
         <div style={{ textAlign: 'center' }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: currentTheme.text.primary }}>
-            Rangliste wird geladen...
+            {t('Rangliste wird geladen...')}
           </p>
           <p style={{ margin: '4px 0 0', fontSize: 12, color: currentTheme.text.secondary }}>
-            Daten werden abgerufen
+            {t('Daten werden abgerufen')}
           </p>
         </div>
       </div>
@@ -123,7 +129,7 @@ export const LeaderboardPage = () => {
           flexDirection: 'column',
         }}
       >
-        <PageHeader title="Rangliste" />
+        <PageHeader title={t('Rangliste')} />
 
         <ModeToggle mode={mode} onModeChange={setMode} />
 
@@ -140,12 +146,12 @@ export const LeaderboardPage = () => {
               color: currentTheme.text.primary,
             }}
           >
-            Noch keine Freunde
+            {t('Noch keine Freunde')}
           </h2>
           <p
             style={{ margin: 0, fontSize: 14, color: currentTheme.text.secondary, lineHeight: 1.5 }}
           >
-            Füge Freunde hinzu, um in der Rangliste gegeneinander anzutreten!
+            {t('Füge Freunde hinzu, um in der Rangliste gegeneinander anzutreten!')}
           </p>
           <motion.button
             whileTap={tapScale}
@@ -163,7 +169,7 @@ export const LeaderboardPage = () => {
               boxShadow: 'var(--glow-soft)',
             }}
           >
-            Freunde finden
+            {t('Freunde finden')}
           </motion.button>
         </div>
       </div>
@@ -180,14 +186,14 @@ export const LeaderboardPage = () => {
       <CelebrationModal
         celebration={celebration}
         onClose={() => setCelebration(null)}
-        userName={user?.displayName || 'Du'}
+        userName={user?.displayName || t('Du')}
       />
 
       <div style={{ paddingBottom: '120px', position: 'relative', zIndex: 1 }}>
         {/* Sticky Header */}
         <PageHeader
-          title="Rangliste"
-          subtitle={`${activeCat?.label}${activeCategory !== 'streakAllTime' ? ' · Diesen Monat' : ' · Aller Zeiten'}${mode === 'global' ? ' · Alle Nutzer' : ''}`}
+          title={t('Rangliste')}
+          subtitle={`${activeCat?.label}${activeCategory !== 'streakAllTime' ? ` · ${t('Diesen Monat')}` : ` · ${t('Aller Zeiten')}`}${mode === 'global' ? ` · ${t('Alle Nutzer')}` : ''}`}
         />
 
         {/* Controls: Mode Toggle + Category Pills in einer Zeile (Desktop) */}
@@ -245,8 +251,8 @@ const ModeToggle = React.memo(function ModeToggle({
 }) {
   const { currentTheme } = useTheme();
   const options = [
-    { id: 'friends' as const, label: 'Freunde', icon: <Group sx={{ fontSize: 16 }} /> },
-    { id: 'global' as const, label: 'Alle', icon: <Public sx={{ fontSize: 16 }} /> },
+    { id: 'friends' as const, label: t('Freunde'), icon: <Group sx={{ fontSize: 16 }} /> },
+    { id: 'global' as const, label: t('Alle'), icon: <Public sx={{ fontSize: 16 }} /> },
   ];
 
   return (

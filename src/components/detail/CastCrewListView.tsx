@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { AnimeCharacterData, CastMember, VoiceActorRef } from './CastCrew.types';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface CastCrewListViewProps {
   isAnime: boolean;
@@ -56,7 +57,7 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
               cursor: 'pointer',
             }}
           >
-            Charaktere ({animeCharacters.length})
+            {t('Charaktere')} ({animeCharacters.length})
           </button>
         )}
 
@@ -77,7 +78,7 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
             cursor: 'pointer',
           }}
         >
-          Besetzung ({cast.length})
+          {t('Besetzung')} ({cast.length})
         </button>
 
         <button
@@ -114,7 +115,9 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
                     ? {
                         role: 'button' as const,
                         tabIndex: 0,
-                        'aria-label': `Sprecher von ${char.character.name} anzeigen`,
+                        'aria-label': t('Sprecher von {name} anzeigen', {
+                          name: char.character.name,
+                        }),
                         onKeyDown: (e: React.KeyboardEvent) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -238,7 +241,7 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
                             color: currentTheme.text.muted,
                           }}
                         >
-                          Sprecher
+                          {t('Sprecher')}
                         </p>
                       </div>
                       {char.voice_actors[0].person.image ? (
@@ -282,7 +285,7 @@ export const CastCrewListView: React.FC<CastCrewListViewProps> = ({
                 onClick={() => onPersonClick(member.id)}
                 role="button"
                 tabIndex={0}
-                aria-label={`${member.name} anzeigen`}
+                aria-label={t('{name} anzeigen', { name: member.name })}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();

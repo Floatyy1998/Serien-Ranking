@@ -1,6 +1,7 @@
 import { ArrowBack } from '@mui/icons-material';
 import * as React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { t } from '../../services/i18n';
 import { IconButton } from './IconButton';
 
 interface BackButtonProps {
@@ -55,8 +56,8 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
         size={40}
         borderRadius="14px"
         variant="glass"
-        ariaLabel={label || 'Zurück'}
-        tooltip="Zurück"
+        ariaLabel={label || t('Zurück')}
+        tooltip={t('Zurück')}
         style={style}
       />
       {showHome && (
@@ -82,8 +83,8 @@ export const BackButton = ({ label, style, showHome = true }: BackButtonProps) =
           size={40}
           borderRadius="14px"
           variant="glass"
-          ariaLabel="Zur Startseite"
-          tooltip="Zur Startseite"
+          ariaLabel={t('Zur Startseite')}
+          tooltip={t('Zur Startseite')}
           style={style}
         />
       )}

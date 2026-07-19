@@ -8,6 +8,7 @@ import {
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScale, tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface OverallRatingSectionProps {
   overallRating: number;
@@ -26,7 +27,7 @@ export const OverallRatingSection = ({
       min: 0.1,
       max: 3,
       icon: <SentimentVeryDissatisfied />,
-      label: 'Schrecklich',
+      label: t('Schrecklich'),
       color: currentTheme.status?.error || '#e74c3c',
     },
     {
@@ -34,7 +35,7 @@ export const OverallRatingSection = ({
       min: 3.1,
       max: 5,
       icon: <SentimentDissatisfied />,
-      label: 'Schlecht',
+      label: t('Schlecht'),
       color: currentTheme.status?.error || '#ff6b6b',
     },
     {
@@ -42,7 +43,7 @@ export const OverallRatingSection = ({
       min: 5.1,
       max: 6.5,
       icon: <SentimentNeutral />,
-      label: 'Okay',
+      label: t('Okay'),
       color: currentTheme.accent,
     },
     {
@@ -50,7 +51,7 @@ export const OverallRatingSection = ({
       min: 6.6,
       max: 8.5,
       icon: <SentimentSatisfied />,
-      label: 'Gut',
+      label: t('Gut'),
       color: currentTheme.status?.success || '#4cd137',
     },
     {
@@ -58,7 +59,7 @@ export const OverallRatingSection = ({
       min: 8.6,
       max: 10,
       icon: <SentimentVerySatisfied />,
-      label: 'Meisterwerk',
+      label: t('Meisterwerk'),
       color: currentTheme.primary,
     },
   ];
@@ -80,7 +81,7 @@ export const OverallRatingSection = ({
       <div className="rate-main-display">
         <div className="rate-circle">
           <span className="rate-circle-number">{overallRating.toFixed(1)}</span>
-          <span className="rate-circle-label">von 10</span>
+          <span className="rate-circle-label">{t('von 10')}</span>
         </div>
 
         {/* Emoji Indicators */}
@@ -115,8 +116,8 @@ export const OverallRatingSection = ({
           value={overallRating}
           onChange={(e) => onRatingChange(parseFloat(e.target.value))}
           className="rate-range"
-          aria-label="Gesamtbewertung"
-          aria-valuetext={`${overallRating.toFixed(1)} von 10`}
+          aria-label={t('Gesamtbewertung')}
+          aria-valuetext={t('{value} von 10', { value: overallRating.toFixed(1) })}
           style={{
             background: `linear-gradient(to right, ${currentTheme.primary} 0%, ${currentTheme.primary} ${overallRating * 10}%, var(--color-background-surface) ${overallRating * 10}%, var(--color-background-surface) 100%)`,
           }}

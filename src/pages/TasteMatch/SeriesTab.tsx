@@ -4,6 +4,7 @@ import React from 'react';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { ACCENT_COLORS } from './constants';
 import { SharedItemCard } from './SharedItemCard';
+import { t } from '../../services/i18n';
 
 interface SeriesTabProps {
   result: TasteMatchResult;
@@ -31,7 +32,9 @@ export const SeriesTab: React.FC<SeriesTabProps> = React.memo(({ result, cardBg 
             }}
           >
             <Tv style={{ fontSize: 20, color: ACCENT_COLORS.series }} />
-            <span className="tm-section-header__text">{sharedSeries.length} gemeinsame Serien</span>
+            <span className="tm-section-header__text">
+              {t('{n} gemeinsame Serien', { n: sharedSeries.length })}
+            </span>
             {perfectMatches.length > 0 && (
               <span
                 className="tm-section-header__badge"
@@ -41,7 +44,7 @@ export const SeriesTab: React.FC<SeriesTabProps> = React.memo(({ result, cardBg 
                 }}
               >
                 <Favorite style={{ fontSize: 12 }} />
-                {perfectMatches.length} perfekte Matches
+                {t('{n} perfekte Matches', { n: perfectMatches.length })}
               </span>
             )}
           </div>
@@ -61,8 +64,8 @@ export const SeriesTab: React.FC<SeriesTabProps> = React.memo(({ result, cardBg 
           <div className="tm-empty-state__icon" style={{ background: `${ACCENT_COLORS.series}15` }}>
             <Tv style={{ fontSize: 36, color: ACCENT_COLORS.series, opacity: 0.6 }} />
           </div>
-          <p className="tm-empty-state__title">Keine gemeinsamen Serien</p>
-          <p className="tm-empty-state__subtitle">Schaut ihr verschiedene Serien?</p>
+          <p className="tm-empty-state__title">{t('Keine gemeinsamen Serien')}</p>
+          <p className="tm-empty-state__subtitle">{t('Schaut ihr verschiedene Serien?')}</p>
         </motion.div>
       )}
     </motion.div>

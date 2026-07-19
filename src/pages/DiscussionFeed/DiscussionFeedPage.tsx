@@ -8,16 +8,17 @@ import { PageLayout, PageHeader, SkeletonListRow, EmptyState } from '../../compo
 import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
+import { t } from '../../services/i18n';
 import type { DiscussionFeedEntry } from '../../types/Discussion';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w92';
 
 const FILTER_TABS: { id: FeedFilterType; label: string }[] = [
-  { id: 'all', label: 'Alle' },
-  { id: 'series', label: 'Serien' },
-  { id: 'movie', label: 'Filme' },
-  { id: 'episode', label: 'Episoden' },
+  { id: 'all', label: t('Alle') },
+  { id: 'series', label: t('Serien') },
+  { id: 'movie', label: t('Filme') },
+  { id: 'episode', label: t('Episoden') },
 ];
 
 const FeedCard: React.FC<{
@@ -28,7 +29,7 @@ const FeedCard: React.FC<{
   const { currentTheme } = useTheme();
 
   const isReply = entry.type === 'reply_created';
-  const actionText = isReply ? 'hat geantwortet auf' : 'hat eine Diskussion gestartet in';
+  const actionText = isReply ? t('hat geantwortet auf') : t('hat eine Diskussion gestartet in');
   const ItemIcon = entry.itemType === 'movie' ? Movie : Tv;
   const posterUrl = entry.posterPath ? `${POSTER_BASE}${entry.posterPath}` : null;
 
@@ -193,7 +194,7 @@ export const DiscussionFeedPage = () => {
 
   return (
     <PageLayout>
-      <PageHeader title="Diskussions-Feed" icon={<ChatBubbleOutline />} />
+      <PageHeader title={t('Diskussions-Feed')} icon={<ChatBubbleOutline />} />
 
       {/* Filter Tabs */}
       <div
@@ -241,7 +242,7 @@ export const DiscussionFeedPage = () => {
       {/* Content */}
       <div style={{ padding: '0 20px', position: 'relative', zIndex: 1 }}>
         {loading ? (
-          <div role="status" aria-label="Diskussionen werden geladen">
+          <div role="status" aria-label={t('Diskussionen werden geladen')}>
             {Array.from({ length: 5 }, (_, i) => (
               <SkeletonListRow key={i} avatarShape="card" />
             ))}
@@ -262,11 +263,15 @@ export const DiscussionFeedPage = () => {
         ) : entries.length === 0 ? (
           <EmptyState
             icon={<ChatBubbleOutline style={{ fontSize: '48px' }} />}
-            title="Noch keine Diskussionen"
+            title={t('Noch keine Diskussionen')}
             description={
               filter !== 'all'
-                ? `Keine ${filter === 'movie' ? 'Film' : filter === 'episode' ? 'Episoden' : 'Serien'}-Diskussionen vorhanden`
-                : 'Es wurden noch keine Diskussionen gestartet'
+                ? filter === 'movie'
+                  ? t('Keine Film-Diskussionen vorhanden')
+                  : filter === 'episode'
+                    ? t('Keine Episoden-Diskussionen vorhanden')
+                    : t('Keine Serien-Diskussionen vorhanden')
+                : t('Es wurden noch keine Diskussionen gestartet')
             }
           />
         ) : (

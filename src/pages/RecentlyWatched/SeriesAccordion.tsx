@@ -2,6 +2,7 @@ import { Check, ExpandLess, ExpandMore, PlayCircle } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import type { WatchedEpisode } from './EpisodeDataManager';
 import { EpisodeDiscussionIndicator } from './RecentlyWatchedComponents';
 import { tapScaleTight } from '../../lib/motion';
@@ -56,7 +57,10 @@ export const SeriesAccordion = memo<{
           role="button"
           tabIndex={0}
           aria-expanded={isExpanded}
-          aria-label={`${firstEpisode.seriesName}, ${episodes.length} Episoden`}
+          aria-label={t('{title}, {n} Episoden', {
+            title: firstEpisode.seriesName,
+            n: episodes.length,
+          })}
           onClick={() => onToggle(dateKey, seriesId)}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -73,7 +77,7 @@ export const SeriesAccordion = memo<{
             decoding="async"
             role="button"
             tabIndex={0}
-            aria-label={`${firstEpisode.seriesName} öffnen`}
+            aria-label={t('{title} öffnen', { title: firstEpisode.seriesName })}
             onClick={(e) => {
               e.stopPropagation();
               onNavigateToSeries(firstEpisode.seriesId);
@@ -101,7 +105,7 @@ export const SeriesAccordion = memo<{
                   color: currentTheme.status.success,
                 }}
               >
-                {episodes.length} Episoden
+                {t('{n} Episoden', { n: episodes.length })}
               </span>
               {episodes.some((ep) => ep.watchCount > 1) && (
                 <span
@@ -159,7 +163,10 @@ export const SeriesAccordion = memo<{
                         <p
                           role="button"
                           tabIndex={0}
-                          aria-label={`Zur Episode S${episode.seasonNumber} E${episode.episodeNumber} springen`}
+                          aria-label={t('Zur Episode S{s} E{e} springen', {
+                            s: episode.seasonNumber,
+                            e: episode.episodeNumber,
+                          })}
                           onClick={() =>
                             onNavigateToEpisode(
                               episode.seriesId,
@@ -209,7 +216,7 @@ export const SeriesAccordion = memo<{
                       <motion.button
                         type="button"
                         whileTap={tapScaleTight}
-                        aria-label={isCompleting ? 'Als gesehen markiert' : 'Erneut ansehen'}
+                        aria-label={isCompleting ? t('Als gesehen markiert') : t('Erneut ansehen')}
                         onClick={(e) => {
                           e.stopPropagation();
                           onRewatch(episode);

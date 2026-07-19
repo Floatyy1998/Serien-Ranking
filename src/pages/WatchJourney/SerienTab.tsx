@@ -17,6 +17,7 @@ import {
   useSeriesPosters,
   useTimelineSeries,
 } from './serienTabHelpers';
+import { t } from '../../services/i18n';
 
 interface SerienTabProps {
   data: WatchJourneyData;
@@ -52,8 +53,8 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
         icon={
           <MovieFilter style={{ fontSize: 64, color: `${textSecondary}30`, marginBottom: 16 }} />
         }
-        title="Keine Serien-Daten"
-        description="Schau Serien, um deine persönliche Serien-Reise zu sehen!"
+        title={t('Keine Serien-Daten')}
+        description={t('Schau Serien, um deine persönliche Serien-Reise zu sehen!')}
       />
     );
   }
@@ -89,24 +90,28 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               marginBottom: 8,
             }}
           >
-            DEINE SERIEN-REISE
+            {t('DEINE SERIEN-REISE')}
           </p>
           <h2 style={{ color: textPrimary, fontSize: 32, fontWeight: 800, margin: '0 0 8px' }}>
-            {uniqueSeriesCount} Serien
+            {t('{n} Serien', { n: uniqueSeriesCount })}
           </h2>
           <div style={{ display: 'flex', gap: 20, marginTop: 16 }}>
             <div>
               <span style={{ fontSize: 28, fontWeight: 700, color: primaryColor }}>
                 {totalEpisodes}
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>Episoden</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('Episoden')}
+              </span>
             </div>
             <div style={{ width: 1, background: `${textSecondary}40` }} />
             <div>
               <span style={{ fontSize: 28, fontWeight: 700, color: primaryColor }}>
                 Ø {avgEpisodesPerSeries}
               </span>
-              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>pro Serie</span>
+              <span style={{ fontSize: 14, color: textSecondary, marginLeft: 4 }}>
+                {t('pro Serie')}
+              </span>
             </div>
           </div>
         </div>
@@ -137,7 +142,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               margin: 0,
             }}
           >
-            Serien-Timeline {data.year}
+            {t('Serien-Timeline {year}', { year: data.year })}
           </h3>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -148,7 +153,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 if (val > monthRangeEnd) setMonthRangeEnd(val);
               }}
               months={MONTH_NAMES}
-              ariaLabel="Startmonat der Timeline"
+              ariaLabel={t('Startmonat der Timeline')}
               compact={isMobile}
             />
             <span style={{ color: textSecondary, fontSize: 13 }}>–</span>
@@ -159,7 +164,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                 if (val < monthRangeStart) setMonthRangeStart(val);
               }}
               months={MONTH_NAMES}
-              ariaLabel="Endmonat der Timeline"
+              ariaLabel={t('Endmonat der Timeline')}
               compact={isMobile}
             />
           </div>
@@ -194,7 +199,7 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               key={series.seriesId}
               role="button"
               tabIndex={0}
-              aria-label={`${series.title} öffnen`}
+              aria-label={t('{title} öffnen', { title: series.title })}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               whileTap={{ opacity: 0.7 }}
@@ -259,7 +264,8 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
                     marginTop: isMobile ? 2 : 4,
                   }}
                 >
-                  {series.episodes} Ep{!isMobile && ` · ${series.totalHours}h`}
+                  {t('{n} Ep', { n: series.episodes })}
+                  {!isMobile && ` · ${series.totalHours}h`}
                 </div>
                 <div
                   style={{
@@ -352,15 +358,15 @@ export const SerienTab: React.FC<SerienTabProps> = ({ data }) => {
               }}
             />
             {showAllTimeline
-              ? 'Weniger anzeigen'
-              : `${timelineSeries.length - 10} weitere Serien anzeigen`}
+              ? t('Weniger anzeigen')
+              : t('{n} weitere Serien anzeigen', { n: timelineSeries.length - 10 })}
           </motion.button>
         )}
 
         {timelineSeries.length === 0 && (
           <div style={{ padding: '40px 20px', textAlign: 'center' }}>
             <p style={{ color: textSecondary, fontSize: 14 }}>
-              Keine Serien im ausgewählten Zeitraum geschaut
+              {t('Keine Serien im ausgewählten Zeitraum geschaut')}
             </p>
           </div>
         )}

@@ -1,6 +1,7 @@
 import { Alert, Box, Snackbar, Typography, useMediaQuery, useTheme } from '@mui/material';
 import React from 'react';
 import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 
 interface PetHungerToastProps {
   open: boolean;
@@ -23,7 +24,9 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
 
   const isCritical = level === 'critical';
   const bgColor = isCritical ? '#dc2626' : '#f97316';
-  const title = isCritical ? `${petName} verhungert bald!` : `${petName} hat Hunger!`;
+  const title = isCritical
+    ? t('{name} verhungert bald!', { name: petName })
+    : t('{name} hat Hunger!', { name: petName });
   const icon = isCritical ? '⚠️' : '🍖';
 
   return (
@@ -53,7 +56,7 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
               '&:hover': { opacity: 0.8 },
             }}
           >
-            Jetzt füttern
+            {t('Jetzt füttern')}
           </Typography>
         }
         sx={{
@@ -94,8 +97,8 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
               }}
             >
               {isCritical
-                ? 'Füttere dein Pet bevor es zu spät ist!'
-                : 'Dein Pet braucht bald etwas zu essen.'}
+                ? t('Füttere dein Pet bevor es zu spät ist!')
+                : t('Dein Pet braucht bald etwas zu essen.')}
             </Typography>
           </Box>
         </Box>

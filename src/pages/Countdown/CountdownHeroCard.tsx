@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { SeriesCountdown } from '../../hooks/useSeriesCountdowns';
 import { tapScaleSmall } from '../../lib/motion';
 import { formatSeasonDate } from '../../lib/date';
+import { t } from '../../services/i18n';
 
 interface CountdownHeroCardProps {
   item: SeriesCountdown;
@@ -11,9 +12,9 @@ interface CountdownHeroCardProps {
 }
 
 function countdownText(daysUntil: number): string {
-  if (daysUntil === 0) return 'startet heute';
-  if (daysUntil === 1) return 'in 1 Tag';
-  return `in ${daysUntil} Tagen`;
+  if (daysUntil === 0) return t('startet heute');
+  if (daysUntil === 1) return t('in 1 Tag');
+  return t('in {n} Tagen', { n: daysUntil });
 }
 
 export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onClick }) => {
@@ -21,7 +22,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
   const ACCENT = currentTheme.accent;
 
   const seasonLabel =
-    item.type === 'mid-season-return' ? 'Rückkehr' : `Staffel ${item.seasonNumber}`;
+    item.type === 'mid-season-return' ? t('Rückkehr') : t('Staffel {n}', { n: item.seasonNumber });
 
   return (
     <motion.button
@@ -30,7 +31,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
       transition={{ duration: 0.4 }}
       whileTap={tapScaleSmall}
       onClick={onClick}
-      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. Details öffnen`}
+      aria-label={`${item.title}, ${seasonLabel}, ${countdownText(item.daysUntil)}. ${t('Details öffnen')}`}
       className="cd-hero"
       style={{
         border: `1px solid ${ACCENT}40`,
@@ -56,7 +57,7 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
         {item.posterUrl ? (
           <img
             src={item.posterUrl}
-            alt={`Poster von ${item.title}`}
+            alt={t('Poster von {title}', { title: item.title })}
             decoding="async"
             className="cd-hero-poster"
           />
@@ -74,10 +75,10 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
         {/* Info */}
         <div className="cd-hero-info">
           <p className="cd-hero-eyebrow" style={{ color: ACCENT }}>
-            {item.type === 'mid-season-return' ? 'Rückkehr' : 'Neue Staffel'}
+            {item.type === 'mid-season-return' ? t('Rückkehr') : t('Neue Staffel')}
           </p>
           <h2 className="cd-hero-title">{item.title}</h2>
-          <p className="cd-hero-season">Staffel {item.seasonNumber}</p>
+          <p className="cd-hero-season">{t('Staffel {n}', { n: item.seasonNumber })}</p>
           <p className="cd-hero-date">{formatSeasonDate(item.nextDate)}</p>
         </div>
 
@@ -90,11 +91,13 @@ export const CountdownHeroCard: React.FC<CountdownHeroCardProps> = ({ item, onCl
           }}
         >
           {item.daysUntil === 0 ? (
-            <span className="cd-hero-circle-today">Heute</span>
+            <span className="cd-hero-circle-today">{t('Heute')}</span>
           ) : (
             <>
               <span className="cd-hero-circle-days">{item.daysUntil}</span>
-              <span className="cd-hero-circle-label">{item.daysUntil === 1 ? 'Tag' : 'Tage'}</span>
+              <span className="cd-hero-circle-label">
+                {item.daysUntil === 1 ? t('Tag') : t('Tage')}
+              </span>
             </>
           )}
         </div>

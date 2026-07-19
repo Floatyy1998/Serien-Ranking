@@ -15,6 +15,7 @@ import type { WatchJourneyData } from '../../services/watchJourneyService';
 import { ACCENT_COLORS } from './accentColors';
 import { ActivityTooltip } from './ActivityTooltip';
 import { wjCard, wjHero } from './watchJourneyStyles';
+import { t } from '../../services/i18n';
 
 interface ActivityTabProps {
   data: WatchJourneyData;
@@ -74,7 +75,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               marginBottom: 16,
             }}
           >
-            DEIN JAHR IN ZAHLEN
+            {t('DEIN JAHR IN ZAHLEN')}
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
@@ -99,7 +100,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <div style={{ color: ACCENT_COLORS.episodes, fontSize: 28, fontWeight: 800 }}>
                 {data.totalEpisodes}
               </div>
-              <div style={{ color: textSecondary, fontSize: 12 }}>Episoden</div>
+              <div style={{ color: textSecondary, fontSize: 12 }}>{t('Episoden')}</div>
             </div>
 
             <div style={{ textAlign: 'center' }}>
@@ -123,7 +124,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <div style={{ color: ACCENT_COLORS.movies, fontSize: 28, fontWeight: 800 }}>
                 {data.totalMovies}
               </div>
-              <div style={{ color: textSecondary, fontSize: 12 }}>Filme</div>
+              <div style={{ color: textSecondary, fontSize: 12 }}>{t('Filme')}</div>
             </div>
 
             <div style={{ textAlign: 'center' }}>
@@ -147,7 +148,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <div style={{ color: ACCENT_COLORS.time, fontSize: 28, fontWeight: 800 }}>
                 {totalHours}h
               </div>
-              <div style={{ color: textSecondary, fontSize: 12 }}>Watch-Zeit</div>
+              <div style={{ color: textSecondary, fontSize: 12 }}>{t('Watch-Zeit')}</div>
             </div>
           </div>
         </div>
@@ -168,7 +169,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
             margin: '0 0 20px',
           }}
         >
-          Monatliche Aktivität
+          {t('Monatliche Aktivität')}
         </h3>
 
         <div style={{ width: '100%', height: 280 }}>
@@ -202,7 +203,7 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
               <Legend
                 wrapperStyle={{ paddingTop: 20 }}
                 formatter={(value) => (
-                  <span style={{ color: textSecondary, fontSize: 13 }}>{value}</span>
+                  <span style={{ color: textSecondary, fontSize: 13 }}>{t(String(value))}</span>
                 )}
               />
               <Bar
@@ -257,10 +258,10 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
           <LocalFireDepartment style={{ color: ACCENT_COLORS.fire, fontSize: 32 }} />
           <div>
             <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
-              Bester Monat: {bestMonth.monthName}
+              {t('Bester Monat: {month}', { month: bestMonth.monthName })}
             </div>
             <div style={{ color: textSecondary, fontSize: 13 }}>
-              {bestMonth.episodes + bestMonth.movies} Episoden & Filme
+              {t('{n} Episoden & Filme', { n: bestMonth.episodes + bestMonth.movies })}
             </div>
           </div>
         </motion.div>
@@ -283,10 +284,13 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
           <TrendingUp style={{ color: ACCENT_COLORS.trending, fontSize: 32 }} />
           <div>
             <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
-              {avgPerMonth} pro Monat
+              {t('{n} pro Monat', { n: avgPerMonth })}
             </div>
             <div style={{ color: textSecondary, fontSize: 13 }}>
-              Ø über {currentMonth} {currentMonth === 1 ? 'Monat' : 'Monate'}
+              {t('Ø über {n} {unit}', {
+                n: currentMonth,
+                unit: currentMonth === 1 ? t('Monat') : t('Monate'),
+              })}
             </div>
           </div>
         </motion.div>
@@ -308,10 +312,10 @@ export const ActivityTab: React.FC<ActivityTabProps> = ({ data }) => {
           <AccessTime style={{ color: ACCENT_COLORS.time, fontSize: 32 }} />
           <div>
             <div style={{ color: textPrimary, fontSize: 15, fontWeight: 600 }}>
-              {daysWatched} Tage Watchtime
+              {t('{n} Tage Watchtime', { n: daysWatched })}
             </div>
             <div style={{ color: textSecondary, fontSize: 13 }}>
-              Das entspricht {totalHours} Stunden
+              {t('Das entspricht {n} Stunden', { n: totalHours })}
             </div>
           </div>
         </motion.div>

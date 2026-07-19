@@ -2,6 +2,7 @@ import { People } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import './ActorUniversePage.css';
+import { t } from '../../services/i18n';
 
 interface StatsBannerProps {
   mostConnectedPair: {
@@ -44,13 +45,13 @@ export const StatsBanner = ({ mostConnectedPair }: StatsBannerProps) => {
         </div>
         <div>
           <p className="au-stats-label" style={{ color: currentTheme.text.muted }}>
-            Stärkstes Duo
+            {t('Stärkstes Duo')}
           </p>
           <p className="au-stats-names" style={{ color: currentTheme.text.primary }}>
             {mostConnectedPair.actor1} & {mostConnectedPair.actor2}
           </p>
           <p className="au-stats-count" style={{ color: currentTheme.primary }}>
-            {mostConnectedPair.count} gemeinsame Serien
+            {t('{n} gemeinsame Serien', { n: mostConnectedPair.count })}
           </p>
         </div>
       </div>

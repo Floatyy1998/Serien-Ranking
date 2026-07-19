@@ -7,6 +7,7 @@ import { WatchJourneyLoadingState } from './WatchJourneyLoadingState';
 import { WatchJourneyTabContent } from './WatchJourneyTabContent';
 import { WatchJourneyTabs } from './WatchJourneyTabs';
 import { WatchJourneyYearPicker } from './WatchJourneyYearPicker';
+import { t } from '../../services/i18n';
 import './WatchJourneyPage.css';
 
 export const WatchJourneyPage: React.FC = () => {
@@ -72,7 +73,7 @@ export const WatchJourneyPage: React.FC = () => {
         <PageHeader
           title="Watch Journey"
           gradientTo={ACCENT_COLORS.movies}
-          subtitle="Deine Trends & Insights"
+          subtitle={t('Deine Trends & Insights')}
           actions={
             <WatchJourneyYearPicker
               selectedYear={selectedYear}

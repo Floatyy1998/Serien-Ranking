@@ -7,6 +7,7 @@ import type { Actor, ActorConnection } from '../../hooks/useActorUniverse';
 import { seededRandom } from '../../utils/seededRandom';
 import { useActorPanZoom } from './useActorPanZoom';
 import { tapScaleTight } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w185';
 
@@ -77,9 +78,9 @@ export const GalaxyMapTab = ({
         }}
       >
         {[
-          { action: zoomIn, icon: <ZoomIn />, isText: false, tooltip: 'Hineinzoomen' },
-          { action: zoomOut, icon: <ZoomOut />, isText: false, tooltip: 'Herauszoomen' },
-          { action: resetView, icon: 'Reset', isText: true, tooltip: 'Ansicht zurücksetzen' },
+          { action: zoomIn, icon: <ZoomIn />, isText: false, tooltip: t('Hineinzoomen') },
+          { action: zoomOut, icon: <ZoomOut />, isText: false, tooltip: t('Herauszoomen') },
+          { action: resetView, icon: 'Reset', isText: true, tooltip: t('Ansicht zurücksetzen') },
         ].map((btn, idx) => (
           <Tooltip key={idx} title={btn.tooltip} arrow placement="left">
             <motion.button
@@ -289,7 +290,7 @@ export const GalaxyMapTab = ({
                         color: currentTheme.text.muted,
                       }}
                     >
-                      {actor.seriesCount} Serien
+                      {t('{n} Serien', { n: actor.seriesCount })}
                     </div>
                   </div>
                 )}
@@ -325,7 +326,7 @@ export const GalaxyMapTab = ({
               boxShadow: '0 0 8px hsl(45, 80%, 60%)',
             }}
           />
-          <span style={{ color: currentTheme.text.secondary }}>Top 10 Schauspieler</span>
+          <span style={{ color: currentTheme.text.secondary }}>{t('Top 10 Schauspieler')}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div
@@ -336,7 +337,7 @@ export const GalaxyMapTab = ({
               borderRadius: '2px',
             }}
           />
-          <span style={{ color: currentTheme.text.secondary }}>Gemeinsame Serie</span>
+          <span style={{ color: currentTheme.text.secondary }}>{t('Gemeinsame Serie')}</span>
         </div>
       </div>
     </motion.div>

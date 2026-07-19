@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Friend } from '../../types/Friend';
 import type { RecommendationMediaType } from '../../types/Recommendation';
+import { t } from '../../services/i18n';
 
 interface FriendAvatarButtonProps {
   friend: Friend;
@@ -31,7 +32,7 @@ export const FriendAvatarButton: React.FC<FriendAvatarButtonProps> = ({
   const avatarSize = isMobile ? 60 : 66;
   const avatarMin = isMobile ? 80 : 88;
 
-  const name = friend.displayName || friend.username || 'Freund';
+  const name = friend.displayName || friend.username || t('Freund');
 
   return (
     <motion.button
@@ -42,7 +43,9 @@ export const FriendAvatarButton: React.FC<FriendAvatarButtonProps> = ({
       aria-disabled={alreadyHas}
       title={
         alreadyHas
-          ? `${name} hat ${mediaType === 'movie' ? 'den Film' : 'die Serie'} schon`
+          ? mediaType === 'movie'
+            ? t('{name} hat den Film schon', { name })
+            : t('{name} hat die Serie schon', { name })
           : undefined
       }
       style={{
@@ -219,7 +222,7 @@ export const FriendAvatarButton: React.FC<FriendAvatarButtonProps> = ({
               whiteSpace: 'nowrap',
             }}
           >
-            Hat das schon
+            {t('Hat das schon')}
           </div>
         )}
       </div>

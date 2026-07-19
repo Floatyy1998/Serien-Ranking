@@ -11,6 +11,7 @@ import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
+import { t } from '../../services/i18n';
 
 interface WatchJourneyTabEmptyStateProps {
   icon: ReactNode;
@@ -24,7 +25,7 @@ export const WatchJourneyTabEmptyState: React.FC<WatchJourneyTabEmptyStateProps>
   icon,
   title,
   description,
-  ctaLabel = 'Serien & Filme entdecken',
+  ctaLabel = t('Serien & Filme entdecken'),
   ctaTo = '/discover',
 }) => {
   const { currentTheme } = useTheme();

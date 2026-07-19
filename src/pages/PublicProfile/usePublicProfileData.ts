@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { PublicItem, PublicFilters } from './publicProfileHelpers';
 import { useResolvedTheme, calculatePublicRating, applyFilters } from './publicProfileHelpers';
+import { t } from '../../services/i18n';
 
 // Re-export types for backward compatibility
 export type {
@@ -74,7 +75,7 @@ export function usePublicProfileData() {
           setLoading(false);
           return;
         }
-        setProfileName(usernameSnap.val() || displayNameSnap.val() || 'Unbekannt');
+        setProfileName(usernameSnap.val() || displayNameSnap.val() || t('Unbekannt'));
 
         const series = seriesSnapshot.val();
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<

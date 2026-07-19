@@ -1,6 +1,7 @@
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { t } from '../../services/i18n';
 
 /**
  * Marketing-Markenpalette der Start-Seite (Pre-Auth Landing).
@@ -25,10 +26,10 @@ export const FooterCTA = () => (
   >
     <div className="start-footer-cta">
       <h2 className="start-footer-cta-heading" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-        Bereit loszulegen?
+        {t('Bereit loszulegen?')}
       </h2>
       <p className="start-footer-cta-text" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-        Starte noch heute und entdecke deine neue Lieblingsserie
+        {t('Starte noch heute und entdecke deine neue Lieblingsserie')}
       </p>
       <Button
         component={Link}
@@ -51,7 +52,7 @@ export const FooterCTA = () => (
           },
         }}
       >
-        Jetzt kostenlos registrieren
+        {t('Jetzt kostenlos registrieren')}
       </Button>
     </div>
   </motion.div>

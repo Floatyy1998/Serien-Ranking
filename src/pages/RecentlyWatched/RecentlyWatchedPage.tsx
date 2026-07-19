@@ -7,6 +7,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { t } from '../../services/i18n';
 import { SkeletonListRow, PageHeader, PageLayout, ScrollToTopButton } from '../../components/ui';
 import { useRecentlyWatched, TIME_RANGES } from './useRecentlyWatched';
 import {
@@ -56,7 +57,7 @@ export const RecentlyWatchedPage = memo(() => {
         style={{ background: `${currentTheme.background.default}ee` }}
       >
         <PageHeader
-          title="Verlauf"
+          title={t('Verlauf')}
           gradientFrom={currentTheme.text.primary}
           gradientTo={currentTheme.status.success}
           sticky={false}
@@ -86,7 +87,7 @@ export const RecentlyWatchedPage = memo(() => {
                 exit={{ opacity: 0 }}
                 style={{ padding: '0 16px' }}
                 role="status"
-                aria-label="Lade Verlauf"
+                aria-label={t('Lade Verlauf')}
               >
                 {Array.from({ length: 6 }, (_, i) => (
                   <SkeletonListRow key={i} avatarShape="card" />

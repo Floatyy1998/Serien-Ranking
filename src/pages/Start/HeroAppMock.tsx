@@ -2,6 +2,7 @@ import { memo, useEffect, useState } from 'react';
 import { PlayArrow, Search, Whatshot } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 
 /**
  * HeroAppMock — das Produkt-Schaufenster der Landing: eine stilisierte
@@ -79,14 +80,14 @@ export const HeroAppMock = memo(() => {
           <span className="sm-brand-dot" />
           <span className="sm-search">
             <Search sx={{ fontSize: 15 }} />
-            Suche nach Serien oder Filmen
+            {t('Suche nach Serien oder Filmen')}
           </span>
           <span className="sm-avatar" />
         </div>
 
         {/* Weiterschauen: Kino-Banner-Zeilen */}
         <div className="sm-label">
-          <PlayArrow sx={{ fontSize: 15 }} /> Weiterschauen
+          <PlayArrow sx={{ fontSize: 15 }} /> {t('Weiterschauen')}
         </div>
         <div className="sm-banners">
           {(banners.length ? banners : Array.from({ length: 3 })).map((item, i) => {
@@ -114,7 +115,7 @@ export const HeroAppMock = memo(() => {
                     )}
                     <div className="sm-banner-info">
                       <span className="sm-banner-title">{b.title}</span>
-                      <span className="sm-banner-meta">{FAKE_META[i % FAKE_META.length]}</span>
+                      <span className="sm-banner-meta">{t(FAKE_META[i % FAKE_META.length])}</span>
                       <span className="sm-progress">
                         <i style={{ width: `${PROGRESS[i % PROGRESS.length]}%` }} />
                       </span>

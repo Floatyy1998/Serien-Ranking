@@ -9,6 +9,7 @@ import { getImageUrl } from '../../utils/imageUrl';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
 export const ItemCard = memo(
@@ -105,7 +106,7 @@ export const ItemCard = memo(
                 {/* Close handle */}
                 <button
                   type="button"
-                  aria-label="Info schließen"
+                  aria-label={t('Info schließen')}
                   className="discover-info-close"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -166,7 +167,7 @@ export const ItemCard = memo(
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  {item.overview || 'Keine Beschreibung verfügbar.'}
+                  {item.overview || t('Keine Beschreibung verfügbar.')}
                 </p>
 
                 {/* CTA Button */}
@@ -189,7 +190,7 @@ export const ItemCard = memo(
                     gap: '4px',
                   }}
                 >
-                  Details
+                  {t('Details')}
                   <ArrowForward style={{ fontSize: '14px' }} />
                 </motion.button>
               </motion.div>
@@ -197,7 +198,7 @@ export const ItemCard = memo(
           </AnimatePresence>
 
           {!item.inList && !showInfo && (
-            <Tooltip title="Zur Liste hinzufügen" arrow>
+            <Tooltip title={t('Zur Liste hinzufügen')} arrow>
               <button
                 className="discover-add-btn"
                 onClick={(e) => {
@@ -274,7 +275,7 @@ export const ItemCard = memo(
 
         {item.basedOn && (
           <p
-            title={`Weil du „${item.basedOn}" magst`}
+            title={t('Weil du „{title}" magst', { title: item.basedOn })}
             style={{
               fontSize: 'var(--text-xs)',
               color: currentTheme.primary,
@@ -285,7 +286,7 @@ export const ItemCard = memo(
               whiteSpace: 'nowrap',
             }}
           >
-            Weil du „{item.basedOn}" magst
+            {t('Weil du „{title}" magst', { title: item.basedOn })}
           </p>
         )}
       </div>

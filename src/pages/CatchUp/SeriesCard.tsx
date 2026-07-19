@@ -5,6 +5,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUrl';
 import { markNextEpisodeWatched } from '../../hooks/markNextEpisode';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import { GradientRing } from './GradientRing';
 import { advanceCatchUpView, formatTimeString, type CatchUpSeries } from './useCatchUpData';
@@ -124,7 +125,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
       className="cu-card"
       role="button"
       tabIndex={0}
-      aria-label={`${item.series.title} öffnen`}
+      aria-label={t('{title} öffnen', { title: item.series.title })}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       style={{
@@ -195,7 +196,10 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
         </div>
         <div className="cu-card-progress-label" style={{ color: currentTheme.text.muted }}>
           <span>
-            {view.watchedEpisodes} von {view.totalEpisodes}
+            {t('{watched} von {total}', {
+              watched: view.watchedEpisodes,
+              total: view.totalEpisodes,
+            })}
           </span>
         </div>
 
@@ -203,7 +207,10 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
         <button
           type="button"
           onClick={handleMarkNext}
-          aria-label={`S${view.currentSeason} E${view.currentEpisode} als gesehen markieren`}
+          aria-label={t('S{s} E{e} als gesehen markieren', {
+            s: view.currentSeason,
+            e: view.currentEpisode,
+          })}
           className="cu-card-mark-next"
           style={{
             marginTop: 8,
@@ -219,7 +226,7 @@ export const SeriesCard = memo<SeriesCardProps>(({ item }) => {
             boxShadow: `inset 0 0 0 1px ${currentTheme.primary}45`,
           }}
         >
-          ✓ S{view.currentSeason} E{view.currentEpisode} gesehen
+          {t('✓ S{s} E{e} gesehen', { s: view.currentSeason, e: view.currentEpisode })}
         </button>
       </div>
 

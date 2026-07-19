@@ -11,6 +11,7 @@ import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../services/firebase/analytics';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
+import { t } from '../../services/i18n';
 import { showActionToast, showToast, showUndoToast } from '../../lib/toast';
 import { hapticSuccess } from '../../lib/haptics';
 
@@ -184,7 +185,7 @@ export const useEpisodeManagement = () => {
 
       const epId = episode.id;
       if (!epId) {
-        showToast('Episode-ID fehlt', 2000, 'error');
+        showToast(t('Episode-ID fehlt'), 2000, 'error');
         return;
       }
       const epPath = `${paths.seriesWatchItem(user.uid, series.id)}/seasons/${seasonIndex}/eps/${epId}`;
@@ -227,14 +228,14 @@ export const useEpisodeManagement = () => {
       // „Bewerten" öffnet die Schnellbewertung — die Markierung läuft normal weiter.
       if (newWatched && shouldTriggerQuickRate(series, seasonIndex, episodeIndex)) {
         const quickRateSeasonNumber = series.seasons[seasonIndex].seasonNumber + 1;
-        showActionToast(`${series.title} fertig — jetzt bewerten?`, {
-          actionLabel: 'Bewerten',
+        showActionToast(t('{title} fertig — jetzt bewerten?', { title: series.title }), {
+          actionLabel: t('Bewerten'),
           onAction: () => showQuickRating(series, quickRateSeasonNumber),
         });
       }
 
       const label = `S${season.seasonNumber + 1}E${episodeIndex + 1}`;
-      const action = newWatched ? 'als gesehen markiert' : 'als nicht gesehen markiert';
+      const action = newWatched ? t('als gesehen markiert') : t('als nicht gesehen markiert');
       showUndoToast(`${series.title} ${label} ${action}`, {
         onUndo: async () => {
           try {
@@ -264,7 +265,7 @@ export const useEpisodeManagement = () => {
               });
             }
           } catch {
-            showToast('Undo fehlgeschlagen', 2000, 'error');
+            showToast(t('Undo fehlgeschlagen'), 2000, 'error');
           }
         },
         onCommit: async () => {
@@ -319,7 +320,7 @@ export const useEpisodeManagement = () => {
       });
     } catch (error) {
       console.error('Failed to toggle episode watch status:', error);
-      showToast('Fehler beim Speichern', 3000, 'error');
+      showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
 
@@ -381,22 +382,25 @@ export const useEpisodeManagement = () => {
       );
       setSelectedSeason(targetSeasonIndex);
 
-      showUndoToast(`Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`, async () => {
-        try {
-          // Undo: alle neu-gemarkten Eps wieder entfernen (waren zuvor unwatched)
-          const undoUpdates: Record<string, unknown> = {};
-          for (const epBase of markedEpPaths) {
-            undoUpdates[epBase] = null;
+      showUndoToast(
+        t('Catch-Up bis S{s}E{e}', { s: targetSeasonIndex + 1, e: targetEpisodeIndex }),
+        async () => {
+          try {
+            // Undo: alle neu-gemarkten Eps wieder entfernen (waren zuvor unwatched)
+            const undoUpdates: Record<string, unknown> = {};
+            for (const epBase of markedEpPaths) {
+              undoUpdates[epBase] = null;
+            }
+            undoUpdates[paths.serienVersion(user.uid)] = serverTimestamp();
+            await dbUpdate(undoUpdates);
+          } catch {
+            showToast(t('Undo fehlgeschlagen'), 2000, 'error');
           }
-          undoUpdates[paths.serienVersion(user.uid)] = serverTimestamp();
-          await dbUpdate(undoUpdates);
-        } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
         }
-      });
+      );
     } catch (error) {
       console.error('Failed to catch up episodes:', error);
-      showToast('Fehler beim Speichern', 3000, 'error');
+      showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
 
@@ -483,21 +487,21 @@ export const useEpisodeManagement = () => {
           const lastEpisodeIndex = (season.episodes?.length || 1) - 1;
           if (shouldTriggerQuickRate(series, seasonIndex, lastEpisodeIndex)) {
             const quickRateSeasonNumber = season.seasonNumber + 1;
-            showActionToast(`${series.title} fertig — jetzt bewerten?`, {
-              actionLabel: 'Bewerten',
+            showActionToast(t('{title} fertig — jetzt bewerten?', { title: series.title }), {
+              actionLabel: t('Bewerten'),
               onAction: () => showQuickRating(series, quickRateSeasonNumber),
             });
           }
         }
       }
 
-      const seasonLabel = `Staffel ${season.seasonNumber + 1}`;
+      const seasonLabel = t('Staffel {n}', { n: season.seasonNumber + 1 });
       const modeLabel =
         mode === 'unwatch'
-          ? 'als nicht gesehen markiert'
+          ? t('als nicht gesehen markiert')
           : mode === 'rewatch'
-            ? 'Rewatch markiert'
-            : 'als gesehen markiert';
+            ? t('Rewatch markiert')
+            : t('als gesehen markiert');
       showUndoToast(`${series.title} ${seasonLabel} ${modeLabel}`, async () => {
         try {
           const undoUpdates: Record<string, unknown> = {};
@@ -516,7 +520,7 @@ export const useEpisodeManagement = () => {
           // Delta-Reload (versionMatch) und zeigt den zurückgenommenen Stand weiter.
           await updateWithSeriesVersion(user.uid, undoUpdates);
         } catch {
-          showToast('Undo fehlgeschlagen', 2000, 'error');
+          showToast(t('Undo fehlgeschlagen'), 2000, 'error');
         }
       });
 
@@ -526,7 +530,7 @@ export const useEpisodeManagement = () => {
       }
     } catch (error) {
       console.error('Failed to toggle season watch status:', error);
-      showToast('Fehler beim Speichern', 3000, 'error');
+      showToast(t('Fehler beim Speichern'), 3000, 'error');
     }
   };
 

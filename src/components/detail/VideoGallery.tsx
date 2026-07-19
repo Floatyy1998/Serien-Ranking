@@ -6,6 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import { tapScale, tapScaleSmall } from '../../lib/motion';
 import { tmdbFetch } from '../../services/tmdbClient';
+import { t } from '../../services/i18n';
 
 interface Video {
   id: string;
@@ -96,7 +97,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
       Trailer: 'Trailer',
       Teaser: 'Teaser',
       Featurette: 'Featurette',
-      'Behind the Scenes': 'Making-Of',
+      'Behind the Scenes': t('Making-Of'),
       Clip: 'Clip',
     };
     return labels[type] || type;
@@ -116,7 +117,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
       <motion.button
         whileTap={tapScale}
         onClick={() => setIsOpen(true)}
-        aria-label="Videos ansehen"
+        aria-label={t('Videos ansehen')}
         style={
           buttonStyle === 'icon'
             ? {
@@ -220,9 +221,9 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
             }}
           >
             {/* Close Button */}
-            <Tooltip title="Schließen" arrow>
+            <Tooltip title={t('Schließen')} arrow>
               <button
-                aria-label="Schließen"
+                aria-label={t('Schließen')}
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedVideo(null);
@@ -378,7 +379,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                     }}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${video.name} abspielen`}
+                    aria-label={t('{name} abspielen', { name: video.name })}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
@@ -474,7 +475,7 @@ export const VideoGallery: React.FC<VideoGalleryProps> = ({
                             color: getOptimalTextColor(currentTheme.primary),
                           }}
                         >
-                          Offiziell
+                          {t('Offiziell')}
                         </div>
                       )}
                     </div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface AppearanceSectionProps {
   onNavigateTheme: () => void;
@@ -36,7 +37,7 @@ export const AppearanceSection = memo(
           <div className="settings-nav-btn-text">
             <h2 className="settings-nav-btn-title">Design & Themes</h2>
             <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-              Farben und Aussehen anpassen
+              {t('Farben und Aussehen anpassen')}
             </p>
           </div>
           <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />
@@ -61,9 +62,9 @@ export const AppearanceSection = memo(
             <ViewQuilt style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
           </div>
           <div className="settings-nav-btn-text">
-            <h2 className="settings-nav-btn-title">Homepage Layout</h2>
+            <h2 className="settings-nav-btn-title">{t('Homepage Layout')}</h2>
             <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
-              Sektionen sortieren & ausblenden
+              {t('Sektionen sortieren & ausblenden')}
             </p>
           </div>
           <ChevronRight style={{ fontSize: '22px', color: currentTheme.text.muted }} />

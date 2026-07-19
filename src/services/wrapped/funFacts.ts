@@ -3,6 +3,7 @@
  */
 
 import type { TopSeriesEntry, MonthStats, TimeOfDayStats, FunFact } from '../../types/Wrapped';
+import { t } from '../i18n';
 
 export interface FunFactContext {
   totalMinutes: number;
@@ -21,13 +22,16 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
   // Zeit-Vergleiche
   facts.push({
     id: 'time_flights',
-    text: `Mit ${hours} Stunden könntest du ${Math.round(hours / 12)} Mal nach New York fliegen ✈️`,
+    text: t('Mit {hours} Stunden könntest du {flights} Mal nach New York fliegen ✈️', {
+      hours,
+      flights: Math.round(hours / 12),
+    }),
     icon: '✈️',
   });
 
   facts.push({
     id: 'time_sleep',
-    text: `Das entspricht ${days} Tagen durchgehend schauen - ohne Schlaf!`,
+    text: t('Das entspricht {days} Tagen durchgehend schauen - ohne Schlaf!', { days }),
     icon: '😴',
   });
 
@@ -36,7 +40,10 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
     const top = ctx.topSeries[0];
     facts.push({
       id: 'top_series',
-      text: `"${top.title}" war dein Favorit mit ${top.episodesWatched} Episoden`,
+      text: t('"{title}" war dein Favorit mit {episodes} Episoden', {
+        title: top.title,
+        episodes: top.episodesWatched,
+      }),
       icon: '🏆',
     });
   }
@@ -44,7 +51,10 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
   // Aktivster Monat
   facts.push({
     id: 'active_month',
-    text: `Dein aktivster Monat war ${ctx.mostActiveMonth.monthName} mit ${ctx.mostActiveMonth.episodesWatched + ctx.mostActiveMonth.moviesWatched} Titeln`,
+    text: t('Dein aktivster Monat war {month} mit {count} Titeln', {
+      month: ctx.mostActiveMonth.monthName,
+      count: ctx.mostActiveMonth.episodesWatched + ctx.mostActiveMonth.moviesWatched,
+    }),
     icon: '📅',
   });
 
@@ -57,7 +67,9 @@ export function generateFunFacts(ctx: FunFactContext): FunFact[] {
   };
   facts.push({
     id: 'time_of_day',
-    text: `Du schaust am liebsten ${ctx.favoriteTimeOfDay.label.toLowerCase()}`,
+    text: t('Du schaust am liebsten {time}', {
+      time: t(ctx.favoriteTimeOfDay.label).toLowerCase(),
+    }),
     icon: timeEmoji[ctx.favoriteTimeOfDay.timeOfDay],
   });
 

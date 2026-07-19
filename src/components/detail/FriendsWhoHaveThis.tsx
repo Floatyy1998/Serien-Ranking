@@ -7,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
+import { t } from '../../services/i18n';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 
@@ -68,7 +69,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
               const rating = calculateOverallRating(foundItem as unknown as Series | Movie);
               friendsWithThisItem.push({
                 uid: friend.uid,
-                displayName: friend.displayName || friend.email?.split('@')[0] || 'Unbekannt',
+                displayName: friend.displayName || friend.email?.split('@')[0] || t('Unbekannt'),
                 photoURL,
                 rating,
               });
@@ -122,7 +123,7 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
             <div
               role="button"
               tabIndex={0}
-              aria-label={`Profil von ${friend.displayName} öffnen`}
+              aria-label={t('Profil von {name} öffnen', { name: friend.displayName })}
               onClick={(e) => {
                 e.stopPropagation();
                 navigate(`/friend/${friend.uid}`);
@@ -238,7 +239,10 @@ const FriendsWhoHaveThisInner: React.FC<FriendsWhoHaveThisProps> = ({ itemId, me
 
       {/* +X More Badge */}
       {friendsWithItem.length > 3 && (
-        <Tooltip title={`+${friendsWithItem.length - 3} weitere Freunde`} arrow>
+        <Tooltip
+          title={t('+{anzahl} weitere Freunde', { anzahl: friendsWithItem.length - 3 })}
+          arrow
+        >
           <div
             style={{
               width: '28px',

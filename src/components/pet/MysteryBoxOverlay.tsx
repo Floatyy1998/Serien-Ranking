@@ -13,6 +13,7 @@ import type { MysteryBoxReward } from '../../services/pet/mysteryBoxService';
 import { RARITY_COLORS, RARITY_LABELS } from '../../types/pet.types';
 import type { AccessoryRarity } from '../../types/pet.types';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 function getRewardIcon(reward: MysteryBoxReward) {
   switch (reward.type) {
@@ -96,7 +97,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
       >
         <button
           onClick={onClose}
-          aria-label="Schließen"
+          aria-label={t('Schließen')}
           style={{
             position: 'absolute',
             top: 16,
@@ -129,7 +130,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
           }}
         >
           {phase === 'reveal' ? (
-            'Belohnung!'
+            t('Belohnung!')
           ) : (
             <>
               <Inventory2 style={{ fontSize: 22, color: '#E040FB' }} />
@@ -265,7 +266,9 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
                 boxShadow: `0 0 20px ${rarityColor}30`,
               }}
             >
-              {RARITY_LABELS[reward.rarity as AccessoryRarity] || 'Belohnung'}
+              {RARITY_LABELS[reward.rarity as AccessoryRarity]
+                ? t(RARITY_LABELS[reward.rarity as AccessoryRarity])
+                : t('Belohnung')}
             </motion.span>
 
             <motion.p
@@ -274,11 +277,13 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               transition={{ delay: 0.6 }}
               style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, textAlign: 'center' }}
             >
-              {reward.type === 'accessory' && 'Exklusives Accessoire freigeschaltet!'}
+              {reward.type === 'accessory' && t('Exklusives Accessoire freigeschaltet!')}
               {reward.type === 'background' &&
-                'Neuer Hintergrund freigeschaltet — statte dein Pet aus!'}
+                t('Neuer Hintergrund freigeschaltet — statte dein Pet aus!')}
               {reward.type === 'xp_boost' &&
-                `${reward.xpMultiplier}x XP Boost — aktiviere ihn auf der Pet-Seite!`}
+                t('{x}x XP Boost — aktiviere ihn auf der Pet-Seite!', {
+                  x: reward.xpMultiplier ?? 2,
+                })}
             </motion.p>
           </motion.div>
         )}
@@ -306,11 +311,12 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
                 fontFamily: 'var(--font-display)',
               }}
             >
-              Diese Box wurde schon geöffnet
+              {t('Diese Box wurde schon geöffnet')}
             </span>
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, margin: 0, maxWidth: 320 }}>
-              Wahrscheinlich auf einem anderen Gerät eingelöst. Die nächste Box wartet nach den
-              nächsten Episoden auf dich.
+              {t(
+                'Wahrscheinlich auf einem anderen Gerät eingelöst. Die nächste Box wartet nach den nächsten Episoden auf dich.'
+              )}
             </p>
             <motion.button
               whileTap={tapScale}
@@ -327,7 +333,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
                 marginTop: 8,
               }}
             >
-              Alles klar
+              {t('Alles klar')}
             </motion.button>
           </motion.div>
         )}
@@ -350,7 +356,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               boxShadow: '0 6px 24px rgba(156,39,176,0.4)',
             }}
           >
-            <LockOpen style={{ fontSize: 20, marginRight: 4 }} /> Öffnen!
+            <LockOpen style={{ fontSize: 20, marginRight: 4 }} /> {t('Öffnen!')}
           </motion.button>
         )}
 
@@ -374,7 +380,7 @@ export const MysteryBoxOverlay: React.FC<MysteryBoxOverlayProps> = ({ totalEpiso
               boxShadow: `0 6px 24px ${rarityColor}50`,
             }}
           >
-            Einsammeln
+            {t('Einsammeln')}
           </motion.button>
         )}
       </motion.div>

@@ -10,6 +10,7 @@ import type { SvgIconComponent } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { GradientText } from '../../components/ui';
+import { t } from '../../services/i18n';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { ProfileMenuItem, ProfileStats as ProfileStatsType } from './useProfileData';
 import { tapScaleSmall } from '../../lib/motion';
@@ -110,19 +111,19 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
     {
       icon: CalendarToday,
       value: stats.totalSeries,
-      label: 'Serien',
+      label: t('Serien'),
       color: currentTheme.primary,
     },
     {
       icon: Movie,
       value: stats.totalMovies,
-      label: 'Filme',
+      label: t('Filme'),
       color: currentTheme.status.error,
     },
     {
       icon: PlayCircle,
       value: stats.watchedEpisodes,
-      label: 'Episoden',
+      label: t('Episoden'),
       color: currentTheme.status.success,
     },
   ];
@@ -148,7 +149,7 @@ export const ProfileStats = memo(({ stats, currentTheme }: ProfileStatsProps) =>
           {stats.timeString}
         </GradientText>
         <div className="profile-stats-time-label" style={{ color: currentTheme.text.muted }}>
-          Gesamte Watchtime
+          {t('Gesamte Watchtime')}
         </div>
       </div>
 
@@ -343,7 +344,7 @@ export const ProfileLogoutButton = memo(
         }}
       >
         <Logout style={{ fontSize: '20px' }} />
-        Abmelden
+        {t('Abmelden')}
       </motion.button>
     </motion.div>
   )

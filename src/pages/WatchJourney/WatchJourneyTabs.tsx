@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { TabType } from './types';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 interface TabDefinition {
   id: TabType;
@@ -20,12 +21,12 @@ interface TabDefinition {
 
 const TABS: TabDefinition[] = [
   { id: 'trends', label: 'Trends', icon: <Timeline style={{ fontSize: 18 }} /> },
-  { id: 'activity', label: 'Aktivität', icon: <TrendingUp style={{ fontSize: 18 }} /> },
-  { id: 'serien', label: 'Serien', icon: <MovieFilter style={{ fontSize: 18 }} /> },
+  { id: 'activity', label: t('Aktivität'), icon: <TrendingUp style={{ fontSize: 18 }} /> },
+  { id: 'serien', label: t('Serien'), icon: <MovieFilter style={{ fontSize: 18 }} /> },
   { id: 'insights', label: 'Insights', icon: <AutoGraph style={{ fontSize: 18 }} /> },
   { id: 'genre', label: 'Genres', icon: <Category style={{ fontSize: 18 }} /> },
   { id: 'provider', label: 'Streaming', icon: <Subscriptions style={{ fontSize: 18 }} /> },
-  { id: 'heatmap', label: 'Zeiten', icon: <Schedule style={{ fontSize: 18 }} /> },
+  { id: 'heatmap', label: t('Zeiten'), icon: <Schedule style={{ fontSize: 18 }} /> },
 ];
 
 interface WatchJourneyTabsProps {
@@ -40,7 +41,7 @@ export const WatchJourneyTabs: React.FC<WatchJourneyTabsProps> = ({ activeTab, o
   return (
     <>
       <div className="wj-tabs-scroll">
-        <div className="wj-tabs-bar" role="tablist" aria-label="Watch-Journey-Ansichten">
+        <div className="wj-tabs-bar" role="tablist" aria-label={t('Watch-Journey-Ansichten')}>
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             return (

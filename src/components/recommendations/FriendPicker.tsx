@@ -4,6 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import type { Friend } from '../../types/Friend';
 import type { RecommendationMediaType } from '../../types/Recommendation';
+import { t } from '../../services/i18n';
 import { FriendAvatarButton } from './FriendAvatarButton';
 
 interface FriendPickerProps {
@@ -65,7 +66,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
               color: currentTheme.text.primary,
             }}
           >
-            An wen?
+            {t('An wen?')}
           </div>
           {!checkingLibrary && friendsWithMedia.size > 0 && (
             <div
@@ -76,7 +77,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
                 letterSpacing: '0.02em',
               }}
             >
-              · {availableCount} verfügbar
+              · {t('{n} verfügbar', { n: availableCount })}
             </div>
           )}
         </div>
@@ -99,7 +100,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
                 letterSpacing: '0.02em',
               }}
             >
-              {selected.size} ausgewählt
+              {t('{n} ausgewählt', { n: selected.size })}
             </motion.span>
           )}
         </AnimatePresence>
@@ -140,7 +141,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
               fontFamily: 'var(--font-display)',
             }}
           >
-            Noch keine Freunde
+            {t('Noch keine Freunde')}
           </div>
           <div
             style={{
@@ -150,7 +151,7 @@ export const FriendPicker: React.FC<FriendPickerProps> = ({
               lineHeight: 1.5,
             }}
           >
-            Füge erst Freunde hinzu, um zu empfehlen.
+            {t('Füge erst Freunde hinzu, um zu empfehlen.')}
           </div>
         </div>
       ) : (

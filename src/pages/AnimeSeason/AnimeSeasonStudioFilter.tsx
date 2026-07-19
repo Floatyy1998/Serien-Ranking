@@ -13,6 +13,7 @@ import { Business, Check, KeyboardArrowDown, Search } from '@mui/icons-material'
 import { useTheme } from '../../contexts/ThemeContext';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { hapticSelect } from '../../lib/haptics';
+import { t } from '../../services/i18n';
 
 interface AnimeSeasonStudioFilterProps {
   studios: string[];
@@ -54,7 +55,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
   }, [studios, query]);
 
   const active = !!value;
-  const label = value || 'Alle Studios';
+  const label = value || t('Alle Studios');
 
   const pick = (studio: string) => {
     hapticSelect();
@@ -71,7 +72,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
         whileTap={{ scale: 0.97 }}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Studio-Filter"
+        aria-label={t('Studio-Filter')}
         onClick={() => setOpen((o) => !o)}
         style={{
           display: 'flex',
@@ -161,7 +162,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
                   autoFocus
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Studio suchen …"
+                  placeholder={t('Studio suchen …')}
                   style={{
                     flex: 1,
                     minWidth: 0,
@@ -180,7 +181,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
               {/* „Alle Studios" (Reset) — nur ohne aktive Suche. */}
               {!query.trim() && (
                 <StudioRow
-                  label="Alle Studios"
+                  label={t('Alle Studios')}
                   selected={!value}
                   onClick={() => pick('')}
                   theme={currentTheme}
@@ -204,7 +205,7 @@ export const AnimeSeasonStudioFilter: React.FC<AnimeSeasonStudioFilterProps> = (
                     color: currentTheme.text.muted,
                   }}
                 >
-                  Kein Studio gefunden
+                  {t('Kein Studio gefunden')}
                 </div>
               )}
             </div>

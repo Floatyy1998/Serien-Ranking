@@ -8,6 +8,7 @@ import Star from '@mui/icons-material/Star';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
+import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 interface QuickActionsProps {
@@ -34,19 +35,19 @@ export const QuickActionsSection: React.FC<QuickActionsProps> = ({ config, navig
     },
     discover: {
       icon: <AutoAwesome style={{ fontSize: '22px' }} />,
-      label: 'Entdecken',
+      label: t('Entdecken'),
       path: '/discover',
       color: currentTheme.status.success,
     },
     history: {
       icon: <History style={{ fontSize: '22px' }} />,
-      label: 'Verlauf',
+      label: t('Verlauf'),
       path: '/recently-watched',
       color: currentTheme.status.error,
     },
     friends: {
       icon: <Group style={{ fontSize: '22px' }} />,
-      label: 'Freunde',
+      label: t('Freunde'),
       path: '/activity',
       color: currentTheme.status.info.main,
     },
@@ -171,7 +172,7 @@ export const SecondaryActionsSection: React.FC<SecondaryActionsProps> = ({ confi
   > = {
     leaderboard: {
       icon: <EmojiEvents style={{ fontSize: '22px' }} />,
-      label: 'Rangliste',
+      label: t('Rangliste'),
       path: '/leaderboard',
       bg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.1) 100%)',
       border: '1px solid rgba(245, 158, 11, 0.2)',

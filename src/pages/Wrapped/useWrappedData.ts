@@ -9,6 +9,7 @@ import { DEFAULT_SLIDE_CONFIG } from '../../types/Wrapped';
 import { calculateWrappedStats } from '../../services/wrappedCalculator';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { WatchActivityService } from '../../services/watchActivityService';
+import { t } from '../../services/i18n';
 
 // Standard-Jahr (jedes Jahr hier ändern)
 const DEFAULT_YEAR = 2025;
@@ -118,7 +119,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
   useEffect(() => {
     const loadData = async () => {
       if (!user) {
-        setError('Bitte melde dich an, um deinen Jahresrückblick zu sehen.');
+        setError(t('Bitte melde dich an, um deinen Jahresrückblick zu sehen.'));
         setLoading(false);
         return;
       }
@@ -130,7 +131,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
         const bingeSessions = await WatchActivityService.getBingeSessionsForYear(user.uid, year);
 
         if (events.length === 0) {
-          setError(`Keine Daten für ${year} gefunden. Schau mehr Serien und Filme!`);
+          setError(t('Keine Daten für {year} gefunden. Schau mehr Serien und Filme!', { year }));
           setLoading(false);
           return;
         }
@@ -142,7 +143,7 @@ export const useWrappedData = (): UseWrappedDataResult => {
         setError(null);
       } catch (err) {
         console.error('Error loading wrapped data:', err);
-        setError('Fehler beim Laden der Daten.');
+        setError(t('Fehler beim Laden der Daten.'));
       } finally {
         setLoading(false);
       }
@@ -226,16 +227,20 @@ export const useWrappedData = (): UseWrappedDataResult => {
     if (!stats) return;
 
     const shareText =
-      `Mein ${year} in Zahlen:\n` +
-      `${stats.totalEpisodesWatched} Episoden\n` +
-      `${stats.totalMoviesWatched} Filme\n` +
-      `${Math.round(stats.totalHoursWatched)} Stunden\n` +
+      t('Mein {year} in Zahlen:', { year }) +
+      '\n' +
+      t('{n} Episoden', { n: stats.totalEpisodesWatched }) +
+      '\n' +
+      t('{n} Filme', { n: stats.totalMoviesWatched }) +
+      '\n' +
+      t('{n} Stunden', { n: Math.round(stats.totalHoursWatched) }) +
+      '\n' +
       `${stats.achievements.filter((a) => a.unlocked).length} Achievements`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Mein Jahresrückblick ${year}`,
+          title: t('Mein Jahresrückblick {year}', { year }),
           text: shareText,
         });
       } catch {
@@ -244,9 +249,9 @@ export const useWrappedData = (): UseWrappedDataResult => {
     } else {
       try {
         await navigator.clipboard.writeText(shareText);
-        showToast('In die Zwischenablage kopiert!', 2500, 'success');
+        showToast(t('In die Zwischenablage kopiert!'), 2500, 'success');
       } catch {
-        showToast('Kopieren fehlgeschlagen', 2500, 'error');
+        showToast(t('Kopieren fehlgeschlagen'), 2500, 'error');
       }
     }
   };

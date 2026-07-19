@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { t } from '../../../services/i18n';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
 
@@ -37,8 +38,8 @@ export const TableOfContents: React.FC<Props> = ({
           <li key={a.key} className={`ob-toc__row ob-toc__row--${state}`}>
             <span className="ob-toc__num">{a.num}</span>
             <div className="ob-toc__body">
-              <span className="ob-toc__label">{a.label}</span>
-              <span className="ob-toc__sub">{a.sub}</span>
+              <span className="ob-toc__label">{t(a.label)}</span>
+              <span className="ob-toc__sub">{t(a.sub)}</span>
             </div>
             <span className="ob-toc__marker" aria-hidden>
               {state === 'done' ? '✓' : state === 'active' ? '●' : ''}

@@ -12,9 +12,10 @@ import type { TabId } from './useActorUniverseData';
 import { useActorUniverseData } from './useActorUniverseData';
 import './ActorUniversePage.css';
 import { tapScale } from '../../lib/motion';
+import { t } from '../../services/i18n';
 
 const TABS: { id: TabId; label: string; icon: typeof TrendingUp }[] = [
-  { id: 'recommendations', label: 'Empfehlungen', icon: TrendingUp },
+  { id: 'recommendations', label: t('Empfehlungen'), icon: TrendingUp },
   { id: 'top', label: 'Top Actors', icon: Star },
   { id: 'map', label: 'Galaxy Map', icon: AutoAwesome },
 ];
@@ -96,7 +97,10 @@ export const ActorUniversePage = () => {
               Actor Universe
             </GradientText>
             <p className="au-subtitle" style={{ color: currentTheme.text.muted }}>
-              {stats.totalActors} Schauspieler • {stats.actorsInMultipleSeries} in mehreren Serien
+              {t('{actors} Schauspieler • {multi} in mehreren Serien', {
+                actors: stats.totalActors,
+                multi: stats.actorsInMultipleSeries,
+              })}
             </p>
           </div>
         </div>
@@ -138,7 +142,7 @@ export const ActorUniversePage = () => {
               toggleVoiceActors();
             }}
             whileTap={tapScale}
-            title={hideVoiceActors ? 'Voice Actors anzeigen' : 'Voice Actors ausblenden'}
+            title={hideVoiceActors ? t('Voice Actors anzeigen') : t('Voice Actors ausblenden')}
             className="au-voice-toggle"
             style={{
               background: hideVoiceActors

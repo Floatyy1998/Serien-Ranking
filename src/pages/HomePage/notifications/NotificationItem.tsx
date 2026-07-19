@@ -6,6 +6,7 @@ import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedN
 import { getNotificationIcon, getNotificationIconBg } from './icons';
 import { tapScaleTight } from '../../../lib/motion';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
+import { t } from '../../../services/i18n';
 
 interface NotificationItemProps {
   item: UnifiedNotification;
@@ -168,7 +169,7 @@ export const NotificationItem = React.memo(function NotificationItem({
               }}
             >
               <Check style={{ fontSize: '16px' }} />
-              Annehmen
+              {t('Annehmen')}
             </motion.button>
             <motion.button
               whileTap={tapScaleTight}
@@ -191,7 +192,7 @@ export const NotificationItem = React.memo(function NotificationItem({
               }}
             >
               <Cancel style={{ fontSize: '16px' }} />
-              Ablehnen
+              {t('Ablehnen')}
             </motion.button>
           </div>
         )}

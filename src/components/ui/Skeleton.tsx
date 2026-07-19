@@ -1,4 +1,5 @@
 import React from 'react';
+import { t } from '../../services/i18n';
 
 interface SkeletonProps {
   /** width/height in px or any valid CSS length */
@@ -74,7 +75,7 @@ export const SkeletonPosterRow: React.FC<{ count?: number; posterWidth?: number 
       padding: '0 20px',
     }}
     role="status"
-    aria-label="Lade Inhalte"
+    aria-label={t('Lade Inhalte')}
   >
     {Array.from({ length: count }, (_, i) => (
       <SkeletonPosterCard key={i} width={posterWidth} />
@@ -112,7 +113,7 @@ export const SkeletonRatingsGrid: React.FC<{ count?: number }> = ({ count = 12 }
       padding: '0 16px',
     }}
     role="status"
-    aria-label="Lade Bewertungen"
+    aria-label={t('Lade Bewertungen')}
   >
     {Array.from({ length: count }, (_, i) => (
       <SkeletonPosterCard key={i} />
