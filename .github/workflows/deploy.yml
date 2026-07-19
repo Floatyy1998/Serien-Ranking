@@ -7,14 +7,10 @@ on:
     branches: [master]
 
 jobs:
-  lint-build-deploy:
+  lint:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v5
-        with:
-          # Volle History, damit `vitest --changed <base>` den Basis-Commit kennt.
-          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -33,25 +29,39 @@ jobs:
       - name: Type check
         run: npm run type-check
 
-      # Nur die vom Diff betroffenen Tests laufen (nicht die komplette Suite).
-      # Push: Basis = Commit vor dem Push. PR: Basis = Ziel-Branch.
-      # Fallback (neuer Branch / keine Basis) = volle Suite.
-      - name: Unit tests (affected)
+  # Nur die vom Diff betroffenen Tests laufen (nicht die komplette Suite).
+  # Push: Basis = Commit vor dem Push. PR: Basis = Ziel-Branch.
+  # Fallback (neuer Branch / keine Basis) = volle Suite.
+  #
+  # Shards als Matrix auf getrennten Runnern: jsdom-Tests bauen über viele
+  # Dateien kumulativ Speicher auf — sequenziell starb erst ein 8er- (6 GB),
+  # dann ein 16er-Shard-Lauf (6 GB) am Heap-OOM, und die volle Suite brauchte
+  # 20-30 Min Wall-Clock. 16 parallele Jobs à 8 GB Heap drücken den
+  # Voll-Suite-Fall auf ~4-6 Min; Repo ist öffentlich, Runner-Minuten frei.
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Volle History, damit `vitest --changed <base>` den Basis-Commit kennt.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --loglevel=error
+
+      - name: Unit tests (affected, shard ${{ matrix.shard }}/16)
         env:
           NODE_OPTIONS: --max-old-space-size=8192
         run: |
-          # Shards in getrennten Prozessen: jsdom-Tests bauen ueber viele
-          # Dateien kumulativ Speicher auf — bei ~300 Dateien stirbt ein
-          # einzelner Fork-Pool am Heap-OOM (alle Tests gruen, Exit 1).
-          # Frischer Prozess pro Shard setzt den Speicher zurueck. Historie:
-          # 8 Shards/6 GB -> OOM (Jul 2026, package.json-Change = volle Suite),
-          # 16 Shards/6 GB -> OOM (18.07.2026, Suite gewachsen). Jetzt 24
-          # Shards + 8 GB Heap (Runner hat 16 GB).
-          run_shards() {
-            for i in $(seq 1 24); do
-              npx vitest run "$@" --passWithNoTests --shard="$i/24"
-            done
-          }
           BASE=""
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}" --depth=1 || true
@@ -61,11 +71,25 @@ jobs:
           fi
           if [ -n "$BASE" ] && git rev-parse --verify "$BASE" >/dev/null 2>&1; then
             echo "Running tests affected since $BASE"
-            run_shards --changed "$BASE"
+            npx vitest run --changed "$BASE" --passWithNoTests --shard="${{ matrix.shard }}/16"
           else
             echo "No usable base ref — running full suite"
-            run_shards
+            npx vitest run --passWithNoTests --shard="${{ matrix.shard }}/16"
           fi
+
+  build-deploy:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --loglevel=error
 
       - name: Build
         run: npx vite build
