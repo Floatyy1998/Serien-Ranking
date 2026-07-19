@@ -2,6 +2,12 @@ import WidgetKit
 import SwiftUI
 import UIKit
 
+// MARK: - Lokalisierung (Systemsprache: Deutsch im de-Raum, sonst Englisch)
+
+let widgetIsGerman = Locale.preferredLanguages.first?.lowercased().hasPrefix("de") ?? true
+
+func L(_ de: String, _ en: String) -> String { widgetIsGerman ? de : en }
+
 // MARK: - Payload
 
 struct WidgetPayload: Decodable {
@@ -82,7 +88,9 @@ struct WidgetPayload: Decodable {
     let cal = Calendar.current
     let todayStart = cal.startOfDay(for: now)
     let todayStr = WidgetPayload.isoDay(now)
-    let weekdays = ["SO", "MO", "DI", "MI", "DO", "FR", "SA"]
+    let weekdays = widgetIsGerman
+      ? ["SO", "MO", "DI", "MI", "DO", "FR", "SA"]
+      : ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
 
     func dayDiff(_ date: Date) -> Int {
       cal.dateComponents([.day], from: todayStart, to: cal.startOfDay(for: date)).day ?? 0
@@ -95,9 +103,9 @@ struct WidgetPayload: Decodable {
         let diff = dayDiff(d)
         if diff < 0 { return nil }
         let label = diff == 0
-          ? "HEUTE"
+          ? L("HEUTE", "TODAY")
           : diff == 1
-            ? "MORGEN"
+            ? L("MORGEN", "TOMORROW")
             : "\(weekdays[cal.component(.weekday, from: d) - 1]) \(cal.component(.day, from: d))."
         return Day(label: label, date: day.date, eps: day.eps)
       }
@@ -308,11 +316,15 @@ struct TodayWidgetView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 7) {
-      HeaderText(text: entry.payload.today.isEmpty ? "HEUTE" : "HEUTE · \(entry.payload.today.count)")
+      HeaderText(
+        text: entry.payload.today.isEmpty
+          ? L("HEUTE", "TODAY")
+          : "\(L("HEUTE", "TODAY")) · \(entry.payload.today.count)"
+      )
 
       if entry.payload.today.isEmpty {
         Spacer(minLength: 0)
-        EmptyHint(text: "Keine neuen Folgen — Zeit für den Backlog 🍿")
+        EmptyHint(text: L("Keine neuen Folgen — Zeit für den Backlog 🍿", "No new episodes — backlog time 🍿"))
         Spacer(minLength: 0)
       } else {
         ForEach(Array(entry.payload.today.prefix(maxRows).enumerated()), id: \.offset) { _, ep in
@@ -337,7 +349,7 @@ struct TodayWidgetView: View {
           }
         }
         if entry.payload.today.count > maxRows {
-          Text("+ \(entry.payload.today.count - maxRows) weitere")
+          Text("+ \(entry.payload.today.count - maxRows) \(L("weitere", "more"))")
             .font(.system(size: 10.5, design: .rounded))
             .foregroundStyle(.white.opacity(0.4))
         }
@@ -355,8 +367,8 @@ struct TodayWidget: Widget {
     StaticConfiguration(kind: "TVRankToday", provider: TodayProvider()) { entry in
       TodayWidgetView(entry: entry)
     }
-    .configurationDisplayName("Heute läuft")
-    .description("Heutige Folgen deiner Serien auf einen Blick.")
+    .configurationDisplayName(L("Heute läuft", "On today"))
+    .description(L("Heutige Folgen deiner Serien auf einen Blick.", "Today's episodes of your shows at a glance."))
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
@@ -378,7 +390,7 @@ struct CountdownWidgetView: View {
   }
 
   private func unit(_ days: Int) -> String {
-    days == 0 ? "heute!" : days == 1 ? "Tag" : "Tage"
+    days == 0 ? L("heute!", "today!") : days == 1 ? L("Tag", "day") : L("Tage", "days")
   }
 
   var body: some View {
@@ -387,7 +399,7 @@ struct CountdownWidgetView: View {
 
       if items.isEmpty {
         Spacer(minLength: 0)
-        EmptyHint(text: "Keine anstehenden Premieren")
+        EmptyHint(text: L("Keine anstehenden Premieren", "No upcoming premieres"))
         Spacer(minLength: 0)
       } else if family == .systemSmall, let cd = items.first {
         Spacer(minLength: 0)
@@ -415,7 +427,11 @@ struct CountdownWidgetView: View {
                 .font(.system(size: 12.5, weight: .semibold, design: .rounded))
                 .lineLimit(1)
                 .foregroundStyle(.white.opacity(0.95))
-              Text(cd.days == 0 ? "heute!" : cd.days == 1 ? "morgen" : "in \(cd.days) Tagen")
+              Text(
+                cd.days == 0
+                  ? L("heute!", "today!")
+                  : cd.days == 1 ? L("morgen", "tomorrow") : L("in \(cd.days) Tagen", "in \(cd.days) days")
+              )
                 .font(.system(size: 11, weight: .medium, design: .rounded))
                 .foregroundStyle(accent.opacity(0.9))
             }
@@ -440,7 +456,7 @@ struct CountdownWidget: Widget {
       CountdownWidgetView(entry: entry)
     }
     .configurationDisplayName("Countdown")
-    .description("Countdown zu den nächsten Staffeln und Premieren deiner Serien.")
+    .description(L("Countdown zu den nächsten Staffeln und Premieren deiner Serien.", "Countdown to your shows' next seasons and premieres."))
     .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
   }
 }
@@ -456,11 +472,11 @@ struct WeekWidgetView: View {
 
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
-      HeaderText(text: "DEINE WOCHE")
+      HeaderText(text: L("DEINE WOCHE", "YOUR WEEK"))
 
       if days.isEmpty {
         Spacer(minLength: 0)
-        EmptyHint(text: "Diese Woche keine neuen Folgen")
+        EmptyHint(text: L("Diese Woche keine neuen Folgen", "No new episodes this week"))
         Spacer(minLength: 0)
       } else {
         ForEach(Array(days.enumerated()), id: \.offset) { _, day in
@@ -495,7 +511,7 @@ struct WeekWidgetView: View {
   @ViewBuilder
   private func dayChip(_ label: String) -> some View {
     // Invertierter HEUTE-Chip nur in Vollfarbe — im Tinted-Modus wäre Schwarz auf Weiß unlesbar
-    let inverted = label == "HEUTE" && renderingMode == .fullColor
+    let inverted = (label == "HEUTE" || label == "TODAY") && renderingMode == .fullColor
     Text(label)
       .font(.system(size: 11, weight: .heavy, design: .rounded))
       .kerning(0.8)
@@ -514,8 +530,8 @@ struct WeekWidget: Widget {
     StaticConfiguration(kind: "TVRankWeek", provider: TodayProvider()) { entry in
       WeekWidgetView(entry: entry)
     }
-    .configurationDisplayName("Deine Woche")
-    .description("Die kommenden Folgen deiner Serien in den nächsten 7 Tagen.")
+    .configurationDisplayName(L("Deine Woche", "Your Week"))
+    .description(L("Die kommenden Folgen deiner Serien in den nächsten 7 Tagen.", "Your shows' upcoming episodes over the next 7 days."))
     .supportedFamilies([.systemLarge])
   }
 }

@@ -72,7 +72,10 @@ public class TvRankCountdownWidget extends AppWidgetProvider {
     }
 
     if (shown == 0) {
-      views.setTextViewText(R.id.cd_empty, "Keine anstehenden Premieren");
+      views.setTextViewText(
+        R.id.cd_empty,
+        WidgetSupport.L("Keine anstehenden Premieren", "No upcoming premieres")
+      );
       views.setViewVisibility(R.id.cd_empty, View.VISIBLE);
     }
 

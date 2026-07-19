@@ -56,6 +56,7 @@ public class TvRankWeekWidget extends AppWidgetProvider {
   private RemoteViews build(Context ctx) {
     RemoteViews views = new RemoteViews(ctx.getPackageName(), R.layout.widget_week);
 
+    views.setTextViewText(R.id.wk_header, WidgetSupport.L("●  DEINE WOCHE", "●  YOUR WEEK"));
     for (int row : ROWS) views.setViewVisibility(row, View.GONE);
     views.setViewVisibility(R.id.wk_empty, View.GONE);
 
@@ -98,7 +99,10 @@ public class TvRankWeekWidget extends AppWidgetProvider {
     }
 
     if (rows.isEmpty()) {
-      views.setTextViewText(R.id.wk_empty, "Diese Woche keine neuen Folgen");
+      views.setTextViewText(
+        R.id.wk_empty,
+        WidgetSupport.L("Diese Woche keine neuen Folgen", "No new episodes this week")
+      );
       views.setViewVisibility(R.id.wk_empty, View.VISIBLE);
     }
 

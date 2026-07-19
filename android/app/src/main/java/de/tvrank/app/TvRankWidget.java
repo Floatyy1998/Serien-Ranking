@@ -49,7 +49,8 @@ public class TvRankWidget extends AppWidgetProvider {
     JSONObject data = WidgetSupport.readPayload(ctx);
     JSONArray today = data.optJSONArray("today");
     int total = today != null ? today.length() : 0;
-    views.setTextViewText(R.id.widget_header, total > 0 ? "●  HEUTE · " + total : "●  HEUTE");
+    String header = WidgetSupport.L("●  HEUTE", "●  TODAY");
+    views.setTextViewText(R.id.widget_header, total > 0 ? header + " · " + total : header);
 
     List<String> urls = new ArrayList<>();
     if (today != null) {
@@ -77,10 +78,16 @@ public class TvRankWidget extends AppWidgetProvider {
     }
 
     if (shown == 0) {
-      views.setTextViewText(R.id.widget_empty, "Keine neuen Folgen — Zeit für den Backlog 🍿");
+      views.setTextViewText(
+        R.id.widget_empty,
+        WidgetSupport.L("Keine neuen Folgen — Zeit für den Backlog 🍿", "No new episodes — backlog time 🍿")
+      );
       views.setViewVisibility(R.id.widget_empty, View.VISIBLE);
     } else if (total > shown) {
-      views.setTextViewText(R.id.widget_more, "+ " + (total - shown) + " weitere");
+      views.setTextViewText(
+        R.id.widget_more,
+        "+ " + (total - shown) + " " + WidgetSupport.L("weitere", "more")
+      );
       views.setViewVisibility(R.id.widget_more, View.VISIBLE);
     }
 

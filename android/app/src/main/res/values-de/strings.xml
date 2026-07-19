@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- Deutsche Widget-Texte; values/strings.xml hält die englischen Defaults -->
+    <string name="widget_description">Heutige Folgen deiner Serien auf einen Blick</string>
+    <string name="widget_countdown_label">TV-Rank Countdown</string>
+    <string name="widget_countdown_description">Countdown zu den nächsten Staffeln und Premieren</string>
+    <string name="widget_week_label">TV-Rank Woche</string>
+    <string name="widget_week_description">Deine kommenden Folgen der nächsten 7 Tage</string>
+</resources>

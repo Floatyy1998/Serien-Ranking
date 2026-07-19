@@ -18,9 +18,19 @@ final class WidgetSupport {
   static final int POSTER_W = 52;
   static final int POSTER_H = 72;
 
-  private static final String[] WEEKDAYS = { "SO", "MO", "DI", "MI", "DO", "FR", "SA" };
+  private static final String[] WEEKDAYS_DE = { "SO", "MO", "DI", "MI", "DO", "FR", "SA" };
+  private static final String[] WEEKDAYS_EN = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
 
   private WidgetSupport() {}
+
+  // Systemsprache: Deutsch im de-Raum, sonst Englisch
+  static boolean isGerman() {
+    return Locale.getDefault().getLanguage().equalsIgnoreCase("de");
+  }
+
+  static String L(String de, String en) {
+    return isGerman() ? de : en;
+  }
 
   static JSONObject readPayload(Context ctx) {
     try {
@@ -141,12 +151,13 @@ final class WidgetSupport {
   }
 
   private static String weekLabel(long diff, String dateStr) {
-    if (diff == 0) return "HEUTE";
-    if (diff == 1) return "MORGEN";
+    if (diff == 0) return L("HEUTE", "TODAY");
+    if (diff == 1) return L("MORGEN", "TOMORROW");
     try {
       Calendar c = Calendar.getInstance();
       c.setTime(new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(prefixDay(dateStr)));
-      return WEEKDAYS[c.get(Calendar.DAY_OF_WEEK) - 1] + " " + c.get(Calendar.DAY_OF_MONTH) + ".";
+      String[] weekdays = isGerman() ? WEEKDAYS_DE : WEEKDAYS_EN;
+      return weekdays[c.get(Calendar.DAY_OF_WEEK) - 1] + " " + c.get(Calendar.DAY_OF_MONTH) + ".";
     } catch (Exception e) {
       return "";
     }
@@ -163,8 +174,8 @@ final class WidgetSupport {
   }
 
   static String formatDays(long days) {
-    if (days == 0) return "heute!";
-    if (days == 1) return "morgen";
-    return "in " + days + " Tagen";
+    if (days == 0) return L("heute!", "today!");
+    if (days == 1) return L("morgen", "tomorrow");
+    return isGerman() ? "in " + days + " Tagen" : "in " + days + " days";
   }
 }
