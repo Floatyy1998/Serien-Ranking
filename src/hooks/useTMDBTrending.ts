@@ -5,6 +5,7 @@ import { isSupportedProvider } from '../config/menuItems';
 import { getProviderLogoUrl } from '../lib/providerMerge';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
+import { pickProviderRegion, watchRegion } from '../services/region';
 import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
@@ -83,7 +84,7 @@ async function fetchProviders(type: 'series' | 'movie', id: number): Promise<Tre
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
       language: undefined,
     });
-    return resolveProviders(data?.results?.DE?.flatrate);
+    return resolveProviders(pickProviderRegion(data?.results)?.flatrate);
   } catch {
     // HTTP- wie Netzwerkfehler → wie bisher leere Provider-Liste.
     return [];
@@ -167,8 +168,10 @@ export const useTMDBTrending = (): UseTMDBTrendingResult => {
         // HTTP-Fehler werfen jetzt in tmdbFetch (statt des früheren
         // `!res.ok`-Throws) und landen wie zuvor im äußeren catch.
         const [tvData, movieData] = await Promise.all([
-          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/tv/week', { region: 'DE' }),
-          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/movie/week', { region: 'DE' }),
+          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/tv/week', { region: watchRegion }),
+          tmdbFetch<{ results?: TMDBTrendingItem[] }>('trending/movie/week', {
+            region: watchRegion,
+          }),
         ]);
         if (cancelled) return;
 

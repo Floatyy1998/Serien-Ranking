@@ -8,6 +8,7 @@ import {
   providerNeedsClipboardCopy,
 } from '../../lib/providerLinks';
 import { t } from '../../services/i18n';
+import { pickProviderRegion, watchRegion } from '../../services/region';
 
 interface Provider {
   provider_id?: number;
@@ -18,14 +19,17 @@ interface Provider {
   name?: string;
 }
 
+interface ProviderRegionEntry {
+  flatrate?: Provider[];
+}
+
 interface ProviderBadgesProps {
   providers?:
     | Provider[]
-    | {
-        results?: { DE?: { flatrate?: Provider[] } };
-        DE?: { flatrate?: Provider[] };
+    | ({
+        results?: Record<string, ProviderRegionEntry | undefined>;
         flatrate?: Provider[];
-      }
+      } & Record<string, unknown>)
     | null;
   size?: 'small' | 'medium' | 'large';
   maxDisplay?: number;
@@ -93,12 +97,15 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
     // Check if already seen (dedupe)
     if (seenProviders.has(normalizedName)) return false;
 
-    // Check if allowed
-    const isAllowed = allowedProviders.some(
-      (allowed) =>
-        normalizedName.toLowerCase().includes(allowed.toLowerCase()) ||
-        allowed.toLowerCase().includes(normalizedName.toLowerCase())
-    );
+    // Whitelist gilt nur für die DE-Region — andere Länder haben eigene Dienste
+    // (Hulu, Peacock, …), die hier nicht hart gepflegt werden können.
+    const isAllowed =
+      watchRegion !== 'DE' ||
+      allowedProviders.some(
+        (allowed) =>
+          normalizedName.toLowerCase().includes(allowed.toLowerCase()) ||
+          allowed.toLowerCase().includes(normalizedName.toLowerCase())
+      );
 
     if (isAllowed) {
       seenProviders.add(normalizedName);
@@ -109,12 +116,12 @@ export const ProviderBadges: React.FC<ProviderBadgesProps> = ({
 
   if (Array.isArray(providers)) {
     providerList = providers.filter(filterAndDedupe);
-  } else if (providers.results?.DE?.flatrate) {
-    providerList = providers.results.DE.flatrate.filter(filterAndDedupe);
-  } else if (providers.DE?.flatrate) {
-    providerList = providers.DE.flatrate.filter(filterAndDedupe);
-  } else if (providers.flatrate) {
-    providerList = providers.flatrate.filter(filterAndDedupe);
+  } else {
+    const regionEntry =
+      pickProviderRegion(providers.results) ??
+      pickProviderRegion(providers as Record<string, ProviderRegionEntry | undefined>);
+    const flat = regionEntry?.flatrate ?? providers.flatrate;
+    if (flat) providerList = flat.filter(filterAndDedupe);
   }
 
   if (!providerList || providerList.length === 0) return null;

@@ -13,6 +13,7 @@ import type { WatchJourneyData } from '../../services/watchJourneyTypes';
 import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { t } from '../../services/i18n';
+import { pickProviderRegion, watchRegion } from '../../services/region';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL;
 const MIN_RATED_ITEMS = 5;
@@ -272,10 +273,10 @@ async function enrichRecsWithTMDB(recs: Recommendation[]): Promise<Recommendatio
             `${mediaType}/${tmdbId}/watch/providers`,
             { language: undefined }
           );
-          const de = provData.results?.DE;
-          const flatrate = de?.flatrate || [];
+          const regionEntry = pickProviderRegion(provData.results);
+          const flatrate = regionEntry?.flatrate || [];
           providers = flatrate
-            .filter((p) => SUPPORTED_PROVIDERS.has(p.provider_name))
+            .filter((p) => watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name))
             .slice(0, 3)
             .map((p) => ({
               name: p.provider_name,

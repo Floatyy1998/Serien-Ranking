@@ -5,6 +5,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
 import type { TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { pickProviderRegion, watchRegion } from '../../services/region';
 import type {
   TmdbMediaDetail,
   TmdbSeasonDetail,
@@ -81,11 +82,12 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
     // dauerhaft bei Serien ohne DE-Flatrate.
     tmdbFetch<TmdbWatchProvidersResponse>(`tv/${id}/watch/providers`, { language: undefined })
       .then((data) => {
-        const flatrate = data.results?.DE?.flatrate;
+        const flatrate = pickProviderRegion(data.results)?.flatrate;
         setProviders(
           Array.isArray(flatrate)
-            ? flatrate.filter((p: { provider_name: string }) =>
-                SUPPORTED_PROVIDERS.has(p.provider_name)
+            ? flatrate.filter(
+                (p: { provider_name: string }) =>
+                  watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
               )
             : []
         );

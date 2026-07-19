@@ -5,6 +5,7 @@ import { isSupportedProvider } from '../config/menuItems';
 import { getProviderLogoUrl } from '../lib/providerMerge';
 import { normalizeProviderName } from '../services/detection/providerChangeDetection';
 import { tmdbFetch } from '../services/tmdbClient';
+import { pickProviderRegion, watchRegion } from '../services/region';
 import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
@@ -177,14 +178,15 @@ async function fetchSeasonalProviders(
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${path}/${id}/watch/providers`, {
       language: undefined,
     });
-    const flatrate = data?.results?.DE?.flatrate;
+    const flatrate = pickProviderRegion(data?.results)?.flatrate;
     if (!Array.isArray(flatrate)) return [];
 
     const seen = new Set<string>();
     const out: SeasonalProvider[] = [];
     for (const raw of flatrate as RawWatchProvider[]) {
       const normalized = normalizeProviderName(raw.provider_name);
-      if (!normalized || !isSupportedProvider(normalized) || seen.has(normalized)) continue;
+      if (!normalized || seen.has(normalized)) continue;
+      if (watchRegion === 'DE' && !isSupportedProvider(normalized)) continue;
       seen.add(normalized);
       const logo =
         getProviderLogoUrl(normalized) ??
@@ -241,7 +243,7 @@ export const useSeasonalRecommendations = (): UseSeasonalRecommendationsResult =
       try {
         const discover = (kind: 'tv' | 'movie', page: number) =>
           tmdbFetch<{ results?: TMDBDiscoverItem[] }>(`discover/${kind}`, {
-            region: 'DE',
+            region: watchRegion,
             sort_by: 'popularity.desc',
             // TV uses vote_count.gte=50 — TV has fewer-vote shows than movies, so keeping
             // 100 made some genres (Sommer-Action&Adventure) nearly empty.

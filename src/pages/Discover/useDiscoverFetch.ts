@@ -6,6 +6,7 @@ import type { Series } from '../../types/Series';
 import type { Movie } from '../../types/Movie';
 import { t } from '../../services/i18n';
 import { tmdbFetch } from '../../services/tmdbClient';
+import { watchRegion } from '../../services/region';
 import type { DiscoverItem } from './discoverItemHelpers';
 import { useDiscoverActions } from './useDiscoverActions';
 import { filterItemsByActiveProviders } from './watchProviderFilter';
@@ -309,7 +310,7 @@ export const useDiscoverFetch = (
         // undefined-Params werden vom Client weggelassen (konditionale Genre-Filter).
         const data = await tmdbFetch<TmdbListResponse>(endpoint, {
           page: currentPage,
-          region: 'DE',
+          region: watchRegion,
           with_genres: selectedGenre ? selectedGenre : undefined,
           sort_by: selectedGenre
             ? activeCategory === 'top_rated'

@@ -28,6 +28,7 @@
 
 import { genreIdMap, genreIdMapForSeries } from '../../config/menuItems';
 import { tmdbFetch } from '../../services/tmdbClient';
+import { pickProviderRegion } from '../../services/region';
 import { tmdbLogoUrl } from '../../hooks/useProviderLogos';
 import { anilistLinkCountsForDe } from '../../services/anilistProviderFallback';
 import { getProviderLogoUrl } from '../../lib/providerMerge';
@@ -205,7 +206,7 @@ async function fetchGermanDetails(
   const genres = (json.genres ?? [])
     .map((genre) => idMap.find((entry) => entry.id === genre.id)?.name)
     .filter((name): name is string => !!name && name !== 'Animation');
-  const flatrate = json['watch/providers']?.results?.DE?.flatrate ?? [];
+  const flatrate = pickProviderRegion(json['watch/providers']?.results)?.flatrate ?? [];
   const providers: TmdbProviderInfo[] = [];
   const seen = new Set<string>();
   for (const entry of flatrate) {

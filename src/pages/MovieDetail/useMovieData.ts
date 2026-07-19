@@ -9,6 +9,7 @@ import type { Movie } from '../../types/Movie';
 import { trackMovieAdded, trackMovieDeleted } from '../../services/firebase/analytics';
 import { getImageUrl } from '../../utils/imageUrl';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
+import { pickProviderRegion, watchRegion } from '../../services/region';
 import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 import { backendFetch } from '../../services/backendApi';
 import { dbRef, paths, updateWithSeriesVersion } from '../../services/db/ref';
@@ -139,10 +140,12 @@ export const useMovieData = () => {
 
       tmdbFetch<TmdbWatchProvidersResponse>(`movie/${id}/watch/providers`, { language: undefined })
         .then((data) => {
-          if (data.results?.DE?.flatrate) {
+          const flatrate = pickProviderRegion(data.results)?.flatrate;
+          if (flatrate) {
             setProviders(
-              data.results.DE.flatrate.filter((p: { provider_name: string }) =>
-                SUPPORTED_PROVIDERS.has(p.provider_name)
+              flatrate.filter(
+                (p: { provider_name: string }) =>
+                  watchRegion !== 'DE' || SUPPORTED_PROVIDERS.has(p.provider_name)
               )
             );
           }

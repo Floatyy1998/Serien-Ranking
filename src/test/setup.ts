@@ -8,6 +8,8 @@ import '@testing-library/jest-dom/vitest';
 // als navigator.language; ohne Pin würde t() englische Texte liefern und alle
 // deutschen Assertions brechen.
 (globalThis as { __TVRANK_TEST_LOCALE__?: string }).__TVRANK_TEST_LOCALE__ = 'de';
+// Gleiches Spiel für die Watch-Region: Tests rechnen mit DE-Providern.
+(globalThis as { __TVRANK_TEST_REGION__?: string }).__TVRANK_TEST_REGION__ = 'DE';
 
 // jsdom-Polyfills, die viele Komponenten brauchen (framer-motion/useReducedMotion
 // → matchMedia; recharts/ResizeObserver). Nur im jsdom-Env aktiv (node hat kein

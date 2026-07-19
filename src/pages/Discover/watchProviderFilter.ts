@@ -19,6 +19,7 @@
 
 import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { tmdbFetch } from '../../services/tmdbClient';
+import { pickProviderRegion } from '../../services/region';
 import type { TmdbWatchProvidersResponse } from '../../services/tmdb.types';
 
 /** Minimal-Typ, den sowohl `DiscoverItem` als auch `SearchResult` erfüllen. */
@@ -78,7 +79,7 @@ export async function fetchItemProviders(type: 'series' | 'movie', id: number): 
     const data = await tmdbFetch<TmdbWatchProvidersResponse>(`${mediaType}/${id}/watch/providers`, {
       language: undefined,
     });
-    const flatrate = data?.results?.DE?.flatrate;
+    const flatrate = pickProviderRegion(data?.results)?.flatrate;
     if (!Array.isArray(flatrate)) {
       providerCache.set(key, []);
       return [];
