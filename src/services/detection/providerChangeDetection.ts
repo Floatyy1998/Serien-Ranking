@@ -1,5 +1,6 @@
 import type { Series } from '../../types/Series';
 import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
+import { watchRegion } from '../region';
 import {
   getProviderNotificationsEnabled,
   getSnoozedUntil,
@@ -115,11 +116,18 @@ export const detectProviderChanges = async (
 
   const watchlistSeries = seriesList.filter((s) => s.watchlist && s.id);
 
-  const [knownProviders, states, snoozed] = await Promise.all([
+  const [knownProvidersStored, states, snoozed, baselineRegion] = await Promise.all([
     getKnownProviders(userId),
     getNotificationStates(userId),
     getSnoozedUntil('provider', userId),
+    dbGet<string>(userPath(userId, 'knownProvidersRegion')).catch(() => null),
   ]);
+
+  // Regionswechsel: der bekannte Stand stammt aus einem anderen Land — still
+  // neu seeden statt fuer jede Serie einen falschen "Provider gewechselt"-Diff
+  // zu melden.
+  const regionChanged = (baselineRegion || 'DE') !== watchRegion;
+  const knownProviders = regionChanged ? {} : knownProvidersStored;
 
   const changes: ProviderChangeInfo[] = [];
   const updatedKnown: KnownProviders = { ...knownProviders };
@@ -197,10 +205,13 @@ export const detectProviderChanges = async (
         updates[userPath(userId, 'knownProviders', key)] = value;
       }
     }
-    for (const key of Object.keys(knownProviders)) {
+    for (const key of Object.keys(knownProvidersStored)) {
       if (!watchlistIds.has(key)) {
         updates[userPath(userId, 'knownProviders', key)] = null;
       }
+    }
+    if (regionChanged) {
+      updates[userPath(userId, 'knownProvidersRegion')] = watchRegion;
     }
     for (const key of Object.keys(states)) {
       if (!watchlistIds.has(key)) {

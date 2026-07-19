@@ -31,6 +31,7 @@ import {
   idbRemovePrefix,
 } from './catalogIDB';
 import { isEnglish } from './i18n';
+import { watchRegion } from './region';
 
 // Vite injiziert process.env.VITE_* via define() in vite.config.ts
 declare const process: { env: Record<string, string | undefined> };
@@ -49,6 +50,7 @@ const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
 const LS_EN_OVERLAY_KEY = LS_PREFIX + 'enOverlay';
+const LS_REGION_PROVIDERS_PREFIX = LS_PREFIX + 'regionProviders:';
 
 // Default-Timeout fuer alle Catalog-Fetches: 15s. Verhindert dass ein
 // haengender Request die UI ewig blockiert (catalogLoading bleibt sonst true).
@@ -96,6 +98,7 @@ let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
 let memoryEnOverlay: EnOverlay | null | undefined = undefined;
+let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
 let cachedVersion: number | null = null;
 let versionFetchPromise: Promise<number | null> | null = null;
 
@@ -190,6 +193,7 @@ async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Prom
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
     idbRemove(LS_EN_OVERLAY_KEY),
+    idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX),
     idbRemovePrefix(LS_SEASONS_PREFIX),
   ]);
 }
@@ -282,6 +286,7 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryEnOverlay = undefined;
+  memoryRegionProviders = undefined;
   await invalidateLocalCaches({ keepSeasonsBulk: seasonsDeltaOk });
   await setLocalVersion(remote);
 }
@@ -390,6 +395,81 @@ async function withEnOverlay<T extends { title: string; beschreibung?: string }>
   return applyEnOverlay(data, kind === 'series' ? overlay.series : overlay.movies);
 }
 
+// Region-Provider-Overlay: catalog/providers/{CC}.json (Backend-Export) mappt
+// tmdbId auf die Flatrate-Provider des gewaehlten Streaming-Landes. Die im
+// Katalog gebackenen Provider sind DE — fuer jede andere Watch-Region werden
+// sie hier ersetzt. Fehlt die Datei oder ein Eintrag, werden die Provider
+// geleert statt falsche DE-Anbieter (RTL+, Joyn, …) anzuzeigen; Detailseiten
+// holen ihre Provider ohnehin live von TMDB.
+
+interface RegionProviderEntry {
+  id: number;
+  logo: string;
+  name: string;
+}
+
+interface RegionProvidersOverlay {
+  series?: Record<string, RegionProviderEntry[]>;
+  movies?: Record<string, RegionProviderEntry[]>;
+}
+
+async function getRegionProviders(): Promise<RegionProvidersOverlay | null> {
+  if (watchRegion === 'DE') return null;
+  if (memoryRegionProviders !== undefined) return memoryRegionProviders;
+
+  const idbKey = LS_REGION_PROVIDERS_PREFIX + watchRegion;
+  const cached = await idbGetAny<RegionProvidersOverlay>(idbKey);
+  if (cached) {
+    memoryRegionProviders = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<RegionProvidersOverlay>(`providers/${watchRegion}.json`, {
+      version,
+    });
+    memoryRegionProviders = data && typeof data === 'object' ? data : null;
+    if (memoryRegionProviders) void idbSetVersioned(idbKey, version, memoryRegionProviders);
+    return memoryRegionProviders;
+  } catch (e) {
+    // 404 = Region (noch) nicht exportiert — dann lieber keine Provider als DE.
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] region-providers fetch failed', e);
+    }
+    memoryRegionProviders = null;
+    return null;
+  }
+}
+
+function applyRegionProviders<T extends { providers: RegionProviderEntry[] }>(
+  data: Record<string, T>,
+  entries: Record<string, RegionProviderEntry[]> | undefined
+): Record<string, T> {
+  const out: Record<string, T> = {};
+  for (const key in data) {
+    out[key] = { ...data[key], providers: entries?.[key] ?? [] };
+  }
+  return out;
+}
+
+async function withRegionProviders<T extends { providers: RegionProviderEntry[] }>(
+  data: Record<string, T> | null,
+  kind: 'series' | 'movies'
+): Promise<Record<string, T> | null> {
+  if (!data || watchRegion === 'DE') return data;
+  const overlay = await getRegionProviders();
+  return applyRegionProviders(data, kind === 'series' ? overlay?.series : overlay?.movies);
+}
+
+/** Beide Katalog-Overlays (Sprache + Streaming-Land) in einem Schritt. */
+async function withOverlays<
+  T extends { title: string; beschreibung?: string; providers: RegionProviderEntry[] },
+>(data: Record<string, T> | null, kind: 'series' | 'movies'): Promise<Record<string, T> | null> {
+  return withRegionProviders(await withEnOverlay(data, kind), kind);
+}
+
 // Provider-Dedup-Expansion
 
 interface ProviderEntry {
@@ -463,7 +543,7 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
   // Stale-While-Revalidate: IDB sofort lesen, ohne Versions-Roundtrip abzuwarten
   const cached = await idbGetAny<Record<string, CatalogSeries>>(LS_META_KEY);
   if (cached) {
-    memoryMeta = await withEnOverlay(cached.data, 'series');
+    memoryMeta = await withOverlays(cached.data, 'series');
     void revalidateInBackground(cached.v);
     return memoryMeta;
   }
@@ -474,14 +554,14 @@ export async function fetchStaticCatalogSeries(): Promise<Record<string, Catalog
     const raw = await fetchJson<unknown>('seriesMeta.json', { version });
     const data = expandProviders<CatalogSeries>(raw);
     void idbSetVersioned(LS_META_KEY, version, data);
-    memoryMeta = await withEnOverlay(data, 'series');
+    memoryMeta = await withOverlays(data, 'series');
     return memoryMeta;
   } catch (e) {
     console.warn('[staticCatalog] seriesMeta fetch failed, trying RTDB mirror', e);
     const mirror = await readCatalogMirror<unknown>('catalogMirror/seriesMeta');
     if (mirror) {
       const data = expandProviders<CatalogSeries>(mirror);
-      memoryMeta = await withEnOverlay(data, 'series');
+      memoryMeta = await withOverlays(data, 'series');
       return memoryMeta;
     }
     return null;
@@ -496,7 +576,7 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
 
   const cached = await idbGetAny<Record<string, CatalogMovie>>(LS_MOVIES_KEY);
   if (cached) {
-    memoryMovies = await withEnOverlay(cached.data, 'movies');
+    memoryMovies = await withOverlays(cached.data, 'movies');
     void revalidateInBackground(cached.v);
     return memoryMovies;
   }
@@ -506,14 +586,14 @@ export async function fetchStaticCatalogMovies(): Promise<Record<string, Catalog
     const raw = await fetchJson<unknown>('moviesMeta.json', { version });
     const data = expandProviders<CatalogMovie>(raw);
     void idbSetVersioned(LS_MOVIES_KEY, version, data);
-    memoryMovies = await withEnOverlay(data, 'movies');
+    memoryMovies = await withOverlays(data, 'movies');
     return memoryMovies;
   } catch (e) {
     console.warn('[staticCatalog] moviesMeta fetch failed, trying RTDB mirror', e);
     const mirror = await readCatalogMirror<unknown>('catalogMirror/moviesMeta');
     if (mirror) {
       const data = expandProviders<CatalogMovie>(mirror);
-      memoryMovies = await withEnOverlay(data, 'movies');
+      memoryMovies = await withOverlays(data, 'movies');
       return memoryMovies;
     }
     return null;
@@ -982,7 +1062,7 @@ export async function fetchStaticCatalogSeriesFresh(): Promise<Record<
       const data = expandProviders<CatalogSeries>(raw);
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_META_KEY, version, data);
-      memoryMeta = await withEnOverlay(data, 'series');
+      memoryMeta = await withOverlays(data, 'series');
       return memoryMeta;
     } finally {
       clearTimeout(timeoutId);
@@ -1012,7 +1092,7 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
       const data = expandProviders<CatalogMovie>(raw);
       const version = await getRemoteVersion();
       if (version != null) void idbSetVersioned(LS_MOVIES_KEY, version, data);
-      memoryMovies = await withEnOverlay(data, 'movies');
+      memoryMovies = await withOverlays(data, 'movies');
       return memoryMovies;
     } finally {
       clearTimeout(timeoutId);
@@ -1032,9 +1112,11 @@ export function clearStaticCatalogCache(): void {
   memoryAnimeManga = null;
   memoryTvPremieres = null;
   memoryEnOverlay = undefined;
+  memoryRegionProviders = undefined;
   cachedVersion = null;
   localVersionCache = undefined;
   void idbRemove(LS_EN_OVERLAY_KEY);
+  void idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX);
   void idbRemove(LS_META_KEY);
   void idbRemove(LS_MOVIES_KEY);
   void idbRemove(LS_VERSION_KEY);
