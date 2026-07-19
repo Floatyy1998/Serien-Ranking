@@ -67,9 +67,11 @@ import {
   getAvailableBoxCount,
   ensureInitialized,
   openMysteryBox,
+  syncAvailableBoxCount,
 } from './mysteryBoxService';
 
 const MB = 'users/u/mysteryBox';
+const MBA = 'users/u/mysteryBoxAvailable';
 
 const alivePet = () => [{ id: 'p1', isAlive: true, accessories: [], unlockedBackgrounds: [] }];
 
@@ -187,10 +189,29 @@ describe('getAvailableBoxCount', () => {
   });
 });
 
+describe('syncAvailableBoxCount', () => {
+  it('spiegelt den Wert in den mysteryBoxAvailable-Leaf', async () => {
+    await syncAvailableBoxCount('u', 3);
+    expect(fb.getAt(MBA)).toBe(3);
+  });
+
+  it('clamped auf >= 0', async () => {
+    await syncAvailableBoxCount('u', -5);
+    expect(fb.getAt(MBA)).toBe(0);
+  });
+});
+
 describe('openMysteryBox', () => {
   it('liefert null, wenn keine Box verdient ist', async () => {
     fb.setAt(MB, { boxesOpened: 2, lastOpenedBoxNumber: 2, schemaVersion: 2 });
     expect(await openMysteryBox('u', 40)).toBeNull();
+  });
+
+  it('zieht den mysteryBoxAvailable-Leaf beim Öffnen nach', async () => {
+    fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 1, schemaVersion: 2 });
+    // earned = floor(80/20) = 4, offen = 3 → nach einem Open: 2
+    await openMysteryBox('u', 80);
+    expect(fb.getAt(MBA)).toBe(2);
   });
 
   it('Regression Doppel-Einlösung: dieselbe Box kann nur EINMAL geöffnet werden', async () => {

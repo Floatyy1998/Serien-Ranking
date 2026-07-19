@@ -74,6 +74,24 @@ export async function getAvailableBoxCount(userId: string, totalEpisodes: number
   return Math.max(0, earnedBoxes - data.lastOpenedBoxNumber);
 }
 
+/**
+ * Spiegelt die aktuelle Zahl offener Boxen in einen eigenen Leaf, den der
+ * Backend-Push-Cron (push-notify.js, „Belohnungs-Reminder") liest. Bewusst
+ * getrennt vom `mysteryBox`-Node, dessen Heal-Transaktionen ihn per set()
+ * ueberschreiben wuerden. Nur schreiben, wenn sich der Wert aendert.
+ */
+export async function syncAvailableBoxCount(userId: string, availableBoxes: number): Promise<void> {
+  try {
+    const ref = dbRef(userPath(userId, 'mysteryBoxAvailable'));
+    const current = (await ref.once('value')).val();
+    const next = Math.max(0, availableBoxes);
+    if (current === next) return;
+    await ref.set(next);
+  } catch {
+    /* best effort — der Push faellt sonst nur auf den alten Stand zurueck */
+  }
+}
+
 /** Legt den mysteryBox-Eintrag an bzw. migriert v1→v2 (Baseline auf aktuellen 20er-Stand — keine rückwirkenden Boxen). */
 export async function ensureInitialized(
   userId: string,
@@ -177,6 +195,10 @@ export async function openMysteryBox(
   if (!tx.committed) return null;
   const claimed = tx.snapshot?.val() as MysteryBoxData | null;
   const boxNumber = claimed?.lastOpenedBoxNumber ?? data.lastOpenedBoxNumber + 1;
+
+  // Verfuegbarkeits-Leaf sofort nachziehen, damit der Push-Cron nicht ueber
+  // eine gerade geoeffnete Box benachrichtigt (Card-Re-Sync kaeme erst spaeter).
+  void syncAvailableBoxCount(userId, Math.max(0, earnedBoxes - boxNumber));
 
   // Rarity basierend auf Box-Nummer (je mehr Boxen, desto besser)
   const rarity = getBoxRarity(boxNumber);

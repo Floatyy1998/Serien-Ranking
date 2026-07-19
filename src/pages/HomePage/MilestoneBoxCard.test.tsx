@@ -38,6 +38,7 @@ vi.mock('../../services/pet/mysteryBoxService', () => ({
   ensureInitialized: vi.fn(() => Promise.resolve()),
   getNextBoxThreshold: (n: number) => Math.ceil((n + 1) / 20) * 20,
   getProgressToNextBox: () => 0.25,
+  syncAvailableBoxCount: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock('../../lib/haptics', () => ({ hapticCelebrate: vi.fn() }));

@@ -15,6 +15,7 @@ import {
   ensureInitialized,
   getNextBoxThreshold,
   getProgressToNextBox,
+  syncAvailableBoxCount,
 } from '../../services/pet/mysteryBoxService';
 import { MysteryBoxOverlay } from '../../components/pet/MysteryBoxOverlay';
 import { t } from '../../services/i18n';
@@ -85,6 +86,12 @@ export const MilestoneBoxCard: React.FC = () => {
   const availableBoxes =
     lastOpenedBoxNumber === null ? 0 : Math.max(0, earnedBoxes - lastOpenedBoxNumber);
   const hasBox = availableBoxes > 0;
+
+  // Verfuegbarkeit fuer den Backend-Push-Cron spiegeln, sobald sie feststeht.
+  useEffect(() => {
+    if (!user?.uid || lastOpenedBoxNumber === null) return;
+    void syncAvailableBoxCount(user.uid, availableBoxes);
+  }, [user?.uid, lastOpenedBoxNumber, availableBoxes]);
 
   return (
     <>
