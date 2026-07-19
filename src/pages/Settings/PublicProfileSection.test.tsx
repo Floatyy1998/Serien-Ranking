@@ -18,6 +18,7 @@ vi.mock('framer-motion', async () => {
 
 vi.mock('@mui/icons-material', () => ({
   ContentCopy: () => null,
+  IosShare: () => null,
   Link: () => null,
   Public: () => null,
   Refresh: () => null,
@@ -43,6 +44,7 @@ const baseProps = () => ({
   isLoadingProfile: false,
   onToggle: vi.fn(),
   onCopyLink: vi.fn(),
+  onShareLink: vi.fn(),
   onRegenerateId: vi.fn(),
 });
 
@@ -67,6 +69,8 @@ describe('PublicProfileSection', () => {
     render(<PublicProfileSection {...props} />);
     expect(screen.getByText('Dein öffentlicher Link')).toBeInTheDocument();
     expect(screen.getByText(/\/public\/abc123$/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Teilen'));
+    expect(props.onShareLink).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByText('Kopieren'));
     expect(props.onCopyLink).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByText('Neu'));

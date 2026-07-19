@@ -7,6 +7,7 @@ import { trackLogout } from '../../services/firebase/analytics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
+import { shareLink } from '../../services/share/shareLink';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -200,6 +201,25 @@ export const useSettingsData = () => {
     });
   }, [publicProfileId, showSnackbar]);
 
+  const sharePublicLink = useCallback(async () => {
+    if (!publicProfileId) return;
+
+    const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
+    const result = await shareLink({
+      url: publicUrl,
+      title: 'TV-Rank',
+      text: 'Schau dir mein TV-Rank-Profil an!',
+    });
+    if (result === 'shared') {
+      hapticSuccess();
+    } else if (result === 'copied') {
+      hapticSuccess();
+      showSnackbar('Link kopiert!');
+    } else if (result === 'failed') {
+      showSnackbar('Teilen nicht möglich');
+    }
+  }, [publicProfileId, showSnackbar]);
+
   const regeneratePublicId = useCallback(async () => {
     if (!user || !isPublicProfile) return;
 
@@ -255,6 +275,7 @@ export const useSettingsData = () => {
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,
+    sharePublicLink,
     regeneratePublicId,
 
     // Navigation

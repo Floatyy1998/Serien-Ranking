@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["TEAMID.de.tvrank.app"],
+        "appIDs": ["UK4BASSCLM.de.tvrank.app"],
         "components": [
           { "/": "/__/*", "exclude": true },
           { "/": "/*" }

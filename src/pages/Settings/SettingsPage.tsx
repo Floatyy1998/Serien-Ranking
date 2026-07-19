@@ -42,6 +42,7 @@ export const SettingsPage = () => {
     saveDisplayName,
     handlePublicProfileToggle,
     copyPublicLink,
+    sharePublicLink,
     regeneratePublicId,
     navigate,
   } = useSettingsData();
@@ -162,6 +163,7 @@ export const SettingsPage = () => {
           isLoadingProfile={isLoadingProfile}
           onToggle={handlePublicProfileToggle}
           onCopyLink={copyPublicLink}
+          onShareLink={sharePublicLink}
           onRegenerateId={regeneratePublicId}
         />
 

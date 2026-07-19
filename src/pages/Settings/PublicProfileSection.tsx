@@ -1,4 +1,4 @@
-import { ContentCopy, Link, Public, Refresh } from '@mui/icons-material';
+import { ContentCopy, IosShare, Link, Public, Refresh } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -10,6 +10,7 @@ interface PublicProfileSectionProps {
   isLoadingProfile: boolean;
   onToggle: (enabled: boolean) => void;
   onCopyLink: () => void;
+  onShareLink: () => void;
   onRegenerateId: () => void;
 }
 
@@ -20,6 +21,7 @@ export const PublicProfileSection = memo(
     isLoadingProfile,
     onToggle,
     onCopyLink,
+    onShareLink,
     onRegenerateId,
   }: PublicProfileSectionProps) => {
     const { currentTheme } = useTheme();
@@ -107,11 +109,25 @@ export const PublicProfileSection = memo(
             <div className="settings-public-link-actions">
               <motion.button
                 whileTap={tapScale}
-                onClick={onCopyLink}
+                onClick={onShareLink}
                 disabled={isLoadingProfile}
                 className="settings-action-btn settings-action-btn--primary"
                 style={{
                   background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                }}
+              >
+                <IosShare style={{ fontSize: '16px' }} />
+                Teilen
+              </motion.button>
+              <motion.button
+                whileTap={tapScale}
+                onClick={onCopyLink}
+                disabled={isLoadingProfile}
+                className="settings-action-btn settings-action-btn--secondary"
+                style={{
+                  background: currentTheme.background.surface,
+                  borderColor: currentTheme.border.default,
+                  color: currentTheme.text.secondary,
                 }}
               >
                 <ContentCopy style={{ fontSize: '16px' }} />
