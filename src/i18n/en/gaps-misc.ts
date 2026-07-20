@@ -1,5 +1,11 @@
 /** Englische Übersetzungen: verstreute Kleintexte (Offline/SW/Toasts/Platzhalter/Saison). */
 const dict: Record<string, string> = {
+  // App-Install-Banner (components/AppInstallBanner.tsx)
+  'TV-Rank als App': 'Get the TV-Rank app',
+  'Schneller, mit Widgets & Benachrichtigungen — hol dir die App.':
+    'Faster, with widgets & notifications — get the app.',
+  Öffnen: 'Open',
+
   // Offline-Sync (services/offline/queuedUpdate.ts)
   'Offline — wird synchronisiert, sobald du online bist':
     "Offline — will sync as soon as you're back online",

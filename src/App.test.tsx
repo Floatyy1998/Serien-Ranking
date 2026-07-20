@@ -24,6 +24,7 @@ vi.mock('./components/CookieConsentBanner', () => ({
   CookieConsentBanner: () => <div data-testid="cookie-banner" />,
 }));
 vi.mock('./components/ElectronUpdateToast', () => ({ ElectronUpdateToast: () => null }));
+vi.mock('./components/AppInstallBanner', () => ({ AppInstallBanner: () => null }));
 vi.mock('./components/ErrorBoundary', () => ({
   ErrorBoundary: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));

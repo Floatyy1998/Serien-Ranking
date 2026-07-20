@@ -7,6 +7,7 @@ import { EmailVerificationBanner } from './components/auth/EmailVerificationBann
 import { AppProviders } from './AppProviders';
 import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
 import { DynamicThemeProvider } from './contexts/ThemeProvider';
+import { AppInstallBanner } from './components/AppInstallBanner';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ElectronUpdateToast } from './components/ElectronUpdateToast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -156,6 +157,7 @@ function AppContent() {
         <CssBaseline />
         <RouteTracker />
         <ElectronUpdateToast />
+        <AppInstallBanner />
         <div className="w-full">
           <a href="#main-content" className="skip-to-content">
             Zum Hauptinhalt springen
