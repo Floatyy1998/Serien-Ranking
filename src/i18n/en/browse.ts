@@ -150,6 +150,7 @@ const dict: Record<string, string> = {
   Swipen: 'Swipe',
   Weiterschauen: 'Continue watching',
   '{n} übrig': '{n} left',
+  'S{a} von S{b}': 'S{a} of S{b}',
   'Wartet auf neue Folgen': 'Waiting for new episodes',
   'Episode-ID fehlt': 'Episode ID missing',
   '{title} {episode} als gesehen markiert': '{title} {episode} marked as watched',

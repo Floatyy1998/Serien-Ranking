@@ -231,7 +231,7 @@ export const TodayEpisodesSection = React.memo(function TodayEpisodesSection({
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {chipLabel(episode.chipType)}
+                            {t(chipLabel(episode.chipType))}
                           </span>
                         )}
                         {fillerInfo && (

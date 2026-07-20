@@ -226,7 +226,7 @@ export const WatchNextEpisodeList = ({
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {chipLabel(episode.chipType)}
+                            {t(chipLabel(episode.chipType))}
                           </span>
                         )}
                         {fillerInfo && (

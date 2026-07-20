@@ -353,7 +353,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
                               whiteSpace: 'nowrap',
                             }}
                           >
-                            {chipLabel(item.chipType)}
+                            {t(chipLabel(item.chipType))}
                           </span>
                         )}
                         {nextFiller && (

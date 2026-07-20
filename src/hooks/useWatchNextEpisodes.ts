@@ -8,6 +8,7 @@ import {
   hasActiveRewatch,
 } from '../lib/validation/rewatch.utils';
 import { getImageUrl } from '../utils/imageUrl';
+import { t } from '../services/i18n';
 import {
   DEFAULT_EPISODE_RUNTIME_MINUTES,
   calculateSeriesMetrics,
@@ -130,7 +131,10 @@ export const useWatchNextEpisodes = (
               watchedEpisodes: rewatchProg.current,
               remainingEpisodes: rewatchRemaining,
               progress: rewatchPercent,
-              currentSeasonOf: `S${rewatchEpisode.seasonNumber + 1} von S${series.seasonCount}`,
+              currentSeasonOf: t('S{a} von S{b}', {
+                a: rewatchEpisode.seasonNumber + 1,
+                b: series.seasonCount ?? 1,
+              }),
               estimatedMinutesLeft:
                 rewatchRemaining * (series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
               providerNames,
@@ -174,7 +178,10 @@ export const useWatchNextEpisodes = (
               watchedEpisodes,
               remainingEpisodes,
               progress,
-              currentSeasonOf: `S${season.seasonNumber + 1} von S${series.seasonCount}`,
+              currentSeasonOf: t('S{a} von S{b}', {
+                a: season.seasonNumber + 1,
+                b: series.seasonCount ?? 1,
+              }),
               estimatedMinutesLeft:
                 remainingEpisodes *
                 (episode.runtime || series.episodeRuntime || DEFAULT_EPISODE_RUNTIME_MINUTES),
