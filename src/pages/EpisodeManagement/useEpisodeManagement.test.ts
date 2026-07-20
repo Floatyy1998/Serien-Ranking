@@ -34,7 +34,7 @@ const ctx = vi.hoisted(() => ({
 }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
-  useSeriesList: () => ({ allSeriesList: ctx.allSeriesList }),
+  useSeriesList: () => ({ allSeriesList: ctx.allSeriesList, refetchAfterAdd: vi.fn() }),
 }));
 vi.mock('../../hooks/discussionCountHooks', () => ({
   useEpisodeDiscussionCounts: () => ({}),
@@ -66,6 +66,12 @@ vi.mock('../../lib/toast', () => ({
   showActionToast: vi.fn(),
 }));
 vi.mock('../../lib/haptics', () => ({ hapticSuccess: vi.fn() }));
+vi.mock('../SeriesDetail/fetchTmdbSeriesFallback', () => ({
+  fetchTmdbSeriesFallback: mocks.fetchTmdbSeriesFallback,
+}));
+const mocks = vi.hoisted(() => ({
+  fetchTmdbSeriesFallback: vi.fn<(id: string) => Promise<Series | null>>(async () => null),
+}));
 
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
@@ -111,6 +117,7 @@ beforeEach(() => {
   ctx.user = { uid: 'u1' };
   ctx.shouldTriggerQuickRate.mockReturnValue(false);
   vi.clearAllMocks();
+  mocks.fetchTmdbSeriesFallback.mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -136,6 +143,46 @@ describe('useEpisodeManagement', () => {
       totalCount: 1,
       allWatched: false,
     });
+  });
+
+  it('lädt nicht getrackte Serien über den TMDB-Fallback (wie die Detail-Seite)', async () => {
+    ctx.allSeriesList = []; // Serie nicht in der eigenen Liste
+    mocks.fetchTmdbSeriesFallback.mockResolvedValue(makeSeries({ seasons: twoSeasons() }));
+
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    await waitFor(() => expect(result.current.series?.id).toBe(5));
+    expect(mocks.fetchTmdbSeriesFallback).toHaveBeenCalledWith('5');
+    expect(result.current.seriesLoading).toBe(false);
+    expect(result.current.isTracked).toBe(false);
+  });
+
+  it('nicht getrackte Serie: Abhaken schreibt nichts, sondern öffnet den Hinzufügen-Prompt', async () => {
+    ctx.allSeriesList = [];
+    mocks.fetchTmdbSeriesFallback.mockResolvedValue(makeSeries({ seasons: twoSeasons() }));
+    const { result } = renderHook(() => useEpisodeManagement());
+    await waitFor(() => expect(result.current.series?.id).toBe(5));
+
+    await act(async () => {
+      await result.current.handleEpisodeToggle(0, 0);
+    });
+
+    expect(applyUserUpdate).not.toHaveBeenCalled();
+    expect(result.current.showAddPrompt).toBe(true);
+
+    await act(async () => {
+      await result.current.handleSeasonToggle(0);
+      await result.current.handleCatchUp(1, 0);
+    });
+    expect(applyUserUpdate).not.toHaveBeenCalled();
+  });
+
+  it('nutzt keinen Fallback, wenn die Serie in der eigenen Liste ist', async () => {
+    ctx.allSeriesList = [makeSeries({ seasons: twoSeasons() })];
+    const { result } = renderHook(() => useEpisodeManagement());
+
+    expect(result.current.series?.id).toBe(5);
+    expect(mocks.fetchTmdbSeriesFallback).not.toHaveBeenCalled();
   });
 
   it('handleEpisodeToggle: marks an episode watched via a serienVersion-bumped update map', async () => {

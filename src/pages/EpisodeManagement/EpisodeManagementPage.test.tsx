@@ -97,6 +97,7 @@ vi.mock('./useEpisodeManagement', () => ({
 vi.mock('../../components/ui', () => ({
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
   CatchUpDialog: () => null,
+  Dialog: () => null,
 }));
 vi.mock('../../components/ui/QuickRatingSheet', () => ({ QuickRatingSheet: () => null }));
 vi.mock('./BulkActionBar', () => ({ BulkActionBar: () => <div data-testid="bulk" /> }));

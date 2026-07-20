@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { fetchTmdbSeriesFallback } from '../SeriesDetail/fetchTmdbSeriesFallback';
 import { dbUpdate, paths, serverTimestamp, updateWithSeriesVersion } from '../../services/db/ref';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,7 +10,12 @@ import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
 import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
-import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../services/firebase/analytics';
+import {
+  trackEpisodeWatched,
+  trackEpisodeUnwatched,
+  trackSeriesAdded,
+} from '../../services/firebase/analytics';
+import { backendFetch } from '../../services/backendApi';
 import { autoWatchlistUpdates, shouldAutoEnableWatchlist } from '../../lib/series/autoWatchlist';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
@@ -39,7 +45,7 @@ export interface SeasonProgress {
 export const useEpisodeManagement = () => {
   const { id } = useParams();
   const { user } = useAuth() || {};
-  const { allSeriesList: seriesList } = useSeriesList();
+  const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
 
   // Quick Rating
   const {
@@ -62,8 +68,80 @@ export const useEpisodeManagement = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
 
-  // Derived data
-  const series = seriesList.find((s: Series) => s.id === Number(id));
+  // Derived data — wie die Detail-Seite: erst die eigene Liste, sonst
+  // TMDB-Fallback zur Ansicht (Serie noch nicht getrackt). Schreibaktionen
+  // sind dann gesperrt, bis die Serie regulär via /add hinzugefügt wurde —
+  // der TMDB-Staffelaufbau kann vom Katalog abweichen (z. B. One Piece),
+  // direkte Watch-Writes würden also auf falsche Plätze zeigen.
+  const localSeries = seriesList.find((s: Series) => s.id === Number(id));
+  const [fallbackSeries, setFallbackSeries] = useState<Series | null>(null);
+  const [fallbackLoading, setFallbackLoading] = useState(false);
+
+  useEffect(() => {
+    if (localSeries || !id) {
+      setFallbackSeries(null);
+      return;
+    }
+    let cancelled = false;
+    setFallbackLoading(true);
+    fetchTmdbSeriesFallback(id)
+      .then((s) => {
+        if (!cancelled) setFallbackSeries(s);
+      })
+      .finally(() => {
+        if (!cancelled) setFallbackLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [localSeries, id]);
+
+  const series = localSeries ?? fallbackSeries ?? undefined;
+
+  // „Erst hinzufügen"-Prompt: Schreibaktionen auf nicht getrackten Serien
+  // öffnen den Dialog statt zu schreiben; Bestätigen ruft /add (wie der
+  // Plus-Button der Detail-Seite) — danach kommt die Serie mit korrektem
+  // Katalog-Staffelaufbau aus der eigenen Liste.
+  const [showAddPrompt, setShowAddPrompt] = useState(false);
+  const [isAddingSeries, setIsAddingSeries] = useState(false);
+
+  const requireTracked = (): boolean => {
+    if (localSeries) return true;
+    setShowAddPrompt(true);
+    return false;
+  };
+
+  const handleAddFromPrompt = async () => {
+    if (!series || !user || isAddingSeries) return;
+    setIsAddingSeries(true);
+    try {
+      const response = await backendFetch('/add', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: import.meta.env.VITE_USER, id: series.id, uuid: user.uid }),
+      });
+      if (response.ok) {
+        const { logSeriesAdded } = await import('../../features/badges/minimalActivityLogger');
+        await logSeriesAdded(user.uid, series.title || 'Unbekannte Serie', series.id);
+        trackSeriesAdded(String(series.id), series.title || '', 'episode_management');
+        await refetchAfterAdd(series.id);
+        showToast(t('Serie erfolgreich hinzugefügt!'), 2500, 'success');
+      } else {
+        const data = await response.json().catch(() => ({}) as { error?: string });
+        if (data.error === 'Serie bereits vorhanden') {
+          await refetchAfterAdd(series.id);
+        } else {
+          showToast(t('Fehler beim Hinzufügen der Serie.'), 3000, 'error');
+        }
+      }
+    } catch {
+      showToast(t('Fehler beim Hinzufügen der Serie.'), 3000, 'error');
+    } finally {
+      setIsAddingSeries(false);
+      setShowAddPrompt(false);
+    }
+  };
 
   const currentSeason = series?.seasons?.[selectedSeason];
 
@@ -145,6 +223,7 @@ export const useEpisodeManagement = () => {
     longPress = false
   ) => {
     if (!series || !user) return;
+    if (!requireTracked()) return;
 
     const season = series.seasons[seasonIndex];
     const episode = season.episodes[episodeIndex];
@@ -343,6 +422,7 @@ export const useEpisodeManagement = () => {
 
   const handleCatchUp = async (targetSeasonIndex: number, targetEpisodeIndex: number) => {
     if (!series || !user) return;
+    if (!requireTracked()) return;
 
     try {
       const nowUnix = Math.floor(Date.now() / 1000);
@@ -416,6 +496,7 @@ export const useEpisodeManagement = () => {
     mode: 'watch' | 'unwatch' | 'rewatch' = 'watch'
   ) => {
     if (!series || !user) return;
+    if (!requireTracked()) return;
 
     const season = series.seasons[seasonIndex];
     const allWatched = season.episodes?.every((ep) => ep.watched);
@@ -577,8 +658,16 @@ export const useEpisodeManagement = () => {
   return {
     // Series data
     series,
+    seriesLoading: fallbackLoading,
+    isTracked: !!localSeries,
     currentSeason,
     seriesId: id,
+
+    // „Erst hinzufügen"-Prompt für nicht getrackte Serien
+    showAddPrompt,
+    setShowAddPrompt,
+    isAddingSeries,
+    handleAddFromPrompt,
 
     // Season selection
     selectedSeason,

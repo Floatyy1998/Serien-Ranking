@@ -133,6 +133,11 @@ const dict: Record<string, string> = {
   // Episoden-Verwaltung
   'Serie nicht gefunden': 'Show not found',
   'Episoden verwalten': 'Manage episodes',
+  'Serie hinzufügen?': 'Add series?',
+  'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.':
+    "This series isn't in your list yet. Add it first to check off episodes.",
+  'Wird hinzugefügt…': 'Adding…',
+  Hinzufügen: 'Add',
   'Vorherige Staffel': 'Previous season',
   'Nächste Staffel': 'Next season',
   'Aktuell: {n}x gesehen': 'Watched {n}x so far',

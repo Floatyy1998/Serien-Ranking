@@ -393,6 +393,20 @@ export function useSeriesActions(
   const handleEpisodeQuickToggle = useCallback(
     async (seasonIndex: number, episodeIndex: number) => {
       if (!series || !userId) return;
+      // Nicht getrackte Serie (TMDB-Fallback-Ansicht): erst regulär via /add
+      // hinzufügen — der TMDB-Staffelaufbau kann vom Katalog abweichen
+      // (z. B. One Piece), direkte Watch-Writes würden falsch landen.
+      if (series === tmdbSeries) {
+        setDialog({
+          open: true,
+          message: t(
+            'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.'
+          ),
+          type: 'info',
+          onConfirm: () => void handleAddSeries(),
+        });
+        return;
+      }
       const season = series.seasons?.[seasonIndex];
       const episode = season?.episodes?.[episodeIndex];
       if (!season || !episode) return;
@@ -508,7 +522,7 @@ export function useSeriesActions(
         setDialog({ open: true, message: t('Fehler beim Speichern.'), type: 'error' });
       }
     },
-    [series, userId]
+    [series, userId, tmdbSeries, handleAddSeries]
   );
 
   const handleStartRewatch = useCallback(

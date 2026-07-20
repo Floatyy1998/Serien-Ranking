@@ -3,14 +3,11 @@ import { SUPPORTED_PROVIDERS } from '../../config/menuItems';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 
 import type { Series } from '../../types/Series';
-import type { TMDBGenre, TMDBWatchProvider, SeriesSeason } from './types';
+import type { TMDBWatchProvider } from './types';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { pickProviderRegion, watchRegion } from '../../services/region';
-import type {
-  TmdbMediaDetail,
-  TmdbSeasonDetail,
-  TmdbWatchProvidersResponse,
-} from '../../services/tmdb.types';
+import type { TmdbMediaDetail, TmdbWatchProvidersResponse } from '../../services/tmdb.types';
+import { fetchTmdbSeriesFallback } from './fetchTmdbSeriesFallback';
 
 interface UseSeriesDataResult {
   series: Series | null;
@@ -98,88 +95,12 @@ export const useSeriesData = (id: string | undefined): UseSeriesDataResult => {
 
     // Full fetch if not found locally
     if (!localSeries && !tmdbSeries) {
-      const hasNonLatin = (text: string) => /[^\u0020-\u024F\u1E00-\u1EFF]/.test(text);
-      const fetchFullData = async () => {
-        setLoading(true);
-        try {
-          const [data, dataEN] = await Promise.all([
-            tmdbFetch<TmdbMediaDetail>(`tv/${id}`, { append_to_response: 'credits,external_ids' }),
-            tmdbFetch<TmdbMediaDetail>(`tv/${id}`, { language: 'en-US' }),
-          ]);
-          const bestName =
-            data.name && !hasNonLatin(data.name) ? data.name : dataEN.name || data.name;
-          if (data.id) {
-            // Episoden von TMDB holen (deutsche Titel)
-            const regularSeasons = (data.seasons || []).filter((s) => s.season_number > 0);
-            const seasonsWithEpisodes: SeriesSeason[] = await Promise.all(
-              regularSeasons.map(async (season) => {
-                try {
-                  const seasonData = await tmdbFetch<TmdbSeasonDetail>(
-                    `tv/${id}/season/${season.season_number}`
-                  );
-
-                  return {
-                    seasonNumber: season.season_number - 1,
-                    episodes:
-                      seasonData.episodes?.map((ep) => ({
-                        id: ep.id,
-                        name: ep.name || '',
-                        episode_number: ep.episode_number,
-                        air_date: ep.air_date || '',
-                        watched: false,
-                        watchCount: 0,
-                      })) || [],
-                  };
-                } catch {
-                  return {
-                    seasonNumber: season.season_number - 1,
-                    episodes: [],
-                  };
-                }
-              })
-            );
-
-            // TMDB-Daten in unseren Series-Typ überführen
-            const series: Series = {
-              id: data.id,
-              title: bestName || '',
-              name: bestName || '',
-              poster: { poster: data.poster_path || '' },
-              genre: { genres: data.genres?.map((g: TMDBGenre) => g.name) || [] },
-              provider: { provider: [] },
-              seasons: seasonsWithEpisodes,
-              first_air_date: data.first_air_date,
-              status: data.status,
-              rating: {},
-              watchlist: false,
-              overview: data.overview,
-              backdrop: data.backdrop_path ?? undefined,
-              // Required fields with defaults
-              begründung: '',
-              beschreibung: data.overview || '',
-              episodeCount: 0,
-              episodeRuntime: 0,
-              imdb: { imdb_id: data.external_ids?.imdb_id || '' },
-              origin_country: data.origin_country || [],
-              original_language: data.original_language || '',
-              original_name: data.original_name || data.name || '',
-              popularity: data.popularity || 0,
-              vote_average: data.vote_average || 0,
-              vote_count: data.vote_count || 0,
-              seasonCount: seasonsWithEpisodes.length || 0,
-              watchtime: 0,
-              wo: { wo: '' },
-              release_date: data.first_air_date || '',
-            };
-            setTmdbSeries(series);
-          }
-        } catch {
-          // Handle error silently
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchFullData();
+      setLoading(true);
+      fetchTmdbSeriesFallback(id)
+        .then((s) => {
+          if (s) setTmdbSeries(s);
+        })
+        .finally(() => setLoading(false));
     }
   }, [localSeries, id, tmdbSeries]); // Remove loading dependency, add tmdbSeries to prevent re-fetching
 

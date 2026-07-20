@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useRef } from 'react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { t } from '../../services/i18n';
-import { PageHeader, CatchUpDialog } from '../../components/ui';
+import { PageHeader, CatchUpDialog, Dialog } from '../../components/ui';
 import { QuickRatingSheet } from '../../components/ui/QuickRatingSheet';
 import { BulkActionBar } from './BulkActionBar';
 import { EpisodeListItem } from './EpisodeListItem';
@@ -14,6 +14,11 @@ import './EpisodeManagementPage.css';
 export const EpisodeManagementPage = () => {
   const {
     series,
+    seriesLoading,
+    showAddPrompt,
+    setShowAddPrompt,
+    isAddingSeries,
+    handleAddFromPrompt,
     currentSeason,
     seriesId,
     selectedSeason,
@@ -45,9 +50,11 @@ export const EpisodeManagementPage = () => {
   } = useEpisodeManagement();
 
   if (!series) {
+    // Während der TMDB-Fallback für nicht getrackte Serien lädt, keine
+    // (falsche) „nicht gefunden"-Meldung zeigen.
     return (
       <div className="mobile-episode-page">
-        <PageHeader title={t('Serie nicht gefunden')} sticky={false} />
+        <PageHeader title={seriesLoading ? '' : t('Serie nicht gefunden')} sticky={false} />
       </div>
     );
   }
@@ -136,6 +143,29 @@ export const EpisodeManagementPage = () => {
         seriesTitle={quickRatingSeries?.title || ''}
         seasonNumber={quickRatingSeasonNumber}
         onRate={saveQuickRating}
+      />
+
+      {/* „Erst hinzufügen"-Prompt für nicht getrackte Serien */}
+      <Dialog
+        open={showAddPrompt}
+        onClose={() => setShowAddPrompt(false)}
+        title={t('Serie hinzufügen?')}
+        message={t(
+          'Diese Serie ist noch nicht in deiner Liste. Füge sie zuerst hinzu, um Folgen abzuhaken.'
+        )}
+        type="info"
+        actions={[
+          {
+            label: t('Abbrechen'),
+            onClick: () => setShowAddPrompt(false),
+            variant: 'secondary',
+          },
+          {
+            label: isAddingSeries ? t('Wird hinzugefügt…') : t('Hinzufügen'),
+            onClick: () => void handleAddFromPrompt(),
+            variant: 'primary',
+          },
+        ]}
       />
     </div>
   );
