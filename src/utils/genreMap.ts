@@ -1,3 +1,5 @@
+import { t } from '../services/i18n';
+
 const GENRE_MAP: Record<number, string> = {
   28: 'Action',
   12: 'Abenteuer',
@@ -33,5 +35,6 @@ export function mapGenreIds(genreIds: number[], max = 2): string {
     .map((id) => GENRE_MAP[id])
     .filter(Boolean)
     .slice(0, max)
+    .map((label) => t(label))
     .join(', ');
 }
