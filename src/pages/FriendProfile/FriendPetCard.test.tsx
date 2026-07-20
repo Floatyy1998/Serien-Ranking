@@ -77,7 +77,8 @@ describe('FriendPetCard', () => {
     render(<FriendPetCard friendUid="friend-1" pet={pet} />);
     expect(screen.getByText('Wuffi')).toBeInTheDocument();
     expect(screen.getByText(/Hund · Lvl 5/)).toBeInTheDocument();
-    expect(screen.getByText('40%')).toBeInTheDocument();
+    // Sättigung = 100 - hunger(40) = 60%; Glück = 80%
+    expect(screen.getByText('60%')).toBeInTheDocument();
     expect(screen.getByText('80%')).toBeInTheDocument();
   });
 

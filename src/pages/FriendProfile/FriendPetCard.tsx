@@ -39,7 +39,8 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
   }, [friendUid]);
 
   const mood = petMoodService.calculateCurrentMood(pet);
-  const hungerPct = Math.round(Math.max(0, Math.min(100, pet.hunger)));
+  // Anzeige als Sättigung (100 = satt = gut), konsistent mit PetWidget/PetCard.
+  const satietyPct = Math.round(Math.max(0, Math.min(100, 100 - pet.hunger)));
   const happinessPct = Math.round(Math.max(0, Math.min(100, pet.happiness)));
 
   const isOwnPet = user?.uid === friendUid;
@@ -105,15 +106,15 @@ export const FriendPetCard = memo(function FriendPetCard({ friendUid, pet }: Pro
         <div className="fp-pet-stats">
           <div className="fp-pet-stat">
             <div className="fp-pet-stat-label">
-              <span>{t('Hunger')}</span>
-              <span>{hungerPct}%</span>
+              <span>{t('Sättigung')}</span>
+              <span>{satietyPct}%</span>
             </div>
             <div className="fp-pet-stat-track">
               <div
                 className="fp-pet-stat-fill"
                 style={{
-                  width: `${hungerPct}%`,
-                  background: hungerPct > 70 ? '#ff6b6b' : currentTheme.accent,
+                  width: `${satietyPct}%`,
+                  background: satietyPct < 30 ? '#ff6b6b' : currentTheme.accent,
                 }}
               />
             </div>

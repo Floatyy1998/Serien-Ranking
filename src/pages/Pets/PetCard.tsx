@@ -52,7 +52,7 @@ export const PetCard = memo(function PetCard({
 
   const stats = [
     {
-      label: 'Hunger',
+      label: t('Sättigung'),
       value: hungerPercentage,
       color: hungerColor,
       icon: '🍖',

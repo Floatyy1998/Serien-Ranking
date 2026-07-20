@@ -93,6 +93,7 @@ const dict: Record<string, string> = {
   '{name} {cause} 😢 – tippe es an, um es wiederzubeleben':
     '{name} {cause} 😢 – tap it to revive it',
   'Sättigung: {n}%': 'Fullness: {n}%',
+  Sättigung: 'Fullness',
   'Gesundes Pet: +50% XP-Bonus aktiv': 'Healthy pet: +50% XP bonus active',
   'Pet ist verstorben – Tippe zum Wiederbeleben': 'Your pet has passed away – tap to revive',
   'Dein Pet hat Hunger!': 'Your pet is hungry!',
