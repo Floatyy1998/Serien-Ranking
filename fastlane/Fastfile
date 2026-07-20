@@ -5,9 +5,11 @@
 default_platform(:ios)
 
 require_relative "widget_target"
+require_relative "notification_service_target"
 
 APP_ID = "de.tvrank.app"
 WIDGET_ID = "de.tvrank.app.TVRankWidget"
+NSE_ID = "de.tvrank.app.NotificationService"
 
 platform :ios do
   desc "Build + Upload zu TestFlight"
@@ -24,6 +26,9 @@ platform :ios do
     add_widget_target!("ios/App/App.xcodeproj")
     register_widget_bridge_plugin!("ios/App/App/capacitor.config.json")
 
+    # Notification Service Extension einhängen (Bilder in Push-Notifications)
+    add_notification_service_target!("ios/App/App.xcodeproj")
+
     # Widget-Bundle-ID im Portal anlegen (einmalig, idempotent)
     Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
       key_id: ENV.fetch("APPSTORE_KEY_ID"),
@@ -35,6 +40,15 @@ platform :ios do
       Spaceship::ConnectAPI::BundleId.create(
         name: "TVRank Widget",
         identifier: WIDGET_ID,
+        platform: Spaceship::ConnectAPI::BundleIdPlatform::IOS
+      )
+    end
+
+    if Spaceship::ConnectAPI::BundleId.all(filter: { identifier: NSE_ID })
+         .none? { |b| b.identifier == NSE_ID }
+      Spaceship::ConnectAPI::BundleId.create(
+        name: "TVRank NotificationService",
+        identifier: NSE_ID,
         platform: Spaceship::ConnectAPI::BundleIdPlatform::IOS
       )
     end
@@ -71,6 +85,14 @@ platform :ios do
     )
     widget_profile_name = lane_context[SharedValues::SIGH_NAME]
 
+    sigh(
+      api_key: api_key,
+      app_identifier: NSE_ID,
+      force: true,
+      output_path: "build/certs"
+    )
+    nse_profile_name = lane_context[SharedValues::SIGH_NAME]
+
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "ios/App/App.xcodeproj",
@@ -91,6 +113,16 @@ platform :ios do
       targets: ["TVRankWidget"]
     )
 
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/App/App.xcodeproj",
+      team_id: ENV.fetch("APPLE_TEAM_ID"),
+      code_sign_identity: "Apple Distribution",
+      profile_name: nse_profile_name,
+      bundle_identifier: NSE_ID,
+      targets: ["NotificationService"]
+    )
+
     build_app(
       project: "ios/App/App.xcodeproj",
       scheme: "App",
@@ -101,6 +133,7 @@ platform :ios do
         provisioningProfiles: {
           APP_ID => app_profile_name,
           WIDGET_ID => widget_profile_name,
+          NSE_ID => nse_profile_name,
         },
       },
       xcargs: "MARKETING_VERSION=1.1 CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}"

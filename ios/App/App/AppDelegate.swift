@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import FirebaseCore
 import FirebaseMessaging
+import UserNotifications
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,7 +11,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
+        registerNotificationCategories()
         return true
+    }
+
+    // Action-Buttons für Push-Notifications. Die Kategorie-IDs entsprechen dem
+    // `category`-Feld, das der Backend-Push-Cron (pushSender.js) mitschickt; der
+    // getippte Button liefert seinen actionId über das Capacitor-Push-Plugin an
+    // den JS-Listener (services/pushNotifications.ts), der zur data.url navigiert.
+    private func registerNotificationCategories() {
+        let isGerman = (Locale.preferredLanguages.first ?? "de").hasPrefix("de")
+        let view = UNNotificationAction(
+            identifier: "view", title: isGerman ? "Ansehen" : "View", options: [.foreground])
+        let feed = UNNotificationAction(
+            identifier: "feed", title: isGerman ? "Füttern" : "Feed", options: [.foreground])
+        let open = UNNotificationAction(
+            identifier: "open", title: isGerman ? "Öffnen" : "Open", options: [.foreground])
+
+        let series = UNNotificationCategory(
+            identifier: "series", actions: [view], intentIdentifiers: [], options: [])
+        let pet = UNNotificationCategory(
+            identifier: "pet", actions: [feed], intentIdentifiers: [], options: [])
+        let reward = UNNotificationCategory(
+            identifier: "reward", actions: [open], intentIdentifiers: [], options: [])
+        let streak = UNNotificationCategory(
+            identifier: "streak", actions: [open], intentIdentifiers: [], options: [])
+
+        UNUserNotificationCenter.current().setNotificationCategories([series, pet, reward, streak])
     }
 
     // APNs-Token an Firebase weiterreichen; Capacitor bekommt den FCM-Token.
