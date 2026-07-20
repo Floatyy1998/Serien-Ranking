@@ -44,4 +44,19 @@ describe('EpisodePicker', () => {
     fireEvent.click(screen.getByText('The Cat in the Bag'));
     expect(onPick).toHaveBeenCalledWith(0, 1);
   });
+
+  it('renders episodes even when the catalog delivers them as a (sparse) object', () => {
+    // Manche Serien liefern episodes als Objekt statt Array — darf nicht crashen.
+    const objectSeasons = [
+      {
+        seasonNumber: 1,
+        episodes: { a: { id: 101, name: 'Pilot' }, b: { id: 102, name: 'Zwei' } },
+      },
+    ] as unknown as CatalogSeason[];
+    render(
+      <EpisodePicker seasons={objectSeasons} seasonIdx={0} episodeIdx={0} onPick={() => {}} />
+    );
+    expect(screen.getByText('Pilot')).toBeInTheDocument();
+    expect(screen.getByText('Zwei')).toBeInTheDocument();
+  });
 });

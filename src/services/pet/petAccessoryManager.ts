@@ -1,4 +1,4 @@
-import { dbRef, userPath } from '../../services/db/ref';
+import { dbRef, dbUpdate, userPath } from '../../services/db/ref';
 import type {
   Pet,
   PetAccessory,
@@ -83,6 +83,7 @@ export async function toggleAccessory(
   const target = pet.accessories.find((a) => a.id === accessoryId);
 
   // Clear isNew flag when interacting with an accessory
+  const wasNew = !!target?.isNew;
   if (target?.isNew) delete target.isNew;
 
   if (target) {
@@ -109,7 +110,46 @@ export async function toggleAccessory(
   }
 
   await dbRef(userPath(userId, 'pets', petId, 'accessories')).set(pet.accessories);
+
+  // NEU-Badge global entfernen: ein neu freigeschaltetes Accessoire soll man nicht
+  // bei jedem Pet einzeln wegklicken müssen — einmal interagieren räumt es überall.
+  if (wasNew) await clearAccessoryNewFlagOnOtherPets(userId, accessoryId, petId);
+
   return pet;
+}
+
+/**
+ * Löscht das `isNew`-Flag eines Accessoires bei allen Pets außer `excludePetId`
+ * (der wurde bereits geschrieben). Ein Multi-Path-Update, das der pets-Listener
+ * sofort in alle Pet-Ansichten spiegelt.
+ */
+async function clearAccessoryNewFlagOnOtherPets(
+  userId: string,
+  accessoryId: string,
+  excludePetId: string
+): Promise<void> {
+  const snap = await dbRef(userPath(userId, 'pets')).once('value');
+  const val = snap.val() as Record<string, { accessories?: PetAccessory[] }> | null;
+  if (!val) return;
+
+  const updates: Record<string, unknown> = {};
+  for (const [pid, p] of Object.entries(val)) {
+    if (pid === excludePetId) continue;
+    const accs = Array.isArray(p?.accessories) ? p.accessories : [];
+    let changed = false;
+    const next = accs.map((a) => {
+      if (a?.id === accessoryId && a.isNew) {
+        changed = true;
+        const cleared = { ...a };
+        delete cleared.isNew;
+        return cleared;
+      }
+      return a;
+    });
+    if (changed) updates[userPath(userId, 'pets', pid, 'accessories')] = next;
+  }
+
+  if (Object.keys(updates).length > 0) await dbUpdate(updates);
 }
 
 // Starter Accessories - 3 random ones for new pets

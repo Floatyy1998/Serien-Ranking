@@ -62,7 +62,7 @@ describe('OnboardingPage', () => {
   it('renders the welcome step and progress on the first step', () => {
     render(<OnboardingPage />);
     expect(screen.getByText('welcome-step')).toBeInTheDocument();
-    expect(screen.getByText(/01 \/ 05/)).toBeInTheDocument();
+    expect(screen.getByText(/01 \/ 06/)).toBeInTheDocument();
     expect(screen.getByText('Kuration')).toBeInTheDocument();
   });
 

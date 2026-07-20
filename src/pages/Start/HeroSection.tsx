@@ -55,7 +55,7 @@ export const HeroSection = () => (
         <div className="start-cta-group">
           <Button
             component={Link}
-            to="/register"
+            to="/join"
             variant="contained"
             size="large"
             startIcon={<PersonAdd />}

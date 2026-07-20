@@ -215,31 +215,33 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   // synchronen setState im Effect-Body.
   const [storedReadTime, setStoredReadTime] = useState<{ uid: string; ts: number } | null>(null);
 
+  // Realtime-Listener statt Einmal-Read: markiert ein Gerät die Announcements
+  // als gelesen, wandert das Wasserzeichen live auf alle anderen Geräte (sonst
+  // blieb der Bell-Badge auf Gerät B stehen).
   useEffect(() => {
     if (!user) return;
     const uid = user.uid;
-    let cancelled = false;
     const ref = dbRef(userPath(uid, 'readTimes', 'announcements'));
-    ref
-      .once('value')
-      .then((snap) => {
-        if (cancelled) return;
+    let baselineWritten = false;
+    const listener = ref.on(
+      'value',
+      (snap) => {
         const val = snap.val();
         if (typeof val === 'number') {
           setStoredReadTime({ uid, ts: val });
-        } else {
+        } else if (!baselineWritten) {
           // First-time hydration: alte Announcements nicht als "neu" auferstehen lassen
+          baselineWritten = true;
           const now = Date.now();
           setStoredReadTime({ uid, ts: now });
           ref.set(now).catch(() => {}); // bewusst still: Hydration-Write ist Best-effort
         }
-      })
-      .catch(() => {
+      },
+      () => {
         // offline — Badge faellt auf 0 zurueck statt faelschlich auf 5
-      });
-    return () => {
-      cancelled = true;
-    };
+      }
+    );
+    return () => ref.off('value', listener);
   }, [user]);
 
   const lastReadAnnouncementsTime = useMemo(

@@ -170,6 +170,30 @@ export async function getUserPets(userId: string): Promise<Pet[]> {
     }
   }
 
+  // Sync: `isNew` global abgleichen. Sobald ein Accessoire bei EINEM Pet als
+  // gesehen gilt (kein isNew), bei allen anderen ebenfalls entfernen — sonst
+  // müsste man ein neues Accessoire bei jedem Pet einzeln wegklicken.
+  if (pets.length > 1) {
+    const seen = new Set<string>();
+    for (const p of pets) {
+      for (const a of p.accessories || []) {
+        if (!a.isNew) seen.add(a.id);
+      }
+    }
+    for (const p of pets) {
+      let dirty = false;
+      for (const a of p.accessories || []) {
+        if (a.isNew && seen.has(a.id)) {
+          delete a.isNew;
+          dirty = true;
+        }
+      }
+      if (dirty) {
+        await dbRef(userPath(userId, 'pets', p.id, 'accessories')).set(p.accessories);
+      }
+    }
+  }
+
   return pets;
 }
 

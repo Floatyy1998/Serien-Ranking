@@ -6,6 +6,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
 import { trackEpisodeWatched, trackEpisodeUnwatched } from '../../services/firebase/analytics';
@@ -380,6 +381,8 @@ export const useEpisodeManagement = () => {
         updates,
         `${series.title} Catch-Up bis S${targetSeasonIndex + 1}E${targetEpisodeIndex}`
       );
+      // Catch-Up ist Massen-Abhaken → zählt nicht für Mystery-Boxen.
+      if (markedEpPaths.length > 0) void adjustBulkExcludedEpisodes(user.uid, markedEpPaths.length);
       setSelectedSeason(targetSeasonIndex);
 
       showUndoToast(
@@ -393,6 +396,8 @@ export const useEpisodeManagement = () => {
             }
             undoUpdates[paths.serienVersion(user.uid)] = serverTimestamp();
             await dbUpdate(undoUpdates);
+            if (markedEpPaths.length > 0)
+              void adjustBulkExcludedEpisodes(user.uid, -markedEpPaths.length);
           } catch {
             showToast(t('Undo fehlgeschlagen'), 2000, 'error');
           }
@@ -415,6 +420,18 @@ export const useEpisodeManagement = () => {
     const season = series.seasons[seasonIndex];
     const allWatched = season.episodes?.every((ep) => ep.watched);
     const willAutoAddToWatchlist = mode !== 'unwatch' && shouldAutoEnableWatchlist(series);
+
+    // Massen-Abhaken zählt nicht für Mystery-Boxen (kein Box-Schwall beim
+    // Eintragen bereits geschauter Serien). Delta = Änderung der Unique-Watched.
+    const seasonEps = season.episodes ?? [];
+    let bulkDelta = 0;
+    if (mode === 'watch') {
+      bulkDelta = allWatched
+        ? -seasonEps.filter((ep) => ep.id && ep.watched).length
+        : seasonEps.filter((ep) => ep.id && !ep.watched).length;
+    } else if (mode === 'unwatch') {
+      bulkDelta = -seasonEps.filter((ep) => ep.id && ep.watched).length;
+    }
 
     try {
       const nowUnix = Math.floor(Date.now() / 1000);
@@ -478,6 +495,8 @@ export const useEpisodeManagement = () => {
         `${series.title} Staffel ${season.seasonNumber + 1} (${mode})`
       );
 
+      if (bulkDelta !== 0) void adjustBulkExcludedEpisodes(user.uid, bulkDelta);
+
       // Quick-Rate: letzte Staffel komplett markiert.
       // F4 — nicht blockierend (siehe handleEpisodeToggle): wegwischbarer
       // Hinweis statt Auto-Modal; öffnet die Schnellbewertung erst auf Tap.
@@ -519,6 +538,7 @@ export const useEpisodeManagement = () => {
           // Bump mitschreiben — sonst überspringt ein zweites Gerät den
           // Delta-Reload (versionMatch) und zeigt den zurückgenommenen Stand weiter.
           await updateWithSeriesVersion(user.uid, undoUpdates);
+          if (bulkDelta !== 0) void adjustBulkExcludedEpisodes(user.uid, -bulkDelta);
         } catch {
           showToast(t('Undo fehlgeschlagen'), 2000, 'error');
         }

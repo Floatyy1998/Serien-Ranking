@@ -80,47 +80,66 @@ export const AppInstallBanner = () => {
     <AnimatePresence>
       {visible && (
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 40 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-          className="liquid-glass"
+          exit={{ opacity: 0, y: 24 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 32 }}
           style={{
             position: 'fixed',
-            left: 16,
-            right: 16,
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            left: 12,
+            right: 12,
+            bottom: 'calc(12px + env(safe-area-inset-bottom))',
             zIndex: 'var(--z-toast)' as string,
-            borderRadius: 'var(--radius-xl)',
-            padding: '14px',
+            borderRadius: 18,
+            padding: '11px 12px',
             display: 'flex',
             alignItems: 'center',
             gap: 12,
+            // Dezentes dunkles Glas statt grünem Klotz.
+            background: 'rgba(18, 20, 26, 0.82)',
+            border: '1px solid rgba(255, 255, 255, 0.09)',
+            WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+            backdropFilter: 'blur(20px) saturate(1.3)',
+            boxShadow: '0 18px 50px rgba(0, 0, 0, 0.5)',
           }}
         >
-          <img
-            src="/tv-logo.svg"
-            alt=""
+          {/* Logo auf ruhigem Chip, damit das grüne Icon nicht dominiert */}
+          <div
             aria-hidden
-            width={44}
-            height={44}
-            style={{ borderRadius: 12, flexShrink: 0 }}
-          />
+            style={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              borderRadius: 11,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            <img src="/tv-logo.svg" alt="" width={26} height={26} />
+          </div>
+
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 14.5,
-                fontWeight: 700,
-                color: currentTheme.text.secondary,
-                marginBottom: 2,
-              }}
-            >
+            <div style={{ fontSize: 14, fontWeight: 600, color: '#fff', letterSpacing: '-0.01em' }}>
               {t('TV-Rank als App')}
             </div>
-            <div style={{ fontSize: 12, lineHeight: 1.4, color: currentTheme.text.muted }}>
-              {t('Schneller, mit Widgets & Benachrichtigungen — hol dir die App.')}
+            <div
+              style={{
+                fontSize: 12,
+                lineHeight: 1.35,
+                color: 'rgba(255, 255, 255, 0.5)',
+                marginTop: 1,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {t('Widgets, Push & schneller.')}
             </div>
           </div>
+
           <motion.a
             whileTap={tapScaleTight}
             href={target.url}
@@ -129,29 +148,29 @@ export const AppInstallBanner = () => {
             onClick={dismiss}
             style={{
               flexShrink: 0,
-              padding: '9px 16px',
+              padding: '8px 16px',
               borderRadius: 'var(--radius-full)',
-              border: 'none',
-              background: currentTheme.primary,
-              color: currentTheme.background.default,
+              background: `color-mix(in srgb, ${currentTheme.primary} 16%, transparent)`,
+              color: currentTheme.primary,
+              border: `1px solid color-mix(in srgb, ${currentTheme.primary} 45%, transparent)`,
               fontSize: 13,
-              fontWeight: 700,
-              minHeight: 40,
+              fontWeight: 600,
+              minHeight: 36,
               display: 'flex',
               alignItems: 'center',
               textDecoration: 'none',
-              boxShadow: 'var(--glow-soft)',
             }}
           >
             {t('Öffnen')}
           </motion.a>
+
           <button
             onClick={dismiss}
             aria-label={t('Schließen')}
             style={{
               flexShrink: 0,
-              width: 28,
-              height: 28,
+              width: 26,
+              height: 26,
               padding: 0,
               display: 'flex',
               alignItems: 'center',
@@ -159,11 +178,11 @@ export const AppInstallBanner = () => {
               borderRadius: 'var(--radius-full)',
               border: 'none',
               background: 'transparent',
-              color: currentTheme.text.muted,
+              color: 'rgba(255, 255, 255, 0.4)',
               cursor: 'pointer',
             }}
           >
-            <Close style={{ fontSize: 18 }} />
+            <Close style={{ fontSize: 16 }} />
           </button>
         </motion.div>
       )}

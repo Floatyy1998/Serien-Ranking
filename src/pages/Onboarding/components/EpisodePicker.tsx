@@ -10,6 +10,12 @@ interface Props {
   onPick: (seasonIdx: number, episodeIdx: number) => void;
 }
 
+function toArray<T>(value: unknown): T[] {
+  if (Array.isArray(value)) return value as T[];
+  if (value && typeof value === 'object') return Object.values(value as Record<string, T>);
+  return [];
+}
+
 export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx, onPick }) => {
   const [activeSeason, setActiveSeason] = useState(seasonIdx);
   const tabsRef = useRef<HTMLDivElement | null>(null);
@@ -26,7 +32,9 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
   }, [activeSeason]);
 
   const currentSeason = seasons[activeSeason];
-  const episodes = currentSeason?.episodes || [];
+  // Katalog liefert episodes je nach Serie als Array ODER als (sparse) Objekt —
+  // defensiv zu einem Array normalisieren, sonst wirft `.map`.
+  const episodes = toArray<CatalogSeason['episodes'][number]>(currentSeason?.episodes);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -53,7 +61,7 @@ export const EpisodePicker: React.FC<Props> = ({ seasons, seasonIdx, episodeIdx,
               className={`ob-season-tab ${active ? 'ob-season-tab--active' : ''}`}
             >
               S{String(i + 1).padStart(2, '0')}
-              <span style={{ opacity: 0.55, marginLeft: 6 }}>{s.episodes?.length || 0}</span>
+              <span style={{ opacity: 0.55, marginLeft: 6 }}>{toArray(s.episodes).length}</span>
             </button>
           );
         })}

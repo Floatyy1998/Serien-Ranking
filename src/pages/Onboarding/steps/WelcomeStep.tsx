@@ -23,6 +23,8 @@ interface Props {
   onToggleGenre: (slug: string) => void;
   onNext: () => void;
   onSkip: () => void;
+  /** Gast-Flow hat oben schon eine Fortschrittsleiste — innere „Programm"-Leiste ausblenden. */
+  hideProgram?: boolean;
 }
 
 async function fetchGenrePosters(g: CuratedGenre): Promise<string[]> {
@@ -64,6 +66,7 @@ export const WelcomeStep: React.FC<Props> = ({
   onToggleGenre,
   onNext,
   onSkip,
+  hideProgram = false,
 }) => {
   const [postersBySlug, setPostersBySlug] = useState<Record<string, string[]>>({});
   const nameTooShort = !!nameEditable && (nameValue ?? '').trim().length < 3;
@@ -197,17 +200,19 @@ export const WelcomeStep: React.FC<Props> = ({
               </motion.p>
             </div>
 
-            <div className="ob-welcome-side">
-              <div className="ob-side-label">
-                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                  {t('Programm')}
-                </span>
-                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  {t('4 Akte')}
-                </span>
+            {!hideProgram && (
+              <div className="ob-welcome-side">
+                <div className="ob-side-label">
+                  <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
+                    {t('Programm')}
+                  </span>
+                  <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
+                    {t('4 Akte')}
+                  </span>
+                </div>
+                <TableOfContents currentStep="welcome" variant="horizontal" delay={1.1} />
               </div>
-              <TableOfContents currentStep="welcome" variant="horizontal" delay={1.1} />
-            </div>
+            )}
           </div>
 
           {/* Right column: tiles */}

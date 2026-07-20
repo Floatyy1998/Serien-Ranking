@@ -30,6 +30,7 @@ const dict: Record<string, string> = {
   'Passwort vergessen?': 'Forgot your password?',
   'Noch kein Konto?': 'No account yet?',
   'Jetzt registrieren': 'Sign up now',
+  '← Zur Startseite': '← Back to start',
 
   // --- Registrierung ---
   'Erstelle dein Konto': 'Create your account',

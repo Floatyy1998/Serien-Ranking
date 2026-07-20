@@ -8,9 +8,15 @@ const fb = vi.hoisted(() => {
   const state: { data: unknown } = { data: null };
   const set = vi.fn(() => Promise.resolve());
   const once = vi.fn(() => Promise.resolve({ val: () => state.data }));
-  const ref = vi.fn(() => ({ once, set }));
+  // Listener feuert synchron mit dem aktuellen State (wie ein RTDB-.on).
+  const on = vi.fn((_event: string, cb: (snap: { val: () => unknown }) => void) => {
+    cb({ val: () => state.data });
+    return cb;
+  });
+  const off = vi.fn();
+  const ref = vi.fn(() => ({ once, set, on, off }));
   const database = vi.fn(() => ({ ref }));
-  return { state, set, once, ref, database };
+  return { state, set, once, on, off, ref, database };
 });
 vi.mock('firebase/compat/app', () => ({
   default: { database: fb.database },
@@ -94,6 +100,8 @@ beforeEach(() => {
   fb.state.data = null;
   fb.set.mockClear();
   fb.once.mockClear();
+  fb.on.mockClear();
+  fb.off.mockClear();
   fb.ref.mockClear();
   fb.database.mockClear();
   friends.value = defaultFriends();
@@ -140,7 +148,7 @@ describe('useUnifiedNotifications', () => {
 
   it('markiert Announcements als gelesen nach Firebase-Hydration (Badge 0)', async () => {
     const { result } = renderHook(() => useUnifiedNotifications());
-    expect(fb.once).toHaveBeenCalled();
+    expect(fb.on).toHaveBeenCalled();
     await flush();
     // Alle Announcements liegen vor systemTime → gelesen → kein Announcement-Badge
     expect(result.current.totalUnreadBadge).toBe(0);
@@ -276,7 +284,7 @@ describe('useUnifiedNotifications', () => {
     vi.setSystemTime(new Date('2000-01-01T00:00:00Z'));
     fb.state.data = 0; // readTime 0 → nichts gelesen
     const { result } = renderHook(() => useUnifiedNotifications());
-    expect(fb.once).toHaveBeenCalled();
+    expect(fb.on).toHaveBeenCalled();
     await flush();
     fb.set.mockClear();
     const annId = ANNOUNCEMENTS[0].id;

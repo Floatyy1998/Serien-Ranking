@@ -9,7 +9,9 @@ const fb = vi.hoisted(() => {
     state.updateCalls.push(payload);
   });
   const ref = vi.fn(() => ({ update }));
-  const database = Object.assign(() => ({ ref }), {});
+  const database = Object.assign(() => ({ ref }), {
+    ServerValue: { TIMESTAMP: { '.sv': 'timestamp' } },
+  });
   return { state, update, ref, database };
 });
 
@@ -79,7 +81,28 @@ describe('useApplyWatchProgress', () => {
     expect(Object.keys(seasonsObj['0']?.eps ?? {})).toEqual(['101', '102']);
     expect(Object.keys(seasonsObj['1']?.eps ?? {})).toEqual(['201', '202', '203']);
     expect(payload['users/u1/series/500/watchlist']).toBe(false);
+    // serienVersion muss mitgebumpt werden, sonst merkt die App die Änderung nicht.
+    expect(payload['users/u1/meta/serienVersion']).toEqual({ '.sv': 'timestamp' });
     expect(onProgress).toHaveBeenLastCalledWith(1, 1);
+  });
+
+  it('normalisiert Episoden, die als (sparse) Objekt statt Array kommen', async () => {
+    // Katalog liefert episodes je nach Serie als Objekt — darf nicht crashen.
+    catalog.fetchStaticCatalogSeasons.mockResolvedValue({
+      '0': { episodes: { a: { id: 101 }, b: { id: 102 } } } as unknown as CatalogSeason,
+      '1': { episodes: { x: { id: 201 }, y: { id: 202 } } } as unknown as CatalogSeason,
+    });
+    const { result } = renderHook(() => useApplyWatchProgress());
+    await result.current({ 500: { kind: 'total' } });
+
+    expect(fb.update).toHaveBeenCalledTimes(1);
+    const payload = fb.state.updateCalls[0] ?? {};
+    const seasonsObj = payload['users/u1/seriesWatch/500/seasons'] as Record<
+      string,
+      { eps: Record<string, unknown> }
+    >;
+    expect(Object.keys(seasonsObj['0']?.eps ?? {})).toEqual(['101', '102']);
+    expect(Object.keys(seasonsObj['1']?.eps ?? {})).toEqual(['201', '202']);
   });
 
   it('markiert bei "upToEpisode" nur bis zum Ziel und bleibt auf der Watchlist', async () => {

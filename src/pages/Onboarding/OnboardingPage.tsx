@@ -11,20 +11,26 @@ import { useWaitForBackendItem } from './hooks/useWaitForBackendItem';
 import './onboarding.css';
 import { CompletionStep } from './steps/CompletionStep';
 import { DiscoveryStep } from './steps/DiscoveryStep';
+import { PetHatchStep } from './steps/PetHatchStep';
 import { SubscriptionsStep } from './steps/SubscriptionsStep';
 import { WelcomeStep } from './steps/WelcomeStep';
 import { invalidateActiveSubscriptions } from '../../hooks/useActiveSubscriptions';
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
+import { petService } from '../../services/petService';
+import { hasGuestOnboarding } from '../../services/guestOnboarding';
+import { GuestResumeOnboarding } from '../GuestOnboarding/GuestResumeOnboarding';
 import { t } from '../../services/i18n';
+import type { Pet } from '../../types/pet.types';
 
-type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'done';
-const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'done'];
+type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'pet' | 'done';
+const STEPS: Step[] = ['welcome', 'series', 'movies', 'subscriptions', 'pet', 'done'];
 const STEP_LABELS: Record<Step, string> = {
   welcome: 'Kuration',
   series: 'Serien',
   movies: 'Filme',
   subscriptions: 'Abos',
+  pet: 'Pet',
   done: 'Premiere',
 };
 
@@ -46,8 +52,15 @@ export const OnboardingPage: React.FC = () => {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [watchTargets, setWatchTargets] = useState<Map<number, WatchTarget>>(new Map());
   const [selectedProviders, setSelectedProviders] = useState<Set<string>>(new Set());
+  const [petName, setPetName] = useState('');
+  const [petType, setPetType] = useState<Pet['type']>('cat');
   const [isCompleting, setIsCompleting] = useState(false);
   const [completionProgress, setCompletionProgress] = useState(0);
+
+  // Ein Onboarding, Signup in der Mitte: Kam der Nutzer über den Pre-Signup-Gast-
+  // Flow (/join), liegt seine Auswahl im Store — dann NICHT das volle Onboarding
+  // wiederholen, sondern nur anwenden + Watch-Fortschritt abfragen (unten).
+  const [isResume] = useState(() => hasGuestOnboarding());
 
   const toggleProvider = useCallback((name: string) => {
     setSelectedProviders((prev) => {
@@ -194,7 +207,7 @@ export const OnboardingPage: React.FC = () => {
     const items = Array.from(pendingItems.values());
     const totalAdds = items.length;
     const totalWatch = Array.from(watchTargets.values()).filter((t) => t.kind !== 'none').length;
-    const totalUnits = Math.max(totalAdds + totalWatch + 1, 1);
+    const totalUnits = Math.max(totalAdds + totalWatch + 2, 1);
     let unitsDone = 0;
     const tick = () => {
       unitsDone++;
@@ -224,6 +237,17 @@ export const OnboardingPage: React.FC = () => {
         invalidateActiveSubscriptions(uid);
       }
 
+      // Starter-Pet anlegen (best-effort — kein Blocker fürs Onboarding).
+      try {
+        const hasPet = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
+        if (!hasPet) {
+          await petService.createPet(uid, petName.trim() || t('Mein Pet'), petType);
+        }
+      } catch {
+        /* ignore */
+      }
+      tick();
+
       await dbRef(userPath(uid, 'onboardingComplete')).set(true);
       setOnboardingComplete?.(true);
       setCompletionProgress(100);
@@ -239,6 +263,8 @@ export const OnboardingPage: React.FC = () => {
     pendingItems,
     watchTargets,
     selectedProviders,
+    petName,
+    petType,
     addToList,
     waitForBackendItem,
     applyWatchProgress,
@@ -257,6 +283,9 @@ export const OnboardingPage: React.FC = () => {
   const currentStepIndex = STEPS.indexOf(step);
   const totalSteps = STEPS.length;
   const progressPct = ((currentStepIndex + 1) / totalSteps) * 100;
+
+  // Gast-Flow → nur anwenden + „wo stehst du?" (statt volles Onboarding erneut).
+  if (isResume) return <GuestResumeOnboarding />;
 
   return (
     <div className="ob-root">
@@ -342,8 +371,19 @@ export const OnboardingPage: React.FC = () => {
               stepNumber={4}
               selectedProviders={selectedProviders}
               onToggle={toggleProvider}
-              onNext={() => setStep('done')}
+              onNext={() => setStep('pet')}
               onBack={() => setStep('movies')}
+            />
+          )}
+          {step === 'pet' && (
+            <PetHatchStep
+              key="pet"
+              name={petName}
+              type={petType}
+              onNameChange={setPetName}
+              onTypeChange={setPetType}
+              onNext={() => setStep('done')}
+              onBack={() => setStep('subscriptions')}
             />
           )}
           {step === 'done' && (
@@ -356,7 +396,7 @@ export const OnboardingPage: React.FC = () => {
               isCompleting={isCompleting}
               completionProgress={completionProgress}
               onFinish={finish}
-              onBack={() => setStep('subscriptions')}
+              onBack={() => setStep('pet')}
             />
           )}
         </AnimatePresence>

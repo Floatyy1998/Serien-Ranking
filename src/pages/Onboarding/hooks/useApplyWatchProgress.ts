@@ -1,8 +1,18 @@
 import { useCallback } from 'react';
-import { dbUpdate, paths } from '../../../services/db/ref';
+import { paths, updateWithSeriesVersion } from '../../../services/db/ref';
 import { useAuth } from '../../../contexts/AuthContext';
 import { fetchStaticCatalogSeasons } from '../../../services/staticCatalog';
 import type { CatalogSeason } from '../../../types/CatalogTypes';
+
+type CatalogEpisode = CatalogSeason['episodes'][number];
+
+/** Katalog liefert episodes je nach Serie als Array ODER (sparse) Objekt. */
+function episodeArray(value: unknown): CatalogEpisode[] {
+  if (Array.isArray(value)) return value as CatalogEpisode[];
+  if (value && typeof value === 'object')
+    return Object.values(value as Record<string, CatalogEpisode>);
+  return [];
+}
 
 /**
  * Markiert "Up to and including episode (seasonIdx, epIdx)" via Catalog-IDs.
@@ -78,14 +88,14 @@ export function useApplyWatchProgress() {
             const watchedEpIds: { sIdx: number; epId: number }[] = [];
             if (target.kind === 'total') {
               ordered.forEach((s, sIdx) => {
-                for (const ep of s.episodes || []) {
+                for (const ep of episodeArray(s.episodes)) {
                   if (typeof ep.id === 'number') watchedEpIds.push({ sIdx, epId: ep.id });
                 }
               });
             } else if (target.kind === 'upToEpisode') {
               const stopSeasonIdx = Math.min(target.seasonIdx, ordered.length - 1);
               for (let sIdx = 0; sIdx <= stopSeasonIdx; sIdx++) {
-                const eps = ordered[sIdx].episodes || [];
+                const eps = episodeArray(ordered[sIdx].episodes);
                 const stopEpIdx =
                   sIdx === stopSeasonIdx
                     ? Math.min(target.episodeIdx, eps.length - 1)
@@ -114,7 +124,8 @@ export function useApplyWatchProgress() {
             const updates: Record<string, unknown> = {};
             updates[`${paths.seriesWatchItem(uid, tmdbId)}/seasons`] = seasonsObj;
             updates[`${paths.seriesItem(uid, tmdbId)}/watchlist`] = shouldStayOnWatchlist;
-            await dbUpdate(updates);
+            // Bump serienVersion, sonst merken andere Geräte / die App die Änderung nicht.
+            await updateWithSeriesVersion(uid, updates);
           } catch (err) {
             console.warn(`[onboarding] applyWatchProgress failed for ${tmdbId}`, err);
           } finally {

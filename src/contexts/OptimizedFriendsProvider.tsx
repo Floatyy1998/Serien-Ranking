@@ -55,41 +55,58 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
     [friendsData]
   );
 
-  // Lade gespeicherte Lesezeiten aus Firebase
+  // Lesezeiten aus Firebase per Realtime-Listener — so wandert ein „als gelesen
+  // markiert" von einem Gerät live auf alle anderen (sonst blieb der Bell-Badge
+  // auf Gerät B stehen, weil der Wert nur einmal beim Mount gelesen wurde).
   useEffect(() => {
-    if (user) {
-      const loadReadTimes = async () => {
-        try {
-          const data = await dbGet<{ requests?: number; activities?: number }>(
-            userPath(user.uid, 'readTimes')
-          );
-
-          if (data) {
-            setLastReadRequestsTime(data.requests || 0);
-            setLastReadActivitiesTime(data.activities || 0);
-            setReadTimesLoaded(true);
-          } else {
-            const now = Date.now();
-            setLastReadRequestsTime(now);
-            setLastReadActivitiesTime(now);
-            await dbRef(userPath(user.uid, 'readTimes')).set({
-              requests: now,
-              activities: now,
-            });
-            setReadTimesLoaded(true);
-          }
-        } catch (error) {
-          console.error('Failed to load read times:', error);
+    if (!user) return;
+    const ref = dbRef(userPath(user.uid, 'readTimes'));
+    let baselineWritten = false;
+    const listener = ref.on(
+      'value',
+      (snap) => {
+        const data = snap.val() as { requests?: number; activities?: number } | null;
+        if (data) {
+          setLastReadRequestsTime(data.requests || 0);
+          setLastReadActivitiesTime(data.activities || 0);
+          setReadTimesLoaded(true);
+        } else if (!baselineWritten) {
+          // Erstbesuch: Baseline setzen (der Listener feuert danach mit den Werten).
+          baselineWritten = true;
           const now = Date.now();
           setLastReadRequestsTime(now);
           setLastReadActivitiesTime(now);
+          void dbRef(userPath(user.uid, 'readTimes')).set({ requests: now, activities: now });
           setReadTimesLoaded(true);
         }
-      };
-
-      loadReadTimes();
-    }
+      },
+      (error: Error) => {
+        console.error('Failed to load read times:', error);
+        const now = Date.now();
+        setLastReadRequestsTime(now);
+        setLastReadActivitiesTime(now);
+        setReadTimesLoaded(true);
+      }
+    );
+    return () => ref.off('value', listener);
   }, [user]);
+
+  // Unread-Zähler neu berechnen, wenn sich die Lesezeit ändert (auch wenn die
+  // Änderung von einem anderen Gerät via Listener oben hereinkommt).
+  useEffect(() => {
+    setUnreadRequestsCount(friendRequests.filter((r) => r.sentAt > lastReadRequestsTime).length);
+  }, [friendRequests, lastReadRequestsTime]);
+
+  useEffect(() => {
+    setUnreadActivitiesCount(
+      friendActivities.filter(
+        (a) =>
+          a.timestamp > lastReadActivitiesTime &&
+          a.type !== 'episode_watched' &&
+          a.type !== 'episodes_watched'
+      ).length
+    );
+  }, [friendActivities, lastReadActivitiesTime]);
 
   // Friend Requests mit Realtime Listener. Reset auf [] passiert im Cleanup
   // (legitim als Teardown), nicht im Effect-Body (das war set-state-in-effect).

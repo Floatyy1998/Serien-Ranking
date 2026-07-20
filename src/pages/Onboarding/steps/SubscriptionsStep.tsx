@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { SUPPORTED_PROVIDERS } from '../../../config/menuItems';
 import { getProviderBrand } from '../../Subscriptions/providerBrands';
 import { getProviderLogoUrl } from '../../../lib/providerMerge';
+import { normalizeProviderName } from '../../../lib/providerName';
+import { watchRegion } from '../../../services/region';
+import { tmdbFetch } from '../../../services/tmdbClient';
 import { TableOfContents } from '../components/TableOfContents';
 import { t } from '../../../services/i18n';
 
@@ -12,7 +15,16 @@ interface Props {
   onToggle: (name: string) => void;
   onNext: () => void;
   onBack: () => void;
+  /** Gast-Flow hat oben schon eine Fortschrittsleiste — innere „Programm"-Leiste ausblenden. */
+  hideProgram?: boolean;
 }
+
+interface ProviderTile {
+  name: string;
+  logo?: string;
+}
+
+type TmdbProvider = { provider_name: string; logo_path?: string | null; display_priority?: number };
 
 export const SubscriptionsStep: React.FC<Props> = ({
   stepNumber,
@@ -20,8 +32,48 @@ export const SubscriptionsStep: React.FC<Props> = ({
   onToggle,
   onNext,
   onBack,
+  hideProgram = false,
 }) => {
-  const providerNames = useMemo(() => Array.from(SUPPORTED_PROVIDERS).sort(), []);
+  // Anbieter folgen der Streaming-Region: DE = kuratierte Liste, sonst die
+  // populären Dienste des Landes von TMDB.
+  const [regionTiles, setRegionTiles] = useState<ProviderTile[] | null>(null);
+  useEffect(() => {
+    if (watchRegion === 'DE') return;
+    let cancelled = false;
+    tmdbFetch<{ results?: TmdbProvider[] }>('watch/providers/tv', {
+      language: undefined,
+      watch_region: watchRegion,
+    })
+      .then((res) => {
+        if (cancelled) return;
+        const seen = new Set<string>();
+        const tiles: ProviderTile[] = [];
+        for (const p of (res.results || []).sort(
+          (a, b) => (a.display_priority ?? 999) - (b.display_priority ?? 999)
+        )) {
+          const name = normalizeProviderName(p.provider_name);
+          if (!name || seen.has(name)) continue;
+          seen.add(name);
+          tiles.push({
+            name,
+            logo: p.logo_path ? `https://image.tmdb.org/t/p/w92${p.logo_path}` : undefined,
+          });
+          if (tiles.length >= 16) break;
+        }
+        setRegionTiles(tiles);
+      })
+      .catch(() => setRegionTiles([]));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const tiles = useMemo<ProviderTile[]>(() => {
+    if (watchRegion !== 'DE') return regionTiles ?? [];
+    return Array.from(SUPPORTED_PROVIDERS)
+      .sort()
+      .map((name) => ({ name, logo: getProviderLogoUrl(name) }));
+  }, [regionTiles]);
   const count = selectedProviders.size;
 
   return (
@@ -108,17 +160,19 @@ export const SubscriptionsStep: React.FC<Props> = ({
               </motion.p>
             </div>
 
-            <div className="ob-welcome-side">
-              <div className="ob-side-label">
-                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                  {t('Programm')}
-                </span>
-                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                  {t('5 Akte')}
-                </span>
+            {!hideProgram && (
+              <div className="ob-welcome-side">
+                <div className="ob-side-label">
+                  <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
+                    {t('Programm')}
+                  </span>
+                  <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
+                    {t('5 Akte')}
+                  </span>
+                </div>
+                <TableOfContents currentStep="subscriptions" variant="horizontal" delay={0.4} />
               </div>
-              <TableOfContents currentStep="subscriptions" variant="horizontal" delay={0.4} />
-            </div>
+            )}
           </div>
 
           {/* Right: provider tiles */}
@@ -131,9 +185,10 @@ export const SubscriptionsStep: React.FC<Props> = ({
                 paddingBottom: 24,
               }}
             >
-              {providerNames.map((name, i) => {
+              {tiles.map((tile, i) => {
+                const name = tile.name;
                 const brand = getProviderBrand(name);
-                const logo = getProviderLogoUrl(name);
+                const logo = tile.logo;
                 const selected = selectedProviders.has(name);
                 return (
                   <motion.button

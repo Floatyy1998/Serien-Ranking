@@ -30,6 +30,7 @@ export const MilestoneBoxCard: React.FC = () => {
   const { user } = useAuth() || {};
   const stats = useWebWorkerStatsOptimized();
   const [lastOpenedBoxNumber, setLastOpenedBoxNumber] = useState<number | null>(null);
+  const [bulkExcluded, setBulkExcluded] = useState(0);
   const [showBox, setShowBox] = useState(false);
   const [celebrate, setCelebrate] = useState(false);
 
@@ -37,8 +38,11 @@ export const MilestoneBoxCard: React.FC = () => {
   // "Eps. gesamt" Counter synchron laeuft und User-Erwartung matcht:
   // 1 Folge gesehen = +1 Progress, Rewatches zaehlen nicht doppelt.
   const totalEpisodes = stats.watchedEpisodes || 0;
-  const nextThreshold = getNextBoxThreshold(totalEpisodes);
-  const progress = getProgressToNextBox(totalEpisodes);
+  // Per Bulk abgehakte Episoden zaehlen nicht fuer Boxen (kein Schwall beim
+  // Eintragen bereits geschauter Serien).
+  const boxEpisodes = Math.max(0, totalEpisodes - bulkExcluded);
+  const nextThreshold = getNextBoxThreshold(boxEpisodes);
+  const progress = getProgressToNextBox(boxEpisodes);
 
   // Live subscription auf den Box-Counter. Solange schemaVersion < 2 ist
   // (alter 50er-Stand), unterdruecken wir den State-Update — der separate
@@ -52,9 +56,13 @@ export const MilestoneBoxCard: React.FC = () => {
         lastOpenedBoxNumber?: number;
         boxesOpened?: number;
         schemaVersion?: number;
+        bulkExcludedEpisodes?: number;
       } | null;
       const last = typeof data?.lastOpenedBoxNumber === 'number' ? data.lastOpenedBoxNumber : null;
       const schemaVersion = data?.schemaVersion ?? 1;
+      setBulkExcluded(
+        typeof data?.bulkExcludedEpisodes === 'number' ? data.bulkExcludedEpisodes : 0
+      );
 
       // Migration steht aus: nicht setzen, sonst flasht kurz die alte
       // Box-Zahl (z.B. 651) auf, bevor ensureInitialized die Baseline neu setzt.
@@ -79,7 +87,7 @@ export const MilestoneBoxCard: React.FC = () => {
     setShowBox(false);
   };
 
-  const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+  const earnedBoxes = Math.floor(boxEpisodes / BOX_EVERY_N_EPISODES);
   // Solange Bootstrap noch nicht durch ist, keine Boxen anzeigen
   // (sonst wuerden bei einem etablierten User mit z.B. 500 Eps fuer
   // einen Frame 10 Boxen aufploppen).

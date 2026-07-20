@@ -455,6 +455,13 @@ textarea[style*='outline']:focus-visible {
   box-shadow: none !important;
 }
 
+/* Onboarding-Felder haben eine eigene, dezente Fokus-Anzeige (.ob-search:focus-within) —
+   den harten grünen Global-Outline hier überspringen. */
+.ob-search input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 /* Skip navigation link */
 .skip-to-content {
   position: absolute;

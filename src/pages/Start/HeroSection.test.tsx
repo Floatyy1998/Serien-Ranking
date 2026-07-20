@@ -118,7 +118,7 @@ describe('HeroSection', () => {
     render(<HeroSection />);
     expect(screen.getByRole('link', { name: /Kostenlos starten/ })).toHaveAttribute(
       'href',
-      '/register'
+      '/join'
     );
     expect(screen.getByRole('link', { name: /Anmelden/ })).toHaveAttribute('href', '/login');
   });

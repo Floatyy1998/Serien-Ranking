@@ -68,6 +68,8 @@ import {
   ensureInitialized,
   openMysteryBox,
   syncAvailableBoxCount,
+  adjustBulkExcludedEpisodes,
+  effectiveEpisodes,
 } from './mysteryBoxService';
 
 const MB = 'users/u/mysteryBox';
@@ -111,7 +113,12 @@ describe('getNextBoxThreshold / getProgressToNextBox', () => {
 describe('ensureInitialized', () => {
   it('Erstbesuch (keine Daten): Baseline auf aktuellen 20er-Stand, Schema v2', async () => {
     const data = await ensureInitialized('u', 45);
-    expect(data).toEqual({ boxesOpened: 0, lastOpenedBoxNumber: 2, schemaVersion: 2 });
+    expect(data).toEqual({
+      boxesOpened: 0,
+      lastOpenedBoxNumber: 2,
+      schemaVersion: 2,
+      bulkExcludedEpisodes: 0,
+    });
     expect(fb.getAt(MB)).toEqual(data);
   });
 
@@ -124,7 +131,12 @@ describe('ensureInitialized', () => {
   it('v1-Eintrag (ohne schemaVersion) wird auf den aktuellen 20er-Stand re-baselined', async () => {
     fb.setAt(MB, { boxesOpened: 5, lastOpenedBoxNumber: 3 });
     const data = await ensureInitialized('u', 100);
-    expect(data).toEqual({ boxesOpened: 5, lastOpenedBoxNumber: 5, schemaVersion: 2 });
+    expect(data).toEqual({
+      boxesOpened: 5,
+      lastOpenedBoxNumber: 5,
+      schemaVersion: 2,
+      bulkExcludedEpisodes: 0,
+    });
   });
 
   it('Self-Heal: erste Defizit-Sichtung heilt NICHT, sondern merkt nur einen Kandidaten vor', async () => {
@@ -187,6 +199,58 @@ describe('getAvailableBoxCount', () => {
     // Defizit-Fall: Baseline bleibt (Heal-Hysterese) → max(0, 2-5) = 0 verfügbar
     expect(await getAvailableBoxCount('u', 40)).toBe(0);
   });
+
+  it('per Bulk abgehakte Episoden zählen NICHT für Boxen', async () => {
+    // 100 Episoden, aber 100 davon per Bulk → 0 effektiv → keine Boxen.
+    fb.setAt(MB, {
+      boxesOpened: 0,
+      lastOpenedBoxNumber: 0,
+      schemaVersion: 2,
+      bulkExcludedEpisodes: 100,
+    });
+    expect(await getAvailableBoxCount('u', 100)).toBe(0);
+  });
+
+  it('nur der Nicht-Bulk-Anteil zählt für Boxen', async () => {
+    // 100 Episoden, 60 per Bulk → 40 effektiv → floor(40/20)=2 Boxen.
+    fb.setAt(MB, {
+      boxesOpened: 0,
+      lastOpenedBoxNumber: 0,
+      schemaVersion: 2,
+      bulkExcludedEpisodes: 60,
+    });
+    expect(await getAvailableBoxCount('u', 100)).toBe(2);
+  });
+});
+
+describe('bulk-Ausschluss (Massen-Abhaken zählt nicht für Boxen)', () => {
+  it('effectiveEpisodes zieht die Bulk-Episoden ab (nie negativ)', () => {
+    expect(effectiveEpisodes(100, { boxesOpened: 0, lastOpenedBoxNumber: 0 })).toBe(100);
+    expect(
+      effectiveEpisodes(100, { boxesOpened: 0, lastOpenedBoxNumber: 0, bulkExcludedEpisodes: 40 })
+    ).toBe(60);
+    expect(
+      effectiveEpisodes(30, { boxesOpened: 0, lastOpenedBoxNumber: 0, bulkExcludedEpisodes: 50 })
+    ).toBe(0);
+  });
+
+  it('adjustBulkExcludedEpisodes summiert Delta und bleibt >= 0', async () => {
+    fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 0, schemaVersion: 2 });
+    await adjustBulkExcludedEpisodes('u', 406);
+    expect((fb.getAt(MB) as { bulkExcludedEpisodes?: number }).bulkExcludedEpisodes).toBe(406);
+    await adjustBulkExcludedEpisodes('u', -6);
+    expect((fb.getAt(MB) as { bulkExcludedEpisodes?: number }).bulkExcludedEpisodes).toBe(400);
+    await adjustBulkExcludedEpisodes('u', -1000);
+    expect((fb.getAt(MB) as { bulkExcludedEpisodes?: number }).bulkExcludedEpisodes).toBe(0);
+  });
+
+  it('406 Folgen in einem Klick abhaken schaltet keine Box frei', async () => {
+    // Regression: Bleach-Bug — Bulk-Mark erhöht total UND bulkExcluded gleich →
+    // effektiv unverändert → keine Box.
+    fb.setAt(MB, { boxesOpened: 0, lastOpenedBoxNumber: 0, schemaVersion: 2 });
+    await adjustBulkExcludedEpisodes('u', 406);
+    expect(await getAvailableBoxCount('u', 406)).toBe(0);
+  });
 });
 
 describe('syncAvailableBoxCount', () => {
@@ -240,7 +304,12 @@ describe('openMysteryBox', () => {
     expect(reward?.rarity).toBe('common');
     expect(reward).toMatchObject({ xpMultiplier: 2, xpEpisodeCount: 2 });
 
-    expect(fb.getAt(MB)).toEqual({ boxesOpened: 1, lastOpenedBoxNumber: 1, schemaVersion: 2 });
+    expect(fb.getAt(MB)).toEqual({
+      boxesOpened: 1,
+      lastOpenedBoxNumber: 1,
+      schemaVersion: 2,
+      bulkExcludedEpisodes: 0,
+    });
     const inv = fb.getAt('users/u/xpBoostInventory') as Array<{ source: string }>;
     expect(inv).toHaveLength(1);
     expect(inv[0].source).toBe('mystery_box');

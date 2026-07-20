@@ -185,6 +185,41 @@ describe('toggleAccessory', () => {
     const result = await toggleAccessory('u1', 'p1', 'beanie');
     expect(result?.accessories?.[0].isNew).toBeUndefined();
   });
+
+  it('loescht das isNew-Flag global bei ALLEN Pets, nicht nur beim geklickten', async () => {
+    // p1 (angeklickt) kommt aus getUserPet; p2/p3 liegen im Firebase-Store.
+    petCore.getUserPet.mockResolvedValue(
+      makePet({
+        accessories: [
+          { id: 'beanie', type: 'head', name: 'Muetze', icon: 'x', equipped: false, isNew: true },
+        ],
+      })
+    );
+    fb.setAt('users/u1/pets', {
+      p1: { accessories: [{ id: 'beanie', type: 'head', name: 'M', icon: 'x', equipped: false }] },
+      p2: {
+        accessories: [
+          { id: 'beanie', type: 'head', name: 'M', icon: 'x', equipped: false, isNew: true },
+          { id: 'bow', type: 'neck', name: 'B', icon: 'y', equipped: true, isNew: true },
+        ],
+      },
+      p3: {
+        accessories: [
+          { id: 'beanie', type: 'head', name: 'M', icon: 'x', equipped: true, isNew: true },
+        ],
+      },
+    });
+
+    await toggleAccessory('u1', 'p1', 'beanie');
+
+    const p2 = fb.getAt('users/u1/pets/p2/accessories') as Array<Record<string, unknown>>;
+    const p3 = fb.getAt('users/u1/pets/p3/accessories') as Array<Record<string, unknown>>;
+    // beanie ist bei allen Pets nicht mehr neu …
+    expect(p2.find((a) => a.id === 'beanie')?.isNew).toBeUndefined();
+    expect(p3.find((a) => a.id === 'beanie')?.isNew).toBeUndefined();
+    // … ein anderes, noch ungesehenes Accessoire bleibt aber neu.
+    expect(p2.find((a) => a.id === 'bow')?.isNew).toBe(true);
+  });
 });
 
 describe('rollAccessoryDrop', () => {

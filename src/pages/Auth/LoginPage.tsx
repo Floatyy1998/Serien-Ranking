@@ -415,6 +415,24 @@ export const LoginPage = () => {
                   {t('Jetzt registrieren')}
                 </Link>
               </Typography>
+              <Typography variant="body2" sx={{ mt: 1.5 }}>
+                <Link
+                  to="/"
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.textDecoration = 'underline';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.textDecoration = 'none';
+                  }}
+                >
+                  {t('← Zur Startseite')}
+                </Link>
+              </Typography>
             </Box>
           </motion.div>
         </Container>

@@ -319,8 +319,8 @@
     box-shadow 0.3s;
 }
 .ob-search:focus-within {
-  border-color: var(--ob-paper);
-  box-shadow: 0 0 0 4px rgba(var(--ob-glow), 0.04);
+  border-color: color-mix(in srgb, var(--ob-paper) 32%, var(--ob-line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ob-paper) 7%, transparent);
 }
 .ob-search__icon {
   width: 18px;
@@ -1204,6 +1204,10 @@
 .ob-spread__left,
 .ob-spread__right {
   min-height: 0;
+  /* Mobile (flex-column): Spalten nicht schrumpfen lassen, sonst quillt die
+     „Programm"-Leiste unter das Provider-Raster. .ob-spread scrollt stattdessen.
+     Bei >=1280px werden diese zu Grid-Items — flex-shrink ist dort wirkungslos. */
+  flex-shrink: 0;
 }
 .ob-spread__left {
   display: flex;

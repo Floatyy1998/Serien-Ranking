@@ -33,7 +33,7 @@ export const FooterCTA = () => (
       </p>
       <Button
         component={Link}
-        to="/register"
+        to="/join"
         variant="contained"
         size="large"
         sx={{

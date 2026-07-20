@@ -58,6 +58,11 @@ const RegisterPage = lazyWithRetry(() =>
     default: m.RegisterPage,
   }))
 );
+const GuestOnboardingPage = lazyWithRetry(() =>
+  import('./pages/GuestOnboarding/GuestOnboardingPage').then((m) => ({
+    default: m.GuestOnboardingPage,
+  }))
+);
 const PublicProfilePage = lazyWithRetry(() =>
   import('./pages/PublicProfile').then((m) => ({
     default: m.PublicProfilePage,
@@ -178,6 +183,14 @@ function AppContent() {
                   element={
                     <AuthContext.Consumer>
                       {(auth) => (auth?.user ? <Navigate to="/" /> : <RegisterPage />)}
+                    </AuthContext.Consumer>
+                  }
+                />
+                <Route
+                  path="/join"
+                  element={
+                    <AuthContext.Consumer>
+                      {(auth) => (auth?.user ? <Navigate to="/" /> : <GuestOnboardingPage />)}
                     </AuthContext.Consumer>
                   }
                 />

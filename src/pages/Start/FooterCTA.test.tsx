@@ -25,6 +25,6 @@ describe('FooterCTA', () => {
   it('links the register CTA to /register', () => {
     render(<FooterCTA />);
     const cta = screen.getByRole('link', { name: /Jetzt kostenlos registrieren/ });
-    expect(cta).toHaveAttribute('href', '/register');
+    expect(cta).toHaveAttribute('href', '/join');
   });
 });

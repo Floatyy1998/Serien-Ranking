@@ -31,9 +31,21 @@ export interface MysteryBoxData {
   lastOpenedBoxNumber: number;
   /** Schema-Version — fehlt bei v1-Eintraegen, triggert Migration */
   schemaVersion?: number;
+  /**
+   * Episoden, die per Massen-Abhaken (ganze Staffel/Serie in einem Klick,
+   * Catch-up) markiert wurden und NICHT zu Boxen zählen sollen. Die
+   * Box-Ableitung rechnet mit `total - bulkExcludedEpisodes`, damit das
+   * Eintragen bereits geschauter Serien keinen Box-Schwall auslöst.
+   */
+  bulkExcludedEpisodes?: number;
   /** Self-Heal-Kandidat: erste Defizit-Sichtung; geheilt erst nach >= 24h — sonst Doppel-Einlösung bei halb geladener Zählung. */
   healCandidateEarned?: number;
   healCandidateAt?: number;
+}
+
+/** Für Boxen zählende Episoden = Gesamt minus per Bulk abgehakte (>= 0). */
+export function effectiveEpisodes(totalEpisodes: number, data?: MysteryBoxData | null): number {
+  return Math.max(0, totalEpisodes - (data?.bulkExcludedEpisodes ?? 0));
 }
 
 /** Defizit muss so lange bestehen, bevor der Self-Heal die Baseline zurückzieht */
@@ -70,8 +82,30 @@ const MILESTONE_EXCLUSIVE_ACCESSORIES = [
 /** Wie viele ungeöffnete Boxen hat der User? */
 export async function getAvailableBoxCount(userId: string, totalEpisodes: number): Promise<number> {
   const data = await ensureInitialized(userId, totalEpisodes);
-  const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+  const earnedBoxes = Math.floor(effectiveEpisodes(totalEpisodes, data) / BOX_EVERY_N_EPISODES);
   return Math.max(0, earnedBoxes - data.lastOpenedBoxNumber);
+}
+
+/**
+ * Verschiebt die Bulk-Ausschluss-Zählung um `delta` Unique-Episoden (positiv =
+ * gerade per Bulk abgehakt, negativ = per Bulk wieder entfernt). Atomar, damit
+ * parallele Marks nicht überschreiben. So bleibt die effektive Episodenzahl bei
+ * jedem Massen-Toggle konstant → keine Box durch Massen-Abhaken.
+ */
+export async function adjustBulkExcludedEpisodes(userId: string, delta: number): Promise<void> {
+  if (!delta) return;
+  try {
+    const ref = dbRef(userPath(userId, 'mysteryBox'));
+    await ref.transaction((current: MysteryBoxData | null) => {
+      const cur: MysteryBoxData = current ?? { boxesOpened: 0, lastOpenedBoxNumber: 0 };
+      return {
+        ...cur,
+        bulkExcludedEpisodes: Math.max(0, (cur.bulkExcludedEpisodes ?? 0) + delta),
+      };
+    });
+  } catch {
+    // Best-effort: ein fehlgeschlagener Box-Zähler-Update darf das Abhaken nie brechen.
+  }
 }
 
 /**
@@ -106,9 +140,11 @@ export async function ensureInitialized(
     data && typeof data.lastOpenedBoxNumber === 'number' && data.lastOpenedBoxNumber >= 0;
   const schemaVersion = (data?.schemaVersion as number | undefined) ?? 1;
 
+  const excluded = (data?.bulkExcludedEpisodes as number | undefined) ?? 0;
+
   if (hasExisting && schemaVersion >= BOX_SCHEMA_VERSION) {
     // Self-Heal mit 24h-Hysterese: Baseline > earned verschluckt neue Boxen, aber sofortiges Zurückspulen bei halb geladener Zählung erlaubte Doppel-Einlösung.
-    const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+    const earnedBoxes = Math.floor(effectiveEpisodes(totalEpisodes, data) / BOX_EVERY_N_EPISODES);
     if (totalEpisodes > 0 && data.lastOpenedBoxNumber > earnedBoxes) {
       const candAt = typeof data.healCandidateAt === 'number' ? data.healCandidateAt : null;
       if (candAt !== null && Date.now() - candAt >= HEAL_DELAY_MS) {
@@ -116,6 +152,7 @@ export async function ensureInitialized(
           boxesOpened: data.boxesOpened ?? 0,
           lastOpenedBoxNumber: earnedBoxes,
           schemaVersion: BOX_SCHEMA_VERSION,
+          bulkExcludedEpisodes: excluded,
         };
         await ref.set(healed);
         return healed;
@@ -138,6 +175,7 @@ export async function ensureInitialized(
         boxesOpened: data.boxesOpened ?? 0,
         lastOpenedBoxNumber: data.lastOpenedBoxNumber,
         schemaVersion: BOX_SCHEMA_VERSION,
+        bulkExcludedEpisodes: excluded,
       };
       await ref.set(cleared);
       return cleared;
@@ -146,11 +184,12 @@ export async function ensureInitialized(
   }
 
   // Migration/Erstbesuch: Baseline auf aktuellen Stand — verhindert den Schwall rückwirkender Boxen.
-  const baseline = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+  const baseline = Math.floor(effectiveEpisodes(totalEpisodes, data) / BOX_EVERY_N_EPISODES);
   const initData: MysteryBoxData = {
     boxesOpened: (data?.boxesOpened as number | undefined) ?? 0,
     lastOpenedBoxNumber: baseline,
     schemaVersion: BOX_SCHEMA_VERSION,
+    bulkExcludedEpisodes: excluded,
   };
   await ref.set(initData);
   return initData;
@@ -172,7 +211,7 @@ export async function openMysteryBox(
   totalEpisodes: number
 ): Promise<MysteryBoxReward | null> {
   const data = await ensureInitialized(userId, totalEpisodes);
-  const earnedBoxes = Math.floor(totalEpisodes / BOX_EVERY_N_EPISODES);
+  const earnedBoxes = Math.floor(effectiveEpisodes(totalEpisodes, data) / BOX_EVERY_N_EPISODES);
 
   if (earnedBoxes <= data.lastOpenedBoxNumber) return null;
 
@@ -188,6 +227,7 @@ export async function openMysteryBox(
       boxesOpened: (cur.boxesOpened || 0) + 1,
       lastOpenedBoxNumber: last + 1,
       schemaVersion: BOX_SCHEMA_VERSION,
+      bulkExcludedEpisodes: cur.bulkExcludedEpisodes ?? 0,
       // Heal-Kandidat entfällt bewusst: eine geöffnete Box beweist die korrekte Zählung.
     };
   });

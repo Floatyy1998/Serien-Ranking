@@ -26,6 +26,10 @@ interface Props {
   onClearSearch: () => void;
   onNext: () => void;
   onBack: () => void;
+  /** Pre-Signup: Serien nur wählen, „wie weit geschaut" kommt erst nach dem Signup. */
+  disableWatchStatus?: boolean;
+  /** Gast-Flow hat oben schon eine Fortschrittsleiste — innere „Programm"-Leiste ausblenden. */
+  hideProgram?: boolean;
 }
 
 function targetToSummary(t: WatchTarget | undefined): WatchSummary | undefined {
@@ -62,6 +66,8 @@ export const DiscoveryStep: React.FC<Props> = ({
   onClearSearch,
   onNext,
   onBack,
+  disableWatchStatus = false,
+  hideProgram = false,
 }) => {
   const [query, setQuery] = useState('');
   const [sheetItem, setSheetItem] = useState<OnboardingItem | null>(null);
@@ -86,7 +92,7 @@ export const DiscoveryStep: React.FC<Props> = ({
   const isAdded = (it: OnboardingItem) => pendingMap.has(`${it.type}-${it.id}`);
 
   const handlePrimaryTap = (it: OnboardingItem) => {
-    if (it.type === 'series') {
+    if (it.type === 'series' && !disableWatchStatus) {
       if (!isAdded(it)) onTogglePending(it);
       setSheetItem(it);
     } else {
@@ -234,21 +240,23 @@ export const DiscoveryStep: React.FC<Props> = ({
           </motion.div>
 
           {/* Programm strip */}
-          <div className="ob-welcome-side">
-            <div className="ob-side-label">
-              <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
-                {t('Programm')}
-              </span>
-              <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
-                {t('4 Akte')}
-              </span>
+          {!hideProgram && (
+            <div className="ob-welcome-side">
+              <div className="ob-side-label">
+                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
+                  {t('Programm')}
+                </span>
+                <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', opacity: 0.5 }}>
+                  {t('4 Akte')}
+                </span>
+              </div>
+              <TableOfContents
+                currentStep={contentType === 'series' ? 'series' : 'movies'}
+                variant="horizontal"
+                delay={0.6}
+              />
             </div>
-            <TableOfContents
-              currentStep={contentType === 'series' ? 'series' : 'movies'}
-              variant="horizontal"
-              delay={0.6}
-            />
-          </div>
+          )}
 
           {/* Grid */}
           <div style={{ flex: 1, minHeight: 0, overflow: 'auto', paddingBottom: 16 }}>

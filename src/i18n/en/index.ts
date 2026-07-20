@@ -17,6 +17,7 @@ import gapsMisc from './gaps-misc';
 import gapsPatchnotes from './gaps-patchnotes';
 import gapsWrapped from './gaps-wrapped';
 import genres from './genres';
+import guest from './guest';
 import home from './home';
 import manga from './manga';
 import misc from './misc';
@@ -40,6 +41,7 @@ const en: Record<string, string> = {
   ...gapsPatchnotes,
   ...gapsWrapped,
   ...genres,
+  ...guest,
   ...home,
   ...manga,
   ...misc,
