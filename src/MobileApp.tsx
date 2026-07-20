@@ -179,6 +179,7 @@ export const MobileApp = () => {
     }
     if (user?.uid) {
       import('./services/pushNotifications').then((m) => m.initNativePush(user.uid));
+      import('./services/languageSync').then((m) => m.syncAppLanguageToProfile(user.uid));
     }
   }, [user?.uid]);
 
