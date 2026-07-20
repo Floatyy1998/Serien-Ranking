@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { BadgeProgress, EarnedBadge } from '../../features/badges/badgeDefinitions';
 import { BADGE_DEFINITIONS } from '../../features/badges/badgeDefinitions';
+import { badgeCounterService } from '../../features/badges/badgeCounterService';
 import { getOfflineBadgeSystem } from '../../features/badges/offlineBadgeSystem';
 import { LoadingSpinner, PageHeader, PageLayout, ProgressBar } from '../../components/ui';
 import { BadgeCard } from './BadgeCard';
@@ -38,16 +39,17 @@ export const BadgesPage = () => {
     const badgeSystem = getOfflineBadgeSystem(user.uid);
     const isCached = badgeSystem.isCacheValid();
 
+    // Statischer Import statt import(): die Page ist selbst lazy (eigener
+    // Chunk), der dynamische Import brachte nichts und lud auf langsamen
+    // Umgebungen nach dem Unmount nach (Vitest-Teardown-Crash in CI).
     if (!isCached) {
       setLoading(true);
       setLoadingProgress({ current: 0, total: 4 });
       setLoadingProgress({ current: 1, total: 4 });
-      const { badgeCounterService } = await import('../../features/badges/badgeCounterService');
       await badgeCounterService.finalizeBingeSession(user.uid);
       setLoadingProgress({ current: 2, total: 4 });
     } else {
-      const { badgeCounterService } = await import('../../features/badges/badgeCounterService');
-      badgeCounterService.finalizeBingeSession(user.uid);
+      void badgeCounterService.finalizeBingeSession(user.uid);
     }
 
     try {
