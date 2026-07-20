@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { normalizeSeasons } from '../lib/episode/seriesMetrics';
 import { backendFetch } from '../services/backendApi';
+import { t } from '../services/i18n';
 import { tmdbFetch } from '../services/tmdbClient';
 import type { Series } from '../types/Series';
 
@@ -203,7 +204,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
       }
 
       if (cast.length === 0) {
-        setError('Keine Cast-Daten verfügbar');
+        setError(t('Keine Cast-Daten verfügbar'));
         setLoading(false);
         return;
       }
@@ -231,8 +232,8 @@ export function useCharacterDescriptions(series: Series | undefined) {
         } else {
           setError(
             res.status === 404
-              ? 'Serie dem KI-Modell nicht bekannt'
-              : 'Fehler beim Laden der Charaktere'
+              ? t('Serie dem KI-Modell nicht bekannt')
+              : t('Fehler beim Laden der Charaktere')
           );
         }
         setLoading(false);
@@ -280,7 +281,7 @@ export function useCharacterDescriptions(series: Series | undefined) {
       setCharacters(descriptions);
       sessionStorage.setItem(cacheKey, JSON.stringify(descriptions));
     } catch {
-      setError('Fehler beim Laden der Charaktere');
+      setError(t('Fehler beim Laden der Charaktere'));
     } finally {
       setLoading(false);
     }
@@ -318,12 +319,12 @@ export function useCharacterDescriptions(series: Series | undefined) {
         } else {
           setQuestionAnswer(
             res.status === 404
-              ? 'Serie dem KI-Modell nicht bekannt.'
-              : 'Fehler bei der Beantwortung.'
+              ? t('Serie dem KI-Modell nicht bekannt.')
+              : t('Fehler bei der Beantwortung.')
           );
         }
       } catch {
-        setQuestionAnswer('Fehler bei der Beantwortung.');
+        setQuestionAnswer(t('Fehler bei der Beantwortung.'));
       } finally {
         setQuestionLoading(false);
       }

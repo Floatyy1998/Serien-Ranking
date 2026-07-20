@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { getSeriesLastWatchedAt, normalizeSeasons } from '../lib/episode/seriesMetrics';
 import { backendFetch } from '../services/backendApi';
+import { t } from '../services/i18n';
 import { tmdbFetch } from '../services/tmdbClient';
 import type { Series } from '../types/Series';
 import { hasEpisodeAired } from '../utils/episodeDate';
@@ -286,9 +287,9 @@ export const useRecapData = (series: Series | undefined): RecapData => {
         const data = await res.json();
         setAiError(data.error);
       } else if (res.status === 404) {
-        setAiError('Serie dem KI-Modell nicht bekannt');
+        setAiError(t('Serie dem KI-Modell nicht bekannt'));
       } else {
-        setAiError('KI-Zusammenfassung fehlgeschlagen');
+        setAiError(t('KI-Zusammenfassung fehlgeschlagen'));
       }
     } catch {
       setAiError('KI-Zusammenfassung fehlgeschlagen');

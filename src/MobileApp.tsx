@@ -11,6 +11,7 @@ import { useNotifications } from './contexts/NotificationContext';
 import { useAdminHealthAlert } from './hooks/useAdminHealthAlert';
 import { usePetGiftReceiver } from './hooks/usePetGiftReceiver';
 import { useNetworkStatus } from './hooks/useNetworkStatus';
+import { t } from './services/i18n';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
@@ -89,27 +90,42 @@ export const MobileApp = () => {
     const messages: string[] = [];
 
     for (const activity of friendActivities.slice(0, 5)) {
-      const name = activity.userName || 'Jemand';
+      const name = activity.userName || t('Jemand');
       switch (activity.type) {
         case 'series_added':
         case 'movie_added':
-          messages.push(`${name} hat "${activity.itemTitle}" hinzugefügt`);
+          messages.push(
+            t('{name} hat "{title}" hinzugefügt', { name, title: activity.itemTitle ?? '' })
+          );
           break;
         case 'series_rated':
         case 'rating_updated':
         case 'movie_rated':
         case 'rating_updated_movie':
-          messages.push(`${name} hat "${activity.itemTitle}" mit ${activity.rating}/10 bewertet`);
+          messages.push(
+            t('{name} hat "{title}" mit {rating}/10 bewertet', {
+              name,
+              title: activity.itemTitle ?? '',
+              rating: activity.rating ?? '',
+            })
+          );
           break;
         case 'series_added_to_watchlist':
         case 'movie_added_to_watchlist':
-          messages.push(`${name} hat "${activity.itemTitle}" auf die Watchlist gesetzt`);
+          messages.push(
+            t('{name} hat "{title}" auf die Watchlist gesetzt', {
+              name,
+              title: activity.itemTitle ?? '',
+            })
+          );
           break;
       }
     }
 
     for (const req of friendRequests) {
-      messages.push(`${req.fromUsername || 'Jemand'} möchte dein Freund werden`);
+      messages.push(
+        t('{name} möchte dein Freund werden', { name: req.fromUsername || t('Jemand') })
+      );
     }
 
     for (const notif of generalNotifications.filter((n) => !n.read).slice(0, 3)) {

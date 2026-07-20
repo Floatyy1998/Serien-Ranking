@@ -34,6 +34,7 @@ import 'firebase/compat/database';
 import { dbRef, dbUpdate } from '../db/ref';
 import { hapticSuccess } from '../../lib/haptics';
 import { showToast } from '../../lib/toast';
+import { t } from '../i18n';
 import { isPermissionDenied, pendingWriteQueue } from './pendingWriteQueue';
 import type { PendingWriteEntry } from './pendingWriteQueue';
 
@@ -80,7 +81,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 function notifyQueuedOnce(): void {
   if (offlineToastShown) return;
   offlineToastShown = true;
-  showToast('Offline — wird synchronisiert, sobald du online bist', 3500, 'info');
+  showToast(t('Offline — wird synchronisiert, sobald du online bist'), 3500, 'info');
 }
 
 function writeEntry(entry: PendingWriteEntry): Promise<void> {
@@ -98,8 +99,8 @@ async function replayPendingWrites(): Promise<void> {
     if (result.replayed > 0) {
       showToast(
         result.replayed === 1
-          ? '1 Offline-Änderung synchronisiert'
-          : `${result.replayed} Offline-Änderungen synchronisiert`
+          ? t('1 Offline-Änderung synchronisiert')
+          : t('{n} Offline-Änderungen synchronisiert', { n: result.replayed })
       );
       hapticSuccess();
     }

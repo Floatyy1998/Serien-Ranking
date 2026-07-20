@@ -4,6 +4,7 @@
  */
 import firebase from 'firebase/compat/app';
 import type { Dispatch, SetStateAction } from 'react';
+import { t } from '../../services/i18n';
 import { isNetworkErrorMessage } from './guards';
 
 export interface RealtimeListenerDeps<T> {
@@ -70,7 +71,7 @@ export function attachRealtimeListener<T>(
               setIsStale(true);
               setError('Offline - zeige gecachte Daten');
             } else {
-              setError('Keine Offline-Daten verfügbar');
+              setError(t('Keine Offline-Daten verfügbar'));
             }
             setLoading(false);
           });

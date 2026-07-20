@@ -1,3 +1,5 @@
+import { t } from './i18n';
+
 interface CacheStatus {
   caches: Array<{
     name: string;
@@ -374,9 +376,9 @@ class ServiceWorkerManager {
     const banner = document.createElement('div');
     banner.id = 'sw-update-banner';
     banner.innerHTML =
-      '<span>Neue Version verfügbar</span>' +
-      '<button class="sw-apply" type="button">Aktualisieren</button>' +
-      '<button class="sw-close" type="button" aria-label="Später">✕</button>';
+      `<span>${t('Neue Version verfügbar')}</span>` +
+      `<button class="sw-apply" type="button">${t('Aktualisieren')}</button>` +
+      `<button class="sw-close" type="button" aria-label="${t('Später')}">✕</button>`;
     banner.querySelector('.sw-apply')?.addEventListener('click', () => {
       banner.remove();
       onApply();
@@ -393,7 +395,7 @@ class ServiceWorkerManager {
     window.dispatchEvent(
       new CustomEvent('sw-update-complete', {
         detail: {
-          message: 'Update erfolgreich installiert',
+          message: t('Update erfolgreich installiert'),
         },
       })
     );

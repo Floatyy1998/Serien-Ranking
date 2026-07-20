@@ -13,6 +13,7 @@ import {
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
+import { t } from '../services/i18n';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';
@@ -86,7 +87,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       },
       (err) => {
         console.error('Error fetching discussions:', err);
-        setError('Fehler beim Laden der Diskussionen');
+        setError(t('Fehler beim Laden der Diskussionen'));
         setLoading(false);
       }
     );
@@ -104,7 +105,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       input: Omit<CreateDiscussionInput, 'itemId' | 'itemType' | 'seasonNumber' | 'episodeNumber'>
     ): Promise<string | null> => {
       if (!user?.uid) {
-        setError('Du musst eingeloggt sein um zu diskutieren');
+        setError(t('Du musst eingeloggt sein um zu diskutieren'));
         return null;
       }
 
@@ -154,7 +155,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         return newRef.key;
       } catch (err) {
         console.error('Error creating discussion:', err);
-        setError('Fehler beim Erstellen der Diskussion');
+        setError(t('Fehler beim Erstellen der Diskussion'));
         return null;
       }
     },
@@ -176,7 +177,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         // Non-owners can only set isSpoiler to true (flag as spoiler)
         if (!isOwner) {
           if (input.title !== undefined || input.content !== undefined) {
-            setError('Du kannst nur eigene Diskussionen bearbeiten');
+            setError(t('Du kannst nur eigene Diskussionen bearbeiten'));
             return false;
           }
           // Non-owners can only add spoiler flag, not remove it
@@ -205,8 +206,11 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
           await sendNotificationToUser(discussion.userId, {
             type: 'spoiler_flag',
-            title: 'Spoiler-Markierung',
-            message: `${username} hat deine Diskussion "${discussion.title}" als Spoiler markiert`,
+            title: t('Spoiler-Markierung'),
+            message: t('{name} hat deine Diskussion "{title}" als Spoiler markiert', {
+              name: username,
+              title: discussion.title,
+            }),
             data: {
               discussionId,
               itemId,
@@ -220,7 +224,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         return true;
       } catch (err) {
         console.error('Error editing discussion:', err);
-        setError('Fehler beim Bearbeiten der Diskussion');
+        setError(t('Fehler beim Bearbeiten der Diskussion'));
         return false;
       }
     },
@@ -238,7 +242,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         const discussion = snapshot.val();
 
         if (discussion?.userId !== user.uid) {
-          setError('Du kannst nur eigene Diskussionen löschen');
+          setError(t('Du kannst nur eigene Diskussionen löschen'));
           return false;
         }
 
@@ -251,7 +255,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         return true;
       } catch (err) {
         console.error('Error deleting discussion:', err);
-        setError('Fehler beim Löschen der Diskussion');
+        setError(t('Fehler beim Löschen der Diskussion'));
         return false;
       }
     },
@@ -280,8 +284,11 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
             await sendNotificationToUser(discussion.userId, {
               type: 'discussion_like',
-              title: 'Neue Reaktion',
-              message: `${username} gefällt deine Diskussion "${discussion.title}"`,
+              title: t('Neue Reaktion'),
+              message: t('{name} gefällt deine Diskussion "{title}"', {
+                name: username,
+                title: discussion.title,
+              }),
               data: {
                 discussionId,
                 itemId,

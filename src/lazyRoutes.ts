@@ -1,4 +1,5 @@
 import { createElement, lazy, type ComponentType } from 'react';
+import { t } from './services/i18n';
 
 // Nach Chunk-Fehler: Reload erst, wenn die App im Hintergrund ist
 let backgroundReloadArmed = false;
@@ -36,7 +37,7 @@ const ChunkFailedPage: ComponentType = () =>
           margin: 0,
         },
       },
-      'Seite konnte nicht geladen werden'
+      t('Seite konnte nicht geladen werden')
     ),
     createElement(
       'p',
@@ -49,7 +50,9 @@ const ChunkFailedPage: ComponentType = () =>
           fontSize: '15px',
         },
       },
-      'Wahrscheinlich gibt es eine neue App-Version. Sie wird automatisch übernommen, sobald die App kurz im Hintergrund war — oder direkt hier:'
+      t(
+        'Wahrscheinlich gibt es eine neue App-Version. Sie wird automatisch übernommen, sobald die App kurz im Hintergrund war — oder direkt hier:'
+      )
     ),
     createElement(
       'button',
@@ -66,7 +69,7 @@ const ChunkFailedPage: ComponentType = () =>
           background: 'var(--theme-primary, #00d123)',
         },
       },
-      'Jetzt aktualisieren'
+      t('Jetzt aktualisieren')
     )
   );
 

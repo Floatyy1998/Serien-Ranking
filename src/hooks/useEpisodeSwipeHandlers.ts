@@ -7,6 +7,7 @@ import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { hapticSuccess } from '../lib/haptics';
 import { applyUserUpdate } from '../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
+import { t } from '../services/i18n';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import { useContinueWatching } from './useContinueWatching';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from './useQuickSeasonRating';
@@ -199,7 +200,7 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
 
         hapticSuccess();
 
-        showUndoToast(`${item.title} ${label} als gesehen markiert`, {
+        showUndoToast(t('{title} {label} als gesehen markiert', { title: item.title, label }), {
           onUndo: async () => {
             setHiddenContinueEpisodes((prev) => {
               const s = new Set(prev);
@@ -293,50 +294,58 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           `${episode.seriesTitle} ${label} (Heute-Swipe)`
         );
 
-        showUndoToast(`${episode.seriesTitle} ${label} als gesehen markiert`, {
-          onUndo: async () => {
-            setHiddenEpisodes((prev) => {
-              const s = new Set(prev);
-              s.delete(episodeKey);
-              return s;
-            });
-            try {
-              await revertEpisodeWatch(
-                user.uid,
-                episode.seriesId,
-                episode.seasonIndex,
-                episode.episodeId,
-                snap
+        showUndoToast(
+          t('{title} {label} als gesehen markiert', { title: episode.seriesTitle, label }),
+          {
+            onUndo: async () => {
+              setHiddenEpisodes((prev) => {
+                const s = new Set(prev);
+                s.delete(episodeKey);
+                return s;
+              });
+              try {
+                await revertEpisodeWatch(
+                  user.uid,
+                  episode.seriesId,
+                  episode.seasonIndex,
+                  episode.episodeId,
+                  snap
+                );
+              } catch {
+                showToast('Undo fehlgeschlagen', 2000, 'error');
+              }
+            },
+            onCommit: async () => {
+              trackEpisodeWatched(
+                episode.seriesTitle,
+                episode.seasonNumber,
+                episode.episodeNumber,
+                {
+                  tmdbId: episode.seriesId,
+                  genres: episode.seriesGenre,
+                  runtime: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                  isRewatch: snap.previousCount > 0,
+                  source: 'today_episodes_swipe',
+                }
               );
-            } catch {
-              showToast('Undo fehlgeschlagen', 2000, 'error');
-            }
-          },
-          onCommit: async () => {
-            trackEpisodeWatched(episode.seriesTitle, episode.seasonNumber, episode.episodeNumber, {
-              tmdbId: episode.seriesId,
-              genres: episode.seriesGenre,
-              runtime: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              isRewatch: snap.previousCount > 0,
-              source: 'today_episodes_swipe',
-            });
-            // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
-            // isRewatch ohnehin false, wie zuvor hart kodiert. Kein airDate
-            // (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
-            await runEpisodeWatchFanout({
-              userId: user.uid,
-              seriesId: Number(episode.seriesId),
-              seriesTitle: episode.seriesTitle,
-              seasonNumber: episode.seasonNumber,
-              episodeNumber: episode.episodeNumber,
-              runtimeMinutes: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
-              isRewatch: snap.previousCount > 0,
-              genres: episode.seriesGenre,
-              providers: episode.seriesProviders,
-              wrappedEvent: snap.previousCount === 0,
-            });
-          },
-        });
+              // Wrapped-Event nur beim Erstwatch (previousCount === 0) — dann ist
+              // isRewatch ohnehin false, wie zuvor hart kodiert. Kein airDate
+              // (bestehendes Verhalten: updateEpisodeCounters ohne 3. Argument).
+              await runEpisodeWatchFanout({
+                userId: user.uid,
+                seriesId: Number(episode.seriesId),
+                seriesTitle: episode.seriesTitle,
+                seasonNumber: episode.seasonNumber,
+                episodeNumber: episode.episodeNumber,
+                runtimeMinutes: episode.runtime || DEFAULT_EPISODE_RUNTIME_MINUTES,
+                isRewatch: snap.previousCount > 0,
+                genres: episode.seriesGenre,
+                providers: episode.seriesProviders,
+                wrappedEvent: snap.previousCount === 0,
+              });
+            },
+          }
+        );
       } catch (error) {
         console.error('Error marking episode as watched:', error);
         showToast('Fehler beim Speichern', 3000, 'error');

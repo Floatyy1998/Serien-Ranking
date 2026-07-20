@@ -9,6 +9,7 @@ import { pickProviderRegion, watchRegion } from '../services/region';
 import type { TmdbWatchProvidersResponse } from '../services/tmdb.types';
 import { mapGenreIds } from '../utils/genreMap';
 import { getImageUrl } from '../utils/imageUrl';
+import { t } from '../services/i18n';
 
 interface SeasonConfig {
   title: string;
@@ -64,7 +65,7 @@ function getSeasonConfig(): SeasonConfig {
 
   if (month === 1 && day <= 14) {
     return {
-      title: 'Valentinstag',
+      title: t('Valentinstag'),
       iconColor: '#e91e63',
       badgeGradient: 'linear-gradient(135deg, #e91e63, #f06292)',
       tvGenres: '35',
@@ -75,7 +76,7 @@ function getSeasonConfig(): SeasonConfig {
     case 0:
     case 1:
       return {
-        title: 'Winter-Abende',
+        title: t('Winter-Abende'),
         iconColor: '#90caf9',
         badgeGradient: 'linear-gradient(135deg, #42a5f5, #90caf9)',
         tvGenres: '18|10765',
@@ -85,7 +86,7 @@ function getSeasonConfig(): SeasonConfig {
     case 3:
     case 4:
       return {
-        title: 'Frühlingsgefühle',
+        title: t('Frühlingsgefühle'),
         iconColor: '#66bb6a',
         badgeGradient: 'linear-gradient(135deg, #66bb6a, #aed581)',
         tvGenres: '35',
@@ -98,7 +99,7 @@ function getSeasonConfig(): SeasonConfig {
       // TV: Action&Adventure (10759) + Sci-Fi&Fantasy (10765) — same blockbuster feel
       // for series (Mandalorian, Stranger Things, House of the Dragon, …).
       return {
-        title: 'Sommer-Blockbuster',
+        title: t('Sommer-Blockbuster'),
         iconColor: '#ffa726',
         badgeGradient: 'linear-gradient(135deg, #ff9800, #ffcc02)',
         tvGenres: '10759|10765',
@@ -106,7 +107,7 @@ function getSeasonConfig(): SeasonConfig {
       };
     case 8:
       return {
-        title: 'Herbst-Krimis',
+        title: t('Herbst-Krimis'),
         iconColor: '#8d6e63',
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
         tvGenres: '9648|80',
@@ -114,7 +115,7 @@ function getSeasonConfig(): SeasonConfig {
       };
     case 9:
       return {
-        title: 'Halloween & Grusel',
+        title: t('Halloween & Grusel'),
         iconColor: '#ff6f00',
         badgeGradient: 'linear-gradient(135deg, #ff6f00, #f4511e)',
         tvGenres: '9648',
@@ -123,7 +124,7 @@ function getSeasonConfig(): SeasonConfig {
       };
     case 10:
       return {
-        title: 'Herbst-Krimis',
+        title: t('Herbst-Krimis'),
         iconColor: '#8d6e63',
         badgeGradient: 'linear-gradient(135deg, #8d6e63, #bcaaa4)',
         tvGenres: '9648|80',
@@ -131,14 +132,14 @@ function getSeasonConfig(): SeasonConfig {
       };
     case 11:
       return {
-        title: 'Weihnachts-Highlights',
+        title: t('Weihnachts-Highlights'),
         iconColor: '#c62828',
         badgeGradient: 'linear-gradient(135deg, #c62828, #e53935)',
         keywords: '207317',
       };
     default:
       return {
-        title: 'Empfehlungen',
+        title: t('Empfehlungen'),
         iconColor: '#7c4dff',
         badgeGradient: 'linear-gradient(135deg, #7c4dff, #b388ff)',
         tvGenres: '18',

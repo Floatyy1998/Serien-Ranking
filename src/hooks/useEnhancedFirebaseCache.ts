@@ -27,6 +27,7 @@ import {
 import { attachRealtimeListener } from './firebaseCache/realtimeListener';
 import { useReconnectSync } from './firebaseCache/reconnect';
 import type { EnhancedCacheOptions, EnhancedCacheResult } from './firebaseCache/types';
+import { t } from '../services/i18n';
 import {
   fetchRemoteVersion,
   fetchVersionPair,
@@ -287,7 +288,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
         } else {
           setIsOffline(true);
           if (!cachedData) {
-            setError('Offline - keine Daten verfügbar');
+            setError(t('Offline - keine Daten verfügbar'));
             setLoading(false);
           }
         }
@@ -299,7 +300,7 @@ export function useEnhancedFirebaseCache<T = unknown>(
           setIsStale(true);
           setError('Fehler beim Laden - zeige gecachte Daten');
         } else {
-          setError(error instanceof Error ? error.message : 'Laden fehlgeschlagen');
+          setError(error instanceof Error ? error.message : t('Laden fehlgeschlagen'));
         }
         setLoading(false);
       }

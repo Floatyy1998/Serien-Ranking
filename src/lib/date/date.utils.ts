@@ -1,3 +1,5 @@
+import { t } from '../../services/i18n';
+
 /**
  * Returns a date as YYYY-MM-DD string in the local timezone.
  * Unlike toISOString().split('T')[0], this avoids UTC conversion
@@ -11,9 +13,9 @@ export const toLocalDateString = (date: Date = new Date()): string => {
 };
 
 export const getFormattedDate = (date: string) => {
-  if (!date) return 'Kein Datum';
+  if (!date) return t('Kein Datum');
   const parsedDate = new Date(date);
-  if (isNaN(parsedDate.getTime())) return 'Ungültiges Datum';
+  if (isNaN(parsedDate.getTime())) return t('Ungültiges Datum');
 
   const day = parsedDate.getDate().toString().padStart(2, '0');
   const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
@@ -28,6 +30,6 @@ export const getFormattedDate = (date: string) => {
  */
 export const formatSeasonDate = (date: string | Date): string => {
   const d = typeof date === 'string' ? new Date(date) : date;
-  if (isNaN(d.getTime())) return 'Ungültiges Datum';
+  if (isNaN(d.getTime())) return t('Ungültiges Datum');
   return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' });
 };

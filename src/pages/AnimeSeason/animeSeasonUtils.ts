@@ -4,6 +4,7 @@ import { getEpisodeAirDate } from '../../utils/episodeDate';
 import type { CatalogEpisode, CatalogSeason } from '../../types/CatalogTypes';
 import type { SeasonAnime } from '../../services/anilistSeasonService';
 import type { Series } from '../../types/Series';
+import { t } from '../../services/i18n';
 import { dayLabel, isSameDay, relativeDayLabel } from './animeFormat';
 import type { TmdbProviderInfo } from './resolveTmdbId';
 
@@ -187,7 +188,7 @@ export function buildDayGroups(entries: DecoratedAnime[], now: Date): DayGroup[]
   if (tba.length) {
     groups.push({
       key: 'tba',
-      label: 'Start noch offen',
+      label: t('Start noch offen'),
       relative: null,
       isToday: false,
       isPast: false,

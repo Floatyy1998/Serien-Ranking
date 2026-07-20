@@ -264,7 +264,7 @@ export const MangaCarouselSection = React.memo(function MangaCarouselSection({
               key={`${variant}-${item.id}`}
               role="button"
               tabIndex={0}
-              aria-label={`${item.title} öffnen`}
+              aria-label={t('{title} öffnen', { title: item.title })}
               whileTap={tapScale}
               onClick={() => navigate(`/manga/${item.id}`)}
               onKeyDown={(e) => {

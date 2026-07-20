@@ -284,7 +284,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
                   marginBottom: '6px',
                 }}
               >
-                {achievement.title}
+                {t(achievement.title)}
               </h4>
               <p
                 style={{
@@ -294,7 +294,7 @@ export const AchievementsSlide: React.FC<AchievementsSlideProps> = ({ achievemen
                   lineHeight: 1.3,
                 }}
               >
-                {achievement.description}
+                {t(achievement.description)}
               </p>
               {achievement.value && (
                 <p

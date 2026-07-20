@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { t } from '../services/i18n';
 
 /**
  * Generiert einen Poster-Placeholder als data: URL — mit TV-Rank Logo als
@@ -171,10 +172,10 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
   <text x="150" y="284" text-anchor="middle"
         font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif"
         font-size="30" font-weight="900" fill="url(#hero)" letter-spacing="2"
-        filter="url(#heroGlow)" opacity="0.65">KEIN POSTER</text>
+        filter="url(#heroGlow)" opacity="0.65">${t('KEIN POSTER')}</text>
   <text x="150" y="284" text-anchor="middle"
         font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Inter, sans-serif"
-        font-size="30" font-weight="900" fill="url(#hero)" letter-spacing="2">KEIN POSTER</text>
+        font-size="30" font-weight="900" fill="url(#hero)" letter-spacing="2">${t('KEIN POSTER')}</text>
 
   <!-- Status row: blinking-dot + subtitle -->
   <g transform="translate(150 312)">
@@ -182,19 +183,19 @@ const buildPlaceholderSvg = (primary: string, secondary: string): string => `
     <circle cx="-50" cy="0" r="2" fill="${primary}"/>
     <text x="-38" y="4" text-anchor="start"
           font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
-          font-size="11" font-weight="600" fill="#a3afc7" letter-spacing="2">VORHANDEN</text>
+          font-size="11" font-weight="600" fill="#a3afc7" letter-spacing="2">${t('VORHANDEN')}</text>
   </g>
 
   <!-- Bottom: Tagline + Footer -->
   <!-- Tagline -->
   <text x="150" y="380" text-anchor="middle"
         font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
-        font-size="9" font-weight="700" fill="${primary}" fill-opacity="0.65" letter-spacing="4">SERIEN · FILME · MANGA</text>
+        font-size="9" font-weight="700" fill="${primary}" fill-opacity="0.65" letter-spacing="4">${t('SERIEN · FILME · MANGA')}</text>
 
   <!-- Footer note -->
   <text x="150" y="404" text-anchor="middle"
         font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif"
-        font-size="9" font-weight="500" fill="#6b7793" letter-spacing="0.6">Coverbild bald verfügbar</text>
+        font-size="9" font-weight="500" fill="#6b7793" letter-spacing="0.6">${t('Coverbild bald verfügbar')}</text>
 
   <!-- Cinema corner brackets (outer frame) -->
   <g stroke="${primary}" stroke-opacity="0.5" stroke-width="1.5" fill="none" stroke-linecap="round">

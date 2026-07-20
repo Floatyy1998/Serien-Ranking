@@ -9,6 +9,7 @@ import type {
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
+import { t } from '../services/i18n';
 
 interface EditReplyInput {
   content?: string;
@@ -67,7 +68,7 @@ export const useDiscussionReplies = (
       },
       (err) => {
         console.error('Error fetching replies:', err);
-        setError('Fehler beim Laden der Antworten');
+        setError(t('Fehler beim Laden der Antworten'));
         setLoading(false);
       }
     );
@@ -142,10 +143,16 @@ export const useDiscussionReplies = (
           const isAuthor = participantId === discussion?.userId;
           await sendNotificationToUser(participantId, {
             type: 'discussion_reply',
-            title: 'Neue Antwort',
+            title: t('Neue Antwort'),
             message: isAuthor
-              ? `${username} hat auf deine Diskussion "${discussion.title}" geantwortet`
-              : `${username} hat auch auf "${discussion?.title}" geantwortet`,
+              ? t('{name} hat auf deine Diskussion "{title}" geantwortet', {
+                  name: username,
+                  title: discussion.title,
+                })
+              : t('{name} hat auch auf "{title}" geantwortet', {
+                  name: username,
+                  title: discussion?.title ?? '',
+                }),
             data: {
               discussionId,
               discussionPath,
@@ -196,7 +203,7 @@ export const useDiscussionReplies = (
         return true;
       } catch (err) {
         console.error('Error creating reply:', err);
-        setError('Fehler beim Erstellen der Antwort');
+        setError(t('Fehler beim Erstellen der Antwort'));
         return false;
       }
     },
@@ -218,12 +225,12 @@ export const useDiscussionReplies = (
         // Non-owners can only set isSpoiler to true (flag as spoiler)
         if (!isOwner) {
           if (input.content !== undefined) {
-            setError('Du kannst nur eigene Antworten bearbeiten');
+            setError(t('Du kannst nur eigene Antworten bearbeiten'));
             return false;
           }
           // Non-owners can only add spoiler flag, not remove it
           if (input.isSpoiler === false) {
-            setError('Nur der Autor kann die Spoiler-Markierung entfernen');
+            setError(t('Nur der Autor kann die Spoiler-Markierung entfernen'));
             return false;
           }
         }
@@ -246,8 +253,12 @@ export const useDiscussionReplies = (
 
           await sendNotificationToUser(reply.userId, {
             type: 'spoiler_flag',
-            title: 'Spoiler-Markierung',
-            message: `${username} hat deinen Kommentar als Spoiler markiert: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
+            title: t('Spoiler-Markierung'),
+            message: t('{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"', {
+              name: username,
+              snippet:
+                reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content,
+            }),
             data: {
               discussionId,
               discussionPath,
@@ -259,7 +270,7 @@ export const useDiscussionReplies = (
         return true;
       } catch (err) {
         console.error('Error editing reply:', err);
-        setError('Fehler beim Bearbeiten der Antwort');
+        setError(t('Fehler beim Bearbeiten der Antwort'));
         return false;
       }
     },
@@ -277,7 +288,7 @@ export const useDiscussionReplies = (
         const reply = snapshot.val();
 
         if (reply?.userId !== user.uid) {
-          setError('Du kannst nur eigene Antworten löschen');
+          setError(t('Du kannst nur eigene Antworten löschen'));
           return false;
         }
 
@@ -292,7 +303,7 @@ export const useDiscussionReplies = (
         return true;
       } catch (err) {
         console.error('Error deleting reply:', err);
-        setError('Fehler beim Löschen der Antwort');
+        setError(t('Fehler beim Löschen der Antwort'));
         return false;
       }
     },
@@ -321,8 +332,14 @@ export const useDiscussionReplies = (
 
             await sendNotificationToUser(reply.userId, {
               type: 'discussion_like',
-              title: 'Neue Reaktion',
-              message: `${username} gefällt deine Antwort: "${reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content}"`,
+              title: t('Neue Reaktion'),
+              message: t('{name} gefällt deine Antwort: "{snippet}"', {
+                name: username,
+                snippet:
+                  reply.content.length > 50
+                    ? reply.content.substring(0, 50) + '...'
+                    : reply.content,
+              }),
               data: {
                 discussionId,
                 discussionPath,

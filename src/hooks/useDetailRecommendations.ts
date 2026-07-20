@@ -5,6 +5,7 @@ import { useSeriesList } from '../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../features/badges/minimalActivityLogger';
 import { backendFetch } from '../services/backendApi';
+import { t } from '../services/i18n';
 import { getTmdbApiKey, tmdbFetch } from '../services/tmdbClient';
 import type { DiscoverItem } from '../pages/Discover/discoverItemHelpers';
 
@@ -103,7 +104,7 @@ export const useDetailRecommendations = (
       setItems(enriched);
     } catch (err) {
       console.error('useDetailRecommendations failed:', err);
-      setError('Empfehlungen konnten nicht geladen werden');
+      setError(t('Empfehlungen konnten nicht geladen werden'));
       setItems([]);
     } finally {
       setLoading(false);

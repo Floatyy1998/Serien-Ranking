@@ -9,6 +9,8 @@
  * damit Screenreader Feedback + den zeitkritischen „Rückgängig"-Button ansagen.
  */
 
+import { t } from '../services/i18n';
+
 // Max. gleichzeitig offene Undo-Toasts. Beim Bulk-Markieren würden sonst
 // beliebig viele stapeln; der älteste wird committet, sobald das Limit greift.
 const MAX_UNDO_TOASTS = 3;
@@ -259,7 +261,7 @@ export function showUndoToast(
   const undoBtn = document.createElement('button');
   undoBtn.className = 'toast-undo-btn';
   undoBtn.type = 'button';
-  undoBtn.textContent = 'Rückgängig';
+  undoBtn.textContent = t('Rückgängig');
   toast.appendChild(undoBtn);
 
   // Progress bar — driven by rAF for guaranteed smooth countdown
