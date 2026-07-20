@@ -79,10 +79,14 @@ export async function logEpisodeWatch(
   await saveEvent(userId, event);
   await updateWatchStreak(userId);
 
-  updateLeaderboardStats(userId, {
-    episodesWatched: 1,
-    watchtimeMinutes: runtime,
-  }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
+  // Bulk-Marking (Nachtragen alter Folgen) zählt nicht für die Rangliste —
+  // sonst gewinnt, wer seine Bibliothek importiert statt schaut.
+  if (!isBulkMarking) {
+    updateLeaderboardStats(userId, {
+      episodesWatched: 1,
+      watchtimeMinutes: runtime,
+    }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
+  }
 
   // Freunde-Feed nur bei Erstwatch (kein Bulk/Rewatch — Feed-Spam); bewusst nicht im Notification-Hub.
   if (!isBulkMarking && !isRewatch) {

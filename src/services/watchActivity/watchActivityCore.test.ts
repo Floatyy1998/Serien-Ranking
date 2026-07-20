@@ -172,7 +172,7 @@ describe('logEpisodeWatch', () => {
     expect(saved?.bid).toBe('binge-1');
   });
 
-  it('Bulk-Marking: überspringt Binge, Pet und Feed – speichert aber Event, Streak, Leaderboard', async () => {
+  it('Bulk-Marking: überspringt Binge, Pet, Feed und Leaderboard – speichert aber Event und Streak', async () => {
     checkBulkMarkingAndGetTimestamp.mockReturnValue({
       isBulkMarking: true,
       distributedDate: new Date(),
@@ -185,7 +185,8 @@ describe('logEpisodeWatch', () => {
     expect(logEpisodeWatchedActivity).not.toHaveBeenCalled();
     expect(firstSaved()?.t).toBe('ep');
     expect(updateWatchStreak).toHaveBeenCalled();
-    expect(updateLeaderboardStats).toHaveBeenCalled();
+    // Nachtragen alter Folgen zählt nicht für die Rangliste
+    expect(updateLeaderboardStats).not.toHaveBeenCalled();
   });
 
   it('reicht Genres und Provider ins Event durch', async () => {
