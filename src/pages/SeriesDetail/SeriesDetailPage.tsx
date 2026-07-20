@@ -348,8 +348,9 @@ export const SeriesDetailPage = memo(() => {
         </div>
       )}
 
-      {/* Friends Progress Strip — only when user actually tracks this series */}
-      {!isReadOnlyTmdbSeries && friendsProgress.entries.length > 0 && (
+      {/* Friends Progress Strip — auch für nicht getrackte Serien: die
+          Freunde-Daten sind unabhängig von der eigenen Liste lesbar. */}
+      {friendsProgress.entries.length > 0 && (
         <FriendsProgressStrip
           entries={friendsProgress.entries}
           userPercentage={progressStats.percentage}
