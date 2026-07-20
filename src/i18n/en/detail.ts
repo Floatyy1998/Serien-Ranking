@@ -52,7 +52,7 @@ const dict: Record<string, string> = {
   '~{h} Std.': '~{h} hrs',
   übrig: 'remaining',
   'Ep. / Tag': 'Eps / day',
-  'Fertig ca.': 'Done approx.',
+  'Fertig ca.': 'Est. finish',
   '{watched} von {total} Episoden': '{watched} of {total} episodes',
 
   // StatusBadge

@@ -20,7 +20,7 @@ const dict: Record<string, string> = {
   'Du kannst nur eigene Diskussionen löschen': 'You can only delete your own discussions',
   'Fehler beim Löschen der Diskussion': 'Failed to delete discussion',
   '{name} gefällt deine Diskussion "{title}"': '{name} likes your discussion "{title}"',
-  'Du musst eingeloggt sein um zu diskutieren': 'You must be logged in to participate',
+  'Du musst eingeloggt sein um zu diskutieren': 'You must be logged in to join the discussion',
   'Neue Antwort': 'New reply',
   '{name} hat auch auf "{title}" geantwortet': '{name} also replied to "{title}"',
   'Spoiler-Markierung': 'Spoiler flag',

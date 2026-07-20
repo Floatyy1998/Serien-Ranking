@@ -149,8 +149,8 @@ const dict: Record<string, string> = {
 
   // Currently watching card
   'Binge-Modus': 'Binge mode',
-  'Aktiv dabei': 'Watching actively',
-  'Schaut entspannt': 'Watching casually',
+  'Aktiv dabei': 'Actively watching',
+  'Schaut entspannt': 'Casually watching',
   Pausiert: 'Paused',
   Rewatch: 'Rewatch',
   '{name} schaut': '{name} is watching',
@@ -182,7 +182,7 @@ const dict: Record<string, string> = {
   'Wird verschickt …': 'Sending …',
   'Snack unterwegs': 'Snack on its way',
   'Pet ist nicht mehr': 'Pet is no more',
-  'Schon verwöhnt — wieder {rest}': 'Already treated — again {rest}',
+  'Schon verwöhnt — wieder {rest}': 'Already treated — again in {rest}',
   'Snack schicken': 'Send a snack',
   Hunger: 'Hunger',
   Glück: 'Happiness',

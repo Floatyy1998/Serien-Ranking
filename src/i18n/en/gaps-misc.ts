@@ -2,7 +2,7 @@
 const dict: Record<string, string> = {
   // Offline-Sync (services/offline/queuedUpdate.ts)
   'Offline — wird synchronisiert, sobald du online bist':
-    'Offline — will sync as soon as you are back online',
+    "Offline — will sync as soon as you're back online",
   '1 Offline-Änderung synchronisiert': '1 offline change synced',
   '{n} Offline-Änderungen synchronisiert': '{n} offline changes synced',
 
@@ -38,7 +38,7 @@ const dict: Record<string, string> = {
   // Saisonale Empfehlungen (hooks/useSeasonalRecommendations.ts)
   Valentinstag: "Valentine's Day",
   'Winter-Abende': 'Winter Evenings',
-  Frühlingsgefühle: 'Spring Feelings',
+  Frühlingsgefühle: 'Spring Fever',
   'Sommer-Blockbuster': 'Summer Blockbusters',
   'Herbst-Krimis': 'Autumn Crime',
   'Halloween & Grusel': 'Halloween & Horror',

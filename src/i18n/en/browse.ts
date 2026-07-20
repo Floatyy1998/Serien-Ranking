@@ -73,7 +73,7 @@ const dict: Record<string, string> = {
   Details: 'Details',
   'Zur Liste hinzufügen': 'Add to list',
   'Weil du „{title}" magst': 'Because you like "{title}"',
-  'Inhalte konnten nicht geladen werden.': 'Content could not be loaded.',
+  'Inhalte konnten nicht geladen werden.': 'Failed to load content.',
 
   // Bewertungen
   Ansicht: 'View',

@@ -48,7 +48,7 @@ const dict: Record<string, string> = {
   'Schau Episoden, um Accessoires zu finden!': 'Watch episodes to find accessories!',
   'Noch keine {rarity} entdeckt.': 'No {rarity} finds yet.',
   'Öffne Mystery Boxen oder dreh das Glücksrad, um Hintergründe zu finden!':
-    'Open mystery boxes or spin the lucky wheel to find backgrounds!',
+    'Open Mystery Boxes or take a Daily Spin to find backgrounds!',
   'Farbe {name}': 'Color {name}',
   NEU: 'NEW',
   Standard: 'Default',
@@ -72,7 +72,7 @@ const dict: Record<string, string> = {
   'Noch {n} Episoden': '{n} episodes left',
   'Keine Boosts vorhanden.': 'No boosts yet.',
   "Boosts gibt's beim Daily Spin & in Mystery Boxen!":
-    'Grab boosts from the daily spin & mystery boxes!',
+    'Grab boosts from the Daily Spin & Mystery Boxes!',
   '3x XP — 5 Episoden': '3x XP — 5 episodes',
   '2x XP — 2 Episoden': '2x XP — 2 episodes',
   '3x XP — 10 Episoden': '3x XP — 10 episodes',
@@ -84,7 +84,7 @@ const dict: Record<string, string> = {
   '{name} verhungert bald!': '{name} is starving!',
   '{name} hat Hunger!': '{name} is hungry!',
   'Jetzt füttern': 'Feed now',
-  'Füttere dein Pet bevor es zu spät ist!': 'Feed your pet before it is too late!',
+  'Füttere dein Pet bevor es zu spät ist!': "Feed your pet before it's too late!",
   'Dein Pet braucht bald etwas zu essen.': 'Your pet needs food soon.',
   'ist verhungert': 'starved',
   'ist vor Kummer gestorben': 'died of a broken heart',
@@ -112,7 +112,7 @@ const dict: Record<string, string> = {
   Schließen: 'Close',
   'Schade!': 'Aw, no luck!',
   'Gewonnen!': 'You won!',
-  'Tägliches Glücksrad': 'Daily Lucky Wheel',
+  'Tägliches Glücksrad': 'Daily Spin',
   '{n} Tage Streak — bessere Belohnungen!': '{n}-day streak — better rewards!',
   'Alle XP werden {x}x multipliziert für {n} Episoden!':
     'All XP is multiplied by {x}x for {n} episodes!',
@@ -137,7 +137,7 @@ const dict: Record<string, string> = {
     '{x}x XP boost — activate it on the pet page!',
   'Diese Box wurde schon geöffnet': 'This box has already been opened',
   'Wahrscheinlich auf einem anderen Gerät eingelöst. Die nächste Box wartet nach den nächsten Episoden auf dich.':
-    'Probably claimed on another device. Your next box is waiting after a few more episodes.',
+    'Probably claimed on another device. Your next box will be ready after a few more episodes.',
   'Alles klar': 'Got it',
   'Öffnen!': 'Open!',
 
@@ -341,7 +341,7 @@ const dict: Record<string, string> = {
   'Boom, {n} Tage!': 'Boom, {n} days!',
   'Aufgestiegen – Level {n}!': 'Leveled up – level {n}!',
   'Level {n} erreicht!': 'Level {n} reached!',
-  'Level {n}, stark!': 'Level {n}, strong!',
+  'Level {n}, stark!': 'Level {n}, awesome!',
   'Level {n} – weiter so!': 'Level {n} – keep it up!',
   'Hab dich lieb!': 'Love you!',
   'Du fütterst mich gut': 'You feed me well',
@@ -351,7 +351,7 @@ const dict: Record<string, string> = {
   'Hmm, langweilig …': 'Hmm, bored …',
   'Noch da?': 'Still there?',
   'Lust auf ne Folge?': 'Up for an episode?',
-  'Watchlist offen?': 'Watchlist open?',
+  'Watchlist offen?': 'Open your watchlist?',
   'Was läuft so?': "What's on?",
   'Bin da, falls du was guckst': "I'm here if you're watching",
   'Pause oder Folge?': 'Break or episode?',
@@ -379,7 +379,7 @@ const dict: Record<string, string> = {
   'Premiere für mich!': 'A premiere for me!',
   'Bewertet – stark!': 'Rated – nice!',
   'Dein Urteil zählt': 'Your verdict counts',
-  'Saubere Wertung': 'Clean rating',
+  'Saubere Wertung': 'Solid rating!',
 };
 
 export default dict;

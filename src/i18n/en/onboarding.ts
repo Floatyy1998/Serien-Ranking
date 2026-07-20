@@ -10,7 +10,7 @@ const dict: Record<string, string> = {
   'Unbekannter Fehler': 'Unknown error',
   'Dein Kino. Dein Ranking.': 'Your cinema. Your ranking.',
   'Tracke Serien, Filme & Manga — mit Freunden, Stats und allem Drum und Dran.':
-    'Track series, movies & manga — with friends, stats, and all the trimmings.',
+    'Track series, movies & manga — with friends, stats, and all the bells and whistles.',
 
   // --- Login ---
   'Willkommen zurück': 'Welcome back',
@@ -59,7 +59,7 @@ const dict: Record<string, string> = {
   'E-Mail & Passwort': 'email & password',
   'einer anderen Methode': 'another sign-in method',
   'Für diese E-Mail existiert bereits ein Konto mit {label}. Bitte melde dich damit an.':
-    'An account already exists for this email using {label}. Please sign in that way.',
+    'An account already exists for this email using {label}. Please sign in with that method.',
   'Diese Anmeldemethode ist noch nicht freigeschaltet. Bitte versuche es später erneut.':
     'This sign-in method is not enabled yet. Please try again later.',
   'Netzwerkfehler — bitte prüfe deine Internetverbindung.':
@@ -124,7 +124,7 @@ const dict: Record<string, string> = {
   // --- Onboarding: Watch-Status & Episoden ---
   'Wo bist du bei': 'Where are you in',
   'Noch nicht gesehen': 'Not watched yet',
-  'Steht auf der Watchlist': 'Goes on the watchlist',
+  'Steht auf der Watchlist': 'On my watchlist',
   'Bin mittendrin': "I'm in the middle",
   'Episode auswählen': 'Pick an episode',
   'Komplett gesehen': 'Watched it all',
@@ -132,7 +132,7 @@ const dict: Record<string, string> = {
   '← andere option': '← other option',
   'lade episoden …': 'loading episodes …',
   'Diese Serie ist noch nicht im Katalog. Wir notieren sie als watchlist — Episoden-Status kannst du später setzen.':
-    "This series isn't in the catalog yet. We'll note it as watchlist — you can set your episode progress later.",
+    "This series isn't in the catalog yet. We'll add it to your watchlist — you can set your episode progress later.",
   übernehmen: 'apply',
   'Tippe die letzte gesehene Episode an — alles davor wird abgehakt.':
     'Tap the last episode you watched — everything before it gets checked off.',
@@ -177,7 +177,7 @@ const dict: Record<string, string> = {
   'Features für das beste Tracking-Erlebnis': 'Features for the best tracking experience',
   'Serien-Tracking': 'Series tracking',
   'Verfolge jede Episode, markiere gesehene Folgen und verpasse nie wieder eine neue Staffel.':
-    'Follow every episode, mark watched ones, and never miss a new season again.',
+    'Follow every episode, mark them as watched, and never miss a new season again.',
   'Film-Bibliothek': 'Movie library',
   'Organisiere deine Filmsammlung, bewerte Filme und entdecke neue Highlights.':
     'Organize your movie collection, rate films, and discover new highlights.',

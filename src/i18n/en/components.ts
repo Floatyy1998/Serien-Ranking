@@ -129,7 +129,7 @@ const dict: Record<string, string> = {
   'KI-Zusammenfassung generieren': 'Generate AI summary',
   'Zuletzt geschaut': 'Last watched',
   Zuletzt: 'Latest',
-  'Was ist nochmal passiert mit...?': 'What happened again with...?',
+  'Was ist nochmal passiert mit...?': 'What happened with... again?',
   Antwort: 'Answer',
   'Nicht mehr anzeigen': "Don't show again",
 

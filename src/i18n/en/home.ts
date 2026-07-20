@@ -30,8 +30,8 @@ const dict: Record<string, string> = {
   'Diese Woche': 'This week',
   '{n} Ep.': '{n} eps',
   'neu geschaut': 'newly watched',
-  'Zeit mit Serien': 'Time with series',
-  'Zeit mit Filmen': 'Time with movies',
+  'Zeit mit Serien': 'Series watch time',
+  'Zeit mit Filmen': 'Movie watch time',
   'Ø Serien-Rating': 'Avg. series rating',
   'Ø Film-Rating': 'Avg. movie rating',
   Lieblingsgenre: 'Favorite genre',
@@ -68,9 +68,9 @@ const dict: Record<string, string> = {
   Tage: 'days',
 
   // HiddenSeriesCard
-  'Nicht weitergeschaut': 'Not continued',
-  'Nicht weitergeschaut: {n} Serie ausgeblendet': 'Not continued: {n} series hidden',
-  'Nicht weitergeschaut: {n} Serien ausgeblendet': 'Not continued: {n} series hidden',
+  'Nicht weitergeschaut': 'Stopped watching',
+  'Nicht weitergeschaut: {n} Serie ausgeblendet': 'Stopped watching: {n} series hidden',
+  'Nicht weitergeschaut: {n} Serien ausgeblendet': 'Stopped watching: {n} series hidden',
   '{n} Serie ausgeblendet': '{n} series hidden',
   '{n} Serien ausgeblendet': '{n} series hidden',
 
@@ -98,8 +98,8 @@ const dict: Record<string, string> = {
   '{n} Jahren': '{n} years',
   '{name} pausiert': '{name} paused',
   '{amount}/Monat schläft': '{amount}/month sitting idle',
-  '{n} Abo ungenutzt': '{n} subscription unused',
-  '{n} Abos ungenutzt': '{n} subscriptions unused',
+  '{n} Abo ungenutzt': '{n} unused subscription',
+  '{n} Abos ungenutzt': '{n} unused subscriptions',
   '{n} Abo ohne Aktivität · Tippen für Details':
     '{n} subscription with no activity · tap for details',
   '{n} Abos ohne Aktivität · Tippen für Details':
@@ -145,7 +145,7 @@ const dict: Record<string, string> = {
     'Every anime of the season at a glance: a premiere timeline with a live countdown to the next big premiere, "Season 2"/"NEW" chips, dates just like in your calendar (TVMaze-verified), and quick access to your shows. All in the patch notes.',
   'Neu: Mehr über deine Freunde': 'New: More about your friends',
   'Freunde-Stand auf jeder Seriendetail-Seite, „Was schaut Lisa gerade", „Worauf wartet sie", Pet-Sneakpeek mit Snack-Geschenk und Air-Date + Watched-Date pro Folge. Alles in den Patch Notes.':
-    'Friend progress on every series detail page, "What is Lisa watching right now", "What is she waiting for", a pet sneak peek with snack gifts, and air date + watched date per episode. All in the patch notes.',
+    'Friend progress on every series detail page, "What\'s Lisa watching right now", "What\'s she waiting for", a pet sneak peek with snack gifts, and air date + watched date per episode. All in the patch notes.',
   'Neu: Anime-Filler, Aktivitäts-Ticker & mehr': 'New: Anime fillers, activity ticker & more',
   'Anime-Filler/Recap auf Detail-Seite und in der Episoden-Liste, Freunde-Aktivitäten als sanfter Ticker auf der Homepage, Streaming-Reminder mit Pausieren-Button, Pet-Reaktionen auf Streaks, sanfte Seitenwechsel – alles in den Patch Notes.':
     'Anime filler/recap on the detail page and in the episode list, friend activity as a gentle ticker on the home screen, streaming reminders with a pause button, pet reactions to streaks, smooth page transitions — all in the patch notes.',
@@ -174,7 +174,7 @@ const dict: Record<string, string> = {
   // NotificationItem / RecommendationCard
   Annehmen: 'Accept',
   Ablehnen: 'Decline',
-  'empfiehlt dir': 'recommends for you',
+  'empfiehlt dir': 'recommends to you',
   Film: 'Movie',
   Serie: 'Series',
   Anschauen: 'Watch',
@@ -211,15 +211,15 @@ const dict: Record<string, string> = {
 
   // DailySpinCard
   'Glücksrad drehen': 'Spin the wheel',
-  'Glücksrad – morgen wieder verfügbar': 'Lucky wheel – available again tomorrow',
-  Glücksrad: 'Lucky wheel',
+  'Glücksrad – morgen wieder verfügbar': 'Daily Spin – back tomorrow',
+  Glücksrad: 'Daily Spin',
   'Jetzt drehen!': 'Spin now!',
-  'Morgen wieder verfügbar': 'Available again tomorrow',
+  'Morgen wieder verfügbar': 'Back tomorrow',
   '{n}d Bonus': '{n}d bonus',
   '{n}x gedreht': '{n} spins',
 
   // MilestoneBoxCard
-  'Mystery Box öffnen – {n} verfügbar': 'Open mystery box – {n} available',
+  'Mystery Box öffnen – {n} verfügbar': 'Open Mystery Box – {n} available',
   '{n} Box verfügbar!': '{n} box available!',
   '{n} Boxen verfügbar!': '{n} boxes available!',
   'Nächste in {n} Episoden': 'Next in {n} episodes',
@@ -251,7 +251,7 @@ const dict: Record<string, string> = {
   // WatchStreakCard
   'Fehler beim Aktivieren des Shields': 'Failed to activate the shield',
   'Kein Pet vorhanden': 'No pet available',
-  'Dein Pet lebt nicht': 'Your pet is not alive',
+  'Dein Pet lebt nicht': "Your pet isn't alive",
   'Nicht genug XP ({have}/{need})': 'Not enough XP ({have}/{need})',
   'Cooldown: noch {n} Tag': 'Cooldown: {n} day left',
   'Cooldown: noch {n} Tage': 'Cooldown: {n} days left',
@@ -265,7 +265,7 @@ const dict: Record<string, string> = {
   Rekord: 'Record',
   'Best: {n}': 'Best: {n}',
   'Heute geschaut': 'Watched today',
-  'Schau heute, sonst bricht die Streak': 'Watch today or your streak breaks',
+  'Schau heute, sonst bricht die Streak': 'Watch today or lose your streak',
   'Streak verloren': 'Streak lost',
 
   // useRewatchHandler

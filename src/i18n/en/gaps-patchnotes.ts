@@ -40,7 +40,7 @@ const dict: Record<string, string> = {
   'Rangliste im Kino-Look': 'Leaderboard in Cinema Style',
   'Backdrops in Originalauflösung': 'Backdrops in Original Resolution',
   'Feinschliff im ganzen System': 'Polish Across the Whole System',
-  'Komplettes Redesign — jede Seite neu': 'Complete Redesign — Every Page New',
+  'Komplettes Redesign — jede Seite neu': 'Complete Redesign — Every Page Rebuilt',
   'Neues Profil: dein Kino auf einem Screen': 'New Profile: Your Cinema on One Screen',
   'Desktop nutzt endlich die volle Breite': 'Desktop Finally Uses the Full Width',
   'Neue Startseite, Login & Registrierung': 'New Landing Page, Login & Sign-Up',
@@ -52,7 +52,7 @@ const dict: Record<string, string> = {
   '„Staffel 2"-, „Part 2"- und „NEU"-Chips': '"Season 2", "Part 2" and "NEW" Chips',
   'Termine wie in deinem Kalender': 'Dates Like in Your Calendar',
   'Deine Serien werden erkannt': 'Your Shows Are Recognized',
-  'Komfort beim Stöbern': 'Comfort While Browsing',
+  'Komfort beim Stöbern': 'Easier Browsing',
   'Filter: Serien, Filme & Provider': 'Filter: Shows, Movies & Providers',
   'Direkt zur Liste hinzufügen': 'Add Straight to Your List',
   'TMDB-Rating auf den Karten': 'TMDB Rating on the Cards',
@@ -105,7 +105,7 @@ const dict: Record<string, string> = {
   'Die iOS- und Android-App melden sich jetzt von selbst: morgens, wenn eine deiner Serien heute eine neue Folge bekommt, und sofort, wenn dich eine Freundschaftsanfrage erreicht. Einschalten unter Einstellungen → Benachrichtigungen → Push-Benachrichtigungen.':
     'The iOS and Android apps now reach out on their own: in the morning when one of your shows gets a new episode today, and instantly when a friend request arrives. Turn it on under Settings → Notifications → Push Notifications.',
   'Belege bis zu 4 Plätze der Navigationsleiste mit deinen Lieblingszielen — Kalender raus, Statistiken rein? Rangliste statt Manga? Du entscheidest. Seiten in der Leiste verlieren automatisch ihren Zurück-Pfeil, denn sie sind jetzt ein Zuhause.':
-    'Fill up to 4 slots of the navigation bar with your favorite destinations — drop the calendar, add stats? Leaderboard instead of manga? You decide. Pages in the bar automatically lose their back arrow, because they are now a home.',
+    'Fill up to 4 slots in the navigation bar with your favorite destinations — drop the calendar, add stats? Leaderboard instead of manga? You decide. Pages in the bar automatically lose their back arrow, because they are a home base now.',
   'Homepage anpassen heißt jetzt anfassen: Deine App schwebt als Miniatur in der Mitte — Sektionen greifst und verschiebst du direkt, das Auge blendet aus, und die Leiste bestückst du per Tipp. Was du siehst, ist live dein Layout.':
     'Customizing the homepage now means hands-on: your app floats as a miniature in the center — grab and move sections directly, the eye hides them, and you fill the bar with a tap. What you see is your layout, live.',
   'Das Podium ist jetzt eine Bühne: große Avatare mit Medaillen-Ring und Krone, Glas-Sockel mit Gold-, Silber- und Bronze-Lichtkante und deine Zahl groß im Rampenlicht. Die Trophäen-Galerie füllt den Desktop als Glas-Karten in voller Breite.':
@@ -121,7 +121,7 @@ const dict: Record<string, string> = {
   'Keine gestreckten Endlos-Listen mehr: Episoden, Freunde, Empfehlungen, Countdowns, Diskussionen und Manga-Listen liegen am Desktop jetzt als Karten-Grids nebeneinander. Statistiken sind ein dichtes Bento-Dashboard statt einer Einspalten-Wurst.':
     'No more stretched endless lists: on desktop, episodes, friends, recommendations, countdowns, discussions and manga lists now sit side by side as card grids. Stats are a dense bento dashboard instead of a single-column sprawl.',
   'Wer nicht eingeloggt ist, sieht jetzt eine echte Bühne: eine animierte Poster-Wand aus den Trending-Serien der Woche, eine Live-Vorschau der App und Anmelden/Registrieren im Kino-Split. Perfekt, um TV-Rank Freunden zu zeigen.':
-    "If you are not logged in, you now see a real stage: an animated poster wall from the week's trending shows, a live preview of the app, and login/sign-up in a cinema split. Perfect for showing TV-Rank to friends.",
+    "If you're not logged in, you now see a real stage: an animated poster wall from the week's trending shows, a live preview of the app, and login/sign-up in a cinema split. Perfect for showing TV-Rank to friends.",
   'Neue Versionen laden sich komplett im Hintergrund vor und werden nur noch angewendet, wenn du es nicht merkst (beim Tab-Wechsel) oder wenn du selbst auf „Aktualisieren" tippst. Der „Update wird installiert"-Reload mitten in der Session ist Geschichte.':
     'New versions preload completely in the background and are only applied when you don\'t notice (on tab switch) or when you tap "Update" yourself. The "installing update" reload mid-session is history.',
   'Die Startseite lädt für Besucher jetzt in rund einer Sekunde — der Ladebildschirm erscheint nur noch dort, wo er wirklich gebraucht wird.':
@@ -153,7 +153,7 @@ const dict: Record<string, string> = {
   'Auf jedem Friend-Profil erscheint die heißeste Serie der letzten 14 Tage mit Status („Binge-Modus", „Aktiv dabei", „Schaut entspannt", „Pausiert" oder „Rewatch"), aktueller Folge und Spoiler-Diff zu deinem Stand. Rewatch wird erkannt und blendet den Spoiler-Hinweis automatisch aus.':
     'Every friend profile shows the hottest show of the last 14 days with a status ("Binge mode", "Actively watching", "Watching casually", "Paused" or "Rewatch"), the current episode and a spoiler diff to your progress. Rewatches are detected and hide the spoiler warning automatically.',
   'Ebenfalls auf dem Friend-Profil: die nächsten anstehenden Folgen aus der Watchlist deines Freundes, sortiert nach Air-Date. Wenn ihr beide eine Serie wartet, gibt es ein „Ihr beide"-Badge – idealer Co-Watch-Hinweis.':
-    'Also on the friend profile: the next upcoming episodes from your friend\'s watchlist, sorted by air date. If you are both waiting on a show, there is a "Both of you" badge – an ideal co-watch hint.',
+    "Also on the friend profile: the next upcoming episodes from your friend's watchlist, sorted by air date. If you're both waiting on a show, there's a \"Both of you\" badge – an ideal co-watch hint.",
   'Du siehst Level, Hunger und Glück des Pets von deinem Freund – und kannst einmal pro Tag pro Freund einen Snack schicken. Sein Pet bekommt −10 Hunger und +5 Glück, sobald die App das nächste Mal geöffnet wird. In der Glocke landet zusätzlich eine Notification „X schickt Snack".':
     'You see the level, hunger and happiness of your friend\'s pet – and can send a snack once per day per friend. Their pet gets −10 hunger and +5 happiness the next time the app is opened. A notification "X sends a snack" also lands in the bell.',
   'In der Episodenliste steht jetzt rechts neben jeder Folge das Erstausstrahlungs-Datum und – falls geschaut – wann du sie zum ersten Mal gesehen hast. Auf dem Handy klappt die Info unter die Folge.':
@@ -169,7 +169,7 @@ const dict: Record<string, string> = {
   'Wenn dein Watch-Streak steigt oder ein Meilenstein erreicht ist (3, 7, 14, 21, 30, 50, 100 Tage …), erscheint eine kleine Sprechblase über deinem Pet mit Emoji und Glückwunsch. Verbindet Streak-Tracking und Pet-System ohne extra Klick.':
     'When your watch streak grows or hits a milestone (3, 7, 14, 21, 30, 50, 100 days …), a little speech bubble with an emoji and congratulations appears above your pet. Connects streak tracking and the pet system without an extra click.',
   'Die Detail-Seite öffnet das Recap-Sheet nicht mehr automatisch – stattdessen liegt ein klar sichtbarer „Recap der letzten N Folgen"-Button im Info-Tab, sobald du Episoden gesehen hast. Du entscheidest wann es dich interessiert.':
-    'The detail page no longer opens the recap sheet automatically – instead a clearly visible "Recap of the last N episodes" button sits in the Info tab once you have watched episodes. You decide when it interests you.',
+    'The detail page no longer opens the recap sheet automatically – instead a clearly visible "Recap of the last N episodes" button sits in the Info tab once you have watched episodes. You decide when you want it.',
   'Wechsel von Homepage zu Detail-Seite, von einer Detail-Seite zur nächsten, oder vom Carousel – alles jetzt mit einem dezenten Crossfade statt hartem Sprung. Nutzt die native View-Transitions-API des Browsers, respektiert „prefers-reduced-motion".':
     'Switching from the homepage to a detail page, from one detail page to the next, or from the carousel – all now with a subtle crossfade instead of a hard jump. Uses the browser\'s native View Transitions API, respects "prefers-reduced-motion".',
   'Die „Hauptaktionen"-Sektion mit den großen Weiterschauen/Entdecken-Buttons ist entfernt – beide bleiben bequem im Schnellzugriff und in der Bottom-Nav erreichbar. Neue Sektionen tauchen ab sofort an ihrer vorgesehenen Position auf, nicht mehr automatisch am Ende deiner Liste.':
@@ -181,11 +181,11 @@ const dict: Record<string, string> = {
   'Du kannst nur Freunden etwas empfehlen, die die Serie oder den Film noch nicht in ihrer Sammlung haben. Wer es schon kennt, wird ausgegraut mit „Hat das schon" – spart Zeit und macht Empfehlungen wertvoller.':
     'You can only recommend something to friends who don\'t already have the show or movie in their collection. Anyone who already knows it is grayed out with "Already has it" – saving time and making recommendations more valuable.',
   'Pflege deine aktiven Abos (Netflix, Disney+, Crunchyroll …) mit Monatspreis und Schwellenwert für „ungenutzt". Live-Insights zeigen Total/Monat und wie viel du gerade für nichts zahlst.':
-    'Manage your active subscriptions (Netflix, Disney+, Crunchyroll …) with a monthly price and a threshold for "unused". Live insights show the total per month and how much you are currently paying for nothing.',
+    'Manage your active subscriptions (Netflix, Disney+, Crunchyroll …) with a monthly price and a threshold for "unused". Live insights show the total per month and how much you\'re currently paying for nothing.',
   'Pro Anbieter wird gezeigt was du seit Wochen nicht mehr geschaut hast und welche Serien deiner Watchlist nur dort laufen. Markiere ein Abo als „Kündigen wenn ungenutzt" und du bekommst einen klaren Vorschlag.':
     'For each provider you see what you haven\'t watched in weeks and which of your watchlist shows only air there. Mark a subscription as "Cancel if unused" and you get a clear suggestion.',
   'Eine Episode läuft auf mehreren Anbietern? Wir ordnen sie automatisch dem Provider zu, den du am häufigsten exklusiv nutzt. So weiß deine Statistik, wofür du wirklich Wert ziehst.':
-    'An episode airs on multiple providers? We automatically assign it to the provider you use exclusively most often. That way your stats know where you really get value.',
+    'An episode airs on multiple providers? We automatically assign it to the provider you most often use exclusively. That way your stats know where you really get value.',
   'Rick and Morty schaust du auf HBO Max, nicht Netflix? Tipp im Subscriptions-Diagnose-Panel auf „verschieben" und alle vergangenen & künftigen Watches wandern korrekt zum gewählten Anbieter – inkl. Logo + Brand-Color überall.':
     'You watch Rick and Morty on HBO Max, not Netflix? Tap "move" in the subscriptions diagnostics panel and all past & future watches move correctly to the chosen provider – including logo + brand color everywhere.',
   'Auf der Subscriptions-Seite findest du alle Watchlist-Serien, die NUR auf Anbietern laufen, die du gerade nicht abonniert hast. Auf der Homepage erscheint außerdem eine Notification, wenn eine neue Staffel auf einem nicht-abonnierten Provider startet.':
@@ -219,7 +219,7 @@ const dict: Record<string, string> = {
   'Recaps werden nicht mehr automatisch geladen – erst wenn du auf "Recap lesen" klickst. Spart KI-Anfragen und lädt schneller.':
     'Recaps are no longer loaded automatically – only when you click "Read recap". Saves AI requests and loads faster.',
   'Neue Glassmorphism-Navigation mit Glow-Effekt auf dem aktiven Tab. Bessere Lesbarkeit der inaktiven Icons.':
-    'New glassmorphism navigation with a glow effect on the active tab. Better readability of the inactive icons.',
+    'New glassmorphism navigation with a glow effect on the active tab. The inactive icons are easier to read.',
   'Neue Wochenansicht mit Navigation, Desktop-Grid-Layout mit 7-Spalten und automatische Episoden-Gruppierung pro Serie.':
     'New week view with navigation, a 7-column desktop grid layout and automatic episode grouping per show.',
   'Progress-Bars auf jeder Watchlist-Karte zeigen wie weit du bist – mit Staffel-Info und verbleibenden Episoden.':
@@ -229,7 +229,7 @@ const dict: Record<string, string> = {
   'Filtere deine Watchlist nach Streaming-Anbieter – zeige nur Netflix, Disney+ oder andere.':
     'Filter your watchlist by streaming provider – show only Netflix, Disney+ or others.',
   'Rewatches zeigen jetzt ihren eigenen Fortschritt statt den der Original-Serie.':
-    'Rewatches now show their own progress instead of that of the original show.',
+    "Rewatches now show their own progress, not the original show's.",
   'Wähle Staffel und Episode – alles davor wird automatisch als gesehen markiert. Perfekt für Serien die du woanders geschaut hast.':
     'Pick a season and episode – everything before it is automatically marked as watched. Perfect for shows you watched elsewhere.',
   'Sektionen auf der Homepage sortieren, ausblenden und nach deinem Geschmack anpassen.':

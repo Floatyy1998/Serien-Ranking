@@ -7,7 +7,7 @@ const settings: Record<string, string> = {
   'Streaming-Land': 'Streaming country',
   'Auto (aus Gerätesprache)': 'Auto (from device language)',
   'Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.':
-    'Controls which country streaming providers are shown for.',
+    "Sets which country's streaming providers are shown.",
   Deutschland: 'Germany',
   Österreich: 'Austria',
   Schweiz: 'Switzerland',
@@ -86,7 +86,7 @@ const settings: Record<string, string> = {
   'Falsches Passwort.': 'Wrong password.',
   'Zu viele Versuche — bitte später erneut versuchen.':
     'Too many attempts — please try again later.',
-  'Bestätigung abgebrochen.': 'Confirmation cancelled.',
+  'Bestätigung abgebrochen.': 'Confirmation canceled.',
   'Löschen fehlgeschlagen. Bitte erneut versuchen.': 'Deletion failed. Please try again.',
 
   // SecuritySection
@@ -137,7 +137,7 @@ const settings: Record<string, string> = {
     'Get notified when a streaming provider changes',
   'Provider-Änderungs-Benachrichtigungen': 'Provider change notifications',
   'Erinnerungen kommen frühestens 30 Tage nach der letzten Anzeige wieder — selbst wenn die Serie weiter inaktiv ist. Schaust du eine Episode, wird die Erinnerung beim nächsten Inaktivwerden direkt wieder freigeschaltet.':
-    'Reminders come back at the earliest 30 days after they were last shown — even if the show stays inactive. Once you watch an episode, the reminder is re-armed the next time the show goes inactive.',
+    'Reminders come back no sooner than 30 days after they were last shown — even if the show stays inactive. Once you watch an episode, the reminder is re-armed the next time the show goes inactive.',
 
   // ThemePage
   'Farben anpassen': 'Customize colors',

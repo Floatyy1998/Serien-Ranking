@@ -226,7 +226,7 @@ const dict: Record<string, string> = {
   'Minuten pro Episode': 'Minutes per episode',
   'Deine Rekorde': 'Your Records',
   'Episoden insgesamt': 'Total episodes',
-  'Verschiedene Serien': 'Distinct series',
+  'Verschiedene Serien': 'Different series',
   'Längste Binge-Session': 'Longest binge session',
   'Keine Provider-Daten': 'No provider data',
   'Streaming-Dienste werden beim Markieren von Episoden erfasst. Schau etwas, um deine Streaming-Verteilung zu sehen!':

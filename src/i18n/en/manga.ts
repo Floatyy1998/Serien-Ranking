@@ -66,7 +66,7 @@ const dict: Record<string, string> = {
   'Zuletzt gelesen': 'Last read',
   '{n} offen': '{n} left',
   'Alles aufgeholt!': 'All caught up!',
-  'Du bist bei allen Manga auf dem aktuellen Stand.': 'You are up to date on all your manga.',
+  'Du bist bei allen Manga auf dem aktuellen Stand.': "You're all caught up on your manga.",
 
   // ─── Manga: Leseliste ──────────────────────────────────────
   'Fortschritt ↓': 'Progress ↓',
@@ -156,7 +156,7 @@ const dict: Record<string, string> = {
   Beschreibung: 'Description',
   'Kapitel-Releases': 'Chapter releases',
   'Nächstes Kapitel': 'Next chapter',
-  'Erscheint ca. alle {n} Tage': 'Releases about every {n} days',
+  'Erscheint ca. alle {n} Tage': 'New chapter roughly every {n} days',
   'Zurücksetzen?': 'Reset?',
   Ja: 'Yes',
   Nein: 'No',
@@ -220,7 +220,7 @@ const dict: Record<string, string> = {
   'Unbekannter Titel': 'Unknown title',
   '„{title}" hinzugefügt': '"{title}" added',
   'Hinzufügen fehlgeschlagen': 'Adding failed',
-  'Was läuft diese Anime-Season?': 'What is airing this anime season?',
+  'Was läuft diese Anime-Season?': "What's airing this anime season?",
   '{n} in deiner Liste': '{n} in your list',
   'Anime-Season': 'Anime Season',
   'Mit Provider': 'With provider',
