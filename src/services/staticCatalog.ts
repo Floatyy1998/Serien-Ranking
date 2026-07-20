@@ -966,6 +966,9 @@ export interface TvPremiereStaticEntry {
   title: string;
   originalTitle: string | null;
   overviewDe: string | null;
+  /** EN-Titel/-Beschreibung (Export seit Jul 2026); fehlen bei älteren Daten. */
+  titleEn?: string | null;
+  overviewEn?: string | null;
   poster: string | null;
   backdrop: string | null;
   rating: number | null;

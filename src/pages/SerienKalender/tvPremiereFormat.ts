@@ -71,6 +71,16 @@ export function shiftQuarter(date: Date, delta: number): Date {
   return new Date(date.getFullYear(), (quarterOf(date) + delta) * 3, 1);
 }
 
+/** Titel in App-Sprache — EN-Feld mit DE-Fallback (ältere Exporte ohne EN). */
+export function premiereTitle(entry: TvPremiereStaticEntry): string {
+  return (appLocale === 'en' && entry.titleEn) || entry.title;
+}
+
+/** Beschreibung in App-Sprache — EN-Feld mit DE-Fallback. */
+export function premiereOverview(entry: TvPremiereStaticEntry): string {
+  return (appLocale === 'en' && entry.overviewEn) || entry.overviewDe || '';
+}
+
 /** Karten-/Timeline-Badge aus dem Premieren-Typ: „Neu" (Primary) für eine
  *  ganz neue Serie, „Staffel N" (neutral) für einen Rückkehrer. */
 export function premiereBadge(entry: TvPremiereStaticEntry): {

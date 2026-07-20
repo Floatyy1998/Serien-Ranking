@@ -29,6 +29,8 @@ import {
   isSameDay,
   parsePremiereDate,
   premiereBadge,
+  premiereOverview,
+  premiereTitle,
 } from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 import { t } from '../../services/i18n';
@@ -151,13 +153,13 @@ export const SerienKalenderCard: React.FC<SerienKalenderCardProps> = ({
   /** Beschreibung aufgeklappt („mehr lesen" — navigiert NICHT). */
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = entry.title || t('Unbekannter Titel');
+  const title = premiereTitle(entry) || t('Unbekannter Titel');
   const cover = entry.poster || '';
   const providers = (entry.providers || []).filter(
     (p): p is LogoProvider => typeof p.logo === 'string' && p.logo.length > 0
   );
   const metaLine = buildMetaLine(entry);
-  const description = entry.overviewDe || '';
+  const description = premiereOverview(entry);
 
   const badge = premiereBadge(entry);
 

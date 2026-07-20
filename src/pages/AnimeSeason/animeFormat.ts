@@ -175,11 +175,12 @@ export function franchiseTitle(title: string): string | null {
   return base.length >= 4 ? base : null;
 }
 
-/** Timeline-Tages-Label: „FREITAG · 3. JULI". */
+/** Timeline-Tages-Label: „FREITAG · 3. JULI" bzw. „FRIDAY · JULY 3". */
 export function dayLabel(date: Date): string {
   const weekday = date.toLocaleDateString(DATE_LOCALE, { weekday: 'long' }).toUpperCase();
   const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
-  return `${weekday} · ${date.getDate()}. ${month}`;
+  const day = appLocale === 'en' ? `${month} ${date.getDate()}` : `${date.getDate()}. ${month}`;
+  return `${weekday} · ${day}`;
 }
 
 /** Relative Tages-Pill: „Gestern" / „Heute" / „Morgen" / „in 5 Tagen". */
@@ -193,14 +194,15 @@ export function relativeDayLabel(date: Date, now: Date): string | null {
   return null;
 }
 
-/** Prominentes Datums-Band für die Poster-Pill: „SA · 4. JULI". */
+/** Prominentes Datums-Band für die Poster-Pill: „SA · 4. JULI" bzw. „SAT · JULY 4". */
 export function datePillText(date: Date): string {
   const weekday = date
     .toLocaleDateString(DATE_LOCALE, { weekday: 'short' })
     .replace('.', '')
     .toUpperCase();
   const month = date.toLocaleDateString(DATE_LOCALE, { month: 'long' }).toUpperCase();
-  return `${weekday} · ${date.getDate()}. ${month}`;
+  const day = appLocale === 'en' ? `${month} ${date.getDate()}` : `${date.getDate()}. ${month}`;
+  return `${weekday} · ${day}`;
 }
 
 /** Große Hero-Startzeile: „Startet Samstag, 4. Juli" (+Jahr falls fremd). */

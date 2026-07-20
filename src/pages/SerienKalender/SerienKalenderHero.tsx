@@ -21,7 +21,13 @@ import { getOptimalTextColor, lightenColor } from '../../theme/colorUtils';
 import { useThemedPlaceholder } from '../../utils/themedPlaceholder';
 import { hapticTap } from '../../lib/haptics';
 import { MiniProviderBadges } from '../HomePage/sections/MiniProviderBadges';
-import { formatStartLong, isSameDay, parsePremiereDate } from './tvPremiereFormat';
+import {
+  formatStartLong,
+  isSameDay,
+  parsePremiereDate,
+  premiereOverview,
+  premiereTitle,
+} from './tvPremiereFormat';
 import type { TvPremiereStaticEntry } from '../../services/staticCatalog';
 import { t } from '../../services/i18n';
 
@@ -85,10 +91,10 @@ export const SerienKalenderHero: React.FC<SerienKalenderHeroProps> = ({
   const [now] = useState(() => new Date());
   const [descExpanded, setDescExpanded] = useState(false);
 
-  const title = entry.title || t('Unbekannter Titel');
+  const title = premiereTitle(entry) || t('Unbekannter Titel');
   const backdrop = entry.backdrop || '';
   const cover = entry.poster || '';
-  const description = entry.overviewDe || '';
+  const description = premiereOverview(entry);
   const providers = (entry.providers || []).filter(
     (p): p is { name: string; logo: string } => typeof p.logo === 'string' && p.logo.length > 0
   );
