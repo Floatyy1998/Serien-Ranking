@@ -122,15 +122,6 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
 
       hapticSuccess();
 
-      // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
-      requestEpisodeRating({
-        seriesId: series.id,
-        seriesTitle: series.title || series.name || episode.seriesTitle,
-        seasonIndex: episode.seasonIndex,
-        episodeId: epId,
-        label: ep?.name ? `${label} · ${ep.name}` : label,
-      });
-
       showUndoToast(
         t('{title} {episode} als gesehen markiert', { title: episode.seriesTitle, episode: label }),
         {
@@ -156,6 +147,15 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
             }
           },
           onCommit: async () => {
+            // Bewertungs-Prompt erst nach Ablauf des Undo-Fensters (Toast weg,
+            // Mark bleibt bestehen); gedrosselt auf max. 1×/Minute.
+            requestEpisodeRating({
+              seriesId: series.id,
+              seriesTitle: series.title || series.name || episode.seriesTitle,
+              seasonIndex: episode.seasonIndex,
+              episodeId: epId,
+              label: ep?.name ? `${label} · ${ep.name}` : label,
+            });
             // Side-Effects erst nach Ablauf des Undo-Fensters
             trackEpisodeWatched(
               series.title || series.name || 'Unbekannte Serie',

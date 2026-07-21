@@ -107,15 +107,6 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
     hapticSuccess();
     const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
 
-    // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
-    requestEpisodeRating({
-      seriesId: series.id,
-      seriesTitle: series.title,
-      seasonIndex,
-      episodeId,
-      label: next.episodeName ? `${label} · ${next.episodeName}` : label,
-    });
-
     showUndoToast(t('{title} {label} als gesehen markiert', { title: series.title, label }), {
       onUndo: async () => {
         try {
@@ -138,6 +129,15 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
         }
       },
       onCommit: async () => {
+        // Bewertungs-Prompt erst nach Ablauf des Undo-Fensters (Toast weg,
+        // Mark bleibt bestehen); gedrosselt auf max. 1×/Minute.
+        requestEpisodeRating({
+          seriesId: series.id,
+          seriesTitle: series.title,
+          seasonIndex,
+          episodeId,
+          label: next.episodeName ? `${label} · ${next.episodeName}` : label,
+        });
         trackEpisodeWatched(series.title, seasonNumber, episodeNumber, {
           tmdbId: series.id,
           genres: series.genre?.genres,

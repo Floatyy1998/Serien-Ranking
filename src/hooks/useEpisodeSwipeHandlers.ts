@@ -201,15 +201,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
 
         hapticSuccess();
 
-        // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
-        requestEpisodeRating({
-          seriesId: item.id,
-          seriesTitle: item.title,
-          seasonIndex: item.nextEpisode.seasonIndex,
-          episodeId: item.nextEpisode.episodeId,
-          label,
-        });
-
         showUndoToast(t('{title} {label} als gesehen markiert', { title: item.title, label }), {
           onUndo: async () => {
             setHiddenContinueEpisodes((prev) => {
@@ -230,6 +221,15 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
             }
           },
           onCommit: async () => {
+            // Bewertungs-Prompt erst nach Ablauf des Undo-Fensters (Toast weg,
+            // Mark bleibt bestehen); gedrosselt auf max. 1×/Minute.
+            requestEpisodeRating({
+              seriesId: item.id,
+              seriesTitle: item.title,
+              seasonIndex: item.nextEpisode.seasonIndex,
+              episodeId: item.nextEpisode.episodeId,
+              label,
+            });
             trackEpisodeWatched(
               item.title,
               item.nextEpisode.seasonNumber,
@@ -304,15 +304,6 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           `${episode.seriesTitle} ${label} (Heute-Swipe)`
         );
 
-        // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
-        requestEpisodeRating({
-          seriesId: Number(episode.seriesId),
-          seriesTitle: episode.seriesTitle,
-          seasonIndex: episode.seasonIndex,
-          episodeId: Number(episode.episodeId),
-          label,
-        });
-
         showUndoToast(
           t('{title} {label} als gesehen markiert', { title: episode.seriesTitle, label }),
           {
@@ -335,6 +326,15 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
               }
             },
             onCommit: async () => {
+              // Bewertungs-Prompt erst nach Ablauf des Undo-Fensters (Toast weg,
+              // Mark bleibt bestehen); gedrosselt auf max. 1×/Minute.
+              requestEpisodeRating({
+                seriesId: Number(episode.seriesId),
+                seriesTitle: episode.seriesTitle,
+                seasonIndex: episode.seasonIndex,
+                episodeId: Number(episode.episodeId),
+                label,
+              });
               trackEpisodeWatched(
                 episode.seriesTitle,
                 episode.seasonNumber,
