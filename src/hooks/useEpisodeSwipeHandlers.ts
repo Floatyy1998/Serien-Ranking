@@ -3,6 +3,7 @@ import { dbRef, dbUpdate, paths } from '../services/db/ref';
 import { useAuth } from '../contexts/AuthContext';
 import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../lib/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import { hapticSuccess } from '../lib/haptics';
 import { applyUserUpdate } from '../services/offline/queuedUpdate';
@@ -200,6 +201,15 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
 
         hapticSuccess();
 
+        // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
+        requestEpisodeRating({
+          seriesId: item.id,
+          seriesTitle: item.title,
+          seasonIndex: item.nextEpisode.seasonIndex,
+          episodeId: item.nextEpisode.episodeId,
+          label,
+        });
+
         showUndoToast(t('{title} {label} als gesehen markiert', { title: item.title, label }), {
           onUndo: async () => {
             setHiddenContinueEpisodes((prev) => {
@@ -293,6 +303,15 @@ export const useEpisodeSwipeHandlers = (): EpisodeSwipeHandlersReturn => {
           episode.episodeId,
           `${episode.seriesTitle} ${label} (Heute-Swipe)`
         );
+
+        // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
+        requestEpisodeRating({
+          seriesId: Number(episode.seriesId),
+          seriesTitle: episode.seriesTitle,
+          seasonIndex: episode.seasonIndex,
+          episodeId: Number(episode.episodeId),
+          label,
+        });
 
         showUndoToast(
           t('{title} {label} als gesehen markiert', { title: episode.seriesTitle, label }),
