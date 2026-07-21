@@ -7,6 +7,9 @@ const fb = vi.hoisted(() => {
   const state = { dataByPath: {} as Record<string, unknown> };
   const ref = vi.fn((path: string) => ({
     once: async () => ({ val: () => state.dataByPath[path] ?? null }),
+    set: async (v: unknown) => {
+      state.dataByPath[path] = v;
+    },
   }));
   const database = Object.assign(() => ({ ref }), {});
   return { state, ref, database };

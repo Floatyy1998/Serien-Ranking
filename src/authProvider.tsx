@@ -7,6 +7,7 @@ import { AuthContext } from './contexts/AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from './services/db/ref';
+import { isEnglish } from './services/i18n';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -201,6 +202,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 // language …) nicht überschreiben.
                 await userRef.update(userData);
                 setOnboardingComplete(false);
+
+                // Willkommens-Notification beim Erstlogin (Sprache = App-Sprache).
+                try {
+                  void userRef.child('notifications').push({
+                    type: 'welcome',
+                    title: isEnglish() ? 'Welcome to TV-Rank! 🎬' : 'Willkommen bei TV-Rank! 🎬',
+                    message: isEnglish()
+                      ? 'Great to have you here — have fun tracking your series and movies! If you run into any problems or have questions, just reach out via the little red bug icon. Thanks for being part of TV-Rank!'
+                      : 'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',
+                    timestamp: Date.now(),
+                    read: false,
+                  });
+                } catch {
+                  /* best-effort */
+                }
 
                 // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)
                 void syncUserSearchIndex(user.uid, userData);

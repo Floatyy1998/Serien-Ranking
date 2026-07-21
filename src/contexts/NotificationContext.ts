@@ -15,7 +15,10 @@ export interface AppNotification {
     | 'bug_ticket_reply'
     | 'bug_ticket_status'
     | 'accessory_drop'
-    | 'pending_accessory_drop';
+    | 'pending_accessory_drop'
+    | 'welcome'
+    | 'admin_message'
+    | 'data_heal';
   title: string;
   message: string;
   timestamp: number;

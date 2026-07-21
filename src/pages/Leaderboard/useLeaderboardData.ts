@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import {
   fetchGlobalLeaderboard,
   fetchLeaderboardData,
@@ -132,13 +133,40 @@ export function useLeaderboardData() {
 
         if (!user?.uid || loaded.length === 0) return;
         const latest = loaded[0];
-        const key = `trophy_celebrated_${latest.monthKey}`;
-        if (localStorage.getItem(key)) return;
         const entries = [latest.first, latest.second, latest.third];
         const idx = entries.findIndex((e) => e?.uid === user.uid);
         if (idx === -1) return;
+
+        // Gefeiert-Merker lebt in der DB (geräteübergreifend, überlebt
+        // localStorage-Löschung) — localStorage ist nur Lese-Cache.
+        const key = `trophy_celebrated_${latest.monthKey}`;
+        const dbPath = userPath(user.uid, 'leaderboardCelebrated', latest.monthKey);
+        if (localStorage.getItem(key)) {
+          dbRef(dbPath)
+            .set(true)
+            .catch(() => {});
+          return;
+        }
+        const alreadyCelebrated = await dbGet(dbPath).catch(() => null);
+        if (cancelled) return;
+        if (alreadyCelebrated) {
+          try {
+            localStorage.setItem(key, 'true');
+          } catch {
+            /* quota — Cache ist optional */
+          }
+          return;
+        }
+
         const [, m] = latest.monthKey.split('-');
-        localStorage.setItem(key, 'true');
+        dbRef(dbPath)
+          .set(true)
+          .catch(() => {});
+        try {
+          localStorage.setItem(key, 'true');
+        } catch {
+          /* quota — Cache ist optional */
+        }
         setCelebration({
           place: idx + 1,
           monthLabel: MONTH_NAMES[m] || m,

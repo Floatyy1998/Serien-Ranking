@@ -383,7 +383,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
                 ? 'chat'
                 : n.type === 'spoiler_flag'
                   ? 'flag'
-                  : n.type === 'discussion_like'
+                  : n.type === 'discussion_like' || n.type === 'welcome'
                     ? 'heart'
                     : 'chat',
       };
