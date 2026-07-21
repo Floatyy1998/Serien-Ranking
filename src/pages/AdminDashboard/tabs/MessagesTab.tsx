@@ -1,5 +1,6 @@
-import { Delete, Send } from '@mui/icons-material';
+import { Delete, NotificationsActive, Send } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
+import { backendFetch } from '../../../services/backendApi';
 import { dbRef } from '../../../services/db/ref';
 
 interface UserMessage {
@@ -28,6 +29,16 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   const [selectedUid, setSelectedUid] = useState('');
   const [text, setText] = useState('');
   const [search, setSearch] = useState('');
+
+  // In-App-Notification (users/$uid/notifications) — läuft über den
+  // admin-gesicherten Backend-Endpoint /admin/notify (Admin-SDK-Write).
+  const [notifSearch, setNotifSearch] = useState('');
+  const [notifTargets, setNotifTargets] = useState<Record<string, string>>({});
+  const [notifTitle, setNotifTitle] = useState('');
+  const [notifMessage, setNotifMessage] = useState('');
+  const [notifPush, setNotifPush] = useState(false);
+  const [notifSending, setNotifSending] = useState(false);
+  const [notifResult, setNotifResult] = useState('');
 
   const loadMessages = useCallback(() => {
     dbRef('admin/userMessages')
@@ -79,8 +90,272 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     );
   });
 
+  const notifFilteredUsers = Object.entries(users).filter(([uid, u]) => {
+    const q = notifSearch.toLowerCase();
+    return (
+      u.displayName?.toLowerCase().includes(q) ||
+      u.username?.toLowerCase().includes(q) ||
+      uid.toLowerCase().includes(q)
+    );
+  });
+
+  const handleSendNotification = async () => {
+    const uids = Object.keys(notifTargets);
+    if (!uids.length || !notifTitle.trim() || !notifMessage.trim() || notifSending) return;
+    setNotifSending(true);
+    setNotifResult('');
+    try {
+      const res = await backendFetch('/admin/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uids,
+          title: notifTitle.trim(),
+          message: notifMessage.trim(),
+          withPush: notifPush,
+        }),
+      });
+      const data = (await res.json()) as {
+        sent?: number;
+        results?: { uid: string; ok: boolean; error?: string }[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setNotifResult(`Fehler: ${data.error || res.status}`);
+      } else {
+        const failed = (data.results || []).filter((r) => !r.ok);
+        setNotifResult(
+          failed.length
+            ? `${data.sent} gesendet, ${failed.length} fehlgeschlagen: ${failed
+                .map((f) => `${f.uid.slice(0, 8)}… (${f.error})`)
+                .join(', ')}`
+            : `${data.sent} Notification(s) gesendet ✓`
+        );
+        if (!failed.length) {
+          setNotifTargets({});
+          setNotifTitle('');
+          setNotifMessage('');
+          setNotifPush(false);
+        }
+      }
+    } catch (e) {
+      setNotifResult(`Fehler: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setNotifSending(false);
+    }
+  };
+
+  const notifReady =
+    Object.keys(notifTargets).length > 0 &&
+    notifTitle.trim().length > 0 &&
+    notifMessage.trim().length > 0 &&
+    !notifSending;
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '10px 12px',
+    background: theme.background.default,
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: '8px',
+    color: theme.text.secondary,
+    fontSize: '13px',
+    outline: 'none',
+    boxSizing: 'border-box',
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* In-App-Notification (+ optional Push) über /admin/notify */}
+      <div
+        style={{
+          padding: '16px',
+          borderRadius: '12px',
+          background: theme.background.surface,
+          border: `1px solid rgba(255,255,255,0.06)`,
+        }}
+      >
+        <h3
+          style={{
+            margin: '0 0 12px',
+            fontSize: '14px',
+            color: theme.text.secondary,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <NotificationsActive style={{ fontSize: '16px', color: theme.primary }} />
+          In-App-Notification senden
+        </h3>
+
+        <input
+          type="text"
+          value={notifSearch}
+          onChange={(e) => setNotifSearch(e.target.value)}
+          placeholder="Empfänger suchen (Name oder UID)..."
+          style={{ ...inputStyle, marginBottom: '8px' }}
+        />
+
+        {notifSearch && (
+          <div
+            style={{
+              maxHeight: '150px',
+              overflowY: 'auto',
+              marginBottom: '8px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            {notifFilteredUsers.slice(0, 20).map(([uid, u]) => (
+              <div
+                key={uid}
+                onClick={() => {
+                  setNotifTargets((prev) => ({
+                    ...prev,
+                    [uid]: u.displayName || u.username || uid,
+                  }));
+                  setNotifSearch('');
+                }}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  background: notifTargets[uid] ? `${theme.primary}20` : theme.background.default,
+                  fontSize: '13px',
+                  color: theme.text.secondary,
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                }}
+              >
+                <strong>{u.displayName || u.username || 'Unbekannt'}</strong>
+                <span style={{ color: theme.text.muted, marginLeft: '8px', fontSize: '11px' }}>
+                  {uid.slice(0, 12)}...
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {Object.keys(notifTargets).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '8px' }}>
+            {Object.entries(notifTargets).map(([uid, name]) => (
+              <span
+                key={uid}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '4px 10px',
+                  borderRadius: '999px',
+                  background: `${theme.primary}15`,
+                  color: theme.primary,
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                {name}
+                <button
+                  onClick={() =>
+                    setNotifTargets((prev) => {
+                      const next = { ...prev };
+                      delete next[uid];
+                      return next;
+                    })
+                  }
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    color: theme.primary,
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontSize: '13px',
+                    lineHeight: 1,
+                  }}
+                  aria-label={`${name} entfernen`}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <input
+          type="text"
+          value={notifTitle}
+          onChange={(e) => setNotifTitle(e.target.value)}
+          maxLength={120}
+          placeholder="Titel..."
+          style={{ ...inputStyle, marginBottom: '8px' }}
+        />
+        <textarea
+          value={notifMessage}
+          onChange={(e) => setNotifMessage(e.target.value)}
+          maxLength={1000}
+          placeholder="Nachricht..."
+          rows={3}
+          style={{ ...inputStyle, resize: 'vertical', marginBottom: '8px' }}
+        />
+
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'wrap',
+          }}
+        >
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              color: theme.text.secondary,
+              cursor: 'pointer',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={notifPush}
+              onChange={(e) => setNotifPush(e.target.checked)}
+            />
+            Auch als Push senden
+          </label>
+          <button
+            onClick={handleSendNotification}
+            disabled={!notifReady}
+            style={{
+              marginLeft: 'auto',
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              background: notifReady ? theme.primary : `${theme.primary}30`,
+              color: notifReady ? theme.background.default : `${theme.primary}60`,
+              cursor: notifReady ? 'pointer' : 'default',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '13px',
+              fontWeight: 600,
+            }}
+          >
+            <Send style={{ fontSize: '16px' }} />
+            {notifSending ? 'Sendet…' : 'Notification senden'}
+          </button>
+        </div>
+
+        {notifResult && (
+          <div
+            style={{
+              marginTop: '8px',
+              fontSize: '12px',
+              color: notifResult.startsWith('Fehler') ? theme.status.error : theme.status.success,
+            }}
+          >
+            {notifResult}
+          </div>
+        )}
+      </div>
+
       {/* Neue Nachricht */}
       <div
         style={{
