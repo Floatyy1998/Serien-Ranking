@@ -289,6 +289,9 @@ const dict: Record<string, string> = {
     'Tap the bookmark icon on a series to make it show up here.',
   '{n} Serie wartet noch.': '{n} series is still waiting.',
   '{n} Serien warten noch.': '{n} series are still waiting.',
+  'Noch keine Serien in deiner Liste': 'No series in your list yet',
+  'Stöbere unter Entdecken oder such direkt nach deiner Lieblingsserie — sobald du eine hinzufügst, geht’s hier weiter.':
+    'Browse Discover or search for your favorite show — as soon as you add one, this is where you’ll pick it back up.',
 
   // TodayEpisodesSection
   'Heute Neu': 'New today',

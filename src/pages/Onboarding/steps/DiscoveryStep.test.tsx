@@ -49,10 +49,18 @@ describe('DiscoveryStep', () => {
     expect(screen.getByText('nutze die suche, um etwas hinzuzufügen')).toBeInTheDocument();
   });
 
-  it('renders suggestion cards and fires onNext from the CTA', () => {
+  it('keeps the CTA disabled until at least one item is picked', () => {
     const onNext = vi.fn<() => void>();
     render(<DiscoveryStep {...baseProps({ suggestions: [seriesItem], onNext })} />);
-    expect(screen.getByText('Fargo')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('weiter zu filmen'));
+    expect(onNext).not.toHaveBeenCalled();
+    expect(screen.getByText('wähle min. 1')).toBeInTheDocument();
+  });
+
+  it('renders suggestion cards and fires onNext once something is picked', () => {
+    const onNext = vi.fn<() => void>();
+    const pendingMap = new Map<string, OnboardingItem>([['series-3', seriesItem]]);
+    render(<DiscoveryStep {...baseProps({ suggestions: [seriesItem], pendingMap, onNext })} />);
     fireEvent.click(screen.getByText('weiter zu filmen'));
     expect(onNext).toHaveBeenCalledTimes(1);
   });

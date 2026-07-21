@@ -13,6 +13,7 @@ import {
   getGuestSubscriptions,
   type GuestPick,
 } from '../../services/guestOnboarding';
+import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { WatchStatusSheet } from '../Onboarding/components/WatchStatusSheet';
 import type { WatchTarget } from '../Onboarding/hooks/useApplyWatchProgress';
 import { useApplyWatchProgress } from '../Onboarding/hooks/useApplyWatchProgress';
@@ -55,10 +56,32 @@ export const GuestResumeOnboarding: React.FC = () => {
   const [sheetItem, setSheetItem] = useState<GuestPick | null>(null);
   const startedRef = useRef(false);
 
+  // Social-Sign-ups über den Gast-Flow haben noch keinen Usernamen — der ist
+  // auch hier Pflicht (der Resume ersetzt das volle Onboarding samt Namens-Schritt).
+  const [nameNeeded, setNameNeeded] = useState(false);
+  const [nameValue, setNameValue] = useState('');
+  const nameTooShort = nameNeeded && nameValue.trim().length < 3;
+
   const finalize = useCallback(
     async (finalTargets: Map<number, WatchTarget>) => {
       const uid = user?.uid;
       if (!uid) return;
+      if (nameNeeded) {
+        const name = nameValue.trim();
+        if (name.length < 3) return;
+        try {
+          await dbRef(userPath(uid)).update({
+            displayName: name,
+            displayNameLower: name.toLowerCase(),
+            username: name,
+            usernameLower: name.toLowerCase(),
+          });
+          void syncUserSearchIndex(uid, { username: name, displayName: name });
+          void user?.updateProfile({ displayName: name }).catch(() => {});
+        } catch {
+          /* best-effort — Name lässt sich später in den Einstellungen setzen */
+        }
+      }
       try {
         const obj: Record<number, WatchTarget> = {};
         for (const [id, tgt] of finalTargets.entries()) if (tgt.kind !== 'none') obj[id] = tgt;
@@ -71,7 +94,7 @@ export const GuestResumeOnboarding: React.FC = () => {
       clearGuestPicks();
       navigate('/', { replace: true });
     },
-    [user?.uid, applyWatchProgress, setOnboardingComplete, navigate]
+    [user, nameNeeded, nameValue, applyWatchProgress, setOnboardingComplete, navigate]
   );
 
   useEffect(() => {
@@ -82,6 +105,25 @@ export const GuestResumeOnboarding: React.FC = () => {
 
     (async () => {
       const { picks, subscriptions, pet } = data;
+
+      let unameMissing = false;
+      try {
+        const uname = (await dbGet(userPath(uid, 'username'))) as string | null;
+        if (!uname || String(uname).trim().length < 3) {
+          unameMissing = true;
+          const emailPrefix = (user?.email?.split('@')[0] || '').toLowerCase();
+          const candidate = (user?.displayName || '').trim();
+          const usable =
+            candidate.length >= 3 &&
+            candidate !== 'Unbekannt' &&
+            candidate.toLowerCase() !== emailPrefix;
+          setNameNeeded(true);
+          setNameValue(usable ? candidate : '');
+        }
+      } catch {
+        /* best-effort — im Zweifel nicht blockieren */
+      }
+
       const total = Math.max(picks.length + 2, 1);
       let done = 0;
       const tick = () => {
@@ -115,8 +157,8 @@ export const GuestResumeOnboarding: React.FC = () => {
         console.error('[guest-resume] apply error', e);
       }
       setProgress(100);
-      // Kein Watch-Fortschritt möglich → direkt fertig.
-      if (seriesPicks.length === 0) {
+      // Kein Watch-Fortschritt möglich → direkt fertig (außer der Name fehlt noch).
+      if (seriesPicks.length === 0 && !unameMissing) {
         void finalize(new Map());
       } else {
         setPhase('progress');
@@ -189,20 +231,22 @@ export const GuestResumeOnboarding: React.FC = () => {
                       color: 'var(--ob-paper)',
                     }}
                   >
-                    {t('Wo stehst du?')}
+                    {seriesPicks.length > 0 ? t('Wo stehst du?') : t('Fast geschafft')}
                   </h1>
-                  <p
-                    style={{
-                      marginTop: 8,
-                      color: 'var(--ob-text-mute)',
-                      fontFamily: 'var(--ob-font-display)',
-                      fontStyle: 'italic',
-                      fontSize: 'clamp(14px, 2.4vw, 18px)',
-                      maxWidth: 480,
-                    }}
-                  >
-                    {t('Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.')}
-                  </p>
+                  {seriesPicks.length > 0 && (
+                    <p
+                      style={{
+                        marginTop: 8,
+                        color: 'var(--ob-text-mute)',
+                        fontFamily: 'var(--ob-font-display)',
+                        fontStyle: 'italic',
+                        fontSize: 'clamp(14px, 2.4vw, 18px)',
+                        maxWidth: 480,
+                      }}
+                    >
+                      {t('Tippe eine Serie an und sag uns, bis wohin du sie schon geschaut hast.')}
+                    </p>
+                  )}
                 </div>
 
                 <div style={{ flex: 1, minHeight: 0, overflow: 'auto', paddingBottom: 16 }}>
@@ -284,19 +328,71 @@ export const GuestResumeOnboarding: React.FC = () => {
                   background: 'linear-gradient(180deg, transparent 0%, var(--ob-stage) 55%)',
                 }}
               >
-                <button onClick={() => finalize(targets)} className="ob-cta">
+                {nameNeeded && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: 8,
+                      marginBottom: 16,
+                    }}
+                  >
+                    <label
+                      htmlFor="ob-resume-name"
+                      className="ob-mono"
+                      style={{
+                        color: 'var(--ob-paper)',
+                        fontSize: 'clamp(15px, 2.4vw, 20px)',
+                        letterSpacing: '0.14em',
+                      }}
+                    >
+                      {t('Wie dürfen wir dich nennen?')}
+                    </label>
+                    <input
+                      id="ob-resume-name"
+                      className="ob-name-input"
+                      value={nameValue}
+                      onChange={(e) => setNameValue(e.target.value)}
+                      maxLength={24}
+                      placeholder={t('Dein Name')}
+                      autoComplete="nickname"
+                    />
+                  </div>
+                )}
+                <button
+                  onClick={() => finalize(targets)}
+                  disabled={nameTooShort}
+                  className="ob-cta"
+                >
                   <span className="ob-cta__inner">
                     <span>{t('fertig — los geht’s')}</span>
+                    {nameTooShort && (
+                      <>
+                        <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
+                        <span style={{ opacity: 0.55, fontSize: 11 }}>
+                          {t('name: min. 3 zeichen')}
+                        </span>
+                      </>
+                    )}
                   </span>
                   <span className="ob-cta__arrow">→</span>
                 </button>
-                <button
-                  onClick={() => finalize(new Map())}
-                  className="ob-link"
-                  style={{ margin: '8px auto 0', display: 'block' }}
-                >
-                  {t('überspringen')}
-                </button>
+                {seriesPicks.length > 0 && (
+                  <button
+                    onClick={() => finalize(new Map())}
+                    className="ob-link"
+                    disabled={nameTooShort}
+                    style={{
+                      margin: '8px auto 0',
+                      display: 'block',
+                      ...(nameTooShort ? { opacity: 0.35, cursor: 'not-allowed' } : null),
+                    }}
+                    title={nameTooShort ? t('name: min. 3 zeichen') : undefined}
+                  >
+                    {t('überspringen')}
+                  </button>
+                )}
               </div>
             </motion.div>
           )}

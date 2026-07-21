@@ -21,21 +21,21 @@ afterEach(() => {
 });
 
 describe('WelcomeStep', () => {
-  it('renders the curated genres and skip action', () => {
-    const onSkip = vi.fn<() => void>();
+  it('renders the curated genres without any skip action', () => {
     render(
-      <WelcomeStep
-        username="Alice"
-        selectedSlugs={[]}
-        onToggleGenre={() => {}}
-        onNext={() => {}}
-        onSkip={onSkip}
-      />
+      <WelcomeStep username="Alice" selectedSlugs={[]} onToggleGenre={() => {}} onNext={() => {}} />
     );
     expect(screen.getByText('Drama')).toBeInTheDocument();
     expect(screen.getByText('Action')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('jetzt nicht'));
-    expect(onSkip).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText('jetzt nicht')).not.toBeInTheDocument();
+  });
+
+  it('disables the next CTA until a genre is selected', () => {
+    render(
+      <WelcomeStep username="Alice" selectedSlugs={[]} onToggleGenre={() => {}} onNext={() => {}} />
+    );
+    const cta = screen.getByText('weiter').closest('button') as HTMLButtonElement;
+    expect(cta.disabled).toBe(true);
   });
 
   it('enables the next CTA once a genre is selected', () => {
@@ -46,7 +46,6 @@ describe('WelcomeStep', () => {
         selectedSlugs={['drama']}
         onToggleGenre={() => {}}
         onNext={onNext}
-        onSkip={() => {}}
       />
     );
     const cta = screen.getByText('weiter').closest('button') as HTMLButtonElement;

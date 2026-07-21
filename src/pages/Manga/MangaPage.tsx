@@ -151,6 +151,7 @@ export const MangaPage = () => {
             totalUnreadBadge={notifs.totalUnreadBadge}
             onNotificationsOpen={() => setShowNotifications(true)}
             photoURL={photoURL}
+            displayName={user?.displayName}
           />
         </motion.div>
       </header>

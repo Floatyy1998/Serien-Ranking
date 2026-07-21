@@ -165,8 +165,16 @@ afterEach(() => {
 
 describe('ContinueWatchingSection', () => {
   it('renders nothing when there are no items and no waiting watchlist series', () => {
+    h.seriesList = [{ id: 9, watchlist: false, seasons: [{ episodes: [{ watched: true }] }] }];
     const { container } = renderT({ items: [] });
     expect(container.firstChild).toBeNull();
+  });
+
+  it('renders the discover prompt when the user has no series at all', () => {
+    renderT({ items: [] });
+    expect(screen.getByText('Noch keine Serien in deiner Liste')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Noch keine Serien in deiner Liste'));
+    expect(h.navigate).toHaveBeenCalledWith('/discover');
   });
 
   it('renders the empty-watchlist prompt when unwatched aired series are waiting', () => {

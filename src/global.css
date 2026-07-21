@@ -461,6 +461,10 @@ textarea[style*='outline']:focus-visible {
   outline: none !important;
   box-shadow: none !important;
 }
+.ob-name-input:focus-visible {
+  outline: none !important;
+  box-shadow: 0 14px 28px -18px rgba(244, 237, 224, 0.55) !important;
+}
 
 /* Skip navigation link */
 .skip-to-content {

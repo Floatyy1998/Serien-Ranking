@@ -68,9 +68,11 @@ const buttonSx = {
 interface SocialLoginButtonsProps {
   onError: (message: string) => void;
   disabled?: boolean;
+  /** „oder weiter mit"-Trenner oben ausblenden (wenn die Buttons zuerst stehen). */
+  hideDivider?: boolean;
 }
 
-export const SocialLoginButtons = ({ onError, disabled }: SocialLoginButtonsProps) => {
+export const SocialLoginButtons = ({ onError, disabled, hideDivider }: SocialLoginButtonsProps) => {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<SocialProvider | null>(null);
 
@@ -97,12 +99,14 @@ export const SocialLoginButtons = ({ onError, disabled }: SocialLoginButtonsProp
   };
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
-        <Typography sx={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '0.85rem', px: 1 }}>
-          {t('oder weiter mit')}
-        </Typography>
-      </Divider>
+    <Box sx={{ mt: hideDivider ? 0 : 3 }}>
+      {!hideDivider && (
+        <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <Typography sx={{ color: 'rgba(255, 255, 255, 0.45)', fontSize: '0.85rem', px: 1 }}>
+            {t('oder weiter mit')}
+          </Typography>
+        </Divider>
+      )}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
         <Button
           fullWidth

@@ -56,6 +56,23 @@ describe('HeaderActions', () => {
     expect(onOpen).toHaveBeenCalledTimes(1);
   });
 
+  it('shows the name initial when there is no profile photo', () => {
+    render(
+      <HeaderActions
+        totalUnreadBadge={0}
+        onNotificationsOpen={vi.fn()}
+        photoURL={null}
+        displayName="Konrad"
+      />
+    );
+    expect(screen.getByText('K')).toBeInTheDocument();
+  });
+
+  it('shows a person icon when there is neither photo nor name', () => {
+    render(<HeaderActions totalUnreadBadge={0} onNotificationsOpen={vi.fn()} photoURL={null} />);
+    expect(screen.getByTestId('PersonIcon')).toBeInTheDocument();
+  });
+
   it('navigates to the profile when the avatar is clicked', () => {
     render(<HeaderActions totalUnreadBadge={0} onNotificationsOpen={vi.fn()} photoURL={null} />);
     fireEvent.click(screen.getByRole('button', { name: 'Profil und weitere Bereiche öffnen' }));

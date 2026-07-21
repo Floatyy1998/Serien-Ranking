@@ -1,4 +1,4 @@
-import { Notifications } from '@mui/icons-material';
+import { Notifications, Person } from '@mui/icons-material';
 import { Badge } from '@mui/material';
 import { motion } from 'framer-motion';
 import React from 'react';
@@ -10,15 +10,18 @@ interface HeaderActionsProps {
   totalUnreadBadge: number;
   onNotificationsOpen: () => void;
   photoURL: string | undefined | null;
+  displayName?: string | null;
 }
 
 export const HeaderActions = React.memo(function HeaderActions({
   totalUnreadBadge,
   onNotificationsOpen,
   photoURL,
+  displayName,
 }: HeaderActionsProps) {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const initial = (displayName || '').trim().charAt(0).toUpperCase();
 
   const bellButton = (
     <motion.button
@@ -75,8 +78,27 @@ export const HeaderActions = React.memo(function HeaderActions({
           background: photoURL ? `url(${photoURL}) center/cover` : `${currentTheme.primary}30`,
           border: `2px solid ${currentTheme.primary}`,
           cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-      />
+      >
+        {!photoURL &&
+          (initial ? (
+            <span
+              style={{
+                fontSize: 18,
+                fontWeight: 800,
+                lineHeight: 1,
+                color: currentTheme.text.primary,
+              }}
+            >
+              {initial}
+            </span>
+          ) : (
+            <Person style={{ fontSize: 22, color: currentTheme.text.primary }} />
+          ))}
+      </motion.button>
     </div>
   );
 });

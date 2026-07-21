@@ -122,9 +122,18 @@
   white-space: nowrap;
 }
 
+/* Lange Labels („Bewertungen", „Statistiken") schrumpfen statt zu clippen */
+.nav-label--long {
+  font-size: 9px;
+  letter-spacing: 0;
+}
+
 @media (max-width: 379px) {
   .nav-label {
     font-size: 9px;
+  }
+  .nav-label--long {
+    font-size: 8px;
   }
 }
 

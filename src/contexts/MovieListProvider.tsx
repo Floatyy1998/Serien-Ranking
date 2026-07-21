@@ -8,7 +8,6 @@ import { MovieListContext } from './MovieListContext';
 import {
   fetchStaticCatalogMovies,
   fetchStaticCatalogMoviesFresh,
-  clearStaticCatalogCache,
   subscribeCatalogChange,
 } from '../services/staticCatalog';
 
@@ -43,38 +42,34 @@ export const MovieListProvider = ({ children }: { children: React.ReactNode }) =
     async (forceFresh: boolean = false) => {
       if (!userMovieRefs || Object.keys(userMovieRefs).length === 0) return;
       setCatalogLoading(true);
-      if (forceFresh) clearStaticCatalogCache();
 
-      // 1) Static-File (Stale-While-Revalidate liefert Cache sofort)
+      // forceFresh: gezielt moviesMeta frisch (no-store) — bewusst OHNE
+      // clearStaticCatalogCache(): das nukte alle Katalog-Caches und löste
+      // beim Onboarding einen Refetch-Sturm über alle Konsumenten aus.
       let merged: Record<string, CatalogMovie> | null = null;
-      try {
-        merged = await fetchStaticCatalogMovies();
-      } catch {
-        // ignore
+      if (forceFresh) {
+        try {
+          merged = await fetchStaticCatalogMoviesFresh();
+        } catch {
+          // weiter mit Cache-Pfad
+        }
       }
 
-      // 2) Wenn komplett leer: einmal force-fresh
+      // Static-File (Stale-While-Revalidate liefert Cache sofort)
+      if (!merged) {
+        try {
+          merged = await fetchStaticCatalogMovies();
+        } catch {
+          // ignore
+        }
+      }
+
+      // Wenn komplett leer: einmal force-fresh
       if (!merged) {
         try {
           merged = await fetchStaticCatalogMoviesFresh();
         } catch (e) {
           console.warn('[catalog] retry fresh fetch failed', e);
-        }
-      }
-
-      // 3) Bei forceFresh + fehlenden IDs explizit nachladen.
-      //    Der periodische Versions-Bump-Check pflegt stale Daten ohnehin nach.
-      if (forceFresh && merged) {
-        const currentMerged = merged;
-        const userIds = Object.keys(userMovieRefs);
-        const missingIds = userIds.filter((id) => !currentMerged[id]);
-        if (missingIds.length > 0) {
-          try {
-            const freshData = await fetchStaticCatalogMoviesFresh();
-            if (freshData) merged = freshData;
-          } catch (e) {
-            console.warn('[catalog] fresh refetch failed', e);
-          }
         }
       }
 

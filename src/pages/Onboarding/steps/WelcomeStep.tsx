@@ -22,7 +22,6 @@ interface Props {
   selectedSlugs: string[];
   onToggleGenre: (slug: string) => void;
   onNext: () => void;
-  onSkip: () => void;
   /** Gast-Flow hat oben schon eine Fortschrittsleiste — innere „Programm"-Leiste ausblenden. */
   hideProgram?: boolean;
 }
@@ -65,7 +64,6 @@ export const WelcomeStep: React.FC<Props> = ({
   selectedSlugs,
   onToggleGenre,
   onNext,
-  onSkip,
   hideProgram = false,
 }) => {
   const [postersBySlug, setPostersBySlug] = useState<Record<string, string[]>>({});
@@ -131,17 +129,25 @@ export const WelcomeStep: React.FC<Props> = ({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.1 }}
-                  className="ob-mono"
                   style={{
-                    color: 'var(--ob-text-mute)',
-                    marginBottom: 10,
+                    marginBottom: 14,
                     display: 'flex',
-                    alignItems: 'baseline',
-                    gap: 10,
-                    flexWrap: 'wrap',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 8,
                   }}
                 >
-                  <label htmlFor="ob-name">{t('Wie dürfen wir dich nennen?')}</label>
+                  <label
+                    htmlFor="ob-name"
+                    className="ob-mono"
+                    style={{
+                      color: 'var(--ob-paper)',
+                      fontSize: 'clamp(15px, 2.4vw, 20px)',
+                      letterSpacing: '0.14em',
+                    }}
+                  >
+                    {t('Wie dürfen wir dich nennen?')}
+                  </label>
                   <input
                     id="ob-name"
                     className="ob-name-input"
@@ -280,11 +286,6 @@ export const WelcomeStep: React.FC<Props> = ({
           </span>
           <span className="ob-cta__arrow">→</span>
         </button>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <button onClick={onSkip} className="ob-link">
-            {t('jetzt nicht')}
-          </button>
-        </div>
       </motion.div>
     </motion.div>
   );

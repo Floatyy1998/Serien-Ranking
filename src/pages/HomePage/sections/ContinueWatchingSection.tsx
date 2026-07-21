@@ -1,4 +1,4 @@
-import { Bookmark, PlayCircle } from '@mui/icons-material';
+import { Bookmark, PlayCircle, TravelExplore } from '@mui/icons-material';
 import { AnimatePresence } from 'framer-motion';
 import React, { useMemo } from 'react';
 import { EpisodeDiscussionButton } from '../../../components/Discussion';
@@ -108,7 +108,7 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   const accentColor = currentTheme.primary;
   const { getSeriesOverride, activeProviders } = useActiveSubscriptions();
   const { isMobile } = useDeviceType();
-  const { seriesList } = useSeriesList();
+  const { seriesList, loading: seriesLoading } = useSeriesList();
   const fillerCatalog = useAnimeFillerCatalog();
 
   // Per-item filler lookup – sourced from the shared static catalog
@@ -138,6 +138,61 @@ export const ContinueWatchingSection = React.memo(function ContinueWatchingSecti
   }, [seriesList]);
 
   if (items.length === 0) {
+    // Ganz frisches Konto: ohne einzige Serie wäre die Sektion sonst unsichtbar
+    // — stattdessen den Weg zur ersten Serie zeigen (nicht während des Ladens,
+    // sonst flackert der Hinweis bei jedem App-Start kurz auf).
+    if (seriesList.length === 0) {
+      if (seriesLoading) return null;
+      return (
+        <section style={{ marginBottom: '32px' }}>
+          <SectionHeader icon={<PlayCircle />} iconColor={accentColor} title={t('Weiterschauen')} />
+          <div style={{ padding: '0 20px' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/discover')}
+              style={{
+                width: '100%',
+                padding: '20px 16px',
+                background: `${accentColor}10`,
+                border: `1px dashed ${accentColor}55`,
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                textAlign: 'left',
+                color: currentTheme.text.primary,
+                fontFamily: 'inherit',
+              }}
+            >
+              <TravelExplore style={{ color: accentColor, fontSize: '28px', flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: isMobile ? '14px' : '15px',
+                    fontWeight: 600,
+                    marginBottom: '2px',
+                  }}
+                >
+                  {t('Noch keine Serien in deiner Liste')}
+                </div>
+                <div
+                  style={{
+                    fontSize: isMobile ? '12px' : '13px',
+                    color: currentTheme.text.muted,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {t(
+                    'Stöbere unter Entdecken oder such direkt nach deiner Lieblingsserie — sobald du eine hinzufügst, geht’s hier weiter.'
+                  )}
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+      );
+    }
     if (unwatchlistedWithUnwatched === 0) return null;
     return (
       <section style={{ marginBottom: '32px' }}>

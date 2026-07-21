@@ -98,7 +98,16 @@ export const OnboardingPage: React.FC = () => {
       .then((existing) => {
         if (cancelled || existing) return;
         setNameEditable(true);
-        setNameValue(user.displayName || user.email?.split('@')[0] || '');
+        // Nur einen ECHTEN Namen vorbefüllen. Der E-Mail-Präfix ist bei
+        // Social-Logins oft Müll (Apple-Relay: „7vy8946ydsdshf") — dann leer
+        // lassen, damit die Pflicht (min. 3 Zeichen) wirklich greift.
+        const emailPrefix = (user.email?.split('@')[0] || '').toLowerCase();
+        const candidate = (user.displayName || '').trim();
+        const usable =
+          candidate.length >= 3 &&
+          candidate !== 'Unbekannt' &&
+          candidate.toLowerCase() !== emailPrefix;
+        setNameValue(usable ? candidate : '');
       })
       .catch(() => {});
     return () => {
@@ -272,14 +281,6 @@ export const OnboardingPage: React.FC = () => {
     navigate,
   ]);
 
-  const handleSkip = useCallback(async () => {
-    if (!user?.uid) return;
-    await persistName();
-    await dbRef(userPath(user.uid, 'onboardingComplete')).set(true);
-    setOnboardingComplete?.(true);
-    navigate('/', { replace: true });
-  }, [user?.uid, persistName, setOnboardingComplete, navigate]);
-
   const currentStepIndex = STEPS.indexOf(step);
   const totalSteps = STEPS.length;
   const progressPct = ((currentStepIndex + 1) / totalSteps) * 100;
@@ -320,7 +321,6 @@ export const OnboardingPage: React.FC = () => {
               selectedSlugs={selectedSlugs}
               onToggleGenre={toggleGenre}
               onNext={handleWelcomeNext}
-              onSkip={handleSkip}
             />
           )}
           {step === 'series' && (

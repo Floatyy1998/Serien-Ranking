@@ -12,8 +12,9 @@ import { mergeToSeriesView } from '../lib/seriesAdapter';
 import {
   fetchStaticCatalogSeries,
   fetchStaticCatalogSeriesFresh,
+  fetchStaticCatalogSeasons,
   fetchStaticCatalogSeasonsBulk,
-  clearStaticCatalogCache,
+  fetchStaticCatalogSeasonsBulkFresh,
   subscribeCatalogChange,
 } from '../services/staticCatalog';
 
@@ -138,40 +139,35 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
     async (forceFresh: boolean = false) => {
       if (!userSeriesRefs || Object.keys(userSeriesRefs).length === 0) return;
       setCatalogLoading(true);
-      if (forceFresh) clearStaticCatalogCache();
 
-      // 1) Static-File versuchen (Stale-While-Revalidate liefert Cache sofort)
+      // forceFresh: gezielt seriesMeta frisch (no-store) — bewusst OHNE
+      // clearStaticCatalogCache(): das nukte früher ALLE Katalog-Caches
+      // (Movies, Filler, Premieren, Overlays …) und löste beim Onboarding
+      // einen Refetch-Sturm über alle Konsumenten aus.
       let merged: Record<string, CatalogSeries> | null = null;
-      try {
-        merged = await fetchStaticCatalogSeries();
-      } catch {
-        // weiter mit Fallback
+      if (forceFresh) {
+        try {
+          merged = await fetchStaticCatalogSeriesFresh();
+        } catch {
+          // weiter mit Cache-Pfad
+        }
       }
 
-      // 2) Wenn komplett leer (kein Cache, fetch fehlgeschlagen): einmal force-fresh
+      // Static-File (Stale-While-Revalidate liefert Cache sofort)
+      if (!merged) {
+        try {
+          merged = await fetchStaticCatalogSeries();
+        } catch {
+          // weiter mit Fallback
+        }
+      }
+
+      // Wenn komplett leer (kein Cache, fetch fehlgeschlagen): einmal force-fresh
       if (!merged) {
         try {
           merged = await fetchStaticCatalogSeriesFresh();
         } catch (e) {
           console.warn('[catalog] retry fresh fetch failed', e);
-        }
-      }
-
-      // 3) Falls Daten da sind aber User-IDs fehlen UND forceFresh angefordert wurde,
-      //    holen wir explizit frisch. Sonst nicht — der periodische Versions-Bump-
-      //    Check (visibilitychange / 5min-Poll) zieht stale Daten ohnehin nach,
-      //    und der separate Effect unten ruft refetchCatalog(true) bei Bedarf.
-      if (forceFresh && merged) {
-        const currentMerged = merged;
-        const userIds = Object.keys(userSeriesRefs);
-        const missingIds = userIds.filter((id) => !currentMerged[id]);
-        if (missingIds.length > 0) {
-          try {
-            const freshData = await fetchStaticCatalogSeriesFresh();
-            if (freshData) merged = freshData;
-          } catch (e) {
-            console.warn('[catalog] fresh refetch failed', e);
-          }
         }
       }
 
@@ -259,12 +255,20 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
       }
 
       if (bulk) {
-        const seasons: Record<string, Record<string, CatalogSeason>> = {};
-        for (const tmdbId of tmdbIds) {
-          seasons[tmdbId] = bulk[tmdbId] || {};
-        }
         seasonsLoadedRef.current = true;
-        setCatalogSeasons(seasons);
+        // Mergen statt ersetzen: parallel laufende Updater (refetchAfterAdd
+        // beim Onboarding, Versions-Watcher) arbeiten mit älteren Refs-
+        // Snapshots — ein Voll-Ersatz würde deren frisch gesetzte Staffeln
+        // wieder auf {} kippen (Serie zeigt dann dauerhaft „0 Staffeln").
+        setCatalogSeasons((prev) => {
+          const seasons = { ...prev };
+          for (const tmdbId of tmdbIds) {
+            const fresh = bulk[tmdbId];
+            if (fresh) seasons[tmdbId] = fresh;
+            else if (!seasons[tmdbId]) seasons[tmdbId] = {};
+          }
+          return seasons;
+        });
       }
       // Wenn bulk auch nach Retry null ist: bestehenden State NICHT ueberschreiben.
       // Sonst sieht der User ploetzlich Series ohne Staffel-Daten (= "keine
@@ -309,11 +313,15 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
           // versucht's erneut. KEIN Einzel-Fallback (293 parallele Requests
           // verstopfen den Connection-Pool).
           if (newBulk) {
-            const newSeasons: Record<string, Record<string, CatalogSeason>> = {};
-            for (const tmdbId of tmdbIds) {
-              newSeasons[tmdbId] = newBulk[tmdbId] || {};
-            }
-            setCatalogSeasons(newSeasons);
+            setCatalogSeasons((prev) => {
+              const newSeasons = { ...prev };
+              for (const tmdbId of tmdbIds) {
+                const fresh = newBulk[tmdbId];
+                if (fresh) newSeasons[tmdbId] = fresh;
+                else if (!newSeasons[tmdbId]) newSeasons[tmdbId] = {};
+              }
+              return newSeasons;
+            });
           }
         } catch {
           // silent fail — nicht den haupt-flow stoeren
@@ -500,20 +508,58 @@ export const SeriesListProvider = ({ children }: { children: React.ReactNode }) 
   // userSeriesRefs-Snapshot noch fehlen (Realtime-Listener feuert async nach
   // dem HTTP-Response), darum explizit in die Set-Liste aufnehmen — sonst
   // bleiben die Staffeln nach dem Add leer.
+  const refetchAfterAddInflightRef = useRef<Promise<{
+    meta: Record<string, CatalogSeries> | null;
+    bulk: Record<string, Record<string, CatalogSeason>> | null;
+  }> | null>(null);
   const refetchAfterAdd = useCallback(
     async (newSeriesId?: number | string) => {
-      clearStaticCatalogCache();
-      const [meta, bulk] = await Promise.all([
-        fetchStaticCatalogSeriesFresh(),
-        fetchStaticCatalogSeasonsBulk(),
-      ]);
+      // Ein geteilter In-Flight-Fetch für parallele Adds (Onboarding fügt
+      // mehrere Serien gleichzeitig hinzu): statt N× (Cache-Nuke + Voll-
+      // Download) laufen alle Aufrufer auf denselben frischen Fetch auf.
+      if (!refetchAfterAddInflightRef.current) {
+        refetchAfterAddInflightRef.current = (async () => {
+          const [meta, bulk] = await Promise.all([
+            fetchStaticCatalogSeriesFresh(),
+            fetchStaticCatalogSeasonsBulkFresh(),
+          ]);
+          return { meta, bulk };
+        })().finally(() => {
+          refetchAfterAddInflightRef.current = null;
+        });
+      }
+      const { meta, bulk } = await refetchAfterAddInflightRef.current;
       if (meta) setCatalogMeta(meta);
       if (bulk) {
-        const ids = new Set<string>(userSeriesRefs ? Object.keys(userSeriesRefs) : []);
-        if (newSeriesId != null) ids.add(String(newSeriesId));
-        const next: Record<string, Record<string, CatalogSeason>> = {};
-        for (const tmdbId of ids) next[tmdbId] = bulk[tmdbId] || {};
-        setCatalogSeasons(next);
+        // Funktional + additiv: beim Onboarding laufen mehrere Adds parallel —
+        // jeder Aufruf darf nur ergänzen, nie die Staffeln der anderen
+        // frisch hinzugefügten Serien wegersetzen.
+        setCatalogSeasons((prev) => {
+          const ids = new Set<string>([
+            ...Object.keys(prev),
+            ...(userSeriesRefs ? Object.keys(userSeriesRefs) : []),
+          ]);
+          if (newSeriesId != null) ids.add(String(newSeriesId));
+          const next: Record<string, Record<string, CatalogSeason>> = { ...prev };
+          for (const tmdbId of ids) {
+            const fresh = bulk[tmdbId];
+            if (fresh) next[tmdbId] = fresh;
+            else if (!next[tmdbId]) next[tmdbId] = {};
+          }
+          return next;
+        });
+      }
+      // Nachzügler: Serie wurde erst NACH Start des geteilten Fetchs in den
+      // Katalog exportiert → gezielt nur ihr kleines Einzel-File nachladen.
+      if (newSeriesId != null && bulk && !bulk[String(newSeriesId)]) {
+        try {
+          const single = await fetchStaticCatalogSeasons(newSeriesId);
+          if (single) {
+            setCatalogSeasons((prev) => ({ ...prev, [String(newSeriesId)]: single }));
+          }
+        } catch {
+          /* Auto-Refetch-Effekt deckt den Rest ab */
+        }
       }
     },
     [userSeriesRefs]

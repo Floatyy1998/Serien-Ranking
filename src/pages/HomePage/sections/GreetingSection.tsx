@@ -290,6 +290,7 @@ export const GreetingSection = React.memo(function GreetingSection({
               totalUnreadBadge={totalUnreadBadge}
               onNotificationsOpen={onNotificationsOpen}
               photoURL={photoURL}
+              displayName={displayName}
             />
           </div>
 

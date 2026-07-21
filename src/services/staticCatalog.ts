@@ -1294,6 +1294,40 @@ export async function fetchStaticCatalogMoviesFresh(): Promise<Record<
   }
 }
 
+/**
+ * seasonsAll.json garantiert frisch (no-store), ohne den restlichen
+ * Katalog-Cache anzufassen — für den Nach-/add-Refresh. Aktualisiert
+ * Memory- und IDB-Cache, damit Folge-Reads den frischen Stand sehen.
+ */
+export async function fetchStaticCatalogSeasonsBulkFresh(): Promise<Record<
+  string,
+  Record<string, CatalogSeason>
+> | null> {
+  try {
+    const url = `${CATALOG_BASE_URL}/seasonsAll.json?_=${Date.now()}`;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEFAULT_FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+      if (!res.ok) return null;
+      const data = (await res.json()) as Record<string, Record<string, CatalogSeason>>;
+      const version = await getRemoteVersion();
+      if (version != null) void idbSetVersioned(LS_SEASONS_BULK_KEY, version, data);
+      memorySeasonsBulk = (await withEnEpisodeBulk(data)) ?? data;
+      return memorySeasonsBulk;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  } catch {
+    return null;
+  }
+}
+
 export function clearStaticCatalogCache(): void {
   memoryMeta = null;
   memoryMovies = null;

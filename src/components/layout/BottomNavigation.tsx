@@ -240,7 +240,9 @@ export const BottomNavigation = () => {
                     <div className="nav-icon">{item.icon}</div>
                   )}
                 </div>
-                <span className="nav-label">{item.label}</span>
+                <span className={`nav-label${item.label.length > 9 ? ' nav-label--long' : ''}`}>
+                  {item.label}
+                </span>
               </motion.button>
             );
           })}

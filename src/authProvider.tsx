@@ -171,7 +171,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               const userRef = dbRef(paths.user(user.uid));
               const snapshot = await userRef.once('value');
 
-              if (!snapshot.exists()) {
+              // Neuling auch dann erkennen, wenn der Knoten schon als RUMPF
+              // existiert: beim (Social-)Erstlogin mounten App-Provider parallel
+              // und schreiben z. B. readTimes/language, BEVOR dieser Check läuft
+              // — dann wäre exists() true und der Nutzer bekäme nie ein
+              // Onboarding. Echte Bestandsnutzer haben immer ein uid-Feld
+              // (RegisterPage/dieser Zweig schreiben es seit jeher).
+              const existingData = snapshot.exists()
+                ? (snapshot.val() as Record<string, unknown>)
+                : null;
+              const isFreshAccount =
+                !existingData ||
+                (existingData.uid === undefined && existingData.onboardingComplete === undefined);
+
+              if (isFreshAccount) {
                 // Neuer Benutzer - nur grundlegende Daten setzen (Username wird in ProfileDialog gesetzt)
                 const userData = {
                   uid: user.uid,
@@ -184,7 +197,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   onboardingComplete: false,
                 };
 
-                await userRef.set(userData);
+                // update statt set: parallel entstandene Felder (readTimes,
+                // language …) nicht überschreiben.
+                await userRef.update(userData);
                 setOnboardingComplete(false);
 
                 // Self-Heal: Such-Index spiegeln (best-effort, wirft nie)

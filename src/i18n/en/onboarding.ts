@@ -94,6 +94,8 @@ const dict: Record<string, string> = {
   'wähle bis zu {max} richtungen': 'pick up to {max} directions',
   weiter: 'continue',
   'name: min. 3 zeichen': 'name: min. 3 characters',
+  'Fast geschafft': 'Almost there',
+  oder: 'or',
   'mit {n}': 'with {n}',
   'wähle min. 1': 'pick at least 1',
   'jetzt nicht': 'not now',
@@ -120,7 +122,6 @@ const dict: Record<string, string> = {
   'weiter zu filmen': 'on to movies',
   fertig: 'done',
   '{n} gewählt': '{n} picked',
-  'überspringen ok': 'skipping is fine',
 
   // --- Onboarding: Watch-Status & Episoden ---
   'Wo bist du bei': 'Where are you in',

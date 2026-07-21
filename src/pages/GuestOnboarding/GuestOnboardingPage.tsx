@@ -230,10 +230,6 @@ export const GuestOnboardingPage: React.FC = () => {
               selectedSlugs={selectedSlugs}
               onToggleGenre={toggleGenre}
               onNext={handleWelcomeNext}
-              onSkip={() => {
-                fetchSuggestions([]);
-                setStep('series');
-              }}
             />
           )}
 
@@ -383,9 +379,16 @@ export const GuestOnboardingPage: React.FC = () => {
 
               {authError && <div style={{ color: '#ff6b6b', fontSize: 13 }}>{authError}</div>}
 
-              <SocialLoginButtons onError={setAuthError} />
+              <SocialLoginButtons onError={setAuthError} hideDivider />
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--ob-line)' }} />
+                  <span className="ob-mono" style={{ color: 'var(--ob-text-mute)', fontSize: 11 }}>
+                    {t('oder')}
+                  </span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--ob-line)' }} />
+                </div>
                 <Link to="/register" className="ob-cta" style={{ textDecoration: 'none' }}>
                   <span className="ob-cta__inner">
                     <span>{t('mit e-mail registrieren')}</span>

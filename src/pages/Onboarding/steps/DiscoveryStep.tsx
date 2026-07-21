@@ -342,12 +342,12 @@ export const DiscoveryStep: React.FC<Props> = ({
             background: 'linear-gradient(180deg, transparent 0%, var(--ob-stage) 50%)',
           }}
         >
-          <button onClick={onNext} className="ob-cta">
+          <button onClick={onNext} disabled={addedCount === 0} className="ob-cta">
             <span className="ob-cta__inner">
               <span>{contentType === 'series' ? t('weiter zu filmen') : t('fertig')}</span>
               <span style={{ opacity: 0.55, fontSize: 11 }}>·</span>
               <span style={{ opacity: 0.55, fontSize: 11 }}>
-                {addedCount > 0 ? t('{n} gewählt', { n: addedCount }) : t('überspringen ok')}
+                {addedCount > 0 ? t('{n} gewählt', { n: addedCount }) : t('wähle min. 1')}
               </span>
             </span>
             <span className="ob-cta__arrow">→</span>
