@@ -53,6 +53,7 @@ vi.mock('@mui/icons-material', () => ({
   Android: () => null,
   Check: () => null,
   DesktopWindows: () => null,
+  ExpandMore: () => null,
   Language: () => null,
   Logout: () => null,
   PowerSettingsNew: () => null,
