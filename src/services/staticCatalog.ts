@@ -423,6 +423,26 @@ interface RegionProvidersOverlay {
   movies?: Record<string, RegionProviderEntry[]>;
 }
 
+/**
+ * Alle in der aktiven Watch-Region vorkommenden Provider-Namen, nach
+ * Häufigkeit sortiert (für dynamische Filterlisten). null bei Region DE
+ * (dort gilt die kuratierte Standard-Liste) oder fehlendem Overlay.
+ */
+export async function fetchRegionProviderNames(): Promise<string[] | null> {
+  const overlay = await getRegionProviders();
+  if (!overlay) return null;
+  const counts = new Map<string, number>();
+  for (const bucket of [overlay.series, overlay.movies]) {
+    for (const entries of Object.values(bucket || {})) {
+      for (const p of entries || []) {
+        if (p?.name) counts.set(p.name, (counts.get(p.name) || 0) + 1);
+      }
+    }
+  }
+  if (counts.size === 0) return null;
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([name]) => name);
+}
+
 async function getRegionProviders(): Promise<RegionProvidersOverlay | null> {
   if (watchRegion === 'DE') return null;
   if (memoryRegionProviders !== undefined) return memoryRegionProviders;

@@ -1,5 +1,6 @@
 import { Tooltip } from '@mui/material';
-import { genreMenuItems, providerMenuItems } from '../../config/menuItems';
+import { genreMenuItems } from '../../config/menuItems';
+import { useProviderMenuItems } from '../../hooks/useProviderMenuItems';
 import { csvIncludes, parseCsv, toggleCsv } from '../../lib/filters/multiSelectFilter';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
@@ -44,6 +45,8 @@ export const QuickFilterPanel: React.FC<QuickFilterPanelProps> = ({
   clearFilters,
 }) => {
   const { currentTheme } = useTheme();
+  // Provider-Chips passend zur Watch-Region (DE = kuratierte Liste).
+  const providerMenuItems = useProviderMenuItems();
 
   return (
     <div
