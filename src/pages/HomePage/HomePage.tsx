@@ -1,4 +1,5 @@
 import AutoAwesome from '@mui/icons-material/AutoAwesome';
+import Campaign from '@mui/icons-material/Campaign';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useDeferredValue, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -383,21 +384,63 @@ export const HomePage: React.FC = () => {
       <WrappedNotification />
 
       {adminMessage && (
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: -14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 24 }}
           style={{
             margin: '16px',
-            padding: '16px',
-            borderRadius: '12px',
-            background: `linear-gradient(135deg, ${currentTheme.background.surface}, ${currentTheme.background.default})`,
-            border: `1px solid ${currentTheme.accent || currentTheme.primary}30`,
-            textAlign: 'center',
-            fontSize: '15px',
-            fontWeight: 600,
-            color: currentTheme.accent || currentTheme.primary,
+            padding: '16px 18px',
+            borderRadius: '16px',
+            background: `linear-gradient(135deg, ${currentTheme.primary}2E 0%, ${currentTheme.primary}12 45%, ${currentTheme.background.surface} 100%)`,
+            border: `1.5px solid ${currentTheme.primary}66`,
+            boxShadow: `0 8px 32px ${currentTheme.primary}30, inset 0 1px 0 rgba(255,255,255,0.08)`,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
           }}
         >
-          {adminMessage}
-        </div>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: '12px',
+              background: `${currentTheme.primary}26`,
+              border: `1px solid ${currentTheme.primary}55`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Campaign style={{ color: currentTheme.primary, fontSize: 24 }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: currentTheme.primary,
+                marginBottom: '3px',
+              }}
+            >
+              {t('Nachricht vom TV-Rank Team')}
+            </div>
+            <div
+              style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                color: currentTheme.text.secondary,
+                lineHeight: 1.45,
+                overflowWrap: 'anywhere',
+              }}
+            >
+              {adminMessage}
+            </div>
+          </div>
+        </motion.div>
       )}
 
       {/* Unified Series-Notification Hub — Tab-Bar + Mini-Mode + alle Kategorien */}
