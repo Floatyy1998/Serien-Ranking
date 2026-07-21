@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useMemo, useState } from 'react';
 
 import { getImageUrl } from '../../utils/imageUrl';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
 import type { ItemCardProps } from './discoverItemHelpers';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 import { tapScale } from '../../lib/motion';
@@ -17,6 +18,15 @@ export const ItemCard = memo(
     const [showInfo, setShowInfo] = useState(false);
 
     const imageUrl = useMemo(() => getImageUrl(item.poster_path, 'w500'), [item.poster_path]);
+
+    // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
+    const communityMap = useCommunityRatingsMap();
+    const displayRating = pickDisplayRating(
+      communityMap,
+      item.media_type === 'movie' ? 'movies' : 'series',
+      item.id,
+      item.vote_average
+    );
 
     const handlePosterClick = useCallback(() => {
       if (showInfo) {
@@ -47,7 +57,7 @@ export const ItemCard = memo(
           boxShadow={`0 6px 20px ${currentTheme.background.default}80`}
           style={{ marginBottom: '10px' }}
         >
-          {item.vote_average > 0 && (
+          {displayRating && (
             <div
               style={{
                 position: 'absolute',
@@ -70,10 +80,10 @@ export const ItemCard = memo(
               <Star
                 style={{
                   fontSize: '14px',
-                  color: currentTheme.accent,
+                  color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
                 }}
               />
-              {item.vote_average.toFixed(1)}
+              {displayRating.value.toFixed(1)}
             </div>
           )}
 

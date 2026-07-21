@@ -14,6 +14,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
 import { useDetailRecommendations } from '../../hooks/useDetailRecommendations';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
 import { useTransitionNavigate } from '../../hooks/useTransitionNavigate';
 import type { DiscoverItem } from '../../pages/Discover/discoverItemHelpers';
 import { HorizontalScrollContainer } from '../ui/HorizontalScrollContainer';
@@ -261,7 +262,16 @@ const MagneticCard = memo(
       item.release_date || item.first_air_date
         ? new Date(item.release_date || item.first_air_date || '').getFullYear()
         : null;
-    const rating = item.vote_average > 0 ? item.vote_average.toFixed(1) : null;
+    // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
+    const communityMap = useCommunityRatingsMap();
+    const displayRating = pickDisplayRating(
+      communityMap,
+      item.type === 'series' ? 'series' : 'movies',
+      item.id,
+      item.vote_average
+    );
+    const rating = displayRating ? displayRating.value.toFixed(1) : null;
+    const ratingColor = displayRating?.isCommunity ? currentTheme.primary : currentTheme.accent;
 
     const handleAdd = async (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -444,7 +454,7 @@ const MagneticCard = memo(
               {year && rating && <Dot />}
               {rating && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                  <Star style={{ fontSize: 11, color: currentTheme.accent }} />
+                  <Star style={{ fontSize: 11, color: ratingColor }} />
                   {rating}
                 </span>
               )}

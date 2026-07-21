@@ -1,8 +1,13 @@
 import { Check, SkipNext } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
+import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
+import { StarRatingRow } from '../../components/ui/StarRatingRow';
+import { setEpisodeRating } from '../../services/episodeRatingService';
+import { showToast } from '../../lib/toast';
 import { fillerLookupKey } from '../../services/animeFillerService';
 import { t } from '../../services/i18n';
 import { useEpisodeDiscussion } from './useEpisodeDiscussion';
@@ -21,6 +26,7 @@ import './EpisodeDiscussionPage.css';
 
 export const EpisodeDiscussionPage = memo(() => {
   const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
 
   const {
     seriesId,
@@ -54,6 +60,45 @@ export const EpisodeDiscussionPage = memo(() => {
     getStillUrl,
     getProfileUrl,
   } = useEpisodeDiscussion();
+
+  // Folgenbewertung: lokale Episode (userRating + id + seasonIndex) auflösen.
+  const localEpisode = useMemo(() => {
+    const sn = Number(seasonNumber);
+    const en = Number(episodeNumber);
+    if (!series?.seasons || !sn || !en) return null;
+    const seasonIndex = series.seasons.findIndex((s) => (s.seasonNumber ?? 0) + 1 === sn);
+    const episode = series.seasons[seasonIndex]?.episodes?.[en - 1];
+    if (seasonIndex === -1 || !episode?.id) return null;
+    return { seasonIndex, episodeId: episode.id, userRating: episode.userRating };
+  }, [series, seasonNumber, episodeNumber]);
+
+  const communityEpisodeRatings = useEpisodeRatings(series?.id);
+  const communityEntry = localEpisode
+    ? (communityEpisodeRatings?.[String(localEpisode.episodeId)] ?? null)
+    : null;
+
+  const handleRateEpisode = useCallback(
+    async (value: number | null) => {
+      if (!user || !series || !localEpisode) return;
+      try {
+        await setEpisodeRating(
+          user.uid,
+          series.id,
+          localEpisode.seasonIndex,
+          localEpisode.episodeId,
+          value
+        );
+        showToast(
+          value ? t('Folge mit {n}/10 bewertet', { n: value }) : t('Folgenbewertung entfernt'),
+          2000,
+          'success'
+        );
+      } catch {
+        showToast(t('Fehler beim Speichern'), 2500, 'error');
+      }
+    },
+    [user, series, localEpisode]
+  );
 
   // Anime filler/recap data – backend-driven, no direct AniList/Jikan calls.
   const animeFiller = useAnimeFillerData(series?.tmdb_id || series?.id, series?.seasons);
@@ -205,6 +250,51 @@ export const EpisodeDiscussionPage = memo(() => {
           getStillUrl={getStillUrl}
           navigate={navigate}
         />
+
+        {/* Folgenbewertung: eigene Sterne + Community-Durchschnitt */}
+        {hasUser && hasSeries && localEpisode && (
+          <div
+            style={{
+              margin: '12px 16px',
+              padding: '14px 16px',
+              borderRadius: '16px',
+              background: currentTheme.background.surface,
+              border: `1px solid ${currentTheme.border?.default || 'rgba(255,255,255,0.1)'}`,
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '12px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: currentTheme.text.muted,
+                marginBottom: '8px',
+              }}
+            >
+              {localEpisode.userRating
+                ? t('Deine Bewertung: {n}/10', { n: localEpisode.userRating })
+                : t('Folge bewerten')}
+            </div>
+            <StarRatingRow value={localEpisode.userRating} onSelect={handleRateEpisode} />
+            {communityEntry && (
+              <div
+                style={{
+                  marginTop: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: currentTheme.primary,
+                }}
+              >
+                {t('Community: {n}/10 ({c} Bewertungen)', {
+                  n: communityEntry.a,
+                  c: communityEntry.c,
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         <QuickActions
           currentTheme={currentTheme}

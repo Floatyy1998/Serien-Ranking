@@ -141,6 +141,16 @@ const dict: Record<string, string> = {
   'Episode {n} als gesehen markieren': 'Mark episode {n} as watched',
   'Episode {n} – Optionen anzeigen': 'Episode {n} – show options',
 
+  // Folgenbewertung + Community-Rating
+  'Folge mit {n}/10 bewertet': 'Episode rated {n}/10',
+  'Folgenbewertung entfernt': 'Episode rating removed',
+  'Deine Bewertung: {n}/10': 'Your rating: {n}/10',
+  'Folge bewerten': 'Rate this episode',
+  '{n} von 10': '{n} out of 10',
+  'Community: {n}/10 ({c} Bewertungen)': 'Community: {n}/10 ({c} ratings)',
+  'Wie war die Folge?': 'How was the episode?',
+  Später: 'Later',
+
   // useSeriesActions (Toasts/Dialoge)
   'Serie erfolgreich hinzugefügt!': 'Series added!',
   'Serie ist bereits in deiner Liste!': 'This series is already in your list!',

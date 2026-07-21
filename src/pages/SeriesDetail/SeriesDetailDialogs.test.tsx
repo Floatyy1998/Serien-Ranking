@@ -37,6 +37,7 @@ const baseProps = {
   setShowRewatchDialog: vi.fn(),
   handleEpisodeRewatch: vi.fn<() => Promise<void>>(),
   handleEpisodeUnwatch: vi.fn<() => Promise<void>>(),
+  handleEpisodeRate: vi.fn<() => Promise<void>>(),
   dialog: { open: false, message: '', type: 'info' as const },
   setDialog: vi.fn(),
   snackbar: { open: false, message: '' },

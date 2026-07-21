@@ -49,6 +49,7 @@ const LS_SEASONAL_ANIME_KEY = LS_PREFIX + 'seasonalAnime';
 const LS_ANIME_FILLER_KEY = LS_PREFIX + 'animeFiller';
 const LS_ANIME_MANGA_KEY = LS_PREFIX + 'animeManga';
 const LS_TV_PREMIERES_KEY = LS_PREFIX + 'tvPremieres';
+const LS_COMMUNITY_RATINGS_KEY = LS_PREFIX + 'communityRatings';
 const LS_EN_OVERLAY_KEY = LS_PREFIX + 'enOverlay';
 const LS_EN_EPISODES_KEY = LS_PREFIX + 'enEpisodes';
 const LS_REGION_PROVIDERS_PREFIX = LS_PREFIX + 'regionProviders:';
@@ -98,6 +99,8 @@ let memorySeasonalAnime: Record<string, SeasonalAnimeStaticEntry> | null = null;
 let memoryAnimeFiller: Record<string, AnimeFillerStaticEntry> | null = null;
 let memoryAnimeManga: Record<string, AnimeMangaStaticEntry> | null = null;
 let memoryTvPremieres: TvPremiereStaticEntry[] | null = null;
+let memoryCommunityRatings: CommunityRatings | null = null;
+const memoryEpisodeRatings = new Map<number, Record<string, CommunityRatingEntry> | null>();
 let memoryEnOverlay: EnOverlay | null | undefined = undefined;
 let memoryEnEpisodes: EnEpisodeNames | null | undefined = undefined;
 let memoryRegionProviders: RegionProvidersOverlay | null | undefined = undefined;
@@ -194,6 +197,7 @@ async function invalidateLocalCaches(opts?: { keepSeasonsBulk?: boolean }): Prom
     idbRemove(LS_ANIME_FILLER_KEY),
     idbRemove(LS_ANIME_MANGA_KEY),
     idbRemove(LS_TV_PREMIERES_KEY),
+    idbRemove(LS_COMMUNITY_RATINGS_KEY),
     idbRemove(LS_EN_OVERLAY_KEY),
     idbRemove(LS_EN_EPISODES_KEY),
     idbRemovePrefix(LS_REGION_PROVIDERS_PREFIX),
@@ -288,6 +292,8 @@ async function handleVersionBump(localV: number | null, remote: number): Promise
   memoryAnimeFiller = null;
   memoryAnimeManga = null;
   memoryTvPremieres = null;
+  memoryCommunityRatings = null;
+  memoryEpisodeRatings.clear();
   memoryEnOverlay = undefined;
   memoryEnEpisodes = undefined;
   memoryRegionProviders = undefined;
@@ -949,6 +955,75 @@ export async function fetchStaticAnimeManga(): Promise<Record<
   }
 }
 
+/** Anonymes Community-Rating aus catalog/community-ratings.json:
+ *  a = Durchschnitt (1 Dezimale), c = Anzahl Bewertungen (>= minRatings). */
+export interface CommunityRatingEntry {
+  a: number;
+  c: number;
+}
+
+export interface CommunityRatings {
+  series: Record<string, CommunityRatingEntry>;
+  movies: Record<string, CommunityRatingEntry>;
+}
+
+/**
+ * Lädt catalog/community-ratings.json (nächtlicher Backend-Export, anonyme
+ * Durchschnitte der TV-Rank-Nutzer ab 5 Bewertungen). Gleiche Cache-Strategie
+ * wie die übrigen Catalog-Files. null bei 404 (Export noch nicht vorhanden).
+ */
+export async function fetchStaticCommunityRatings(): Promise<CommunityRatings | null> {
+  if (memoryCommunityRatings) return memoryCommunityRatings;
+
+  const cached = await idbGetAny<CommunityRatings>(LS_COMMUNITY_RATINGS_KEY);
+  if (cached) {
+    memoryCommunityRatings = cached.data;
+    void revalidateInBackground(cached.v);
+    return cached.data;
+  }
+
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: CommunityRatings }>('community-ratings.json', {
+      version,
+    });
+    const entries = data.entries ?? { series: {}, movies: {} };
+    memoryCommunityRatings = entries;
+    void idbSetVersioned(LS_COMMUNITY_RATINGS_KEY, version, entries);
+    return entries;
+  } catch (e) {
+    if (!String(e).includes('404')) {
+      console.warn('[staticCatalog] community-ratings fetch failed', e);
+    }
+    return null;
+  }
+}
+
+/**
+ * Lädt catalog/episode-ratings/{seriesId}.json — anonyme Episoden-Durchschnitte
+ * (nur Serien mit mindestens einer Episode über der Bewertungs-Schwelle;
+ * 404 = keine Daten, wird pro Session gemerkt).
+ */
+export async function fetchStaticEpisodeRatings(
+  seriesId: number
+): Promise<Record<string, CommunityRatingEntry> | null> {
+  if (memoryEpisodeRatings.has(seriesId)) return memoryEpisodeRatings.get(seriesId) ?? null;
+  const version = await ensureVersionFresh();
+  try {
+    const data = await fetchJson<{ entries?: Record<string, CommunityRatingEntry> }>(
+      `episode-ratings/${seriesId}.json`,
+      { version }
+    );
+    const entries = data.entries ?? null;
+    memoryEpisodeRatings.set(seriesId, entries);
+    return entries;
+  } catch {
+    // 404 = normal (Serie hat keine Community-Episodenbewertungen)
+    memoryEpisodeRatings.set(seriesId, null);
+    return null;
+  }
+}
+
 /**
  * Ein Premieren-Eintrag aus catalog/tv-premieres.json — vom Backend-Cron
  * täglich vorgerechnet für ein rollierendes 3-Monats-Fenster (Vormonat ·
@@ -1208,6 +1283,8 @@ export function clearStaticCatalogCache(): void {
   memoryAnimeFiller = null;
   memoryAnimeManga = null;
   memoryTvPremieres = null;
+  memoryCommunityRatings = null;
+  memoryEpisodeRatings.clear();
   memoryEnOverlay = undefined;
   memoryEnEpisodes = undefined;
   memoryRegionProviders = undefined;

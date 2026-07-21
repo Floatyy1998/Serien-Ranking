@@ -5,6 +5,7 @@ import type { Series } from '../../types/Series';
 import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { NextEpisode } from '../../hooks/useWatchNextEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { t } from '../../services/i18n';
@@ -120,6 +121,15 @@ export const useWatchNextSwipe = ({ user, seriesList }: UseWatchNextSwipeOptions
       await applyUserUpdate(uid, updates, `${episode.seriesTitle} ${label} (Watch-Next-Swipe)`);
 
       hapticSuccess();
+
+      // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
+      requestEpisodeRating({
+        seriesId: series.id,
+        seriesTitle: series.title || series.name || episode.seriesTitle,
+        seasonIndex: episode.seasonIndex,
+        episodeId: epId,
+        label: ep?.name ? `${label} · ${ep.name}` : label,
+      });
 
       showUndoToast(
         t('{title} {episode} als gesehen markiert', { title: episode.seriesTitle, episode: label }),

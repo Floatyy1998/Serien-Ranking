@@ -18,6 +18,7 @@
  *   c: watchCount
  *   f: firstWatchedAt als Unix-Seconds (0/fehlend = nicht gesetzt)
  *   l: lastWatchedAt als Unix-Seconds (0/fehlend = nicht gesetzt)
+ *   r: Folgenbewertung des Nutzers 1–10 (fehlend = unbewertet)
  */
 
 // Types
@@ -27,6 +28,7 @@ export interface EpisodeWatchEntry {
   c?: number;
   f?: number;
   l?: number;
+  r?: number; // Folgenbewertung 1-10
 }
 
 export interface EpidSeason {
@@ -46,6 +48,8 @@ export interface EpisodeWatch {
   watchCount: number;
   firstWatchedAt?: string;
   lastWatchedAt?: string;
+  /** Eigene Folgenbewertung 1–10 (r-Feld), undefined = unbewertet. */
+  userRating?: number;
 }
 
 // Format Detection
@@ -83,6 +87,7 @@ export function readEpisodeById(
     watchCount: entry?.c ?? 0,
     firstWatchedAt: unixToIso(entry?.f),
     lastWatchedAt: unixToIso(entry?.l),
+    ...(typeof entry?.r === 'number' && entry.r > 0 ? { userRating: entry.r } : {}),
   };
 }
 

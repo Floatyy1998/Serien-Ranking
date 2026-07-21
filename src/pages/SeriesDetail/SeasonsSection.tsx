@@ -13,6 +13,7 @@ import {
   hasAnySeasonFullyWatched,
 } from '../../lib/validation/rewatch.utils';
 import { fillerLookupKey, type FillerEpisode } from '../../services/animeFillerService';
+import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
 import type { DynamicTheme } from '../../theme/dynamicTheme';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Series } from '../../types/Series';
@@ -90,6 +91,8 @@ export function SeasonsSection({
   fillerByKey,
 }: SeasonsSectionProps) {
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
+  // Anonyme Community-Episoden-Durchschnitte (ab 5 Bewertungen), lazy pro Serie.
+  const communityEpisodeRatings = useEpisodeRatings(series.id);
   const safeSeasonIndex = Math.min(
     Math.max(selectedSeasonIndex, 0),
     Math.max(series.seasons.length - 1, 0)
@@ -463,6 +466,55 @@ export function SeasonsSection({
                       mutedColor={currentTheme.text.muted}
                       accentColor={currentTheme.accent}
                     />
+
+                    {/* Eigene Folgenbewertung */}
+                    {episode.userRating ? (
+                      <span
+                        className="episode-rating-badge"
+                        title={t('Deine Bewertung: {n}/10', { n: episode.userRating })}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '2px 7px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          background: `${warningColor}26`,
+                          color: warningColor,
+                          border: `1px solid ${warningColor}55`,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        ★ {episode.userRating}
+                      </span>
+                    ) : null}
+
+                    {/* Community-Durchschnitt (ab 5 Bewertungen) */}
+                    {communityEpisodeRatings?.[String(episode.id)] ? (
+                      <span
+                        className="episode-rating-badge"
+                        title={t('Community: {n}/10 ({c} Bewertungen)', {
+                          n: communityEpisodeRatings[String(episode.id)].a,
+                          c: communityEpisodeRatings[String(episode.id)].c,
+                        })}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px',
+                          padding: '2px 7px',
+                          borderRadius: '10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          background: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
+                          color: currentTheme.primary,
+                          border: `1px solid color-mix(in srgb, ${currentTheme.primary} 33%, transparent)`,
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        Ø {communityEpisodeRatings[String(episode.id)].a.toFixed(1)}
+                      </span>
+                    ) : null}
 
                     {/* Filler / Recap marker */}
                     {fillerInfo && (

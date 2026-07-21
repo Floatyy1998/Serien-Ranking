@@ -90,6 +90,7 @@ export const SeriesDetailPage = memo(() => {
     handleHideToggle,
     handleEpisodeRewatch,
     handleEpisodeUnwatch,
+    handleEpisodeRate,
     handleEpisodeQuickToggle,
     handleStartRewatch,
     handleStopRewatch,
@@ -587,6 +588,7 @@ export const SeriesDetailPage = memo(() => {
         setShowRewatchDialog={setShowRewatchDialog}
         handleEpisodeRewatch={handleEpisodeRewatch}
         handleEpisodeUnwatch={handleEpisodeUnwatch}
+        handleEpisodeRate={handleEpisodeRate}
         dialog={dialog}
         setDialog={setDialog}
         snackbar={snackbar}

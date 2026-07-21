@@ -80,6 +80,7 @@ export function mergeToSeriesView(
         let watchCount = 0;
         let firstWatchedAt: string | undefined;
         let lastWatchedAt: string | undefined;
+        let userRating: number | undefined;
 
         const epidSeason = seasonWatch && isEpidSeason(seasonWatch) ? seasonWatch : null;
         const epidHit = epidSeason && ep.id != null ? epidSeason.eps[String(ep.id)] : undefined;
@@ -90,6 +91,7 @@ export function mergeToSeriesView(
           watchCount = cw.watchCount;
           firstWatchedAt = cw.firstWatchedAt;
           lastWatchedAt = cw.lastWatchedAt;
+          userRating = cw.userRating;
         } else if (seasonWatch && isLegacyArraySeason(seasonWatch)) {
           // Fallback wenn Season teil-migriert ist (eps existiert, aber diese
           // Episode steht noch im Legacy-Array). Sonst gehen vorher gesehene
@@ -121,6 +123,7 @@ export function mergeToSeriesView(
           watchCount,
           ...(firstWatchedAt ? { firstWatchedAt } : {}),
           ...(lastWatchedAt ? { lastWatchedAt } : {}),
+          ...(userRating ? { userRating } : {}),
         };
       });
 

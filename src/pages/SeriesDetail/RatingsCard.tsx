@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useCommunityRating } from '../../hooks/useCommunityRatings';
 import type { Series } from '../../types/Series';
 
 interface RatingsCardProps {
@@ -22,7 +23,10 @@ interface RatingBadge {
   value: string;
   votes: string;
   href: string;
+  /** Kein Link (pointer-events aus). */
   disabled: boolean;
+  /** Zusätzlich ausgegraut (fehlende Datenquelle) — TV-RANK ist nur nicht klickbar. */
+  dim?: boolean;
 }
 
 export const RatingsCard = memo<RatingsCardProps>(
@@ -40,6 +44,9 @@ export const RatingsCard = memo<RatingsCardProps>(
 
     const imdbId = series?.imdb?.imdb_id || localSeries?.imdb?.imdb_id || '';
     const hasImdb = !!imdbId;
+
+    // Anonymer Community-Durchschnitt der TV-Rank-Nutzer (ab 5 Bewertungen).
+    const community = useCommunityRating('series', seriesId);
 
     const badges: RatingBadge[] = [
       {
@@ -65,8 +72,24 @@ export const RatingsCard = memo<RatingsCardProps>(
         votes: `(${imdbRating ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1) : '0.0'}k)`,
         href: `https://www.imdb.com/title/${imdbId}`,
         disabled: !hasImdb,
+        dim: !hasImdb,
       },
     ];
+
+    if (community) {
+      badges.push({
+        key: 'tvrank',
+        label: 'TV-RANK',
+        labelBg: currentTheme.primary,
+        labelColor: currentTheme.background.default,
+        pillBg: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
+        pillBorder: `color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
+        value: `${community.a.toFixed(1)}/10`,
+        votes: `(${community.c})`,
+        href: '',
+        disabled: true,
+      });
+    }
 
     return (
       <div
@@ -74,6 +97,9 @@ export const RatingsCard = memo<RatingsCardProps>(
         style={{
           gap: isMobile ? '8px' : '12px',
           marginBottom: noMargin ? 0 : isMobile ? '12px' : '12px',
+          // Zentriert: ein umgebrochener dritter Chip (TV-RANK) strandet so
+          // nicht linksbündig, sondern sitzt mittig unter der ersten Reihe.
+          justifyContent: 'center',
         }}
       >
         {badges.map((badge) => (
@@ -88,13 +114,13 @@ export const RatingsCard = memo<RatingsCardProps>(
               background: badge.pillBg,
               borderColor: badge.pillBorder,
               fontSize: isMobile ? '12px' : '13px',
-              opacity: badge.disabled ? 0.5 : 1,
+              opacity: badge.dim ? 0.5 : 1,
               pointerEvents: badge.disabled ? 'none' : 'auto',
             }}
           >
             <span
               className="detail-ratings-card__label"
-              style={{ background: badge.labelBg, color: badge.labelColor }}
+              style={{ background: badge.labelBg, color: badge.labelColor, whiteSpace: 'nowrap' }}
             >
               {badge.label}
             </span>

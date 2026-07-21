@@ -45,6 +45,8 @@ export interface Series {
       watchCount?: number;
       firstWatchedAt?: string;
       lastWatchedAt?: string;
+      /** Eigene Folgenbewertung 1–10 (aus dem kompakten r-Feld). */
+      userRating?: number;
       runtime?: number;
       episode_number?: number; // TMDB format
       season_number?: number; // Vom seriesAdapter gesetzt (äußerer Season-Key als Quelle)

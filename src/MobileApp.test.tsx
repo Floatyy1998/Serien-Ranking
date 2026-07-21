@@ -38,6 +38,7 @@ vi.mock('./hooks/useNetworkStatus', () => ({ useNetworkStatus: () => {} }));
 vi.mock('./pages/BugReport/useBugReportData', () => ({ cleanupOldTickets: vi.fn() }));
 vi.mock('./services/pushNotifications', () => ({ initNativePush: vi.fn() }));
 vi.mock('./components/PushOptInPrompt', () => ({ PushOptInPrompt: () => null }));
+vi.mock('./components/EpisodeRatingSheetHost', () => ({ EpisodeRatingSheetHost: () => null }));
 
 vi.mock('./pages/HomePage', () => ({ HomePage: () => <div /> }));
 vi.mock('./pages/WatchNext', () => ({ WatchNextPage: () => <div /> }));

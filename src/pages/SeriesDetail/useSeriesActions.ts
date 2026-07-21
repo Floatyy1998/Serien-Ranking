@@ -305,6 +305,28 @@ export function useSeriesActions(
     [series, userId, showSnackbar]
   );
 
+  // Folgenbewertung (1–10) ins kompakte r-Feld; null entfernt die Bewertung.
+  const handleEpisodeRate = useCallback(
+    async (episode: SeriesEpisode, rating: number | null) => {
+      if (!series || !userId) return;
+      try {
+        const seasonIndex = series.seasons?.findIndex((s: SeriesSeason) =>
+          s.episodes?.some((e: SeriesEpisode) => e.id === episode.id)
+        );
+        if (seasonIndex == null || seasonIndex === -1) throw new Error('Episode not found');
+        if (!episode.id) throw new Error('Episode-ID fehlt');
+        const { setEpisodeRating } = await import('../../services/episodeRatingService');
+        await setEpisodeRating(userId, series.id, seasonIndex, episode.id, rating);
+        showSnackbar(
+          rating ? t('Folge mit {n}/10 bewertet', { n: rating }) : t('Folgenbewertung entfernt')
+        );
+      } catch {
+        setDialog({ open: true, message: t('Fehler beim Speichern.'), type: 'error' });
+      }
+    },
+    [series, userId, showSnackbar]
+  );
+
   const handleEpisodeUnwatch = useCallback(
     async (episode: SeriesEpisode) => {
       if (!series || !userId) return;
@@ -588,6 +610,7 @@ export function useSeriesActions(
     handleHideToggle,
     handleEpisodeRewatch,
     handleEpisodeUnwatch,
+    handleEpisodeRate,
     handleEpisodeQuickToggle,
     handleStartRewatch,
     handleStopRewatch,

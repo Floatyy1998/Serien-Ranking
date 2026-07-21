@@ -2,6 +2,7 @@ import { ChatBubbleOutline, Repeat, RemoveCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
+import { StarRatingRow } from '../../components/ui/StarRatingRow';
 import type { SeriesEpisode } from './types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -14,6 +15,8 @@ interface EpisodeActionSheetProps {
   episodeNumber: number;
   onRewatch: (episode: SeriesEpisode) => void;
   onUnwatch: (episode: SeriesEpisode) => void;
+  /** Folgenbewertung setzen (null = entfernen). Undefined blendet die Sterne aus. */
+  onRate?: (episode: SeriesEpisode, rating: number | null) => void;
   onNavigateToDiscussion: () => void;
   onClose: () => void;
 }
@@ -26,6 +29,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
   episodeNumber,
   onRewatch,
   onUnwatch,
+  onRate,
   onNavigateToDiscussion,
   onClose,
 }) => {
@@ -34,6 +38,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
 
   const watchCount = episode.watchCount || 1;
   const warningColor = currentTheme.status?.warning || '#f59e0b';
+  const userRating = episode.userRating || 0;
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Episode bearbeiten')}>
@@ -59,6 +64,24 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             S{seasonNumber} E{episodeNumber} &middot; {t('{n}x gesehen', { n: watchCount })}
           </p>
         </div>
+
+        {/* Folgenbewertung: Tap = setzen, Tap auf aktuellen Wert = entfernen */}
+        {onRate && (
+          <div style={{ marginBottom: '18px', textAlign: 'center' }}>
+            <p
+              style={{
+                fontSize: '12px',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
+                margin: '0 0 8px',
+              }}
+            >
+              {userRating ? t('Deine Bewertung: {n}/10', { n: userRating }) : t('Folge bewerten')}
+            </p>
+            <StarRatingRow value={userRating} onSelect={(value) => onRate(episode, value)} />
+          </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <motion.button

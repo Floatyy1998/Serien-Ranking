@@ -15,6 +15,7 @@ import { t } from './services/i18n';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
 import { PushOptInPrompt } from './components/PushOptInPrompt';
 import { WidgetDataSync } from './components/WidgetDataSync';
+import { EpisodeRatingSheetHost } from './components/EpisodeRatingSheetHost';
 import './styles/App.css';
 
 // Haupt-Tabs leben in MainTabs (Keep-Alive) — hier nur die übrigen Routen
@@ -195,6 +196,7 @@ export const MobileApp = () => {
       <ScrollToTop />
       <PushOptInPrompt />
       <WidgetDataSync />
+      <EpisodeRatingSheetHost />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <div style={{ display: isTabPath ? undefined : 'none' }}>

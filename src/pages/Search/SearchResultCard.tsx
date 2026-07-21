@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { memo, useMemo } from 'react';
 import { PosterFrame } from '../../components/ui/PosterFrame';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../hooks/useCommunityRatings';
 import { t } from '../../services/i18n';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SearchResult } from './useSearchPage';
@@ -32,6 +33,14 @@ export const SearchResultCard = memo(
 
     const label = item.title || item.name || '';
     const typeLabel = item.type === 'series' ? t('Serie') : t('Film');
+    // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
+    const communityMap = useCommunityRatingsMap();
+    const displayRating = pickDisplayRating(
+      communityMap,
+      item.type === 'series' ? 'series' : 'movies',
+      item.id,
+      item.vote_average
+    );
     const accentGradient = `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`;
     // WCAG-optimale Textfarbe auf der Primär-/Akzent-Gradientfläche (Type-Badge, Add-/Check-Button)
     const onAccent = useMemo(
@@ -62,18 +71,18 @@ export const SearchResultCard = memo(
               {/* Gradient Overlay */}
               <div className="search-result-gradient-overlay" />
 
-              {/* Rating Badge */}
-              {item.vote_average && item.vote_average > 0 && (
+              {/* Rating Badge — Community-Wert führt, Primärfarbe markiert ihn */}
+              {displayRating && (
                 <div
                   className={`search-rating-badge ${isDesktop ? 'search-rating-badge--desktop' : ''}`}
                 >
                   <Star
                     style={{
                       fontSize: isDesktop ? '12px' : '10px',
-                      color: currentTheme.accent,
+                      color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
                     }}
                   />
-                  {item.vote_average.toFixed(1)}
+                  {displayRating.value.toFixed(1)}
                 </div>
               )}
 

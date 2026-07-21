@@ -18,6 +18,7 @@ import { hapticSuccess } from '../lib/haptics';
 import { applyUserUpdate } from '../services/offline/queuedUpdate';
 import { showToast, showUndoToast } from '../lib/toast';
 import { runEpisodeWatchFanout } from '../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../lib/episodeRatingPrompt';
 import { trackEpisodeWatched } from '../services/firebase/analytics';
 import { getEpisodeAirDateStr, hasEpisodeAired } from '../utils/episodeDate';
 import { t } from '../services/i18n';
@@ -105,6 +106,15 @@ export async function markNextEpisodeWatched(uid: string, series: Series): Promi
 
     hapticSuccess();
     const providers = series.provider?.provider?.map((p: { name: string }) => p.name);
+
+    // Bewertungs-Prompt (gedrosselt: max. 1×/Minute — beim Durchklicken still).
+    requestEpisodeRating({
+      seriesId: series.id,
+      seriesTitle: series.title,
+      seasonIndex,
+      episodeId,
+      label: next.episodeName ? `${label} · ${next.episodeName}` : label,
+    });
 
     showUndoToast(t('{title} {label} als gesehen markiert', { title: series.title, label }), {
       onUndo: async () => {

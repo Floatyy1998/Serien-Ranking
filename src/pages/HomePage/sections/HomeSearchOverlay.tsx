@@ -17,6 +17,7 @@ import { useSeriesList } from '../../../contexts/SeriesListContext';
 import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUrl';
+import { pickDisplayRating, useCommunityRatingsMap } from '../../../hooks/useCommunityRatings';
 import { getOptimalTextColor } from '../../../theme/colorUtils';
 import { tapScale } from '../../../lib/motion';
 import { backendFetch } from '../../../services/backendApi';
@@ -43,6 +44,7 @@ interface HomeSearchOverlayProps {
 export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps) => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
+  const communityMap = useCommunityRatingsMap();
   const {
     query,
     setQuery,
@@ -177,6 +179,13 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
   const renderCard = (item: QuickResult, idx: number, delayStep: number) => {
     const added = isInList(item);
     const pending = pendingKey === keyOf(item);
+    // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
+    const displayRating = pickDisplayRating(
+      communityMap,
+      item.type === 'series' ? 'series' : 'movies',
+      item.id,
+      item.vote_average
+    );
     return (
       <motion.div
         key={keyOf(item)}
@@ -211,13 +220,18 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
               <Search style={{ fontSize: '28px', opacity: 0.4 }} />
             </div>
           )}
-          {item.vote_average ? (
+          {displayRating ? (
             <span
               className="hso__rating"
               style={{ background: `${currentTheme.background.default}d9` }}
             >
-              <Star style={{ fontSize: '12px', color: currentTheme.accent }} />
-              {item.vote_average.toFixed(1)}
+              <Star
+                style={{
+                  fontSize: '12px',
+                  color: displayRating.isCommunity ? currentTheme.primary : currentTheme.accent,
+                }}
+              />
+              {displayRating.value.toFixed(1)}
             </span>
           ) : null}
           <span

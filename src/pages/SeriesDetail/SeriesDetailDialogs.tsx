@@ -30,6 +30,7 @@ interface SeriesDetailDialogsProps {
   setShowRewatchDialog: (val: RewatchDialogState) => void;
   handleEpisodeRewatch: (episode: SeriesEpisode) => Promise<void>;
   handleEpisodeUnwatch: (episode: SeriesEpisode) => Promise<void>;
+  handleEpisodeRate: (episode: SeriesEpisode, rating: number | null) => Promise<void>;
   dialog: DialogState;
   setDialog: (val: DialogState) => void;
   snackbar: { open: boolean; message: string };
@@ -43,6 +44,7 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
   setShowRewatchDialog,
   handleEpisodeRewatch,
   handleEpisodeUnwatch,
+  handleEpisodeRate,
   dialog,
   setDialog,
   snackbar,
@@ -59,6 +61,7 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
       episodeNumber={showRewatchDialog.episodeNumber || 1}
       onRewatch={handleEpisodeRewatch}
       onUnwatch={handleEpisodeUnwatch}
+      onRate={handleEpisodeRate}
       onNavigateToDiscussion={() => {
         const sn = showRewatchDialog.seasonNumber || 1;
         const en = showRewatchDialog.episodeNumber || 1;

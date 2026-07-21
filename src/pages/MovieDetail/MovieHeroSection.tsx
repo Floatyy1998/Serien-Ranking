@@ -16,6 +16,7 @@ import type { Movie } from '../../types/Movie';
 import { getImageUrl } from '../../utils/imageUrl';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from './useMovieData';
+import { useCommunityRating } from '../../hooks/useCommunityRatings';
 
 interface MovieHeroSectionProps {
   movie: Movie;
@@ -67,6 +68,30 @@ export const MovieHeroSection = memo(
     onDeleteClick,
   }: MovieHeroSectionProps) => {
     const { currentTheme } = useTheme();
+    // Anonymer Community-Durchschnitt der TV-Rank-Nutzer (ab 5 Bewertungen).
+    const community = useCommunityRating('movies', id);
+    const renderCommunityBadge = (showCount: boolean) =>
+      community ? (
+        <span
+          className="md-rating-badge"
+          style={{
+            background: `color-mix(in srgb, ${currentTheme.primary} 15%, transparent)`,
+            borderColor: `color-mix(in srgb, ${currentTheme.primary} 30%, transparent)`,
+          }}
+        >
+          <span
+            className="md-rating-label"
+            style={{
+              background: currentTheme.primary,
+              color: currentTheme.background.default,
+            }}
+          >
+            TV-RANK
+          </span>
+          <span className="md-rating-value">{community.a.toFixed(1)}/10</span>
+          {showCount && <span className="md-rating-count">({community.c})</span>}
+        </span>
+      ) : null;
     const themedPlaceholder = useMemo(
       () =>
         buildThemedPlaceholderDataUrl(
@@ -357,6 +382,7 @@ export const MovieHeroSection = memo(
                       {imdbRating?.rating?.toFixed(1) || '0.0'}/10
                     </span>
                   </a>
+                  {renderCommunityBadge(false)}
                   {mergedDisplayProviders.length > 0 && (
                     <ProviderBadges
                       providers={mergedDisplayProviders}
@@ -534,6 +560,7 @@ export const MovieHeroSection = memo(
                       k)
                     </span>
                   </a>
+                  {renderCommunityBadge(true)}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {mergedDisplayProviders.length > 0 && (
