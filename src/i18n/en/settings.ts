@@ -114,9 +114,10 @@ const settings: Record<string, string> = {
   'Rechtliches & Datenquellen': 'Legal & data sources',
   Datenschutzerklärung: 'Privacy policy',
   Impressum: 'Legal notice',
-  'Analyse & Cookies': 'Analytics & cookies',
-  'Anonymisierte Nutzungsdaten zur Verbesserung der App':
-    'Anonymized usage data to improve the app',
+  'Analyse & Datenschutz': 'Analytics & privacy',
+  Nutzungsstatistiken: 'Usage statistics',
+  'Kontobezogene Nutzungsdaten zur Verbesserung der App — keine Drittanbieter':
+    'Account-linked usage data to improve the app — no third parties',
   Datenquellen: 'Data sources',
   'Streaming-Anbieter': 'Streaming providers',
   'Episoden-Informationen': 'Episode information',

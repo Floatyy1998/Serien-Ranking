@@ -1,4 +1,4 @@
-import { Cookie } from '@mui/icons-material';
+import { Insights } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useState } from 'react';
 import { getAnalyticsConsent, setAnalyticsConsent } from '../services/firebase/analytics';
@@ -90,7 +90,7 @@ export const CookieConsentBanner = memo(() => {
                   flexShrink: 0,
                 }}
               >
-                <Cookie style={{ fontSize: 20, color: COLORS.accent }} />
+                <Insights style={{ fontSize: 20, color: COLORS.accent }} />
               </div>
               <span
                 style={{
@@ -100,7 +100,7 @@ export const CookieConsentBanner = memo(() => {
                   letterSpacing: '-0.01em',
                 }}
               >
-                {t('Cookies & Datenschutz')}
+                {t('Nutzungsstatistiken erlauben?')}
               </span>
             </div>
 
@@ -114,7 +114,7 @@ export const CookieConsentBanner = memo(() => {
               }}
             >
               {t(
-                'Wir erfassen anonymisierte Nutzungsdaten zur Verbesserung der App. Die Einwilligung ist freiwillig und jederzeit in den'
+                'Mit deiner Einwilligung erfassen wir kontobezogene Nutzungsereignisse (z. B. besuchte Seiten), um die App zu verbessern. Keine Cookies, keine Drittanbieter. Jederzeit in den'
               )}{' '}
               <a
                 href="/settings"

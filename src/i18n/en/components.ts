@@ -235,9 +235,9 @@ const dict: Record<string, string> = {
 
   // BugFab / CookieConsentBanner / ErrorBoundary / ElectronUpdateToast
   'Bug melden': 'Report a bug',
-  'Cookies & Datenschutz': 'Cookies & privacy',
-  'Wir erfassen anonymisierte Nutzungsdaten zur Verbesserung der App. Die Einwilligung ist freiwillig und jederzeit in den':
-    'We collect anonymized usage data to improve the app. Consent is optional and can be revoked at any time in',
+  'Nutzungsstatistiken erlauben?': 'Allow usage statistics?',
+  'Mit deiner Einwilligung erfassen wir kontobezogene Nutzungsereignisse (z. B. besuchte Seiten), um die App zu verbessern. Keine Cookies, keine Drittanbieter. Jederzeit in den':
+    'With your consent we record account-linked usage events (e.g. visited pages) to improve the app. No cookies, no third parties. Revocable at any time in',
   ' widerrufbar.': '.',
   'Mehr erfahren': 'Learn more',
   Ablehnen: 'Decline',

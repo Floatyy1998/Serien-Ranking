@@ -82,7 +82,7 @@ export const LegalSection = memo(
           }}
         >
           <h3 className="settings-datasources-title" style={{ color: currentTheme.text.primary }}>
-            {t('Analyse & Cookies')}
+            {t('Analyse & Datenschutz')}
           </h3>
           <div
             style={{
@@ -94,10 +94,10 @@ export const LegalSection = memo(
           >
             <div style={{ flex: 1 }}>
               <div style={{ color: currentTheme.text.primary, fontSize: '14px' }}>
-                Firebase Analytics
+                {t('Nutzungsstatistiken')}
               </div>
               <div style={{ color: currentTheme.text.muted, fontSize: '12px', marginTop: '2px' }}>
-                {t('Anonymisierte Nutzungsdaten zur Verbesserung der App')}
+                {t('Kontobezogene Nutzungsdaten zur Verbesserung der App — keine Drittanbieter')}
               </div>
             </div>
             <label className="settings-toggle-switch" style={{ flexShrink: 0, marginLeft: '12px' }}>
@@ -106,7 +106,7 @@ export const LegalSection = memo(
                 checked={analyticsEnabled}
                 onChange={handleAnalyticsToggle}
                 className="settings-toggle-input"
-                aria-label="Firebase Analytics"
+                aria-label={t('Nutzungsstatistiken')}
               />
               <span
                 className="settings-toggle-track"

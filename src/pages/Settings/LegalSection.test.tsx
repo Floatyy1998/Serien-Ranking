@@ -69,7 +69,7 @@ describe('LegalSection', () => {
 
   it('persists the analytics consent when the toggle is switched on', () => {
     render(<LegalSection onNavigatePrivacy={vi.fn()} onNavigateImpressum={vi.fn()} />);
-    fireEvent.click(screen.getByLabelText('Firebase Analytics'));
+    fireEvent.click(screen.getByLabelText('Nutzungsstatistiken'));
     expect(setConsentMock).toHaveBeenCalledWith(true);
   });
 });

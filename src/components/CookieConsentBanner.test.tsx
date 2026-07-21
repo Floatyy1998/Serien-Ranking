@@ -72,7 +72,7 @@ describe('CookieConsentBanner', () => {
       vi.advanceTimersByTime(800);
     });
 
-    expect(screen.getByText('Cookies & Datenschutz')).toBeInTheDocument();
+    expect(screen.getByText('Nutzungsstatistiken erlauben?')).toBeInTheDocument();
     expect(screen.getByText('Akzeptieren')).toBeInTheDocument();
   });
 

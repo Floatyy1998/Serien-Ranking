@@ -108,7 +108,8 @@ class AnalyticsService {
       this.flush();
     }
     this.userId = uid;
-    if (uid) {
+    // Meta/Praesenz nur mit Einwilligung — die DSE verspricht "ausschliesslich nach Einwilligung"
+    if (uid && this.enabled) {
       this.updateMeta();
       this.updateRealtimePresence(true);
     }
@@ -120,8 +121,13 @@ class AnalyticsService {
     if (enabled) {
       this.startFlushTimer();
       this.setupLifecycleListeners();
+      if (this.userId) {
+        this.updateMeta();
+        this.updateRealtimePresence(true);
+      }
     } else {
       this.stopFlushTimer();
+      this.teardownLifecycleListeners();
       this.updateRealtimePresence(false);
       this.buffer = [];
     }
@@ -209,7 +215,7 @@ class AnalyticsService {
 
   /** Mark this user as active today in global DAU/MAU */
   private async updateMeta(): Promise<void> {
-    if (!this.userId) return;
+    if (!this.userId || !this.enabled) return;
     const db = firebase.database();
     const dateKey = todayKey();
     const mKey = monthKey();
@@ -241,6 +247,7 @@ class AnalyticsService {
    */
   private async updateRealtimePresence(online: boolean): Promise<void> {
     if (!this.userId) return;
+    if (online && !this.enabled) return;
     try {
       const ref = firebase.database().ref(`analytics/global/realtime/activeUsers/${this.userId}`);
       if (online) {
