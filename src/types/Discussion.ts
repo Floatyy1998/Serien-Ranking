@@ -2,6 +2,9 @@ import type React from 'react';
 
 export type DiscussionItemType = 'movie' | 'series' | 'episode';
 
+/** Geteilter Übersetzungs-Cache pro Zielsprache (Erst-Übersetzer schreibt). */
+export type CommentTranslations = Record<string, { text: string; title?: string }>;
+
 export interface DiscussionReply {
   id: string;
   userId: string;
@@ -12,6 +15,8 @@ export interface DiscussionReply {
   updatedAt?: number; // Set when edited
   likes: string[]; // Array of userIds who liked
   isSpoiler?: boolean;
+  lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
+  translations?: CommentTranslations;
 }
 
 export interface Discussion {
@@ -38,6 +43,9 @@ export interface Discussion {
   // Status
   isPinned?: boolean;
   isSpoiler?: boolean;
+  // Übersetzung
+  lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
+  translations?: CommentTranslations;
 }
 
 export interface CreateDiscussionInput {

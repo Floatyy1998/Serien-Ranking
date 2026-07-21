@@ -27,5 +27,13 @@ const dict: Record<string, string> = {
   '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"':
     '{name} flagged your comment as a spoiler: "{snippet}"',
   'Neue Reaktion': 'New reaction',
+  Übersetzen: 'Translate',
+  'Übersetze…': 'Translating…',
+  'Original anzeigen': 'Show original',
+  'Übersetzung fehlgeschlagen – erneut versuchen': 'Translation failed – try again',
+  'Kommentare automatisch übersetzen': 'Auto-translate comments',
+  An: 'On',
+  'Fremdsprachige Diskussionen und Antworten werden automatisch in deine Sprache übersetzt. Ausgeschaltet erscheint stattdessen ein Übersetzen-Button.':
+    'Discussions and replies in other languages are automatically translated into your language. When off, a translate button is shown instead.',
 };
 export default dict;

@@ -14,6 +14,8 @@ import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
+import { useCommentTranslation } from '../../hooks/useCommentTranslation';
+import { TranslateButton } from './TranslateButton';
 
 const DiscussionItemInner: React.FC<{
   discussion: Discussion;
@@ -46,6 +48,21 @@ const DiscussionItemInner: React.FC<{
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
   const { text, images } = extractImageUrls(discussion.content);
+
+  const translation = useCommentTranslation({
+    nodePath: `${discussionPath}/${discussion.id}`,
+    content: text,
+    title: discussion.title,
+    lang: discussion.lang,
+    translations: discussion.translations,
+    enabled: !isEditing && !(discussion.isSpoiler && !showSpoiler),
+  });
+  const displayTitle =
+    translation.showTranslation && translation.translated?.title
+      ? translation.translated.title
+      : discussion.title;
+  const displayText =
+    translation.showTranslation && translation.translated ? translation.translated.text : text;
 
   const handleSaveEdit = async () => {
     if (!editTitle.trim()) return;
@@ -185,7 +202,7 @@ const DiscussionItemInner: React.FC<{
           lineHeight: 1.3,
         }}
       >
-        {discussion.title}
+        {displayTitle}
       </h4>
 
       {/* Edit Form */}
@@ -224,9 +241,10 @@ const DiscussionItemInner: React.FC<{
                   lineHeight: 1.6,
                 }}
               >
-                {text}
+                {displayText}
               </p>
             )}
+            <TranslateButton translation={translation} />
 
             {/* Images */}
             {images.length > 0 && (

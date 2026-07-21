@@ -168,6 +168,7 @@ export const RepliesSection: React.FC<{
                   <ReplyItem
                     key={reply.id}
                     reply={reply}
+                    nodePath={`discussionReplies/${discussionId}/${reply.id}`}
                     onDelete={() => deleteReply(reply.id)}
                     onEdit={(input) => editReply(reply.id, input)}
                     onToggleLike={() => toggleReplyLike(reply.id)}

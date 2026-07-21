@@ -10,16 +10,19 @@ import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
+import { useCommentTranslation } from '../../hooks/useCommentTranslation';
+import { TranslateButton } from './TranslateButton';
 
 const ReplyItemInner: React.FC<{
   reply: DiscussionReply;
+  nodePath: string;
   onDelete: () => void;
   onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
   onToggleLike: () => void;
   isOwner: boolean;
   currentUserId?: string;
   onReplyTo?: (username: string) => void;
-}> = ({ reply, onDelete, onEdit, onToggleLike, isOwner, currentUserId, onReplyTo }) => {
+}> = ({ reply, nodePath, onDelete, onEdit, onToggleLike, isOwner, currentUserId, onReplyTo }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? reply.likes.includes(currentUserId) : false;
@@ -31,6 +34,16 @@ const ReplyItemInner: React.FC<{
   const [saving, setSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
+
+  const translation = useCommentTranslation({
+    nodePath,
+    content: text,
+    lang: reply.lang,
+    translations: reply.translations,
+    enabled: !isEditing && !(reply.isSpoiler && !showSpoiler),
+  });
+  const displayText =
+    translation.showTranslation && translation.translated ? translation.translated.text : text;
 
   const handleSaveEdit = async () => {
     setSaving(true);
@@ -230,9 +243,10 @@ const ReplyItemInner: React.FC<{
                   lineHeight: 1.5,
                 }}
               >
-                {text}
+                {displayText}
               </p>
             )}
+            <TranslateButton translation={translation} />
 
             {/* Images */}
             {images.length > 0 && (

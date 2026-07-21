@@ -1,6 +1,6 @@
 /** Sprachwahl: Auto (Browsersprache, DACH→Deutsch) / Deutsch / Englisch. Wechsel lädt die App neu. */
 
-import { Language, Public } from '@mui/icons-material';
+import { Language, Public, Translate } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { ThemedSelect } from '../../components/ui/ThemedSelect';
@@ -9,6 +9,10 @@ import { tapScaleSmall } from '../../lib/motion';
 import type { AppLanguage } from '../../services/i18n';
 import { getAppLanguageSetting, setAppLanguageSetting, t } from '../../services/i18n';
 import { getWatchRegionSetting, setWatchRegionSetting } from '../../services/region';
+import {
+  isAutoTranslateEnabled,
+  setAutoTranslateEnabled,
+} from '../../services/translation/commentTranslation';
 
 const OPTIONS: { value: AppLanguage; label: string }[] = [
   { value: 'auto', label: 'Auto' },
@@ -48,6 +52,12 @@ export const LanguageSection = () => {
   const { currentTheme } = useTheme();
   const [selected, setSelected] = useState<AppLanguage>(getAppLanguageSetting());
   const [region, setRegion] = useState<string>(getWatchRegionSetting());
+  const [autoTranslate, setAutoTranslate] = useState<boolean>(isAutoTranslateEnabled());
+
+  const chooseAutoTranslate = (value: boolean) => {
+    setAutoTranslate(value);
+    setAutoTranslateEnabled(value);
+  };
 
   const choose = (value: AppLanguage) => {
     if (value === selected) return;
@@ -118,6 +128,67 @@ export const LanguageSection = () => {
         }}
       >
         {t('Auto nutzt die Gerätesprache: Deutsch im DACH-Raum, sonst Englisch.')}
+      </p>
+
+      <div
+        style={{
+          height: 1,
+          background: 'rgba(255,255,255,0.08)',
+          margin: '20px 0',
+        }}
+      />
+
+      <h2
+        className="settings-section-title"
+        style={{
+          color: currentTheme.text.primary,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 12,
+        }}
+      >
+        <Translate style={{ fontSize: 20, color: currentTheme.primary }} />
+        {t('Kommentare automatisch übersetzen')}
+      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        {[
+          { value: true, label: t('An') },
+          { value: false, label: t('Aus') },
+        ].map((opt) => {
+          const active = autoTranslate === opt.value;
+          return (
+            <motion.button
+              key={String(opt.value)}
+              whileTap={tapScaleSmall}
+              onClick={() => chooseAutoTranslate(opt.value)}
+              style={{
+                padding: '9px 18px',
+                borderRadius: 999,
+                border: `1px solid ${active ? currentTheme.primary : currentTheme.border.default}`,
+                background: active ? `${currentTheme.primary}22` : 'rgba(255,255,255,0.03)',
+                color: active ? currentTheme.primary : currentTheme.text.secondary,
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: 'pointer',
+              }}
+            >
+              {opt.label}
+            </motion.button>
+          );
+        })}
+      </div>
+      <p
+        style={{
+          color: currentTheme.text.muted,
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+          margin: '10px 0 0 0',
+        }}
+      >
+        {t(
+          'Fremdsprachige Diskussionen und Antworten werden automatisch in deine Sprache übersetzt. Ausgeschaltet erscheint stattdessen ein Übersetzen-Button.'
+        )}
       </p>
 
       <div

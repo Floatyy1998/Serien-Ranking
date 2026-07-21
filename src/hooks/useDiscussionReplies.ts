@@ -240,6 +240,9 @@ export const useDiscussionReplies = (
         // Only set updatedAt if content changed (not just spoiler flag by others)
         if (isOwner && input.content !== undefined) {
           updates.updatedAt = Date.now();
+          // Übersetzungs-Cache passt nach einer Textänderung nicht mehr
+          updates.translations = null;
+          updates.lang = null;
         }
 
         if (input.content !== undefined) updates.content = input.content;

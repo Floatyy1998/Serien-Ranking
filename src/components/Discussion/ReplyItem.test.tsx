@@ -85,6 +85,7 @@ const reply: DiscussionReply = {
 
 const baseProps = {
   reply,
+  nodePath: 'discussionReplies/d1/r1',
   onDelete: vi.fn(),
   onEdit: vi.fn<() => Promise<boolean>>().mockResolvedValue(true),
   onToggleLike: vi.fn(),

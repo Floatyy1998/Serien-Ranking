@@ -192,6 +192,9 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         // Only set updatedAt if content/title changed (not just spoiler flag by others)
         if (isOwner && (input.title !== undefined || input.content !== undefined)) {
           updates.updatedAt = Date.now();
+          // Übersetzungs-Cache passt nach einer Textänderung nicht mehr
+          updates.translations = null;
+          updates.lang = null;
         }
 
         if (input.title !== undefined) updates.title = input.title;
