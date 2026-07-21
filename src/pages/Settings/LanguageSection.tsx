@@ -3,6 +3,7 @@
 import { Language, Public } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import { ThemedSelect } from '../../components/ui/ThemedSelect';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 import type { AppLanguage } from '../../services/i18n';
@@ -71,11 +72,20 @@ export const LanguageSection = () => {
       transition={{ delay: 0.23 }}
       className="settings-card"
     >
-      <h2 className="settings-section-title" style={{ color: currentTheme.text.primary }}>
+      <h2
+        className="settings-section-title"
+        style={{
+          color: currentTheme.text.primary,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 12,
+        }}
+      >
+        <Language style={{ fontSize: 20, color: currentTheme.primary }} />
         {t('Sprache')}
       </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <Language style={{ fontSize: 22, color: currentTheme.primary }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         {OPTIONS.map((opt) => {
           const active = selected === opt.value;
           return (
@@ -84,12 +94,13 @@ export const LanguageSection = () => {
               whileTap={tapScaleSmall}
               onClick={() => choose(opt.value)}
               style={{
-                padding: '8px 16px',
+                padding: '9px 18px',
                 borderRadius: 999,
                 border: `1px solid ${active ? currentTheme.primary : currentTheme.border.default}`,
-                background: active ? `${currentTheme.primary}22` : 'transparent',
+                background: active ? `${currentTheme.primary}22` : 'rgba(255,255,255,0.03)',
                 color: active ? currentTheme.primary : currentTheme.text.secondary,
                 fontWeight: 600,
+                fontSize: 14,
                 cursor: 'pointer',
               }}
             >
@@ -98,39 +109,55 @@ export const LanguageSection = () => {
           );
         })}
       </div>
-      <p style={{ color: currentTheme.text.muted, fontSize: '0.85rem' }}>
+      <p
+        style={{
+          color: currentTheme.text.muted,
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+          margin: '10px 0 0 0',
+        }}
+      >
         {t('Auto nutzt die Gerätesprache: Deutsch im DACH-Raum, sonst Englisch.')}
       </p>
+
+      <div
+        style={{
+          height: 1,
+          background: 'rgba(255,255,255,0.08)',
+          margin: '20px 0',
+        }}
+      />
+
       <h2
         className="settings-section-title"
-        style={{ color: currentTheme.text.primary, marginTop: 18 }}
+        style={{
+          color: currentTheme.text.primary,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 12,
+        }}
       >
+        <Public style={{ fontSize: 20, color: currentTheme.primary }} />
         {t('Streaming-Land')}
       </h2>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <Public style={{ fontSize: 22, color: currentTheme.primary }} />
-        <select
-          value={region}
-          onChange={(e) => chooseRegion(e.target.value)}
-          style={{
-            padding: '8px 14px',
-            borderRadius: 999,
-            border: `1px solid ${currentTheme.border.default}`,
-            background: 'transparent',
-            color: currentTheme.text.primary,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
-        >
-          <option value="auto">{t('Auto (aus Gerätesprache)')}</option>
-          {REGIONS.map((r) => (
-            <option key={r.code} value={r.code}>
-              {t(r.label)}
-            </option>
-          ))}
-        </select>
-      </div>
-      <p style={{ color: currentTheme.text.muted, marginBottom: 0, fontSize: '0.85rem' }}>
+      <ThemedSelect
+        value={region}
+        onChange={chooseRegion}
+        ariaLabel={t('Streaming-Land')}
+        options={[
+          { value: 'auto', label: t('Auto (aus Gerätesprache)') },
+          ...REGIONS.map((r) => ({ value: r.code, label: t(r.label) })),
+        ]}
+      />
+      <p
+        style={{
+          color: currentTheme.text.muted,
+          fontSize: '0.85rem',
+          lineHeight: 1.5,
+          margin: '10px 0 0 0',
+        }}
+      >
         {t('Bestimmt, für welches Land Streaming-Anbieter angezeigt werden.')}
       </p>
     </motion.div>

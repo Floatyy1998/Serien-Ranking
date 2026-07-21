@@ -6,6 +6,7 @@ export { EmptyState } from './EmptyState';
 export { ProfileItemCard } from './ProfileItemCard';
 export type { ProfileCardProvider } from './ProfileItemCard';
 export { SwipeableEpisodeRow } from './SwipeableEpisodeRow';
+export { ThemedSelect } from './ThemedSelect';
 export { SearchInput } from './SearchInput';
 export { BottomSheet } from './BottomSheet';
 export { GradientText } from './GradientText';
