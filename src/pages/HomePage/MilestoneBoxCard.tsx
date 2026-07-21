@@ -198,7 +198,7 @@ export const MilestoneBoxCard: React.FC = () => {
                 ? availableBoxes > 1
                   ? t('{n} Boxen verfügbar!', { n: availableBoxes })
                   : t('{n} Box verfügbar!', { n: availableBoxes })
-                : t('Nächste in {n} Episoden', { n: nextThreshold - totalEpisodes })}
+                : t('Nächste in {n} Episoden', { n: nextThreshold - boxEpisodes })}
             </p>
           </div>
 
@@ -253,7 +253,7 @@ export const MilestoneBoxCard: React.FC = () => {
                   />
                 </div>
                 <span style={{ fontSize: 10, color: currentTheme.text.muted }}>
-                  {totalEpisodes % BOX_EVERY_N_EPISODES}/{BOX_EVERY_N_EPISODES}
+                  {boxEpisodes % BOX_EVERY_N_EPISODES}/{BOX_EVERY_N_EPISODES}
                 </span>
               </div>
             )}
