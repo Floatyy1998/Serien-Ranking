@@ -172,6 +172,26 @@
   gap: 6px;
 }
 
+/* Tag komplett geschaut: gefüllte Kopfzeile + Haken-Kreis (Desktop-Grid) */
+.cal-day-label.is-complete {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-success) 35%, transparent);
+  border-radius: 10px;
+  padding: 3px 8px;
+}
+
+.cal-day-done {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-success);
+  color: #fff;
+  flex-shrink: 0;
+}
+
 .cal-day-weekday {
   font-size: 12px;
   font-weight: 600;

@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef, useState, forwardRef } from 'react';
+import { Check } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
@@ -95,6 +96,8 @@ const DayCell = memo(
       const isToday = dateKey === todayKey;
       const hasEpisodes = groups.length > 0;
       const dayDate = new Date(dateKey + 'T00:00:00');
+      const dayEpisodes = groups.flatMap((group) => group.episodes);
+      const allWatched = dayEpisodes.length > 0 && dayEpisodes.every((ep) => ep.watched);
 
       return (
         <div
@@ -102,7 +105,7 @@ const DayCell = memo(
           className={`cal-day ${isToday ? 'is-today' : ''} ${!hasEpisodes ? 'is-empty' : ''}`}
         >
           {/* Day header */}
-          <div className="cal-day-label">
+          <div className={`cal-day-label ${allWatched ? 'is-complete' : ''}`}>
             <span
               className={`cal-day-weekday ${isToday ? 'is-today' : ''}`}
               style={isToday ? { color: currentTheme.primary } : {}}
@@ -119,6 +122,11 @@ const DayCell = memo(
             >
               {dayDate.getDate()}
             </span>
+            {allWatched && (
+              <span className="cal-day-done" role="img" aria-label={t('alles geschaut')}>
+                <Check style={{ fontSize: 13 }} />
+              </span>
+            )}
             {!hasEpisodes && <span className="cal-day-none">&mdash;</span>}
           </div>
 
