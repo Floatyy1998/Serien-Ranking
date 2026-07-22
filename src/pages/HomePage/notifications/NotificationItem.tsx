@@ -1,6 +1,6 @@
 import { Cancel, Check } from '@mui/icons-material';
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useState } from 'react';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { getNotificationIcon, getNotificationIconBg } from './icons';
@@ -26,10 +26,16 @@ export const NotificationItem = React.memo(function NotificationItem({
   onDeclineRequest,
 }: NotificationItemProps) {
   const clickable = item.kind !== 'request' && !!item.navigateTo;
+  // Ohne Navigationsziel (z. B. Admin-Nachricht): Tippen klappt den vollen Text auf
+  const expandable = item.kind !== 'request' && !item.navigateTo;
+  const [expanded, setExpanded] = useState(false);
   return (
     <motion.div
       whileTap={item.kind !== 'request' ? { scale: 0.98 } : undefined}
-      onClick={() => onItemClick(item)}
+      onClick={() => {
+        if (expandable) setExpanded((v) => !v);
+        onItemClick(item);
+      }}
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       onKeyDown={
@@ -136,10 +142,15 @@ export const NotificationItem = React.memo(function NotificationItem({
             fontSize: '14px',
             color: !item.read ? theme.text.secondary : theme.text.muted,
             lineHeight: 1.4,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
+            overflowWrap: 'anywhere',
+            ...(expanded
+              ? {}
+              : {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                }),
           }}
         >
           {item.message}
