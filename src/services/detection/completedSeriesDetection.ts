@@ -1,7 +1,13 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
+import { diffDetectionState } from '../../lib/validation/detectionStateDiff';
 import { hasEpisodeAired } from '../../utils/episodeDate';
+import {
+  normalizeSeasons,
+  normalizeEpisodes,
+  isEpisodeWatched,
+} from '../../lib/episode/seriesMetrics';
 import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 export interface CompletedSeriesData {
@@ -36,10 +42,21 @@ export const getStoredCompletedData = async (
 
 export const storeCompletedData = async (
   userId: string,
-  data: Record<string, CompletedSeriesData>
+  data: Record<string, CompletedSeriesData>,
+  previous: Record<string, CompletedSeriesData> = {}
 ): Promise<void> => {
   try {
-    await dbRef(userPath(userId, 'completedSeriesData')).set(data);
+    const updates = diffDetectionState(
+      (key, field) =>
+        field !== undefined
+          ? userPath(userId, 'completedSeriesData', key, field)
+          : userPath(userId, 'completedSeriesData', key),
+      previous,
+      data
+    );
+    if (Object.keys(updates).length > 0) {
+      await dbUpdate(updates);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[CompletedSeriesDetection] Failed to store completed data: ${message}`);
@@ -50,16 +67,12 @@ const areAllEpisodesWatched = (series: Series): boolean => {
   let hasAiredEpisodes = false;
   let allWatched = true;
 
-  if (series.seasons) {
-    for (const season of series.seasons) {
-      if (season.episodes) {
-        for (const episode of season.episodes) {
-          if (hasEpisodeAired(episode)) {
-            hasAiredEpisodes = true;
-            if (!episode.watched) {
-              allWatched = false;
-            }
-          }
+  for (const season of normalizeSeasons(series.seasons)) {
+    for (const episode of normalizeEpisodes(season.episodes)) {
+      if (hasEpisodeAired(episode)) {
+        hasAiredEpisodes = true;
+        if (!isEpisodeWatched(episode)) {
+          allWatched = false;
         }
       }
     }
@@ -186,8 +199,8 @@ export const detectCompletedSeries = async (
     }
   }
 
-  // Aktualisierte Daten speichern
-  await storeCompletedData(userId, updatedStoredData);
+  // Aktualisierte Daten speichern (feldgenau, kein Voll-Node-Set)
+  await storeCompletedData(userId, updatedStoredData, storedData);
   await cleanupSnoozes('completed', userId, currentWatchlistIds);
 
   return completedSeries;

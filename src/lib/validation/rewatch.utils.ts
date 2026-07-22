@@ -1,5 +1,5 @@
 import type { Series } from '../../types/Series';
-import { normalizeEpisodes } from '../episode/seriesMetrics';
+import { normalizeEpisodes, normalizeSeasons } from '../episode/seriesMetrics';
 
 type Episode = Series['seasons'][number]['episodes'][number];
 
@@ -96,7 +96,7 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
   let totalWatchedEpisodes = 0;
   let episodesRewatchedInRound = 0;
 
-  for (const season of series.seasons) {
+  for (const season of normalizeSeasons(series.seasons)) {
     const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
@@ -121,7 +121,7 @@ export const getRewatchProgress = (series: Series): { current: number; total: nu
 export const hasAnySeasonFullyWatched = (series: Series): boolean => {
   if (!series.seasons || series.seasons.length === 0) return false;
 
-  for (const season of series.seasons) {
+  for (const season of normalizeSeasons(series.seasons)) {
     const episodes = normalizeEpisodes(season.episodes);
     if (episodes.length === 0) continue;
     if (episodes.every((ep) => ep.watched)) return true;
@@ -138,7 +138,7 @@ const isSeriesFullyWatched = (series: Series): boolean => {
 
   let watchCount: number | null = null;
 
-  for (const season of series.seasons) {
+  for (const season of normalizeSeasons(series.seasons)) {
     const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) return false;
@@ -166,7 +166,7 @@ export const getImplicitRewatchRound = (series: Series): number => {
   let maxWatchCount = 0;
   let hasWatchedEpisodes = false;
 
-  for (const season of series.seasons) {
+  for (const season of normalizeSeasons(series.seasons)) {
     const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (!episode.watched) continue;
@@ -191,7 +191,7 @@ export const getMaxWatchCount = (series: Series): number => {
   if (!series.seasons || series.seasons.length === 0) return 0;
 
   let maxWatchCount = 0;
-  for (const season of series.seasons) {
+  for (const season of normalizeSeasons(series.seasons)) {
     const episodes = normalizeEpisodes(season.episodes);
     for (const episode of episodes) {
       if (episode.watched) {

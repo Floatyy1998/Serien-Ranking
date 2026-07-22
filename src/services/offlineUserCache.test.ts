@@ -63,6 +63,10 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(2026, 6, 4, 12, 0, 0));
   vi.stubGlobal('localStorage', makeLocalStorage());
+  // jsdom hat kein IndexedDB — der Service nutzt IDBKeyRange.bound für den user_-Prefix-Scan
+  vi.stubGlobal('IDBKeyRange', {
+    bound: (lower: string, upper: string) => ({ lower, upper }),
+  });
 });
 
 afterEach(() => {
@@ -163,7 +167,8 @@ describe('clearCachedUserFromStorage', () => {
     await clearCachedUserFromStorage(true, getDB);
 
     expect(localStorage.getItem('cachedUser')).toBeNull();
-    expect(onDelete).toHaveBeenCalledWith('user_*');
+    // Prefix-Range statt Literal-Key: löscht jeden user_<uid>-Eintrag
+    expect(onDelete).toHaveBeenCalledWith({ lower: 'user_', upper: 'user_￿' });
   });
 
   it('löscht nur localStorage, wenn IDB deaktiviert ist', async () => {

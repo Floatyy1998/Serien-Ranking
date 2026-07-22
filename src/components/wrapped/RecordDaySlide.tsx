@@ -31,13 +31,15 @@ export const RecordDaySlide: React.FC<RecordDaySlideProps> = ({ mostActiveDay })
   const totalItems = mostActiveDay.episodesWatched + mostActiveDay.moviesWatched;
   const hours = Math.round(mostActiveDay.minutesWatched / 60);
 
-  // Formatiere das Datum schöner
+  // Formatiere das Datum schöner (ungültige Datumswerte nicht als "Invalid Date" rendern)
   const dateObj = new Date(mostActiveDay.date);
-  const formattedDate = dateObj.toLocaleDateString(isEnglish() ? 'en-US' : 'de-DE', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
+  const formattedDate = Number.isFinite(dateObj.getTime())
+    ? dateObj.toLocaleDateString(isEnglish() ? 'en-US' : 'de-DE', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : mostActiveDay.date;
 
   return (
     <div

@@ -33,6 +33,7 @@ import { showToast } from '../../lib/toast';
 import type { WatchingPace } from '../../lib/date/paceCalculation';
 import type { Series } from '../../types/Series';
 import { getImageUrl } from '../../utils/imageUrl';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import { buildThemedPlaceholderDataUrl } from '../../utils/themedPlaceholder';
 import type { TMDBWatchProvider } from '../MovieDetail/useMovieData';
 import { RatingsCard } from './RatingsCard';
@@ -132,7 +133,7 @@ export const HeroSection = memo<HeroSectionProps>(
     const iconSize = isMobile ? 17 : 19;
     const warningColor = fullTheme.status?.warning || '#f59e0b';
     const copyTitle = () => {
-      navigator.clipboard.writeText(series.title);
+      void copyTextToClipboard(series.title);
       showToast(t('Titel kopiert'));
     };
     const mergedDisplayProviders = useMemo(

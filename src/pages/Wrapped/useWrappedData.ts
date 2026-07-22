@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type firebase from 'firebase/compat/app';
 import { showToast } from '../../lib/toast';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import { useAuth } from '../../contexts/AuthContext';
 import { useWrappedConfig } from '../../hooks/useWrappedConfig';
 import type { WrappedStats, WrappedSlideConfig } from '../../types/Wrapped';
@@ -247,10 +248,10 @@ export const useWrappedData = (): UseWrappedDataResult => {
         // User cancelled or share failed
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(shareText);
+      const copied = await copyTextToClipboard(shareText);
+      if (copied) {
         showToast(t('In die Zwischenablage kopiert!'), 2500, 'success');
-      } catch {
+      } else {
         showToast(t('Kopieren fehlgeschlagen'), 2500, 'error');
       }
     }

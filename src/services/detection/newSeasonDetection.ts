@@ -1,5 +1,5 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
 import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
 
 // Einfache Map: seriesId → bekannte Staffelanzahl (vom User bestätigter Stand)
@@ -26,9 +26,27 @@ const getStoredSeasonCounts = async (userId: string): Promise<SeasonCounts> => {
   }
 };
 
-const storeSeasonCounts = async (userId: string, data: SeasonCounts): Promise<void> => {
+const storeSeasonCounts = async (
+  userId: string,
+  data: SeasonCounts,
+  previous: SeasonCounts = {}
+): Promise<void> => {
   try {
-    await dbRef(userPath(userId, 'meta', 'seasonCounts')).set(data);
+    // Per-Key-Update statt Voll-Node-Set: clobbert keine parallel gesetzten Counts
+    const updates: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (previous[key] !== value) {
+        updates[userPath(userId, 'meta', 'seasonCounts', key)] = value;
+      }
+    }
+    for (const key of Object.keys(previous)) {
+      if (!(key in data)) {
+        updates[userPath(userId, 'meta', 'seasonCounts', key)] = null;
+      }
+    }
+    if (Object.keys(updates).length > 0) {
+      await dbUpdate(updates);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[NewSeasonDetection] Failed to store season counts: ${message}`);
@@ -109,7 +127,7 @@ export const detectNewSeasons = async (seriesList: Series[], userId: string): Pr
   const hasEntryChange =
     counts.length !== updated.length || updated.some((k) => !(k in storedCounts));
   if (hasEntryChange) {
-    await storeSeasonCounts(userId, updatedCounts);
+    await storeSeasonCounts(userId, updatedCounts, storedCounts);
   }
   await cleanupSnoozes('new-season', userId, currentIds);
 
@@ -157,20 +175,14 @@ export const markMultipleSeasonsAsNotified = async (
   if (seriesIds.length === 0) return;
   const storedCounts = await getStoredSeasonCounts(userId);
   const updates: Record<string, unknown> = {};
-  let countsChanged = false;
 
   for (const id of seriesIds) {
     const key = id.toString();
     const series = seriesList?.find((s) => s.id === id);
     if (series && series.seasonCount > (storedCounts[key] ?? 0)) {
-      storedCounts[key] = series.seasonCount;
-      countsChanged = true;
+      updates[userPath(userId, 'meta', 'seasonCounts', key)] = series.seasonCount;
     }
     updates[userPath(userId, 'newSeasonNotifications', id)] = null;
-  }
-
-  if (countsChanged) {
-    updates[userPath(userId, 'meta', 'seasonCounts')] = storedCounts;
   }
 
   try {

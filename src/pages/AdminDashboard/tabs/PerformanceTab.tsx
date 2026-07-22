@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Speed, Timer, Storage, Cloud, CleaningServices } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
+import { copyTextToClipboard } from '../../../utils/clipboard';
 
 interface PhaseData {
   ms: number;
@@ -99,7 +100,7 @@ export function PerformanceTab({
           : '';
       return `=== ${action.toUpperCase()} (${perf.totalDurationFormatted}) ===\n${phases}\nUsers: ${users}\n${[tmdb, tvmaze].filter(Boolean).join('\n')}`;
     });
-    navigator.clipboard.writeText(lines.join('\n\n'));
+    void copyTextToClipboard(lines.join('\n\n'));
   };
 
   return (

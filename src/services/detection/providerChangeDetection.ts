@@ -114,7 +114,7 @@ export const detectProviderChanges = async (
   const enabled = await getProviderNotificationsEnabled(userId);
   if (!enabled) return [];
 
-  const watchlistSeries = seriesList.filter((s) => s.watchlist && s.id);
+  const watchlistSeries = seriesList.filter((s) => s && s.watchlist && s.id);
 
   const [knownProvidersStored, states, snoozed, baselineRegion] = await Promise.all([
     getKnownProviders(userId),

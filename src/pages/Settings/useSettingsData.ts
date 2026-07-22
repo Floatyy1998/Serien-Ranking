@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { trackLogout } from '../../services/firebase/analytics';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
 import { hapticSelect, hapticSuccess, hapticWarning } from '../../lib/haptics';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { shareLink } from '../../services/share/shareLink';
@@ -196,7 +197,8 @@ export const useSettingsData = () => {
     if (!publicProfileId) return;
 
     const publicUrl = `${window.location.origin}/public/${publicProfileId}`;
-    navigator.clipboard.writeText(publicUrl).then(() => {
+    void copyTextToClipboard(publicUrl).then((ok) => {
+      if (!ok) return;
       hapticSuccess();
       showSnackbar(t('Link kopiert!'));
     });

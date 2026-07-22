@@ -55,7 +55,14 @@ export function useWebWorker<TInput, TOutput>(
 
   // Worker nur einmal erstellen, Cleanup beim Unmount
   useEffect(() => {
-    workerRef.current = workerFactory();
+    // Konstruktor kann synchron werfen (kein Module-Worker-Support, CSP)
+    try {
+      workerRef.current = workerFactory();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Worker creation failed'));
+      setLoading(false);
+      return;
+    }
 
     workerRef.current.addEventListener('message', (event: MessageEvent) => {
       if (event.data?.type === resultType) {

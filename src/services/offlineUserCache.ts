@@ -40,19 +40,23 @@ export async function getCachedUserFromStorage(
     if (cached) {
       const userData = JSON.parse(cached);
       // Check if cache is not too old (24 hours)
-      if (Date.now() - userData.cachedAt < 24 * 60 * 60 * 1000) {
+      if (
+        typeof userData?.cachedAt === 'number' &&
+        Date.now() - userData.cachedAt < 24 * 60 * 60 * 1000
+      ) {
         return userData;
       }
     }
 
-    // Fallback to IndexedDB
+    // Fallback to IndexedDB (Keys sind `user_${uid}` → Prefix-Scan)
     if (enableIndexedDB) {
       const db = await getDB();
       const transaction = db.transaction(['firebaseCache'], 'readonly');
       const store = transaction.objectStore('firebaseCache');
 
-      return new Promise((resolve, reject) => {
-        const request = store.get('user_*');
+      // `await`, damit Rejections vom umgebenden try/catch gefangen werden
+      return await new Promise((resolve, reject) => {
+        const request = store.get(IDBKeyRange.bound('user_', 'user_￿'));
         request.onsuccess = () => resolve(request.result?.data || null);
         request.onerror = () => reject(request.error);
       });
@@ -78,7 +82,7 @@ export async function clearCachedUserFromStorage(
       const store = transaction.objectStore('firebaseCache');
 
       await new Promise<void>((resolve, reject) => {
-        const request = store.delete('user_*');
+        const request = store.delete(IDBKeyRange.bound('user_', 'user_￿'));
         request.onsuccess = () => resolve();
         request.onerror = () => reject(request.error);
       });

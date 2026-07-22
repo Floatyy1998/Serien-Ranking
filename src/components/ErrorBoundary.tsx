@@ -1,6 +1,7 @@
 import { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { t } from '../services/i18n';
+import { copyTextToClipboard } from '../utils/clipboard';
 
 interface Props {
   children: ReactNode;
@@ -22,13 +23,17 @@ export class ErrorBoundary extends Component<Props, State> {
       error.message?.includes('Loading chunk') ||
       error.message?.includes('Failed to fetch')
     ) {
-      const alreadyReloaded = sessionStorage.getItem('chunk-reload');
-      if (!alreadyReloaded) {
-        sessionStorage.setItem('chunk-reload', '1');
-        window.location.reload();
-        return { hasError: false, error: null, errorInfo: '' };
+      try {
+        const alreadyReloaded = sessionStorage.getItem('chunk-reload');
+        if (!alreadyReloaded) {
+          sessionStorage.setItem('chunk-reload', '1');
+          window.location.reload();
+          return { hasError: false, error: null, errorInfo: '' };
+        }
+        sessionStorage.removeItem('chunk-reload');
+      } catch {
+        // Storage blockiert — dann regulär die Fehlerseite zeigen
       }
-      sessionStorage.removeItem('chunk-reload');
     }
     return { hasError: true, error };
   }
@@ -54,7 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
       this.state.errorInfo,
     ].join('\n');
 
-    navigator.clipboard.writeText(text);
+    void copyTextToClipboard(text);
   };
 
   handleReload = () => {

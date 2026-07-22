@@ -1,4 +1,4 @@
-import { dbRef, dbGet, serverTimestamp, userPath, paths } from '../services/db/ref';
+import { dbRef, dbGet, dbUpdate, serverTimestamp, userPath } from '../services/db/ref';
 import { getOfflineBadgeSystem } from '../features/badges/offlineBadgeSystem';
 import type { FriendActivity, FriendRequest } from '../types/Friend';
 
@@ -6,11 +6,10 @@ export async function sendFriendRequestOp(
   user: { uid: string; displayName: string | null; email: string | null },
   username: string
 ): Promise<boolean> {
-  // Match on lowercased slug so "Spixi" can be reached as "spixi". Der
-  // Lookup läuft über den userSearchIndex-Knoten (der users-Root ist unter
-  // den gehärteten Rules nicht mehr lesbar). Solange Rules/Backfill noch
-  // nicht deployt sind, greift der Legacy-Fallback auf den users-Root
-  // (dort zusätzlich case-sensitiv für Alt-User ohne usernameLower).
+  // Match on lowercased slug so "Spixi" can be reached as "spixi". Der Lookup
+  // läuft ausschließlich über den userSearchIndex-Knoten — der users-Root ist
+  // unter den gehärteten Rules nicht lesbar, ein Fallback dorthin erzeugt nur
+  // eine nicht abfangbare permission_denied-Warnung in der Konsole.
   const lower = username.toLowerCase();
   let userData: Record<string, Record<string, unknown>> | null = null;
   try {
@@ -20,20 +19,7 @@ export async function sendFriendRequestOp(
       .once('value');
     userData = snapshot.val();
   } catch {
-    // Alte Rules: userSearchIndex existiert/erlaubt noch nichts.
-  }
-  if (!userData) {
-    try {
-      const usersRef = dbRef('users');
-      let snapshot = await usersRef.orderByChild('usernameLower').equalTo(lower).once('value');
-      userData = snapshot.val();
-      if (!userData) {
-        snapshot = await usersRef.orderByChild('username').equalTo(username).once('value');
-        userData = snapshot.val();
-      }
-    } catch {
-      // Neue Rules: users-Root nicht mehr lesbar — Index ist die Quelle.
-    }
+    // Index nicht lesbar (Rules-Drift) — Suche schlägt kontrolliert fehl.
   }
 
   if (!userData) return false;
@@ -41,27 +27,31 @@ export async function sendFriendRequestOp(
   const targetUserId = Object.keys(userData)[0];
   const targetUserData = userData[targetUserId];
 
-  // Aktueller User Daten laden für fromUsername/fromUserEmail
-  const currentUserData = await dbGet<Record<string, unknown>>(paths.user(user.uid));
+  const [ownUsername, ownEmail] = await Promise.all([
+    dbGet<string>(userPath(user.uid, 'username')).catch(() => null),
+    dbGet<string>(userPath(user.uid, 'email')).catch(() => null),
+  ]);
 
-  const requestRef = dbRef('friendRequests').push();
+  const requestKey = dbRef('friendRequests').push().key;
+  if (!requestKey) return false;
 
-  await requestRef.set({
-    fromUserId: user.uid,
-    toUserId: targetUserId,
-    fromUsername: currentUserData?.username || user.displayName || 'Unbekannt',
-    toUsername: targetUserData?.username || username,
-    fromUserEmail: currentUserData?.email || user.email || '',
-    toUserEmail: targetUserData?.email || '',
-    status: 'pending',
-    sentAt: serverTimestamp(),
+  // Request + Consent-Marker atomar: erst der Marker erlaubt dem Empfänger,
+  // sich später in UNSERE friends-Liste einzutragen (die Rule prüft genau ihn).
+  // Getrennt geschrieben könnte ein Abbruch dazwischen einen Request ohne
+  // Marker hinterlassen — der Accept scheitert dann mit PERMISSION_DENIED.
+  await dbUpdate({
+    [`friendRequests/${requestKey}`]: {
+      fromUserId: user.uid,
+      toUserId: targetUserId,
+      fromUsername: ownUsername || user.displayName || 'Unbekannt',
+      toUsername: targetUserData?.username || username,
+      fromUserEmail: ownEmail || user.email || '',
+      toUserEmail: targetUserData?.email || '',
+      status: 'pending',
+      sentAt: serverTimestamp(),
+    },
+    [userPath(user.uid, 'sentRequestTo', targetUserId)]: serverTimestamp(),
   });
-
-  // Consent-Marker im EIGENEN Baum: erst dadurch darf der Empfänger sich später
-  // in UNSERE friends-Liste eintragen (die Rule prüft genau diesen Marker).
-  // Ohne ihn könnte sich jeder Fremde ungefragt als Freund eintragen und damit
-  // unsere friend-gegateten Privatdaten lesen (Leseeskalation, BUG-SEC-0).
-  await dbRef(userPath(user.uid, 'sentRequestTo', targetUserId)).set(serverTimestamp());
 
   return true;
 }
@@ -91,47 +81,48 @@ export async function acceptFriendRequestOp(
       return null;
     }
   };
-  const [fromUsername, fromDisplayName, fromPhotoURL, fromEmail] = await Promise.all([
+  const [
+    fromUsername,
+    fromDisplayName,
+    fromPhotoURL,
+    fromEmail,
+    ownUsername,
+    ownDisplayName,
+    ownPhotoURL,
+  ] = await Promise.all([
     readVal(`users/${request.fromUserId}/username`),
     readVal(`users/${request.fromUserId}/displayName`),
     readVal(`users/${request.fromUserId}/photoURL`),
     readVal(`users/${request.fromUserId}/email`),
+    readVal(userPath(user.uid, 'username')),
+    readVal(userPath(user.uid, 'displayName')),
+    readVal(userPath(user.uid, 'photoURL')),
   ]);
 
-  const currentUserData = await dbGet<Record<string, unknown>>(paths.user(user.uid));
-
-  // Freund zur eigenen Liste hinzufügen
-  await dbRef(userPath(user.uid, 'friends', request.fromUserId)).set({
-    uid: request.fromUserId,
-    email: fromEmail ?? null,
-    username: fromUsername || 'unknown',
-    displayName: fromDisplayName || fromUsername || null,
-    photoURL: fromPhotoURL || null,
-    friendsSince: serverTimestamp(),
+  // Alle vier Writes atomar: getrennt ausgeführt konnte ein Teil-Fehlschlag
+  // (z.B. fehlender Consent-Marker → PERMISSION_DENIED beim Gegenseiten-Write)
+  // eine asymmetrische Freundschaft + ewig "pending" Request hinterlassen.
+  await dbUpdate({
+    [userPath(user.uid, 'friends', request.fromUserId)]: {
+      uid: request.fromUserId,
+      email: fromEmail ?? null,
+      username: fromUsername || 'unknown',
+      displayName: fromDisplayName || fromUsername || null,
+      photoURL: fromPhotoURL || null,
+      friendsSince: serverTimestamp(),
+    },
+    [userPath(request.fromUserId, 'friends', user.uid)]: {
+      uid: user.uid,
+      email: user.email,
+      username: ownUsername || 'unknown',
+      displayName: ownDisplayName || ownUsername || user.displayName,
+      photoURL: ownPhotoURL || user.photoURL || null,
+      friendsSince: serverTimestamp(),
+    },
+    [`friendRequests/${requestId}/status`]: 'accepted',
+    [`friendRequests/${requestId}/respondedAt`]: serverTimestamp(),
+    [userPath(request.fromUserId, 'sentRequestTo', user.uid)]: null,
   });
-
-  // Sich selbst zur Freundesliste hinzufügen
-  await dbRef(userPath(request.fromUserId, 'friends', user.uid)).set({
-    uid: user.uid,
-    email: user.email,
-    username: currentUserData?.username || 'unknown',
-    displayName: currentUserData?.displayName || currentUserData?.username || user.displayName,
-    photoURL: currentUserData?.photoURL || user.photoURL || null,
-    friendsSince: serverTimestamp(),
-  });
-
-  await dbRef(`friendRequests/${requestId}`).update({
-    status: 'accepted',
-    respondedAt: serverTimestamp(),
-  });
-
-  // Verbrauchten Consent-Marker des Absenders entfernen (der Empfänger darf ihn
-  // löschen). Best-effort — schlägt es fehl, bleibt nur ein harmloser Marker.
-  try {
-    await dbRef(userPath(request.fromUserId, 'sentRequestTo', user.uid)).remove();
-  } catch {
-    // best-effort
-  }
 
   // Remove the request from local state immediately
   setFriendRequests((prev) => prev.filter((req) => req.id !== requestId));

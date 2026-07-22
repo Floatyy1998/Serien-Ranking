@@ -83,7 +83,7 @@ export function mergeToSeriesView(
         let userRating: number | undefined;
 
         const epidSeason = seasonWatch && isEpidSeason(seasonWatch) ? seasonWatch : null;
-        const epidHit = epidSeason && ep.id != null ? epidSeason.eps[String(ep.id)] : undefined;
+        const epidHit = epidSeason && ep.id != null ? epidSeason.eps?.[String(ep.id)] : undefined;
 
         if (epidHit && epidSeason && ep.id != null) {
           const cw = readEpisodeById(epidSeason, ep.id);

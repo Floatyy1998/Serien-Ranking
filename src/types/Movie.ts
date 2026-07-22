@@ -41,7 +41,7 @@ export interface Movie {
   genres?: { id: number; name: string }[]; // TMDB genre format
 
   // Wrapped 2026 - Zeitliche Metadaten
-  addedAt?: string; // Wann zur Sammlung hinzugefügt (ISO-Datum)
+  addedAt?: string | number; // ISO-Datum oder Epoch-ms (Live-Daten enthalten beides)
   watchedAt?: string; // Wann angeschaut (ISO-Datum)
   ratedAt?: string; // Wann bewertet (ISO-Datum)
 

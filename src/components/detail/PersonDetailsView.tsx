@@ -210,7 +210,9 @@ export const PersonDetailsView: React.FC<PersonDetailsViewProps> = ({ personDeta
                 )}
 
                 {/* Year Badge */}
-                {(credit.release_date || credit.first_air_date) && (
+                {Number.isFinite(
+                  new Date(credit.release_date || credit.first_air_date || '').getFullYear()
+                ) && (
                   <div
                     style={{
                       position: 'absolute',

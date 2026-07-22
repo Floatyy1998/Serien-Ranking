@@ -95,6 +95,8 @@ class AnalyticsService {
   private lifecycleListenersAttached = false;
   private visibilityHandler: (() => void) | null = null;
   private beforeUnloadHandler: (() => void) | null = null;
+  /** Zwischengespeichertes ID-Token für den synchronen Beacon-Flush. */
+  private idToken: string | null = null;
 
   init(): void {
     this.enabled = localStorage.getItem(CONSENT_KEY) === 'true';
@@ -110,8 +112,24 @@ class AnalyticsService {
     this.userId = uid;
     // Meta/Praesenz nur mit Einwilligung — die DSE verspricht "ausschliesslich nach Einwilligung"
     if (uid && this.enabled) {
+      this.refreshIdToken();
       this.updateMeta();
       this.updateRealtimePresence(true);
+    }
+    if (!uid) this.idToken = null;
+  }
+
+  private refreshIdToken(): void {
+    try {
+      firebase
+        .auth()
+        .currentUser?.getIdToken()
+        .then((token) => {
+          this.idToken = token;
+        })
+        .catch(() => {});
+    } catch {
+      // auth-Modul noch nicht geladen — Token bleibt null
     }
   }
 
@@ -160,6 +178,8 @@ class AnalyticsService {
   async flush(): Promise<void> {
     if (this.flushing || this.buffer.length === 0 || !this.userId || !this.enabled) return;
     this.flushing = true;
+    // Token für den nächsten flushSync frisch halten (läuft stündlich ab)
+    this.refreshIdToken();
 
     const batch = [...this.buffer];
     this.buffer = [];
@@ -347,13 +367,16 @@ class AnalyticsService {
 
   private flushSync(): void {
     if (this.buffer.length === 0 || !this.userId || !this.enabled) return;
+    // Ohne Auth-Token verwirft die Rule (auth.uid === $uid) den Write ohnehin —
+    // dann gar nicht erst senden.
+    if (!this.idToken) return;
 
     const batch = [...this.buffer];
     this.buffer = [];
     const dateKey = todayKey();
     const id = batchId();
 
-    const url = `${(firebase.app().options as Record<string, unknown>).databaseURL}/analytics/users/${this.userId}/events/${dateKey}/${id}.json`;
+    const url = `${(firebase.app().options as Record<string, unknown>).databaseURL}/analytics/users/${this.userId}/events/${dateKey}/${id}.json?auth=${encodeURIComponent(this.idToken)}`;
     const payload = JSON.stringify({ ts: Date.now(), events: batch });
     navigator.sendBeacon(url, payload);
   }

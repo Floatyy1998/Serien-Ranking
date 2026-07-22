@@ -258,10 +258,11 @@ const MagneticCard = memo(
     }, [isMobile, rawRotateX, rawRotateY, rawLift, rawIntensity]);
 
     const title = item.title || item.name || '';
-    const year =
+    const parsedYear =
       item.release_date || item.first_air_date
         ? new Date(item.release_date || item.first_air_date || '').getFullYear()
         : null;
+    const year = parsedYear !== null && Number.isFinite(parsedYear) ? parsedYear : null;
     // Community-Rating der TV-Rank-Nutzer führt (ab 5 Bewertungen), sonst TMDB.
     const communityMap = useCommunityRatingsMap();
     const displayRating = pickDisplayRating(

@@ -3,6 +3,7 @@
  * Reihenfolge: Capacitor-Share-Plugin (native Apps, Android-WebView hat kein
  * navigator.share) → Web-Share-API (mobile Browser) → Zwischenablage.
  */
+import { copyTextToClipboard } from '../../utils/clipboard';
 
 interface CapacitorSharePlugin {
   share?: (options: { title?: string; text?: string; url?: string }) => Promise<unknown>;
@@ -53,10 +54,6 @@ export async function shareLink(options: {
     }
   }
 
-  try {
-    await navigator.clipboard.writeText(url);
-    return 'copied';
-  } catch {
-    return 'failed';
-  }
+  const copied = await copyTextToClipboard(url);
+  return copied ? 'copied' : 'failed';
 }

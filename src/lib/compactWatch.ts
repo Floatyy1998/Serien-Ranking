@@ -60,7 +60,8 @@ export function isEpidSeason(season: unknown): season is EpidSeason {
     season != null &&
     typeof season === 'object' &&
     'eps' in (season as Record<string, unknown>) &&
-    typeof (season as EpidSeason).eps === 'object'
+    typeof (season as EpidSeason).eps === 'object' &&
+    (season as EpidSeason).eps !== null
   );
 }
 

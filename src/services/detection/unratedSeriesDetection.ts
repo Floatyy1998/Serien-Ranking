@@ -1,6 +1,10 @@
 import type { Series } from '../../types/Series';
 import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
-import { normalizeSeasons, normalizeEpisodes } from '../../lib/episode/seriesMetrics';
+import {
+  normalizeSeasons,
+  normalizeEpisodes,
+  isEpisodeWatched,
+} from '../../lib/episode/seriesMetrics';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { getSnoozedUntil, cleanupSnoozes } from '../../lib/settings/notificationSettings';
@@ -22,7 +26,7 @@ function getLastCompletedAiredSeason(series: Series): number | null {
     const allAired = eps.every((ep) => hasEpisodeAired(ep));
     if (!allAired) continue;
 
-    const allWatched = eps.every((ep) => ep.watched);
+    const allWatched = eps.every((ep) => isEpisodeWatched(ep));
     if (!allWatched) continue;
 
     const seasonNum = (season.seasonNumber ?? 0) + 1;
@@ -95,6 +99,7 @@ export async function detectUnratedSeries(seriesList: Series[], userId: string):
   const unrated: Series[] = [];
 
   for (const series of seriesList) {
+    if (!series || !series.id) continue;
     if (isSeriesRated(series)) continue;
 
     // Skip if a season is currently airing

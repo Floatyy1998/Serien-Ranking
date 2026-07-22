@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Delete, Warning, CheckCircle, ContentCopy } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
+import { copyTextToClipboard } from '../../../utils/clipboard';
 
 interface DataIssue {
   type?: string;
@@ -105,7 +106,7 @@ export function DataHealthTab({
   };
 
   const copyPath = (path: string) => {
-    navigator.clipboard.writeText(path);
+    void copyTextToClipboard(path);
   };
 
   if (loading) {

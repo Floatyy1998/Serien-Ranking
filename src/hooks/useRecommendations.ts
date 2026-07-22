@@ -89,16 +89,18 @@ export function useRecommendations(): UseRecommendationsReturn {
         t('Unbekannt');
       const senderPhoto = dbPhoto || user.photoURL;
 
+      // Rules capen mediaTitle≤500 / senderName≤200 / message≤2000 — vorher
+      // kürzen, sonst wird der ganze Push mit PERMISSION_DENIED verworfen
       const base: Omit<Recommendation, 'id'> = {
         mediaId: media.id,
         mediaType: media.type,
-        mediaTitle: media.title,
+        mediaTitle: media.title.slice(0, 500),
         ...(media.posterPath ? { mediaPoster: media.posterPath } : {}),
         ...(media.backdropPath ? { mediaBackdrop: media.backdropPath } : {}),
         senderUid: user.uid,
-        senderName,
+        senderName: senderName.slice(0, 200),
         ...(senderPhoto ? { senderPhotoURL: senderPhoto } : {}),
-        ...(message && message.trim() ? { message: message.trim() } : {}),
+        ...(message && message.trim() ? { message: message.trim().slice(0, 2000) } : {}),
         timestamp: Date.now(),
         status: 'pending',
       };

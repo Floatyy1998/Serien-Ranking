@@ -155,9 +155,13 @@ export const DynamicThemeProvider = ({ children }: ThemeProviderProps) => {
   });
 
   const [syncMode, setSyncModeState] = useState<'local' | 'cloud'>(() => {
-    // Lade Sync-Mode aus localStorage (default: local)
-    const savedMode = localStorage.getItem('themeSyncMode');
-    return (savedMode as 'local' | 'cloud') || 'local';
+    // Lade Sync-Mode aus localStorage (default: local); Storage kann werfen
+    try {
+      const savedMode = localStorage.getItem('themeSyncMode');
+      return (savedMode as 'local' | 'cloud') || 'local';
+    } catch {
+      return 'local';
+    }
   });
 
   // CSS-Variablen für globale Verwendung setzen

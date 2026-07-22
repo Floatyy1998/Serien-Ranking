@@ -104,7 +104,8 @@ interface WorkerProcessedEpisode {
 }
 
 self.addEventListener('message', (event) => {
-  const { type, data } = event.data;
+  const { type, data } = event.data || {};
+  if (!data || typeof data !== 'object') return;
 
   switch (type) {
     case 'CALCULATE_STATS': {

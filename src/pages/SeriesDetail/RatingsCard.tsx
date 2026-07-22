@@ -69,7 +69,7 @@ export const RatingsCard = memo<RatingsCardProps>(
         pillBg: 'rgba(245, 197, 24, 0.15)',
         pillBorder: 'rgba(245, 197, 24, 0.3)',
         value: `${imdbRating?.rating?.toFixed(1) || '0.0'}/10`,
-        votes: `(${imdbRating ? (parseInt(imdbRating.votes.replace(/,/g, '')) / 1000).toFixed(1) : '0.0'}k)`,
+        votes: `(${((parseInt(imdbRating?.votes?.replace(/,/g, '') ?? '', 10) || 0) / 1000).toFixed(1)}k)`,
         href: `https://www.imdb.com/title/${imdbId}`,
         disabled: !hasImdb,
         dim: !hasImdb,

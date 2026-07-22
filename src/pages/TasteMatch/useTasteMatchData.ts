@@ -6,6 +6,7 @@ import { fetchPublicUserFields } from '../../services/firebase/userDisplayData';
 import type { TasteMatchResult } from '../../services/tasteMatchService';
 import { calculateTasteMatch } from '../../services/tasteMatchService';
 import { t } from '../../services/i18n';
+import { copyTextToClipboard } from '../../utils/clipboard';
 
 export const getScoreColor = (score: number): string => {
   if (score >= 80) return '#00cec9';
@@ -102,7 +103,7 @@ export const useTasteMatchData = (): TasteMatchData => {
         // cancelled
       }
     } else {
-      navigator.clipboard.writeText(text);
+      void copyTextToClipboard(text);
     }
   };
 

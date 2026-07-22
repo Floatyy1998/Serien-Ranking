@@ -1,7 +1,7 @@
 import type { Series } from '../../types/Series';
 import { hasEpisodeAired } from '../../utils/episodeDate';
 import { t } from '../../services/i18n';
-import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../episode/seriesMetrics';
+import { DEFAULT_EPISODE_RUNTIME_MINUTES, normalizeSeasons } from '../episode/seriesMetrics';
 
 export interface WatchingPace {
   episodesPerWeek: number;
@@ -25,7 +25,8 @@ export function calculateWatchingPace(
     shouldShow: false,
   };
 
-  if (!seasons || seasons.length === 0) return noShow;
+  const normalizedSeasons = normalizeSeasons(seasons);
+  if (normalizedSeasons.length === 0) return noShow;
 
   const now = new Date();
   const watchDates: Date[] = [];
@@ -34,9 +35,14 @@ export function calculateWatchingPace(
   let totalRuntimeMinutes = 0;
   let runtimeSamples = 0;
 
-  for (const season of seasons) {
-    if (!season?.episodes) continue;
-    for (const episode of season.episodes) {
+  for (const season of normalizedSeasons) {
+    // Bewusst lenient (kein normalizeEpisodes): auch Episoden ohne
+    // episode_number zählen hier für Pace/Runtime
+    type Episode = Series['seasons'][number]['episodes'][number];
+    const episodes: Episode[] = Array.isArray(season.episodes)
+      ? season.episodes
+      : Object.values((season.episodes ?? {}) as Record<string, Episode>);
+    for (const episode of episodes) {
       if (!episode) continue;
       if (hasEpisodeAired(episode)) {
         airedCount++;

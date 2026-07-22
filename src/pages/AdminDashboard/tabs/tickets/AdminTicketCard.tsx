@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { BugTicket, TicketPriority, TicketStatus } from '../../../BugReport/types';
 import { PRIORITY_CONFIG, STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
 import { Badge, Section } from './ticketHelpers';
+import { copyTextToClipboard } from '../../../../utils/clipboard';
 import {
   actionBtnStyle,
   autoResize,
@@ -92,13 +93,13 @@ export function AdminTicketCard({
         ? adminNotes.map((n) => ({ author: n.authorName, text: n.text, date: n.createdAt }))
         : undefined,
     };
-    navigator.clipboard.writeText(JSON.stringify(JSON.parse(JSON.stringify(data)), null, 2));
+    void copyTextToClipboard(JSON.stringify(JSON.parse(JSON.stringify(data)), null, 2));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const copyComment = (commentId: string, text: string) => {
-    navigator.clipboard.writeText(text);
+    void copyTextToClipboard(text);
     setCopiedCommentId(commentId);
     setTimeout(() => setCopiedCommentId(null), 2000);
   };

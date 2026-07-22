@@ -88,8 +88,8 @@ describe('detectNewSeasons', () => {
   it('erstmalig gesehene Serie wird still eingelesen (nie benachrichtigt)', async () => {
     const result = await detectNewSeasons([makeSeries({ seasonCount: 2 })], UID);
     expect(result).toEqual([]);
-    // seasonCounts wird geseedet
-    expect(fb.store.get('users/u1/meta/seasonCounts')).toEqual({ '1': 2 });
+    // seasonCounts wird geseedet (per-Key-Write)
+    expect(fb.store.get('users/u1/meta/seasonCounts/1')).toBe(2);
   });
 
   it('seasonCount gestiegen ggü. gespeichertem Stand → benachrichtigt', async () => {
@@ -150,9 +150,9 @@ describe('markNewSeasonsAsShown', () => {
 
 describe('markMultipleSeasonsAsNotified', () => {
   it('hebt seasonCounts auf aktuellen Wert und räumt Notification auf', async () => {
-    fb.store.set('users/u1/meta/seasonCounts', { '1': 2 });
+    fb.store.set('users/u1/meta/seasonCounts/1', 2);
     await markMultipleSeasonsAsNotified([1], UID, [makeSeries({ seasonCount: 3 })]);
-    expect(fb.store.get('users/u1/meta/seasonCounts')).toEqual({ '1': 3 });
+    expect(fb.store.get('users/u1/meta/seasonCounts/1')).toBe(3);
     expect(fb.store.get('users/u1/newSeasonNotifications/1')).toBeUndefined();
   });
 

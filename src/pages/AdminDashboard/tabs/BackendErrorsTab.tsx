@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, Warning, Delete, ContentCopy } from '@mui/icons-material';
 import { dbRef } from '../../../services/db/ref';
+import { copyTextToClipboard } from '../../../utils/clipboard';
 
 interface BackendError {
   timestamp: string;
@@ -96,7 +97,7 @@ export function BackendErrorsTab({
       });
       return `=== ${action.toUpperCase()} (${log.runStart || '?'}) ===\n${lines.join('\n')}`;
     });
-    navigator.clipboard.writeText(sections.join('\n\n'));
+    void copyTextToClipboard(sections.join('\n\n'));
   };
 
   // Group filtered errors by context
@@ -370,7 +371,7 @@ export function BackendErrorsTab({
                           )
                           .map(([k, v]) => `${k}: ${v}`)
                           .join(' | ');
-                        navigator.clipboard.writeText(
+                        void copyTextToClipboard(
                           `[${err.context}] ${err.message}${d ? ` (${d})` : ''}`
                         );
                       }}
@@ -406,7 +407,7 @@ export function BackendErrorsTab({
                     {details.map(([key, val]) => (
                       <span
                         key={key}
-                        onClick={() => navigator.clipboard.writeText(String(val))}
+                        onClick={() => void copyTextToClipboard(String(val))}
                         style={{
                           fontSize: 10,
                           color: '#4cc9f0',

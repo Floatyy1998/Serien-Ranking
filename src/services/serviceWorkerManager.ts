@@ -19,7 +19,6 @@ interface PendingUpdate {
 }
 
 class ServiceWorkerManager {
-  private worker: ServiceWorker | null = null;
   private isSupported: boolean = false;
   private registrationPromise: Promise<ServiceWorkerRegistration> | null = null;
   private updateCheckInterval: ReturnType<typeof setInterval> | null = null;
@@ -233,7 +232,7 @@ class ServiceWorkerManager {
   }
 
   public async getCacheStatus(): Promise<CacheStatus | null> {
-    if (!this.worker) return null;
+    if (!this.isSupported || !navigator.serviceWorker.controller) return null;
 
     return new Promise((resolve) => {
       const channel = new MessageChannel();
@@ -310,6 +309,7 @@ class ServiceWorkerManager {
   }
 
   private postMessage(message: Record<string, unknown>, transfer?: Transferable[]): void {
+    if (!this.isSupported) return;
     if (navigator.serviceWorker.controller) {
       if (transfer) {
         navigator.serviceWorker.controller.postMessage(message, { transfer });

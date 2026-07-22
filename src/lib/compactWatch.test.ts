@@ -43,10 +43,8 @@ describe('compactWatch – Format-Erkennung', () => {
     expect(isEpidSeason({})).toBe(false);
   });
 
-  it('BEFUND: isEpidSeason({eps: null}) ist true (typeof null === "object")', () => {
-    // Quirk gepinnt: eps=null passiert den Type-Guard. readEpisodeById
-    // faengt das per Optional Chaining ab, andere Aufrufer evtl. nicht.
-    expect(isEpidSeason({ eps: null })).toBe(true);
+  it('isEpidSeason({eps: null}) ist false (Rumpf-Meta-Objekt, kein valides Format)', () => {
+    expect(isEpidSeason({ eps: null })).toBe(false);
   });
 
   it('isLegacyArraySeason erkennt nur w als echtes Array', () => {

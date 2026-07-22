@@ -14,14 +14,15 @@ const HANDOFF_RECENCY_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Neuester Watch-Zeitstempel (ms) einer Staffel, oder 0 wenn keiner bekannt. */
 function seasonCompletionAt(
-  eps: Array<{ lastWatchedAt?: string; firstWatchedAt?: string }>
+  eps: Array<{ lastWatchedAt?: string | number; firstWatchedAt?: string | number }>
 ): number {
   let latest = 0;
   for (const ep of eps) {
     const ts = ep.lastWatchedAt || ep.firstWatchedAt;
     if (!ts) continue;
-    const d = new Date(ts).getTime();
-    if (d > latest) latest = d;
+    // Compact-Format speichert Unix-Sekunden — nicht als Millisekunden fehlinterpretieren
+    const d = typeof ts === 'number' ? (ts < 1e12 ? ts * 1000 : ts) : new Date(ts).getTime();
+    if (!isNaN(d) && d > latest) latest = d;
   }
   return latest;
 }
@@ -69,7 +70,7 @@ export async function detectAnimeMangaHandoff(
   const out: AnimeMangaHandoff[] = [];
 
   for (const series of seriesList) {
-    if (series.hidden) continue;
+    if (!series || !series.id || series.hidden) continue;
     const entry = bridge[String(series.id)];
     if (!entry) continue;
 

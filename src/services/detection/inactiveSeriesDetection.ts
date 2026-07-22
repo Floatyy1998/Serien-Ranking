@@ -1,6 +1,7 @@
 import type { Series } from '../../types/Series';
-import { dbGet, dbRef, dbUpdate, paths, userPath } from '../db/ref';
+import { dbGet, dbUpdate, paths, userPath } from '../db/ref';
 import { hasActiveRewatch } from '../../lib/validation/rewatch.utils';
+import { diffDetectionState } from '../../lib/validation/detectionStateDiff';
 import { getEpisodeAirDate } from '../../utils/episodeDate';
 import {
   normalizeSeasons,
@@ -50,10 +51,21 @@ export const getStoredInactiveData = async (
 
 export const storeInactiveData = async (
   userId: string,
-  data: Record<string, InactiveSeriesData>
+  data: Record<string, InactiveSeriesData>,
+  previous: Record<string, InactiveSeriesData> = {}
 ): Promise<void> => {
   try {
-    await dbRef(userPath(userId, 'inactiveSeriesData')).set(data);
+    const updates = diffDetectionState(
+      (key, field) =>
+        field !== undefined
+          ? userPath(userId, 'inactiveSeriesData', key, field)
+          : userPath(userId, 'inactiveSeriesData', key),
+      previous,
+      data
+    );
+    if (Object.keys(updates).length > 0) {
+      await dbUpdate(updates);
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[InactiveSeriesDetection] Failed to store inactive data: ${message}`);
@@ -248,8 +260,8 @@ export const detectInactiveSeries = async (
     }
   }
 
-  // Aktualisierte Daten speichern
-  await storeInactiveData(userId, updatedStoredData);
+  // Aktualisierte Daten speichern (feldgenau, kein Voll-Node-Set)
+  await storeInactiveData(userId, updatedStoredData, storedData);
   await cleanupSnoozes('inactive', userId, currentWatchlistIds);
 
   return inactiveSeries;
@@ -368,9 +380,17 @@ export const detectInactiveRewatches = async (
   }
 
   try {
-    await dbRef(userPath(userId, 'inactiveRewatchData')).set(updatedStoredData);
-    if (Object.keys(cleanupUpdates).length > 0) {
-      await dbUpdate(cleanupUpdates);
+    const stateUpdates = diffDetectionState(
+      (key, field) =>
+        field !== undefined
+          ? userPath(userId, 'inactiveRewatchData', key, field)
+          : userPath(userId, 'inactiveRewatchData', key),
+      storedData,
+      updatedStoredData
+    );
+    const combined = { ...stateUpdates, ...cleanupUpdates };
+    if (Object.keys(combined).length > 0) {
+      await dbUpdate(combined);
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

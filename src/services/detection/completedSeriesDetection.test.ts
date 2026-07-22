@@ -119,9 +119,11 @@ describe('detectCompletedSeries', () => {
   it('First-Run: alle ausgestrahlten Episoden geschaut + Status ended → notify', async () => {
     const result = await detectCompletedSeries([endedFullyWatched()], UID);
     expect(result.map((s) => s.id)).toEqual([1]);
-    // Erst-Erfassung wird persistiert
-    expect(fb.store.get('users/u1/completedSeriesData')).toMatchObject({
-      '1': { seriesId: 1, allEpisodesWatched: true, notified: false },
+    // Erst-Erfassung wird persistiert (feldgenauer Diff-Write → Eintrag unter Kind-Key)
+    expect(fb.store.get('users/u1/completedSeriesData/1')).toMatchObject({
+      seriesId: 1,
+      allEpisodesWatched: true,
+      notified: false,
     });
   });
 

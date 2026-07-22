@@ -67,12 +67,13 @@ export async function sendPetGift(opts: {
         preset.hungerDelta < 0 ? tLocale(locale, ', {n} Hunger', { n: preset.hungerDelta }) : '',
     });
 
+  // Rules capen title≤500 / message≤2000 — fromName ist unbegrenzt lang möglich
   const payload: PetGiftPayload = {
     type: 'pet_gift',
-    title: titleFor('de'),
-    message: messageFor('de'),
-    titleEn: titleFor('en'),
-    messageEn: messageFor('en'),
+    title: titleFor('de').slice(0, 500),
+    message: messageFor('de').slice(0, 2000),
+    titleEn: titleFor('en').slice(0, 500),
+    messageEn: messageFor('en').slice(0, 2000),
     timestamp: Date.now(),
     read: false,
     data: {

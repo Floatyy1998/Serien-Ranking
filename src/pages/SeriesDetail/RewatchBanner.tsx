@@ -79,15 +79,17 @@ export function RewatchBanner({
         <motion.button
           whileTap={tapScale}
           onClick={() => {
-            const sIdx = series.seasons.findIndex(
-              (s: Series['seasons'][number]) => s.seasonNumber === nextEp.seasonNumber
+            const seasons = Array.isArray(series.seasons) ? series.seasons : [];
+            const sIdx = seasons.findIndex(
+              (s: Series['seasons'][number]) => s?.seasonNumber === nextEp.seasonNumber
             );
-            if (sIdx >= 0) {
+            const item = sIdx >= 0 ? seasons[sIdx]?.episodes?.[nextEp.episodeIndex] : undefined;
+            if (item) {
               setSelectedSeasonIndex(sIdx);
               setShowRewatchDialog({
                 show: true,
                 type: 'episode',
-                item: series.seasons[sIdx].episodes[nextEp.episodeIndex],
+                item,
                 seasonNumber: nextEp.seasonNumber + 1,
                 episodeNumber: nextEp.episodeIndex + 1,
               });

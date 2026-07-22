@@ -38,11 +38,15 @@ export const sendNotificationToUser = async (
 ) => {
   try {
     const { titleEn, messageEn, ...base } = notification;
+    // Rules capen title≤500 / message≤2000 — vorher kürzen, sonst wird der
+    // ganze Push mit PERMISSION_DENIED verworfen
     const notificationRef = dbRef(userPath(targetUserId, 'notifications'));
     await notificationRef.push({
       ...base,
-      ...(titleEn && { titleEn }),
-      ...(messageEn && { messageEn }),
+      title: base.title.slice(0, 500),
+      message: base.message.slice(0, 2000),
+      ...(titleEn && { titleEn: titleEn.slice(0, 500) }),
+      ...(messageEn && { messageEn: messageEn.slice(0, 2000) }),
       timestamp: Date.now(),
       read: false,
     });

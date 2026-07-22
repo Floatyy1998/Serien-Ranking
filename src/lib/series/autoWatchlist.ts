@@ -1,10 +1,14 @@
 import type { Series } from '../../types/Series';
+import { normalizeSeasons, isEpisodeWatched } from '../episode/seriesMetrics';
 
 type AutoWatchlistSeries = Pick<Series, 'id' | 'watchlist' | 'seasons'>;
 
 export function shouldAutoEnableWatchlist(series: AutoWatchlistSeries | null | undefined): boolean {
   if (!series || series.watchlist) return false;
-  const hasAnyWatched = series.seasons?.some((s) => s.episodes?.some((ep) => ep.watched));
+  const hasAnyWatched = normalizeSeasons(series.seasons).some((s) => {
+    const eps = Array.isArray(s.episodes) ? s.episodes : Object.values(s.episodes ?? {});
+    return eps.some((ep) => !!ep && isEpisodeWatched(ep));
+  });
   return !hasAnyWatched;
 }
 

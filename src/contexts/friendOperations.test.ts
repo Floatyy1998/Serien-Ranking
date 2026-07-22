@@ -84,7 +84,7 @@ const fb = vi.hoisted(() => {
     },
     orderByChild: (field: string) => makeQuery(path, field),
   });
-  const database = (() => ({ ref: (p = '') => makeRef(p) })) as unknown as {
+  const database = (() => ({ ref: (p = '') => makeRef(p === '/' ? '' : p) })) as unknown as {
     (): { ref: (p?: string) => Record<string, unknown> };
     ServerValue: { TIMESTAMP: unknown };
   };
@@ -162,16 +162,15 @@ describe('sendFriendRequestOp', () => {
     expect(fb.getByPath('users/me/sentRequestTo/target')).toBeDefined();
   });
 
-  it('fällt auf den users-Root zurück, wenn der Index leer ist', async () => {
+  it('greift bei Index-Miss NICHT auf den users-Root zurück (Rules erlauben ihn nicht)', async () => {
     fb.setByPath('users', {
       target: { usernameLower: 'bob', username: 'Bob', email: 'b@x.de' },
       me: { username: 'MeName', email: 'me@x.de' },
     });
 
     const ok = await sendFriendRequestOp(me, 'bob');
-    expect(ok).toBe(true);
-    const reqs = fb.getByPath('friendRequests') as Record<string, Record<string, unknown>>;
-    expect(Object.values(reqs)[0].toUserId).toBe('target');
+    expect(ok).toBe(false);
+    expect(fb.getByPath('friendRequests')).toBeUndefined();
   });
 
   it('liefert false, wenn nirgends ein User gefunden wird', async () => {
