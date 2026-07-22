@@ -23,6 +23,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
 
   const iconSize = Math.round(size * 0.5);
   const borderColor = size >= 36 ? `${currentTheme.primary}40` : currentTheme.border.default;
+  const initial = username?.trim().charAt(0).toUpperCase() || '';
 
   const handleClick = () => {
     if (navigable) navigate(`/friend/${userId}`);
@@ -48,19 +49,34 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
               backgroundPosition: 'center',
             }
           : {
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info})`,
+              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.status.info.main})`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }),
       }}
     >
-      {!photoURL && (
-        <Person
-          style={{ fontSize: iconSize, color: currentTheme.text.primary }}
-          aria-hidden="true"
-        />
-      )}
+      {!photoURL &&
+        (initial ? (
+          <span
+            style={{
+              fontSize: Math.round(size * 0.42),
+              fontWeight: 700,
+              lineHeight: 1,
+              color: '#fff',
+              fontFamily: 'var(--font-display)',
+              userSelect: 'none',
+            }}
+            aria-hidden="true"
+          >
+            {initial}
+          </span>
+        ) : (
+          <Person
+            style={{ fontSize: iconSize, color: currentTheme.text.primary }}
+            aria-hidden="true"
+          />
+        ))}
     </button>
   );
 };

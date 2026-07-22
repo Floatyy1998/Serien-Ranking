@@ -98,9 +98,18 @@ const FeedCard: React.FC<{
                   }
                 : {
                     background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: '#fff',
+                    userSelect: 'none',
                   }),
             }}
-          />
+          >
+            {!entry.userPhotoURL && (entry.username?.trim().charAt(0).toUpperCase() || '')}
+          </div>
           <span style={{ fontSize: '14px', fontWeight: 700, color: currentTheme.text.primary }}>
             {entry.username}
           </span>
