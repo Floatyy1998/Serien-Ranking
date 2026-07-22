@@ -12,7 +12,11 @@ interface UserMessage {
 interface UserProfile {
   displayName: string;
   username: string;
+  /** Vom Client gespiegelte App-Sprache (users/$uid/language), '' = unbekannt. */
+  language: string;
 }
+
+type LangFilter = 'all' | 'de' | 'en' | 'unknown';
 
 interface MessagesTabProps {
   theme: {
@@ -33,6 +37,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   // In-App-Notification (users/$uid/notifications) — läuft über den
   // admin-gesicherten Backend-Endpoint /admin/notify (Admin-SDK-Write).
   const [notifSearch, setNotifSearch] = useState('');
+  const [notifLangFilter, setNotifLangFilter] = useState<LangFilter>('all');
   const [notifListOpen, setNotifListOpen] = useState(false);
   const [notifTargets, setNotifTargets] = useState<Record<string, string>>({});
   const [notifTitle, setNotifTitle] = useState('');
@@ -58,6 +63,8 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           profiles[uid] = {
             displayName: val[uid]?.displayName || '',
             username: val[uid]?.username || '',
+            language:
+              val[uid]?.language === 'de' || val[uid]?.language === 'en' ? val[uid].language : '',
           };
         });
         setUsers(profiles);
@@ -91,8 +98,13 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     );
   });
 
+  const matchesLangFilter = (u: UserProfile): boolean =>
+    notifLangFilter === 'all' ||
+    (notifLangFilter === 'unknown' ? !u.language : u.language === notifLangFilter);
+
   const notifFilteredUsers = Object.entries(users)
     .filter(([uid, u]) => {
+      if (!matchesLangFilter(u)) return false;
       const q = notifSearch.toLowerCase();
       return (
         u.displayName?.toLowerCase().includes(q) ||
@@ -104,6 +116,16 @@ export function MessagesTab({ theme }: MessagesTabProps) {
       (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '', 'de')
     );
 
+  const langCounts = Object.values(users).reduce(
+    (acc, u) => {
+      if (u.language === 'de') acc.de++;
+      else if (u.language === 'en') acc.en++;
+      else acc.unknown++;
+      return acc;
+    },
+    { de: 0, en: 0, unknown: 0 }
+  );
+
   const toggleNotifTarget = (uid: string, name: string) => {
     setNotifTargets((prev) => {
       const next = { ...prev };
@@ -113,10 +135,11 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     });
   };
 
+  // Wählt alle User des aktiven Sprach-Filters (Suche wird ignoriert)
   const selectAllNotifTargets = () => {
     const all: Record<string, string> = {};
     Object.entries(users).forEach(([uid, u]) => {
-      all[uid] = u.displayName || u.username || uid;
+      if (matchesLangFilter(u)) all[uid] = u.displayName || u.username || uid;
     });
     setNotifTargets(all);
   };
@@ -217,6 +240,37 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           In-App-Notification senden
         </h3>
 
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          {(
+            [
+              { id: 'all', label: `Alle (${Object.keys(users).length})` },
+              { id: 'de', label: `🇩🇪 Deutsch (${langCounts.de})` },
+              { id: 'en', label: `🇬🇧 Englisch (${langCounts.en})` },
+              { id: 'unknown', label: `? Unbekannt (${langCounts.unknown})` },
+            ] as { id: LangFilter; label: string }[]
+          ).map((f) => {
+            const active = notifLangFilter === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => setNotifLangFilter(f.id)}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '999px',
+                  border: `1px solid ${active ? theme.primary : 'rgba(255,255,255,0.08)'}`,
+                  background: active ? `${theme.primary}20` : 'transparent',
+                  color: active ? theme.primary : theme.text.muted,
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                }}
+              >
+                {f.label}
+              </button>
+            );
+          })}
+        </div>
+
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
           <input
             type="text"
@@ -253,7 +307,13 @@ export function MessagesTab({ theme }: MessagesTabProps) {
               fontWeight: 600,
             }}
           >
-            Alle auswählen ({Object.keys(users).length})
+            Alle auswählen (
+            {notifLangFilter === 'all'
+              ? Object.keys(users).length
+              : notifLangFilter === 'unknown'
+                ? langCounts.unknown
+                : langCounts[notifLangFilter]}
+            )
           </button>
           {Object.keys(notifTargets).length > 0 && (
             <button
@@ -319,6 +379,19 @@ export function MessagesTab({ theme }: MessagesTabProps) {
                     {selected ? '✓' : ''}
                   </span>
                   <strong>{u.displayName || u.username || 'Unbekannt'}</strong>
+                  <span
+                    style={{
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      background: 'rgba(255,255,255,0.06)',
+                      color: theme.text.muted,
+                      fontSize: '10px',
+                      fontWeight: 700,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {u.language ? u.language.toUpperCase() : '?'}
+                  </span>
                   <span style={{ color: theme.text.muted, fontSize: '11px' }}>
                     {uid.slice(0, 12)}...
                   </span>
