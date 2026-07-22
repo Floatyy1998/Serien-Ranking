@@ -13,7 +13,7 @@ import {
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
-import { t } from '../services/i18n';
+import { t, tLocale } from '../services/i18n';
 
 // Re-export useDiscussionReplies so existing imports continue to work
 export { useDiscussionReplies } from './useDiscussionReplies';
@@ -207,13 +207,21 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         if (!isOwner && input.isSpoiler === true && discussion?.userId) {
           const { username } = await getUserDisplayData(user);
 
+          const vars = { name: username, title: discussion.title };
           await sendNotificationToUser(discussion.userId, {
             type: 'spoiler_flag',
-            title: t('Spoiler-Markierung'),
-            message: t('{name} hat deine Diskussion "{title}" als Spoiler markiert', {
-              name: username,
-              title: discussion.title,
-            }),
+            title: 'Spoiler-Markierung',
+            titleEn: tLocale('en', 'Spoiler-Markierung'),
+            message: tLocale(
+              'de',
+              '{name} hat deine Diskussion "{title}" als Spoiler markiert',
+              vars
+            ),
+            messageEn: tLocale(
+              'en',
+              '{name} hat deine Diskussion "{title}" als Spoiler markiert',
+              vars
+            ),
             data: {
               discussionId,
               itemId,
@@ -285,13 +293,13 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           if (discussion && discussion.userId !== user.uid) {
             const { username } = await getUserDisplayData(user);
 
+            const vars = { name: username, title: discussion.title };
             await sendNotificationToUser(discussion.userId, {
               type: 'discussion_like',
-              title: t('Neue Reaktion'),
-              message: t('{name} gefällt deine Diskussion "{title}"', {
-                name: username,
-                title: discussion.title,
-              }),
+              title: 'Neue Reaktion',
+              titleEn: tLocale('en', 'Neue Reaktion'),
+              message: tLocale('de', '{name} gefällt deine Diskussion "{title}"', vars),
+              messageEn: tLocale('en', '{name} gefällt deine Diskussion "{title}"', vars),
               data: {
                 discussionId,
                 itemId,

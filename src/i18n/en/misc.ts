@@ -102,6 +102,10 @@ const dict: Record<string, string> = {
   'Neuer Feature-Wunsch': 'New feature request',
   'Neuer Kommentar': 'New comment',
   '{name} hat auf "{title}" geantwortet': '{name} replied to "{title}"',
+  'Ticket-Status geändert': 'Ticket status changed',
+  'Dein Ticket "{title}" ist jetzt: {status}': 'Your ticket "{title}" is now: {status}',
+  'Antwort auf dein Ticket': 'Reply to your ticket',
+  'Admin hat auf "{title}" geantwortet: {snippet}': 'Admin replied to "{title}": {snippet}',
 };
 
 export default dict;

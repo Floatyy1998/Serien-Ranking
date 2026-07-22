@@ -16,7 +16,9 @@ export const getDiscussionPath = (
   return `discussions/${itemType}/${itemId}`;
 };
 
-// Helper to send notification to another user
+// Helper to send notification to another user.
+// title/message sind die deutschen Quelltexte, titleEn/messageEn die englische
+// Variante — die Anzeige/der Push-Versand wählt nach Empfänger-Sprache.
 export const sendNotificationToUser = async (
   targetUserId: string,
   notification: {
@@ -28,13 +30,18 @@ export const sendNotificationToUser = async (
       | 'bug_ticket_status';
     title: string;
     message: string;
+    titleEn?: string;
+    messageEn?: string;
     data?: Record<string, unknown>;
   }
 ) => {
   try {
+    const { titleEn, messageEn, ...base } = notification;
     const notificationRef = dbRef(userPath(targetUserId, 'notifications'));
     await notificationRef.push({
-      ...notification,
+      ...base,
+      ...(titleEn && { titleEn }),
+      ...(messageEn && { messageEn }),
       timestamp: Date.now(),
       read: false,
     });
@@ -47,6 +54,8 @@ export const sendNotificationToUser = async (
     await queuePush(targetUserId, {
       title: notification.title,
       body: notification.message,
+      ...(titleEn && { titleEn }),
+      ...(messageEn && { bodyEn: messageEn }),
       url,
     });
   } catch (error) {

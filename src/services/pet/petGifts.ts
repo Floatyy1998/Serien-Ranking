@@ -1,5 +1,5 @@
 import { dbRef, userPath } from '../../services/db/ref';
-import { t } from '../i18n';
+import { t, tLocale } from '../i18n';
 import { queuePush } from '../pushQueue';
 
 export type PetGiftType = 'snack' | 'toy';
@@ -8,6 +8,8 @@ export interface PetGiftPayload {
   type: 'pet_gift';
   title: string;
   message: string;
+  titleEn?: string;
+  messageEn?: string;
   timestamp: number;
   read: boolean;
   data: {
@@ -19,12 +21,13 @@ export interface PetGiftPayload {
   };
 }
 
+// label = deutscher Quelltext; Lokalisierung erst beim Bauen der Texte (tLocale)
 const GIFT_PRESETS: Record<
   PetGiftType,
   { hungerDelta: number; happinessDelta: number; label: string }
 > = {
-  snack: { hungerDelta: -10, happinessDelta: 5, label: t('Snack') },
-  toy: { hungerDelta: 0, happinessDelta: 10, label: t('Spielzeug') },
+  snack: { hungerDelta: -10, happinessDelta: 5, label: 'Snack' },
+  toy: { hungerDelta: 0, happinessDelta: 10, label: 'Spielzeug' },
 };
 
 const COOLDOWN_LS_PREFIX = 'petGiftSentAt:';
@@ -52,13 +55,24 @@ export async function sendPetGift(opts: {
   const { fromUid, fromName, toUid, giftType } = opts;
   const preset = GIFT_PRESETS[giftType];
 
+  const titleFor = (locale: 'de' | 'en') =>
+    tLocale(locale, '{name} schickt {gift}', {
+      name: fromName,
+      gift: tLocale(locale, preset.label),
+    });
+  const messageFor = (locale: 'de' | 'en') =>
+    tLocale(locale, 'Dein Pet freut sich (+{h} Glück{rest})', {
+      h: preset.happinessDelta,
+      rest:
+        preset.hungerDelta < 0 ? tLocale(locale, ', {n} Hunger', { n: preset.hungerDelta }) : '',
+    });
+
   const payload: PetGiftPayload = {
     type: 'pet_gift',
-    title: t('{name} schickt {gift}', { name: fromName, gift: preset.label }),
-    message: t('Dein Pet freut sich (+{h} Glück{rest})', {
-      h: preset.happinessDelta,
-      rest: preset.hungerDelta < 0 ? t(', {n} Hunger', { n: preset.hungerDelta }) : '',
-    }),
+    title: titleFor('de'),
+    message: messageFor('de'),
+    titleEn: titleFor('en'),
+    messageEn: messageFor('en'),
     timestamp: Date.now(),
     read: false,
     data: {
@@ -74,6 +88,8 @@ export async function sendPetGift(opts: {
   await queuePush(toUid, {
     title: `🎁 ${payload.title}`,
     body: payload.message,
+    titleEn: `🎁 ${payload.titleEn}`,
+    bodyEn: payload.messageEn,
     url: '/pets',
   });
 

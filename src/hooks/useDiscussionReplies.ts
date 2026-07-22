@@ -9,7 +9,7 @@ import type {
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
-import { t } from '../services/i18n';
+import { t, tLocale } from '../services/i18n';
 
 interface EditReplyInput {
   content?: string;
@@ -141,18 +141,16 @@ export const useDiscussionReplies = (
         // Send notification to all participants
         for (const participantId of participantIds) {
           const isAuthor = participantId === discussion?.userId;
+          const template = isAuthor
+            ? '{name} hat auf deine Diskussion "{title}" geantwortet'
+            : '{name} hat auch auf "{title}" geantwortet';
+          const vars = { name: username, title: discussion?.title ?? '' };
           await sendNotificationToUser(participantId, {
             type: 'discussion_reply',
-            title: t('Neue Antwort'),
-            message: isAuthor
-              ? t('{name} hat auf deine Diskussion "{title}" geantwortet', {
-                  name: username,
-                  title: discussion.title,
-                })
-              : t('{name} hat auch auf "{title}" geantwortet', {
-                  name: username,
-                  title: discussion?.title ?? '',
-                }),
+            title: 'Neue Antwort',
+            titleEn: tLocale('en', 'Neue Antwort'),
+            message: tLocale('de', template, vars),
+            messageEn: tLocale('en', template, vars),
             data: {
               discussionId,
               discussionPath,
@@ -254,14 +252,25 @@ export const useDiscussionReplies = (
         if (!isOwner && input.isSpoiler === true && reply?.userId) {
           const { username } = await getUserDisplayData(user);
 
+          const vars = {
+            name: username,
+            snippet:
+              reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content,
+          };
           await sendNotificationToUser(reply.userId, {
             type: 'spoiler_flag',
-            title: t('Spoiler-Markierung'),
-            message: t('{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"', {
-              name: username,
-              snippet:
-                reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content,
-            }),
+            title: 'Spoiler-Markierung',
+            titleEn: tLocale('en', 'Spoiler-Markierung'),
+            message: tLocale(
+              'de',
+              '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
+              vars
+            ),
+            messageEn: tLocale(
+              'en',
+              '{name} hat deinen Kommentar als Spoiler markiert: "{snippet}"',
+              vars
+            ),
             data: {
               discussionId,
               discussionPath,
@@ -333,16 +342,17 @@ export const useDiscussionReplies = (
           if (reply && reply.userId !== user.uid) {
             const { username } = await getUserDisplayData(user);
 
+            const vars = {
+              name: username,
+              snippet:
+                reply.content.length > 50 ? reply.content.substring(0, 50) + '...' : reply.content,
+            };
             await sendNotificationToUser(reply.userId, {
               type: 'discussion_like',
-              title: t('Neue Reaktion'),
-              message: t('{name} gefällt deine Antwort: "{snippet}"', {
-                name: username,
-                snippet:
-                  reply.content.length > 50
-                    ? reply.content.substring(0, 50) + '...'
-                    : reply.content,
-              }),
+              title: 'Neue Reaktion',
+              titleEn: tLocale('en', 'Neue Reaktion'),
+              message: tLocale('de', '{name} gefällt deine Antwort: "{snippet}"', vars),
+              messageEn: tLocale('en', '{name} gefällt deine Antwort: "{snippet}"', vars),
               data: {
                 discussionId,
                 discussionPath,

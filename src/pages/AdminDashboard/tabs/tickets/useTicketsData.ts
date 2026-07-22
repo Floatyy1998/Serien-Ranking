@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { dbRef } from '../../../../services/db/ref';
+import { tLocale } from '../../../../services/i18n';
 import { sendNotificationToUser } from '../../../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketStatus, TicketType } from '../../../BugReport/types';
 import { STATUS_CONFIG, TYPE_CONFIG } from '../../../BugReport/types';
@@ -100,11 +101,17 @@ export function useTicketsData(): UseTicketsDataResult {
         updatedAt: new Date().toISOString(),
       });
       if (updates.status && ticket && updates.status !== ticket.status) {
-        const statusLabel = (STATUS_CONFIG[updates.status] || STATUS_CONFIG.done).label;
+        const statusRaw = (STATUS_CONFIG[updates.status] || STATUS_CONFIG.done).rawLabel;
+        const template = 'Dein Ticket "{title}" ist jetzt: {status}';
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_status',
           title: 'Ticket-Status geändert',
-          message: `Dein Ticket "${ticket.title}" ist jetzt: ${statusLabel}`,
+          titleEn: tLocale('en', 'Ticket-Status geändert'),
+          message: tLocale('de', template, { title: ticket.title, status: statusRaw }),
+          messageEn: tLocale('en', template, {
+            title: ticket.title,
+            status: tLocale('en', statusRaw),
+          }),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }
@@ -128,10 +135,17 @@ export function useTicketsData(): UseTicketsDataResult {
       await dbRef(`bugTickets/${ticketId}/updatedAt`).set(new Date().toISOString());
       const ticket = tickets.find((t) => t.id === ticketId);
       if (ticket) {
+        const template = 'Admin hat auf "{title}" geantwortet: {snippet}';
+        const vars = {
+          title: ticket.title,
+          snippet: `${text.slice(0, 80)}${text.length > 80 ? '...' : ''}`,
+        };
         await sendNotificationToUser(ticket.createdBy, {
           type: 'bug_ticket_reply',
           title: 'Antwort auf dein Ticket',
-          message: `Admin hat auf "${ticket.title}" geantwortet: ${text.slice(0, 80)}${text.length > 80 ? '...' : ''}`,
+          titleEn: tLocale('en', 'Antwort auf dein Ticket'),
+          message: tLocale('de', template, vars),
+          messageEn: tLocale('en', template, vars),
           data: { ticketId, ticketType: ticket.ticketType || 'bug' },
         });
       }

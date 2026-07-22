@@ -21,6 +21,9 @@ export interface AppNotification {
     | 'data_heal';
   title: string;
   message: string;
+  // Englische Variante (Cross-User-Notifications) — Anzeige wählt nach appLocale
+  titleEn?: string;
+  messageEn?: string;
   timestamp: number;
   read: boolean;
   data?: Record<string, unknown>;

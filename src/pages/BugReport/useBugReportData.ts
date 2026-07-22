@@ -6,7 +6,7 @@ import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
-import { t } from '../../services/i18n';
+import { t, tLocale } from '../../services/i18n';
 
 const AUTO_DELETE_DAYS = 5;
 
@@ -96,7 +96,8 @@ export function useBugReportData() {
         // Notification an Admin
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
-          title: isBug ? t('Neues Bug-Ticket') : t('Neuer Feature-Wunsch'),
+          title: isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch',
+          titleEn: tLocale('en', isBug ? 'Neues Bug-Ticket' : 'Neuer Feature-Wunsch'),
           message: `${displayName}: "${data.title}"`,
           data: { ticketId, ticketType: data.ticketType },
         });
@@ -135,13 +136,13 @@ export function useBugReportData() {
         const ticketData = ticketSnap.val();
         const ticketTitle = ticketData?.title || 'Ticket';
         const ticketType = ticketData?.ticketType || 'bug';
+        const vars = { name: displayName, title: ticketTitle };
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
-          title: t('Neuer Kommentar'),
-          message: t('{name} hat auf "{title}" geantwortet', {
-            name: displayName,
-            title: ticketTitle,
-          }),
+          title: 'Neuer Kommentar',
+          titleEn: tLocale('en', 'Neuer Kommentar'),
+          message: tLocale('de', '{name} hat auf "{title}" geantwortet', vars),
+          messageEn: tLocale('en', '{name} hat auf "{title}" geantwortet', vars),
           data: { ticketId, ticketType },
         });
 

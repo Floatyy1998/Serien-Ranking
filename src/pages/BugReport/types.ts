@@ -32,12 +32,16 @@ export interface BugTicket {
   consoleErrors?: string;
 }
 
-export const STATUS_CONFIG: Record<TicketStatus, { label: string; color: string }> = {
-  open: { label: t('Offen'), color: '#f59e0b' },
-  'in-progress': { label: t('In Bearbeitung'), color: '#3b82f6' },
-  done: { label: t('Erledigt'), color: '#22c55e' },
-  rejected: { label: t('Abgelehnt'), color: '#ef4444' },
-  obsolete: { label: t('Hinfällig'), color: '#78716c' },
+// rawLabel = deutscher Quelltext, für sprachfixierte Benachrichtigungen (tLocale)
+export const STATUS_CONFIG: Record<
+  TicketStatus,
+  { label: string; rawLabel: string; color: string }
+> = {
+  open: { label: t('Offen'), rawLabel: 'Offen', color: '#f59e0b' },
+  'in-progress': { label: t('In Bearbeitung'), rawLabel: 'In Bearbeitung', color: '#3b82f6' },
+  done: { label: t('Erledigt'), rawLabel: 'Erledigt', color: '#22c55e' },
+  rejected: { label: t('Abgelehnt'), rawLabel: 'Abgelehnt', color: '#ef4444' },
+  obsolete: { label: t('Hinfällig'), rawLabel: 'Hinfällig', color: '#78716c' },
 };
 
 export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: string }> = {

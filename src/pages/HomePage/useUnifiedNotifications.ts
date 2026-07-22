@@ -6,7 +6,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
-import { t } from '../../services/i18n';
+import { isEnglish, t } from '../../services/i18n';
 
 export interface RecommendationCardData {
   recId: string;
@@ -359,8 +359,9 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       const item: UnifiedNotification = {
         id: `notif_${n.id}`,
         kind: isPet || isPendingDrop ? 'pet' : isBugTicket ? 'bug_ticket' : 'discussion',
-        title: n.title,
-        message: n.message,
+        // Zweisprachig gespeicherte Notifications in der Leser-Sprache anzeigen
+        title: isEnglish() && n.titleEn ? n.titleEn : n.title,
+        message: isEnglish() && n.messageEn ? n.messageEn : n.message,
         timestamp: n.timestamp,
         read: n.read,
         navigateTo:

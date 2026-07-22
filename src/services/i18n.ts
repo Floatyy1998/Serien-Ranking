@@ -55,12 +55,21 @@ export const appLocale: 'de' | 'en' = detect();
 
 export const isEnglish = (): boolean => appLocale === 'en';
 
-export function t(text: string, vars?: Record<string, string | number>): string {
-  let out = appLocale === 'en' ? (en[text] ?? text) : text;
+/** Übersetzung in eine feste Sprache — z. B. für Benachrichtigungen an andere User. */
+export function tLocale(
+  locale: 'de' | 'en',
+  text: string,
+  vars?: Record<string, string | number>
+): string {
+  let out = locale === 'en' ? (en[text] ?? text) : text;
   if (vars) {
     for (const key of Object.keys(vars)) {
       out = out.split(`{${key}}`).join(String(vars[key]));
     }
   }
   return out;
+}
+
+export function t(text: string, vars?: Record<string, string | number>): string {
+  return tLocale(appLocale, text, vars);
 }
