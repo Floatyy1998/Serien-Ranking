@@ -33,6 +33,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
   // In-App-Notification (users/$uid/notifications) — läuft über den
   // admin-gesicherten Backend-Endpoint /admin/notify (Admin-SDK-Write).
   const [notifSearch, setNotifSearch] = useState('');
+  const [notifListOpen, setNotifListOpen] = useState(false);
   const [notifTargets, setNotifTargets] = useState<Record<string, string>>({});
   const [notifTitle, setNotifTitle] = useState('');
   const [notifMessage, setNotifMessage] = useState('');
@@ -90,14 +91,35 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     );
   });
 
-  const notifFilteredUsers = Object.entries(users).filter(([uid, u]) => {
-    const q = notifSearch.toLowerCase();
-    return (
-      u.displayName?.toLowerCase().includes(q) ||
-      u.username?.toLowerCase().includes(q) ||
-      uid.toLowerCase().includes(q)
+  const notifFilteredUsers = Object.entries(users)
+    .filter(([uid, u]) => {
+      const q = notifSearch.toLowerCase();
+      return (
+        u.displayName?.toLowerCase().includes(q) ||
+        u.username?.toLowerCase().includes(q) ||
+        uid.toLowerCase().includes(q)
+      );
+    })
+    .sort(([, a], [, b]) =>
+      (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '', 'de')
     );
-  });
+
+  const toggleNotifTarget = (uid: string, name: string) => {
+    setNotifTargets((prev) => {
+      const next = { ...prev };
+      if (next[uid]) delete next[uid];
+      else next[uid] = name;
+      return next;
+    });
+  };
+
+  const selectAllNotifTargets = () => {
+    const all: Record<string, string> = {};
+    Object.entries(users).forEach(([uid, u]) => {
+      all[uid] = u.displayName || u.username || uid;
+    });
+    setNotifTargets(all);
+  };
 
   const handleSendNotification = async () => {
     const uids = Object.keys(notifTargets);
@@ -105,38 +127,45 @@ export function MessagesTab({ theme }: MessagesTabProps) {
     setNotifSending(true);
     setNotifResult('');
     try {
-      const res = await backendFetch('/admin/notify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uids,
-          title: notifTitle.trim(),
-          message: notifMessage.trim(),
-          withPush: notifPush,
-        }),
-      });
-      const data = (await res.json()) as {
-        sent?: number;
-        results?: { uid: string; ok: boolean; error?: string }[];
-        error?: string;
-      };
-      if (!res.ok) {
-        setNotifResult(`Fehler: ${data.error || res.status}`);
-      } else {
-        const failed = (data.results || []).filter((r) => !r.ok);
-        setNotifResult(
-          failed.length
-            ? `${data.sent} gesendet, ${failed.length} fehlgeschlagen: ${failed
-                .map((f) => `${f.uid.slice(0, 8)}… (${f.error})`)
-                .join(', ')}`
-            : `${data.sent} Notification(s) gesendet ✓`
-        );
-        if (!failed.length) {
-          setNotifTargets({});
-          setNotifTitle('');
-          setNotifMessage('');
-          setNotifPush(false);
+      // Backend deckelt bei 200 Empfängern pro Aufruf — in Blöcken senden
+      let sent = 0;
+      const failed: { uid: string; error?: string }[] = [];
+      for (let i = 0; i < uids.length; i += 200) {
+        const res = await backendFetch('/admin/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uids: uids.slice(i, i + 200),
+            title: notifTitle.trim(),
+            message: notifMessage.trim(),
+            withPush: notifPush,
+          }),
+        });
+        const data = (await res.json()) as {
+          sent?: number;
+          results?: { uid: string; ok: boolean; error?: string }[];
+          error?: string;
+        };
+        if (!res.ok) {
+          setNotifResult(`Fehler: ${data.error || res.status}`);
+          setNotifSending(false);
+          return;
         }
+        sent += data.sent || 0;
+        failed.push(...(data.results || []).filter((r) => !r.ok));
+      }
+      setNotifResult(
+        failed.length
+          ? `${sent} gesendet, ${failed.length} fehlgeschlagen: ${failed
+              .map((f) => `${f.uid.slice(0, 8)}… (${f.error})`)
+              .join(', ')}`
+          : `${sent} Notification(s) gesendet ✓`
+      );
+      if (!failed.length) {
+        setNotifTargets({});
+        setNotifTitle('');
+        setNotifMessage('');
+        setNotifPush(false);
       }
     } catch (e) {
       setNotifResult(`Fehler: ${e instanceof Error ? e.message : String(e)}`);
@@ -188,49 +217,119 @@ export function MessagesTab({ theme }: MessagesTabProps) {
           In-App-Notification senden
         </h3>
 
-        <input
-          type="text"
-          value={notifSearch}
-          onChange={(e) => setNotifSearch(e.target.value)}
-          placeholder="Empfänger suchen (Name oder UID)..."
-          style={{ ...inputStyle, marginBottom: '8px' }}
-        />
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            value={notifSearch}
+            onChange={(e) => setNotifSearch(e.target.value)}
+            onFocus={() => setNotifListOpen(true)}
+            placeholder="Empfänger suchen (Name oder UID)..."
+            style={{ ...inputStyle, flex: 1, width: 'auto', minWidth: '180px' }}
+          />
+          <button
+            onClick={() => setNotifListOpen((v) => !v)}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '8px',
+              border: '1px solid rgba(255,255,255,0.08)',
+              background: theme.background.default,
+              color: theme.text.secondary,
+              cursor: 'pointer',
+              fontSize: '13px',
+            }}
+          >
+            {notifListOpen ? 'Liste ▴' : 'Liste ▾'}
+          </button>
+          <button
+            onClick={selectAllNotifTargets}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '8px',
+              border: `1px solid ${theme.primary}40`,
+              background: `${theme.primary}15`,
+              color: theme.primary,
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+            }}
+          >
+            Alle auswählen ({Object.keys(users).length})
+          </button>
+          {Object.keys(notifTargets).length > 0 && (
+            <button
+              onClick={() => setNotifTargets({})}
+              style={{
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255,255,255,0.08)',
+                background: 'transparent',
+                color: theme.text.muted,
+                cursor: 'pointer',
+                fontSize: '13px',
+              }}
+            >
+              Leeren
+            </button>
+          )}
+        </div>
 
-        {notifSearch && (
+        {(notifListOpen || notifSearch) && (
           <div
             style={{
-              maxHeight: '150px',
+              maxHeight: '220px',
               overflowY: 'auto',
               marginBottom: '8px',
               borderRadius: '8px',
               border: '1px solid rgba(255,255,255,0.06)',
             }}
           >
-            {notifFilteredUsers.slice(0, 20).map(([uid, u]) => (
-              <div
-                key={uid}
-                onClick={() => {
-                  setNotifTargets((prev) => ({
-                    ...prev,
-                    [uid]: u.displayName || u.username || uid,
-                  }));
-                  setNotifSearch('');
-                }}
-                style={{
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  background: notifTargets[uid] ? `${theme.primary}20` : theme.background.default,
-                  fontSize: '13px',
-                  color: theme.text.secondary,
-                  borderBottom: '1px solid rgba(255,255,255,0.04)',
-                }}
-              >
-                <strong>{u.displayName || u.username || 'Unbekannt'}</strong>
-                <span style={{ color: theme.text.muted, marginLeft: '8px', fontSize: '11px' }}>
-                  {uid.slice(0, 12)}...
-                </span>
+            {notifFilteredUsers.map(([uid, u]) => {
+              const selected = !!notifTargets[uid];
+              return (
+                <div
+                  key={uid}
+                  onClick={() => toggleNotifTarget(uid, u.displayName || u.username || uid)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    background: selected ? `${theme.primary}20` : theme.background.default,
+                    fontSize: '13px',
+                    color: theme.text.secondary,
+                    borderBottom: '1px solid rgba(255,255,255,0.04)',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '4px',
+                      border: `1px solid ${selected ? theme.primary : 'rgba(255,255,255,0.2)'}`,
+                      background: selected ? theme.primary : 'transparent',
+                      color: theme.background.default,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {selected ? '✓' : ''}
+                  </span>
+                  <strong>{u.displayName || u.username || 'Unbekannt'}</strong>
+                  <span style={{ color: theme.text.muted, fontSize: '11px' }}>
+                    {uid.slice(0, 12)}...
+                  </span>
+                </div>
+              );
+            })}
+            {notifFilteredUsers.length === 0 && (
+              <div style={{ padding: '10px 12px', fontSize: '13px', color: theme.text.muted }}>
+                Keine Treffer
               </div>
-            ))}
+            )}
           </div>
         )}
 
@@ -339,7 +438,7 @@ export function MessagesTab({ theme }: MessagesTabProps) {
             }}
           >
             <Send style={{ fontSize: '16px' }} />
-            {notifSending ? 'Sendet…' : 'Notification senden'}
+            {notifSending ? 'Sendet…' : `Notification senden (${Object.keys(notifTargets).length})`}
           </button>
         </div>
 
