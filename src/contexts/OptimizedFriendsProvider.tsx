@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { dbRef, dbGet, userPath, paths } from '../services/db/ref';
+import { dbRef, dbGet, dbUpdate, userPath, paths } from '../services/db/ref';
 import { useAuth } from './AuthContext';
 import { useEnhancedFirebaseCache } from '../hooks/useEnhancedFirebaseCache';
 import type { Friend, FriendActivity, FriendRequest } from '../types/Friend';
@@ -158,6 +158,39 @@ export const OptimizedFriendsProvider = ({ children }: { children: React.ReactNo
       setFriendRequests([]);
       setSentRequests([]);
     };
+  }, [user]);
+
+  // Aufräumen: beantwortete Requests (accepted/declined) älter als 30 Tage
+  // löschen — das UI zeigt nur pending, alles andere wächst sonst unbegrenzt.
+  useEffect(() => {
+    if (!user) return;
+    const RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+    const cleanupOldRequests = async () => {
+      try {
+        const [incoming, outgoing] = await Promise.all([
+          dbRef('friendRequests').orderByChild('toUserId').equalTo(user.uid).once('value'),
+          dbRef('friendRequests').orderByChild('fromUserId').equalTo(user.uid).once('value'),
+        ]);
+        const cutoff = Date.now() - RETENTION_MS;
+        const updates: Record<string, null> = {};
+        for (const snap of [incoming, outgoing]) {
+          const data = snap.val() as Record<
+            string,
+            { status?: string; respondedAt?: number; sentAt?: number }
+          > | null;
+          if (!data) continue;
+          for (const [key, req] of Object.entries(data)) {
+            if (!req || !req.status || req.status === 'pending') continue;
+            const ts = req.respondedAt || req.sentAt || 0;
+            if (ts && ts < cutoff) updates[`friendRequests/${key}`] = null;
+          }
+        }
+        if (Object.keys(updates).length > 0) await dbUpdate(updates);
+      } catch {
+        // best-effort
+      }
+    };
+    cleanupOldRequests();
   }, [user]);
 
   // Friend Activities: Einmaliger Load + child_added Listener für neue Activities
