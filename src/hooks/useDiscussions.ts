@@ -121,7 +121,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           ...(episodeNumber !== undefined && { episodeNumber }),
           userId: user.uid,
           username,
-          userPhotoURL: photoURL,
+          // Firebase lehnt undefined-Werte ab — Feld nur setzen, wenn vorhanden
+          ...(photoURL && { userPhotoURL: photoURL }),
           title: input.title,
           content: input.content,
           createdAt: Date.now(),
