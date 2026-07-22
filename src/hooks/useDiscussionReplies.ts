@@ -86,6 +86,7 @@ export const useDiscussionReplies = (
     async (content: string, isSpoiler?: boolean): Promise<boolean> => {
       if (!user?.uid || !discussionId) return false;
 
+      setError(null);
       try {
         const { username, photoURL } = await getUserDisplayData(user);
 
@@ -223,6 +224,7 @@ export const useDiscussionReplies = (
     async (replyId: string, input: EditReplyInput): Promise<boolean> => {
       if (!user?.uid || !discussionId) return false;
 
+      setError(null);
       try {
         const replyRef = dbRef(`${repliesPath}/${replyId}`);
         const snapshot = await replyRef.once('value');
@@ -304,6 +306,7 @@ export const useDiscussionReplies = (
     async (replyId: string): Promise<boolean> => {
       if (!user?.uid || !discussionId) return false;
 
+      setError(null);
       try {
         const replyRef = dbRef(`${repliesPath}/${replyId}`);
         const snapshot = await replyRef.once('value');
@@ -337,6 +340,7 @@ export const useDiscussionReplies = (
     async (replyId: string): Promise<void> => {
       if (!user?.uid) return;
 
+      setError(null);
       try {
         const likeRef = dbRef(`${repliesPath}/${replyId}/likes/${user.uid}`);
         const snapshot = await likeRef.once('value');

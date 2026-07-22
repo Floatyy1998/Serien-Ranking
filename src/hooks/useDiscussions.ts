@@ -110,6 +110,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         return null;
       }
 
+      setError(null);
       try {
         const { username, photoURL } = await getUserDisplayData(user);
 
@@ -178,6 +179,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
     async (discussionId: string, input: EditDiscussionInput): Promise<boolean> => {
       if (!user?.uid) return false;
 
+      setError(null);
       try {
         const discussionRef = dbRef(`${path}/${discussionId}`);
         const snapshot = await discussionRef.once('value');
@@ -258,6 +260,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
     async (discussionId: string): Promise<boolean> => {
       if (!user?.uid) return false;
 
+      setError(null);
       try {
         const discussionRef = dbRef(`${path}/${discussionId}`);
         const snapshot = await discussionRef.once('value');
@@ -269,8 +272,11 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         }
 
         await discussionRef.remove();
-        // Also remove replies
-        await dbRef(`discussionReplies/${discussionId}`).remove();
+        // Antworten-Cleanup ist best-effort: Rules erlauben Subtree-Delete nur dem
+        // Admin — verwaiste Antworten sind unsichtbar und stören nicht.
+        dbRef(`discussionReplies/${discussionId}`)
+          .remove()
+          .catch(() => {});
         // Remove feed entries (fire-and-forget)
         deleteDiscussionFeedEntries(discussionId);
 
@@ -289,6 +295,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
     async (discussionId: string): Promise<void> => {
       if (!user?.uid) return;
 
+      setError(null);
       try {
         const likeRef = dbRef(`${path}/${discussionId}/likes/${user.uid}`);
         const snapshot = await likeRef.once('value');
