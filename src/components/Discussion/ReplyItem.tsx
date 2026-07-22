@@ -20,9 +20,20 @@ const ReplyItemInner: React.FC<{
   onEdit: (input: { content?: string; isSpoiler?: boolean }) => Promise<boolean>;
   onToggleLike: () => void;
   isOwner: boolean;
+  canDelete?: boolean;
   currentUserId?: string;
   onReplyTo?: (username: string) => void;
-}> = ({ reply, nodePath, onDelete, onEdit, onToggleLike, isOwner, currentUserId, onReplyTo }) => {
+}> = ({
+  reply,
+  nodePath,
+  onDelete,
+  onEdit,
+  onToggleLike,
+  isOwner,
+  canDelete,
+  currentUserId,
+  onReplyTo,
+}) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const isLiked = currentUserId ? reply.likes.includes(currentUserId) : false;
@@ -406,8 +417,8 @@ const ReplyItemInner: React.FC<{
               </Tooltip>
             )}
 
-            {/* Delete Button (owner only) */}
-            {isOwner && !showDeleteConfirm && (
+            {/* Delete Button (Autor oder Admin) */}
+            {(isOwner || canDelete) && !showDeleteConfirm && (
               <Tooltip title={t('Löschen')} arrow>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}

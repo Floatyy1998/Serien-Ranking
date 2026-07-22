@@ -5,6 +5,8 @@ import { t } from '../../services/i18n';
 
 interface DiscussionActionsProps {
   isOwner: boolean;
+  /** Löschen auch ohne Ownership (Admin-Moderation). */
+  canDelete?: boolean;
   isSpoiler: boolean;
   currentUserId?: string;
   showDeleteConfirm: boolean;
@@ -18,6 +20,7 @@ interface DiscussionActionsProps {
 
 export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
   isOwner,
+  canDelete,
   isSpoiler,
   currentUserId,
   showDeleteConfirm,
@@ -92,45 +95,49 @@ export const DiscussionActions: React.FC<DiscussionActionsProps> = ({
         </div>
       )}
 
-      {/* Edit/Delete Buttons */}
-      {isOwner && !showDeleteConfirm && !showSpoilerConfirm && (
+      {/* Edit (nur Autor) / Delete (Autor oder Admin) */}
+      {!showDeleteConfirm && !showSpoilerConfirm && (
         <>
-          <Tooltip title={t('Bearbeiten')} arrow>
-            <button
-              onClick={onEdit}
-              style={{
-                background: `${currentTheme.primary}15`,
-                border: 'none',
-                padding: '6px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: currentTheme.primary,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Edit style={{ fontSize: '18px' }} />
-            </button>
-          </Tooltip>
-          <Tooltip title={t('Löschen')} arrow>
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              style={{
-                background: `${currentTheme.status.error}15`,
-                border: 'none',
-                padding: '6px',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                color: currentTheme.status.error,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Delete style={{ fontSize: '18px' }} />
-            </button>
-          </Tooltip>
+          {isOwner && (
+            <Tooltip title={t('Bearbeiten')} arrow>
+              <button
+                onClick={onEdit}
+                style={{
+                  background: `${currentTheme.primary}15`,
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: currentTheme.primary,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Edit style={{ fontSize: '18px' }} />
+              </button>
+            </Tooltip>
+          )}
+          {(isOwner || canDelete) && (
+            <Tooltip title={t('Löschen')} arrow>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                style={{
+                  background: `${currentTheme.status.error}15`,
+                  border: 'none',
+                  padding: '6px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  color: currentTheme.status.error,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Delete style={{ fontSize: '18px' }} />
+              </button>
+            </Tooltip>
+          )}
         </>
       )}
 

@@ -12,6 +12,7 @@ import {
   deleteDiscussionFeedEntries,
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
+import { ADMIN_UID } from '../config/admin';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
 import { t, tLocale } from '../services/i18n';
@@ -267,7 +268,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
         const snapshot = await discussionRef.once('value');
         const discussion = snapshot.val();
 
-        if (discussion?.userId !== user.uid) {
+        if (discussion?.userId !== user.uid && user.uid !== ADMIN_UID) {
           setError(t('Du kannst nur eigene Diskussionen löschen'));
           return false;
         }

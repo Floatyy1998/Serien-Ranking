@@ -24,6 +24,7 @@ const DiscussionItemInner: React.FC<{
   onEdit: (input: { title?: string; content?: string; isSpoiler?: boolean }) => Promise<boolean>;
   onToggleLike: () => void;
   isOwner: boolean;
+  canDelete?: boolean;
   currentUserId?: string;
   feedMetadata?: DiscussionFeedMetadata;
 }> = ({
@@ -33,6 +34,7 @@ const DiscussionItemInner: React.FC<{
   onEdit,
   onToggleLike,
   isOwner,
+  canDelete,
   currentUserId,
   feedMetadata,
 }) => {
@@ -180,6 +182,7 @@ const DiscussionItemInner: React.FC<{
         {/* Action Buttons */}
         <DiscussionActions
           isOwner={isOwner}
+          canDelete={canDelete}
           isSpoiler={discussion.isSpoiler || false}
           currentUserId={currentUserId}
           showDeleteConfirm={showDeleteConfirm}

@@ -17,6 +17,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
 import { useModerationBan } from '../../hooks/useModerationBan';
+import { ADMIN_UID } from '../../config/admin';
 import { t } from '../../services/i18n';
 import { ReplyItem } from './ReplyItem';
 
@@ -175,6 +176,7 @@ export const RepliesSection: React.FC<{
                     onEdit={(input) => editReply(reply.id, input)}
                     onToggleLike={() => toggleReplyLike(reply.id)}
                     isOwner={reply.userId === user?.uid}
+                    canDelete={user?.uid === ADMIN_UID}
                     currentUserId={user?.uid}
                     onReplyTo={handleReplyTo}
                   />

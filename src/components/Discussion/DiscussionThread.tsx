@@ -9,6 +9,7 @@ import { isPermanentBan, useModerationBan } from '../../hooks/useModerationBan';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
+import { ADMIN_UID } from '../../config/admin';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
@@ -357,6 +358,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               onEdit={(input) => editDiscussion(discussion.id, input)}
               onToggleLike={() => toggleLike(discussion.id)}
               isOwner={discussion.userId === user?.uid}
+              canDelete={user?.uid === ADMIN_UID}
               currentUserId={user?.uid}
               feedMetadata={feedMetadata}
             />

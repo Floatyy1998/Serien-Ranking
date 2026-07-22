@@ -7,6 +7,7 @@ import type {
   DiscussionReply,
 } from '../types/Discussion';
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
+import { ADMIN_UID } from '../config/admin';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
 import { queueModerationScan } from '../services/moderation/moderationScan';
@@ -312,7 +313,7 @@ export const useDiscussionReplies = (
         const snapshot = await replyRef.once('value');
         const reply = snapshot.val();
 
-        if (reply?.userId !== user.uid) {
+        if (reply?.userId !== user.uid && user.uid !== ADMIN_UID) {
           setError(t('Du kannst nur eigene Antworten löschen'));
           return false;
         }
