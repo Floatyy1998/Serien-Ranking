@@ -59,6 +59,9 @@ vi.mock('@mui/icons-material', () => ({
   PowerSettingsNew: () => null,
   Public: () => null,
   Translate: () => null,
+  ImportExport: () => null,
+  FileDownload: () => null,
+  FileUpload: () => null,
 }));
 
 vi.mock('../../contexts/ThemeContext', () => {

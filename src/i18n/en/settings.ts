@@ -132,6 +132,24 @@ const settings: Record<string, string> = {
   'Inaktive Serien': 'Inactive shows',
   'Erinnerung nach X Tagen ohne neue Episode': 'Reminder after X days without a new episode',
   Aus: 'Off',
+  'Import & Export': 'Import & Export',
+  'Export als JSON (Backup)': 'Export as JSON (backup)',
+  'Export als CSV': 'Export as CSV',
+  'JSON enthält deine komplette Watch-History (re-importierbar), CSV eine Zeile pro Folge/Film mit TMDB-Ids für andere Apps.':
+    'JSON contains your complete watch history (re-importable), CSV has one row per episode/movie with TMDB ids for other apps.',
+  'Import (TV-Rank- oder Trakt-JSON)': 'Import (TV-Rank or Trakt JSON)',
+  'Datei nicht erkannt. Unterstützt: TV-Rank-Export-JSON und Trakt-JSON.':
+    'File not recognized. Supported: TV-Rank export JSON and Trakt JSON.',
+  '{n} Serien ({e} Folgen), {m} Filme erkannt': '{n} series ({e} episodes), {m} movies detected',
+  '{n} Serien davon neu — sie werden deiner Liste hinzugefügt.':
+    '{n} of these series are new — they will be added to your list.',
+  'Bestehende Markierungen werden nie überschrieben.': 'Existing marks are never overwritten.',
+  'Import läuft… {done}/{total}': 'Import running… {done}/{total}',
+  'Import starten': 'Start import',
+  'Import abgeschlossen!': 'Import complete!',
+  'Import fehlgeschlagen': 'Import failed',
+  '{n} Einträge ohne auflösbare TMDB-Id übersprungen.':
+    '{n} entries skipped (no resolvable TMDB id).',
   '{days} T.': '{days} d.',
   'Provider-Änderungen': 'Provider changes',
   'Benachrichtigung wenn ein Streaming-Anbieter wechselt':

@@ -16,6 +16,7 @@ import { DeleteAccountSection } from './DeleteAccountSection';
 import { AppearanceSection } from './AppearanceSection';
 import { LegalSection } from './LegalSection';
 import { LanguageSection } from './LanguageSection';
+import { ImportExportSection } from './ImportExportSection';
 import { NotificationsSection } from './NotificationsSection';
 import { SecuritySection } from './SecuritySection';
 import './SettingsPage.css';
@@ -172,6 +173,8 @@ export const SettingsPage = () => {
         <NotificationsSection />
 
         <LanguageSection />
+
+        <ImportExportSection />
 
         <SecuritySection />
 
