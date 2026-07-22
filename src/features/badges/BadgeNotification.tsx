@@ -54,6 +54,8 @@ const BadgeNotification: React.FC<BadgeNotificationProps> = ({
         '& .MuiSnackbarContent-root': {
           padding: 0,
         },
+        // iOS: unter Statusleiste/Dynamic Island schieben (Safe-Area)
+        ...(isMobile && { '&&': { top: 'calc(env(safe-area-inset-top, 0px) + 12px)' } }),
       }}
     >
       <Alert

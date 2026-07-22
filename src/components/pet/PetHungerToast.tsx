@@ -38,6 +38,12 @@ export const PetHungerToast: React.FC<PetHungerToastProps> = ({
         vertical: isMobile ? 'top' : 'bottom',
         horizontal: 'right',
       }}
+      sx={
+        isMobile
+          ? // iOS: unter Statusleiste/Dynamic Island schieben (Safe-Area)
+            { '&&': { top: 'calc(env(safe-area-inset-top, 0px) + 12px)' } }
+          : undefined
+      }
     >
       <Alert
         variant="filled"
