@@ -355,6 +355,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
       const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
       const isPet = n.type === 'accessory_drop';
       const isPendingDrop = n.type === 'pending_accessory_drop';
+      const isModeration = n.type === 'moderation_flag';
 
       const item: UnifiedNotification = {
         id: `notif_${n.id}`,
@@ -367,26 +368,30 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         navigateTo:
           isPet || isPendingDrop
             ? '/pets'
-            : isBugTicket
-              ? isAdmin
-                ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
-                : '/bug-report'
-              : navigateTo,
+            : isModeration
+              ? '/admin?tab=moderation'
+              : isBugTicket
+                ? isAdmin
+                  ? `/admin?tab=tickets&ticket=${(n.data?.ticketId as string) || ''}`
+                  : '/bug-report'
+                : navigateTo,
         notificationId: n.id,
         icon:
           isPet || isPendingDrop
             ? 'pet'
-            : isBugTicket
-              ? n.data?.ticketType === 'feature'
-                ? 'feature'
-                : 'bug'
-              : n.type === 'discussion_reply'
-                ? 'chat'
-                : n.type === 'spoiler_flag'
-                  ? 'flag'
-                  : n.type === 'discussion_like' || n.type === 'welcome'
-                    ? 'heart'
-                    : 'chat',
+            : isModeration || n.type === 'moderation_ban'
+              ? 'flag'
+              : isBugTicket
+                ? n.data?.ticketType === 'feature'
+                  ? 'feature'
+                  : 'bug'
+                : n.type === 'discussion_reply'
+                  ? 'chat'
+                  : n.type === 'spoiler_flag'
+                    ? 'flag'
+                    : n.type === 'discussion_like' || n.type === 'welcome'
+                      ? 'heart'
+                      : 'chat',
       };
 
       if (isPendingDrop && n.data) {

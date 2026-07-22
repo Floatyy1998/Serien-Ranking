@@ -43,5 +43,13 @@ const dict: Record<string, string> = {
     'You have been banned from discussions until {date}.',
   'Du wurdest bis {date} vom Erstellen von Tickets ausgeschlossen.':
     'You have been banned from creating tickets until {date}.',
+  'WIRD GEPRÜFT': 'UNDER REVIEW',
+  'Ausschluss von Diskussionen': 'Banned from discussions',
+  'Ausschluss vom Ticket-Erstellen': 'Banned from creating tickets',
+  'Du wurdest bis {date} ausgeschlossen. Grund: {reason}':
+    'You have been banned until {date}. Reason: {reason}',
+  'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}':
+    'You have been banned permanently. Reason: {reason}',
+  'Verstoß gegen die Community-Regeln': 'Violation of the community rules',
 };
 export default dict;

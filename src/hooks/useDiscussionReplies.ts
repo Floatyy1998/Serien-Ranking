@@ -55,11 +55,14 @@ export const useDiscussionReplies = (
           const data = snapshot.val();
           const replyList: DiscussionReply[] = Object.entries(
             data as Record<string, DiscussionReply>
-          ).map(([id, reply]) => ({
-            ...reply,
-            id,
-            likes: reply.likes ? Object.keys(reply.likes) : [],
-          }));
+          )
+            .map(([id, reply]) => ({
+              ...reply,
+              id,
+              likes: reply.likes ? Object.keys(reply.likes) : [],
+            }))
+            // KI-Quarantäne: versteckte Inhalte sieht nur der Autor selbst
+            .filter((reply) => !reply.hidden || reply.userId === user?.uid);
           // Sort by createdAt (oldest first for replies)
           replyList.sort((a, b) => a.createdAt - b.createdAt);
           setReplies(replyList);
@@ -80,7 +83,7 @@ export const useDiscussionReplies = (
       setLoading(true);
       setReplies([]);
     };
-  }, [discussionId, repliesPath, shouldFetch]);
+  }, [discussionId, repliesPath, shouldFetch, user?.uid]);
 
   // Create a reply
   const createReply = useCallback(

@@ -17,6 +17,7 @@ export interface DiscussionReply {
   isSpoiler?: boolean;
   lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
   translations?: CommentTranslations;
+  hidden?: boolean; // KI-Quarantäne — nur Autor + Admin sehen den Inhalt
 }
 
 export interface Discussion {
@@ -46,6 +47,7 @@ export interface Discussion {
   // Übersetzung
   lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
   translations?: CommentTranslations;
+  hidden?: boolean; // KI-Quarantäne — nur Autor + Admin sehen den Inhalt
 }
 
 export interface CreateDiscussionInput {
@@ -81,6 +83,7 @@ export interface DiscussionFeedEntry {
   episodeTitle?: string;
   contentPreview: string;
   createdAt: number;
+  hidden?: boolean; // KI-Quarantäne
 }
 
 export interface DiscussionThreadProps {

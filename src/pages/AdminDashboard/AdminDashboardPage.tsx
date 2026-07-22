@@ -18,7 +18,7 @@ import {
   Timer,
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { PageHeader, PageLayout } from '../../components/ui';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -71,6 +71,14 @@ export function AdminDashboardPage() {
     return valid ? (param as TabId) : 'overview';
   });
   const data = useAdminDashboardData(30);
+
+  // Deep-Links (?tab=…) auch bei bereits geöffnetem Dashboard anwenden
+  useEffect(() => {
+    const param = searchParams.get('tab');
+    if (param && TABS.some((tb) => tb.id === param)) {
+      setActiveTab(param as TabId);
+    }
+  }, [searchParams]);
 
   const handleRefresh = useCallback(() => data.refresh(), [data]);
 

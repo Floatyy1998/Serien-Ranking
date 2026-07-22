@@ -18,6 +18,8 @@ export interface AppNotification {
     | 'pending_accessory_drop'
     | 'welcome'
     | 'admin_message'
+    | 'moderation_flag'
+    | 'moderation_ban'
     | 'data_heal';
   title: string;
   message: string;

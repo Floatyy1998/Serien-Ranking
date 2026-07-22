@@ -35,10 +35,13 @@ export const useDiscussionFeed = (
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val() as Record<string, Omit<DiscussionFeedEntry, 'id'>>;
-          const list = Object.entries(data).map(([key, entry]) => ({
-            ...entry,
-            id: key,
-          }));
+          const list = Object.entries(data)
+            .map(([key, entry]) => ({
+              ...entry,
+              id: key,
+            }))
+            // KI-Quarantäne: geflaggte Einträge bis zur Freigabe ausblenden
+            .filter((entry) => !entry.hidden);
           list.sort((a, b) => b.createdAt - a.createdAt);
           setEntries(list);
         } else {

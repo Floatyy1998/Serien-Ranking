@@ -176,6 +176,20 @@ const DiscussionItemInner: React.FC<{
                 {t('ANGEPINNT')}
               </span>
             )}
+            {discussion.hidden && (
+              <span
+                style={{
+                  padding: '2px 6px',
+                  background: `${currentTheme.status.warning}25`,
+                  color: currentTheme.status.warning,
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                }}
+              >
+                {t('WIRD GEPRÜFT')}
+              </span>
+            )}
           </div>
         </div>
 

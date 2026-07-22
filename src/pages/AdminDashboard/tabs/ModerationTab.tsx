@@ -4,6 +4,8 @@ import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { dbRef, serverIncrement } from '../../../services/db/ref';
 import { backendFetch } from '../../../services/backendApi';
 import { deleteDiscussionFeedEntries } from '../../../services/discussionFeedService';
+import { sendNotificationToUser } from '../../../hooks/useDiscussionHelpers';
+import { tLocale } from '../../../services/i18n';
 
 interface ModerationFlag {
   id: string;
@@ -23,6 +25,7 @@ interface BanEntry {
   ticketsUntil?: number;
   username?: string;
   bannedAt?: number;
+  reason?: string;
 }
 
 interface StrikeEntry {
@@ -65,6 +68,7 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
   const [bans, setBans] = useState<BanEntry[]>([]);
   const [strikes, setStrikes] = useState<Record<string, StrikeEntry>>({});
   const [confirmAction, setConfirmAction] = useState<string | null>(null);
+  const [banReason, setBanReason] = useState('');
   const [translations, setTranslations] = useState<
     Record<string, { title?: string; text: string; visible: boolean }>
   >({});
@@ -101,6 +105,37 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
     setConfirmAction(null);
   }, []);
 
+  // "Ist okay": Quarantäne aufheben — Inhalt + zugehörige Feed-Einträge wieder sichtbar
+  const approveFlag = useCallback(
+    async (flag: ModerationFlag) => {
+      try {
+        await dbRef(`${flag.path}/hidden`).remove();
+        if (flag.kind === 'discussion' || flag.kind === 'reply') {
+          const discussionId =
+            flag.kind === 'discussion' ? flag.path.split('/').pop() : flag.path.split('/')[1];
+          if (discussionId) {
+            const snap = await dbRef('discussionFeed')
+              .orderByChild('discussionId')
+              .equalTo(discussionId)
+              .once('value');
+            const feed = (snap.val() as Record<string, { userId?: string }> | null) || {};
+            for (const [fid, entry] of Object.entries(feed)) {
+              if (flag.kind === 'discussion' || entry?.userId === flag.userId) {
+                await dbRef(`discussionFeed/${fid}/hidden`)
+                  .remove()
+                  .catch(() => {});
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('[moderation] approve failed', err);
+      }
+      await dismissFlag(flag);
+    },
+    [dismissFlag]
+  );
+
   const deleteContent = useCallback(
     async (flag: ModerationFlag) => {
       try {
@@ -132,18 +167,45 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
     async (flag: ModerationFlag, durationMs: number | null) => {
       const scope = banScopeFor(flag.kind);
       const until = durationMs === null ? PERMANENT_UNTIL : Date.now() + durationMs;
+      const reason = banReason.trim() || flag.reason || '';
       try {
         await dbRef(`moderation/bans/${flag.userId}`).update({
           [scope]: until,
           username: flag.username,
           bannedAt: Date.now(),
+          ...(reason && { reason }),
+        });
+
+        // Betroffenen User informieren (in-App + Push, zweisprachig)
+        const titleDe =
+          scope === 'ticketsUntil'
+            ? 'Ausschluss vom Ticket-Erstellen'
+            : 'Ausschluss von Diskussionen';
+        const template =
+          durationMs === null
+            ? 'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}'
+            : 'Du wurdest bis {date} ausgeschlossen. Grund: {reason}';
+        const messageFor = (locale: 'de' | 'en') =>
+          tLocale(locale, template, {
+            date: new Date(until).toLocaleString(locale === 'de' ? 'de-DE' : 'en-GB', {
+              dateStyle: 'medium',
+              timeStyle: 'short',
+            }),
+            reason: reason || tLocale(locale, 'Verstoß gegen die Community-Regeln'),
+          });
+        await sendNotificationToUser(flag.userId, {
+          type: 'moderation_ban',
+          title: titleDe,
+          titleEn: tLocale('en', titleDe),
+          message: messageFor('de'),
+          messageEn: messageFor('en'),
         });
       } catch (err) {
         console.error('[moderation] ban failed', err);
       }
       await deleteContent(flag);
     },
-    [deleteContent]
+    [deleteContent, banReason]
   );
 
   const unbanUser = useCallback(async (uid: string) => {
@@ -303,32 +365,52 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
 
             <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
               {confirmAction === `ban-${flag.id}` ? (
-                <>
-                  <span style={{ color: theme.status.error, fontSize: 12, alignSelf: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                  <span style={{ color: theme.status.error, fontSize: 12 }}>
                     {flag.username} bannen (
                     {banScopeFor(flag.kind) === 'ticketsUntil' ? 'Tickets' : 'Diskussionen'}) +
-                    Inhalt löschen:
+                    Inhalt löschen — Begründung geht per Benachrichtigung an den User:
                   </span>
-                  {BAN_DURATIONS.map((d) => (
+                  <textarea
+                    value={banReason}
+                    onChange={(e) => setBanReason(e.target.value)}
+                    rows={2}
+                    placeholder="Begründung für den User…"
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: 8,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      background: theme.background.default,
+                      color: theme.text.secondary,
+                      fontSize: 13,
+                      resize: 'vertical',
+                      fontFamily: 'inherit',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {BAN_DURATIONS.map((d) => (
+                      <button
+                        key={d.label}
+                        onClick={() => banUser(flag, d.ms)}
+                        style={actionBtn(theme.status.error)}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
                     <button
-                      key={d.label}
-                      onClick={() => banUser(flag, d.ms)}
-                      style={actionBtn(theme.status.error)}
+                      onClick={() => setConfirmAction(null)}
+                      style={actionBtn(theme.text.muted)}
                     >
-                      {d.label}
+                      Abbrechen
                     </button>
-                  ))}
-                  <button
-                    onClick={() => setConfirmAction(null)}
-                    style={actionBtn(theme.text.muted)}
-                  >
-                    Abbrechen
-                  </button>
-                </>
+                  </div>
+                </div>
               ) : (
                 <>
-                  <button onClick={() => dismissFlag(flag)} style={actionBtn(theme.status.success)}>
-                    <Done style={{ fontSize: 14 }} /> Ist okay
+                  <button onClick={() => approveFlag(flag)} style={actionBtn(theme.status.success)}>
+                    <Done style={{ fontSize: 14 }} /> Freigeben
                   </button>
                   <button
                     onClick={() => deleteContent(flag)}
@@ -337,7 +419,10 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
                     <Delete style={{ fontSize: 14 }} /> Inhalt löschen
                   </button>
                   <button
-                    onClick={() => setConfirmAction(`ban-${flag.id}`)}
+                    onClick={() => {
+                      setBanReason(flag.reason || '');
+                      setConfirmAction(`ban-${flag.id}`);
+                    }}
                     style={actionBtn(theme.status.error)}
                   >
                     <Block style={{ fontSize: 14 }} /> Bannen
@@ -381,6 +466,7 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
             {[
               ban.discussionsUntil && `Diskussionen ${formatUntil(ban.discussionsUntil)}`,
               ban.ticketsUntil && `Tickets ${formatUntil(ban.ticketsUntil)}`,
+              ban.reason && `Grund: ${ban.reason}`,
             ]
               .filter(Boolean)
               .join(' · ')}

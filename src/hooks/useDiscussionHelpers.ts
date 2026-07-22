@@ -27,7 +27,8 @@ export const sendNotificationToUser = async (
       | 'discussion_like'
       | 'spoiler_flag'
       | 'bug_ticket_reply'
-      | 'bug_ticket_status';
+      | 'bug_ticket_status'
+      | 'moderation_ban';
     title: string;
     message: string;
     titleEn?: string;
@@ -50,7 +51,9 @@ export const sendNotificationToUser = async (
       ? targetUserId === ADMIN_UID
         ? '/admin'
         : '/bug-report'
-      : '/discussions';
+      : notification.type === 'moderation_ban'
+        ? '/'
+        : '/discussions';
     await queuePush(targetUserId, {
       title: notification.title,
       body: notification.message,

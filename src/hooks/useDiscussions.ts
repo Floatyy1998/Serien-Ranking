@@ -68,13 +68,14 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       (snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          const discussionList: Discussion[] = Object.entries(
-            data as Record<string, Discussion>
-          ).map(([id, disc]) => ({
-            ...disc,
-            id,
-            likes: disc.likes ? Object.keys(disc.likes) : [],
-          }));
+          const discussionList: Discussion[] = Object.entries(data as Record<string, Discussion>)
+            .map(([id, disc]) => ({
+              ...disc,
+              id,
+              likes: disc.likes ? Object.keys(disc.likes) : [],
+            }))
+            // KI-Quarantäne: versteckte Inhalte sieht nur der Autor selbst
+            .filter((disc) => !disc.hidden || disc.userId === user?.uid);
           // Sort by pinned first, then by createdAt (newest first)
           discussionList.sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
@@ -99,7 +100,7 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
       setLoading(true);
       setError(null);
     };
-  }, [path, itemId]);
+  }, [path, itemId, user?.uid]);
 
   // Create a new discussion
   const createDiscussion = useCallback(
