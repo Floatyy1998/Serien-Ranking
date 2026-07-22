@@ -385,11 +385,12 @@ export const HomePage: React.FC = () => {
 
       {adminMessage && (
         <motion.div
+          className="home-top-banner"
           initial={{ opacity: 0, y: -14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ type: 'spring', stiffness: 260, damping: 24 }}
           style={{
-            margin: '16px',
+            margin: '0 16px 16px',
             padding: '16px 18px',
             borderRadius: '16px',
             background: `linear-gradient(135deg, ${currentTheme.primary}2E 0%, ${currentTheme.primary}12 45%, ${currentTheme.background.surface} 100%)`,

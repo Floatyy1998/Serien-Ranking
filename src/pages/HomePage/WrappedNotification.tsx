@@ -54,14 +54,14 @@ const WrappedNotificationImpl: React.FC = () => {
 
   return (
     <motion.button
+      className="home-top-banner"
       initial={{ opacity: 0, scale: 0.95, y: -20 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 200 }}
       onClick={() => navigate('/wrapped')}
       aria-label={t('Dein {year} Wrapped ist da – Entdecke deinen Jahresrückblick', { year })}
       style={{
-        margin: '16px',
-        marginBottom: '8px',
+        margin: '0 16px 8px',
         padding: '16px 20px',
         borderRadius: '16px',
         background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 50%, var(--theme-secondary-gradient, #f093fb) 100%)`,

@@ -970,3 +970,11 @@ button:active:not(:disabled),
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Homepage-Top-Banner (Wrapped, Admin-Message): erster Banner braucht Safe-Area-Abstand */
+.home-top-banner {
+  margin-top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
+.home-top-banner ~ .home-top-banner {
+  margin-top: 16px;
+}

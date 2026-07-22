@@ -90,7 +90,7 @@ export function useTicketsData(): UseTicketsDataResult {
       const ticket = tickets.find((t) => t.id === ticketId);
       if (
         updates.status &&
-        ['done', 'rejected', 'obsolete'].includes(updates.status) &&
+        ['done', 'rejected', 'obsolete', 'closed'].includes(updates.status) &&
         ticket?.screenshots?.length
       ) {
         await deleteScreenshots(ticket.screenshots);

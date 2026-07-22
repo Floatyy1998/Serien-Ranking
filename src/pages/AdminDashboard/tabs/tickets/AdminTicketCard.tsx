@@ -52,7 +52,10 @@ export function AdminTicketCard({
   adminNotes.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   const isClosed =
-    ticket.status === 'done' || ticket.status === 'rejected' || ticket.status === 'obsolete';
+    ticket.status === 'done' ||
+    ticket.status === 'rejected' ||
+    ticket.status === 'obsolete' ||
+    ticket.status === 'closed';
 
   const handleSend = async () => {
     if (!commentText.trim()) return;
