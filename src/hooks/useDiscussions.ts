@@ -13,6 +13,7 @@ import {
 } from '../services/discussionFeedService';
 import { getDiscussionPath, sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
+import { queueModerationScan } from '../services/moderation/moderationScan';
 import { t, tLocale } from '../services/i18n';
 
 // Re-export useDiscussionReplies so existing imports continue to work
@@ -130,6 +131,16 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
 
         const ref = dbRef(path);
         const newRef = await ref.push(newDiscussion);
+
+        // KI-Moderations-Scan (fire-and-forget)
+        void queueModerationScan({
+          kind: 'discussion',
+          path: `${path}/${newRef.key}`,
+          text: input.content,
+          title: input.title,
+          userId: user.uid,
+          username,
+        });
 
         // Write to discussion feed (fire-and-forget)
         if (feedMetadata?.itemTitle) {

@@ -6,6 +6,7 @@ import { sendNotificationToUser } from '../../hooks/useDiscussionHelpers';
 import type { BugTicket, TicketComment, TicketPriority, TicketType } from './types';
 import { ADMIN_UID } from '../../config/admin';
 import { dbGet, dbRef, paths } from '../../services/db/ref';
+import { queueModerationScan } from '../../services/moderation/moderationScan';
 import { t, tLocale } from '../../services/i18n';
 
 const AUTO_DELETE_DAYS = 5;
@@ -93,6 +94,16 @@ export function useBugReportData() {
 
         await dbRef(`bugTickets/${ticketId}`).set(ticket);
 
+        // KI-Moderations-Scan (fire-and-forget)
+        void queueModerationScan({
+          kind: 'ticket',
+          path: `bugTickets/${ticketId}`,
+          text: [data.description, data.stepsToReproduce].filter(Boolean).join('\n'),
+          title: data.title,
+          userId: user.uid,
+          username: displayName,
+        });
+
         // Notification an Admin
         await sendNotificationToUser(ADMIN_UID, {
           type: 'bug_ticket_reply',
@@ -130,6 +141,15 @@ export function useBugReportData() {
 
         await dbRef(`bugTickets/${ticketId}/comments/${commentId}`).set(comment);
         await dbRef(`bugTickets/${ticketId}/updatedAt`).set(new Date().toISOString());
+
+        // KI-Moderations-Scan (fire-and-forget)
+        void queueModerationScan({
+          kind: 'ticket_comment',
+          path: `bugTickets/${ticketId}/comments/${commentId}`,
+          text,
+          userId: user.uid,
+          username: displayName,
+        });
 
         // Notification an Admin
         const ticketSnap = await dbRef(`bugTickets/${ticketId}`).once('value');

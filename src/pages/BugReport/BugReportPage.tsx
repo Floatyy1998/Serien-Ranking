@@ -7,6 +7,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { NewTicketForm } from './components/NewTicketForm';
 import { TicketCard } from './components/TicketCard';
 import { useBugReportData } from './useBugReportData';
+import { isPermanentBan, useModerationBan } from '../../hooks/useModerationBan';
 import { t } from '../../services/i18n';
 
 // Offene Tickets zuerst — der Rest wandert ins Archiv
@@ -24,6 +25,7 @@ export const BugReportPage = memo(() => {
     updateTicket,
     closeTicket,
   } = useBugReportData();
+  const ban = useModerationBan();
   const [showForm, setShowForm] = useState(() => searchParams.get('create') === 'true');
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'open' | 'archive'>('open');
@@ -44,7 +46,29 @@ export const BugReportPage = memo(() => {
       />
 
       <div style={{ padding: '16px', paddingBottom: '100px' }}>
-        {!showForm && (
+        {ban.tickets && (
+          <div
+            style={{
+              padding: '14px 16px',
+              background: `${currentTheme.status.warning}15`,
+              borderRadius: '12px',
+              color: currentTheme.status.warning,
+              fontSize: '14px',
+              marginBottom: '16px',
+              border: `1px solid ${currentTheme.status.warning}30`,
+            }}
+          >
+            {!isPermanentBan(ban.ticketsUntil) && ban.ticketsUntil
+              ? t('Du wurdest bis {date} vom Erstellen von Tickets ausgeschlossen.', {
+                  date: new Date(ban.ticketsUntil).toLocaleString(undefined, {
+                    dateStyle: 'medium',
+                    timeStyle: 'short',
+                  }),
+                })
+              : t('Du wurdest vom Erstellen von Tickets ausgeschlossen.')}
+          </div>
+        )}
+        {!showForm && !ban.tickets && (
           <motion.button
             whileTap={{ scale: 0.97 }}
             onClick={() => setShowForm(true)}

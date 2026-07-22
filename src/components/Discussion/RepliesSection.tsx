@@ -16,6 +16,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { DiscussionFeedMetadata } from '../../types/Discussion';
 import { useDiscussionReplies } from '../../hooks/useDiscussions';
+import { useModerationBan } from '../../hooks/useModerationBan';
 import { t } from '../../services/i18n';
 import { ReplyItem } from './ReplyItem';
 
@@ -28,6 +29,7 @@ export const RepliesSection: React.FC<{
 }> = ({ discussionId, discussionPath, replyCount, isSpoilerHidden = false, feedMetadata }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const ban = useModerationBan();
   const [isExpanded, setIsExpanded] = useState(false);
   const [newReply, setNewReply] = useState('');
   const [replyImages, setReplyImages] = useState<string[]>([]);
@@ -180,7 +182,7 @@ export const RepliesSection: React.FC<{
               )}
 
               {/* New Reply Input */}
-              {user && (
+              {user && !ban.discussions && (
                 <div
                   style={{
                     display: 'flex',

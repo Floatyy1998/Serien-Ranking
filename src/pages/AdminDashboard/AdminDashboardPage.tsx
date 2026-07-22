@@ -6,6 +6,7 @@ import {
   FilterAlt,
   ConfirmationNumber,
   Extension,
+  Gavel,
   Groups,
   HealthAndSafety,
   History,
@@ -36,6 +37,7 @@ import { ConfigTab } from './tabs/ConfigTab';
 import { NewEpisodesTab } from './tabs/NewEpisodesTab';
 import { AnimeFillerTab } from './tabs/AnimeFillerTab';
 import { PerformanceTab } from './tabs/PerformanceTab';
+import { ModerationTab } from './tabs/ModerationTab';
 import { useAdminDashboardData } from './useAdminDashboardData';
 import { useAdminGuard } from './useAdminGuard';
 
@@ -47,6 +49,7 @@ const TABS = [
   { id: 'events', label: 'Events', icon: <Timeline style={{ fontSize: 16 }} /> },
   { id: 'extension', label: 'Extension', icon: <Extension style={{ fontSize: 16 }} /> },
   { id: 'tickets', label: 'Tickets', icon: <ConfirmationNumber style={{ fontSize: 16 }} /> },
+  { id: 'moderation', label: 'Moderation', icon: <Gavel style={{ fontSize: 16 }} /> },
   { id: 'messages', label: 'Messages', icon: <Message style={{ fontSize: 16 }} /> },
   { id: 'health', label: 'Data Health', icon: <HealthAndSafety style={{ fontSize: 16 }} /> },
   { id: 'new-episodes', label: 'Neue Folgen', icon: <FiberNew style={{ fontSize: 16 }} /> },
@@ -156,6 +159,7 @@ export function AdminDashboardPage() {
               {activeTab === 'events' && <EventsTab data={data} theme={currentTheme} />}
               {activeTab === 'extension' && <ExtensionTab data={data} theme={currentTheme} />}
               {activeTab === 'tickets' && <TicketsTab theme={currentTheme} />}
+              {activeTab === 'moderation' && <ModerationTab theme={currentTheme} />}
               {activeTab === 'messages' && <MessagesTab theme={currentTheme} />}
               {activeTab === 'health' && <DataHealthTab data={data} theme={currentTheme} />}
               {activeTab === 'new-episodes' && <NewEpisodesTab theme={currentTheme} />}

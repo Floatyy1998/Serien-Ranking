@@ -9,6 +9,7 @@ import type {
 import { writeDiscussionFeedEntry } from '../services/discussionFeedService';
 import { sendNotificationToUser } from './useDiscussionHelpers';
 import { getUserDisplayData } from '../services/firebase/userDisplayData';
+import { queueModerationScan } from '../services/moderation/moderationScan';
 import { t, tLocale } from '../services/i18n';
 
 interface EditReplyInput {
@@ -103,7 +104,16 @@ export const useDiscussionReplies = (
         }
 
         // Add reply
-        await dbRef(repliesPath).push(newReply);
+        const replyRef = await dbRef(repliesPath).push(newReply);
+
+        // KI-Moderations-Scan (fire-and-forget)
+        void queueModerationScan({
+          kind: 'reply',
+          path: `${repliesPath}/${replyRef.key}`,
+          text: content,
+          userId: user.uid,
+          username,
+        });
 
         // Update reply count and lastReplyAt on discussion
         const discussionRef = dbRef(`${discussionPath}/${discussionId}`);

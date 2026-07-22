@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../ui';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDiscussions } from '../../hooks/useDiscussions';
+import { isPermanentBan, useModerationBan } from '../../hooks/useModerationBan';
 import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
@@ -23,6 +24,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [showNewForm, setShowNewForm] = useState(false);
+  const ban = useModerationBan();
 
   // Spoiler-Schutz für noch nicht gesehene Inhalte (Episode, Serie & Film).
   const spoilerKey =
@@ -246,7 +248,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           )}
         </h3>
 
-        {user && !showNewForm && (
+        {user && !showNewForm && !ban.discussions && (
           <motion.button
             whileTap={tapScale}
             onClick={() => setShowNewForm(true)}
@@ -266,6 +268,30 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           </motion.button>
         )}
       </div>
+
+      {/* Ban-Hinweis */}
+      {ban.discussions && (
+        <div
+          style={{
+            padding: '14px 16px',
+            background: `${currentTheme.status.warning}15`,
+            borderRadius: '12px',
+            color: currentTheme.status.warning,
+            fontSize: '14px',
+            marginBottom: '16px',
+            border: `1px solid ${currentTheme.status.warning}30`,
+          }}
+        >
+          {!isPermanentBan(ban.discussionsUntil) && ban.discussionsUntil
+            ? t('Du wurdest bis {date} von Diskussionen ausgeschlossen.', {
+                date: new Date(ban.discussionsUntil).toLocaleString(undefined, {
+                  dateStyle: 'medium',
+                  timeStyle: 'short',
+                }),
+              })
+            : t('Du wurdest von Diskussionen ausgeschlossen und kannst nichts mehr posten.')}
+        </div>
+      )}
 
       {/* Error */}
       {error && (

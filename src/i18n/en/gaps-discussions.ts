@@ -35,5 +35,13 @@ const dict: Record<string, string> = {
   An: 'On',
   'Fremdsprachige Diskussionen und Antworten werden automatisch in deine Sprache übersetzt. Ausgeschaltet erscheint stattdessen ein Übersetzen-Button.':
     'Discussions and replies in other languages are automatically translated into your language. When off, a translate button is shown instead.',
+  'Du wurdest von Diskussionen ausgeschlossen und kannst nichts mehr posten.':
+    'You have been banned from discussions and can no longer post.',
+  'Du wurdest vom Erstellen von Tickets ausgeschlossen.':
+    'You have been banned from creating tickets.',
+  'Du wurdest bis {date} von Diskussionen ausgeschlossen.':
+    'You have been banned from discussions until {date}.',
+  'Du wurdest bis {date} vom Erstellen von Tickets ausgeschlossen.':
+    'You have been banned from creating tickets until {date}.',
 };
 export default dict;
