@@ -114,6 +114,10 @@ const dict: Record<string, string> = {
   'Keine archivierten Tickets.': 'No archived tickets.',
   'Ticket geschlossen': 'Ticket closed',
   '{name} hat das Ticket "{title}" geschlossen': '{name} closed the ticket "{title}"',
+  'Kontakt:': 'Contact:',
+  'E-Mail:': 'Email:',
+  'Rechtliche Informationen konnten nicht geladen werden.':
+    'Legal information could not be loaded.',
 };
 
 export default dict;

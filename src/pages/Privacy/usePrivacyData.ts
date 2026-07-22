@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isEnglish } from '../../services/i18n';
 
 export interface PrivacyData {
   title: string;
@@ -95,13 +96,25 @@ export const usePrivacyData = () => {
 
   useEffect(() => {
     // Legal content lives on the backend (kept out of the public frontend repo).
-    fetch(`${BACKEND_URL}/legal/privacy.json`)
-      .then((res) => res.json())
-      .then(setData)
-      .catch(() => {
+    // Englische Fassung ist eine Convenience-Übersetzung — Fallback auf Deutsch.
+    const load = async () => {
+      try {
+        if (isEnglish()) {
+          const res = await fetch(`${BACKEND_URL}/legal/privacy.en.json`);
+          if (res.ok) {
+            setData(await res.json());
+            return;
+          }
+        }
+        const res = await fetch(`${BACKEND_URL}/legal/privacy.json`);
+        setData(await res.json());
+      } catch {
         console.error('Legal content file not found');
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
   }, []);
 
   return { data, loading };

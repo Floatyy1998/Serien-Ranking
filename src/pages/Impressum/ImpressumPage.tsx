@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { LoadingSpinner, PageHeader } from '../../components/ui';
 import { Gavel } from '@mui/icons-material';
+import { isEnglish, t } from '../../services/i18n';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_API_URL || 'https://serienapi.konrad-dinges.de';
 
 interface ImpressumData {
   title: string;
+  /** Convenience-Übersetzungs-Hinweis (nur in der EN-Fassung gesetzt). */
+  note?: string;
   sections: {
     contact: {
       title: string;
@@ -41,14 +44,25 @@ export const ImpressumPage = () => {
 
   useEffect(() => {
     // Legal content lives on the backend (kept out of the public frontend repo).
-    fetch(`${BACKEND_URL}/legal/impressum.json`)
-      .then((res) => res.json())
-      .then(setData)
-      .catch(() => {
-        // File not found - content must be loaded from external source
+    // Englische Fassung ist eine Convenience-Übersetzung — Fallback auf Deutsch.
+    const load = async () => {
+      try {
+        if (isEnglish()) {
+          const res = await fetch(`${BACKEND_URL}/legal/impressum.en.json`);
+          if (res.ok) {
+            setData(await res.json());
+            return;
+          }
+        }
+        const res = await fetch(`${BACKEND_URL}/legal/impressum.json`);
+        setData(await res.json());
+      } catch {
         console.error('Legal content file not found');
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+    void load();
   }, []);
 
   if (loading) {
@@ -96,7 +110,7 @@ export const ImpressumPage = () => {
           <Gavel style={{ fontSize: 36, opacity: 0.4, color: currentTheme.text.secondary }} />
         </div>
         <p style={{ color: currentTheme.text.secondary, fontSize: 15 }}>
-          Rechtliche Informationen konnten nicht geladen werden.
+          {t('Rechtliche Informationen konnten nicht geladen werden.')}
         </p>
       </div>
     );
@@ -152,6 +166,18 @@ export const ImpressumPage = () => {
           zIndex: 1,
         }}
       >
+        {data.note && (
+          <p
+            style={{
+              fontSize: '13px',
+              color: currentTheme.text.muted,
+              fontStyle: 'italic',
+              margin: '0 0 16px',
+            }}
+          >
+            {data.note}
+          </p>
+        )}
         <div
           style={{
             padding: '20px',
@@ -190,9 +216,9 @@ export const ImpressumPage = () => {
             {'\n'}
             {data.sections.contact.country}
             {'\n\n'}
-            Kontakt:
+            {t('Kontakt:')}
             {'\n'}
-            E-Mail: {data.sections.contact.email}
+            {t('E-Mail:')} {data.sections.contact.email}
           </p>
         </div>
 
