@@ -175,7 +175,58 @@ export function useBugReportData() {
     [user]
   );
 
-  return { tickets, loading, uploadScreenshot, createTicket, addComment, updateTicket };
+  // Ersteller schließt sein eigenes Ticket (Screenshots werden direkt aufgeräumt)
+  const closeTicket = useCallback(
+    async (ticketId: string): Promise<boolean> => {
+      if (!user) return false;
+      try {
+        const ticket = tickets.find((tk) => tk.id === ticketId);
+        if (!ticket || ticket.createdBy !== user.uid) return false;
+
+        if (ticket.screenshots?.length) {
+          for (const url of ticket.screenshots) {
+            try {
+              await firebase.storage().refFromURL(url).delete();
+            } catch {
+              // ignorieren — Datei fehlt ggf. schon
+            }
+          }
+        }
+        await dbRef(`bugTickets/${ticketId}`).update({
+          status: 'closed',
+          screenshots: [],
+          updatedAt: new Date().toISOString(),
+        });
+
+        const displayName =
+          user.displayName || (await getUserDisplayName(user.uid)) || t('Unbekannt');
+        const vars = { name: displayName, title: ticket.title };
+        await sendNotificationToUser(ADMIN_UID, {
+          type: 'bug_ticket_status',
+          title: 'Ticket geschlossen',
+          titleEn: tLocale('en', 'Ticket geschlossen'),
+          message: tLocale('de', '{name} hat das Ticket "{title}" geschlossen', vars),
+          messageEn: tLocale('en', '{name} hat das Ticket "{title}" geschlossen', vars),
+          data: { ticketId, ticketType: ticket.ticketType || 'bug' },
+        });
+        return true;
+      } catch (error) {
+        console.error('Ticket close failed:', error);
+        return false;
+      }
+    },
+    [user, tickets]
+  );
+
+  return {
+    tickets,
+    loading,
+    uploadScreenshot,
+    createTicket,
+    addComment,
+    updateTicket,
+    closeTicket,
+  };
 }
 
 /** Auto-Cleanup: abgeschlossene Tickets nach 5 Tagen löschen (inkl. Screenshots) */
@@ -187,7 +238,7 @@ export async function cleanupOldTickets() {
     const cutoff = Date.now() - AUTO_DELETE_DAYS * 24 * 60 * 60 * 1000;
     for (const [id, t] of Object.entries(all as Record<string, BugTicket>)) {
       if (
-        ['done', 'rejected', 'obsolete'].includes(t.status) &&
+        ['done', 'rejected', 'obsolete', 'closed'].includes(t.status) &&
         new Date(t.updatedAt).getTime() < cutoff
       ) {
         if (t.screenshots?.length) {

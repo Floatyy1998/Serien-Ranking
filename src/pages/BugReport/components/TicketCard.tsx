@@ -19,6 +19,7 @@ interface TicketCardProps {
   onToggle: () => void;
   onAddComment: (text: string) => Promise<boolean>;
   onUpdate: (updates: { title?: string; description?: string }) => Promise<boolean>;
+  onClose?: () => Promise<boolean>;
 }
 
 export function TicketCard({
@@ -28,6 +29,7 @@ export function TicketCard({
   onToggle,
   onAddComment,
   onUpdate,
+  onClose,
 }: TicketCardProps) {
   const [commentText, setCommentText] = useState('');
   const [sending, setSending] = useState(false);
@@ -35,9 +37,14 @@ export function TicketCard({
   const [editTitle, setEditTitle] = useState(ticket.title);
   const [editDesc, setEditDesc] = useState(ticket.description);
   const isClosed =
-    ticket.status === 'done' || ticket.status === 'rejected' || ticket.status === 'obsolete';
+    ticket.status === 'done' ||
+    ticket.status === 'rejected' ||
+    ticket.status === 'obsolete' ||
+    ticket.status === 'closed';
   const canEdit = ticket.status === 'open' || ticket.status === 'in-progress';
   const [reopenMode, setReopenMode] = useState(false);
+  const [closeConfirm, setCloseConfirm] = useState(false);
+  const [closing, setClosing] = useState(false);
   const statusCfg = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.done;
   const priorityCfg = PRIORITY_CONFIG[ticket.priority] || PRIORITY_CONFIG.low;
   const typeCfg = TYPE_CONFIG[ticket.ticketType || 'bug'];
@@ -563,56 +570,133 @@ export function TicketCard({
                   )}
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                  <textarea
-                    value={commentText}
-                    onChange={(e) => {
-                      setCommentText(e.target.value);
-                      autoResize(e.target);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendComment();
-                        const ta = e.target as HTMLTextAreaElement;
-                        ta.style.height = 'auto';
-                      }
-                    }}
-                    placeholder={t('Kommentar schreiben...')}
-                    rows={1}
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      background: theme.background.default,
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: '8px',
-                      color: theme.text.secondary,
-                      fontSize: '13px',
-                      outline: 'none',
-                      resize: 'none',
-                      fontFamily: 'inherit',
-                      overflow: 'hidden',
-                    }}
-                  />
-                  <motion.button
-                    whileTap={tapScale}
-                    onClick={handleSendComment}
-                    disabled={!commentText.trim() || sending}
-                    style={{
-                      padding: '8px 12px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background:
-                        commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
-                      color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
-                      cursor: commentText.trim() && !sending ? 'pointer' : 'default',
-                      display: 'flex',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Send style={{ fontSize: 16 }} />
-                  </motion.button>
-                </div>
+                <>
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                    <textarea
+                      value={commentText}
+                      onChange={(e) => {
+                        setCommentText(e.target.value);
+                        autoResize(e.target);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendComment();
+                          const ta = e.target as HTMLTextAreaElement;
+                          ta.style.height = 'auto';
+                        }
+                      }}
+                      placeholder={t('Kommentar schreiben...')}
+                      rows={1}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        background: theme.background.default,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '8px',
+                        color: theme.text.secondary,
+                        fontSize: '13px',
+                        outline: 'none',
+                        resize: 'none',
+                        fontFamily: 'inherit',
+                        overflow: 'hidden',
+                      }}
+                    />
+                    <motion.button
+                      whileTap={tapScale}
+                      onClick={handleSendComment}
+                      disabled={!commentText.trim() || sending}
+                      style={{
+                        padding: '8px 12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background:
+                          commentText.trim() && !sending ? theme.primary : `${theme.primary}30`,
+                        color: commentText.trim() && !sending ? '#fff' : `${theme.primary}60`,
+                        cursor: commentText.trim() && !sending ? 'pointer' : 'default',
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <Send style={{ fontSize: 16 }} />
+                    </motion.button>
+                  </div>
+
+                  {/* Ersteller kann sein Ticket selbst schließen */}
+                  {onClose && !closeConfirm && (
+                    <motion.button
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setCloseConfirm(true)}
+                      style={{
+                        width: '100%',
+                        marginTop: '10px',
+                        padding: '10px 16px',
+                        borderRadius: '8px',
+                        border: `1px solid ${theme.border.default}`,
+                        background: 'transparent',
+                        color: theme.text.muted,
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {t('Ticket schließen')}
+                    </motion.button>
+                  )}
+                  {onClose && closeConfirm && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        marginTop: '10px',
+                      }}
+                    >
+                      <span style={{ flex: 1, fontSize: '12px', color: theme.text.secondary }}>
+                        {t('Ticket wirklich schließen?')}
+                      </span>
+                      <motion.button
+                        whileTap={tapScale}
+                        disabled={closing}
+                        onClick={async () => {
+                          setClosing(true);
+                          const success = await onClose();
+                          if (!success) setClosing(false);
+                          setCloseConfirm(false);
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: closing ? `${theme.primary}30` : '#64748b',
+                          color: '#fff',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: closing ? 'default' : 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {closing ? '...' : t('Ja')}
+                      </motion.button>
+                      <motion.button
+                        whileTap={tapScale}
+                        onClick={() => setCloseConfirm(false)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '8px',
+                          border: `1px solid ${theme.border.default}`,
+                          background: 'transparent',
+                          color: theme.text.secondary,
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          fontFamily: 'inherit',
+                        }}
+                      >
+                        {t('Nein')}
+                      </motion.button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </motion.div>

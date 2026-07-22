@@ -106,6 +106,14 @@ const dict: Record<string, string> = {
   'Dein Ticket "{title}" ist jetzt: {status}': 'Your ticket "{title}" is now: {status}',
   'Antwort auf dein Ticket': 'Reply to your ticket',
   'Admin hat auf "{title}" geantwortet: {snippet}': 'Admin replied to "{title}": {snippet}',
+  Geschlossen: 'Closed',
+  Archiv: 'Archive',
+  'Ticket schließen': 'Close ticket',
+  'Ticket wirklich schließen?': 'Really close this ticket?',
+  'Keine offenen Tickets.': 'No open tickets.',
+  'Keine archivierten Tickets.': 'No archived tickets.',
+  'Ticket geschlossen': 'Ticket closed',
+  '{name} hat das Ticket "{title}" geschlossen': '{name} closed the ticket "{title}"',
 };
 
 export default dict;

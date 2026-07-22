@@ -1,6 +1,6 @@
 import { t } from '../../services/i18n';
 
-export type TicketStatus = 'open' | 'in-progress' | 'done' | 'rejected' | 'obsolete';
+export type TicketStatus = 'open' | 'in-progress' | 'done' | 'rejected' | 'obsolete' | 'closed';
 export type TicketPriority = 'low' | 'medium' | 'high';
 export type TicketType = 'bug' | 'feature';
 
@@ -42,6 +42,7 @@ export const STATUS_CONFIG: Record<
   done: { label: t('Erledigt'), rawLabel: 'Erledigt', color: '#22c55e' },
   rejected: { label: t('Abgelehnt'), rawLabel: 'Abgelehnt', color: '#ef4444' },
   obsolete: { label: t('Hinfällig'), rawLabel: 'Hinfällig', color: '#78716c' },
+  closed: { label: t('Geschlossen'), rawLabel: 'Geschlossen', color: '#64748b' },
 };
 
 export const PRIORITY_CONFIG: Record<TicketPriority, { label: string; color: string }> = {
