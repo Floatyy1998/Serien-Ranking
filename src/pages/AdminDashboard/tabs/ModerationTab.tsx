@@ -1,5 +1,6 @@
-import { Block, Delete, Done, Gavel, Translate } from '@mui/icons-material';
+import { Block, Delete, Done, Gavel, OpenInNew, Translate } from '@mui/icons-material';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ThemeContextType } from '../../../contexts/ThemeContext';
 import { dbRef, serverIncrement } from '../../../services/db/ref';
 import { backendFetch } from '../../../services/backendApi';
@@ -11,6 +12,7 @@ interface ModerationFlag {
   id: string;
   kind: 'discussion' | 'reply' | 'ticket' | 'ticket_comment';
   path: string;
+  contextPath?: string;
   text: string;
   title?: string;
   userId: string;
@@ -56,6 +58,25 @@ const BAN_DURATIONS: { label: string; ms: number | null }[] = [
   { label: 'Permanent', ms: null },
 ];
 
+/** Route zum gemeldeten Inhalt — für den Kontext-Blick des Admins. */
+const contentRouteFor = (flag: ModerationFlag): string | null => {
+  if (flag.kind === 'ticket' || flag.kind === 'ticket_comment') {
+    const ticketId = flag.path.split('/')[1];
+    return ticketId ? `/admin?tab=tickets&ticket=${ticketId}` : null;
+  }
+  // discussions/<type>/<itemId>[/<discussionId>] — bei Antworten via contextPath
+  const discussionPath =
+    flag.kind === 'discussion' ? flag.path.split('/').slice(0, 3).join('/') : flag.contextPath;
+  if (!discussionPath) return null;
+  const [, itemType, itemId] = discussionPath.split('/');
+  if (!itemType || !itemId) return null;
+  if (itemType === 'episode') {
+    const m = itemId.match(/^(\d+)_s(\d+)_e(\d+)$/);
+    return m ? `/episode/${m[1]}/s/${m[2]}/e/${m[3]}` : null;
+  }
+  return `/${itemType}/${itemId}`;
+};
+
 const formatUntil = (until?: number): string => {
   if (!until) return '';
   if (until >= PERMANENT_UNTIL) return 'permanent';
@@ -64,6 +85,7 @@ const formatUntil = (until?: number): string => {
 };
 
 export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme'] }) {
+  const navigate = useNavigate();
   const [flags, setFlags] = useState<ModerationFlag[]>([]);
   const [bans, setBans] = useState<BanEntry[]>([]);
   const [strikes, setStrikes] = useState<Record<string, StrikeEntry>>({});
@@ -439,6 +461,17 @@ export function ModerationTab({ theme }: { theme: ThemeContextType['currentTheme
                         ? 'Original'
                         : 'Übersetzen'}
                   </button>
+                  {contentRouteFor(flag) && (
+                    <button
+                      onClick={() => {
+                        const route = contentRouteFor(flag);
+                        if (route) navigate(route);
+                      }}
+                      style={actionBtn(theme.text.secondary)}
+                    >
+                      <OpenInNew style={{ fontSize: 14 }} /> Zum Inhalt
+                    </button>
+                  )}
                 </>
               )}
             </div>

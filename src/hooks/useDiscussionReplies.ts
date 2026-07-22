@@ -61,8 +61,10 @@ export const useDiscussionReplies = (
               id,
               likes: reply.likes ? Object.keys(reply.likes) : [],
             }))
-            // KI-Quarantäne: versteckte Inhalte sieht nur der Autor selbst
-            .filter((reply) => !reply.hidden || reply.userId === user?.uid);
+            // KI-Quarantäne: versteckte Inhalte sehen nur Autor + Admin
+            .filter(
+              (reply) => !reply.hidden || reply.userId === user?.uid || user?.uid === ADMIN_UID
+            );
           // Sort by createdAt (oldest first for replies)
           replyList.sort((a, b) => a.createdAt - b.createdAt);
           setReplies(replyList);
@@ -115,6 +117,7 @@ export const useDiscussionReplies = (
         void queueModerationScan({
           kind: 'reply',
           path: `${repliesPath}/${replyRef.key}`,
+          contextPath: discussionPath,
           text: content,
           userId: user.uid,
           username,

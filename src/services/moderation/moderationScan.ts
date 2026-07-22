@@ -12,6 +12,8 @@ export const queueModerationScan = async (scan: {
   kind: ModerationKind;
   /** Voller RTDB-Pfad des Inhalts (für Löschen aus dem Admin-Dashboard). */
   path: string;
+  /** Bei Antworten: Pfad der zugehörigen Diskussion (für den Kontext-Sprung). */
+  contextPath?: string;
   text: string;
   title?: string;
   userId: string;
@@ -21,6 +23,7 @@ export const queueModerationScan = async (scan: {
     await dbRef('moderationQueue').push({
       kind: scan.kind,
       path: scan.path.slice(0, 500),
+      ...(scan.contextPath && { contextPath: scan.contextPath.slice(0, 500) }),
       text: scan.text.slice(0, 6000),
       ...(scan.title && { title: scan.title.slice(0, 500) }),
       userId: scan.userId,

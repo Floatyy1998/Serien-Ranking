@@ -74,8 +74,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
               id,
               likes: disc.likes ? Object.keys(disc.likes) : [],
             }))
-            // KI-Quarantäne: versteckte Inhalte sieht nur der Autor selbst
-            .filter((disc) => !disc.hidden || disc.userId === user?.uid);
+            // KI-Quarantäne: versteckte Inhalte sehen nur Autor + Admin
+            .filter((disc) => !disc.hidden || disc.userId === user?.uid || user?.uid === ADMIN_UID);
           // Sort by pinned first, then by createdAt (newest first)
           discussionList.sort((a, b) => {
             if (a.isPinned && !b.isPinned) return -1;
