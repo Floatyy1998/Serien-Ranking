@@ -44,8 +44,8 @@ const dict: Record<string, string> = {
   // Feature descriptions (Film-Update Juli 2026)
   'Was startet wann? Der neue Film-Kalender zeigt dir Kinostarts und Streaming-Releases für deine Watch-Region — als Timeline mit Quartals-Tabs wie beim Serien-Kalender, inklusive Anbieter-Logos bei Digital-Releases und „+"-Button zum direkten Hinzufügen.':
     'What starts when? The new movie calendar shows theatrical and streaming releases for your watch region — as a timeline with quarter tabs like the series calendar, including provider logos on digital releases and a "+" button to add movies right away.',
-  'Die Startseite passt jetzt auf deine Filmliste auf: Landet ein noch ungesehener Film aus deiner Liste auf einem deiner Abos, taucht er in der neuen Sektion „Neu auf deinen Abos" auf — und du bekommst eine Benachrichtigung. Die Sektion lässt sich im Layout-Editor verschieben oder ausblenden.':
-    'The homepage now keeps an eye on your movie list: when an unwatched movie from your list lands on one of your subscriptions, it shows up in the new "New on your subscriptions" section — and you get a notification. The section can be moved or hidden in the layout editor.',
+  'Die Startseite passt jetzt auf deine Filmliste auf: Landet ein noch ungesehener Film aus deiner Liste bei einem deiner Streaming-Anbieter, taucht er in der neuen Sektion auf — und du bekommst eine Benachrichtigung. Die Sektion lässt sich im Layout-Editor verschieben oder ausblenden.':
+    'The homepage now keeps an eye on your movie list: when an unwatched movie from your list lands on one of your streaming services, it shows up in the new section — and you get a notification. The section can be moved or hidden in the layout editor.',
   'Herr der Ringe, MCU, Fluch der Karibik: Gehört ein Film zu einer Reihe, zeigt seine Detailseite jetzt die komplette Reihe chronologisch — mit Fortschrittsbalken, Haken auf allem Gesehenen und kommenden Teilen samt Jahr. Reihe komplett? Sag niemals nie.':
     'Lord of the Rings, MCU, Pirates of the Caribbean: if a movie belongs to a collection, its detail page now shows the whole collection in order — with a progress bar, checkmarks on everything watched and upcoming parts with their year. Collection complete? Never say never.',
   'Massen-Nachtragen von Filmen zählt nicht mehr für die Rangliste (wie bei Serien), Push-Benachrichtigungen nennen jetzt Staffel und Anbieter statt „und 3 weitere", und viele Details wurden poliert — vom Ranglisten-Podium auf Mobile bis zu den Abständen der Film-Detailseite.':
@@ -53,7 +53,7 @@ const dict: Record<string, string> = {
 
   // Announcement (Film-Update Juli 2026)
   'Neu: Filme im Rampenlicht': 'New: Movies in the Spotlight',
-  'Großes Film-Update: Der neue Film-Kalender zeigt Kinostarts und Streaming-Releases für deine Region, die Startseite meldet Filme von deiner Liste, sobald sie auf deinen Abos landen, und Filmreihen trackst du jetzt mit Fortschritt direkt auf der Filmseite. Alle Details in den Patch Notes.':
+  'Großes Film-Update: Der neue Film-Kalender zeigt Kinostarts und Streaming-Releases für deine Region, die Startseite meldet Filme von deiner Liste, sobald sie bei deinen Streaming-Anbietern landen, und Filmreihen trackst du jetzt mit Fortschritt direkt auf der Filmseite. Alle Details in den Patch Notes.':
     'Big movie update: the new movie calendar shows theatrical and streaming releases for your region, the homepage alerts you when movies from your list land on your subscriptions, and you can now track movie collections with progress right on the movie page. All details in the patch notes.',
   'Die untere Leiste gehört jetzt dir': 'The Bottom Bar Is Now Yours',
   'Neuer Layout-Editor: deine App in klein': 'New Layout Editor: Your App in Miniature',

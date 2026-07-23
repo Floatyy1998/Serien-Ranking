@@ -1,4 +1,4 @@
-import { NewReleases } from '@mui/icons-material';
+import { NewReleases, Subscriptions } from '@mui/icons-material';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { HorizontalScrollContainer, SectionHeader } from '../../../components/ui';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -6,6 +6,7 @@ import { useMovieList } from '../../../contexts/MovieListContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useActiveSubscriptions } from '../../../hooks/useActiveSubscriptions';
 import { useDeviceType } from '../../../hooks/useDeviceType';
+import { useTransitionNavigate } from '../../../hooks/useTransitionNavigate';
 import { getProviderLogoUrl } from '../../../lib/providerMerge';
 import {
   detectMovieAvailability,
@@ -30,6 +31,7 @@ export const NewOnSubscriptionsSection = React.memo(function NewOnSubscriptionsS
   const { activeProviders, loading: subsLoading } = useActiveSubscriptions();
   const { currentTheme } = useTheme();
   const { isMobile } = useDeviceType();
+  const navigate = useTransitionNavigate();
 
   const [available, setAvailable] = useState<AvailableMovie[]>([]);
   const ranRef = useRef(false);
@@ -66,7 +68,13 @@ export const NewOnSubscriptionsSection = React.memo(function NewOnSubscriptionsS
     [available]
   );
 
-  if (items.length === 0) return null;
+  // Ohne gepflegte Streaming-Anbieter kann die Erkennung nichts melden —
+  // statt unsichtbar zu bleiben, den Weg zu den Abo-Einstellungen zeigen
+  // (nur wenn es überhaupt Filme in der Liste gibt).
+  const showSetupHint =
+    !subsLoading && !moviesLoading && !!user && activeProviders.size === 0 && movieList.length > 0;
+
+  if (items.length === 0 && !showSetupHint) return null;
 
   const cardWidth = isMobile ? '155px' : '280px';
 
@@ -75,13 +83,62 @@ export const NewOnSubscriptionsSection = React.memo(function NewOnSubscriptionsS
       <SectionHeader
         icon={<NewReleases />}
         iconColor={currentTheme.accent}
-        title={t('Neu auf deinen Abos')}
+        title={t('Neu auf deinen Streaming-Anbietern')}
       />
-      <HorizontalScrollContainer gap={14} style={{ padding: '0 20px' }}>
-        {items.map((item) => (
-          <CinematicPosterCard key={item.id} item={item} cardWidth={cardWidth} />
-        ))}
-      </HorizontalScrollContainer>
+      {items.length > 0 ? (
+        <HorizontalScrollContainer gap={14} style={{ padding: '0 20px' }}>
+          {items.map((item) => (
+            <CinematicPosterCard key={item.id} item={item} cardWidth={cardWidth} />
+          ))}
+        </HorizontalScrollContainer>
+      ) : (
+        <div style={{ padding: '0 20px' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/subscriptions')}
+            style={{
+              width: '100%',
+              padding: '20px 16px',
+              background: `${currentTheme.primary}10`,
+              border: `1px dashed ${currentTheme.primary}55`,
+              borderRadius: '12px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              textAlign: 'left',
+              color: currentTheme.text.primary,
+              fontFamily: 'inherit',
+            }}
+          >
+            <Subscriptions
+              style={{ color: currentTheme.primary, fontSize: '28px', flexShrink: 0 }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontSize: isMobile ? '14px' : '15px',
+                  fontWeight: 600,
+                  marginBottom: '2px',
+                }}
+              >
+                {t('Wähle deine Streaming-Anbieter')}
+              </div>
+              <div
+                style={{
+                  fontSize: isMobile ? '12px' : '13px',
+                  color: currentTheme.text.muted,
+                  lineHeight: 1.4,
+                }}
+              >
+                {t(
+                  'Sag uns, wo du streamst — sobald ein Film von deiner Liste dort auftaucht, siehst du ihn hier und bekommst eine Benachrichtigung.'
+                )}
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
     </section>
   );
 });

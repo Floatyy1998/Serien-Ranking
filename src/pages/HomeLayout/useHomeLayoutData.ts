@@ -47,7 +47,7 @@ export const SECTION_LABELS: Record<string, string> = {
   'continue-watching': t('Weiterschauen'),
   rewatches: t('Rewatches'),
   'today-episodes': t('Heute Neu'),
-  'new-on-subs': t('Neu auf deinen Abos'),
+  'new-on-subs': t('Neu auf deinen Streaming-Anbietern'),
   seasonal: t('Saisonale Empfehlungen'),
   trending: t('Trending'),
   'top-rated': t('Bestbewertet'),

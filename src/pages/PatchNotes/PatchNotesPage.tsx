@@ -92,9 +92,9 @@ export const PatchNotesPage = () => {
         {
           icon: <NewReleases />,
           color: currentTheme.secondary,
-          title: t('Neu auf deinen Abos'),
+          title: t('Neu auf deinen Streaming-Anbietern'),
           description: t(
-            'Die Startseite passt jetzt auf deine Filmliste auf: Landet ein noch ungesehener Film aus deiner Liste auf einem deiner Abos, taucht er in der neuen Sektion „Neu auf deinen Abos" auf — und du bekommst eine Benachrichtigung. Die Sektion lässt sich im Layout-Editor verschieben oder ausblenden.'
+            'Die Startseite passt jetzt auf deine Filmliste auf: Landet ein noch ungesehener Film aus deiner Liste bei einem deiner Streaming-Anbieter, taucht er in der neuen Sektion auf — und du bekommst eine Benachrichtigung. Die Sektion lässt sich im Layout-Editor verschieben oder ausblenden.'
           ),
         },
         {

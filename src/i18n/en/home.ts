@@ -290,7 +290,10 @@ const dict: Record<string, string> = {
   '{n} Serie wartet noch.': '{n} series is still waiting.',
   '{n} Serien warten noch.': '{n} series are still waiting.',
   'Nachricht vom TV-Rank Team': 'Message from the TV-Rank team',
-  'Neu auf deinen Abos': 'New on your subscriptions',
+  'Neu auf deinen Streaming-Anbietern': 'New on your streaming services',
+  'Wähle deine Streaming-Anbieter': 'Pick your streaming services',
+  'Sag uns, wo du streamst — sobald ein Film von deiner Liste dort auftaucht, siehst du ihn hier und bekommst eine Benachrichtigung.':
+    'Tell us where you stream — as soon as a movie from your list shows up there, you will see it here and get a notification.',
   NEU: 'NEW',
   'Noch keine Serien in deiner Liste': 'No series in your list yet',
   'Stöbere unter Entdecken oder such direkt nach deiner Lieblingsserie — sobald du eine hinzufügst, geht’s hier weiter.':
