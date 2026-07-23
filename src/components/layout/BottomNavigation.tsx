@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MAIN_TAB_PATHS, NAV_SLOT_OPTIONS } from '../../config/navItems';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -13,6 +14,7 @@ import { useNavSlots } from '../../hooks/useNavConfig';
 import { useTodayEpisodes } from '../../hooks/useTodayEpisodes';
 import { hapticTap } from '../../lib/haptics';
 import { setAppBadge } from '../../services/nativeShell';
+import { syncAppBadgeAcrossDevices } from '../../services/badgeSync';
 import { t } from '../../services/i18n';
 import { colors } from '../../theme/colors';
 import { PetWidget } from '../pet';
@@ -31,6 +33,7 @@ export const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   useTheme();
+  const { user } = useAuth() || {};
   const { unreadRequestsCount } = useOptimizedFriends();
   useNotifications();
 
@@ -39,7 +42,10 @@ export const BottomNavigation = () => {
 
   useEffect(() => {
     setAppBadge(unwatchedToday);
-  }, [unwatchedToday]);
+    // Andere Geräte per stillem aps.badge-Push nachziehen (debounced,
+    // schreibt nur bei tatsächlicher Änderung).
+    syncAppBadgeAcrossDevices(user?.uid, unwatchedToday);
+  }, [unwatchedToday, user?.uid]);
   const navSlots = useNavSlots();
   const isNavRoot = useIsNavRoot();
 
