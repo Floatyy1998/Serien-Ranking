@@ -204,8 +204,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setOnboardingComplete(false);
 
                 // Willkommens-Notification beim Erstlogin (Sprache = App-Sprache).
+                // Fester Key statt push(): onAuthStateChanged kann beim Erstlogin
+                // doppelt feuern, bevor der Frisch-Marker sichtbar ist — mit
+                // festem Key überschreibt der zweite Lauf statt zu duplizieren.
                 try {
-                  void userRef.child('notifications').push({
+                  void userRef.child('notifications/welcome').set({
                     type: 'welcome',
                     title: isEnglish() ? 'Welcome to TV-Rank!' : 'Willkommen bei TV-Rank!',
                     message: isEnglish()
