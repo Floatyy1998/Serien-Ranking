@@ -28,6 +28,7 @@ import { trackRegister } from '../../services/firebase/analytics';
 import { t } from '../../services/i18n';
 import { SocialLoginButtons } from './SocialLoginButtons';
 import { syncUserSearchIndex } from '../../services/firebase/userSearchIndex';
+import { requestVerificationMail } from '../../services/authMails';
 import { dbRef, paths, serverTimestamp } from '../../services/db/ref';
 
 export const RegisterPage = () => {
@@ -96,7 +97,7 @@ export const RegisterPage = () => {
           displayName: username,
         });
 
-        await userCredential.user.sendEmailVerification();
+        await requestVerificationMail(userCredential.user);
         trackRegister('email');
         navigate('/');
       }

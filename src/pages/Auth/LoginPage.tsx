@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { requestPasswordResetMail } from '../../services/authMails';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -46,7 +47,7 @@ export const LoginPage = () => {
     setError('');
     setInfo('');
     try {
-      await firebase.auth().sendPasswordResetEmail(email);
+      await requestPasswordResetMail(email);
       setInfo(t('Wir haben dir eine E-Mail zum Zurücksetzen deines Passworts geschickt.'));
     } catch (err: unknown) {
       const firebaseError = err as { code?: string };

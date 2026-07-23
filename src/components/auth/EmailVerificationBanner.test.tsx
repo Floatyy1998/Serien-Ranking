@@ -41,6 +41,12 @@ vi.mock('firebase/compat/app', () => ({
 }));
 vi.mock('firebase/compat/auth', () => ({}));
 
+// Verifizierungs-Mail läuft über den Backend-Weg (mit Firebase-Fallback).
+const requestVerificationMail = vi.hoisted(() =>
+  vi.fn<(user: unknown) => Promise<void>>(async () => {})
+);
+vi.mock('../../services/authMails', () => ({ requestVerificationMail }));
+
 import { EmailVerificationBanner } from './EmailVerificationBanner';
 
 function makeUser(emailVerified: boolean): FakeUser {
@@ -98,6 +104,7 @@ describe('EmailVerificationBanner', () => {
 
     fireEvent.click(screen.getByText('Erneut senden'));
 
-    expect(user.sendEmailVerification).toHaveBeenCalledTimes(1);
+    expect(requestVerificationMail).toHaveBeenCalledTimes(1);
+    expect(requestVerificationMail).toHaveBeenCalledWith(user);
   });
 });

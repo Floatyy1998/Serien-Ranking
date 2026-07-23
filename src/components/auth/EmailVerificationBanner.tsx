@@ -5,6 +5,7 @@ import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { requestVerificationMail } from '../../services/authMails';
 import { commonStyles } from '../../theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
@@ -63,8 +64,7 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
 
   const resendVerification = () => {
     if (user) {
-      user
-        .sendEmailVerification()
+      requestVerificationMail(user)
         .then(() => {
           setMessage(t('Verifizierungslink wurde erneut gesendet.'));
           setSnackOpen(true);

@@ -2,6 +2,7 @@ import Firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
+import { appLocale } from '../i18n';
 
 export const initFirebase = () => {
   const config = {
@@ -22,5 +23,13 @@ export const initFirebase = () => {
 
   if (!Firebase.apps.length) {
     Firebase.initializeApp(config);
+    // Auth-Mails (Verifizierung, Passwort-Reset) in der App-Sprache verschicken.
+    // Greift für Firebases Standard-Templates — angepasste Template-Texte in
+    // der Console überschreiben die Lokalisierung.
+    try {
+      Firebase.auth().languageCode = appLocale;
+    } catch {
+      /* Auth noch nicht verfügbar — Standardsprache bleibt */
+    }
   }
 };
