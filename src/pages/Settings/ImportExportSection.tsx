@@ -23,6 +23,14 @@ interface ImportJobState {
   done?: number;
   currentTitle?: string;
   error?: string;
+  report?: {
+    addedSeries?: number;
+    writtenEpisodes?: number;
+    skippedExisting?: number;
+    updatedMovies?: number;
+    skippedMovies?: number;
+    failed?: { title?: string; error?: string }[];
+  };
 }
 
 export const ImportExportSection = () => {
@@ -299,9 +307,37 @@ export const ImportExportSection = () => {
       )}
 
       {job?.status === 'done' && (
-        <p style={{ color: currentTheme.status.success, fontSize: '0.9rem', margin: '10px 0 0' }}>
-          {t('Import abgeschlossen!')}
-        </p>
+        <div style={{ margin: '10px 0 0' }}>
+          <p style={{ color: currentTheme.status.success, fontSize: '0.9rem', margin: 0 }}>
+            {t('Import abgeschlossen!')}
+          </p>
+          {job.report && (
+            <p
+              style={{
+                color: currentTheme.text.muted,
+                fontSize: '0.85rem',
+                lineHeight: 1.5,
+                margin: '6px 0 0',
+              }}
+            >
+              {t(
+                '{s} Serien neu, {e} Folgen importiert, {se} Folgen übersprungen (schon markiert), {m} Filme aktualisiert, {sm} Filme übersprungen.',
+                {
+                  s: job.report.addedSeries ?? 0,
+                  e: job.report.writtenEpisodes ?? 0,
+                  se: job.report.skippedExisting ?? 0,
+                  m: job.report.updatedMovies ?? 0,
+                  sm: job.report.skippedMovies ?? 0,
+                }
+              )}
+              {(job.report.failed?.length ?? 0) > 0 &&
+                ` ${t('{n} Einträge fehlgeschlagen:', { n: job.report.failed!.length })} ${job.report
+                  .failed!.slice(0, 5)
+                  .map((f) => f.title || '?')
+                  .join(', ')}${job.report.failed!.length > 5 ? '…' : ''}`}
+            </p>
+          )}
+        </div>
       )}
       {(commitError || job?.status === 'error') && (
         <p style={{ color: currentTheme.status.error, fontSize: '0.85rem', margin: '10px 0 0' }}>

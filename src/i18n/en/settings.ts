@@ -150,6 +150,9 @@ const settings: Record<string, string> = {
   'Import fehlgeschlagen': 'Import failed',
   '{n} Einträge ohne auflösbare TMDB-Id übersprungen.':
     '{n} entries skipped (no resolvable TMDB id).',
+  '{s} Serien neu, {e} Folgen importiert, {se} Folgen übersprungen (schon markiert), {m} Filme aktualisiert, {sm} Filme übersprungen.':
+    '{s} new series, {e} episodes imported, {se} episodes skipped (already marked), {m} movies updated, {sm} movies skipped.',
+  '{n} Einträge fehlgeschlagen:': '{n} entries failed:',
   '{days} T.': '{days} d.',
   'Provider-Änderungen': 'Provider changes',
   'Benachrichtigung wenn ein Streaming-Anbieter wechselt':
