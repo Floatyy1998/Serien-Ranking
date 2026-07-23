@@ -45,6 +45,7 @@ import { PlayTestBanner } from './PlayTestBanner';
 import { ContinueWatchingSection } from './sections/ContinueWatchingSection';
 import { RewatchSection } from './sections/RewatchSection';
 import { TodayEpisodesSection } from './sections/TodayEpisodesSection';
+import { NewOnSubscriptionsSection } from './sections/NewOnSubscriptionsSection';
 import { MediaCarouselSection } from './sections/MediaCarouselSection';
 
 export const HomePage: React.FC = () => {
@@ -339,6 +340,9 @@ export const HomePage: React.FC = () => {
             onPosterClick={handlePosterClick}
           />
         );
+
+      case 'new-on-subs':
+        return <NewOnSubscriptionsSection key="new-on-subs" />;
 
       case 'seasonal':
         return (

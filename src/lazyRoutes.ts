@@ -325,6 +325,12 @@ export const SerienKalenderPage = lazyWithRetry(() =>
   }))
 );
 
+export const FilmKalenderPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "film-kalender" */ './pages/FilmKalender').then((m) => ({
+    default: m.FilmKalenderPage,
+  }))
+);
+
 // Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys.
 //
 // iOS-Shell (kein Service Worker!) braucht den VOLL-Preload aller Routen als
@@ -367,6 +373,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('./pages/Manga/HiddenMangaPage'),
     () => import('./pages/AnimeSeason'),
     () => import('./pages/SerienKalender'),
+    () => import('./pages/FilmKalender'),
     () => import('./pages/Wrapped'),
     () => import('./pages/WatchJourney'),
     () => import('./pages/TasteMatch'),

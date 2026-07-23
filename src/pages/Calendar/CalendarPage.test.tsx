@@ -33,6 +33,7 @@ vi.mock('@mui/icons-material', () => ({
   CalendarMonth: () => null,
   ChevronRight: () => null,
   LiveTv: () => null,
+  LocalMovies: () => null,
 }));
 vi.mock('framer-motion', async () => {
   const React = await import('react');

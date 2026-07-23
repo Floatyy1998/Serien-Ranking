@@ -284,6 +284,26 @@ const dict: Record<string, string> = {
     'New series & seasons with German availability (TMDB) — updated daily',
   'Bereits gestartet': 'Already started',
   'Nichts gefunden': 'Nothing found',
+
+  // ─── Film-Kalender ─────────────────────────────────────────
+  'Film-Kalender': 'Movie calendar',
+  'Film-Kalender öffnen': 'Open movie calendar',
+  'Kinostarts & Streaming-Releases': 'Theatrical & streaming releases',
+  'Film-Kalender wird geladen': 'Loading movie calendar',
+  Kino: 'Cinema',
+  KINO: 'CINEMA',
+  STREAMING: 'STREAMING',
+  '{n} Release': '{n} release',
+  '{n} Releases': '{n} releases',
+  'Releases nicht erreichbar': 'Releases unavailable',
+  'Die Release-Daten konnten nicht geladen werden.': 'The release data could not be loaded.',
+  'Keine Releases': 'No releases',
+  'Für {q} sind in diesem Modus keine Releases gelistet.':
+    'No releases are listed for {q} in this mode.',
+  'Kinostarts in deiner Region (TMDB)': 'Theatrical releases in your region (TMDB)',
+  'Digital-/Streaming-Releases in deiner Region (TMDB)':
+    'Digital/streaming releases in your region (TMDB)',
+  'Schon gesehen': 'Already watched',
 };
 
 export default dict;

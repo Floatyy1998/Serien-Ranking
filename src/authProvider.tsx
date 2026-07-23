@@ -207,7 +207,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 try {
                   void userRef.child('notifications').push({
                     type: 'welcome',
-                    title: isEnglish() ? 'Welcome to TV-Rank! 🎬' : 'Willkommen bei TV-Rank! 🎬',
+                    title: isEnglish() ? 'Welcome to TV-Rank!' : 'Willkommen bei TV-Rank!',
                     message: isEnglish()
                       ? 'Great to have you here — have fun tracking your series and movies! If you run into any problems or have questions, just reach out via the little red bug icon. Thanks for being part of TV-Rank!'
                       : 'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',

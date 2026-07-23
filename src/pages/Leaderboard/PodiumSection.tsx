@@ -36,6 +36,11 @@ export const PodiumSection = React.memo(function PodiumSection({
         const height = PODIUM_HEIGHTS[podiumIndex];
         const isFirst = podiumIndex === 0;
         const avatarSize = isFirst ? 96 : 72;
+        // Lange Werte („123h 35m") schrumpfen statt auf schmalen Mobile-
+        // Podesten umzubrechen.
+        const valueText = formatValue(entry.value, category);
+        const compact = valueText.length >= 7;
+        const valueFontSize = isFirst ? (compact ? 24 : 40) : compact ? 18 : 28;
 
         return (
           <motion.div
@@ -125,15 +130,17 @@ export const PodiumSection = React.memo(function PodiumSection({
             >
               <span
                 style={{
-                  fontSize: isFirst ? 40 : 28,
+                  fontSize: valueFontSize,
                   fontWeight: 900,
                   letterSpacing: '-0.02em',
                   lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
                   color: currentTheme.text.secondary,
                   textShadow: `0 0 24px ${medal}40`,
                 }}
               >
-                {formatValue(entry.value, category)}
+                {valueText}
               </span>
               {unit && (
                 <span

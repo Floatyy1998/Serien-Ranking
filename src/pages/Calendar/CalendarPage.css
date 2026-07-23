@@ -979,7 +979,7 @@
 @media (min-width: 768px) {
   .cal-entry-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     padding: 4px 20px 12px;
   }
@@ -1174,6 +1174,10 @@
     grid-template-columns: 1fr 1fr;
     gap: 8px;
     padding: 0 12px 10px;
+  }
+  /* 3 Einträge: der letzte spannt beide Spalten, statt einsam links zu hängen. */
+  .cal-entry-row .cal-entry-btn:nth-child(3):last-child {
+    grid-column: 1 / -1;
   }
   .cal-entry-row .cal-entry-btn {
     width: 100%;

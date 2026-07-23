@@ -222,7 +222,7 @@
 
 /* Video mobile */
 .md-video-mobile {
-  padding: 8px 12px 0;
+  padding: 8px 16px 14px;
 }
 
 /* Action Buttons */
@@ -339,7 +339,7 @@
 
 .md-tabs--mobile {
   gap: 6px;
-  padding: 0 12px;
+  padding: 0 16px;
   margin-bottom: 12px;
 }
 
@@ -397,7 +397,7 @@
 }
 
 .md-info--mobile {
-  padding: 12px;
+  padding: 12px 16px;
 }
 
 .md-info__section {

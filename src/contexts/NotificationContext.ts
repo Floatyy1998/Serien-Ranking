@@ -20,7 +20,8 @@ export interface AppNotification {
     | 'admin_message'
     | 'moderation_flag'
     | 'moderation_ban'
-    | 'data_heal';
+    | 'data_heal'
+    | 'movie_available';
   title: string;
   message: string;
   // Englische Variante (Cross-User-Notifications) — Anzeige wählt nach appLocale

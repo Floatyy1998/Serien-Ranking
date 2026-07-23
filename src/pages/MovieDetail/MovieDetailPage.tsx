@@ -10,6 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { MovieHeroSection } from './MovieHeroSection';
 import { MovieActionButtons } from './MovieActionButtons';
 import { MovieInfoTab } from './MovieInfoTab';
+import { CollectionSection } from './CollectionSection';
 import { useMovieData } from './useMovieData';
 import { t } from '../../services/i18n';
 import './MovieDetailPage.css';
@@ -131,6 +132,9 @@ export const MovieDetailPage = memo(() => {
       ) : (
         <div role="tabpanel" id="md-tabpanel-info" aria-labelledby="md-tab-info">
           <MovieInfoTab movie={movie} isMobile={isMobile} tmdbOverview={tmdbOverview} />
+          <Deferred>
+            <CollectionSection movieId={Number(movie.id)} isMobile={isMobile} />
+          </Deferred>
           <Deferred>
             <RecommendationsSection id={movie.id} mediaType="movie" />
           </Deferred>

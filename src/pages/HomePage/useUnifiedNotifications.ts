@@ -67,6 +67,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_movie-update-2026-07',
+    title: 'Neu: Filme im Rampenlicht',
+    message:
+      'Großes Film-Update: Der neue Film-Kalender zeigt Kinostarts und Streaming-Releases für deine Region, die Startseite meldet Filme von deiner Liste, sobald sie auf deinen Abos landen, und Filmreihen trackst du jetzt mit Fortschritt direkt auf der Filmseite. Alle Details in den Patch Notes.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik) —
+    // beim Push ggf. auf kurz nach dem tatsächlichen Deploy-Zeitpunkt anpassen.
+    timestamp: new Date('2026-07-23T20:30:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_nav-layout-2026-07',
     title: 'Neu: Deine Navigation, dein Layout 🎛️',
     message:

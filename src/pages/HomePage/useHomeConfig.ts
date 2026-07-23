@@ -9,6 +9,7 @@ export const DEFAULT_SECTION_ORDER = [
   'continue-watching',
   'rewatches',
   'today-episodes',
+  'new-on-subs',
   'seasonal',
   'trending',
   'top-rated',

@@ -1,4 +1,4 @@
-import { CalendarMonth, ChevronRight, LiveTv } from '@mui/icons-material';
+import { CalendarMonth, ChevronRight, LiveTv, LocalMovies } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -98,6 +98,23 @@ export const CalendarPage = () => {
             <span className="cal-entry-btn__body">
               <span className="cal-entry-btn__title">{t('Serien-Kalender')}</span>
               <span className="cal-entry-btn__sub">{t('Neue Serien & Staffeln entdecken')}</span>
+            </span>
+            <ChevronRight className="cal-entry-btn__chevron" />
+          </motion.button>
+
+          <motion.button
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              hapticTap();
+              navigate('/film-kalender');
+            }}
+            aria-label={t('Film-Kalender öffnen')}
+            className="cal-entry-btn"
+          >
+            <LocalMovies className="cal-entry-btn__icon" style={{ fontSize: 22 }} />
+            <span className="cal-entry-btn__body">
+              <span className="cal-entry-btn__title">{t('Film-Kalender')}</span>
+              <span className="cal-entry-btn__sub">{t('Kinostarts & Streaming-Releases')}</span>
             </span>
             <ChevronRight className="cal-entry-btn__chevron" />
           </motion.button>

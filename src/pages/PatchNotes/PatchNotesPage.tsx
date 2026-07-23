@@ -13,6 +13,7 @@ import {
   HourglassEmpty,
   LibraryAddCheck,
   LocalFireDepartment,
+  LocalMovies,
   Navigation,
   NewReleases,
   NotificationsActive,
@@ -75,6 +76,45 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: t('Juli 2026 – Filme im Rampenlicht'),
+      date: '2026-07-23',
+      features: [
+        {
+          icon: <LocalMovies />,
+          color: currentTheme.primary,
+          title: t('Der Film-Kalender ist da'),
+          description: t(
+            'Was startet wann? Der neue Film-Kalender zeigt dir Kinostarts und Streaming-Releases für deine Watch-Region — als Timeline mit Quartals-Tabs wie beim Serien-Kalender, inklusive Anbieter-Logos bei Digital-Releases und „+"-Button zum direkten Hinzufügen.'
+          ),
+          link: { label: t('Zum Film-Kalender'), path: '/film-kalender' },
+        },
+        {
+          icon: <NewReleases />,
+          color: currentTheme.secondary,
+          title: t('Neu auf deinen Abos'),
+          description: t(
+            'Die Startseite passt jetzt auf deine Filmliste auf: Landet ein noch ungesehener Film aus deiner Liste auf einem deiner Abos, taucht er in der neuen Sektion „Neu auf deinen Abos" auf — und du bekommst eine Benachrichtigung. Die Sektion lässt sich im Layout-Editor verschieben oder ausblenden.'
+          ),
+        },
+        {
+          icon: <SmartDisplay />,
+          color: currentTheme.status.warning,
+          title: t('Filmreihen mit Fortschritt'),
+          description: t(
+            'Herr der Ringe, MCU, Fluch der Karibik: Gehört ein Film zu einer Reihe, zeigt seine Detailseite jetzt die komplette Reihe chronologisch — mit Fortschrittsbalken, Haken auf allem Gesehenen und kommenden Teilen samt Jahr. Reihe komplett? Sag niemals nie.'
+          ),
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.status.success,
+          title: t('Fairness & Feinschliff'),
+          description: t(
+            'Massen-Nachtragen von Filmen zählt nicht mehr für die Rangliste (wie bei Serien), Push-Benachrichtigungen nennen jetzt Staffel und Anbieter statt „und 3 weitere", und viele Details wurden poliert — vom Ranglisten-Podium auf Mobile bis zu den Abständen der Film-Detailseite.'
+          ),
+        },
+      ],
+    },
     {
       version: t('Juli 2026 – TV-Rank klopft an'),
       date: '2026-07-15',

@@ -35,6 +35,7 @@ vi.mock('@mui/icons-material', () => {
     'HourglassEmpty',
     'LibraryAddCheck',
     'LocalFireDepartment',
+    'LocalMovies',
     'Navigation',
     'NewReleases',
     'NotificationsActive',
