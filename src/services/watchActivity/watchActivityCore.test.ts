@@ -72,6 +72,9 @@ const mocks = vi.hoisted(() => ({
   checkBulkMarkingAndGetTimestamp: vi.fn<() => { isBulkMarking: boolean; distributedDate?: Date }>(
     () => ({ isBulkMarking: false })
   ),
+  checkMovieBulkMarking: vi.fn<() => { isBulkMarking: boolean; distributedDate?: Date }>(() => ({
+    isBulkMarking: false,
+  })),
   getActiveBingeSession: vi.fn(),
   updateBingeSession: vi.fn(),
   updateWatchStreak: vi.fn(async () => {}),
@@ -91,6 +94,7 @@ const {
 
 vi.mock('./bulkMarkingDetection', () => ({
   checkBulkMarkingAndGetTimestamp: mocks.checkBulkMarkingAndGetTimestamp,
+  checkMovieBulkMarking: mocks.checkMovieBulkMarking,
 }));
 vi.mock('./bingeSessionTracking', () => ({
   getActiveBingeSession: mocks.getActiveBingeSession,
@@ -114,6 +118,7 @@ beforeEach(() => {
   fb.reset();
   vi.clearAllMocks();
   checkBulkMarkingAndGetTimestamp.mockReturnValue({ isBulkMarking: false });
+  mocks.checkMovieBulkMarking.mockReturnValue({ isBulkMarking: false });
   updateBingeSession.mockResolvedValue('binge-1');
   getActiveBingeSession.mockResolvedValue({ episodes: [{}], isActive: true });
   vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Windows NT 10.0)' });
@@ -223,6 +228,18 @@ describe('logMovieWatch', () => {
       moviesWatched: 1,
       watchtimeMinutes: 120,
     });
+  });
+
+  it('Bulk-Marking: überspringt Leaderboard und Pet – speichert aber Event und Streak', async () => {
+    mocks.checkMovieBulkMarking.mockReturnValue({
+      isBulkMarking: true,
+      distributedDate: new Date(),
+    });
+    await logMovieWatch('u', 103, 'Bulk Movie', 100);
+    expect(firstSaved()?.t).toBe('mv');
+    expect(updateWatchStreak).toHaveBeenCalled();
+    expect(updateLeaderboardStats).not.toHaveBeenCalled();
+    expect(triggerPetReaction).not.toHaveBeenCalled();
   });
 
   it('Duplikat: aktualisiert nur das Rating des bestehenden Events, ohne neues Event/Pet', async () => {

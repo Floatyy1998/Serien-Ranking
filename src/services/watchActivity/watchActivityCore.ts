@@ -3,7 +3,7 @@ import 'firebase/compat/database';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { EpisodeWatchEvent, MovieWatchEvent } from '../../types/WatchActivity';
 import { updateLeaderboardStats } from '../leaderboardService';
-import { createBaseEventData, createEpisodeEventData, getEventsPath, saveEvent } from './shared';
+import { createEpisodeEventData, createMovieEventData, getEventsPath, saveEvent } from './shared';
 import { getActiveBingeSession, updateBingeSession } from './bingeSessionTracking';
 import { updateWatchStreak } from './watchStreakTracking';
 import { triggerPetReaction } from '../../hooks/usePetReactions';
@@ -133,7 +133,9 @@ export async function logMovieWatch(
       return;
     }
 
-    const baseEvent = createBaseEventData();
+    // Bulk-Erkennung wie bei Episoden: ab 3 Film-Marks in 60 s (Bibliothek
+    // nachtragen) — Timestamps werden zurückverteilt, Rangliste/Pet skippen.
+    const { eventData: baseEvent, isBulkMarking } = createMovieEventData();
 
     const event: MovieWatchEvent = {
       ...baseEvent,
@@ -153,13 +155,20 @@ export async function logMovieWatch(
     await saveEvent(userId, event);
     await updateWatchStreak(userId);
 
-    updateLeaderboardStats(userId, {
-      moviesWatched: 1,
-      watchtimeMinutes: runtime || 120,
-    }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
+    // Bulk-Marking zählt nicht für die Rangliste — sonst gewinnt, wer seine
+    // Filmbibliothek importiert statt schaut (gleiche Regel wie Episoden).
+    if (!isBulkMarking) {
+      updateLeaderboardStats(userId, {
+        moviesWatched: 1,
+        watchtimeMinutes: runtime || 120,
+      }).catch(() => {}); // bewusst still: Leaderboard ist Best-effort-Gamification
+    }
 
     // Pet reaction – movie tone if no rating, rated tone if user also rated.
-    triggerPetReaction({ tone: rating !== undefined ? 'rated' : 'movie' });
+    // Bei Bulk-Marking übersprungen (Bubble-Spam).
+    if (!isBulkMarking) {
+      triggerPetReaction({ tone: rating !== undefined ? 'rated' : 'movie' });
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[WatchActivity] Failed to log movie watch: ${message}`);

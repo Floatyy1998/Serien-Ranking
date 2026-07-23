@@ -6,7 +6,7 @@
 
 import { dbGet, dbRef, userPath } from '../../services/db/ref';
 import type { ActivityEvent } from '../../types/WatchActivity';
-import { checkBulkMarkingAndGetTimestamp } from './bulkMarkingDetection';
+import { checkBulkMarkingAndGetTimestamp, checkMovieBulkMarking } from './bulkMarkingDetection';
 import { compactifyEvent, isCompactEvent, expandCompactEvent } from './compactEvent';
 
 // KONSTANTEN
@@ -76,6 +76,29 @@ export function createEpisodeEventData(): {
   const { isBulkMarking, distributedDate } = checkBulkMarkingAndGetTimestamp();
 
   // Bei Bulk-Marking verwende verteilten Timestamp
+  const dateToUse = isBulkMarking && distributedDate ? distributedDate : new Date();
+
+  return {
+    eventData: {
+      timestamp: dateToUse.toISOString(),
+      month: dateToUse.getMonth() + 1,
+      dayOfWeek: dateToUse.getDay(),
+      hour: dateToUse.getHours(),
+      deviceType: detectDeviceType(),
+    },
+    isBulkMarking,
+  };
+}
+
+/**
+ * Basis-Metadaten für Movie-Events mit eigener Bulk-Marking-Erkennung
+ * (Nachtragen der Film-Bibliothek — gleiche Regeln wie Episoden).
+ */
+export function createMovieEventData(): {
+  eventData: ReturnType<typeof createBaseEventData>;
+  isBulkMarking: boolean;
+} {
+  const { isBulkMarking, distributedDate } = checkMovieBulkMarking();
   const dateToUse = isBulkMarking && distributedDate ? distributedDate : new Date();
 
   return {
