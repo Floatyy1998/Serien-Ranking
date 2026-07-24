@@ -402,10 +402,27 @@
   transform: translateY(1px);
 }
 
-/* Sticker haben keinen Bubble-Hintergrund — Zeit als eigene Zeile darunter */
+/* Sticker: dezente Glas-Kachel statt frei schwebendem Canvas */
+.ch-bubble--media {
+  padding: 10px 10px 4px;
+  border-radius: 20px;
+  border: 1px solid var(--glass-border-light);
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--theme-primary) 10%, transparent),
+      transparent 72%
+    ),
+    var(--glass-light);
+}
+
+.ch-bubble--media canvas {
+  display: block;
+}
+
 .ch-bubble--media .ch-bubble-time {
   display: block;
-  margin: 2px 4px 0 0;
+  margin: 2px 2px 2px 0;
   text-align: right;
   transform: none;
   opacity: 0.6;
@@ -523,12 +540,6 @@
 
 .ch-sticker-grid button:hover {
   background: rgba(255, 255, 255, 0.08);
-}
-
-.ch-bubble--media {
-  background: none;
-  border: none;
-  padding: 2px 0;
 }
 
 .ch-typing {
