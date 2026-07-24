@@ -42,6 +42,16 @@ import {
   drawLotusHelm,
   drawGlitchCrown,
   drawPyramidHelm,
+  drawSproutHat,
+  drawPopcornHat,
+  drawPropellerCap,
+  drawJesterHat,
+  drawDetectiveHat,
+  drawWinterCrown,
+  drawDivingHelmet,
+  drawCrystalHorns,
+  drawJellyfishCrown,
+  drawGalaxyCrown,
 } from './accessories/head';
 import {
   drawRoundGlasses,
@@ -72,6 +82,16 @@ import {
   drawEclipseGoggles,
   drawVoidMask,
   drawMirrorShades,
+  drawEyepatch,
+  drawBlushStickers,
+  drawMustache,
+  drawDiscoShades,
+  drawSnorkelMask,
+  drawGoldenEyelashes,
+  drawVrHeadset,
+  drawKitsuneMask,
+  drawThirdEye,
+  drawMoonVisor,
 } from './accessories/face';
 import {
   drawCollar,
@@ -108,6 +128,16 @@ import {
   drawRuneNecklace,
   drawSakuraPendant,
   drawObsidianAmulet,
+  drawWoolScarf,
+  drawLeafCape,
+  drawSeaweedScarf,
+  drawHeadphonesNeck,
+  drawPearlNecklace,
+  drawFilmstripScarf,
+  drawDiscoChain,
+  drawLavaAmulet,
+  drawAuroraScarf,
+  drawKrakenCharm,
 } from './accessories/neck';
 
 // Sicherer Default falls petType nicht bekannt (z.B. veralteter JS-Cache,
@@ -125,173 +155,75 @@ const DEFAULT_ANCHORS: PetAnchors = {
 };
 
 function getAnchors(
-  petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda',
+  petType:
+    | 'cat'
+    | 'dog'
+    | 'bird'
+    | 'dragon'
+    | 'fox'
+    | 'rabbit'
+    | 'panda'
+    | 'owl'
+    | 'penguin'
+    | 'axolotl',
   level: number
 ): PetAnchors {
   const cx = 16;
+  // Kawaii-Skelett (seit Redesign Juli 2026): Kopf r=6.2*s bei y13, Körper bei y21.5
+  const s = level >= 50 ? 1.16 : level >= 20 ? 1.12 : level >= 15 ? 1.08 : level >= 10 ? 1.05 : 1;
   switch (petType) {
-    case 'cat': {
-      // Lv50+ = Säbelzahn-Form (größerer Kopf, andere Proportionen)
-      if (level >= 50) {
-        const hs = level >= 75 ? 1.5 : level >= 60 ? 1.4 : 1.35;
-        return {
-          headTopY: 10,
-          headCenterX: cx,
-          headHalfWidth: 4 * hs,
-          eyeY: 13,
-          eyeLeftX: -3.5,
-          eyeRightX: 1,
-          eyeWidth: 2.5,
-          neckY: 18,
-          neckHalfWidth: 5 * hs,
-        };
-      }
-      const hs =
-        level >= 20 ? 1.3 : level >= 15 ? 1.25 : level >= 10 ? 1.15 : level >= 5 ? 1.08 : 1;
+    case 'cat':
       return {
-        headTopY: 11,
+        headTopY: 13 - 6.2 * s,
         headCenterX: cx,
-        headHalfWidth: 3 * hs,
-        eyeY: 14,
-        eyeLeftX: -3,
-        eyeRightX: 1,
+        headHalfWidth: 5.6 * s,
+        eyeY: 13.3,
+        eyeLeftX: -3.6,
+        eyeRightX: 1.6,
         eyeWidth: 2,
-        neckY: 18.5,
-        neckHalfWidth: 3.5 * hs,
+        neckY: 18.6,
+        neckHalfWidth: 4.4 * s,
       };
-    }
-    case 'dog': {
-      // Lv50+ = Wolf-Form
-      if (level >= 50) {
-        const hs = level >= 75 ? 1.45 : level >= 60 ? 1.35 : 1.3;
-        return {
-          headTopY: 11,
-          headCenterX: cx,
-          headHalfWidth: 4 * hs,
-          eyeY: 14,
-          eyeLeftX: -3.5,
-          eyeRightX: 1,
-          eyeWidth: 2.5,
-          neckY: 19,
-          neckHalfWidth: 5 * hs,
-        };
-      }
-      const hs = level >= 20 ? 1.35 : level >= 15 ? 1.3 : level >= 10 ? 1.2 : level >= 5 ? 1.1 : 1;
+    case 'dog':
+    case 'dragon':
+    case 'fox':
+      // Diese drei zeichnen ihre Augen etwas höher (headCY-0.2 bis -0.4)
       return {
-        headTopY: 12,
+        headTopY: 13 - 6.2 * s,
         headCenterX: cx,
-        headHalfWidth: 3.5 * hs,
-        eyeY: 15,
-        eyeLeftX: -3,
-        eyeRightX: 1,
+        headHalfWidth: 5.6 * s,
+        eyeY: 12.7,
+        eyeLeftX: -3.6,
+        eyeRightX: 1.6,
+        eyeWidth: 2,
+        neckY: 18.6,
+        neckHalfWidth: 4.4 * s,
+      };
+    case 'bird':
+      // Ei-Silhouette (Küken): Körper-Oben = Kopf
+      return {
+        headTopY: 17.5 - 6.2 * s,
+        headCenterX: cx,
+        headHalfWidth: 4.6 * s,
+        eyeY: 17.5 - 6.2 * s * 0.35,
+        eyeLeftX: -3.2,
+        eyeRightX: 1.2,
         eyeWidth: 2,
         neckY: 19.5,
-        neckHalfWidth: 4 * hs,
-      };
-    }
-    case 'bird':
-      // Lv50+ = Phönix-Form
-      if (level >= 50) {
-        return {
-          headTopY: 10,
-          headCenterX: cx,
-          headHalfWidth: 3,
-          eyeY: 13,
-          eyeLeftX: -4,
-          eyeRightX: 2,
-          eyeWidth: 2,
-          neckY: 15.5,
-          neckHalfWidth: 3,
-        };
-      }
-      return {
-        headTopY: 10,
-        headCenterX: cx,
-        headHalfWidth: 2.5,
-        eyeY: 13,
-        eyeLeftX: -4,
-        eyeRightX: 2,
-        eyeWidth: 2,
-        neckY: 15.5,
-        neckHalfWidth: 3,
-      };
-    case 'dragon':
-      // Lv50+ = Wyvern-Form
-      if (level >= 50) {
-        return {
-          headTopY: 10,
-          headCenterX: cx,
-          headHalfWidth: 4,
-          eyeY: 12,
-          eyeLeftX: -3.5,
-          eyeRightX: 1,
-          eyeWidth: 2.5,
-          neckY: 17.5,
-          neckHalfWidth: 4.5,
-        };
-      }
-      return {
-        headTopY: 11,
-        headCenterX: cx,
-        headHalfWidth: 3.5,
-        eyeY: 13,
-        eyeLeftX: -3,
-        eyeRightX: 1,
-        eyeWidth: 2,
-        neckY: 18,
-        neckHalfWidth: 4,
-      };
-    case 'fox':
-      // Lv50+ = Göttliche Kitsune-Form
-      if (level >= 50) {
-        return {
-          headTopY: 10,
-          headCenterX: cx,
-          headHalfWidth: 3.5,
-          eyeY: 13.5,
-          eyeLeftX: -3.5,
-          eyeRightX: 1.5,
-          eyeWidth: 2,
-          neckY: 17,
-          neckHalfWidth: 3.5,
-        };
-      }
-      return {
-        headTopY: 11,
-        headCenterX: cx,
-        headHalfWidth: 3,
-        eyeY: 14,
-        eyeLeftX: -3,
-        eyeRightX: 1.5,
-        eyeWidth: 1.5,
-        neckY: 17,
-        neckHalfWidth: 3,
+        neckHalfWidth: 4 * s,
       };
     case 'rabbit':
-      // Lv50+ = Mondhase-Form
-      if (level >= 50) {
-        return {
-          headTopY: 12,
-          headCenterX: cx,
-          headHalfWidth: 4.5,
-          eyeY: 14.5,
-          eyeLeftX: -3,
-          eyeRightX: 1.5,
-          eyeWidth: 1.5,
-          neckY: 19,
-          neckHalfWidth: 4,
-        };
-      }
+      // Kopf r=6*s bei y13.5 (Ohren ragen darüber hinaus)
       return {
-        headTopY: 12,
+        headTopY: 13.5 - 6 * s,
         headCenterX: cx,
-        headHalfWidth: 4,
-        eyeY: 15,
-        eyeLeftX: -2.5,
-        eyeRightX: 1.3,
-        eyeWidth: 1.2,
-        neckY: 19,
-        neckHalfWidth: 3.5,
+        headHalfWidth: 5.4 * s,
+        eyeY: 13.8,
+        eyeLeftX: -3.5,
+        eyeRightX: 1.5,
+        eyeWidth: 2,
+        neckY: 18.6,
+        neckHalfWidth: 4.4 * s,
       };
     case 'panda':
       // Lv50+ = Kung-Fu-Wächter-Form (Kopf r=6.7 bei centerY-3.5=12.5)
@@ -320,6 +252,51 @@ function getAnchors(
         neckY: 19,
         neckHalfWidth: 4,
       };
+    case 'owl': {
+      // Ei-Silhouette: Körper-Oben = Kopf (Top ~10.1), Augen bei y≈14.7 (cx±2.6)
+      const s = level >= 50 ? 1.18 : level >= 20 ? 1.12 : level >= 10 ? 1.05 : 1;
+      return {
+        headTopY: 17.5 - 7.4 * s,
+        headCenterX: cx,
+        headHalfWidth: 5 * s,
+        eyeY: 17.5 - 7.4 * s * 0.38 - 2,
+        eyeLeftX: -3.6,
+        eyeRightX: 1.6,
+        eyeWidth: 2,
+        neckY: 19.5,
+        neckHalfWidth: 4.5 * s,
+      };
+    }
+    case 'penguin': {
+      // Kopf-Rundung oben (Top ~7.6), Augen bei y≈13.2 (cx±1.7)
+      const s = level >= 50 ? 1.16 : level >= 20 ? 1.12 : level >= 10 ? 1.05 : 1;
+      return {
+        headTopY: 18 - 7.2 * s * 0.72 - 5.6 * s * 0.78,
+        headCenterX: cx,
+        headHalfWidth: 4.2 * s,
+        eyeY: 18 - 7.2 * s * 0.62,
+        eyeLeftX: -2.6,
+        eyeRightX: 0.8,
+        eyeWidth: 1.8,
+        neckY: 18 - 7.2 * s * 0.62 + 3,
+        neckHalfWidth: 4 * s,
+      };
+    }
+    case 'axolotl': {
+      // Großer Rundkopf r≈6.3 bei y=13 → Top ~6.7, Augen bei y≈13.3 (cx±3.1)
+      const s = level >= 50 ? 1.16 : level >= 20 ? 1.12 : level >= 10 ? 1.05 : 1;
+      return {
+        headTopY: 13 - 6.3 * s,
+        headCenterX: cx,
+        headHalfWidth: 5.2 * s,
+        eyeY: 13.3,
+        eyeLeftX: -4.1,
+        eyeRightX: 2.1,
+        eyeWidth: 2,
+        neckY: 18.5,
+        neckHalfWidth: 4 * s,
+      };
+    }
     default:
       return DEFAULT_ANCHORS;
   }
@@ -330,7 +307,17 @@ export const drawAccessory = (
   accessory: PetAccessory,
   ps: number,
   offset: number,
-  petType: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda' = 'cat',
+  petType:
+    | 'cat'
+    | 'dog'
+    | 'bird'
+    | 'dragon'
+    | 'fox'
+    | 'rabbit'
+    | 'panda'
+    | 'owl'
+    | 'penguin'
+    | 'axolotl' = 'cat',
   level: number = 1
 ): void => {
   const a = getAnchors(petType, level);
@@ -660,6 +647,98 @@ export const drawAccessory = (
       break;
     case 'obsidianAmulet':
       drawObsidianAmulet(ctx, ps, offset, a);
+      break;
+
+    // ── Erweiterung Juli 2026 ──
+    case 'sproutHat':
+      drawSproutHat(ctx, ps, offset, a);
+      break;
+    case 'popcornHat':
+      drawPopcornHat(ctx, ps, offset, a);
+      break;
+    case 'propellerCap':
+      drawPropellerCap(ctx, ps, offset, a);
+      break;
+    case 'jesterHat':
+      drawJesterHat(ctx, ps, offset, a);
+      break;
+    case 'detectiveHat':
+      drawDetectiveHat(ctx, ps, offset, a);
+      break;
+    case 'winterCrown':
+      drawWinterCrown(ctx, ps, offset, a);
+      break;
+    case 'divingHelmet':
+      drawDivingHelmet(ctx, ps, offset, a);
+      break;
+    case 'crystalHorns':
+      drawCrystalHorns(ctx, ps, offset, a);
+      break;
+    case 'jellyfishCrown':
+      drawJellyfishCrown(ctx, ps, offset, a);
+      break;
+    case 'galaxyCrown':
+      drawGalaxyCrown(ctx, ps, offset, a);
+      break;
+    case 'eyepatch':
+      drawEyepatch(ctx, ps, offset, a);
+      break;
+    case 'blushStickers':
+      drawBlushStickers(ctx, ps, offset, a);
+      break;
+    case 'mustache':
+      drawMustache(ctx, ps, offset, a);
+      break;
+    case 'discoShades':
+      drawDiscoShades(ctx, ps, offset, a);
+      break;
+    case 'snorkelMask':
+      drawSnorkelMask(ctx, ps, offset, a);
+      break;
+    case 'goldenEyelashes':
+      drawGoldenEyelashes(ctx, ps, offset, a);
+      break;
+    case 'vrHeadset':
+      drawVrHeadset(ctx, ps, offset, a);
+      break;
+    case 'kitsuneMask':
+      drawKitsuneMask(ctx, ps, offset, a);
+      break;
+    case 'thirdEye':
+      drawThirdEye(ctx, ps, offset, a);
+      break;
+    case 'moonVisor':
+      drawMoonVisor(ctx, ps, offset, a);
+      break;
+    case 'woolScarf':
+      drawWoolScarf(ctx, ps, offset, a);
+      break;
+    case 'leafCape':
+      drawLeafCape(ctx, ps, offset, a);
+      break;
+    case 'seaweedScarf':
+      drawSeaweedScarf(ctx, ps, offset, a);
+      break;
+    case 'headphonesNeck':
+      drawHeadphonesNeck(ctx, ps, offset, a);
+      break;
+    case 'pearlNecklace':
+      drawPearlNecklace(ctx, ps, offset, a);
+      break;
+    case 'filmstripScarf':
+      drawFilmstripScarf(ctx, ps, offset, a);
+      break;
+    case 'discoChain':
+      drawDiscoChain(ctx, ps, offset, a);
+      break;
+    case 'lavaAmulet':
+      drawLavaAmulet(ctx, ps, offset, a);
+      break;
+    case 'auroraScarf':
+      drawAuroraScarf(ctx, ps, offset, a);
+      break;
+    case 'krakenCharm':
+      drawKrakenCharm(ctx, ps, offset, a);
       break;
   }
 };

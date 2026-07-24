@@ -77,6 +77,15 @@ const MILESTONE_EXCLUSIVE_ACCESSORIES = [
   'pyramidHelm',
   'mirrorShades',
   'obsidianAmulet',
+  // Erweiterung Juli 2026
+  'jellyfishCrown',
+  'galaxyCrown',
+  'crystalHorns',
+  'kitsuneMask',
+  'thirdEye',
+  'moonVisor',
+  'auroraScarf',
+  'krakenCharm',
 ];
 
 /** Wie viele ungeöffnete Boxen hat der User? */

@@ -67,6 +67,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_pet-update-2026-07',
+    title: 'Neu: Das große Pet-Update',
+    message:
+      'Drei neue Pets — Eule, Pinguin und Axolotl — mit eigenen Entwicklungsformen, alle bisherigen Pets komplett neu gezeichnet, dazu 30 neue Accessoires und 20 neue Hintergründe. Und der gesamte Bestand wurde poliert. Alle Details in den Patch Notes.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik)
+    timestamp: new Date('2026-07-24T13:30:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_movie-update-2026-07',
     title: 'Neu: Filme im Rampenlicht',
     message:

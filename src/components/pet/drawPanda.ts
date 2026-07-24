@@ -422,24 +422,24 @@ function drawGuardianPanda(
     arcFill(ctx, centerX, bodyCY + 1.45, 0.2, ps, offset);
   }
 
-  // Rotes Stirnband
+  // Rotes Stirnband (hoch auf der Stirn, direkt unter den Ohren)
   if (equippedSlot !== 'head') {
     ctx.fillStyle = '#DC143C' + bodyAlpha;
     ctx.fillRect(
-      (centerX - headR + 1) * ps,
-      (headCY - 1.8) * ps + offset,
-      ps * (headR * 2 - 2),
+      (centerX - headR + 1.6) * ps,
+      (headCY - 4.2) * ps + offset,
+      ps * (headR * 2 - 3.2),
       ps * 0.9
     );
     ctx.fillStyle = '#FFD700' + bodyAlpha;
-    ctx.fillRect((centerX - 0.5) * ps, (headCY - 1.6) * ps + offset, ps, ps * 0.25);
-    ctx.fillRect((centerX - 0.8) * ps, (headCY - 1.3) * ps + offset, ps * 1.6, ps * 0.25);
-    ctx.fillRect((centerX - 0.4) * ps, (headCY - 1) * ps + offset, ps * 0.8, ps * 0.25);
+    ctx.fillRect((centerX - 0.5) * ps, (headCY - 4) * ps + offset, ps, ps * 0.25);
+    ctx.fillRect((centerX - 0.8) * ps, (headCY - 3.7) * ps + offset, ps * 1.6, ps * 0.25);
+    ctx.fillRect((centerX - 0.4) * ps, (headCY - 3.4) * ps + offset, ps * 0.8, ps * 0.25);
     ctx.fillStyle = '#DC143C' + bodyAlpha;
-    ctx.fillRect((centerX - headR) * ps, (headCY - 1.8) * ps + offset, ps * 1.3, ps * 1.7);
+    ctx.fillRect((centerX - headR + 0.5) * ps, (headCY - 4.2) * ps + offset, ps * 1.3, ps * 1.7);
     ctx.fillStyle = '#B0102C' + bodyAlpha;
-    ctx.fillRect((centerX - headR) * ps, (headCY - 0.1) * ps + offset, ps * 0.6, ps * 1.5);
-    ctx.fillRect((centerX - headR + 0.7) * ps, (headCY - 0.1) * ps + offset, ps * 0.6, ps * 1.5);
+    ctx.fillRect((centerX - headR + 0.5) * ps, (headCY - 2.5) * ps + offset, ps * 0.6, ps * 1.5);
+    ctx.fillRect((centerX - headR + 1.2) * ps, (headCY - 2.5) * ps + offset, ps * 0.6, ps * 1.5);
   }
 
   // Qi-Flammen um die Fäuste

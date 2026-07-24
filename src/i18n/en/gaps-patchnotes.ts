@@ -1,6 +1,7 @@
 /** Englische Übersetzungen: Patch Notes. */
 const dict: Record<string, string> = {
   // Version titles
+  'Juli 2026 – Das große Pet-Update': 'July 2026 – The Big Pet Update',
   'Juli 2026 – Filme im Rampenlicht': 'July 2026 – Movies in the Spotlight',
   'Juli 2026 – TV-Rank klopft an': 'July 2026 – TV-Rank Comes Knocking',
   'Juli 2026 – Deine Navigation, dein Layout': 'July 2026 – Your Navigation, Your Layout',
@@ -17,6 +18,7 @@ const dict: Record<string, string> = {
   'Februar 2026': 'February 2026',
 
   // Link labels
+  'Zu deinen Pets': 'Go to Your Pets',
   'Zum Film-Kalender': 'Go to the Movie Calendar',
   'Zu den Einstellungen': 'Go to Settings',
   'Leiste anpassen': 'Customize the Bar',
@@ -36,10 +38,27 @@ const dict: Record<string, string> = {
   'Watchlist öffnen': 'Open Watchlist',
 
   // Feature titles
+  'Drei neue Pets: Eule, Pinguin & Axolotl': 'Three New Pets: Owl, Penguin & Axolotl',
+  'Alle Pets im neuen Look': 'All Pets with a New Look',
+  '30 neue Accessoires & 20 neue Hintergründe': '30 New Accessories & 20 New Backgrounds',
+  'Der gesamte Bestand poliert': 'The Entire Collection Polished',
   'Der Film-Kalender ist da': 'The Movie Calendar Is Here',
   'Filmreihen mit Fortschritt': 'Movie Collections with Progress',
   'Fairness & Feinschliff': 'Fairness & Polish',
   'Push-Benachrichtigungen in den Apps': 'Push Notifications in the Apps',
+
+  // Feature descriptions + Announcement (Pet-Update Juli 2026)
+  'Drei neue Begleiter ziehen ein: eine weise Eule, ein watschelnder Pinguin und ein verspielter Axolotl. Jedes hat eine eigene Entwicklungsform ab Level 50 — Erzmagier, Kaiser und Leviathan.':
+    'Three new companions are moving in: a wise owl, a waddling penguin and a playful axolotl. Each has its own evolved form from level 50 — Archmage, Emperor and Leviathan.',
+  'Katze, Hund, Vogel, Drache, Fuchs und Hase wurden komplett neu gezeichnet — weicher, runder, liebenswerter. Ihre Entwicklungsformen bleiben erhalten: Säbelzahn, Wolf, Phönix, Wyvern, Kitsune und Mondhase sehen besser aus als je zuvor.':
+    'Cat, dog, bird, dragon, fox and bunny have been completely redrawn — softer, rounder, more lovable. Their evolved forms remain: Sabertooth, Wolf, Phoenix, Wyvern, Kitsune and Moon Rabbit look better than ever.',
+  'Von der Popcorn-Tüte über die VR-Brille bis zur Galaxien-Krone: 30 neue Accessoires in allen Seltenheiten — acht davon exklusiv in der Mystery Box. Dazu 20 neue Hintergrund-Szenen, vom Autokino über den Koi-Teich bis zur Premierennacht.':
+    'From the popcorn bucket to the VR headset to the galaxy crown: 30 new accessories across all rarities — eight of them exclusive to the mystery box. Plus 20 new background scenes, from the drive-in cinema to the koi pond to premiere night.',
+  'Auch alles Bisherige wurde überarbeitet: Alle 73 bestehenden Accessoires bekamen weiche Formen, Verläufe und Glanzlichter, alle 60 bestehenden Hintergründe wurden als Szenen neu gezeichnet — mit Tiefenebenen und stimmiger Lichtstimmung.':
+    'Everything existing got a makeover too: all 73 existing accessories received soft shapes, gradients and highlights, and all 60 existing backgrounds were redrawn as scenes — with depth layers and cohesive lighting.',
+  'Neu: Das große Pet-Update': 'New: The Big Pet Update',
+  'Drei neue Pets — Eule, Pinguin und Axolotl — mit eigenen Entwicklungsformen, alle bisherigen Pets komplett neu gezeichnet, dazu 30 neue Accessoires und 20 neue Hintergründe. Und der gesamte Bestand wurde poliert. Alle Details in den Patch Notes.':
+    'Three new pets — owl, penguin and axolotl — with their own evolved forms, all existing pets completely redrawn, plus 30 new accessories and 20 new backgrounds. And the entire collection has been polished. All details in the patch notes.',
 
   // Feature descriptions (Film-Update Juli 2026)
   'Was startet wann? Der neue Film-Kalender zeigt dir Kinostarts und Streaming-Releases für deine Watch-Region — als Timeline mit Quartals-Tabs wie beim Serien-Kalender, inklusive Anbieter-Logos bei Digital-Releases und „+"-Button zum direkten Hinzufügen.':

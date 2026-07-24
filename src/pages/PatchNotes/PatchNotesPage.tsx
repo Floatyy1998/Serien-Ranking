@@ -77,6 +77,45 @@ export const PatchNotesPage = () => {
 
   const releases: PatchRelease[] = [
     {
+      version: t('Juli 2026 – Das große Pet-Update'),
+      date: '2026-07-24',
+      features: [
+        {
+          icon: <Pets />,
+          color: currentTheme.primary,
+          title: t('Drei neue Pets: Eule, Pinguin & Axolotl'),
+          description: t(
+            'Drei neue Begleiter ziehen ein: eine weise Eule, ein watschelnder Pinguin und ein verspielter Axolotl. Jedes hat eine eigene Entwicklungsform ab Level 50 — Erzmagier, Kaiser und Leviathan.'
+          ),
+          link: { label: t('Zu deinen Pets'), path: '/pets' },
+        },
+        {
+          icon: <AutoAwesome />,
+          color: currentTheme.secondary,
+          title: t('Alle Pets im neuen Look'),
+          description: t(
+            'Katze, Hund, Vogel, Drache, Fuchs und Hase wurden komplett neu gezeichnet — weicher, runder, liebenswerter. Ihre Entwicklungsformen bleiben erhalten: Säbelzahn, Wolf, Phönix, Wyvern, Kitsune und Mondhase sehen besser aus als je zuvor.'
+          ),
+        },
+        {
+          icon: <Palette />,
+          color: currentTheme.status.warning,
+          title: t('30 neue Accessoires & 20 neue Hintergründe'),
+          description: t(
+            'Von der Popcorn-Tüte über die VR-Brille bis zur Galaxien-Krone: 30 neue Accessoires in allen Seltenheiten — acht davon exklusiv in der Mystery Box. Dazu 20 neue Hintergrund-Szenen, vom Autokino über den Koi-Teich bis zur Premierennacht.'
+          ),
+        },
+        {
+          icon: <AutoFixHigh />,
+          color: currentTheme.status.success,
+          title: t('Der gesamte Bestand poliert'),
+          description: t(
+            'Auch alles Bisherige wurde überarbeitet: Alle 73 bestehenden Accessoires bekamen weiche Formen, Verläufe und Glanzlichter, alle 60 bestehenden Hintergründe wurden als Szenen neu gezeichnet — mit Tiefenebenen und stimmiger Lichtstimmung.'
+          ),
+        },
+      ],
+    },
+    {
       version: t('Juli 2026 – Filme im Rampenlicht'),
       date: '2026-07-23',
       features: [

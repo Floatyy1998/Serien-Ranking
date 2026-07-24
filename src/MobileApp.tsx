@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout, ScrollToTop } from './components/layout';
@@ -57,6 +57,11 @@ import {
   FilmKalenderPage,
   preloadRoutes,
 } from './lazyRoutes';
+
+// Nur im Dev-Server: Vorschau aller neuen Pet-Inhalte unter /dev/pet-preview
+const DevPetPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('./pages/DevPetPreview').then((m) => ({ default: m.DevPetPreviewPage })))
+  : null;
 
 // Themed Spinner statt rohem "Loading..."-Text — das hier ist der Suspense-
 // Fallback, den Nutzer beim ersten Besuch fast jeder Lazy-Route sehen
@@ -347,6 +352,16 @@ export const MobileApp = () => {
                   </Layout>
                 }
               />
+              {DevPetPreviewPage && (
+                <Route
+                  path="/dev/pet-preview"
+                  element={
+                    <Layout hideNav>
+                      <DevPetPreviewPage />
+                    </Layout>
+                  }
+                />
+              )}
               <Route
                 path="/admin"
                 element={

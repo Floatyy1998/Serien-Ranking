@@ -333,6 +333,96 @@ export const ACCESSORIES: Record<string, AccessoryDefinition> = {
     icon: '\uD83D\uDDA4',
     rarity: 'legendary',
   },
+
+  // ── ERWEITERUNG JULI 2026 (30 neue) ────────────────────
+  // Head
+  sproutHat: { slot: 'head', name: t('Keimling'), icon: '\uD83C\uDF31', rarity: 'common' },
+  popcornHat: { slot: 'head', name: t('Popcorn-Tüte'), icon: '\uD83C\uDF7F', rarity: 'uncommon' },
+  propellerCap: {
+    slot: 'head',
+    name: t('Propeller-Kappe'),
+    icon: '\uD83D\uDE81',
+    rarity: 'uncommon',
+  },
+  jesterHat: { slot: 'head', name: t('Narrenkappe'), icon: '\uD83C\uDCCF', rarity: 'uncommon' },
+  detectiveHat: { slot: 'head', name: t('Detektiv-Hut'), icon: '\uD83D\uDD0E', rarity: 'rare' },
+  winterCrown: { slot: 'head', name: t('Winterkrone'), icon: '\u2744\uFE0F', rarity: 'rare' },
+  divingHelmet: { slot: 'head', name: t('Taucherhelm'), icon: '\uD83E\uDD3F', rarity: 'epic' },
+  crystalHorns: { slot: 'head', name: t('Kristallhörner'), icon: '\uD83D\uDC8E', rarity: 'epic' },
+  jellyfishCrown: {
+    slot: 'head',
+    name: t('Quallen-Krone'),
+    icon: '\uD83E\uDEBC',
+    rarity: 'legendary',
+  },
+  galaxyCrown: {
+    slot: 'head',
+    name: t('Galaxien-Krone'),
+    icon: '\uD83C\uDF0C',
+    rarity: 'legendary',
+  },
+  // Face
+  eyepatch: {
+    slot: 'face',
+    name: t('Augenklappe'),
+    icon: '\uD83C\uDFF4\u200D\u2620\uFE0F',
+    rarity: 'common',
+  },
+  blushStickers: {
+    slot: 'face',
+    name: t('Herz-Sticker'),
+    icon: '\uD83D\uDC97',
+    rarity: 'common',
+  },
+  mustache: { slot: 'face', name: t('Schnurrbart'), icon: '\uD83E\uDD78', rarity: 'uncommon' },
+  discoShades: { slot: 'face', name: t('Disco-Brille'), icon: '\uD83E\uDEA9', rarity: 'uncommon' },
+  snorkelMask: { slot: 'face', name: t('Schnorchelmaske'), icon: '\uD83E\uDD3F', rarity: 'rare' },
+  goldenEyelashes: {
+    slot: 'face',
+    name: t('Gold-Wimpern'),
+    icon: '\u2728',
+    rarity: 'rare',
+  },
+  vrHeadset: { slot: 'face', name: t('VR-Brille'), icon: '\uD83E\uDD7D', rarity: 'epic' },
+  kitsuneMask: { slot: 'face', name: t('Kitsune-Maske'), icon: '\uD83E\uDD8A', rarity: 'epic' },
+  thirdEye: { slot: 'face', name: t('Drittes Auge'), icon: '\uD83E\uDDFF', rarity: 'legendary' },
+  moonVisor: {
+    slot: 'face',
+    name: t('Mondlicht-Visier'),
+    icon: '\uD83C\uDF19',
+    rarity: 'legendary',
+  },
+  // Neck
+  woolScarf: { slot: 'neck', name: t('Wollschal'), icon: '\uD83E\uDDE3', rarity: 'common' },
+  leafCape: { slot: 'neck', name: t('Blätter-Umhang'), icon: '\uD83C\uDF43', rarity: 'common' },
+  seaweedScarf: { slot: 'neck', name: t('Algen-Schal'), icon: '\uD83C\uDF3F', rarity: 'uncommon' },
+  headphonesNeck: {
+    slot: 'neck',
+    name: t('Kopfhörer'),
+    icon: '\uD83C\uDFA7',
+    rarity: 'uncommon',
+  },
+  pearlNecklace: { slot: 'neck', name: t('Perlenkette'), icon: '\uD83E\uDDAA', rarity: 'rare' },
+  filmstripScarf: {
+    slot: 'neck',
+    name: t('Filmstreifen-Schal'),
+    icon: '\uD83C\uDF9E\uFE0F',
+    rarity: 'rare',
+  },
+  discoChain: { slot: 'neck', name: t('Discokugel-Kette'), icon: '\uD83E\uDEA9', rarity: 'epic' },
+  lavaAmulet: { slot: 'neck', name: t('Lava-Amulett'), icon: '\uD83C\uDF0B', rarity: 'epic' },
+  auroraScarf: {
+    slot: 'neck',
+    name: t('Polarlicht-Schal'),
+    icon: '\uD83C\uDF20',
+    rarity: 'legendary',
+  },
+  krakenCharm: {
+    slot: 'neck',
+    name: t('Kraken-Talisman'),
+    icon: '\uD83D\uDC19',
+    rarity: 'legendary',
+  },
 };
 
 /** Get the rarity for an accessory by ID */

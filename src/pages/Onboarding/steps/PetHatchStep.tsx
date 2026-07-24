@@ -21,6 +21,9 @@ const TYPES: { type: Pet['type']; label: string }[] = [
   { type: 'panda', label: 'Panda' },
   { type: 'bird', label: 'Vogel' },
   { type: 'dragon', label: 'Drache' },
+  { type: 'owl', label: 'Eule' },
+  { type: 'penguin', label: 'Pinguin' },
+  { type: 'axolotl', label: 'Axolotl' },
 ];
 
 function previewPet(type: Pet['type'], name: string): Pet {

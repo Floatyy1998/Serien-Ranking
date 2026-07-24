@@ -12,6 +12,9 @@ import { drawBird } from './drawBird';
 import { drawFox } from './drawFox';
 import { drawRabbit } from './drawRabbit';
 import { drawPanda } from './drawPanda';
+import { drawOwl } from './drawOwl';
+import { drawPenguin } from './drawPenguin';
+import { drawAxolotl } from './drawAxolotl';
 
 interface EvolvingPixelPetProps {
   pet: Pet;
@@ -117,19 +120,20 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
       if (pet.type === 'cat') {
         drawCat(
           ctx,
-          pet,
           pet.level,
           pixelSize,
           color,
           darkColor,
           lightColor,
           moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
           equippedSlot
         );
       } else if (pet.type === 'dog') {
         drawDog(
           ctx,
-          pet,
           pet.level,
           pixelSize,
           color,
@@ -199,6 +203,48 @@ export const EvolvingPixelPet: React.FC<EvolvingPixelPetProps> = ({
         );
       } else if (pet.type === 'panda') {
         drawPanda(
+          ctx,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
+          equippedSlot
+        );
+      } else if (pet.type === 'owl') {
+        drawOwl(
+          ctx,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
+          equippedSlot
+        );
+      } else if (pet.type === 'penguin') {
+        drawPenguin(
+          ctx,
+          pet.level,
+          pixelSize,
+          color,
+          darkColor,
+          lightColor,
+          moodBounce,
+          animated,
+          frameRef.current,
+          animationSpeed,
+          equippedSlot
+        );
+      } else if (pet.type === 'axolotl') {
+        drawAxolotl(
           ctx,
           pet.level,
           pixelSize,

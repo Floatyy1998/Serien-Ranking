@@ -2,7 +2,17 @@ export interface Pet {
   id: string;
   userId: string;
   name: string;
-  type: 'cat' | 'dog' | 'bird' | 'dragon' | 'fox' | 'rabbit' | 'panda';
+  type:
+    | 'cat'
+    | 'dog'
+    | 'bird'
+    | 'dragon'
+    | 'fox'
+    | 'rabbit'
+    | 'panda'
+    | 'owl'
+    | 'penguin'
+    | 'axolotl';
   color: string;
   level: number;
   experience: number;
@@ -72,6 +82,9 @@ export const PET_TYPES = {
   fox: '\uD83E\uDD8A',
   rabbit: '\uD83D\uDC30',
   panda: '\uD83D\uDC3C',
+  owl: '\uD83E\uDD89',
+  penguin: '\uD83D\uDC27',
+  axolotl: '\uD83E\uDD8E',
 };
 
 export const PET_TYPE_NAMES = {
@@ -82,6 +95,9 @@ export const PET_TYPE_NAMES = {
   fox: 'Fuchs',
   rabbit: 'Hase',
   panda: 'Panda',
+  owl: 'Eule',
+  penguin: 'Pinguin',
+  axolotl: 'Axolotl',
 };
 
 // Accessory System
