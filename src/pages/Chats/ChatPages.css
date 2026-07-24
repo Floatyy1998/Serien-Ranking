@@ -588,38 +588,59 @@
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  padding: 10px clamp(12px, 3vw, 40px) calc(10px + env(safe-area-inset-bottom));
+  padding: 12px clamp(12px, 3vw, 40px) calc(12px + env(safe-area-inset-bottom));
   position: relative;
   z-index: 2;
+  border-top: 1px solid var(--glass-border-light);
+  background: var(--glass-light);
+  -webkit-backdrop-filter: var(--glass-filter-lg);
+  backdrop-filter: var(--glass-filter-lg);
+}
+
+.ch-input-bar .ch-icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border-light);
+  background: var(--glass-light);
 }
 
 .ch-input {
   box-sizing: border-box;
   flex: 1;
-  min-height: 46px;
-  max-height: 132px;
+  min-height: 48px;
+  max-height: 120px;
   resize: none;
-  border-radius: 23px;
-  padding: 13px 18px;
+  border-radius: 24px;
+  padding: 12px 18px;
   font: inherit;
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.4;
+  overflow-y: auto;
+  scrollbar-width: none;
   border: 1px solid var(--glass-border-light);
   background: var(--glass-light);
   -webkit-backdrop-filter: var(--glass-filter-lg);
   backdrop-filter: var(--glass-filter-lg);
   color: inherit;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.ch-input::-webkit-scrollbar {
+  display: none;
 }
 
 .ch-input:focus {
   border-color: var(--theme-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary) 15%, transparent);
 }
 
 .ch-send-btn {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   display: flex;

@@ -14,6 +14,7 @@ import { t } from '../../services/i18n';
 import {
   chatPairId,
   deleteChat,
+  ensureChat,
   markChatRead,
   MAX_MESSAGE_LENGTH,
   reportChat,
@@ -65,12 +66,29 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<'report' | 'delete' | null>(null);
+  const [chatReady, setChatReady] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastTypingSentRef = useRef(0);
 
+  // Chat beim Öffnen anlegen — Listener auf einen nicht existierenden Chat
+  // werden von Firebase bei permission_denied dauerhaft gecancelt.
   useEffect(() => {
-    if (!pairId || !myUid) return;
+    if (!myUid) return;
+    let alive = true;
+    setChatReady(false);
+    ensureChat(myUid, friendId)
+      .then(() => {
+        if (alive) setChatReady(true);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [myUid, friendId]);
+
+  useEffect(() => {
+    if (!pairId || !myUid || !chatReady) return;
     setMessages([]);
     setDraft('');
     setEmojiOpen(false);
@@ -85,7 +103,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       offTyping();
       void setTyping(myUid, pairId, false);
     };
-  }, [pairId, myUid]);
+  }, [pairId, myUid, chatReady]);
 
   // Tipp-Anzeige lebt nur kurz — regelmäßig neu bewerten, bis sie erlischt.
   useEffect(() => {
@@ -117,9 +135,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       const el = inputRef.current;
       if (el) {
         el.style.height = 'auto';
-        el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+        // +2 = Rahmen (border-box), sonst bleibt 1 Zeile scrollbar
+        el.style.height = `${Math.min(el.scrollHeight + 2, 120)}px`;
       }
-      if (!myUid || !pairId) return;
+      if (!myUid || !pairId || !chatReady) return;
       const now = Date.now();
       if (value.trim() && now - lastTypingSentRef.current > 2500) {
         lastTypingSentRef.current = now;
@@ -127,7 +146,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       }
       if (!value.trim()) void setTyping(myUid, pairId, false);
     },
-    [myUid, pairId]
+    [myUid, pairId, chatReady]
   );
 
   const handleSend = useCallback(async () => {

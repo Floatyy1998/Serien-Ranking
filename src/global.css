@@ -466,6 +466,12 @@ textarea[style*='outline']:focus-visible {
   box-shadow: 0 14px 28px -18px rgba(244, 237, 224, 0.55) !important;
 }
 
+/* Chat-Composer hat eine eigene dezente Fokus-Anzeige (.ch-input:focus) */
+.ch-input:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent) !important;
+}
+
 /* Skip navigation link */
 .skip-to-content {
   position: absolute;

@@ -49,15 +49,24 @@ export function otherUidFromPairId(pairId: string, myUid: string): string | null
   return null;
 }
 
-/** Chat anlegen, falls er noch nicht existiert (participants sind create-once). */
+/**
+ * Chat anlegen, falls er noch nicht existiert (participants sind create-once).
+ * Zwei getrennte Writes: die Summary-Rule verlangt existierende participants,
+ * in einem Multi-Path-Update sieht sie aber nur den alten Datenstand.
+ */
 export async function ensureChat(myUid: string, friendUid: string): Promise<string> {
   const pairId = chatPairId(myUid, friendUid);
   const existing = await dbGet(`chats/${pairId}/participants`);
   if (!existing) {
-    await dbUpdate({
-      [`chats/${pairId}/participants`]: { [myUid]: true, [friendUid]: true },
-      [`chats/${pairId}/summary/createdAt`]: Date.now(),
-    });
+    try {
+      await dbRef(`chats/${pairId}/participants`).set({ [myUid]: true, [friendUid]: true });
+    } catch (err) {
+      const raced = await dbGet(`chats/${pairId}/participants`);
+      if (!raced) throw err;
+    }
+    await dbRef(`chats/${pairId}/summary/createdAt`)
+      .set(Date.now())
+      .catch(() => {});
   }
   return pairId;
 }
