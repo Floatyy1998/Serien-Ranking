@@ -134,7 +134,8 @@ export async function sendImageMessage(
   myUid: string,
   friendUid: string,
   file: File,
-  myName: string
+  myName: string,
+  caption = ''
 ): Promise<void> {
   const prepared = await prepareChatImage(file);
   const pairId = await ensureChat(myUid, friendUid);
@@ -148,7 +149,8 @@ export async function sendImageMessage(
   const url: string = await storageRef.getDownloadURL();
 
   const ts = Date.now();
-  const preview = prepared.isGif ? 'GIF' : 'Bild';
+  const text = caption.trim().slice(0, 1000);
+  const preview = text ? text.slice(0, 300) : prepared.isGif ? 'GIF' : 'Bild';
   await dbUpdate({
     [`chats/${pairId}/messages/${msgId}`]: {
       s: myUid,
@@ -156,6 +158,7 @@ export async function sendImageMessage(
       img: url,
       w: prepared.width,
       h: prepared.height,
+      ...(text && { t: text }),
     },
     [`chats/${pairId}/summary/lastMessage`]: preview,
     [`chats/${pairId}/summary/lastMessageAt`]: ts,
@@ -169,7 +172,7 @@ export async function sendImageMessage(
     title: myName,
     body: preview,
     titleEn: myName,
-    bodyEn: prepared.isGif ? 'GIF' : 'Image',
+    bodyEn: text ? preview : prepared.isGif ? 'GIF' : 'Image',
     url: `/chat/${myUid}`,
   });
 }

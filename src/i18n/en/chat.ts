@@ -74,6 +74,7 @@ const dict: Record<string, string> = {
   'Im Pet-System freischalten': 'Unlock in the pet system',
   'Neue Nachricht': 'New message',
   'Bild senden': 'Send image',
+  'Bildunterschrift hinzufügen …': 'Add a caption …',
   Bild: 'Image',
   'Bild ist zu groß (max. 8 MB).': 'Image is too large (max. 8 MB).',
   'Bild konnte nicht gesendet werden.': 'The image could not be sent.',

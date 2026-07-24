@@ -39,6 +39,7 @@ import {
   type ChatBubbleStyle,
 } from '../../services/chat/chatAppearance';
 import { clearDeliveredChatPushes } from '../../services/pushNotifications';
+import { MAX_IMAGE_BYTES } from '../../lib/imageCompress';
 import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
@@ -85,6 +86,12 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [wallpaperId, setWallpaperId] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [pendingImage, setPendingImage] = useState<{
+    file: File;
+    url: string;
+    isGif: boolean;
+  } | null>(null);
+  const [caption, setCaption] = useState('');
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -200,29 +207,67 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     }
   }, [myUid, friendId, draft, myName, sending]);
 
-  const sendImageFiles = useCallback(
-    async (files: ArrayLike<File>) => {
-      if (!myUid || uploadingImage) return;
-      const file = Array.from(files).find((f) => f.type.startsWith('image/'));
-      if (!file) return;
-      setUploadingImage(true);
-      try {
-        await sendImageMessage(myUid, friendId, file, myName);
-      } catch (err) {
-        const code = err instanceof Error ? err.message : '';
-        showToast(
-          code === 'too-large'
-            ? t('Bild ist zu groß (max. 8 MB).')
-            : t('Bild konnte nicht gesendet werden.'),
-          4000,
-          'error'
-        );
-      } finally {
-        setUploadingImage(false);
+  // WhatsApp-Flow: erst Vorschau mit optionaler Bildunterschrift, dann senden.
+  const openImagePreview = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      showToast(t('Bild ist zu groß (max. 8 MB).'), 4000, 'error');
+      return;
+    }
+    setCaption('');
+    setPendingImage((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return { file, url: URL.createObjectURL(file), isGif: file.type === 'image/gif' };
+    });
+  }, []);
+
+  const closeImagePreview = useCallback(() => {
+    setPendingImage((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, []);
+
+  // Kopierte GIFs landen als Standbild in der Zwischenablage — die echte
+  // GIF-URL steckt im mitkopierten HTML. Erst das Original versuchen.
+  const handlePastedImage = useCallback(
+    async (file: File | null, gifUrl: string | null) => {
+      if (gifUrl) {
+        try {
+          const res = await fetch(gifUrl.replace(/&amp;/g, '&'));
+          const blob = await res.blob();
+          if (blob.type === 'image/gif' && blob.size <= MAX_IMAGE_BYTES) {
+            openImagePreview(new File([blob], 'clipboard.gif', { type: 'image/gif' }));
+            return;
+          }
+        } catch {
+          /* CORS o. ä. — dann eben das Standbild */
+        }
       }
+      if (file) openImagePreview(file);
     },
-    [myUid, friendId, myName, uploadingImage]
+    [openImagePreview]
   );
+
+  const confirmSendImage = useCallback(async () => {
+    if (!myUid || !pendingImage || uploadingImage) return;
+    setUploadingImage(true);
+    try {
+      await sendImageMessage(myUid, friendId, pendingImage.file, myName, caption);
+      closeImagePreview();
+    } catch (err) {
+      const code = err instanceof Error ? err.message : '';
+      showToast(
+        code === 'too-large'
+          ? t('Bild ist zu groß (max. 8 MB).')
+          : t('Bild konnte nicht gesendet werden.'),
+        4000,
+        'error'
+      );
+    } finally {
+      setUploadingImage(false);
+    }
+  }, [myUid, friendId, myName, pendingImage, caption, uploadingImage, closeImagePreview]);
 
   const sendSticker = useCallback(
     async (stickerId: string) => {
@@ -484,19 +529,29 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     })()}
                   >
                     {m.imageUrl ? (
-                      <img
-                        className="ch-image"
-                        src={m.imageUrl}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        style={
-                          m.imageWidth && m.imageHeight
-                            ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
-                            : undefined
-                        }
-                        onClick={() => setLightboxUrl(m.imageUrl || null)}
-                      />
+                      <>
+                        <img
+                          className="ch-image"
+                          src={m.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          style={
+                            m.imageWidth && m.imageHeight
+                              ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
+                              : undefined
+                          }
+                          onClick={() => setLightboxUrl(m.imageUrl || null)}
+                        />
+                        {m.text && (
+                          <div
+                            className="ch-image-caption"
+                            style={{ color: currentTheme.text.primary }}
+                          >
+                            {m.text}
+                          </div>
+                        )}
+                      </>
                     ) : m.stickerId && isValidStickerId(m.stickerId) ? (
                       <StickerCanvas stickerId={m.stickerId} size={150} />
                     ) : (
@@ -571,7 +626,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             accept="image/*"
             hidden
             onChange={(e) => {
-              if (e.target.files?.length) void sendImageFiles(e.target.files);
+              if (e.target.files?.[0]) openImagePreview(e.target.files[0]);
               e.target.value = '';
             }}
           />
@@ -597,9 +652,15 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             onChange={(e) => handleDraftChange(e.target.value)}
             onPaste={(e) => {
               const files = e.clipboardData?.files;
-              if (files && files.length > 0) {
+              const html = e.clipboardData?.getData('text/html') || '';
+              const gifUrl = /<img[^>]+src="([^"]+\.gif[^"]*)"/i.exec(html)?.[1] || null;
+              const file =
+                files && files.length > 0
+                  ? Array.from(files).find((f) => f.type.startsWith('image/')) || null
+                  : null;
+              if (file || gifUrl) {
                 e.preventDefault();
-                void sendImageFiles(files);
+                void handlePastedImage(file, gifUrl);
               }
             }}
             onKeyDown={(e) => {
@@ -627,6 +688,62 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           <span>{t('Ihr müsst Freunde sein, um zu chatten.')}</span>
         </div>
       )}
+
+      <AnimatePresence>
+        {pendingImage && (
+          <motion.div
+            className="ch-imgpreview"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            role="dialog"
+            aria-label={t('Bild senden')}
+          >
+            <button
+              className="ch-icon-btn ch-imgpreview-close"
+              onClick={closeImagePreview}
+              aria-label={t('Schließen')}
+              style={{ color: '#fff' }}
+            >
+              <ArrowBack />
+            </button>
+            <div className="ch-imgpreview-stage">
+              <img src={pendingImage.url} alt="" />
+            </div>
+            <div className="ch-imgpreview-bar">
+              <input
+                type="text"
+                value={caption}
+                maxLength={500}
+                placeholder={t('Bildunterschrift hinzufügen …')}
+                onChange={(e) => setCaption(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    void confirmSendImage();
+                  }
+                }}
+                autoFocus={!('ontouchstart' in window)}
+              />
+              <button
+                className="ch-send-btn"
+                onClick={() => void confirmSendImage()}
+                disabled={uploadingImage}
+                aria-label={t('Senden')}
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                  opacity: uploadingImage ? 0.6 : 1,
+                }}
+              >
+                <Send
+                  className={uploadingImage ? 'ch-upload-pulse' : undefined}
+                  style={{ fontSize: 20, transform: 'translateX(1px)' }}
+                />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {lightboxUrl && (
