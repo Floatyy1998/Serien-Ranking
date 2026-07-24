@@ -1,4 +1,5 @@
 import {
+  ChatBubbleOutline,
   CompareArrows,
   ExpandLess,
   ExpandMore,
@@ -8,6 +9,7 @@ import {
 } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -49,6 +51,7 @@ interface RestrictedProfile {
 
 export const FriendProfilePage = memo(() => {
   const { currentTheme } = useTheme();
+  const navigate = useNavigate();
   const { user } = useAuth() || {};
   const {
     friends,
@@ -228,17 +231,33 @@ export const FriendProfilePage = memo(() => {
             n: itemsWithRatingCount,
           })}
           actions={
-            <motion.button
-              whileTap={tapScale}
-              onClick={navigateToTasteMatch}
-              className="fp-match-btn"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-              }}
-            >
-              <CompareArrows style={{ fontSize: 20 }} />
-              Match
-            </motion.button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <motion.button
+                whileTap={tapScale}
+                onClick={() => friendId && navigate(`/chat/${friendId}`)}
+                className="fp-match-btn"
+                aria-label={t('Nachricht senden')}
+                style={{
+                  background: 'var(--glass-light)',
+                  border: `1px solid ${currentTheme.primary}55`,
+                  color: currentTheme.primary,
+                }}
+              >
+                <ChatBubbleOutline style={{ fontSize: 18 }} />
+                {t('Chat')}
+              </motion.button>
+              <motion.button
+                whileTap={tapScale}
+                onClick={navigateToTasteMatch}
+                className="fp-match-btn"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                }}
+              >
+                <CompareArrows style={{ fontSize: 20 }} />
+                Match
+              </motion.button>
+            </div>
           }
         />
 

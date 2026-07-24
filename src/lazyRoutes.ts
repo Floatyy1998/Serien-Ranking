@@ -331,6 +331,18 @@ export const FilmKalenderPage = lazyWithRetry(() =>
   }))
 );
 
+export const ChatsPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "chats" */ './pages/Chats').then((m) => ({
+    default: m.ChatsPage,
+  }))
+);
+
+export const ChatThreadPage = lazyWithRetry(() =>
+  import(/* webpackChunkName: "chats" */ './pages/Chats').then((m) => ({
+    default: m.ChatThreadPage,
+  }))
+);
+
 // Routen-Chunks im Leerlauf vorladen — importierte Module überleben Deploys.
 //
 // iOS-Shell (kein Service Worker!) braucht den VOLL-Preload aller Routen als
@@ -374,6 +386,7 @@ export function preloadRoutes(opts: { isAdmin?: boolean } = {}) {
     () => import('./pages/AnimeSeason'),
     () => import('./pages/SerienKalender'),
     () => import('./pages/FilmKalender'),
+    () => import('./pages/Chats'),
     () => import('./pages/Wrapped'),
     () => import('./pages/WatchJourney'),
     () => import('./pages/TasteMatch'),

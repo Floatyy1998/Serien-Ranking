@@ -55,6 +55,8 @@ import {
   AnimeSeasonPage,
   SerienKalenderPage,
   FilmKalenderPage,
+  ChatsPage,
+  ChatThreadPage,
   preloadRoutes,
 } from './lazyRoutes';
 
@@ -479,6 +481,8 @@ export const MobileApp = () => {
               />
 
               {/* Redirect old routes */}
+              <Route path="/chats" element={<ChatsPage />} />
+              <Route path="/chat/:friendId" element={<ChatThreadPage />} />
               <Route path="/profile/:id" element={<FriendProfilePage />} />
               <Route path="/friends" element={<Navigate to="/activity" />} />
               <Route path="*" element={<Navigate to="/" />} />

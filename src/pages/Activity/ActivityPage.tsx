@@ -1,4 +1,5 @@
 import ChatBubbleOutline from '@mui/icons-material/ChatBubbleOutline';
+import SendRounded from '@mui/icons-material/SendRounded';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
 import GroupRounded from '@mui/icons-material/GroupRounded';
@@ -152,20 +153,38 @@ export const ActivityPage = () => {
         gradientFrom={currentTheme.text.primary}
         gradientTo={currentTheme.primary}
         actions={
-          <Tooltip title={t('Freund hinzufügen')} arrow>
-            <motion.button
-              whileTap={tapScaleTight}
-              onClick={() => setShowAddFriend(true)}
-              className="activity-add-btn"
-              style={{
-                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-                boxShadow: currentTheme.shadow.card,
-                color: onPrimary,
-              }}
-            >
-              <PersonAddRounded style={{ fontSize: '22px' }} />
-            </motion.button>
-          </Tooltip>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Tooltip title={t('Chats')} arrow>
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={() => navigate('/chats')}
+                className="activity-add-btn"
+                aria-label={t('Chats')}
+                style={{
+                  background: 'var(--glass-light)',
+                  border: `1px solid ${currentTheme.primary}55`,
+                  boxShadow: currentTheme.shadow.card,
+                  color: currentTheme.primary,
+                }}
+              >
+                <SendRounded style={{ fontSize: '20px', transform: 'rotate(-25deg)' }} />
+              </motion.button>
+            </Tooltip>
+            <Tooltip title={t('Freund hinzufügen')} arrow>
+              <motion.button
+                whileTap={tapScaleTight}
+                onClick={() => setShowAddFriend(true)}
+                className="activity-add-btn"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                  boxShadow: currentTheme.shadow.card,
+                  color: onPrimary,
+                }}
+              >
+                <PersonAddRounded style={{ fontSize: '22px' }} />
+              </motion.button>
+            </Tooltip>
+          </div>
         }
       />
 

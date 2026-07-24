@@ -8,6 +8,7 @@ import analytics from './analytics';
 import badges from './badges';
 import browse from './browse';
 import browse2 from './browse2';
+import chat from './chat';
 import components from './components';
 import detail from './detail';
 import gapsActivity from './gaps-activity';
@@ -32,6 +33,7 @@ const en: Record<string, string> = {
   ...badges,
   ...browse,
   ...browse2,
+  ...chat,
   ...components,
   ...detail,
   ...gapsActivity,

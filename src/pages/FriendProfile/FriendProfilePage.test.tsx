@@ -39,6 +39,7 @@ const { friendsState, dbGetMock } = vi.hoisted(() => ({
   dbGetMock: vi.fn(async () => ({ username: 'mia', displayName: 'Mia', photoURL: '' })),
 }));
 
+vi.mock('react-router-dom', () => ({ useNavigate: () => vi.fn() }));
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: () => ({ user: { uid: 'me' } }),
 }));
@@ -62,6 +63,7 @@ vi.mock('./FriendCurrentlyWatchingCard', () => ({ FriendCurrentlyWatchingCard: (
 vi.mock('./FriendAnticipationSection', () => ({ FriendAnticipationSection: () => null }));
 vi.mock('./FriendPetCard', () => ({ FriendPetCard: () => null }));
 vi.mock('@mui/icons-material', () => ({
+  ChatBubbleOutline: () => null,
   CompareArrows: () => null,
   ExpandLess: () => null,
   ExpandMore: () => null,

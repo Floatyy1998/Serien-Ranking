@@ -4,6 +4,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import 'firebase/compat/storage';
+import { deleteAllChatsForUser } from './chat/chatService';
 import { dbGet, dbRef, userPath } from './db/ref';
 import { reauthenticateSocial } from './firebase/socialAuth';
 
@@ -82,6 +83,10 @@ export async function deleteAccount(password: string | null): Promise<void> {
   } catch {
     /* best effort */
   }
+
+  // Private Chats: kompletter Verlauf beider Seiten (DSGVO Art. 17) — solange
+  // die Auth noch lebt, erlauben die Rules dem Teilnehmer die Löschung.
+  await deleteAllChatsForUser(uid);
 
   // Öffentliche Referenzen
   try {
