@@ -28,8 +28,17 @@ import {
   subscribeTyping,
   type ChatMessage,
 } from '../../services/chat/chatService';
+import {
+  saveBubbleStyle,
+  setChatWallpaper,
+  subscribeBubbleStyle,
+  subscribeChatWallpaper,
+  type ChatBubbleStyle,
+} from '../../services/chat/chatAppearance';
+import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
+import { ChatDesignSheet } from './ChatDesignSheet';
 import { StickerCanvas } from './StickerCanvas';
 import { isValidStickerId } from './stickers';
 import { useChatPartner } from './useChatPartner';
@@ -67,6 +76,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<'report' | 'delete' | null>(null);
   const [chatReady, setChatReady] = useState(false);
+  const [designOpen, setDesignOpen] = useState(false);
+  const [myStyle, setMyStyle] = useState<ChatBubbleStyle | null>(null);
+  const [partnerStyle, setPartnerStyle] = useState<ChatBubbleStyle | null>(null);
+  const [wallpaperId, setWallpaperId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const lastTypingSentRef = useRef(0);
@@ -104,6 +117,21 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       void setTyping(myUid, pairId, false);
     };
   }, [pairId, myUid, chatReady]);
+
+  useEffect(() => {
+    if (!myUid) return;
+    const offMine = subscribeBubbleStyle(myUid, setMyStyle);
+    const offTheirs = subscribeBubbleStyle(friendId, setPartnerStyle);
+    return () => {
+      offMine();
+      offTheirs();
+    };
+  }, [myUid, friendId]);
+
+  useEffect(() => {
+    if (!myUid || !pairId) return;
+    return subscribeChatWallpaper(myUid, pairId, setWallpaperId);
+  }, [myUid, pairId]);
 
   // Tipp-Anzeige lebt nur kurz — regelmäßig neu bewerten, bis sie erlischt.
   useEffect(() => {
@@ -278,6 +306,13 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
 
   return (
     <div className="ch-pane-thread" style={{ background: currentTheme.background.default }}>
+      {wallpaperId && resolveWallpaper(wallpaperId) && (
+        <div
+          className="ch-wallpaper"
+          style={{ background: resolveWallpaper(wallpaperId)?.css }}
+          aria-hidden
+        />
+      )}
       <div className="ch-thread-bg" aria-hidden />
       <div className="ch-thread-header">
         {showBack && (
@@ -335,6 +370,14 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
               <button
                 onClick={() => {
                   setMenuOpen(false);
+                  setDesignOpen(true);
+                }}
+              >
+                {t('Design & Hintergrund')}
+              </button>
+              <button
+                onClick={() => {
+                  setMenuOpen(false);
                   setConfirm('report');
                 }}
               >
@@ -386,15 +429,22 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     transition={{ duration: 0.15 }}
                     className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId ? ' ch-bubble--media' : ''}`}
                     onDoubleClick={() => toggleHeart(m.id)}
-                    style={
-                      m.stickerId
-                        ? undefined
-                        : own
-                          ? {
-                              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                            }
-                          : { color: currentTheme.text.primary }
-                    }
+                    style={(() => {
+                      if (m.stickerId) return undefined;
+                      const s = own ? myStyle : partnerStyle;
+                      if (s) {
+                        return {
+                          background: `linear-gradient(135deg, ${s.c1}, ${s.c2})`,
+                          color: bubbleTextColor(s.c1, s.c2),
+                          '--bub-r': `${RADIUS_PX[s.r]}px`,
+                        } as React.CSSProperties;
+                      }
+                      return own
+                        ? {
+                            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                          }
+                        : { color: currentTheme.text.primary };
+                    })()}
                   >
                     {m.stickerId && isValidStickerId(m.stickerId) ? (
                       <StickerCanvas stickerId={m.stickerId} size={150} />
@@ -497,6 +547,25 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           <span>{t('Ihr müsst Freunde sein, um zu chatten.')}</span>
         </div>
       )}
+
+      <AnimatePresence>
+        {designOpen && (
+          <ChatDesignSheet
+            myStyle={myStyle}
+            wallpaperId={wallpaperId}
+            onClose={() => setDesignOpen(false)}
+            onSaveStyle={(style) => {
+              if (!myUid) return;
+              void saveBubbleStyle(myUid, style).catch(() => {});
+            }}
+            onSelectWallpaper={(id) => {
+              if (!myUid || !pairId) return;
+              setWallpaperId(id);
+              void setChatWallpaper(myUid, pairId, id).catch(() => {});
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       <Dialog
         open={confirm === 'report'}

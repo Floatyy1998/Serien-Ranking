@@ -54,6 +54,29 @@ const dict: Record<string, string> = {
   'Chat blockiert.': 'Chat blocked.',
   'Chat entsperrt.': 'Chat unblocked.',
   'Das hat nicht geklappt — versuch es nochmal.': "That didn't work — please try again.",
+  'Design & Hintergrund': 'Design & background',
+  'Chat-Design': 'Chat design',
+  Schließen: 'Close',
+  'Deine Bubbles': 'Your bubbles',
+  'Dein Design sehen auch deine Freunde — es ist Teil deines Stils.':
+    'Your friends see your design too — it is part of your style.',
+  'So sehen deine Nachrichten aus': 'This is what your messages look like',
+  'Theme-Standard': 'Theme default',
+  'Eigene Farben': 'Custom colors',
+  'Farbe 1': 'Color 1',
+  'Farbe 2': 'Color 2',
+  Rund: 'Round',
+  Weich: 'Soft',
+  Kantig: 'Sharp',
+  'Chat-Hintergrund': 'Chat background',
+  'Nur du siehst den Hintergrund — pro Chat wählbar.':
+    'Only you can see the background — pick one per chat.',
+  Standard: 'Default',
+  Smaragd: 'Emerald',
+  Mitternacht: 'Midnight',
+  Pflaume: 'Plum',
+  Glut: 'Ember',
+  Schiefer: 'Slate',
 };
 
 export default dict;
