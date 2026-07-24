@@ -581,9 +581,10 @@
 /* Match button */
 
 .fp-match-btn {
-  padding: 12px 18px;
+  height: 44px;
+  padding: 0 18px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 22px;
   color: white;
   font-size: 15px;
   font-weight: 700;
@@ -594,6 +595,22 @@
   box-shadow: var(--shadow-md);
   transition: all 0.3s var(--ease-default);
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+/* Sekundärer Rund-Button (z. B. Chat) — gleiche Höhe wie die Match-Pill */
+.fp-icon-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s var(--ease-default);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
 /* 2050-Desktop: Insight-Platzhalter als schlanke Zeile statt Riesen-Leerbox */

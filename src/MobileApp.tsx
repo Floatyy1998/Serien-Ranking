@@ -483,7 +483,14 @@ export const MobileApp = () => {
               {/* Redirect old routes */}
               <Route path="/chats" element={<ChatsPage />} />
               <Route path="/chat/:friendId" element={<ChatThreadPage />} />
-              <Route path="/profile/:id" element={<FriendProfilePage />} />
+              <Route
+                path="/profile/:id"
+                element={
+                  <Layout hideNav>
+                    <FriendProfilePage />
+                  </Layout>
+                }
+              />
               <Route path="/friends" element={<Navigate to="/activity" />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

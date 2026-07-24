@@ -77,6 +77,14 @@ export const HiddenSeriesPage: React.FC = () => {
   return (
     <PageLayout
       style={{
+        // Eigener Fixed-Scroller wie WatchJourney/TasteMatch — umgeht die
+        // Safe-Area-Polsterung der `.mobile-app`-Shell, damit der Header-Inset
+        // (PageHeader) nicht doppelt zählt.
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         height: '100vh',
         overflowY: 'auto',
         overflowX: 'hidden',

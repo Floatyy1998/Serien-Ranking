@@ -29,6 +29,7 @@ import {
 } from '../../components/ui';
 import type { ProfileCardProvider } from '../../components/ui';
 import { getImageUrl } from '../../utils/imageUrl';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { t } from '../../services/i18n';
 import {
   calculateFriendRating,
@@ -52,6 +53,7 @@ interface RestrictedProfile {
 
 export const FriendProfilePage = memo(() => {
   const { currentTheme } = useTheme();
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
   const navigate = useNavigate();
   const { user } = useAuth() || {};
   const {
@@ -233,11 +235,11 @@ export const FriendProfilePage = memo(() => {
             n: itemsWithRatingCount,
           })}
           actions={
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <motion.button
                 whileTap={tapScale}
                 onClick={() => friendId && navigate(`/chat/${friendId}`)}
-                className="fp-match-btn"
+                className="fp-icon-btn"
                 aria-label={t('Nachricht senden')}
                 style={{
                   background: 'var(--glass-light)',
@@ -245,8 +247,7 @@ export const FriendProfilePage = memo(() => {
                   color: currentTheme.primary,
                 }}
               >
-                <ChatBubbleOutline style={{ fontSize: 18 }} />
-                {t('Chat')}
+                <ChatBubbleOutline style={{ fontSize: 20 }} />
               </motion.button>
               <motion.button
                 whileTap={tapScale}
@@ -254,6 +255,7 @@ export const FriendProfilePage = memo(() => {
                 className="fp-match-btn"
                 style={{
                   background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                  color: onPrimary,
                 }}
               >
                 <CompareArrows style={{ fontSize: 20 }} />
