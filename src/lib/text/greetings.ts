@@ -1,19 +1,23 @@
-import { t } from '../../services/i18n';
+import { isEnglish, t } from '../../services/i18n';
 
 export interface Greeting {
   text: string;
   lang: string;
   title?: string; // TMDB search title
   type?: 'movie' | 'tv'; // movie or tv series
+  /** Nur auf Deutsch zeigen (Dialekt-Grüße, deutsche Kultur-Referenzen). */
+  deOnly?: boolean;
+  /** Nur auf Englisch zeigen (kolloquiale EN-Grüße als Gegenstück). */
+  enOnly?: boolean;
 }
 
 const morningGreetings: Greeting[] = [
   // Klassische Morgen-Grüße
   { text: 'Guten Morgen', lang: 'Deutsch' },
-  { text: 'Moin', lang: 'Norddeutsch' },
-  { text: 'Moin moin', lang: 'Norddeutsch' },
-  { text: 'Servus', lang: 'Süddeutsch' },
-  { text: 'Grüß Gott', lang: 'Süddeutsch' },
+  { text: 'Moin', lang: 'Norddeutsch', deOnly: true },
+  { text: 'Moin moin', lang: 'Norddeutsch', deOnly: true },
+  { text: 'Servus', lang: 'Süddeutsch', deOnly: true },
+  { text: 'Grüß Gott', lang: 'Süddeutsch', deOnly: true },
   // Key „Morgen" ist im en-Wörterbuch als „Tomorrow" (Countdown) belegt
   { text: 'Schönen guten Morgen', lang: 'Deutsch' },
   { text: 'Guten Morgen, Sonnenschein', lang: 'Deutsch' },
@@ -27,6 +31,8 @@ const morningGreetings: Greeting[] = [
   { text: 'Buongiorno', lang: 'Italienisch' },
   { text: 'Bonjour', lang: 'Französisch' },
   { text: 'Ohayō', lang: 'Japanisch' },
+  { text: "Mornin'", lang: 'Englisch', enOnly: true },
+  { text: 'Howdy', lang: 'Amerikanisch', enOnly: true },
 
   // Film/Serien-Zitate die als Morgen-Gruß funktionieren
   {
@@ -107,8 +113,8 @@ const morningGreetings: Greeting[] = [
     title: 'The Mandalorian',
     type: 'tv',
   },
-  { text: 'Ich bin dann mal weg', lang: 'Hape Kerkeling' },
-  { text: 'Tschakka, du schaffst das', lang: 'Deutsch' },
+  { text: 'Ich bin dann mal weg', lang: 'Hape Kerkeling', deOnly: true },
+  { text: 'Tschakka, du schaffst das', lang: 'Deutsch', deOnly: true },
   {
     text: 'Auf ein Neues',
     lang: 'Deutsch',
@@ -122,22 +128,24 @@ const morningGreetings: Greeting[] = [
 const afternoonGreetings: Greeting[] = [
   // Klassische Nachmittags-Grüße
   { text: 'Guten Tag', lang: 'Deutsch' },
-  { text: 'Mahlzeit', lang: 'Deutsch' },
+  { text: 'Mahlzeit', lang: 'Deutsch', deOnly: true },
   { text: 'Hallo', lang: 'Deutsch' },
   { text: 'Grüß dich', lang: 'Deutsch' },
-  { text: 'Servus', lang: 'Süddeutsch' },
+  { text: 'Servus', lang: 'Süddeutsch', deOnly: true },
   { text: 'Na', lang: 'Deutsch' },
   { text: 'Schönen Nachmittag', lang: 'Deutsch' },
-  { text: 'Moin', lang: 'Norddeutsch' },
+  { text: 'Moin', lang: 'Norddeutsch', deOnly: true },
   { text: 'Tag auch', lang: 'Deutsch' },
-  { text: 'Grüezi', lang: 'Schweizerdeutsch' },
-  { text: 'Tach', lang: 'Berlinerisch' },
+  { text: 'Grüezi', lang: 'Schweizerdeutsch', deOnly: true },
+  { text: 'Tach', lang: 'Berlinerisch', deOnly: true },
   { text: 'Was geht', lang: 'Deutsch' },
   { text: 'Alles klar', lang: 'Deutsch' },
   { text: 'Hey', lang: 'Deutsch' },
   { text: 'Ciao', lang: 'Italienisch' },
   { text: 'Hola', lang: 'Spanisch' },
   { text: 'Yo', lang: 'Slang' },
+  { text: "G'day", lang: 'Australisch', enOnly: true },
+  { text: 'Hiya', lang: 'Britisch', enOnly: true },
 
   // Film/Serien-Zitate
   {
@@ -263,8 +271,9 @@ const eveningGreetings: Greeting[] = [
   { text: 'Schönen Feierabend', lang: 'Deutsch' },
   { text: 'Hallo', lang: 'Deutsch' },
   { text: 'Grüß dich', lang: 'Deutsch' },
-  { text: 'Servus', lang: 'Süddeutsch' },
+  { text: 'Servus', lang: 'Süddeutsch', deOnly: true },
   { text: 'Hey', lang: 'Deutsch' },
+  { text: 'Alright, mate', lang: 'Britisch', enOnly: true },
   { text: 'Na du', lang: 'Deutsch' },
   { text: 'Schönen Abend noch', lang: 'Deutsch' },
   { text: 'Feierabend', lang: 'Deutsch' },
@@ -423,6 +432,7 @@ const nightGreetings: Greeting[] = [
   { text: 'Buenas noches', lang: 'Spanisch' },
   { text: 'Buonanotte', lang: 'Italienisch' },
   { text: 'Bonne nuit', lang: 'Französisch' },
+  { text: 'Burning the midnight oil', lang: 'Englisch', enOnly: true },
 
   // Film/Serien-Zitate für Nacht
   {
@@ -564,6 +574,11 @@ export function getGreeting(hour: number): Greeting {
     greetings = nightGreetings;
     slotStart = hour >= 22 ? 22 : -2; // 22-23 oder 0-4 (letztere als Vortagnacht)
   }
+
+  // Sprachbewusster Pool: Dialekt-Grüße und deutsche Kultur-Referenzen bringen
+  // englischsprachigen Nutzern nichts — dafür bekommen sie eigene EN-Grüße.
+  const english = isEnglish();
+  greetings = greetings.filter((g) => (english ? !g.deOnly : !g.enOnly));
 
   // Day-seeded Shuffle: pro Tag eine neue Permutation der Greetings-Liste,
   // dann per Stunden-Offset indexiert. Das garantiert, dass innerhalb eines
