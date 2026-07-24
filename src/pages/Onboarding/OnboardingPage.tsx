@@ -21,6 +21,7 @@ import { petService } from '../../services/petService';
 import { hasGuestOnboarding } from '../../services/guestOnboarding';
 import { GuestResumeOnboarding } from '../GuestOnboarding/GuestResumeOnboarding';
 import { t } from '../../services/i18n';
+import { showToast } from '../../lib/toast';
 import type { Pet } from '../../types/pet.types';
 
 type Step = 'welcome' | 'series' | 'movies' | 'subscriptions' | 'pet' | 'done';
@@ -223,17 +224,36 @@ export const OnboardingPage: React.FC = () => {
       setCompletionProgress(Math.min(99, Math.round((unitsDone / totalUnits) * 100)));
     };
 
+    // Zählt, wie viele Titel wirklich gelandet sind — addToList wirft nie,
+    // sondern liefert bei Netz-/Backend-Fehlern still false. Ohne diesen Check
+    // schließt ein Backend-Ausfall das Onboarding mit null Titeln ab.
+    let addedOk = 0;
+
     try {
       setPendingId(null);
       await Promise.all(
         items.map(async (item) => {
           setPendingId(`${item.type}-${item.id}`);
           const ok = await addToList(item);
-          if (ok) await waitForBackendItem(item.type, item.id, 60_000);
+          if (ok) {
+            addedOk++;
+            await waitForBackendItem(item.type, item.id, 60_000);
+          }
           tick();
         })
       );
       setPendingId(null);
+
+      if (items.length > 0 && addedOk === 0) {
+        showToast(
+          t('Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung.'),
+          5000,
+          'error'
+        );
+        setIsCompleting(false);
+        setCompletionProgress(0);
+        return;
+      }
 
       const targetsObj: Record<number, WatchTarget> = {};
       for (const [id, t] of watchTargets.entries()) targetsObj[id] = t;
@@ -263,6 +283,18 @@ export const OnboardingPage: React.FC = () => {
       setTimeout(() => navigate('/', { replace: true }), 500);
     } catch (e) {
       console.error('[onboarding] finish error', e);
+      // Nur abschließen, wenn wenigstens ein Titel gelandet ist — sonst darf
+      // der Nutzer es erneut versuchen statt mit leerem Konto zu starten.
+      if (items.length > 0 && addedOk === 0) {
+        showToast(
+          t('Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung.'),
+          5000,
+          'error'
+        );
+        setIsCompleting(false);
+        setCompletionProgress(0);
+        return;
+      }
       await dbRef(userPath(uid, 'onboardingComplete')).set(true);
       setOnboardingComplete?.(true);
       navigate('/', { replace: true });

@@ -90,6 +90,12 @@ const dict: Record<string, string> = {
   'Dein Name': 'Your name',
   'So heißt du in der App — andere Nutzer können diesen Namen sehen.':
     'This is your name in the app — other users can see it.',
+  'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung.':
+    'Your selection could not be saved — check your connection.',
+  'Das hat nicht geklappt': "That didn't work",
+  'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung und versuch es gleich nochmal.':
+    'Your selection could not be saved — check your connection and try again in a moment.',
+  'erneut versuchen': 'try again',
   'Willkommen, {name}.': 'Welcome, {name}.',
   'Was läuft': 'What are you',
   'bei dir?': 'watching?',

@@ -21,7 +21,7 @@ import { useOnboardingSearch } from '../Onboarding/hooks/useOnboardingSearch';
 import { useWaitForBackendItem } from '../Onboarding/hooks/useWaitForBackendItem';
 import '../Onboarding/onboarding.css';
 
-type Phase = 'applying' | 'progress';
+type Phase = 'applying' | 'progress' | 'failed';
 
 function summaryLabel(target: WatchTarget | undefined): string | null {
   if (!target || target.kind === 'none') return null;
@@ -97,75 +97,90 @@ export const GuestResumeOnboarding: React.FC = () => {
     [user, nameNeeded, nameValue, applyWatchProgress, setOnboardingComplete, navigate]
   );
 
+  const runApply = useCallback(async () => {
+    const uid = user?.uid;
+    if (!uid) return;
+    setPhase('applying');
+    setProgress(0);
+
+    const { picks, subscriptions, pet } = data;
+
+    let unameMissing = false;
+    try {
+      const uname = (await dbGet(userPath(uid, 'username'))) as string | null;
+      if (!uname || String(uname).trim().length < 3) {
+        unameMissing = true;
+        const emailPrefix = (user?.email?.split('@')[0] || '').toLowerCase();
+        const candidate = (user?.displayName || '').trim();
+        const usable =
+          candidate.length >= 3 &&
+          candidate !== 'Unbekannt' &&
+          candidate.toLowerCase() !== emailPrefix;
+        setNameNeeded(true);
+        setNameValue(usable ? candidate : '');
+      }
+    } catch {
+      /* best-effort — im Zweifel nicht blockieren */
+    }
+
+    const total = Math.max(picks.length + 2, 1);
+    let done = 0;
+    const tick = () => {
+      done++;
+      setProgress(Math.min(99, Math.round((done / total) * 100)));
+    };
+    // addToList wirft nie (false bei Netz-/Backend-Fehler) — zählen, was
+    // wirklich gelandet ist, statt mit leerem Konto abzuschließen.
+    let addedOk = 0;
+    try {
+      await Promise.all(
+        picks.map(async (item) => {
+          const ok = await addToList(item);
+          if (ok) {
+            addedOk++;
+            await waitForBackendItem(item.type, item.id, 60_000);
+          }
+          tick();
+        })
+      );
+
+      if (subscriptions.length > 0) {
+        const cfg: Record<string, { active: boolean }> = {};
+        for (const name of subscriptions) cfg[name] = { active: true };
+        await dbRef(userPath(uid, 'subscriptions', 'providers')).set(cfg);
+        invalidateActiveSubscriptions(uid);
+      }
+      tick();
+
+      if (pet) {
+        const existing = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
+        if (!existing) await petService.createPet(uid, pet.name.trim() || t('Mein Pet'), pet.type);
+      }
+      tick();
+    } catch (e) {
+      console.error('[guest-resume] apply error', e);
+    }
+
+    if (picks.length > 0 && addedOk === 0) {
+      setPhase('failed');
+      return;
+    }
+
+    setProgress(100);
+    // Kein Watch-Fortschritt möglich → direkt fertig (außer der Name fehlt noch).
+    if (seriesPicks.length === 0 && !unameMissing) {
+      void finalize(new Map());
+    } else {
+      setPhase('progress');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.uid]);
+
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    const uid = user?.uid;
-    if (!uid) return;
-
-    (async () => {
-      const { picks, subscriptions, pet } = data;
-
-      let unameMissing = false;
-      try {
-        const uname = (await dbGet(userPath(uid, 'username'))) as string | null;
-        if (!uname || String(uname).trim().length < 3) {
-          unameMissing = true;
-          const emailPrefix = (user?.email?.split('@')[0] || '').toLowerCase();
-          const candidate = (user?.displayName || '').trim();
-          const usable =
-            candidate.length >= 3 &&
-            candidate !== 'Unbekannt' &&
-            candidate.toLowerCase() !== emailPrefix;
-          setNameNeeded(true);
-          setNameValue(usable ? candidate : '');
-        }
-      } catch {
-        /* best-effort — im Zweifel nicht blockieren */
-      }
-
-      const total = Math.max(picks.length + 2, 1);
-      let done = 0;
-      const tick = () => {
-        done++;
-        setProgress(Math.min(99, Math.round((done / total) * 100)));
-      };
-      try {
-        await Promise.all(
-          picks.map(async (item) => {
-            const ok = await addToList(item);
-            if (ok) await waitForBackendItem(item.type, item.id, 60_000);
-            tick();
-          })
-        );
-
-        if (subscriptions.length > 0) {
-          const cfg: Record<string, { active: boolean }> = {};
-          for (const name of subscriptions) cfg[name] = { active: true };
-          await dbRef(userPath(uid, 'subscriptions', 'providers')).set(cfg);
-          invalidateActiveSubscriptions(uid);
-        }
-        tick();
-
-        if (pet) {
-          const existing = Object.keys((await dbGet(userPath(uid, 'pets'))) || {}).length > 0;
-          if (!existing)
-            await petService.createPet(uid, pet.name.trim() || t('Mein Pet'), pet.type);
-        }
-        tick();
-      } catch (e) {
-        console.error('[guest-resume] apply error', e);
-      }
-      setProgress(100);
-      // Kein Watch-Fortschritt möglich → direkt fertig (außer der Name fehlt noch).
-      if (seriesPicks.length === 0 && !unameMissing) {
-        void finalize(new Map());
-      } else {
-        setPhase('progress');
-      }
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.uid]);
+    void runApply();
+  }, [runApply]);
 
   return (
     <div className="ob-root">
@@ -196,6 +211,44 @@ export const GuestResumeOnboarding: React.FC = () => {
               <span className="ob-mono" style={{ color: 'var(--ob-text-mute)' }}>
                 {progress}%
               </span>
+            </motion.div>
+          )}
+
+          {phase === 'failed' && (
+            <motion.div
+              key="failed"
+              className="ob-step"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                textAlign: 'center',
+                padding: 'clamp(24px, 6vw, 64px)',
+                gap: 20,
+              }}
+            >
+              <h1
+                className="ob-display"
+                style={{ fontSize: 'clamp(28px, 6vw, 48px)', margin: 0, color: 'var(--ob-paper)' }}
+              >
+                {t('Das hat nicht geklappt')}
+              </h1>
+              <span
+                className="ob-mono"
+                style={{ color: 'var(--ob-text-mute)', textTransform: 'none', maxWidth: '42ch' }}
+              >
+                {t(
+                  'Deine Auswahl konnte nicht gespeichert werden — prüfe deine Verbindung und versuch es gleich nochmal.'
+                )}
+              </span>
+              <button onClick={() => void runApply()} className="ob-cta" style={{ maxWidth: 420 }}>
+                <span className="ob-cta__inner">
+                  <span>{t('erneut versuchen')}</span>
+                </span>
+                <span className="ob-cta__arrow">→</span>
+              </button>
             </motion.div>
           )}
 

@@ -72,9 +72,11 @@ export function hasGuestPicks(): boolean {
 }
 
 /** True, sobald der Gast irgendetwas gewählt hat (Titel/Abos/Pet). */
+// Nur echte Titel-Picks zählen: ein Store mit bloß Abos/Pet (z. B. nach
+// localStorage-Teilverlust) darf das volle Onboarding NICHT ersetzen — sonst
+// schließt der Resume-Flow mit null Serien/Filmen ab.
 export function hasGuestOnboarding(): boolean {
-  const s = read();
-  return s.picks.length > 0 || s.subscriptions.length > 0 || s.pet !== null;
+  return read().picks.length > 0;
 }
 
 export function addGuestPick(item: GuestPick): void {
