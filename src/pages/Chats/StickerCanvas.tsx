@@ -14,9 +14,14 @@ export const StickerCanvas = ({ stickerId, size }: { stickerId: string; size: nu
     const entry = STICKER_DRAWERS[pet];
     if (!entry) return;
     const level = Number(levelStr) || 25;
-    const ps = Math.max(1, Math.floor(size / 32));
+    // In Gerätepixeln rendern und CSS-Größe exakt darauf mappen — sonst wird
+    // das Pixel-Art auf High-DPI-Displays matschig hochskaliert.
+    const dpr = window.devicePixelRatio || 1;
+    const ps = Math.max(1, Math.round((size * dpr) / 32));
     canvas.width = ps * 32;
     canvas.height = ps * 32;
+    canvas.style.width = `${(ps * 32) / dpr}px`;
+    canvas.style.height = `${(ps * 32) / dpr}px`;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);

@@ -25,6 +25,7 @@ vi.mock('firebase/compat/database', () => ({}));
 
 // Context mocks
 type FriendsState = {
+  friends: Record<string, unknown>[];
   unreadActivitiesCount: number;
   lastReadActivitiesTime: number;
   friendActivities: Record<string, unknown>[];
@@ -82,6 +83,7 @@ const flush = async () => {
 };
 
 const defaultFriends = (): FriendsState => ({
+  friends: [],
   unreadActivitiesCount: 0,
   lastReadActivitiesTime: 0,
   friendActivities: [],

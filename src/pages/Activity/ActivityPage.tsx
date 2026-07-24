@@ -10,8 +10,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useScrollRestore } from '../../hooks/useScrollRestore';
+import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
+import { subscribeUnreadChats } from '../../services/chat/chatUnread';
 import { useTheme } from '../../contexts/ThemeContext';
 import { IconContainer, PageHeader, ScrollToTopButton } from '../../components/ui';
 import { t } from '../../services/i18n';
@@ -60,8 +62,15 @@ export const ActivityPage = () => {
     [notifications]
   );
 
+  const { user } = useAuth() || {};
   const [activeTab, setActiveTab] = useState<TabId>('activity');
   const [showAddFriend, setShowAddFriend] = useState(false);
+  const [unreadChatsCount, setUnreadChatsCount] = useState(0);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    return subscribeUnreadChats(user.uid, (list) => setUnreadChatsCount(list.length));
+  }, [user?.uid]);
   const [friendToRemove, setFriendToRemove] = useState<{ uid: string; name: string } | null>(null);
   const [removing, setRemoving] = useState(false);
 
@@ -126,7 +135,7 @@ export const ActivityPage = () => {
     {
       id: 'discussions' as const,
       icon: <ChatRoundedIcon style={{ fontSize: '21px' }} />,
-      label: 'Chat',
+      label: t('Kommentare'),
       badgeCount: unreadDiscussionsCount > 0 ? unreadDiscussionsCount : undefined,
     },
   ];
@@ -161,13 +170,24 @@ export const ActivityPage = () => {
                 className="activity-add-btn"
                 aria-label={t('Chats')}
                 style={{
+                  position: 'relative',
                   background: 'var(--glass-light)',
                   border: `1px solid ${currentTheme.primary}55`,
                   boxShadow: currentTheme.shadow.card,
                   color: currentTheme.primary,
                 }}
               >
-                <SendRounded style={{ fontSize: '20px', transform: 'rotate(-25deg)' }} />
+                <SendRounded
+                  style={{ fontSize: '19px', transform: 'rotate(-45deg) translate(1px, 1px)' }}
+                />
+                {unreadChatsCount > 0 && (
+                  <span
+                    className="activity-btn-badge"
+                    style={{ background: currentTheme.primary, color: onPrimary }}
+                  >
+                    {unreadChatsCount > 99 ? '99+' : unreadChatsCount}
+                  </span>
+                )}
               </motion.button>
             </Tooltip>
             <Tooltip title={t('Freund hinzufügen')} arrow>

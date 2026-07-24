@@ -128,7 +128,7 @@ describe('ActivityPage', () => {
     expect(screen.getByRole('tab', { name: 'Feed' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Freunde' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Anfragen' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Kommentare' })).toBeInTheDocument();
   });
 
   it('switches to the friends tab when its nav button is clicked', () => {

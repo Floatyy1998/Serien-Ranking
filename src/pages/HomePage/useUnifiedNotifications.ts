@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
+import { subscribeUnreadChats, type UnreadChat } from '../../services/chat/chatUnread';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
 import { isEnglish, t } from '../../services/i18n';
@@ -29,6 +30,7 @@ export interface UnifiedNotification {
     | 'announcement'
     | 'bug_ticket'
     | 'pet'
+    | 'chat'
     | 'recommendation';
   title: string;
   message: string;
@@ -70,7 +72,7 @@ export const ANNOUNCEMENTS: Announcement[] = [
     id: 'announcement_friends-chat-2026-07',
     title: 'Neu: Private Chats mit deinen Freunden',
     message:
-      'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Online-Status, Tipp-Anzeige und Push inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.',
+      'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Gestalte Bubbles und Chat-Hintergründe selbst, freigeschaltete Pet-Szenen inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.',
     // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik) —
     // beim Push auf kurz nach dem tatsächlichen Deploy-Zeitpunkt anpassen.
     timestamp: new Date('2026-07-24T23:00:00+02:00').getTime(),
@@ -211,6 +213,7 @@ export interface UseUnifiedNotificationsReturn {
 
 export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   const {
+    friends,
     unreadActivitiesCount,
     lastReadActivitiesTime,
     friendActivities,
@@ -243,6 +246,14 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   // lastReadAnnouncementsTime per useMemo zurueck auf null faellt — ohne
   // synchronen setState im Effect-Body.
   const [storedReadTime, setStoredReadTime] = useState<{ uid: string; ts: number } | null>(null);
+
+  // Ungelesene Chat-Nachrichten — verschwinden beim Öffnen des Chats
+  // (lastReadAt), NICHT über „alle gelesen" in der Bell.
+  const [unreadChats, setUnreadChats] = useState<UnreadChat[]>([]);
+  useEffect(() => {
+    if (!user?.uid) return;
+    return subscribeUnreadChats(user.uid, setUnreadChats);
+  }, [user?.uid]);
 
   // Realtime-Listener statt Einmal-Read: markiert ein Gerät die Announcements
   // als gelesen, wandert das Wasserzeichen live auf alle anderen Geräte (sonst
@@ -347,6 +358,20 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         read: lastReadActivitiesTime > 0 && act.timestamp <= lastReadActivitiesTime,
         navigateTo: tmdbId ? (isMovie ? `/movie/${tmdbId}` : `/series/${tmdbId}`) : undefined,
         icon: isRating ? 'star' : isWatchlist ? 'watchlist' : isMovie ? 'movie' : 'tv',
+      });
+    }
+
+    for (const chat of unreadChats) {
+      const friend = friends.find((f) => f.uid === chat.otherUid);
+      items.push({
+        id: `chat_${chat.pairId}`,
+        kind: 'chat',
+        title: friend?.displayName || friend?.username || t('Neue Nachricht'),
+        message: chat.lastMessage || t('Neue Nachricht'),
+        timestamp: chat.lastMessageAt,
+        read: false,
+        navigateTo: `/chat/${chat.otherUid}`,
+        icon: 'chat',
       });
     }
 
@@ -470,6 +495,8 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
   }, [
     friendActivities,
     friendRequests,
+    friends,
+    unreadChats,
     notifications,
     recommendations,
     lastReadActivitiesTime,
@@ -482,6 +509,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
     unreadActivitiesCount +
     notificationUnreadCount +
     pendingRecommendationsCount +
+    unreadChats.length +
     (lastReadAnnouncementsTime !== null
       ? ANNOUNCEMENTS.filter((a) => a.timestamp > lastReadAnnouncementsTime).length
       : 0);

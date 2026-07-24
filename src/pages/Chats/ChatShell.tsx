@@ -44,7 +44,9 @@ export const ChatShell = ({ activeFriendId }: { activeFriendId?: string }) => {
         <ChatListPane
           myUid={myUid}
           activeFriendId={activeFriendId}
-          onOpen={(friendUid) => navigate(`/chat/${friendUid}`)}
+          // Chat-zu-Chat-Wechsel ersetzen den History-Eintrag, sonst müllt der
+          // Verlauf zu und der Zurück-Pfeil hangelt sich durch alle alten Chats.
+          onOpen={(friendUid) => navigate(`/chat/${friendUid}`, { replace: !!activeFriendId })}
         />
       )}
       {showThread ? (

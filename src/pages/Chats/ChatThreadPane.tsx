@@ -314,7 +314,12 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             className="ch-icon-btn"
             onClick={() => {
               hapticTap();
-              navigate('/chats');
+              // Dahin zurück, wo man herkam (Liste, Profil, Activity) —
+              // ohne Vorseite (z. B. Push-Deep-Link) in die Chat-Liste.
+              const idx =
+                typeof window.history.state?.idx === 'number' ? window.history.state.idx : 0;
+              if (idx > 0) navigate(-1);
+              else navigate('/chats', { replace: true });
             }}
             aria-label={t('Zurück')}
             style={{ color: currentTheme.text.primary }}

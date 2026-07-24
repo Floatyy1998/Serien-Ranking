@@ -108,6 +108,14 @@ export const PatchNotesPage = () => {
           ),
         },
         {
+          icon: <Palette />,
+          color: currentTheme.status.purple,
+          title: t('Mach den Chat zu deinem'),
+          description: t(
+            'Gestalte deine Bubbles mit eigenem Farbverlauf und Eckenform — mit Live-Vorschau. Dazu wählst du pro Chat einen Hintergrund: ruhige Verläufe für alle, und die Pet-Szenen, die du im Pet-System schon freigeschaltet hast. Beides siehst nur du.'
+          ),
+        },
+        {
           icon: <Lock />,
           color: currentTheme.status.success,
           title: t('Privatsphäre eingebaut'),

@@ -62,9 +62,12 @@ const dict: Record<string, string> = {
     'You can see who is online and who is typing, unread chats are marked at a glance, messages group into bubbles with day separators — and when you are away, a push notification comes knocking.',
   'Nachrichten sind nur für euch beide lesbar — kein automatisches Mitlesen, keine Auswertung. Unangenehme Chats kannst du melden oder blockieren, Löschen entfernt den Verlauf für beide Seiten, und nach 12 Monaten räumen wir alte Nachrichten automatisch weg.':
     'Messages can only be read by the two of you — no automatic scanning, no analysis. You can report or block unpleasant chats, deleting removes the history for both sides, and after 12 months old messages are cleaned up automatically.',
+  'Mach den Chat zu deinem': 'Make the Chat Your Own',
+  'Gestalte deine Bubbles mit eigenem Farbverlauf und Eckenform — mit Live-Vorschau. Dazu wählst du pro Chat einen Hintergrund: ruhige Verläufe für alle, und die Pet-Szenen, die du im Pet-System schon freigeschaltet hast. Beides siehst nur du.':
+    'Style your bubbles with a custom gradient and corner shape — with live preview. Plus pick a background per chat: calm gradients for everyone, and the pet scenes you have already unlocked in the pet system. Both are visible only to you.',
   'Neu: Private Chats mit deinen Freunden': 'New: Private Chats with Your Friends',
-  'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Online-Status, Tipp-Anzeige und Push inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.':
-    'You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Online status, typing indicator and push included. And everything stays private: only the person you write to can read along. All details in the patch notes.',
+  'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Gestalte Bubbles und Chat-Hintergründe selbst, freigeschaltete Pet-Szenen inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.':
+    'You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Style your bubbles and chat backgrounds yourself, unlocked pet scenes included. And everything stays private: only the person you write to can read along. All details in the patch notes.',
 
   // Feature descriptions + Announcement (Pet-Update Juli 2026)
   'Drei neue Begleiter ziehen ein: eine weise Eule, ein watschelnder Pinguin und ein verspielter Axolotl. Jedes hat eine eigene Entwicklungsform ab Level 50 — Erzmagier, Kaiser und Leviathan.':

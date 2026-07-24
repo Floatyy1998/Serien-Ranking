@@ -72,6 +72,7 @@ const dict: Record<string, string> = {
   'Nur du siehst den Hintergrund — pro Chat wählbar. Pet-Szenen schaltest du im Pet-System frei.':
     'Only you can see the background — pick one per chat. Pet scenes are unlocked in the pet system.',
   'Im Pet-System freischalten': 'Unlock in the pet system',
+  'Neue Nachricht': 'New message',
   Standard: 'Default',
   Smaragd: 'Emerald',
   Mitternacht: 'Midnight',

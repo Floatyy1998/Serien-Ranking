@@ -141,22 +141,22 @@ export const ChatDesignSheet = ({
                 />
               </span>
             </label>
-            <div className="ch-design-radius">
-              {RADIUS_OPTIONS.map((o) => (
-                <button
-                  key={o.id}
-                  className={draft.r === o.id ? 'is-active' : ''}
-                  style={
-                    draft.r === o.id
-                      ? { color: currentTheme.primary, borderColor: currentTheme.primary }
-                      : { color: currentTheme.text.muted }
-                  }
-                  onClick={() => apply({ ...draft, r: o.id })}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
+          </div>
+          <div className="ch-design-radius">
+            {RADIUS_OPTIONS.map((o) => (
+              <button
+                key={o.id}
+                className={draft.r === o.id ? 'is-active' : ''}
+                style={
+                  draft.r === o.id
+                    ? { color: currentTheme.primary, borderColor: currentTheme.primary }
+                    : { color: currentTheme.text.muted }
+                }
+                onClick={() => apply({ ...draft, r: o.id })}
+              >
+                {o.label}
+              </button>
+            ))}
           </div>
 
           <h3 style={{ color: currentTheme.text.muted }}>{t('Chat-Hintergrund')}</h3>
