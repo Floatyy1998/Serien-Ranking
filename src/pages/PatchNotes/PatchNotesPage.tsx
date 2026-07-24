@@ -5,6 +5,7 @@ import {
   AutoFixHigh,
   CalendarMonth,
   CalendarToday,
+  EmojiEmotions,
   Equalizer,
   EuroSymbol,
   FilterAlt,
@@ -14,6 +15,7 @@ import {
   LibraryAddCheck,
   LocalFireDepartment,
   LocalMovies,
+  Lock,
   Navigation,
   NewReleases,
   NotificationsActive,
@@ -76,6 +78,45 @@ export const PatchNotesPage = () => {
   const navigate = useNavigate();
 
   const releases: PatchRelease[] = [
+    {
+      version: t('Juli 2026 – Der Freunde-Chat'),
+      date: '2026-07-24',
+      features: [
+        {
+          icon: <Forum />,
+          color: currentTheme.primary,
+          title: t('Private Chats mit deinen Freunden'),
+          description: t(
+            'Schreib deinen Freunden direkt in TV-Rank — über das Papierflieger-Symbol im Freunde-Bereich oder den Chat-Button auf jedem Freund-Profil. Am Desktop als Split-View wie bei Instagram: links deine Chats mit Suche, rechts die Unterhaltung in voller Breite.'
+          ),
+          link: { label: t('Chats öffnen'), path: '/chats' },
+        },
+        {
+          icon: <EmojiEmotions />,
+          color: currentTheme.secondary,
+          title: t('Emojis, Herz-Reaktionen & Pet-Sticker'),
+          description: t(
+            'Der Picker bringt ein kuratiertes Emoji-Set und exklusive Sticker deiner Pets mit — jedes der zehn Pets in Basis- und Entwicklungsform. Und wie beim großen Vorbild: Doppeltipp auf eine Nachricht schenkt ihr ein Herz.'
+          ),
+        },
+        {
+          icon: <NotificationsActive />,
+          color: currentTheme.status.warning,
+          title: t('Live wie ein richtiger Messenger'),
+          description: t(
+            'Du siehst, wer online ist und wer gerade schreibt, ungelesene Chats sind auf einen Blick markiert, Nachrichten gruppieren sich zu Bubbles mit Tages-Trennern — und wenn du gerade nicht da bist, klopft eine Push-Benachrichtigung an.'
+          ),
+        },
+        {
+          icon: <Lock />,
+          color: currentTheme.status.success,
+          title: t('Privatsphäre eingebaut'),
+          description: t(
+            'Nachrichten sind nur für euch beide lesbar — kein automatisches Mitlesen, keine Auswertung. Unangenehme Chats kannst du melden oder blockieren, Löschen entfernt den Verlauf für beide Seiten, und nach 12 Monaten räumen wir alte Nachrichten automatisch weg.'
+          ),
+        },
+      ],
+    },
     {
       version: t('Juli 2026 – Das große Pet-Update'),
       date: '2026-07-24',

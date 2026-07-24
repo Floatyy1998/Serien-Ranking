@@ -1,6 +1,7 @@
 /** Englische Übersetzungen: Patch Notes. */
 const dict: Record<string, string> = {
   // Version titles
+  'Juli 2026 – Der Freunde-Chat': 'July 2026 – The Friends Chat',
   'Juli 2026 – Das große Pet-Update': 'July 2026 – The Big Pet Update',
   'Juli 2026 – Filme im Rampenlicht': 'July 2026 – Movies in the Spotlight',
   'Juli 2026 – TV-Rank klopft an': 'July 2026 – TV-Rank Comes Knocking',
@@ -18,6 +19,7 @@ const dict: Record<string, string> = {
   'Februar 2026': 'February 2026',
 
   // Link labels
+  'Chats öffnen': 'Open Chats',
   'Zu deinen Pets': 'Go to Your Pets',
   'Zum Film-Kalender': 'Go to the Movie Calendar',
   'Zu den Einstellungen': 'Go to Settings',
@@ -46,6 +48,23 @@ const dict: Record<string, string> = {
   'Filmreihen mit Fortschritt': 'Movie Collections with Progress',
   'Fairness & Feinschliff': 'Fairness & Polish',
   'Push-Benachrichtigungen in den Apps': 'Push Notifications in the Apps',
+
+  // Feature titles + descriptions + Announcement (Freunde-Chat Juli 2026)
+  'Private Chats mit deinen Freunden': 'Private Chats with Your Friends',
+  'Emojis, Herz-Reaktionen & Pet-Sticker': 'Emojis, Heart Reactions & Pet Stickers',
+  'Live wie ein richtiger Messenger': 'Live Like a Real Messenger',
+  'Privatsphäre eingebaut': 'Privacy Built In',
+  'Schreib deinen Freunden direkt in TV-Rank — über das Papierflieger-Symbol im Freunde-Bereich oder den Chat-Button auf jedem Freund-Profil. Am Desktop als Split-View wie bei Instagram: links deine Chats mit Suche, rechts die Unterhaltung in voller Breite.':
+    'Message your friends right inside TV-Rank — via the paper-plane icon in the friends area or the chat button on any friend profile. On desktop it is a split view like Instagram: your chats with search on the left, the conversation in full width on the right.',
+  'Der Picker bringt ein kuratiertes Emoji-Set und exklusive Sticker deiner Pets mit — jedes der zehn Pets in Basis- und Entwicklungsform. Und wie beim großen Vorbild: Doppeltipp auf eine Nachricht schenkt ihr ein Herz.':
+    'The picker comes with a curated emoji set and exclusive stickers of your pets — each of the ten pets in base and evolved form. And just like the big role models: double-tap a message to give it a heart.',
+  'Du siehst, wer online ist und wer gerade schreibt, ungelesene Chats sind auf einen Blick markiert, Nachrichten gruppieren sich zu Bubbles mit Tages-Trennern — und wenn du gerade nicht da bist, klopft eine Push-Benachrichtigung an.':
+    'You can see who is online and who is typing, unread chats are marked at a glance, messages group into bubbles with day separators — and when you are away, a push notification comes knocking.',
+  'Nachrichten sind nur für euch beide lesbar — kein automatisches Mitlesen, keine Auswertung. Unangenehme Chats kannst du melden oder blockieren, Löschen entfernt den Verlauf für beide Seiten, und nach 12 Monaten räumen wir alte Nachrichten automatisch weg.':
+    'Messages can only be read by the two of you — no automatic scanning, no analysis. You can report or block unpleasant chats, deleting removes the history for both sides, and after 12 months old messages are cleaned up automatically.',
+  'Neu: Private Chats mit deinen Freunden': 'New: Private Chats with Your Friends',
+  'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Online-Status, Tipp-Anzeige und Push inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.':
+    'You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Online status, typing indicator and push included. And everything stays private: only the person you write to can read along. All details in the patch notes.',
 
   // Feature descriptions + Announcement (Pet-Update Juli 2026)
   'Drei neue Begleiter ziehen ein: eine weise Eule, ein watschelnder Pinguin und ein verspielter Axolotl. Jedes hat eine eigene Entwicklungsform ab Level 50 — Erzmagier, Kaiser und Leviathan.':

@@ -67,6 +67,16 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_friends-chat-2026-07',
+    title: 'Neu: Private Chats mit deinen Freunden',
+    message:
+      'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Online-Status, Tipp-Anzeige und Push inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik) —
+    // beim Push auf kurz nach dem tatsächlichen Deploy-Zeitpunkt anpassen.
+    timestamp: new Date('2026-07-24T23:00:00+02:00').getTime(),
+    navigateTo: '/patch-notes',
+  },
+  {
     id: 'announcement_pet-update-2026-07',
     title: 'Neu: Das große Pet-Update',
     message:
