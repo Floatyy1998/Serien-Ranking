@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useRecommendations } from '../../hooks/useRecommendations';
+import { previewLabel } from '../../services/chat/chatService';
 import { subscribeUnreadChats, type UnreadChat } from '../../services/chat/chatUnread';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { ADMIN_UID } from '../../config/admin';
@@ -368,7 +369,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
         id: `chat_${chat.pairId}`,
         kind: 'chat',
         title: friend?.displayName || friend?.username || t('Neue Nachricht'),
-        message: chat.lastMessage || t('Neue Nachricht'),
+        message: previewLabel(chat.lastMessage) || t('Neue Nachricht'),
         timestamp: chat.lastMessageAt,
         read: false,
         navigateTo: `/chat/${chat.otherUid}`,

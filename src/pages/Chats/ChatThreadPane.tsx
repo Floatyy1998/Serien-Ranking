@@ -1,4 +1,5 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import ImageOutlined from '@mui/icons-material/ImageOutlined';
 import InsertEmoticonOutlined from '@mui/icons-material/InsertEmoticonOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Send from '@mui/icons-material/Send';
@@ -19,6 +20,7 @@ import {
   markChatRead,
   MAX_MESSAGE_LENGTH,
   reportChat,
+  sendImageMessage,
   sendMessage,
   setChatBlocked,
   setReaction,
@@ -81,8 +83,11 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [designOpen, setDesignOpen] = useState(false);
   const [myStyle, setMyStyle] = useState<ChatBubbleStyle | null>(null);
   const [wallpaperId, setWallpaperId] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const lastTypingSentRef = useRef(0);
 
   // Chat beim Öffnen anlegen — Listener auf einen nicht existierenden Chat
@@ -194,6 +199,30 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       setSending(false);
     }
   }, [myUid, friendId, draft, myName, sending]);
+
+  const sendImageFiles = useCallback(
+    async (files: ArrayLike<File>) => {
+      if (!myUid || uploadingImage) return;
+      const file = Array.from(files).find((f) => f.type.startsWith('image/'));
+      if (!file) return;
+      setUploadingImage(true);
+      try {
+        await sendImageMessage(myUid, friendId, file, myName);
+      } catch (err) {
+        const code = err instanceof Error ? err.message : '';
+        showToast(
+          code === 'too-large'
+            ? t('Bild ist zu groß (max. 8 MB).')
+            : t('Bild konnte nicht gesendet werden.'),
+          4000,
+          'error'
+        );
+      } finally {
+        setUploadingImage(false);
+      }
+    },
+    [myUid, friendId, myName, uploadingImage]
+  );
 
   const sendSticker = useCallback(
     async (stickerId: string) => {
@@ -435,10 +464,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     initial={{ opacity: 0, y: 6, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.15 }}
-                    className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId ? ' ch-bubble--media' : ''}`}
+                    className={`ch-bubble ${own ? 'ch-bubble--own' : 'ch-bubble--other'}${m.cont ? ' ch-bubble--cont' : ''}${m.stickerId || m.imageUrl ? ' ch-bubble--media' : ''}`}
                     onDoubleClick={() => toggleHeart(m.id)}
                     style={(() => {
-                      if (m.stickerId) return undefined;
+                      if (m.stickerId || m.imageUrl) return undefined;
                       const s = own ? myStyle : null;
                       if (s) {
                         return {
@@ -454,7 +483,21 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                         : { color: currentTheme.text.primary };
                     })()}
                   >
-                    {m.stickerId && isValidStickerId(m.stickerId) ? (
+                    {m.imageUrl ? (
+                      <img
+                        className="ch-image"
+                        src={m.imageUrl}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        style={
+                          m.imageWidth && m.imageHeight
+                            ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
+                            : undefined
+                        }
+                        onClick={() => setLightboxUrl(m.imageUrl || null)}
+                      />
+                    ) : m.stickerId && isValidStickerId(m.stickerId) ? (
                       <StickerCanvas stickerId={m.stickerId} size={150} />
                     ) : (
                       m.text
@@ -522,6 +565,28 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           >
             <InsertEmoticonOutlined />
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => {
+              if (e.target.files?.length) void sendImageFiles(e.target.files);
+              e.target.value = '';
+            }}
+          />
+          <button
+            className="ch-icon-btn"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploadingImage}
+            aria-label={t('Bild senden')}
+            style={{
+              color: uploadingImage ? currentTheme.primary : currentTheme.text.muted,
+              opacity: uploadingImage ? 0.6 : 1,
+            }}
+          >
+            <ImageOutlined className={uploadingImage ? 'ch-upload-pulse' : undefined} />
+          </button>
           <textarea
             ref={inputRef}
             className="ch-input"
@@ -530,6 +595,13 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
             rows={1}
             placeholder={t('Nachricht an {name} …', { name: partner.name })}
             onChange={(e) => handleDraftChange(e.target.value)}
+            onPaste={(e) => {
+              const files = e.clipboardData?.files;
+              if (files && files.length > 0) {
+                e.preventDefault();
+                void sendImageFiles(files);
+              }
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey && !('ontouchstart' in window)) {
                 e.preventDefault();
@@ -555,6 +627,22 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           <span>{t('Ihr müsst Freunde sein, um zu chatten.')}</span>
         </div>
       )}
+
+      <AnimatePresence>
+        {lightboxUrl && (
+          <motion.div
+            className="ch-lightbox"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLightboxUrl(null)}
+            role="dialog"
+            aria-label={t('Bild')}
+          >
+            <img src={lightboxUrl} alt="" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {designOpen && (

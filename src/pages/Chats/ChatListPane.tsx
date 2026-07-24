@@ -10,6 +10,7 @@ import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
 import {
   otherUidFromPairId,
+  previewLabel,
   subscribeChatIndex,
   subscribeChatState,
   subscribeSummary,
@@ -76,7 +77,7 @@ const ChatRow = ({
           }}
         >
           {summary.lastSender === myUid && summary.lastMessage ? `${t('Du')}: ` : ''}
-          {summary.lastMessage || t('Sag hallo!')}
+          {previewLabel(summary.lastMessage) || t('Sag hallo!')}
         </div>
       </div>
       <div className="ch-row-side">

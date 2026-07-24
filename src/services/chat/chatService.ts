@@ -12,8 +12,12 @@
  * Privatsphäre: Nachrichten werden NICHT proaktiv gescannt — Moderation nur
  * über die Melden-Funktion (chatReports + Admin-Benachrichtigung).
  */
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/storage';
 import { ADMIN_UID } from '../../config/admin';
+import { prepareChatImage } from '../../lib/imageCompress';
 import { dbGet, dbRef, dbUpdate, userPath } from '../db/ref';
+import { t } from '../i18n';
 import { queuePush } from '../pushQueue';
 
 export interface ChatMessage {
@@ -22,6 +26,9 @@ export interface ChatMessage {
   text: string;
   timestamp: number;
   stickerId?: string;
+  imageUrl?: string;
+  imageWidth?: number;
+  imageHeight?: number;
 }
 
 export type OutgoingMessage =
@@ -118,6 +125,62 @@ export async function sendMessage(
   });
 }
 
+/**
+ * Bild/GIF senden: komprimieren, nach Storage laden (Dateiname = Message-ID,
+ * damit die Lösch-Crons den Storage-Pfad aus dem Message-Key ableiten können),
+ * dann die Nachricht mit der Download-URL schreiben.
+ */
+export async function sendImageMessage(
+  myUid: string,
+  friendUid: string,
+  file: File,
+  myName: string
+): Promise<void> {
+  const prepared = await prepareChatImage(file);
+  const pairId = await ensureChat(myUid, friendUid);
+  const msgId = dbRef(`chats/${pairId}/messages`).push().key;
+  if (!msgId) return;
+
+  const storageRef = firebase.storage().ref(`chat-images/${pairId}/${msgId}`);
+  await storageRef.put(prepared.blob, {
+    contentType: prepared.isGif ? 'image/gif' : 'image/webp',
+  });
+  const url: string = await storageRef.getDownloadURL();
+
+  const ts = Date.now();
+  const preview = prepared.isGif ? 'GIF' : 'Bild';
+  await dbUpdate({
+    [`chats/${pairId}/messages/${msgId}`]: {
+      s: myUid,
+      ts,
+      img: url,
+      w: prepared.width,
+      h: prepared.height,
+    },
+    [`chats/${pairId}/summary/lastMessage`]: preview,
+    [`chats/${pairId}/summary/lastMessageAt`]: ts,
+    [`chats/${pairId}/summary/lastSender`]: myUid,
+    [`chatIndex/${myUid}/${pairId}`]: ts,
+    [`chatIndex/${friendUid}/${pairId}`]: ts,
+    [userPath(myUid, 'chatState', pairId, 'lastReadAt')]: ts,
+  });
+
+  void queuePush(friendUid, {
+    title: myName,
+    body: preview,
+    titleEn: myName,
+    bodyEn: prepared.isGif ? 'GIF' : 'Image',
+    url: `/chat/${myUid}`,
+  });
+}
+
+/** Anzeige-Label für Vorschau-Tokens (lastMessage speichert DE-Quelle). */
+export function previewLabel(preview: string | undefined): string {
+  if (!preview) return '';
+  if (preview === 'Bild') return t('Bild');
+  return preview;
+}
+
 export async function markChatRead(myUid: string, pairId: string): Promise<void> {
   try {
     await dbRef(userPath(myUid, 'chatState', pairId, 'lastReadAt')).set(Date.now());
@@ -135,7 +198,7 @@ export function subscribeMessages(
   const handler = query.on('value', (snap) => {
     const val = (snap.val() || {}) as Record<
       string,
-      { s: string; t?: string; st?: string; ts: number }
+      { s: string; t?: string; st?: string; img?: string; w?: number; h?: number; ts: number }
     >;
     const list = Object.entries(val)
       .map(([id, m]) => ({
@@ -144,6 +207,9 @@ export function subscribeMessages(
         text: m.t || '',
         timestamp: m.ts,
         stickerId: m.st,
+        imageUrl: m.img,
+        imageWidth: m.w,
+        imageHeight: m.h,
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     cb(list);
@@ -260,6 +326,14 @@ export async function deleteChat(myUid: string, pairId: string): Promise<void> {
   await dbRef(userPath(myUid, 'chatState', pairId))
     .set(null)
     .catch(() => {});
+  // Bilder des Chats aus dem Storage entsorgen (DSGVO-Löschkette)
+  try {
+    const folder = firebase.storage().ref(`chat-images/${pairId}`);
+    const listing = await folder.listAll();
+    await Promise.all(listing.items.map((item) => item.delete().catch(() => {})));
+  } catch {
+    /* best-effort — der Backend-Cron räumt Reste ab */
+  }
 }
 
 /** Für die Konto-Löschung: alle Chats des Nutzers entfernen (best-effort). */
@@ -289,7 +363,15 @@ export async function reportChat(
 ): Promise<void> {
   const recent = messages.slice(-30);
   const excerpt = recent
-    .map((m) => `${m.senderId === reporter.uid ? reporter.name : reportedName}: ${m.text}`)
+    .map((m) => {
+      const who = m.senderId === reporter.uid ? reporter.name : reportedName;
+      const content = m.imageUrl
+        ? `[Bild] ${m.imageUrl}`
+        : m.stickerId
+          ? `[Sticker ${m.stickerId}]`
+          : m.text;
+      return `${who}: ${content}`;
+    })
     .join('\n')
     .slice(0, 5500);
 
