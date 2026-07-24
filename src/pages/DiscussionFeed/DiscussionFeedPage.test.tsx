@@ -40,6 +40,7 @@ vi.mock('../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 vi.mock('../../components/ui', () => ({
+  NameBadges: () => null,
   PageLayout: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   PageHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
   SkeletonListRow: () => <div data-testid="skeleton-row" />,

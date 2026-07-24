@@ -5,7 +5,8 @@ import Send from '@mui/icons-material/Send';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, NameBadges } from '../../components/ui';
+import { Dialog } from '../../components/ui';
+import { NameBadges } from '../../components/ui/NameBadges';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
@@ -35,6 +36,7 @@ import {
   subscribeChatWallpaper,
   type ChatBubbleStyle,
 } from '../../services/chat/chatAppearance';
+import { clearDeliveredChatPushes } from '../../services/pushNotifications';
 import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
 import { ChatAvatar } from './ChatAvatar';
 import { ChatComposerPicker } from './ChatComposerPicker';
@@ -139,8 +141,12 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
 
   useEffect(() => {
     if (!pairId || !myUid || messages.length === 0) return;
-    if (document.visibilityState === 'visible') void markChatRead(myUid, pairId);
-  }, [pairId, myUid, messages.length]);
+    if (document.visibilityState === 'visible') {
+      void markChatRead(myUid, pairId);
+      // Gelesen = zugestellte Pushes dieses Chats vom Sperrbildschirm räumen
+      void clearDeliveredChatPushes(friendId);
+    }
+  }, [pairId, myUid, messages.length, friendId]);
 
   useEffect(() => {
     const el = listRef.current;

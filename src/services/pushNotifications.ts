@@ -1,11 +1,21 @@
 /** Nativer Push via Capacitor — im Browser No-op; Token landet unter users/$uid/fcmTokens für den Backend-Sender. */
 import { dbRef, serverTimestamp, userPath } from './db/ref';
 
+interface DeliveredNotification {
+  id?: string;
+  tag?: string;
+  data?: { url?: string };
+}
+
 interface PushPlugin {
   requestPermissions?: () => Promise<{ receive: 'granted' | 'denied' | 'prompt' }>;
   checkPermissions?: () => Promise<{ receive: 'granted' | 'denied' | 'prompt' }>;
   register?: () => Promise<void>;
   addListener?: (event: string, handler: (data: never) => void) => Promise<unknown>;
+  getDeliveredNotifications?: () => Promise<{ notifications: DeliveredNotification[] }>;
+  removeDeliveredNotifications?: (opts: {
+    notifications: DeliveredNotification[];
+  }) => Promise<void>;
 }
 
 interface CapacitorGlobal {
@@ -115,6 +125,25 @@ export const getNativePushPermission = async (): Promise<
     return perm?.receive ?? null;
   } catch {
     return null;
+  }
+};
+
+/**
+ * Räumt zugestellte Pushes dieses Chats vom Sperrbildschirm, sobald die
+ * Nachrichten in der App gelesen wurden. Matching über den Deep-Link
+ * (data.url = /chat/$uid), damit andere Pushes unangetastet bleiben.
+ */
+export const clearDeliveredChatPushes = async (friendUid: string): Promise<void> => {
+  const entry = getPlugin();
+  if (!entry) return;
+  try {
+    const res = await entry.plugin.getDeliveredNotifications?.();
+    const mine = (res?.notifications || []).filter((n) => n.data?.url === `/chat/${friendUid}`);
+    if (mine.length > 0) {
+      await entry.plugin.removeDeliveredNotifications?.({ notifications: mine });
+    }
+  } catch {
+    /* best effort */
   }
 };
 

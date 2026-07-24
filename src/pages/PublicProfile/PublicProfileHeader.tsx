@@ -1,7 +1,8 @@
 import { Public, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { BackButton, GradientText, NameBadges } from '../../components/ui';
+import { BackButton, GradientText } from '../../components/ui';
+import { NameBadges } from '../../components/ui/NameBadges';
 import { t } from '../../services/i18n';
 import type { PublicTheme } from './usePublicProfileData';
 
