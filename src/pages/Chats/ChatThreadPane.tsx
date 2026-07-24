@@ -401,14 +401,12 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     ) : (
                       m.text
                     )}
-                    {m.last && (
-                      <span className="ch-bubble-time">
-                        {new Date(m.timestamp).toLocaleTimeString('de-DE', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </span>
-                    )}
+                    <span className="ch-bubble-time">
+                      {new Date(m.timestamp).toLocaleTimeString('de-DE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </motion.div>
                   {msgReactions.length > 0 && (
                     <motion.button
