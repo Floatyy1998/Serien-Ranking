@@ -1,9 +1,12 @@
 /* Freunde-Chat — Instagram-Klasse: Split-View auf Desktop (Liste | Thread),
    volle Breite, Glas-Look. Mobile zeigt je Route nur eine Spalte. */
 
+/* .mobile-app polstert oben schon um die Safe-Area — hier abziehen, sonst
+   ragt die Shell unten genau um die Inset-Höhe aus dem Viewport. */
 .ch-shell {
   display: flex;
-  height: 100dvh;
+  height: calc(100vh - env(safe-area-inset-top));
+  height: calc(100dvh - env(safe-area-inset-top));
   width: 100%;
   overflow: hidden;
 }
@@ -27,7 +30,7 @@
 }
 
 .ch-list-header {
-  padding: calc(14px + env(safe-area-inset-top)) 16px 10px;
+  padding: 14px 16px 10px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -247,7 +250,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--glass-border-light);
   background: var(--glass-light);
   -webkit-backdrop-filter: var(--glass-filter-lg);
@@ -299,7 +302,7 @@
 
 .ch-menu {
   position: absolute;
-  top: calc(56px + env(safe-area-inset-top));
+  top: 60px;
   right: 12px;
   z-index: 20;
   min-width: 210px;
