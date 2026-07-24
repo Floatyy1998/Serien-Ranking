@@ -11,6 +11,8 @@ export interface ChatWallpaper {
   id: string;
   name: string;
   css: string;
+  /** Gesetzt bei Pet-Szenen: nur nutzbar, wenn im Pet-System freigeschaltet. */
+  petBackgroundId?: string;
 }
 
 const GRADIENTS: ChatWallpaper[] = [
@@ -25,6 +27,7 @@ const PET_SCENES: ChatWallpaper[] = Object.values(PET_BACKGROUNDS).map((bg) => (
   id: `pet:${bg.id}`,
   name: bg.name,
   css: bg.background,
+  petBackgroundId: bg.id,
 }));
 
 export const CHAT_WALLPAPERS: ChatWallpaper[] = [...GRADIENTS, ...PET_SCENES];

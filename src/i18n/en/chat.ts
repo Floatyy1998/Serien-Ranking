@@ -58,8 +58,8 @@ const dict: Record<string, string> = {
   'Chat-Design': 'Chat design',
   Schließen: 'Close',
   'Deine Bubbles': 'Your bubbles',
-  'Dein Design sehen auch deine Freunde — es ist Teil deines Stils.':
-    'Your friends see your design too — it is part of your style.',
+  'Nur du siehst dein Design — es gilt für alle deine Chats.':
+    'Only you can see your design — it applies to all your chats.',
   'So sehen deine Nachrichten aus': 'This is what your messages look like',
   'Theme-Standard': 'Theme default',
   'Eigene Farben': 'Custom colors',
@@ -69,8 +69,9 @@ const dict: Record<string, string> = {
   Weich: 'Soft',
   Kantig: 'Sharp',
   'Chat-Hintergrund': 'Chat background',
-  'Nur du siehst den Hintergrund — pro Chat wählbar.':
-    'Only you can see the background — pick one per chat.',
+  'Nur du siehst den Hintergrund — pro Chat wählbar. Pet-Szenen schaltest du im Pet-System frei.':
+    'Only you can see the background — pick one per chat. Pet scenes are unlocked in the pet system.',
+  'Im Pet-System freischalten': 'Unlock in the pet system',
   Standard: 'Default',
   Smaragd: 'Emerald',
   Mitternacht: 'Midnight',

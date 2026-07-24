@@ -1,11 +1,11 @@
 /**
- * Chat-Erscheinungsbild.
- *
- * Bubble-Design (chatStyles/$uid): öffentlich lesbar — deine Bubbles tragen
- * dein Design auf BEIDEN Seiten (Identitäts-Modell wie das Pet).
- * Hintergrund (users/$uid/chatPrefs/$pairId/bg): nur für dich sichtbar.
+ * Chat-Erscheinungsbild — alles rein lokal (nur der Nutzer selbst sieht es):
+ * Bubble-Design unter users/$uid/chatPrefs/bubbleStyle,
+ * Hintergrund pro Chat unter users/$uid/chatPrefs/$pairId/bg.
+ * Pet-Szenen als Wallpaper sind an die im Pet-System freigeschalteten
+ * Hintergründe gekoppelt (unlockedBackgrounds, über alle Pets synchron).
  */
-import { dbRef, userPath } from '../db/ref';
+import { dbGet, dbRef, userPath } from '../db/ref';
 
 export type BubbleRadius = 'round' | 'soft' | 'sharp';
 
@@ -31,14 +31,14 @@ export function isValidBubbleStyle(value: unknown): value is ChatBubbleStyle {
 }
 
 export async function saveBubbleStyle(uid: string, style: ChatBubbleStyle | null): Promise<void> {
-  await dbRef(`chatStyles/${uid}`).set(style);
+  await dbRef(userPath(uid, 'chatPrefs', 'bubbleStyle')).set(style);
 }
 
 export function subscribeBubbleStyle(
   uid: string,
   cb: (style: ChatBubbleStyle | null) => void
 ): () => void {
-  const ref = dbRef(`chatStyles/${uid}`);
+  const ref = dbRef(userPath(uid, 'chatPrefs', 'bubbleStyle'));
   const handler = ref.on(
     'value',
     (snap) => {
@@ -56,6 +56,25 @@ export async function setChatWallpaper(
   wallpaperId: string | null
 ): Promise<void> {
   await dbRef(userPath(uid, 'chatPrefs', pairId, 'bg')).set(wallpaperId);
+}
+
+/** Union der im Pet-System freigeschalteten Hintergrund-IDs (alle Pets). */
+export async function getUnlockedPetBackgroundIds(uid: string): Promise<Set<string>> {
+  const unlocked = new Set<string>();
+  try {
+    const pets = (await dbGet(userPath(uid, 'pets'))) as Record<
+      string,
+      { unlockedBackgrounds?: Record<string, string> | string[] }
+    > | null;
+    for (const pet of Object.values(pets || {})) {
+      for (const id of Object.values(pet.unlockedBackgrounds || {})) {
+        if (typeof id === 'string') unlocked.add(id);
+      }
+    }
+  } catch {
+    /* best-effort — dann bleiben nur die Gradients wählbar */
+  }
+  return unlocked;
 }
 
 export function subscribeChatWallpaper(

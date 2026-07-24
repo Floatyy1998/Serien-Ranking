@@ -1,9 +1,14 @@
 import CloseRounded from '@mui/icons-material/CloseRounded';
+import LockRounded from '@mui/icons-material/LockRounded';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
-import type { BubbleRadius, ChatBubbleStyle } from '../../services/chat/chatAppearance';
+import {
+  getUnlockedPetBackgroundIds,
+  type BubbleRadius,
+  type ChatBubbleStyle,
+} from '../../services/chat/chatAppearance';
 import { BUBBLE_PRESETS, bubbleTextColor, CHAT_WALLPAPERS, RADIUS_PX } from './chatWallpapers';
 
 const RADIUS_OPTIONS: Array<{ id: BubbleRadius; label: string }> = [
@@ -13,12 +18,14 @@ const RADIUS_OPTIONS: Array<{ id: BubbleRadius; label: string }> = [
 ];
 
 export const ChatDesignSheet = ({
+  myUid,
   myStyle,
   wallpaperId,
   onSaveStyle,
   onSelectWallpaper,
   onClose,
 }: {
+  myUid: string;
   myStyle: ChatBubbleStyle | null;
   wallpaperId: string | null;
   onSaveStyle: (style: ChatBubbleStyle | null) => void;
@@ -26,6 +33,17 @@ export const ChatDesignSheet = ({
   onClose: () => void;
 }) => {
   const { currentTheme } = useTheme();
+  const [unlocked, setUnlocked] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void getUnlockedPetBackgroundIds(myUid).then((ids) => {
+      if (alive) setUnlocked(ids);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [myUid]);
   const themeDefault: ChatBubbleStyle = {
     c1: currentTheme.primary,
     c2: currentTheme.secondary,
@@ -66,7 +84,7 @@ export const ChatDesignSheet = ({
         <div className="ch-design-scroll">
           <h3 style={{ color: currentTheme.text.muted }}>{t('Deine Bubbles')}</h3>
           <p className="ch-design-hint" style={{ color: currentTheme.text.muted }}>
-            {t('Dein Design sehen auch deine Freunde — es ist Teil deines Stils.')}
+            {t('Nur du siehst dein Design — es gilt für alle deine Chats.')}
           </p>
 
           <div className="ch-design-preview">
@@ -143,7 +161,9 @@ export const ChatDesignSheet = ({
 
           <h3 style={{ color: currentTheme.text.muted }}>{t('Chat-Hintergrund')}</h3>
           <p className="ch-design-hint" style={{ color: currentTheme.text.muted }}>
-            {t('Nur du siehst den Hintergrund — pro Chat wählbar.')}
+            {t(
+              'Nur du siehst den Hintergrund — pro Chat wählbar. Pet-Szenen schaltest du im Pet-System frei.'
+            )}
           </p>
 
           <div className="ch-design-walls">
@@ -154,16 +174,22 @@ export const ChatDesignSheet = ({
             >
               <span style={{ color: currentTheme.text.muted }}>{t('Standard')}</span>
             </button>
-            {CHAT_WALLPAPERS.map((w) => (
-              <button
-                key={w.id}
-                className={`ch-design-wall${wallpaperId === w.id ? ' is-active' : ''}`}
-                style={{ background: w.css }}
-                onClick={() => onSelectWallpaper(w.id)}
-                title={w.name}
-                aria-label={w.name}
-              />
-            ))}
+            {CHAT_WALLPAPERS.map((w) => {
+              const locked = !!w.petBackgroundId && !!unlocked && !unlocked.has(w.petBackgroundId);
+              return (
+                <button
+                  key={w.id}
+                  className={`ch-design-wall${wallpaperId === w.id ? ' is-active' : ''}${locked ? ' is-locked' : ''}`}
+                  style={{ background: w.css }}
+                  onClick={() => !locked && onSelectWallpaper(w.id)}
+                  disabled={locked}
+                  title={locked ? t('Im Pet-System freischalten') : w.name}
+                  aria-label={locked ? `${w.name} — ${t('Im Pet-System freischalten')}` : w.name}
+                >
+                  {locked && <LockRounded className="ch-design-lock" />}
+                </button>
+              );
+            })}
           </div>
         </div>
       </motion.div>

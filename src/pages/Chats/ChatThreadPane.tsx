@@ -78,7 +78,6 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [chatReady, setChatReady] = useState(false);
   const [designOpen, setDesignOpen] = useState(false);
   const [myStyle, setMyStyle] = useState<ChatBubbleStyle | null>(null);
-  const [partnerStyle, setPartnerStyle] = useState<ChatBubbleStyle | null>(null);
   const [wallpaperId, setWallpaperId] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -120,13 +119,8 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
 
   useEffect(() => {
     if (!myUid) return;
-    const offMine = subscribeBubbleStyle(myUid, setMyStyle);
-    const offTheirs = subscribeBubbleStyle(friendId, setPartnerStyle);
-    return () => {
-      offMine();
-      offTheirs();
-    };
-  }, [myUid, friendId]);
+    return subscribeBubbleStyle(myUid, setMyStyle);
+  }, [myUid]);
 
   useEffect(() => {
     if (!myUid || !pairId) return;
@@ -431,7 +425,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                     onDoubleClick={() => toggleHeart(m.id)}
                     style={(() => {
                       if (m.stickerId) return undefined;
-                      const s = own ? myStyle : partnerStyle;
+                      const s = own ? myStyle : null;
                       if (s) {
                         return {
                           background: `linear-gradient(135deg, ${s.c1}, ${s.c2})`,
@@ -551,6 +545,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
       <AnimatePresence>
         {designOpen && (
           <ChatDesignSheet
+            myUid={myUid}
             myStyle={myStyle}
             wallpaperId={wallpaperId}
             onClose={() => setDesignOpen(false)}
