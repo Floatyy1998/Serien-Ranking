@@ -56,7 +56,12 @@ export function otherUidFromPairId(pairId: string, myUid: string): string | null
  */
 export async function ensureChat(myUid: string, friendUid: string): Promise<string> {
   const pairId = chatPairId(myUid, friendUid);
-  const existing = await dbGet(`chats/${pairId}/participants`);
+  let existing: unknown = null;
+  try {
+    existing = await dbGet(`chats/${pairId}/participants`);
+  } catch {
+    // Lese-Rule verlangt existierende participants — Fehler heißt: Chat gibt es noch nicht
+  }
   if (!existing) {
     try {
       await dbRef(`chats/${pairId}/participants`).set({ [myUid]: true, [friendUid]: true });
