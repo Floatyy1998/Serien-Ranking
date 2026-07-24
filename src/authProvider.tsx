@@ -7,7 +7,6 @@ import { AuthContext } from './contexts/AuthContext';
 import { getOfflineBadgeSystem } from './features/badges/offlineBadgeSystem';
 import { syncUserSearchIndex } from './services/firebase/userSearchIndex';
 import { dbRef, paths, serverTimestamp } from './services/db/ref';
-import { isEnglish } from './services/i18n';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<firebase.User | null>(null);
@@ -203,19 +202,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 await userRef.update(userData);
                 setOnboardingComplete(false);
 
-                // Willkommens-Notification beim Erstlogin (Sprache = App-Sprache).
-                // Fester Key statt push(): onAuthStateChanged kann beim Erstlogin
+                // Willkommens-Notifications beim Erstlogin. Beide Sprachen
+                // speichern — die Anzeige wählt nach der Leser-Sprache, damit
+                // ein späterer Sprachwechsel die Texte nicht veraltet.
+                // Feste Keys statt push(): onAuthStateChanged kann beim Erstlogin
                 // doppelt feuern, bevor der Frisch-Marker sichtbar ist — mit
                 // festem Key überschreibt der zweite Lauf statt zu duplizieren.
                 try {
                   void userRef.child('notifications/welcome').set({
                     type: 'welcome',
-                    title: isEnglish() ? 'Welcome to TV-Rank!' : 'Willkommen bei TV-Rank!',
-                    message: isEnglish()
-                      ? 'Great to have you here — have fun tracking your series and movies! If you run into any problems or have questions, just reach out via the little red bug icon. Thanks for being part of TV-Rank!'
-                      : 'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',
+                    title: 'Willkommen bei TV-Rank!',
+                    message:
+                      'Schön, dass du da bist — viel Spaß beim Tracken deiner Serien und Filme! Wenn etwas nicht funktioniert oder du Fragen hast, melde dich einfach über das kleine rote Käfer-Symbol. Danke, dass du bei TV-Rank dabei bist!',
+                    titleEn: 'Welcome to TV-Rank!',
+                    messageEn:
+                      'Great to have you here — have fun tracking your series and movies! If you run into any problems or have questions, just reach out via the little red bug icon. Thanks for being part of TV-Rank!',
                     timestamp: Date.now(),
                     read: false,
+                  });
+                  // Hinweis auf Personalisierung (Theme-Farben + Homepage-Layout
+                  // unter „Mehr"); 1s älter, damit die Willkommens-Nachricht im
+                  // Feed oben steht.
+                  void userRef.child('notifications/customizeHint').set({
+                    type: 'welcome',
+                    title: 'Mach TV-Rank zu deinem',
+                    message:
+                      'Wusstest du? Unter „Mehr" kannst du die Theme-Farben komplett frei anpassen und deine Startseite im Layout-Editor selbst zusammenstellen — ganz nach deinem Geschmack.',
+                    titleEn: 'Make TV-Rank yours',
+                    messageEn:
+                      'Did you know? Under "More" you can freely customize the theme colors and arrange your homepage in the layout editor — entirely to your taste.',
+                    timestamp: Date.now() - 1000,
+                    read: false,
+                    data: { navigateTo: '/profile' },
                   });
                 } catch {
                   /* best-effort */

@@ -370,6 +370,10 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           navigateTo = `/${n.data.itemType}/${n.data.itemId}`;
         }
       }
+      // Direktes Ziel (z. B. Personalisierungs-Hinweis → „Mehr"-Hub)
+      if (!navigateTo && typeof n.data?.navigateTo === 'string') {
+        navigateTo = n.data.navigateTo;
+      }
 
       const isBugTicket = n.type === 'bug_ticket_reply' || n.type === 'bug_ticket_status';
       const isPet = n.type === 'accessory_drop';
