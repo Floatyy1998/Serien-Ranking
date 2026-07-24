@@ -254,6 +254,10 @@ export const RegisterPage = () => {
                   required
                   autoComplete="username"
                   error={!!error}
+                  helperText={t(
+                    'So heißt du in der App — andere Nutzer können diesen Namen sehen.'
+                  )}
+                  FormHelperTextProps={{ sx: { color: 'rgba(255, 255, 255, 0.5)', mx: 0 } }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">

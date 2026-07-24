@@ -157,6 +157,18 @@ export const WelcomeStep: React.FC<Props> = ({
                     placeholder={t('Dein Name')}
                     autoComplete="nickname"
                   />
+                  <span
+                    className="ob-mono"
+                    style={{
+                      color: 'var(--ob-text-mute)',
+                      fontSize: 11,
+                      maxWidth: '36ch',
+                      textTransform: 'none',
+                      letterSpacing: '0.04em',
+                    }}
+                  >
+                    {t('So heißt du in der App — andere Nutzer können diesen Namen sehen.')}
+                  </span>
                 </motion.div>
               ) : (
                 <motion.div

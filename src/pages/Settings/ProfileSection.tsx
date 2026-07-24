@@ -123,6 +123,17 @@ export const ProfileSection = memo(
                   >
                     {saving ? '...' : <Check style={{ fontSize: '16px' }} />}
                   </motion.button>
+                  <span
+                    style={{
+                      display: 'block',
+                      width: '100%',
+                      fontSize: 11,
+                      color: currentTheme.text.muted,
+                      marginTop: 4,
+                    }}
+                  >
+                    {t('So heißt du in der App — andere Nutzer können diesen Namen sehen.')}
+                  </span>
                 </div>
               ) : (
                 <span className="settings-field-value" style={{ color: currentTheme.text.primary }}>

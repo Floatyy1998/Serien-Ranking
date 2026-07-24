@@ -3,6 +3,7 @@ import { useMemo } from 'react';
 import { EvolvingPixelPet } from '../../../components/pet';
 import { t } from '../../../services/i18n';
 import type { Pet } from '../../../types/pet.types';
+import { PET_COLORS } from '../../../types/pet.types';
 
 interface Props {
   name: string;
@@ -13,18 +14,23 @@ interface Props {
   onBack: () => void;
 }
 
-const TYPES: { type: Pet['type']; label: string }[] = [
-  { type: 'cat', label: 'Katze' },
-  { type: 'dog', label: 'Hund' },
-  { type: 'fox', label: 'Fuchs' },
-  { type: 'rabbit', label: 'Hase' },
-  { type: 'panda', label: 'Panda' },
-  { type: 'bird', label: 'Vogel' },
-  { type: 'dragon', label: 'Drache' },
-  { type: 'owl', label: 'Eule' },
-  { type: 'penguin', label: 'Pinguin' },
-  { type: 'axolotl', label: 'Axolotl' },
+// Signaturfarbe pro Gestalt (Key aus PET_COLORS) — die Auswahl wirkt dadurch
+// wie ein Ensemble statt zehnmal dasselbe Pet in Teal.
+const TYPES: { type: Pet['type']; label: string; color: string }[] = [
+  { type: 'cat', label: 'Katze', color: 'orange' },
+  { type: 'dog', label: 'Hund', color: 'gelb' },
+  { type: 'fox', label: 'Fuchs', color: 'rot' },
+  { type: 'rabbit', label: 'Hase', color: 'rosa' },
+  { type: 'panda', label: 'Panda', color: 'gruen' },
+  { type: 'bird', label: 'Vogel', color: 'tuerkis' },
+  { type: 'dragon', label: 'Drache', color: 'lila' },
+  { type: 'owl', label: 'Eule', color: 'orange' },
+  { type: 'penguin', label: 'Pinguin', color: 'blau' },
+  { type: 'axolotl', label: 'Axolotl', color: 'rosa' },
 ];
+
+const typeColorKey = (type: Pet['type']): string =>
+  TYPES.find((x) => x.type === type)?.color ?? 'blau';
 
 function previewPet(type: Pet['type'], name: string): Pet {
   return {
@@ -32,7 +38,7 @@ function previewPet(type: Pet['type'], name: string): Pet {
     userId: 'preview',
     name: name || 'Buddy',
     type,
-    color: 'grau',
+    color: typeColorKey(type),
     level: 3,
     experience: 0,
     hunger: 10,
@@ -55,6 +61,8 @@ export const PetHatchStep: React.FC<Props> = ({
 }) => {
   const heroPet = useMemo(() => previewPet(type, name), [type, name]);
   const nameEmpty = name.trim().length === 0;
+  const heroHex = PET_COLORS[typeColorKey(type)] ?? PET_COLORS.blau;
+  const heroLabel = TYPES.find((x) => x.type === type)?.label ?? '';
 
   return (
     <motion.div
@@ -83,26 +91,43 @@ export const PetHatchStep: React.FC<Props> = ({
         </span>
       </div>
 
-      {/* Hero: echtes Pixel-Pet auf einer Lichtbühne */}
+      {/* Hero: echtes Pixel-Pet auf einer Lichtbühne mit Farb-Aura der Gestalt */}
       <div
         style={{
           position: 'relative',
           display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-          minHeight: 176,
+          flexDirection: 'column',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          minHeight: 208,
         }}
       >
+        <motion.div
+          aria-hidden
+          key={`glow-${type}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          style={{
+            position: 'absolute',
+            bottom: 18,
+            width: 260,
+            height: 200,
+            borderRadius: '50%',
+            background: `radial-gradient(ellipse at 50% 75%, ${heroHex}55 0%, ${heroHex}18 45%, transparent 72%)`,
+            filter: 'blur(10px)',
+            pointerEvents: 'none',
+          }}
+        />
         <div
           aria-hidden
           style={{
             position: 'absolute',
-            bottom: 6,
-            width: 190,
+            bottom: 30,
+            width: 200,
             height: 34,
             borderRadius: '50%',
-            background:
-              'radial-gradient(ellipse, color-mix(in srgb, var(--ob-paper) 45%, transparent) 0%, transparent 70%)',
+            background: `radial-gradient(ellipse, ${heroHex}66 0%, transparent 70%)`,
             filter: 'blur(6px)',
           }}
         />
@@ -111,9 +136,30 @@ export const PetHatchStep: React.FC<Props> = ({
           initial={{ scale: 0.7, y: 14, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+          style={{ position: 'relative', zIndex: 1 }}
         >
-          <EvolvingPixelPet pet={heroPet} size={150} animated />
+          <EvolvingPixelPet pet={heroPet} size={170} animated />
         </motion.div>
+        <motion.span
+          key={`tag-${type}-${nameEmpty}`}
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="ob-mono"
+          style={{
+            position: 'relative',
+            zIndex: 1,
+            marginTop: 2,
+            padding: '4px 12px',
+            borderRadius: 999,
+            border: `1px solid ${heroHex}88`,
+            background: `color-mix(in srgb, ${heroHex} 16%, var(--ob-stage-2))`,
+            color: 'var(--ob-paper)',
+            fontSize: 11,
+          }}
+        >
+          {nameEmpty ? t(heroLabel) : `${name.trim()} · ${t(heroLabel)}`}
+        </motion.span>
       </div>
 
       <div>
@@ -160,6 +206,7 @@ export const PetHatchStep: React.FC<Props> = ({
         <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 6 }}>
           {TYPES.map((x) => {
             const active = type === x.type;
+            const hex = PET_COLORS[x.color] ?? PET_COLORS.blau;
             return (
               <button
                 key={x.type}
@@ -169,24 +216,33 @@ export const PetHatchStep: React.FC<Props> = ({
                 aria-pressed={active}
                 style={{
                   flexShrink: 0,
-                  width: 74,
-                  height: 74,
+                  width: 84,
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  gap: 4,
+                  padding: '10px 0 8px',
                   borderRadius: 16,
                   cursor: 'pointer',
                   background: active
-                    ? 'color-mix(in srgb, var(--ob-paper) 14%, var(--ob-stage-2))'
+                    ? `color-mix(in srgb, ${hex} 18%, var(--ob-stage-2))`
                     : 'var(--ob-stage-2)',
-                  border: `1px solid ${active ? 'var(--ob-paper)' : 'var(--ob-line)'}`,
-                  boxShadow: active
-                    ? '0 10px 30px color-mix(in srgb, var(--ob-paper) 22%, transparent)'
-                    : 'none',
+                  border: `1px solid ${active ? hex : 'var(--ob-line)'}`,
+                  boxShadow: active ? `0 10px 30px ${hex}44` : 'none',
                   transition: 'border-color 0.25s, box-shadow 0.25s, background 0.25s',
                 }}
               >
-                <EvolvingPixelPet pet={previewPet(x.type, '')} size={52} animated={false} />
+                <EvolvingPixelPet pet={previewPet(x.type, '')} size={56} animated={active} />
+                <span
+                  className="ob-mono"
+                  style={{
+                    fontSize: 9,
+                    color: active ? 'var(--ob-paper)' : 'var(--ob-text-mute)',
+                  }}
+                >
+                  {t(x.label)}
+                </span>
               </button>
             );
           })}

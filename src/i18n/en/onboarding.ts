@@ -88,6 +88,8 @@ const dict: Record<string, string> = {
   '01 — Kuration': '01 — Curation',
   'Wie dürfen wir dich nennen?': 'What should we call you?',
   'Dein Name': 'Your name',
+  'So heißt du in der App — andere Nutzer können diesen Namen sehen.':
+    'This is your name in the app — other users can see it.',
   'Willkommen, {name}.': 'Welcome, {name}.',
   'Was läuft': 'What are you',
   'bei dir?': 'watching?',
