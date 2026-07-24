@@ -17,6 +17,7 @@ export interface RecommendationCardData {
   mediaPoster?: string;
   mediaBackdrop?: string;
   senderName: string;
+  senderUid?: string;
   senderPhotoURL?: string;
   message?: string;
 }
@@ -484,6 +485,7 @@ export function useUnifiedNotifications(): UseUnifiedNotificationsReturn {
           mediaPoster: rec.mediaPoster,
           mediaBackdrop: rec.mediaBackdrop,
           senderName: rec.senderName,
+          senderUid: rec.senderUid,
           senderPhotoURL: rec.senderPhotoURL,
           message: rec.message,
         },

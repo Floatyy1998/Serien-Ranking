@@ -7,6 +7,7 @@
 import PersonRounded from '@mui/icons-material/PersonRounded';
 import { motion } from 'framer-motion';
 import { useMemo } from 'react';
+import { NameBadges } from '../../components/ui/NameBadges';
 import type { FriendActivity } from '../../types/Friend';
 import { tapScaleTight } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -92,6 +93,7 @@ export const ActiveFriendsRow = ({
             </span>
             <span className="activity-pulse-name" style={{ color: theme.text.muted }}>
               {user.name.split(' ')[0]}
+              <NameBadges uid={userId} compact />
             </span>
           </motion.button>
         );

@@ -88,6 +88,7 @@ vi.mock('framer-motion', async () => {
   };
 });
 vi.mock('../../components/ui', () => ({
+  NameBadges: () => null,
   EmptyState: ({ title }: { title: string }) => <div>{title}</div>,
   Skeleton: () => <div />,
   SkeletonPosterRow: () => <div />,

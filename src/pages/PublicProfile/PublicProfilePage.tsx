@@ -113,6 +113,7 @@ export const PublicProfilePage: React.FC = () => {
     loading,
     profileExists,
     profileName,
+    profileUserId,
     averageRating,
     itemsWithRatingCount,
     activeTab,
@@ -138,6 +139,7 @@ export const PublicProfilePage: React.FC = () => {
       <div ref={scrollRef}>
         <PublicProfileHeader
           profileName={profileName}
+          profileUid={profileUserId}
           itemsWithRatingCount={itemsWithRatingCount}
           averageRating={averageRating}
           currentTheme={currentTheme}

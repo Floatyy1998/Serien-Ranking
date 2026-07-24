@@ -11,6 +11,7 @@ import { ImagePreview } from './ImagePreview';
 import { RepliesSection } from './RepliesSection';
 import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
+import { NameBadges } from '../ui/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
@@ -136,6 +137,7 @@ const DiscussionItemInner: React.FC<{
               }}
             >
               {discussion.username}
+              <NameBadges uid={discussion.userId} />
             </button>
             <span style={{ fontSize: '12px', color: currentTheme.text.muted }}>
               {formatRelativeTime(discussion.createdAt)}

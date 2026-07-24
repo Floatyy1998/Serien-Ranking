@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { NameBadges } from '../../components/ui/NameBadges';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
 import { t } from '../../services/i18n';
@@ -112,6 +113,7 @@ export const PodiumSection = React.memo(function PodiumSection({
               }}
             >
               {entry.isCurrentUser ? t('Du') : entry.displayName.split(' ')[0]}
+              <NameBadges uid={entry.uid} compact />
             </span>
 
             {/* Podium block */}

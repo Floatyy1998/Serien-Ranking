@@ -2,6 +2,7 @@ import { Cancel, Person, PlayCircle, Send } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { NameBadges } from '../../../components/ui/NameBadges';
 import { getImageUrl } from '../../../utils/imageUrl';
 import { formatNotificationTime, type UnifiedNotification } from '../useUnifiedNotifications';
 import { tapScale } from '../../../lib/motion';
@@ -100,6 +101,7 @@ export const RecommendationCard = React.memo(function RecommendationCard({
               }}
             >
               {data.senderName}
+              <NameBadges uid={data.senderUid} />
             </div>
             <div
               style={{

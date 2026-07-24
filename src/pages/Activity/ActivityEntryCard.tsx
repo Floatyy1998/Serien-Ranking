@@ -10,6 +10,7 @@ import StarRounded from '@mui/icons-material/StarRounded';
 import TvRounded from '@mui/icons-material/TvRounded';
 import { motion } from 'framer-motion';
 import React from 'react';
+import { NameBadges } from '../../components/ui/NameBadges';
 import type { FriendActivity } from '../../types/Friend';
 import { isPlaceholderUrl } from '../../utils/imageUrl';
 import { t } from '../../services/i18n';
@@ -168,6 +169,7 @@ export const ActivityEntryCard = React.memo(
               }}
             >
               {userName}
+              <NameBadges uid={activity.userId} compact />
             </span>
             {timeLabel && (
               <span

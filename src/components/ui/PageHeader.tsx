@@ -12,6 +12,8 @@ interface PageHeaderProps {
   gradientTo?: string;
   subtitle?: string;
   icon?: React.ReactNode;
+  /** Kleines Element direkt hinter dem Titel (z. B. NameBadges) */
+  titleBadge?: React.ReactNode;
   actions?: React.ReactNode;
   sticky?: boolean;
   showBack?: boolean;
@@ -24,6 +26,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   gradientTo,
   subtitle,
   icon,
+  titleBadge,
   actions,
   sticky = true,
   showBack = true,
@@ -100,6 +103,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           >
             {icon}
             {title}
+            {titleBadge}
           </GradientText>
           {subtitle && (
             <p

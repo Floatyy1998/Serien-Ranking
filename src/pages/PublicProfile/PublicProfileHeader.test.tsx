@@ -24,6 +24,7 @@ vi.mock('@mui/icons-material', () => {
 vi.mock('../../components/ui', () => ({
   BackButton: () => <button>Zurück</button>,
   GradientText: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+  NameBadges: () => null,
 }));
 
 import { PublicProfileHeader } from './PublicProfileHeader';

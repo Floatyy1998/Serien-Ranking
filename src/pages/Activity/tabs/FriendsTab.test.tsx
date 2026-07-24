@@ -59,6 +59,7 @@ vi.mock('../../../contexts/ThemeContext', () => {
   return { useTheme: () => ({ currentTheme: make() }) };
 });
 vi.mock('../../../components/ui', () => ({
+  NameBadges: () => null,
   EmptyState: ({
     title,
     action,

@@ -5,7 +5,7 @@ import Send from '@mui/icons-material/Send';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog } from '../../components/ui';
+import { Dialog, NameBadges } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { hapticTap } from '../../lib/haptics';
@@ -337,7 +337,10 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           className="ch-thread-title"
           onClick={() => canChat && navigate(`/profile/${friendId}`)}
         >
-          <strong style={{ color: currentTheme.text.primary }}>{partner.name}</strong>
+          <strong style={{ color: currentTheme.text.primary }}>
+            {partner.name}
+            <NameBadges uid={friendId} />
+          </strong>
           <span style={{ color: partner.isOnline ? '#22c55e' : currentTheme.text.muted }}>
             {otherTyping
               ? t('schreibt …')

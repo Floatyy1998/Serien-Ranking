@@ -2,7 +2,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import ForumOutlined from '@mui/icons-material/ForumOutlined';
 import { motion } from 'framer-motion';
 import { useEffect, useMemo, useState } from 'react';
-import { BackButton } from '../../components/ui';
+import { BackButton, NameBadges } from '../../components/ui';
 import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
@@ -65,6 +65,7 @@ const ChatRow = ({
       <div className="ch-row-body">
         <div className="ch-row-name" style={{ color: currentTheme.text.primary }}>
           {name}
+          <NameBadges uid={otherUid} />
         </div>
         <div
           className="ch-row-preview"
@@ -99,6 +100,7 @@ const FriendRow = ({ friend, onOpen }: { friend: Friend; onOpen: (uid: string) =
       <div className="ch-row-body">
         <div className="ch-row-name" style={{ color: currentTheme.text.primary }}>
           {name}
+          <NameBadges uid={friend.uid} />
         </div>
         <div className="ch-row-preview" style={{ color: currentTheme.text.muted }}>
           {friend.isOnline ? t('Gerade online') : t('Neuen Chat starten')}

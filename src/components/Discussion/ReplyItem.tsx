@@ -8,6 +8,7 @@ import type { DiscussionReply } from '../../types/Discussion';
 import { ImagePreview } from './ImagePreview';
 import { SpoilerReveal } from '../ui/SpoilerReveal';
 import { UserAvatar } from '../ui/UserAvatar';
+import { NameBadges } from '../ui/NameBadges';
 import { extractImageUrls, formatRelativeTime } from './utils';
 import { t } from '../../services/i18n';
 import { useCommentTranslation } from '../../hooks/useCommentTranslation';
@@ -125,6 +126,7 @@ const ReplyItemInner: React.FC<{
             }}
           >
             {reply.username}
+            <NameBadges uid={reply.userId} />
           </button>
           <span style={{ fontSize: '11px', color: currentTheme.text.muted }}>
             {formatRelativeTime(reply.createdAt)}

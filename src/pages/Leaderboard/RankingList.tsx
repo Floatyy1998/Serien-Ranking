@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { NameBadges } from '../../components/ui/NameBadges';
 import type { LeaderboardCategory, LeaderboardEntry } from '../../types/Leaderboard';
 import { formatValue } from './leaderboardUtils';
 import { t } from '../../services/i18n';
@@ -83,6 +84,7 @@ export const RankingList = React.memo(function RankingList({
                 }}
               >
                 {entry.isCurrentUser ? t('Du') : entry.displayName}
+                <NameBadges uid={entry.uid} />
               </span>
               {entry.username && !entry.isCurrentUser && (
                 <span className="lb-rank-username" style={{ color: currentTheme.text.muted }}>

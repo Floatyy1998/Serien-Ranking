@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useDeviceType } from '../../hooks/useDeviceType';
-import { PageLayout, PageHeader, SkeletonListRow, EmptyState } from '../../components/ui';
+import {
+  PageLayout,
+  PageHeader,
+  SkeletonListRow,
+  EmptyState,
+  NameBadges,
+} from '../../components/ui';
 import type { FeedFilterType } from '../../hooks/useDiscussionFeed';
 import { useDiscussionFeed } from '../../hooks/useDiscussionFeed';
 import { formatRelativeTime } from '../../components/Discussion/utils';
@@ -112,6 +118,7 @@ const FeedCard: React.FC<{
           </div>
           <span style={{ fontSize: '14px', fontWeight: 700, color: currentTheme.text.primary }}>
             {entry.username}
+            <NameBadges uid={entry.userId} />
           </span>
           <span style={{ fontSize: '13px', color: currentTheme.text.muted }}>{actionText}</span>
         </div>

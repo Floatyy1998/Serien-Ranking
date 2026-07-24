@@ -16,6 +16,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { dbGet } from '../../services/db/ref';
 import {
   EmptyState,
+  NameBadges,
   Skeleton,
   SkeletonPosterRow,
   PageHeader,
@@ -225,6 +226,7 @@ export const FriendProfilePage = memo(() => {
         {/* Header */}
         <PageHeader
           title={friendName}
+          titleBadge={<NameBadges uid={friendId} />}
           sticky={false}
           subtitle={t('\u00D8 {avg} | {n} bewertet', {
             avg: averageRating.toFixed(1),

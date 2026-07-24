@@ -25,6 +25,7 @@ export { Dialog } from './Dialog';
 export { HorizontalScrollContainer } from './HorizontalScrollContainer';
 export { QuickFilter } from './QuickFilter';
 export { BackButton } from './BackButton';
+export { NameBadges } from './NameBadges';
 export { NavEscapeButtons } from './NavEscapeButtons';
 export { PageLayout } from './PageLayout';
 export { PageHeader } from './PageHeader';

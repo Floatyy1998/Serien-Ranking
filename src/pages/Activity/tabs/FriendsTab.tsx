@@ -8,7 +8,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { t } from '../../../services/i18n';
-import { EmptyState } from '../../../components/ui';
+import { EmptyState, NameBadges } from '../../../components/ui';
 import type { FirebaseUserProfile } from '../types';
 import type { Friend } from '../../../types/Friend';
 import { tapScaleSmall, tapScaleTight } from '../../../lib/motion';
@@ -214,6 +214,7 @@ export const FriendsTab = ({
                   }}
                 >
                   {displayName}
+                  <NameBadges uid={friend.uid} />
                 </h3>
                 <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
                   {username ? `@${username}` : isOnline ? t('Online') : t('Freund')}

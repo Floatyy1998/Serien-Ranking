@@ -6,7 +6,7 @@ import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import { motion } from 'framer-motion';
 import { useState, type ReactNode } from 'react';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { EmptyState } from '../../../components/ui';
+import { EmptyState, NameBadges } from '../../../components/ui';
 import { showUndoToast } from '../../../lib/toast';
 import { t } from '../../../services/i18n';
 import { useActivityGrouping } from '../useActivityGrouping';
@@ -160,6 +160,7 @@ export const RequestsTab = ({
                       }}
                     >
                       {name}
+                      <NameBadges uid={request.fromUserId} />
                     </h3>
                     <p style={{ fontSize: '13px', color: currentTheme.text.muted, margin: 0 }}>
                       {t('möchte dein Freund sein')} ·{' '}

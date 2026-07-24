@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { NameBadges } from '../../components/ui/NameBadges';
 import { t } from '../../services/i18n';
 import type { FriendSeriesProgress } from './useFriendsSeriesProgress';
 
@@ -147,6 +148,7 @@ export const FriendsProgressStrip = memo(function FriendsProgressStrip({
                         style={{ color: currentTheme.text.primary }}
                       >
                         {entry.displayName}
+                        <NameBadges uid={entry.uid} />
                       </div>
                       <div
                         className="friend-progress-status"

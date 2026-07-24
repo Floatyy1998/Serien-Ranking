@@ -2,6 +2,7 @@ import { EmojiEvents } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import React from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
+import { NameBadges } from '../../components/ui/NameBadges';
 import type { MonthlyTrophy } from '../../types/Leaderboard';
 import { t } from '../../services/i18n';
 
@@ -179,6 +180,7 @@ export const TrophyHistory = React.memo(function TrophyHistory({
                       }}
                     >
                       {entry.uid === currentUserId ? t('Du') : entry.displayName}
+                      <NameBadges uid={entry.uid} compact />
                     </span>
 
                     <span

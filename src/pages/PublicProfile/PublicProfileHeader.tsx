@@ -1,19 +1,20 @@
 import { Public, Star } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo } from 'react';
-import { BackButton, GradientText } from '../../components/ui';
+import { BackButton, GradientText, NameBadges } from '../../components/ui';
 import { t } from '../../services/i18n';
 import type { PublicTheme } from './usePublicProfileData';
 
 interface PublicProfileHeaderProps {
   profileName: string;
+  profileUid?: string | null;
   itemsWithRatingCount: number;
   averageRating: number;
   currentTheme: PublicTheme;
 }
 
 export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
-  ({ profileName, itemsWithRatingCount, averageRating, currentTheme }) => (
+  ({ profileName, profileUid, itemsWithRatingCount, averageRating, currentTheme }) => (
     <motion.header
       className="pp-header"
       initial={{ y: -20, opacity: 0 }}
@@ -36,6 +37,7 @@ export const PublicProfileHeader = memo<PublicProfileHeaderProps>(
             }}
           >
             {profileName}
+            <NameBadges uid={profileUid} />
           </GradientText>
           <div className="pp-header__meta" style={{ color: currentTheme.text.secondary }}>
             <span className="pp-header__meta-item">

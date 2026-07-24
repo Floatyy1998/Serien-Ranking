@@ -27,6 +27,7 @@ export function usePublicProfileData() {
 
   const [loading, setLoading] = useState(true);
   const [profileName, setProfileName] = useState('');
+  const [profileUserId, setProfileUserId] = useState<string | null>(null);
   const [profileSeries, setProfileSeries] = useState<PublicItem[]>([]);
   const [profileMovies, setProfileMovies] = useState<PublicItem[]>([]);
   const [activeTab, setActiveTab] = useState<'series' | 'movies'>('series');
@@ -76,6 +77,7 @@ export function usePublicProfileData() {
           return;
         }
         setProfileName(usernameSnap.val() || displayNameSnap.val() || t('Unbekannt'));
+        setProfileUserId(foundUserId);
 
         const series = seriesSnapshot.val();
         const catalogSeries: Record<string, unknown> = (staticSeriesCatalog || {}) as Record<
@@ -290,6 +292,7 @@ export function usePublicProfileData() {
     profileExists,
     /* profile info */
     profileName,
+    profileUserId,
     averageRating,
     itemsWithRatingCount,
     /* tab */
