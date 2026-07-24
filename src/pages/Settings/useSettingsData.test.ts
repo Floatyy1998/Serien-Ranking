@@ -58,6 +58,9 @@ vi.mock('react-router-dom', () => ({ useNavigate: () => navSpy }));
 const analytics = vi.hoisted(() => ({ trackLogout: vi.fn() }));
 vi.mock('../../services/firebase/analytics', () => ({ trackLogout: analytics.trackLogout }));
 
+const toast = vi.hoisted(() => ({ showToast: vi.fn() }));
+vi.mock('../../lib/toast', () => ({ showToast: toast.showToast }));
+
 const searchIndex = vi.hoisted(() => ({ syncUserSearchIndex: vi.fn(async () => {}) }));
 vi.mock('../../services/firebase/userSearchIndex', () => ({
   syncUserSearchIndex: searchIndex.syncUserSearchIndex,
@@ -143,7 +146,7 @@ describe('useSettingsData – actions', () => {
       displayName: 'Neuer Name',
       username: 'Neuer Name',
     });
-    expect(result.current.snackbar.open).toBe(true);
+    expect(toast.showToast).toHaveBeenCalledWith('Anzeigename gespeichert!', 3000);
   });
 
   it('handleLogout meldet ab und navigiert bei Bestätigung', async () => {

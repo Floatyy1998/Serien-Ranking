@@ -1,11 +1,9 @@
-import Check from '@mui/icons-material/Check';
-import { Dialog } from '../../components/ui';
+import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { calculateSeriesMetrics } from '../../lib/episode/seriesMetrics';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { t } from '../../services/i18n';
 
-import type { DynamicTheme } from '../../theme/dynamicTheme';
 import type { Series } from '../../types/Series';
 import type { SeriesEpisode } from './types';
 
@@ -34,7 +32,6 @@ interface SeriesDetailDialogsProps {
   dialog: DialogState;
   setDialog: (val: DialogState) => void;
   snackbar: { open: boolean; message: string };
-  currentTheme: DynamicTheme;
   navigate: (path: string) => void;
 }
 
@@ -48,7 +45,6 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
   dialog,
   setDialog,
   snackbar,
-  currentTheme,
   navigate,
 }) => (
   <>
@@ -115,33 +111,7 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
       }
     />
 
-    {/* Snackbar */}
-    {snackbar.open && (
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 'calc(20px + env(safe-area-inset-bottom))',
-          left: '20px',
-          right: '20px',
-          background: currentTheme.status.success,
-          color: currentTheme.text.secondary,
-          padding: '16px 20px',
-          borderRadius: '12px',
-          backdropFilter: 'var(--blur-sm)',
-          WebkitBackdropFilter: 'var(--blur-sm)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          zIndex: 1000,
-          fontSize: '15px',
-          fontWeight: 600,
-          boxShadow: currentTheme.shadow.card,
-        }}
-      >
-        <Check style={{ fontSize: '20px' }} />
-        <span>{snackbar.message}</span>
-      </div>
-    )}
+    {/* Snackbar (zentrales Toast-System) */}
+    <Snackbar open={snackbar.open} message={snackbar.message} />
   </>
 );

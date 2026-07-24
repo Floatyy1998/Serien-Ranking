@@ -1,8 +1,7 @@
 import Info from '@mui/icons-material/Info';
 import People from '@mui/icons-material/People';
-import Star from '@mui/icons-material/Star';
 import { memo } from 'react';
-import { Dialog } from '../../components/ui';
+import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
 import { CastCrew, RecommendationsSection } from '../../components/detail';
 import { Deferred } from '../../components/ui/Deferred';
@@ -181,13 +180,8 @@ export const MovieDetailPage = memo(() => {
         ]}
       />
 
-      {/* Success Snackbar */}
-      {snackbar.open && (
-        <div className="md-snackbar" style={{ background: currentTheme.status.success }}>
-          <Star style={{ fontSize: '20px' }} />
-          <span style={{ fontSize: '15px', fontWeight: 500 }}>{snackbar.message}</span>
-        </div>
-      )}
+      {/* Success Snackbar (zentrales Toast-System) */}
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       {/* Dialog for other alerts */}
       <Dialog

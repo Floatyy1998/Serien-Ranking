@@ -592,7 +592,6 @@ export const SeriesDetailPage = memo(() => {
         dialog={dialog}
         setDialog={setDialog}
         snackbar={snackbar}
-        currentTheme={currentTheme}
         navigate={navigate}
       />
 

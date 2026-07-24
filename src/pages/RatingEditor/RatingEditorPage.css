@@ -538,32 +538,6 @@
   transform: none !important;
 }
 
-/* Snackbar */
-.rate-snackbar {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  color: white;
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  z-index: var(--z-nav);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: calc(100% - 40px);
-}
-
-.rate-snackbar-icon {
-  font-size: 20px;
-}
-
-.rate-snackbar-text {
-  font-size: 15px;
-  font-weight: 500;
-}
-
 /* Desktop adjustments */
 @media (min-width: 768px) {
   .rate-page {

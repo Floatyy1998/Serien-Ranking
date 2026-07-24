@@ -1,5 +1,5 @@
 import { Email, Warning } from '@mui/icons-material';
-import { Alert, Button, Snackbar, Tooltip } from '@mui/material';
+import { Button, Tooltip } from '@mui/material';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import { useEffect, useState } from 'react';
@@ -9,6 +9,7 @@ import { requestVerificationMail } from '../../services/authMails';
 import { commonStyles } from '../../theme';
 import { useTheme } from '../../contexts/ThemeContext';
 import { t } from '../../services/i18n';
+import { showToast } from '../../lib/toast';
 
 interface EmailVerificationBannerProps {
   children: React.ReactNode;
@@ -21,8 +22,6 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
   const [isVerified, setIsVerified] = useState<boolean | null>(user?.emailVerified ?? null);
   const [mountNow] = useState(() => Date.now());
   const [loading] = useState(false); // Kein initiales Loading
-  const [message, setMessage] = useState('');
-  const [snackOpen, setSnackOpen] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -67,19 +66,12 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
     if (user) {
       requestVerificationMail(user)
         .then(() => {
-          setMessage(t('Verifizierungslink wurde erneut gesendet.'));
-          setSnackOpen(true);
+          showToast(t('Verifizierungslink wurde erneut gesendet.'), 4000);
         })
         .catch((error) => {
-          setMessage(error.message);
-          setSnackOpen(true);
+          showToast(error.message, 4000, 'error');
         });
     }
-  };
-
-  const handleSnackClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === 'clickaway') return;
-    setSnackOpen(false);
   };
 
   const handleLogout = () => {
@@ -182,15 +174,6 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
           </div>
         </div>
         {children}
-        <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
-          <Alert
-            onClose={handleSnackClose}
-            severity={message.includes('Fehler') ? 'error' : 'success'}
-            sx={{ width: '100%' }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
       </>
     );
   }
@@ -262,32 +245,9 @@ export const EmailVerificationBanner = ({ children }: EmailVerificationBannerPro
         </div>
 
         <div style={{ paddingTop: '52px' }}>{children}</div>
-
-        <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
-          <Alert
-            onClose={handleSnackClose}
-            severity={message.includes('Fehler') ? 'error' : 'success'}
-            sx={{ width: '100%' }}
-          >
-            {message}
-          </Alert>
-        </Snackbar>
       </>
     );
   }
 
-  return (
-    <>
-      {children}
-      <Snackbar open={snackOpen} autoHideDuration={6000} onClose={handleSnackClose}>
-        <Alert
-          onClose={handleSnackClose}
-          severity={message.includes('Fehler') ? 'error' : 'success'}
-          sx={{ width: '100%' }}
-        >
-          {message}
-        </Alert>
-      </Snackbar>
-    </>
-  );
+  return <>{children}</>;
 };

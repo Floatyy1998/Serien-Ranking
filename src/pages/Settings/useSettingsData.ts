@@ -10,6 +10,7 @@ import { copyTextToClipboard } from '../../utils/clipboard';
 import { dbRef, dbUpdate, paths, userPath } from '../../services/db/ref';
 import { t } from '../../services/i18n';
 import { shareLink } from '../../services/share/shareLink';
+import { showToast } from '../../lib/toast';
 
 export const useSettingsData = () => {
   const navigate = useNavigate();
@@ -28,10 +29,6 @@ export const useSettingsData = () => {
     message: string;
     type: 'success' | 'error' | 'info' | 'warning';
   }>({ open: false, message: '', type: 'info' });
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
-    open: false,
-    message: '',
-  });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load user data from Firebase
@@ -63,9 +60,9 @@ export const useSettingsData = () => {
     loadUserData();
   }, [user]);
 
+  // Zentrales Toast-System (lib/toast): zentriert, gestapelt, aria-live.
   const showSnackbar = useCallback((message: string) => {
-    setSnackbar({ open: true, message });
-    setTimeout(() => setSnackbar({ open: false, message: '' }), 3000);
+    showToast(message, 3000);
   }, []);
 
   const handleLogout = useCallback(async () => {
@@ -270,7 +267,6 @@ export const useSettingsData = () => {
     // UI state
     dialog,
     setDialog,
-    snackbar,
 
     // Handlers
     handleLogout,

@@ -1,8 +1,8 @@
 /** Kompositions-Komponente nach DiscoverPage-Muster — Logik in useSettingsData. */
 
-import { Android, Check, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
+import { Android, DesktopWindows, Logout, PowerSettingsNew } from '@mui/icons-material';
 import { Switch } from '@mui/material';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { ThemeContextType } from '../../contexts/ThemeContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -39,7 +39,6 @@ export const SettingsPage = () => {
     isLoadingProfile,
     dialog,
     setDialog,
-    snackbar,
     handleLogout,
     handleImageUpload,
     saveDisplayName,
@@ -203,25 +202,6 @@ export const SettingsPage = () => {
 
         <DeleteAccountSection />
       </div>
-
-      {/* Success Snackbar */}
-      <AnimatePresence>
-        {snackbar.open && (
-          <motion.div
-            role="status"
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            className="settings-snackbar"
-            style={{
-              background: `linear-gradient(135deg, ${currentTheme.status.success}, ${currentTheme.primary})`,
-            }}
-          >
-            <Check style={{ fontSize: '20px' }} />
-            <span className="settings-snackbar-text">{snackbar.message}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Dialog
         open={dialog.open}

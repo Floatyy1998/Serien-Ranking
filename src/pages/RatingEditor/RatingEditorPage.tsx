@@ -6,7 +6,7 @@ import { BackButton, Dialog } from '../../components/ui';
 import { useRatingEditorData } from './useRatingEditorData';
 import { OverallRatingSection } from './OverallRatingSection';
 import { GenreRatingSection } from './GenreRatingSection';
-import { RatingSnackbar } from './RatingSnackbar';
+import { Snackbar } from '../../components/ui/Snackbar';
 import './RatingEditorPage.css';
 import { tapScale } from '../../lib/motion';
 
@@ -123,7 +123,7 @@ export const RatingEditorPage = () => {
       </div>
 
       {/* Snackbar */}
-      <RatingSnackbar open={snackbar.open} message={snackbar.message} />
+      <Snackbar open={snackbar.open} message={snackbar.message} />
 
       {/* Delete confirmation */}
       <Dialog

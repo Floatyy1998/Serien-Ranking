@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import type { DynamicTheme } from '../../theme/dynamicTheme';
 import type { Series } from '../../types/Series';
 
 vi.mock('@mui/icons-material/Check', () => ({ default: () => null }));
@@ -16,18 +15,14 @@ vi.mock('../../components/Discussion', () => ({
 vi.mock('../../components/ui', () => ({
   Dialog: ({ open, title }: { open: boolean; title: string }) =>
     open ? <div data-testid="dialog">{title}</div> : null,
+  Snackbar: ({ open, message }: { open: boolean; message: string }) =>
+    open ? <div data-testid="snackbar">{message}</div> : null,
 }));
 vi.mock('../../lib/episode/seriesMetrics', () => ({
   calculateSeriesMetrics: () => ({ progress: 1 }),
 }));
 
 import { SeriesDetailDialogs } from './SeriesDetailDialogs';
-
-const theme = {
-  status: { success: '#22c55e' },
-  text: { secondary: '#ddd' },
-  shadow: { card: '0 1px 2px #000' },
-} as unknown as DynamicTheme;
 
 const series = { id: 42, title: 'Lost', poster: { poster: '/p.jpg' } } as unknown as Series;
 
@@ -41,7 +36,6 @@ const baseProps = {
   dialog: { open: false, message: '', type: 'info' as const },
   setDialog: vi.fn(),
   snackbar: { open: false, message: '' },
-  currentTheme: theme,
   navigate: vi.fn(),
 };
 

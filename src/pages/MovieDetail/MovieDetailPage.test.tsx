@@ -43,7 +43,7 @@ vi.mock('./MovieActionButtons', () => ({
   MovieActionButtons: () => <div data-testid="actions" />,
 }));
 vi.mock('./MovieInfoTab', () => ({ MovieInfoTab: () => <div data-testid="info-tab" /> }));
-vi.mock('../../components/ui', () => ({ Dialog: () => null }));
+vi.mock('../../components/ui', () => ({ Dialog: () => null, Snackbar: () => null }));
 vi.mock('../../components/Discussion', () => ({
   DiscussionThread: () => <div data-testid="discussion" />,
 }));

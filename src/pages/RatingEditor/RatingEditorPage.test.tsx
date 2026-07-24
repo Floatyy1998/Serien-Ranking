@@ -52,8 +52,8 @@ vi.mock('./OverallRatingSection', () => ({
 vi.mock('./GenreRatingSection', () => ({
   GenreRatingSection: () => <div data-testid="genre" />,
 }));
-vi.mock('./RatingSnackbar', () => ({
-  RatingSnackbar: ({ open }: { open: boolean }) => (open ? <div data-testid="snackbar" /> : null),
+vi.mock('../../components/ui/Snackbar', () => ({
+  Snackbar: ({ open }: { open: boolean }) => (open ? <div data-testid="snackbar" /> : null),
 }));
 vi.mock('../../components/ui', () => ({
   BackButton: () => <button aria-label="back" />,
