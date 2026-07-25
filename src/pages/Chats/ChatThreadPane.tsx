@@ -95,6 +95,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingFrame = useRef(0);
   const lastTypingSentRef = useRef(0);
 
   // Chat beim Öffnen anlegen — Listener auf einen nicht existierenden Chat
@@ -160,10 +161,24 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     }
   }, [pairId, myUid, messages.length, friendId]);
 
-  useEffect(() => {
+  const scrollToBottom = useCallback(() => {
     const el = listRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [messages.length, otherTyping]);
+  }, []);
+
+  useEffect(() => {
+    // Erst synchron, dann im nächsten Frame erneut: Layout (Bild-Seitenverhältnis,
+    // Schrift, Zeilenumbruch, Safe-Area) ist vor dem Paint noch nicht final, sonst
+    // landet der Sprung ein Stück über dem echten Ende.
+    scrollToBottom();
+    const r1 = requestAnimationFrame(() => {
+      scrollToBottom();
+      const r2 = requestAnimationFrame(scrollToBottom);
+      pendingFrame.current = r2;
+    });
+    pendingFrame.current = r1;
+    return () => cancelAnimationFrame(pendingFrame.current);
+  }, [messages.length, otherTyping, scrollToBottom]);
 
   const iBlocked = !!myUid && blockedBy.includes(myUid);
   const chatFrozen = blockedBy.length > 0;
@@ -541,6 +556,15 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                               ? { aspectRatio: `${m.imageWidth} / ${m.imageHeight}` }
                               : undefined
                           }
+                          onLoad={() => {
+                            // Bild ohne bekannte Maße wächst beim Laden — nachführen,
+                            // aber nur wenn man ohnehin (fast) unten ist, sonst reißt
+                            // es den Lese-Scroll weg.
+                            const el = listRef.current;
+                            if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 160) {
+                              el.scrollTop = el.scrollHeight;
+                            }
+                          }}
                           onClick={() => setLightboxUrl(m.imageUrl || null)}
                         />
                         {m.text && (
