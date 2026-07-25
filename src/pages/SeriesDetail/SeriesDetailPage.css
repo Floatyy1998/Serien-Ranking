@@ -334,8 +334,10 @@
 
 @media (max-width: 767px) {
   .hero-actions__btn--primary {
-    flex: 1;
-    min-width: 0;
+    /* Wächst, schrumpft aber nie unter die eigene Textbreite — so quetscht
+       sich "Episoden" nicht zusammen, sondern die Reihe bricht um. */
+    flex: 1 0 auto;
+    min-width: max-content;
   }
 }
 
