@@ -1,8 +1,10 @@
 import { ChatBubbleOutline, Repeat, RemoveCircle } from '@mui/icons-material';
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import { BottomSheet } from '../../components/ui';
-import { StarRatingRow } from '../../components/ui/StarRatingRow';
+import { StarRatingSlider } from '../../components/ui/StarRatingSlider';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { SeriesEpisode } from './types';
 import { tapScale } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -34,11 +36,16 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
   onClose,
 }) => {
   const { currentTheme } = useTheme();
+  const userRating = episode?.userRating || 0;
+  const [draft, setDraft] = useState(userRating);
+  useEffect(() => {
+    if (isOpen) setDraft(userRating);
+  }, [isOpen, episode?.id, userRating]);
   if (!episode) return null;
 
   const watchCount = episode.watchCount || 1;
   const warningColor = currentTheme.status?.warning || '#f59e0b';
-  const userRating = episode.userRating || 0;
+  const dirty = draft !== userRating;
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose} ariaLabel={t('Episode bearbeiten')}>
@@ -65,7 +72,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
           </p>
         </div>
 
-        {/* Folgenbewertung: Tap = setzen, Tap auf aktuellen Wert = entfernen */}
+        {/* Folgenbewertung: Sterne ziehen (Dezimalwerte), dann aktiv speichern */}
         {onRate && (
           <div style={{ marginBottom: '18px', textAlign: 'center' }}>
             <p
@@ -74,12 +81,32 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',
-                margin: '0 0 8px',
+                margin: '0 0 10px',
               }}
             >
-              {userRating ? t('Deine Bewertung: {n}/10', { n: userRating }) : t('Folge bewerten')}
+              {t('Folge bewerten')}
             </p>
-            <StarRatingRow value={userRating} onSelect={(value) => onRate(episode, value)} />
+            <StarRatingSlider value={draft} onChange={setDraft} size={30} />
+            <motion.button
+              whileTap={dirty ? tapScale : undefined}
+              onClick={() => dirty && onRate(episode, draft >= 0.5 ? draft : null)}
+              disabled={!dirty}
+              style={{
+                marginTop: '14px',
+                padding: '11px 24px',
+                borderRadius: 'var(--radius-lg)',
+                background: dirty ? currentTheme.primary : 'rgba(255,255,255,0.08)',
+                border: 'none',
+                color: dirty
+                  ? getOptimalTextColor(currentTheme.primary)
+                  : currentTheme.text?.muted || 'rgba(255,255,255,0.4)',
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: dirty ? 'pointer' : 'default',
+              }}
+            >
+              {draft >= 0.5 ? t('Bewertung speichern') : t('Bewertung entfernen')}
+            </motion.button>
           </div>
         )}
 

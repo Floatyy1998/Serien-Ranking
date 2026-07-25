@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { BottomSheet } from './ui';
-import { StarRatingRow } from './ui/StarRatingRow';
+import { StarRatingSlider } from './ui/StarRatingSlider';
+import { getOptimalTextColor } from '../theme/colorUtils';
 import { EPISODE_RATING_EVENT, type EpisodeRatingRequest } from '../lib/episodeRatingPrompt';
 import { setEpisodeRating } from '../services/episodeRatingService';
 import { showToast } from '../lib/toast';
@@ -17,12 +18,17 @@ export const EpisodeRatingSheetHost = () => {
   const { user } = useAuth() || {};
   const { currentTheme } = useTheme();
   const [request, setRequest] = useState<EpisodeRatingRequest | null>(null);
+  const [draft, setDraft] = useState(0);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const onRequest = (e: Event) => {
       const detail = (e as CustomEvent<EpisodeRatingRequest>).detail;
       if (!detail) return;
-      window.setTimeout(() => setRequest(detail), 400);
+      window.setTimeout(() => {
+        setDraft(detail.currentRating || 0);
+        setRequest(detail);
+      }, 400);
     };
     window.addEventListener(EPISODE_RATING_EVENT, onRequest);
     return () => window.removeEventListener(EPISODE_RATING_EVENT, onRequest);
@@ -30,29 +36,32 @@ export const EpisodeRatingSheetHost = () => {
 
   const close = useCallback(() => setRequest(null), []);
 
-  const handleSelect = useCallback(
-    async (value: number | null) => {
-      if (!user || !request) return;
+  const handleSave = useCallback(async () => {
+    if (!user || !request || saving) return;
+    const value = draft >= 0.5 ? draft : null;
+    setSaving(true);
+    try {
+      await setEpisodeRating(
+        user.uid,
+        request.seriesId,
+        request.seasonIndex,
+        request.episodeId,
+        value
+      );
+      showToast(
+        value
+          ? t('Folge mit {n}/10 bewertet', { n: value.toFixed(1) })
+          : t('Folgenbewertung entfernt'),
+        2000,
+        'success'
+      );
       close();
-      try {
-        await setEpisodeRating(
-          user.uid,
-          request.seriesId,
-          request.seasonIndex,
-          request.episodeId,
-          value
-        );
-        showToast(
-          value ? t('Folge mit {n}/10 bewertet', { n: value }) : t('Folgenbewertung entfernt'),
-          2000,
-          'success'
-        );
-      } catch {
-        showToast(t('Fehler beim Speichern'), 2500, 'error');
-      }
-    },
-    [user, request, close]
-  );
+    } catch {
+      showToast(t('Fehler beim Speichern'), 2500, 'error');
+    } finally {
+      setSaving(false);
+    }
+  }, [user, request, draft, saving, close]);
 
   if (!user) return null;
 
@@ -81,12 +90,32 @@ export const EpisodeRatingSheetHost = () => {
           >
             {t('Wie war die Folge?')}
           </p>
-          <StarRatingRow value={request.currentRating} onSelect={handleSelect} size={28} />
+          <StarRatingSlider value={draft} onChange={setDraft} size={32} />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              marginTop: '18px',
+              width: '100%',
+              maxWidth: '260px',
+              padding: '14px 22px',
+              borderRadius: 'var(--radius-lg)',
+              background: currentTheme.primary,
+              border: 'none',
+              color: getOptimalTextColor(currentTheme.primary),
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: saving ? 'default' : 'pointer',
+              opacity: saving ? 0.6 : 1,
+            }}
+          >
+            {draft >= 0.5 ? t('Bewertung speichern') : t('Ohne Bewertung speichern')}
+          </button>
           <button
             onClick={close}
             style={{
-              marginTop: '16px',
-              padding: '10px 22px',
+              marginTop: '10px',
+              padding: '8px 22px',
               background: 'transparent',
               border: 'none',
               color: currentTheme.text?.muted || 'rgba(255,255,255,0.5)',

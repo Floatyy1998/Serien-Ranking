@@ -1,11 +1,12 @@
 import { Check, SkipNext } from '@mui/icons-material';
 import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useAnimeFillerData } from '../../hooks/useAnimeFillerData';
 import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
-import { StarRatingRow } from '../../components/ui/StarRatingRow';
+import { StarRatingSlider } from '../../components/ui/StarRatingSlider';
+import { getOptimalTextColor } from '../../theme/colorUtils';
 import { setEpisodeRating } from '../../services/episodeRatingService';
 import { showToast } from '../../lib/toast';
 import { fillerLookupKey } from '../../services/animeFillerService';
@@ -77,28 +78,35 @@ export const EpisodeDiscussionPage = memo(() => {
     ? (communityEpisodeRatings?.[String(localEpisode.episodeId)] ?? null)
     : null;
 
-  const handleRateEpisode = useCallback(
-    async (value: number | null) => {
-      if (!user || !series || !localEpisode) return;
-      try {
-        await setEpisodeRating(
-          user.uid,
-          series.id,
-          localEpisode.seasonIndex,
-          localEpisode.episodeId,
-          value
-        );
-        showToast(
-          value ? t('Folge mit {n}/10 bewertet', { n: value }) : t('Folgenbewertung entfernt'),
-          2000,
-          'success'
-        );
-      } catch {
-        showToast(t('Fehler beim Speichern'), 2500, 'error');
-      }
-    },
-    [user, series, localEpisode]
-  );
+  const currentRating = localEpisode?.userRating || 0;
+  const [draft, setDraft] = useState(currentRating);
+  useEffect(() => {
+    setDraft(currentRating);
+  }, [currentRating]);
+  const ratingDirty = draft !== currentRating;
+
+  const handleRateEpisode = useCallback(async () => {
+    if (!user || !series || !localEpisode) return;
+    const value = draft >= 0.5 ? draft : null;
+    try {
+      await setEpisodeRating(
+        user.uid,
+        series.id,
+        localEpisode.seasonIndex,
+        localEpisode.episodeId,
+        value
+      );
+      showToast(
+        value
+          ? t('Folge mit {n}/10 bewertet', { n: value.toFixed(1) })
+          : t('Folgenbewertung entfernt'),
+        2000,
+        'success'
+      );
+    } catch {
+      showToast(t('Fehler beim Speichern'), 2500, 'error');
+    }
+  }, [user, series, localEpisode, draft]);
 
   // Anime filler/recap data – backend-driven, no direct AniList/Jikan calls.
   const animeFiller = useAnimeFillerData(series?.tmdb_id || series?.id, series?.seasons);
@@ -273,11 +281,29 @@ export const EpisodeDiscussionPage = memo(() => {
                 marginBottom: '8px',
               }}
             >
-              {localEpisode.userRating
-                ? t('Deine Bewertung: {n}/10', { n: localEpisode.userRating })
-                : t('Folge bewerten')}
+              {t('Folge bewerten')}
             </div>
-            <StarRatingRow value={localEpisode.userRating} onSelect={handleRateEpisode} />
+            <StarRatingSlider value={draft} onChange={setDraft} size={28} />
+            <motion.button
+              whileTap={ratingDirty ? { scale: 0.96 } : undefined}
+              onClick={handleRateEpisode}
+              disabled={!ratingDirty}
+              style={{
+                marginTop: '12px',
+                padding: '10px 22px',
+                borderRadius: 'var(--radius-lg)',
+                background: ratingDirty ? currentTheme.primary : 'rgba(255,255,255,0.08)',
+                border: 'none',
+                color: ratingDirty
+                  ? getOptimalTextColor(currentTheme.primary)
+                  : currentTheme.text.muted,
+                fontSize: '14px',
+                fontWeight: 700,
+                cursor: ratingDirty ? 'pointer' : 'default',
+              }}
+            >
+              {draft >= 0.5 ? t('Bewertung speichern') : t('Bewertung entfernen')}
+            </motion.button>
             {communityEntry && (
               <div
                 style={{
