@@ -67,12 +67,18 @@ const bindListeners = (uid: string): void => {
     if (data?.value) void saveToken(uid, data.value, entry.platform);
   });
 
-  // Tap auf die Notification: optionaler Deep-Link aus data.url.
+  // Tap auf die Notification: optionaler Deep-Link aus data.url. Client-seitig
+  // navigieren (routerNavigate) statt window.location.assign — Letzteres macht
+  // einen Vollreload und zeigt so einen ZWEITEN Splashscreen.
   entry.plugin.addListener?.(
     'pushNotificationActionPerformed',
     (action: { notification?: { data?: { url?: string } } }) => {
       const url = action?.notification?.data?.url;
-      if (url && url.startsWith('/')) window.location.assign(url);
+      if (url && url.startsWith('/')) {
+        import('./nativeShell')
+          .then((m) => m.routerNavigate(url))
+          .catch(() => window.location.assign(url));
+      }
     }
   );
 };

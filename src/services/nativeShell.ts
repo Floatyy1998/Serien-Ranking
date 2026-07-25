@@ -89,8 +89,10 @@ const SHORTCUT_ROUTES: Record<string, string> = {
 };
 
 // Rohes pushState({}) zerstört React Routers history.state.idx (NaN-Kette →
-// jeder BackButton fällt auf Home zurück) — Index deshalb selbst weiterführen
-const routerNavigate = (path: string): void => {
+// jeder BackButton fällt auf Home zurück) — Index deshalb selbst weiterführen.
+// Exportiert, damit auch der Push-Handler client-seitig navigiert (statt
+// window.location.assign = Vollreload = zweiter Splashscreen).
+export const routerNavigate = (path: string): void => {
   const state = window.history.state as { idx?: number } | null;
   const idx = typeof state?.idx === 'number' && Number.isFinite(state.idx) ? state.idx : 0;
   window.history.pushState({ idx: idx + 1 }, '', path);
