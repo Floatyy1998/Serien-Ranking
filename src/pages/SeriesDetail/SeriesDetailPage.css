@@ -541,14 +541,19 @@ button.episode-list-number:focus-visible {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 8px;
+  /* Unter Anzeige-Zoom umbrechen statt das Datum abzuschneiden */
+  flex-wrap: wrap;
+  gap: 4px 8px;
   font-size: 12px;
   font-weight: 500;
-  white-space: nowrap;
   font-variant-numeric: tabular-nums;
   margin-left: auto;
   padding-left: 16px;
-  flex-shrink: 0;
+  min-width: 0;
+}
+
+.episode-list-meta > span {
+  white-space: nowrap;
 }
 
 @media (max-width: 720px) {
