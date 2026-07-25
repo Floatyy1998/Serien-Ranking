@@ -580,37 +580,137 @@
 
 /* Match button */
 
-.fp-match-btn {
-  height: 44px;
-  padding: 0 18px;
+/* ── Profil-Kopf (Identitätskarte) ─────────────────────── */
+.fp-hero {
+  position: relative;
+  padding: calc(12px + env(safe-area-inset-top)) 20px 18px;
+  overflow: hidden;
+}
+
+.fp-hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fp-hero-top {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.fp-hero-avatar {
+  position: relative;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px var(--color-background-default),
+    0 0 0 3px color-mix(in srgb, var(--theme-primary) 50%, transparent);
+}
+
+.fp-hero-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2.5px solid var(--color-background-default);
+}
+
+.fp-hero-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.fp-hero-name > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fp-hero-name .name-badge {
+  flex-shrink: 0;
+}
+
+/* Bewertungs-Block: Ø-Wert über der Anzahl, gleiche Höhe wie Name/Avatar */
+.fp-hero-rating {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  line-height: 1.2;
+}
+
+.fp-hero-rating-val {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15.5px;
+  font-weight: 800;
+}
+
+.fp-hero-avg {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.fp-hero-rating-cnt {
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.fp-hero-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.fp-hero-btn {
+  flex: 1;
+  height: 46px;
   border: none;
-  border-radius: 22px;
-  color: white;
+  border-radius: 15px;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s var(--ease-default);
+  box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--theme-primary) 60%, transparent);
+  transition:
+    transform 0.15s ease,
+    filter 0.2s ease;
   -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
 }
 
-/* Sekundärer Rund-Button (z. B. Chat) — gleiche Höhe wie die Match-Pill */
-.fp-icon-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-md);
-  transition: all 0.3s var(--ease-default);
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 0;
+.fp-hero-btn--ghost {
+  background: var(--glass-light);
+  -webkit-backdrop-filter: var(--glass-filter-sm);
+  backdrop-filter: var(--glass-filter-sm);
+  box-shadow: none;
+}
+
+.fp-hero-btn:active {
+  transform: scale(0.98);
 }
 
 /* 2050-Desktop: Insight-Platzhalter als schlanke Zeile statt Riesen-Leerbox */

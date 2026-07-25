@@ -15,6 +15,7 @@ import { useOptimizedFriends } from '../../contexts/OptimizedFriendsContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { dbGet } from '../../services/db/ref';
 import {
+  BackButton,
   EmptyState,
   NameBadges,
   Skeleton,
@@ -81,6 +82,7 @@ export const FriendProfilePage = memo(() => {
   } = useFriendProfileData();
 
   const isSelf = !!user?.uid && user.uid === friendId;
+  const friendEntry = friends.find((f) => f.uid === friendId);
   const isFriend = friends.some((f) => f.uid === friendId);
   const restricted = !friendsLoading && !!friendId && !isSelf && !isFriend;
 
@@ -225,45 +227,81 @@ export const FriendProfilePage = memo(() => {
   return (
     <PageLayout>
       <div ref={scrollRef}>
-        {/* Header */}
-        <PageHeader
-          title={friendName}
-          titleBadge={<NameBadges uid={friendId} />}
-          sticky={false}
-          subtitle={t('\u00D8 {avg} | {n} bewertet', {
-            avg: averageRating.toFixed(1),
-            n: itemsWithRatingCount,
-          })}
-          actions={
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <motion.button
-                whileTap={tapScale}
-                onClick={() => friendId && navigate(`/chat/${friendId}`)}
-                className="fp-icon-btn"
-                aria-label={t('Nachricht senden')}
+        {/* Profil-Kopf: Name links, Avatar rechts, Aktionen, Bewertungs-Stat */}
+        <header className="fp-hero">
+          <div
+            className="fp-hero-glow"
+            style={{
+              background: `radial-gradient(70% 100% at 85% 0%, ${currentTheme.primary}20, transparent 72%)`,
+            }}
+            aria-hidden
+          />
+          <div className="fp-hero-top">
+            <BackButton />
+            <h1 className="fp-hero-name">
+              <span
                 style={{
-                  background: 'var(--glass-light)',
-                  border: `1px solid ${currentTheme.primary}55`,
-                  color: currentTheme.primary,
+                  background: `linear-gradient(90deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
                 }}
               >
-                <ChatBubbleOutline style={{ fontSize: 20 }} />
-              </motion.button>
-              <motion.button
-                whileTap={tapScale}
-                onClick={navigateToTasteMatch}
-                className="fp-match-btn"
-                style={{
-                  background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                  color: onPrimary,
-                }}
-              >
-                <CompareArrows style={{ fontSize: 20 }} />
-                Match
-              </motion.button>
+                {friendName}
+              </span>
+              <NameBadges uid={friendId} />
+            </h1>
+            <div className="fp-hero-rating">
+              <span className="fp-hero-rating-val" style={{ color: currentTheme.text.secondary }}>
+                <span className="fp-hero-avg" style={{ color: currentTheme.text.muted }}>
+                  {'Ø'}
+                </span>
+                <Star style={{ fontSize: 15, color: currentTheme.accent }} />
+                {averageRating.toFixed(1)}
+              </span>
+              <span className="fp-hero-rating-cnt" style={{ color: currentTheme.text.muted }}>
+                {t('{n} bewertet', { n: itemsWithRatingCount })}
+              </span>
             </div>
-          }
-        />
+            <div className="fp-hero-avatar">
+              <UserAvatar
+                userId={friendId ?? ''}
+                username={friendName}
+                photoURL={friendEntry?.photoURL}
+                size={40}
+                navigable={false}
+              />
+              {friendEntry?.isOnline && <span className="fp-hero-dot" />}
+            </div>
+          </div>
+
+          <div className="fp-hero-actions">
+            <motion.button
+              whileTap={tapScale}
+              onClick={() => friendId && navigate(`/chat/${friendId}`)}
+              className="fp-hero-btn fp-hero-btn--ghost"
+              style={{
+                border: `1px solid ${currentTheme.primary}55`,
+                color: currentTheme.primary,
+              }}
+            >
+              <ChatBubbleOutline style={{ fontSize: 19 }} />
+              {t('Chat')}
+            </motion.button>
+            <motion.button
+              whileTap={tapScale}
+              onClick={navigateToTasteMatch}
+              className="fp-hero-btn"
+              style={{
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                color: onPrimary,
+              }}
+            >
+              <CompareArrows style={{ fontSize: 19 }} />
+              Match
+            </motion.button>
+          </div>
+        </header>
 
         {/* Friend Insights — Currently Watching, Pet, Anticipation */}
         {friendId && (
