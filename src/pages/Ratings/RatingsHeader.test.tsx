@@ -26,6 +26,22 @@ vi.mock('@mui/icons-material', () => ({
 vi.mock('../../components/ui', () => ({
   NavEscapeButtons: () => null,
   GradientText: ({ children }: { children: React.ReactNode }) => <h1>{children}</h1>,
+  SearchInput: ({
+    value,
+    onChange,
+    placeholder,
+  }: {
+    value: string;
+    onChange: (v: string) => void;
+    placeholder?: string;
+  }) => (
+    <input
+      aria-label="search"
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  ),
   TabSwitcher: ({
     tabs,
     onTabChange,
@@ -66,6 +82,8 @@ describe('RatingsHeader', () => {
         activeTab="series"
         seriesCount={3}
         moviesCount={5}
+        searchValue=""
+        onSearchChange={vi.fn()}
         onTabChange={vi.fn()}
       />
     );
@@ -83,10 +101,30 @@ describe('RatingsHeader', () => {
         activeTab="series"
         seriesCount={3}
         moviesCount={5}
+        searchValue=""
+        onSearchChange={vi.fn()}
         onTabChange={onTabChange}
       />
     );
     fireEvent.click(screen.getByText('Filme'));
     expect(onTabChange).toHaveBeenCalledWith('movies');
+  });
+
+  it('emits typed search text via onSearchChange', () => {
+    const onSearchChange = vi.fn<(v: string) => void>();
+    render(
+      <RatingsHeader
+        theme={theme}
+        stats={stats}
+        activeTab="series"
+        seriesCount={3}
+        moviesCount={5}
+        searchValue=""
+        onSearchChange={onSearchChange}
+        onTabChange={vi.fn()}
+      />
+    );
+    fireEvent.change(screen.getByLabelText('search'), { target: { value: 'breaking' } });
+    expect(onSearchChange).toHaveBeenCalledWith('breaking');
   });
 });

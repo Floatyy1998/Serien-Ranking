@@ -17,6 +17,7 @@ const { fpState } = vi.hoisted(() => ({
     friendName: 'Mia',
     activeTab: 'series' as 'series' | 'movies',
     setActiveTab: vi.fn(),
+    filters: {} as Record<string, string>,
     setFilters: vi.fn(),
     ratedSeries: [{ id: 1 }],
     ratedMovies: [],
@@ -105,6 +106,9 @@ vi.mock('../../components/ui', () => ({
   ),
   QuickFilter: () => <div />,
   ScrollToTopButton: () => <div />,
+  SearchInput: ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+    <input aria-label="search" value={value} onChange={(e) => onChange(e.target.value)} />
+  ),
   UserAvatar: () => <div />,
   TabSwitcher: ({
     tabs,

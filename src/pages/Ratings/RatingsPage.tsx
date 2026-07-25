@@ -108,6 +108,8 @@ export const RatingsPage: React.FC = () => {
         activeTab={activeTab}
         seriesCount={seriesCount}
         moviesCount={moviesCount}
+        searchValue={filters.search || ''}
+        onSearchChange={(v) => handleQuickFilterChange({ search: v })}
         onTabChange={handleTabChange}
       />
 

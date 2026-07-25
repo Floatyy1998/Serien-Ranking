@@ -178,6 +178,17 @@
   }
 }
 
+.fp-search-wrap {
+  padding: 0 20px;
+  margin-bottom: 16px;
+}
+
+@media (min-width: 768px) {
+  .fp-search-wrap {
+    padding: 0 40px;
+  }
+}
+
 .fp-insights-toggle {
   align-self: flex-start;
   display: inline-flex;

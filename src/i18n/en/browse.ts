@@ -82,6 +82,7 @@ const dict: Record<string, string> = {
   'Meine Bewertungen': 'My Ratings',
   bewertet: 'rated',
   Durchschnitt: 'average',
+  'Serien & Filme durchsuchen...': 'Search series & movies...',
   'Noch keine Serien': 'No series yet',
   'Noch keine Filme': 'No movies yet',
   'Keine Ergebnisse für diesen Filter': 'No results for this filter',

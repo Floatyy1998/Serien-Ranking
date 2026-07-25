@@ -25,6 +25,7 @@ import {
   ProfileItemCard,
   QuickFilter,
   ScrollToTopButton,
+  SearchInput,
   TabSwitcher,
   UserAvatar,
 } from '../../components/ui';
@@ -70,6 +71,7 @@ export const FriendProfilePage = memo(() => {
     friendName,
     activeTab,
     setActiveTab,
+    filters,
     setFilters,
     ratedSeries,
     ratedMovies,
@@ -388,12 +390,22 @@ export const FriendProfilePage = memo(() => {
           </div>
         )}
 
+        {/* Suche über die Bewertungen des Freundes (beide Tabs) */}
+        <div className="fp-search-wrap">
+          <SearchInput
+            value={filters.search || ''}
+            onChange={(v) => setFilters((prev) => ({ ...prev, search: v }))}
+            placeholder={t('Serien & Filme durchsuchen...')}
+          />
+        </div>
+
         {/* Quick Filter */}
         <QuickFilter
           onFilterChange={setFilters}
           isMovieMode={activeTab === 'movies'}
           isRatingsMode={true}
           hasBottomNav={false}
+          initialFilters={filters}
         />
 
         {/* Tab Switcher */}

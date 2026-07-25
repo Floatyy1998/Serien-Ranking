@@ -54,6 +54,10 @@
   margin-top: 16px;
 }
 
+.ratings-search-wrap {
+  margin-top: 14px;
+}
+
 .ratings-stat-card {
   padding: 10px 16px;
   border-radius: var(--radius-md);
