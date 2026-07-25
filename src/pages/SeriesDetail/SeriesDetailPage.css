@@ -288,7 +288,9 @@
 .hero-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
+  row-gap: 8px;
 }
 
 .hero-actions__btn {
