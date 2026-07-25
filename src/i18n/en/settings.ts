@@ -109,6 +109,12 @@ const settings: Record<string, string> = {
   'Farben und Aussehen anpassen': 'Customize colors and appearance',
   'Homepage Layout': 'Homepage layout',
   'Sektionen sortieren & ausblenden': 'Sort & hide sections',
+  Anzeigegröße: 'Display size',
+  'Ganze App größer oder kleiner': 'Make the whole app bigger or smaller',
+  Klein: 'Small',
+  Standard: 'Default',
+  Groß: 'Large',
+  'Sehr groß': 'Extra large',
 
   // LegalSection
   'Rechtliches & Datenquellen': 'Legal & data sources',

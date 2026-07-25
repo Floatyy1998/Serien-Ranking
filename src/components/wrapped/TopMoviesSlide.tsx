@@ -17,7 +17,7 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxIt
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -72,7 +72,7 @@ export const TopMoviesSlide: React.FC<TopMoviesSlideProps> = ({ topMovies, maxIt
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

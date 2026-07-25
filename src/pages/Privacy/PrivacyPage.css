@@ -1,14 +1,14 @@
 /* PrivacyPage - Layout styles with priv- prefix */
 
 .priv-loading {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .priv-error {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -33,7 +33,7 @@
 }
 
 .priv-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   position: relative;
 }
 

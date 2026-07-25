@@ -130,7 +130,7 @@ export const SummarySlide: React.FC<SummarySlideProps> = ({ stats, onShare }) =>
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

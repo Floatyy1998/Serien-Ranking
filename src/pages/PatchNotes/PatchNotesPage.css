@@ -1,5 +1,5 @@
 .patch-notes-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   padding-bottom: calc(40px + env(safe-area-inset-bottom));
 }
 

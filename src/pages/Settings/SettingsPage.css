@@ -1,7 +1,7 @@
 /* SettingsPage - Layout styles with settings- prefix */
 
 .settings-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   position: relative;
   padding-bottom: 100px;
 }
@@ -216,6 +216,58 @@
 .settings-nav-btn-subtitle {
   font-size: 14px;
   margin: 2px 0 0 0;
+}
+
+/* Anzeigegröße-Karte (Segmented Control) */
+.settings-size-card {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  cursor: default;
+}
+
+.settings-size-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-size-seg {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-size-seg button {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px 4px;
+  height: auto;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 1px solid var(--glass-border-light);
+  background: var(--glass-light);
+  transition: transform 0.12s ease;
+}
+
+.settings-size-seg button:active {
+  transform: scale(0.96);
+}
+
+.settings-size-seg .sz-a {
+  font-weight: 800;
+  line-height: 1;
+}
+
+.settings-size-seg .sz-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
 }
 
 /* Toggle switch (public profile) */

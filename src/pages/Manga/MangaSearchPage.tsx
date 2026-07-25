@@ -105,7 +105,7 @@ export const MangaSearchPage = () => {
   const addButtonTextColor = getOptimalTextColor(currentTheme.primary);
 
   return (
-    <div style={{ minHeight: '100vh', background: currentTheme.background.default }}>
+    <div style={{ minHeight: 'var(--vh, 100vh)', background: currentTheme.background.default }}>
       {/* ─── Sticky Header ───────────────────────── */}
       <div
         style={{

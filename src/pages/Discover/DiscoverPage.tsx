@@ -135,7 +135,7 @@ export const DiscoverPage = memo(() => {
   ] as const;
 
   return (
-    <PageLayout style={{ height: '100vh', overflow: 'hidden' }}>
+    <PageLayout style={{ height: 'var(--vh, 100vh)', overflow: 'hidden' }}>
       {/* Fixed Header and Controls */}
       <div
         data-header="discover-header"

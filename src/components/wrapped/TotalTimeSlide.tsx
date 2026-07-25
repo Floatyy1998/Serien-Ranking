@@ -25,7 +25,7 @@ export const TotalTimeSlide: React.FC<TotalTimeSlideProps> = ({
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

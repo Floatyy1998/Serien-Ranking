@@ -1,7 +1,7 @@
 /* ProfilePage - Layout styles */
 
 .profile-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   position: relative;
   padding-bottom: 100px;
 }
@@ -359,8 +359,8 @@
     grid-template-rows: minmax(0, 1fr) auto auto;
     /* .mobile-content.with-nav reserviert 90px fürs Dock und erzwingt
        min-height:100% — beides ausgleichen, sonst scrollt die Seite um 90px */
-    height: calc(100vh - 90px);
-    min-height: calc(100vh - 90px);
+    height: calc(var(--vh, 100vh) - 90px);
+    min-height: calc(var(--vh, 100vh) - 90px);
     overflow: hidden;
     padding: 0;
   }

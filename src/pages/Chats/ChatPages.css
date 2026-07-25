@@ -5,8 +5,8 @@
    ragt die Shell unten genau um die Inset-Höhe aus dem Viewport. */
 .ch-shell {
   display: flex;
-  height: calc(100vh - env(safe-area-inset-top));
-  height: calc(100dvh - env(safe-area-inset-top));
+  height: calc(var(--vh, 100vh) - env(safe-area-inset-top));
+  height: calc(var(--vh, 100dvh) - env(safe-area-inset-top));
   width: 100%;
   overflow: hidden;
 }

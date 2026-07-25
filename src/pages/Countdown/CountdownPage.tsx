@@ -21,7 +21,7 @@ export const CountdownPage: React.FC = () => {
   return (
     <PageLayout
       gradientColors={[currentTheme.primary, currentTheme.accent]}
-      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+      style={{ height: 'var(--vh, 100vh)', display: 'flex', flexDirection: 'column' }}
     >
       <PageHeader title="Countdown" icon={<CalendarMonth style={{ fontSize: 28 }} />} />
 

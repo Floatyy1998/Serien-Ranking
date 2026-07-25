@@ -1,5 +1,5 @@
 .manga-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   position: relative;
   overflow: hidden;
   padding-bottom: 100px;

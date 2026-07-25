@@ -1,8 +1,14 @@
+/* --vh = Viewport-Höhe, die unter Anzeige-Zoom (displayScale) kompensiert wird.
+   Ohne Zoom = var(--vh, 100dvh); unter Zoom setzt applyDisplayScale sie auf var(--vh, 100dvh)/scale. */
+:root {
+  --vh: 100dvh;
+}
+
 /* Mobile App Global Styles */
 .mobile-app {
   width: 100%;
-  height: 100vh;
-  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+  height: var(--vh, 100vh);
+  height: var(--vh, 100dvh); /* Dynamic viewport height + Zoom-Kompensation */
   background: var(--color-background-default);
   color: var(--color-text-primary);
   /* Remove scrolling from main container - let child handle it */

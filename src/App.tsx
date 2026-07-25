@@ -91,7 +91,7 @@ const PageLoader = () => (
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      height: '100vh',
+      height: 'var(--vh, 100vh)',
       background: 'var(--theme-background, #000000)',
     }}
   >

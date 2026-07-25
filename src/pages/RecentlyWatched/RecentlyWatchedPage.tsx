@@ -48,7 +48,7 @@ export const RecentlyWatchedPage = memo(() => {
   return (
     <PageLayout
       gradientColors={[currentTheme.status.success, currentTheme.primary]}
-      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+      style={{ height: 'var(--vh, 100vh)', display: 'flex', flexDirection: 'column' }}
     >
       {/* Fixed Header */}
       <div

@@ -36,7 +36,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
@@ -87,7 +87,7 @@ export const LateNightSlide: React.FC<LateNightSlideProps> = ({ lateNightStats }
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

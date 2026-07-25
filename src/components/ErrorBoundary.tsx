@@ -72,7 +72,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           background:
             'radial-gradient(120% 80% at 50% 0%, var(--theme-primary-05, rgba(0,209,35,0.05)), transparent 60%), var(--theme-background, #000)',
           color: 'var(--color-text-secondary, #e5e5e5)',

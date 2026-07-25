@@ -6,6 +6,10 @@ import './services/localStorageBootstrap';
 import ReactDOM from 'react-dom/client';
 import { AppWithSplash } from './AppWithSplash';
 import './index.css';
+import { applyDisplayScale, getDisplayScale } from './services/displayScale';
+
+// Anzeigegröße vor dem ersten Paint anwenden (kein Flash ungezoomter UI)
+applyDisplayScale(getDisplayScale());
 
 // Service Worker Manager — sofort importieren damit SW beim App-Start registriert wird
 import './services/serviceWorkerManager';

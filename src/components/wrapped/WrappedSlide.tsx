@@ -26,7 +26,7 @@ export const WrappedSlide: React.FC<WrappedSlideProps> = ({
       className={`wrapped-slide ${className}`}
       style={{
         ...backgroundStyle,
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

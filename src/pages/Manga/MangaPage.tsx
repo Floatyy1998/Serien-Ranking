@@ -95,7 +95,7 @@ export const MangaPage = () => {
       style={{
         overflowY: 'auto',
         position: 'relative',
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         background: currentTheme.background.default,
       }}
     >

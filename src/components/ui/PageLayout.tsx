@@ -15,7 +15,7 @@ export const PageLayout = forwardRef<HTMLDivElement, PageLayoutProps>(
       <div
         ref={ref}
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100dvh)',
           background: currentTheme.background.default,
           position: 'relative',
           overflow: 'hidden',

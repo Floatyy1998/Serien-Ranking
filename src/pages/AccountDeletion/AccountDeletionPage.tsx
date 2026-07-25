@@ -31,7 +31,11 @@ export const AccountDeletionPage = () => {
 
   return (
     <div
-      style={{ minHeight: '100vh', background: currentTheme.background.default, paddingBottom: 60 }}
+      style={{
+        minHeight: 'var(--vh, 100vh)',
+        background: currentTheme.background.default,
+        paddingBottom: 60,
+      }}
     >
       <PageHeader title="Konto löschen" icon={<DeleteForever />} showBack={false} />
 

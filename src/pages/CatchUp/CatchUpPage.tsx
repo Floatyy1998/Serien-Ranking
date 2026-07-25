@@ -36,7 +36,7 @@ export const CatchUpPage: React.FC = () => {
     <PageLayout
       ref={scrollContainerRef}
       style={{
-        height: '100dvh',
+        height: 'var(--vh, 100dvh)',
         overflowY: 'auto',
         overflowX: 'hidden',
         color: currentTheme.text.primary,

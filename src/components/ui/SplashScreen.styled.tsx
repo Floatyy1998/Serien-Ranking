@@ -93,7 +93,7 @@ const progressShine = keyframes`
 
 const particleFloat = keyframes`
   0% {
-    transform: translateY(100vh) rotate(0deg);
+    transform: translateY(var(--vh, 100vh)) rotate(0deg);
     opacity: 0;
   }
   10% {
@@ -103,7 +103,7 @@ const particleFloat = keyframes`
     opacity: 1;
   }
   100% {
-    transform: translateY(-100vh) rotate(360deg);
+    transform: translateY(-var(--vh, 100vh)) rotate(360deg);
     opacity: 0;
   }
 `;
@@ -117,7 +117,7 @@ export const SplashContainer = styled(Box, {
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: var(--vh, 100vh);
   z-index: 9999;
   display: flex;
   flex-direction: column;

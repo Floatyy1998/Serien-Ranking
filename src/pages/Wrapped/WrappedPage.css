@@ -46,7 +46,7 @@
 /* Full-screen states (loading / error) */
 
 .wrapped-fullscreen {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -218,8 +218,8 @@
 }
 
 .wrapped-slide {
-  /* 100% des Tracks (= fixed inset:0 Container), NICHT 100vh: der Track
-     translatet um -n*100% seiner eigenen Höhe; auf Mobile weicht 100vh von der
+  /* 100% des Tracks (= fixed inset:0 Container), NICHT var(--vh, 100vh): der Track
+     translatet um -n*100% seiner eigenen Höhe; auf Mobile weicht var(--vh, 100vh) von der
      sichtbaren Viewport-Höhe (URL-Leiste) ab → Slides drifteten aus dem Raster. */
   height: 100%;
 }

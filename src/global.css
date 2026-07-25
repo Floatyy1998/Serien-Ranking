@@ -304,7 +304,7 @@ a,
   .ui-sheet {
     width: min(1600px, calc(100vw - 96px));
     /* Sheet liegt über dem Dock — Platz nutzen statt drüber schweben */
-    max-height: calc(100vh - 48px);
+    max-height: calc(var(--vh, 100vh) - 48px);
     border-radius: 28px;
     border-bottom: 1px solid var(--glass-border-light);
     margin-bottom: 24px;

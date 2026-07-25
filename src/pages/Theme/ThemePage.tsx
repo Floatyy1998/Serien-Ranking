@@ -145,7 +145,7 @@ export const ThemePage = () => {
   return (
     <PageLayout
       gradientColors={[currentTheme.primary, currentTheme.accent]}
-      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+      style={{ height: 'var(--vh, 100vh)', display: 'flex', flexDirection: 'column' }}
     >
       <PageHeader
         title="Design"

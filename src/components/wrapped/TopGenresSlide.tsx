@@ -54,7 +54,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -83,7 +83,7 @@ export const TopGenresSlide: React.FC<TopGenresSlideProps> = ({ topGenres, maxIt
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

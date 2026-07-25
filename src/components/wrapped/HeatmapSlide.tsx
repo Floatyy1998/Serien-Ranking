@@ -39,7 +39,7 @@ export const HeatmapSlide: React.FC<HeatmapSlideProps> = ({ heatmapData }) => {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',

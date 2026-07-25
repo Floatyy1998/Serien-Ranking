@@ -69,7 +69,7 @@ export const ImpressumPage = () => {
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           background: currentTheme.background.default,
           display: 'flex',
           alignItems: 'center',
@@ -85,7 +85,7 @@ export const ImpressumPage = () => {
     return (
       <div
         style={{
-          minHeight: '100vh',
+          minHeight: 'var(--vh, 100vh)',
           background: currentTheme.background.default,
           display: 'flex',
           flexDirection: 'column',
@@ -119,7 +119,7 @@ export const ImpressumPage = () => {
   return (
     <div
       style={{
-        minHeight: '100vh',
+        minHeight: 'var(--vh, 100vh)',
         background: currentTheme.background.default,
         position: 'relative',
       }}

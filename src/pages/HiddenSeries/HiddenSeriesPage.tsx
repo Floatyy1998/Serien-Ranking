@@ -85,7 +85,7 @@ export const HiddenSeriesPage: React.FC = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        height: '100vh',
+        height: 'var(--vh, 100dvh)',
         overflowY: 'auto',
         overflowX: 'hidden',
         color: currentTheme.text.primary,

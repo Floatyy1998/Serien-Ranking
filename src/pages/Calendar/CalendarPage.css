@@ -1,5 +1,5 @@
 .calendar-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   padding-bottom: 0;
 }
 
@@ -991,7 +991,7 @@
 
   .cal-content {
     grid-auto-rows: 1fr;
-    min-height: calc(100vh - 380px);
+    min-height: calc(var(--vh, 100vh) - 380px);
     align-items: stretch;
   }
 

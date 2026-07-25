@@ -1222,7 +1222,7 @@
 
 /* Creation Modal */
 .pet-create-page {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   position: relative;
 }
 
@@ -1236,7 +1236,7 @@
 }
 
 .pet-create-center {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1297,7 +1297,7 @@
 
 /* Loading */
 .pet-loading {
-  min-height: 100vh;
+  min-height: var(--vh, 100vh);
   display: flex;
   align-items: center;
   justify-content: center;
