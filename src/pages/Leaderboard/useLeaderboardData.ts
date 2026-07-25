@@ -50,6 +50,9 @@ export function useLeaderboardData() {
     Record<string, { displayName: string; photoURL?: string; username?: string }>
   >({});
   const [globalEntries, setGlobalEntries] = useState<GlobalLeaderboardEntry[]>([]);
+  // Eigener Live-Wert für den Alle-Tab: der globale Snapshot (leaderboardTop)
+  // wird nur alle ~15 Min neu geschrieben, der eigene Stats-Knoten aber sofort.
+  const [selfStats, setSelfStats] = useState<LeaderboardStats | null>(null);
   const [trophies, setTrophies] = useState<MonthlyTrophy[]>([]);
   const [loading, setLoading] = useState(true);
   const [celebration, setCelebration] = useState<CelebrationData | null>(null);
@@ -96,6 +99,11 @@ export function useLeaderboardData() {
     if (user?.uid) {
       const friendUids = friends.map((f) => f.uid);
       await seedLeaderboardStats(user.uid, friendUids);
+      // Eigenen Live-Stand separat laden, um ihn über den (bis ~15 Min alten)
+      // Snapshot zu legen — so ist der eigene Wert im Alle-Tab identisch zum
+      // Freunde-Tab.
+      const self = await fetchLeaderboardData(user.uid, []);
+      setSelfStats(self[user.uid] ?? null);
     }
     const entries = await fetchGlobalLeaderboard();
     setGlobalEntries(entries);
@@ -207,6 +215,25 @@ export function useLeaderboardData() {
         rank: 0,
         isCurrentUser: e.uid === user.uid,
       }));
+      // Eigenen Wert auf den Live-Stand heben (Snapshot kann veraltet sein) —
+      // Live zählt im laufenden Monat nur hoch, daher nie kleiner als Snapshot.
+      if (selfStats) {
+        const liveValue = selfStats[activeCategory] || 0;
+        const own = entries.find((e) => e.uid === user.uid);
+        if (own) {
+          own.value = Math.max(own.value, liveValue);
+        } else if (liveValue > 0) {
+          entries.push({
+            uid: user.uid,
+            displayName: user.displayName || t('Unbekannt'),
+            photoURL: user.photoURL || undefined,
+            username: undefined,
+            value: liveValue,
+            rank: 0,
+            isCurrentUser: true,
+          });
+        }
+      }
       entries.sort((a, b) => b.value - a.value);
       entries.forEach((e, i) => {
         e.rank = i + 1;
@@ -231,7 +258,7 @@ export function useLeaderboardData() {
       e.rank = i + 1;
     });
     return entries;
-  }, [statsData, profiles, activeCategory, user?.uid, mode, globalEntries]);
+  }, [statsData, profiles, activeCategory, user, mode, globalEntries, selfStats]);
 
   const handleSetMode = useCallback((newMode: 'friends' | 'global') => {
     setMode(newMode);
