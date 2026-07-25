@@ -1901,35 +1901,169 @@ export function drawKitsuneMask(
   const cx = a.headCenterX;
   const ey = a.eyeY;
   const hw = a.headHalfWidth;
-  // Weiße Halbmaske (auf die Stirn geschoben, Seite)
-  const mx = cx + hw * 0.75;
-  const my = ey - hw * 0.9;
-  ctx.fillStyle = '#FAFAFA';
+  // Vollflächige Fuchsmaske über dem Gesicht (eine Maske deckt das Gesicht ab).
+  const mcx = cx;
+  const mcy = ey + hw * 0.05;
+  const mw = hw * 1.0;
+  const mh = hw * 1.02;
+  const earY = mcy - mh * 0.78;
+  const eyeOff = hw * 0.44;
+  const eyeCY = ey - hw * 0.02;
+  const RED = '#E23B2E';
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Fuchsohren (weiß)
+  ctx.fillStyle = '#FBFBFB';
+  for (const dir of [-1, 1]) {
+    const bx = mcx + dir * mw * 0.5;
+    ctx.beginPath();
+    ctx.moveTo((bx - 1.05) * ps, (earY + 0.2) * ps + off);
+    ctx.quadraticCurveTo(
+      (bx + dir * 0.1) * ps,
+      (earY - mh * 0.72) * ps + off,
+      (bx + 1.05) * ps,
+      (earY + 0.2) * ps + off
+    );
+    ctx.closePath();
+    ctx.fill();
+  }
+  // Maskenkörper (unten leicht spitz -> Fuchsschnauze)
   ctx.beginPath();
-  ctx.ellipse(mx * ps, my * ps + off, ps * 1.7, ps * 2, 0.35, 0, Math.PI * 2);
-  ctx.fill();
-  // Öhrchen der Maske
-  ctx.beginPath();
-  ctx.moveTo((mx - 1.2) * ps, (my - 1.2) * ps + off);
-  ctx.lineTo((mx - 0.2) * ps, (my - 2.6) * ps + off);
-  ctx.lineTo((mx + 0.5) * ps, (my - 1.4) * ps + off);
+  ctx.moveTo((mcx - mw) * ps, (mcy - mh * 0.15) * ps + off);
+  ctx.quadraticCurveTo((mcx - mw) * ps, (mcy - mh) * ps + off, mcx * ps, (mcy - mh) * ps + off);
+  ctx.quadraticCurveTo(
+    (mcx + mw) * ps,
+    (mcy - mh) * ps + off,
+    (mcx + mw) * ps,
+    (mcy - mh * 0.15) * ps + off
+  );
+  ctx.quadraticCurveTo(
+    (mcx + mw * 0.9) * ps,
+    (mcy + mh * 0.6) * ps + off,
+    mcx * ps,
+    (mcy + mh * 0.95) * ps + off
+  );
+  ctx.quadraticCurveTo(
+    (mcx - mw * 0.9) * ps,
+    (mcy + mh * 0.6) * ps + off,
+    (mcx - mw) * ps,
+    (mcy - mh * 0.15) * ps + off
+  );
   ctx.closePath();
   ctx.fill();
-  // Rote Zeichnung
-  ctx.strokeStyle = '#D32F2F';
-  ctx.lineWidth = ps * 0.25;
+  // sanfte Bodenschattierung
+  ctx.fillStyle = 'rgba(0,0,0,0.05)';
   ctx.beginPath();
-  ctx.moveTo((mx - 0.9) * ps, (my - 0.5) * ps + off);
-  ctx.lineTo((mx - 0.3) * ps, (my - 0.1) * ps + off);
-  ctx.moveTo((mx + 0.9) * ps, (my - 0.6) * ps + off);
-  ctx.lineTo((mx + 0.3) * ps, (my - 0.2) * ps + off);
-  ctx.stroke();
-  // Augen-Schlitze
-  ctx.fillStyle = '#D32F2F';
-  ctx.beginPath();
-  ctx.ellipse((mx - 0.5) * ps, (my + 0.3) * ps + off, ps * 0.4, ps * 0.18, 0.4, 0, Math.PI * 2);
-  ctx.ellipse((mx + 0.6) * ps, (my + 0.2) * ps + off, ps * 0.4, ps * 0.18, 0.4, 0, Math.PI * 2);
+  ctx.ellipse(
+    mcx * ps,
+    (mcy + mh * 0.55) * ps + off,
+    mw * 0.7 * ps,
+    mh * 0.4 * ps,
+    0,
+    0,
+    Math.PI * 2
+  );
   ctx.fill();
+
+  // Ohr-Innenrot
+  ctx.fillStyle = RED;
+  for (const dir of [-1, 1]) {
+    const bx = mcx + dir * mw * 0.5;
+    ctx.beginPath();
+    ctx.moveTo((bx - 0.5) * ps, (earY - 0.05) * ps + off);
+    ctx.quadraticCurveTo(
+      (bx + dir * 0.05) * ps,
+      (earY - mh * 0.5) * ps + off,
+      (bx + 0.5) * ps,
+      (earY - 0.05) * ps + off
+    );
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Augen: roter Mandel-Rand + schwarzes Auge (fierce, außen hoch)
+  for (const dir of [-1, 1]) {
+    const exc = mcx + dir * eyeOff;
+    const tilt = dir * 0.32;
+    ctx.fillStyle = RED;
+    ctx.beginPath();
+    ctx.ellipse(exc * ps, eyeCY * ps + off, hw * 0.34 * ps, hw * 0.2 * ps, tilt, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1c0606';
+    ctx.beginPath();
+    ctx.ellipse(exc * ps, eyeCY * ps + off, hw * 0.24 * ps, hw * 0.13 * ps, tilt, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.beginPath();
+    ctx.arc((exc - dir * 0.2) * ps, (eyeCY - 0.35) * ps + off, hw * 0.05 * ps, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Brauen: kräftig, nach außen-oben geschwungen
+  ctx.strokeStyle = RED;
+  ctx.lineWidth = hw * 0.13 * ps;
+  for (const dir of [-1, 1]) {
+    const exc = mcx + dir * eyeOff;
+    ctx.beginPath();
+    ctx.moveTo((exc - dir * hw * 0.28) * ps, (eyeCY - hw * 0.34) * ps + off);
+    ctx.quadraticCurveTo(
+      (exc + dir * hw * 0.2) * ps,
+      (eyeCY - hw * 0.62) * ps + off,
+      (exc + dir * hw * 0.5) * ps,
+      (eyeCY - hw * 0.44) * ps + off
+    );
+    ctx.stroke();
+  }
+
+  // Stirnmarke: symmetrischer Tropfen
+  ctx.fillStyle = RED;
+  const fy = mcy - mh * 0.62;
+  ctx.beginPath();
+  ctx.moveTo(mcx * ps, (fy - 0.9) * ps + off);
+  ctx.quadraticCurveTo((mcx + 0.55) * ps, (fy + 0.1) * ps + off, mcx * ps, (fy + 0.7) * ps + off);
+  ctx.quadraticCurveTo((mcx - 0.55) * ps, (fy + 0.1) * ps + off, mcx * ps, (fy - 0.9) * ps + off);
+  ctx.fill();
+
+  // Wangen: geschwungene Striche nach außen
+  ctx.strokeStyle = RED;
+  ctx.lineWidth = hw * 0.1 * ps;
+  for (const dir of [-1, 1]) {
+    const sx = mcx + dir * eyeOff * 1.05;
+    ctx.beginPath();
+    ctx.moveTo(sx * ps, (eyeCY + hw * 0.4) * ps + off);
+    ctx.quadraticCurveTo(
+      (sx + dir * hw * 0.45) * ps,
+      (eyeCY + hw * 0.58) * ps + off,
+      (sx + dir * hw * 0.5) * ps,
+      (eyeCY + hw * 0.92) * ps + off
+    );
+    ctx.stroke();
+  }
+
+  // Nase + kleiner Mund
+  ctx.fillStyle = RED;
+  ctx.beginPath();
+  ctx.moveTo(mcx * ps, (mcy + mh * 0.58) * ps + off);
+  ctx.lineTo((mcx - 0.4) * ps, (mcy + mh * 0.42) * ps + off);
+  ctx.lineTo((mcx + 0.4) * ps, (mcy + mh * 0.42) * ps + off);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = RED;
+  ctx.lineWidth = hw * 0.07 * ps;
+  ctx.beginPath();
+  ctx.moveTo((mcx - 0.6) * ps, (mcy + mh * 0.8) * ps + off);
+  ctx.quadraticCurveTo(
+    mcx * ps,
+    (mcy + mh * 0.92) * ps + off,
+    (mcx + 0.6) * ps,
+    (mcy + mh * 0.8) * ps + off
+  );
+  ctx.stroke();
+
+  ctx.restore();
 }
 
 export function drawThirdEye(
