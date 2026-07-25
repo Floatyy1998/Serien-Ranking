@@ -13,9 +13,10 @@ import {
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
-  { scale: DISPLAY_SCALES[0], label: t('Klein'), a: 14 },
-  { scale: DISPLAY_SCALES[1], label: t('Standard'), a: 17 },
-  { scale: DISPLAY_SCALES[2], label: t('Groß'), a: 21 },
+  { scale: DISPLAY_SCALES[0], label: t('Klein'), a: 13 },
+  { scale: DISPLAY_SCALES[1], label: t('Standard'), a: 15 },
+  { scale: DISPLAY_SCALES[2], label: t('Groß'), a: 18 },
+  { scale: DISPLAY_SCALES[3], label: t('Sehr groß'), a: 22 },
 ];
 
 const DisplaySizeControl = memo(() => {

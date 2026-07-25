@@ -20,6 +20,7 @@ vi.mock('@mui/icons-material', () => ({
   ChevronRight: () => null,
   Palette: () => null,
   ViewQuilt: () => null,
+  FormatSize: () => null,
 }));
 
 vi.mock('../../contexts/ThemeContext', () => {

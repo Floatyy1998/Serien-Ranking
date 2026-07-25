@@ -8,9 +8,7 @@
  */
 const KEY = 'displayScale';
 
-// Bewusst auf +10 % gedeckelt: Zoom verkleinert die nutzbare Breite, größere
-// Werte (z. B. 1.25) lassen enge Kopfzeilen überlappen. Bis 1.1 bleibt alles heil.
-export const DISPLAY_SCALES = [0.9, 1, 1.1] as const;
+export const DISPLAY_SCALES = [0.9, 1, 1.1, 1.25] as const;
 export type DisplayScale = (typeof DISPLAY_SCALES)[number];
 
 const isAllowed = (v: number): v is DisplayScale =>
@@ -38,8 +36,15 @@ export function applyDisplayScale(scale: number): void {
     // werden. Deshalb geben wir den Layout-Containern eine kompensierte
     // Viewport-Hoehe via --vh (durch den Zoom-Faktor geteilt). KEIN var(--vh)
     // hier verwenden — das waere eine Selbstreferenz.
-    if (s === 1) root.style.removeProperty('--vh');
-    else root.style.setProperty('--vh', `calc(100dvh / ${s})`);
+    if (s === 1) {
+      root.style.removeProperty('--vh');
+      root.style.removeProperty('--display-scale');
+    } else {
+      root.style.setProperty('--vh', `calc(100dvh / ${s})`);
+      // Roher Faktor für Elemente, die NICHT mitskalieren sollen (z. B. Splash):
+      // sie gegen-zoomen mit calc(1 / var(--display-scale)).
+      root.style.setProperty('--display-scale', String(s));
+    }
   } catch {
     /* niemals crashen wegen einer Anzeige-Einstellung */
   }

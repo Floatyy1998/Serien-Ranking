@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { App } from './App';
 import { SplashScreen } from './components/ui/SplashScreen';
+import { applyDisplayScale, getDisplayScale } from './services/displayScale';
 
 /**
  * Globaler Ready-Tracker
@@ -47,6 +48,23 @@ export const AppWithSplash: React.FC = () => {
   const [isAppMounted, setIsAppMounted] = useState(false);
   const [allSystemsReady, setAllSystemsReady] = useState(false);
   const checkInterval = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+
+  const currentPath = window.location.pathname;
+  const isAuthPage =
+    currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
+  let hasCachedUser = false;
+  try {
+    hasCachedUser = !!localStorage.getItem('cachedUser');
+  } catch {
+    // localStorage gesperrt (Private Mode) → lieber ohne Splash starten
+  }
+
+  // Anzeigegröße (zoom) erst anwenden, wenn KEIN Splash sichtbar ist — der
+  // Splash soll nie mitskalieren. Sichtbarer Splash → Scale 1, danach echt.
+  useEffect(() => {
+    const splashVisible = !isAuthPage && hasCachedUser && showSplash;
+    applyDisplayScale(splashVisible ? 1 : getDisplayScale());
+  }, [isAuthPage, hasCachedUser, showSplash]);
 
   useEffect(() => {
     // Mount App im Hintergrund nach kurzer Verzögerung
@@ -95,20 +113,9 @@ export const AppWithSplash: React.FC = () => {
     };
   }, [allSystemsReady]);
 
-  const currentPath = window.location.pathname;
-  const isAuthPage =
-    currentPath === '/login' || currentPath === '/register' || currentPath === '/start';
-
   // Ausgeloggte Besucher (kein gecachter User) bekommen KEINEN Splash:
   // initialData/homeConfig werden ohne Login nie ready → sie säßen sonst
   // bis zum 8s-Fallback vor dem Splash. Die Landing rendert sofort.
-  let hasCachedUser = false;
-  try {
-    hasCachedUser = !!localStorage.getItem('cachedUser');
-  } catch {
-    // localStorage gesperrt (Private Mode) → lieber ohne Splash starten
-  }
-
   if (isAuthPage || !hasCachedUser) {
     return <App />;
   }

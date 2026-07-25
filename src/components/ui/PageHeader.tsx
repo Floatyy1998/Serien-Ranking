@@ -85,7 +85,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         }}
       >
         {showBack && !isNavRoot && <BackButton />}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <GradientText
             as="h1"
             from={gradientFrom}
@@ -99,10 +99,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '10px',
+              minWidth: 0,
             }}
           >
             {icon}
-            {title}
+            <span
+              style={{
+                minWidth: 0,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {title}
+            </span>
             {titleBadge}
           </GradientText>
           {subtitle && (
@@ -119,7 +129,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </p>
           )}
         </div>
-        {actions}
+        {actions && <div style={{ flexShrink: 0, display: 'flex' }}>{actions}</div>}
       </motion.div>
     </header>
   );

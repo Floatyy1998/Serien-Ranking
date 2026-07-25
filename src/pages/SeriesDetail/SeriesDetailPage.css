@@ -569,6 +569,13 @@ button.episode-list-number:focus-visible {
   border: 1px solid var(--glass-border-subtle);
   border-radius: 14px;
   padding: 3px;
+  /* Unter Anzeige-Zoom lieber scrollen als überlaufen */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.detail-tab-switcher::-webkit-scrollbar {
+  display: none;
 }
 
 /* Desktop: kompakte Segmented-Control statt 2500px-Streifen. */

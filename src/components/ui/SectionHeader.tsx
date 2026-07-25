@@ -44,6 +44,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
           fontWeight: 800,
           letterSpacing: '-0.01em',
           margin: 0,
+          minWidth: 0,
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
@@ -52,15 +53,25 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
         <span
           style={{
             display: 'flex',
+            flexShrink: 0,
             color: iconColor || currentTheme.primary,
             filter: `drop-shadow(0 0 6px ${iconColor || currentTheme.primary}60)`,
           }}
         >
           {icon}
         </span>
-        {title}
+        <span
+          style={{
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {title}
+        </span>
       </h2>
-      {action}
+      {action && <div style={{ flexShrink: 0, display: 'flex' }}>{action}</div>}
       {onSeeAll && (
         <Tooltip title={t('Alle anzeigen')} arrow>
           <button
@@ -74,6 +85,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               display: 'flex',
               alignItems: 'center',
               padding: 0,
+              flexShrink: 0,
+              whiteSpace: 'nowrap',
             }}
           >
             {resolvedSeeAllLabel} <ChevronRight style={{ fontSize: '16px' }} />

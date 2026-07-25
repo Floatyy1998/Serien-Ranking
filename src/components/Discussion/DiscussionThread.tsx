@@ -217,6 +217,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: '12px',
           marginBottom: '20px',
         }}
       >
@@ -227,15 +228,26 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             fontFamily: 'var(--font-display)',
             color: currentTheme.text.primary,
             margin: 0,
+            minWidth: 0,
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
           }}
         >
-          {title || t('Diskussionen')}
+          <span
+            style={{
+              minWidth: 0,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title || t('Diskussionen')}
+          </span>
           {discussions.length > 0 && (
             <span
               style={{
+                flexShrink: 0,
                 fontSize: '15px',
                 fontWeight: 600,
                 color: currentTheme.text.muted,
@@ -254,6 +266,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
             whileTap={tapScale}
             onClick={() => setShowNewForm(true)}
             style={{
+              flexShrink: 0,
               padding: '10px 20px',
               borderRadius: '12px',
               border: 'none',
@@ -262,6 +275,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               cursor: 'pointer',
               fontSize: '15px',
               fontWeight: 700,
+              whiteSpace: 'nowrap',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08)',
             }}
           >
