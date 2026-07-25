@@ -393,18 +393,20 @@ function hslToHex(h: number, s: number, l: number): string {
 }
 
 /**
- * Generiert eine Komplementärfarbe via Hue-Rotation um 150°.
- * Cyan → Magenta/Pink, Grün → Violett, Blau → Orange-Rot, Orange → Cyan.
- * Immer hohe Sättigung (min 65%) und gute Helligkeit (55-65%) für vivid Gradients.
+ * Erzeugt den zweiten Verlaufston aus der Primärfarbe. Bewusst ANALOG statt
+ * komplementär: nur +45° Hue-Rotation → harmonischer, im-Theme-bleibender
+ * Partner (Grün → Türkis/Cyan, Blau → Violett, Rot → Orange) statt der früher
+ * fremd wirkenden Komplementärfarbe (Grün → Lila).
+ * Sättigung/Helligkeit im vivid-Bereich, damit Verläufe kräftig bleiben.
  */
 export function generateComplementaryColor(hex: string): string {
   try {
     const { h, s, l } = hexToHsl(hex);
-    const newH = (h + 150) % 360;
+    const newH = (h + 45) % 360;
     const newS = Math.min(80, Math.max(65, s));
     const newL = Math.min(65, Math.max(55, l));
     return hslToHex(newH, newS, newL);
   } catch {
-    return '#8b5cf6'; // Fallback auf bewährtes Purple
+    return '#00c2b8'; // Fallback: neutrales Türkis statt Fremd-Lila
   }
 }
