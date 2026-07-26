@@ -44,6 +44,31 @@ const triFill = (
   ctx.fill();
 };
 
+// Helper: Glied-Ellipse wie im Original (Zentrum cx,cy, Eigen-Rotation rot), die
+// aber um ihren Ansatz (px,py) am Körper schwingt (delta) statt um die eigene
+// Mitte. delta=0 ergibt exakt die Ruhelage — nur das freie Ende bewegt sich.
+const swingAround = (
+  ctx: CanvasRenderingContext2D,
+  px: number,
+  py: number,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  rot: number,
+  delta: number,
+  ps: number,
+  offset: number
+) => {
+  ctx.save();
+  ctx.translate(px * ps, py * ps + offset);
+  ctx.rotate(delta);
+  ctx.beginPath();
+  ctx.ellipse((cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, rot, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+};
+
 /**
  * HUND — Kawaii-Welpe: lange Beagle-Schlappohren, die VOR dem Kopf hängen,
  * große helle Schnauze mit Knopfnase und Zunge, Augenbrauen-Punkte,
@@ -86,20 +111,40 @@ export const drawDog = (
   const bodyRx = 4.9 * sizeBoost;
   const bodyRy = 4.4 * sizeBoost;
 
-  // SCHWANZ (wedelt; Wolf: buschiger)
+  // SCHWANZ (wedelt um den Ansatz am Körper — nur die Spitze schwingt)
+  const tailCx = centerX + bodyRx + 1.4;
+  const tailCy = bodyCY - 1.6;
+  const tailPx = centerX + bodyRx - 0.2;
+  const tailPy = bodyCY + 0.2;
   ctx.fillStyle = color;
-  ellipseFill(
+  swingAround(
     ctx,
-    centerX + bodyRx + 1.4,
-    bodyCY - 1.6,
+    tailPx,
+    tailPy,
+    tailCx,
+    tailCy,
     wolf ? 1.5 : 1.1,
     wolf ? 3 : 2.5,
+    0.75,
+    wag,
     ps,
-    offset,
-    0.75 + wag
+    offset
   );
+  // Helle Spitze um denselben Ansatz mitdrehen.
+  ctx.save();
+  ctx.translate(tailPx * ps, tailPy * ps + offset);
+  ctx.rotate(wag);
   ctx.fillStyle = light;
-  arcFill(ctx, centerX + bodyRx + 2.3, bodyCY - 3.1 + wag, wolf ? 1 : 0.75, ps, offset);
+  ctx.beginPath();
+  ctx.arc(
+    (centerX + bodyRx + 2.3 - tailPx) * ps,
+    (bodyCY - 3.1 - tailPy) * ps,
+    (wolf ? 1 : 0.75) * ps,
+    0,
+    Math.PI * 2
+  );
+  ctx.fill();
+  ctx.restore();
 
   // KÖRPER
   ctx.fillStyle = color;

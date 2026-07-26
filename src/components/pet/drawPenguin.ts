@@ -44,6 +44,33 @@ const triFill = (
   ctx.fill();
 };
 
+// Helper: Glied-Ellipse (Zentrum cx,cy, Eigen-Rotation rot) wie im Original, die
+// aber um ein Ende ihrer langen Achse (den Körper-Ansatz) schwingt statt um die
+// Mitte. pivotEnd -1 = oberes Ende (Schulter), +1 = unteres Ende. delta = Schwung;
+// delta=0 = exakte Ruhelage, nur das freie Ende bewegt sich.
+const swingLimb = (
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  rot: number,
+  delta: number,
+  pivotEnd: number,
+  ps: number,
+  offset: number
+) => {
+  const px = cx - pivotEnd * ry * Math.sin(rot);
+  const py = cy + pivotEnd * ry * Math.cos(rot);
+  ctx.save();
+  ctx.translate(px * ps, py * ps + offset);
+  ctx.rotate(delta);
+  ctx.beginPath();
+  ctx.ellipse((cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, rot, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+};
+
 /**
  * PINGUIN — birnenförmiger Körper (User-Farbe als Frack), weißer Bauch,
  * wackelnde Flossen, oranger Schnabel + Füße. Ab Lv50 „Kaiserpinguin"-Form
@@ -105,10 +132,11 @@ export const drawPenguin = (
   arcFill(ctx, centerX - 1.9, headCY + 0.4, 1.7, ps, offset);
   arcFill(ctx, centerX + 1.9, headCY + 0.4, 1.7, ps, offset);
 
-  // FLOSSEN (seitlich, wackeln beim Watscheln)
+  // FLOSSEN (näher am Körper; wackeln um das Schulter-Ende statt um die Mitte)
+  const flipCy = bodyCY + 0.5;
   ctx.fillStyle = dark;
-  ellipseFill(ctx, centerX - bodyRx * 1.02, bodyCY + 0.5, 1.4, 3.8, ps, offset, -0.35 - flap);
-  ellipseFill(ctx, centerX + bodyRx * 1.02, bodyCY + 0.5, 1.4, 3.8, ps, offset, 0.35 + flap);
+  swingLimb(ctx, centerX - bodyRx * 0.86, flipCy, 1.4, 3.8, -0.35, -flap, -1, ps, offset);
+  swingLimb(ctx, centerX + bodyRx * 0.86, flipCy, 1.4, 3.8, 0.35, flap, -1, ps, offset);
 
   // AUGEN
   const blink = animated && Math.floor(frame * 0.02 * animationSpeed) % 8 === 7;

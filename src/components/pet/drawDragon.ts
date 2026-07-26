@@ -44,6 +44,33 @@ const triFill = (
   ctx.fill();
 };
 
+// Helper: Glied-Ellipse (Zentrum cx,cy, Eigen-Rotation rot) wie im Original, die
+// aber um ein Ende ihrer langen Achse (den Körper-Ansatz) schwingt statt um die
+// Mitte. pivotEnd -1 = oberes Ende (Schulter), +1 = unteres Ende. delta = Schwung;
+// delta=0 = exakte Ruhelage, nur das freie Ende bewegt sich.
+const swingLimb = (
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  rot: number,
+  delta: number,
+  pivotEnd: number,
+  ps: number,
+  offset: number
+) => {
+  const px = cx - pivotEnd * ry * Math.sin(rot);
+  const py = cy + pivotEnd * ry * Math.cos(rot);
+  ctx.save();
+  ctx.translate(px * ps, py * ps + offset);
+  ctx.rotate(delta);
+  ctx.beginPath();
+  ctx.ellipse((cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, rot, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+};
+
 const sizeBoostFor = (level: number): number =>
   level >= 50
     ? 1.16
@@ -302,23 +329,42 @@ export const drawDragonWingsOverlay = (
   for (let side = -1; side <= 1; side += 2) {
     const wx = centerX + side * (bodyRx + wingRx * 0.55);
     const wy = bodyCY - 1.2;
-    const rot = side * (0.5 + flap);
+    const wingRot = side * 0.5;
+    // Flügel sitzen mit dem unteren, körpernahen Ende fest; nur die Spitze schwingt.
     ctx.fillStyle = dark;
-    ellipseFill(ctx, wx, wy, wingRx, wingRy, ps, offset, rot);
+    swingLimb(ctx, wx, wy, wingRx, wingRy, wingRot, side * flap, 1, ps, offset);
     ctx.fillStyle = color;
-    ellipseFill(ctx, wx + side * 0.3, wy + 0.5, wingRx * 0.62, wingRy * 0.62, ps, offset, rot);
+    swingLimb(
+      ctx,
+      wx + side * 0.3,
+      wy + 0.5,
+      wingRx * 0.62,
+      wingRy * 0.62,
+      wingRot,
+      side * flap,
+      1,
+      ps,
+      offset
+    );
     if (wyvern) {
+      // Membranadern um dasselbe untere Ende mitdrehen.
+      const px = wx - wingRy * Math.sin(wingRot);
+      const py = wy + wingRy * Math.cos(wingRot);
+      ctx.save();
+      ctx.translate(px * ps, py * ps + offset);
+      ctx.rotate(side * flap);
       ctx.strokeStyle = dark;
       ctx.lineWidth = ps * 0.22;
       for (let i = 0; i < 2; i++) {
         ctx.beginPath();
-        ctx.moveTo(wx * ps, (wy + wingRy * 0.5) * ps + offset);
+        ctx.moveTo((wx - px) * ps, (wy + wingRy * 0.5 - py) * ps);
         ctx.lineTo(
-          (wx + side * wingRx * (0.5 + i * 0.5)) * ps,
-          (wy - wingRy * (0.5 + i * 0.3)) * ps + offset
+          (wx + side * wingRx * (0.5 + i * 0.5) - px) * ps,
+          (wy - wingRy * (0.5 + i * 0.3) - py) * ps
         );
         ctx.stroke();
       }
+      ctx.restore();
     }
   }
 };

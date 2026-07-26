@@ -44,6 +44,33 @@ const triFill = (
   ctx.fill();
 };
 
+// Helper: Glied-Ellipse (Zentrum cx,cy, Eigen-Rotation rot) wie im Original, die
+// aber um ein Ende ihrer langen Achse (den Körper-Ansatz) schwingt statt um die
+// Mitte. pivotEnd -1 = oberes Ende (Schulter), +1 = unteres Ende. delta = Schwung;
+// delta=0 = exakte Ruhelage, nur das freie Ende bewegt sich.
+const swingLimb = (
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  rot: number,
+  delta: number,
+  pivotEnd: number,
+  ps: number,
+  offset: number
+) => {
+  const px = cx - pivotEnd * ry * Math.sin(rot);
+  const py = cy + pivotEnd * ry * Math.cos(rot);
+  ctx.save();
+  ctx.translate(px * ps, py * ps + offset);
+  ctx.rotate(delta);
+  ctx.beginPath();
+  ctx.ellipse((cx - px) * ps, (cy - py) * ps, rx * ps, ry * ps, rot, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+};
+
 /**
  * VOGEL — Kawaii-Küken: rundes Ei-Körperchen, Stummelflügel, Federschopf,
  * kleiner Schnabel, Stelzenbeinchen. Ab Lv50 „Phönix"-Form mit Flammenkamm,
@@ -115,14 +142,16 @@ export const drawBird = (
   ctx.fillStyle = light;
   ellipseFill(ctx, centerX, bodyCY + 1.8, bodyRx * 0.6, bodyRy * 0.55, ps, offset);
 
-  // FLÜGEL (Stummel; flattern sanft; Phönix: Flammen-Spitzen)
+  // FLÜGEL (näher am Körper und tiefer; flattern um das Schulter-Ende)
+  const wingCx = bodyRx * 0.82;
+  const wingCy = bodyCY + 1.2;
   ctx.fillStyle = dark;
-  ellipseFill(ctx, centerX - bodyRx * 0.98, bodyCY + 0.3, 1.5, 3.4, ps, offset, -0.3 - flap);
-  ellipseFill(ctx, centerX + bodyRx * 0.98, bodyCY + 0.3, 1.5, 3.4, ps, offset, 0.3 + flap);
+  swingLimb(ctx, centerX - wingCx, wingCy, 1.5, 3.2, -0.26, -flap, -1, ps, offset);
+  swingLimb(ctx, centerX + wingCx, wingCy, 1.5, 3.2, 0.26, flap, -1, ps, offset);
   if (phoenix) {
     ctx.fillStyle = '#FF7043';
-    ellipseFill(ctx, centerX - bodyRx * 1.05, bodyCY + 2.2, 0.9, 1.6, ps, offset, -0.4 - flap);
-    ellipseFill(ctx, centerX + bodyRx * 1.05, bodyCY + 2.2, 0.9, 1.6, ps, offset, 0.4 + flap);
+    swingLimb(ctx, centerX - wingCx - 0.2, wingCy + 1.6, 0.9, 1.6, -0.34, -flap, -1, ps, offset);
+    swingLimb(ctx, centerX + wingCx + 0.2, wingCy + 1.6, 0.9, 1.6, 0.34, flap, -1, ps, offset);
   }
 
   // FEDERSCHOPF (weicht Kopf-Accessoires; Phönix: Flammenkamm)
