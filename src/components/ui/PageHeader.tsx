@@ -40,6 +40,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   return (
     <header
+      className="page-header"
       style={{
         position: 'relative',
         padding: '20px',
@@ -78,14 +79,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         initial={shouldReduceMotion ? false : { opacity: 0, y: -16 }}
         animate={shouldReduceMotion ? false : { opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 250, damping: 22 }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '16px',
-        }}
+        className={`page-header__row${subtitle && actions ? ' page-header__row--stacked' : ''}`}
       >
         {showBack && !isNavRoot && <BackButton />}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="page-header__main">
           <GradientText
             as="h1"
             from={gradientFrom}
@@ -129,7 +126,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </p>
           )}
         </div>
-        {actions && <div style={{ flexShrink: 0, display: 'flex' }}>{actions}</div>}
+        {actions && <div className="page-header__actions">{actions}</div>}
       </motion.div>
     </header>
   );
