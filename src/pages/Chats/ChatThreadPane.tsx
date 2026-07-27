@@ -38,6 +38,7 @@ import {
   subscribeChatWallpaper,
   type ChatBubbleStyle,
 } from '../../services/chat/chatAppearance';
+import { queueDismiss } from '../../services/dismissQueue';
 import { clearDeliveredChatPushes } from '../../services/pushNotifications';
 import { MAX_IMAGE_BYTES } from '../../lib/imageCompress';
 import { bubbleTextColor, RADIUS_PX, resolveWallpaper } from './chatWallpapers';
@@ -154,11 +155,20 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
 
   useEffect(() => {
     if (!pairId || !myUid || messages.length === 0) return;
-    if (document.visibilityState === 'visible') {
+    const markRead = () => {
+      if (document.visibilityState !== 'visible') return;
       void markChatRead(myUid, pairId);
-      // Gelesen = zugestellte Pushes dieses Chats vom Sperrbildschirm räumen
+      // Gelesen = zugestellte Pushes dieses Chats vom Sperrbildschirm räumen —
+      // hier lokal, auf den übrigen Geräten per stillem Push über die Queue.
       void clearDeliveredChatPushes(friendId);
-    }
+      void queueDismiss(myUid, `/chat/${friendId}`);
+    };
+    markRead();
+    // Trifft die Nachricht ein, während die App im Hintergrund liegt, läuft der
+    // Effekt ins Leere und wiederholt sich nicht — beim Zurückkommen bliebe der
+    // offene Chat sonst ungelesen und der Push auf dem Sperrbildschirm liegen.
+    document.addEventListener('visibilitychange', markRead);
+    return () => document.removeEventListener('visibilitychange', markRead);
   }, [pairId, myUid, messages.length, friendId]);
 
   const scrollToBottom = useCallback(() => {
