@@ -136,7 +136,9 @@ platform :ios do
           NSE_ID => nse_profile_name,
         },
       },
-      xcargs: "MARKETING_VERSION=1.2 CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}"
+      # Marketing-Version hier pflegen (das Repo-pbxproj bleibt unangetastet);
+      # die Build-Nummer zieht der Workflow aus der Lauf-Nummer.
+      xcargs: "MARKETING_VERSION=1.3 CURRENT_PROJECT_VERSION=#{ENV.fetch('BUILD_NUMBER', '1')}"
     )
 
     pilot(
