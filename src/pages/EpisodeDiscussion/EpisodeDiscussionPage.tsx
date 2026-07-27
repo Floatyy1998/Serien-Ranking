@@ -1,5 +1,5 @@
 import { Check, SkipNext } from '@mui/icons-material';
-import { AnimatePresence, motion, type PanInfo } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -118,18 +118,6 @@ export const EpisodeDiscussionPage = memo(() => {
     ? { filler: currentFiller.filler, recap: currentFiller.recap }
     : null;
 
-  const handleSwipeNav = useCallback(
-    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-      if (Math.abs(info.offset.x) < 60 || Math.abs(info.velocity.x) < 100) return;
-      if (info.offset.x < 0 && navigation.hasNextEpisode) {
-        navigation.goToNextEpisode();
-      } else if (info.offset.x > 0 && navigation.hasPrevEpisode) {
-        navigation.goToPrevEpisode();
-      }
-    },
-    [navigation]
-  );
-
   if (loading) {
     return <LoadingState currentTheme={currentTheme} />;
   }
@@ -228,15 +216,9 @@ export const EpisodeDiscussionPage = memo(() => {
         )}
       </AnimatePresence>
 
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.3}
-        dragMomentum={false}
-        dragSnapToOrigin
-        onDragEnd={handleSwipeNav}
-        style={{ touchAction: 'pan-y' }}
-      >
+      {/* Kein Swipe-Wechsel zur nächsten/vorigen Folge mehr — Navigation nur
+          über die Buttons (der Drag kollidierte mit Scroll und Sternen). */}
+      <div>
         <HeroSection
           currentTheme={currentTheme}
           stillPath={stillPath}
@@ -283,7 +265,7 @@ export const EpisodeDiscussionPage = memo(() => {
             >
               {t('Folge bewerten')}
             </div>
-            <StarRatingSlider value={draft} onChange={setDraft} size={28} />
+            <StarRatingSlider value={draft} onChange={setDraft} size={22} />
             <motion.button
               whileTap={ratingDirty ? { scale: 0.96 } : undefined}
               onClick={handleRateEpisode}
@@ -335,7 +317,11 @@ export const EpisodeDiscussionPage = memo(() => {
         <EpisodeNavigation currentTheme={currentTheme} navigation={navigation} />
 
         <div className="ed-content">
-          <OverviewSection currentTheme={currentTheme} episodeOverview={episodeOverview} />
+          <OverviewSection
+            currentTheme={currentTheme}
+            episodeOverview={episodeOverview}
+            isWatched={isWatched}
+          />
 
           <CrewSection currentTheme={currentTheme} directors={directors} writers={writers} />
 
@@ -355,7 +341,7 @@ export const EpisodeDiscussionPage = memo(() => {
             isWatched={isWatched}
           />
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 });

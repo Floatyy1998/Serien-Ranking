@@ -7,6 +7,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useEpisodeDiscussionCounts } from '../../hooks/discussionCountHooks';
 import { shouldTriggerQuickRate, useQuickSeasonRating } from '../../hooks/useQuickSeasonRating';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { adjustBulkExcludedEpisodes } from '../../services/pet/mysteryBoxService';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import type { Series } from '../../types/Series';
@@ -363,6 +364,17 @@ export const useEpisodeManagement = () => {
             trackEpisodeUnwatched(series.title, season.seasonNumber + 1, episodeIndex + 1);
           }
           if (!episode.watched && newWatched) {
+            // Bewertungs-Prompt wie an den übrigen Abhak-Stellen (1×/Minute gedrosselt)
+            if (episode.id) {
+              requestEpisodeRating({
+                seriesId: series.id,
+                seriesTitle: series.title,
+                seasonIndex: season.seasonNumber,
+                episodeId: episode.id,
+                label: `S${season.seasonNumber + 1} E${episodeIndex + 1}${episode.name ? ` · ${episode.name}` : ''}`,
+                currentRating: episode.userRating,
+              });
+            }
             await runEpisodeWatchFanout({
               userId: user.uid,
               seriesId: series.id,

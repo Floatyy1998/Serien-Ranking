@@ -90,7 +90,7 @@ export const EpisodeRatingSheetHost = () => {
           >
             {t('Wie war die Folge?')}
           </p>
-          <StarRatingSlider value={draft} onChange={setDraft} size={32} />
+          <StarRatingSlider value={draft} onChange={setDraft} size={26} />
           <button
             onClick={handleSave}
             disabled={saving}

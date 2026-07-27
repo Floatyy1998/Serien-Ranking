@@ -86,7 +86,7 @@ export const EpisodeActionSheet: React.FC<EpisodeActionSheetProps> = ({
             >
               {t('Folge bewerten')}
             </p>
-            <StarRatingSlider value={draft} onChange={setDraft} size={30} />
+            <StarRatingSlider value={draft} onChange={setDraft} size={24} />
             <motion.button
               whileTap={dirty ? tapScale : undefined}
               onClick={() => dirty && onRate(episode, draft >= 0.5 ? draft : null)}

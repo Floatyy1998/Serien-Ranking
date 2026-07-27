@@ -6,6 +6,7 @@ import { trackEpisodeWatched } from '../../services/firebase/analytics';
 import type { WeeklyEpisode } from '../../hooks/useWeeklyEpisodes';
 import { useWeeklyEpisodes, getWeekNumber } from '../../hooks/useWeeklyEpisodes';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../../lib/episode/seriesMetrics';
 import { applyUserUpdate } from '../../services/offline/queuedUpdate';
 import { appLocale, t } from '../../services/i18n';
@@ -201,6 +202,17 @@ export const useCalendarData = () => {
                 }
               );
               const episode = series.seasons?.[seasonIndex]?.episodes?.[episodeIndex];
+              // Bewertungs-Prompt wie an den übrigen Abhak-Stellen (1×/Minute gedrosselt)
+              if (episode?.id && prevCount === 0) {
+                requestEpisodeRating({
+                  seriesId: series.id,
+                  seriesTitle: series.title || series.name || '',
+                  seasonIndex,
+                  episodeId: episode.id,
+                  label: `S${seasonIndex + 1} E${episodeIndex + 1}${episode.name ? ` · ${episode.name}` : ''}`,
+                  currentRating: episode.userRating,
+                });
+              }
               // Kein Pet-XP im Kalender (bestehendes Verhalten beibehalten).
               // Wrapped-Event nur beim Erstwatch (prevCount === 0) — dann ist
               // isRewatch ohnehin false, wie zuvor hart kodiert.

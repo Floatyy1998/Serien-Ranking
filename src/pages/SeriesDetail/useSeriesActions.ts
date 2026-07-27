@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { dbRef, dbUpdate, paths, serverTimestamp } from '../../services/db/ref';
 import { logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { runEpisodeWatchFanout } from '../../lib/episode/episodeWatchFanout';
+import { requestEpisodeRating } from '../../lib/episodeRatingPrompt';
 import { getMaxWatchCount } from '../../lib/validation/rewatch.utils';
 import { useSeriesList } from '../../contexts/SeriesListContext';
 import type { Series } from '../../types/Series';
@@ -509,6 +510,17 @@ export function useSeriesActions(
           },
           onCommit: async () => {
             if (newWatched) {
+              // Bewertungs-Prompt wie an den übrigen Abhak-Stellen (1×/Minute gedrosselt)
+              if (episode.id) {
+                requestEpisodeRating({
+                  seriesId: series.id,
+                  seriesTitle: series.title || series.name || '',
+                  seasonIndex,
+                  episodeId: episode.id,
+                  label: `S${seasonNumber} E${epNumber}${episode.name ? ` · ${episode.name}` : ''}`,
+                  currentRating: episode.userRating,
+                });
+              }
               trackEpisodeWatched(series.title, seasonNumber, epNumber, {
                 tmdbId: series.id,
                 genres: series.genre?.genres,

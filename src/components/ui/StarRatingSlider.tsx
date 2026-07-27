@@ -9,14 +9,14 @@ interface StarRatingSliderProps {
   value: number;
   /** Live-Änderung beim Ziehen/Tippen (noch nicht gespeichert). */
   onChange: (value: number) => void;
-  /** Stern-Größe in px (Default 34). */
+  /** Stern-Größe in px (Default 24 — bei 10 Sternen muss die Reihe mobil passen). */
   size?: number;
   /** Numerischen Wert darunter zeigen (Default true). */
   showValue?: boolean;
 }
 
 const MAX = 10;
-const STARS = 5; // jeder Stern = 2 Punkte
+const STARS = 10; // jeder Stern = 1 Punkt, passend zur 1-10-Skala
 const STEP = 0.1;
 
 const round1 = (v: number): number => Math.round(v * 10) / 10;
@@ -29,7 +29,7 @@ const clamp = (v: number): number => Math.max(0, Math.min(MAX, v));
 export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
   value,
   onChange,
-  size = 34,
+  size = 24,
   showValue = true,
 }) => {
   const { currentTheme } = useTheme();
@@ -110,15 +110,16 @@ export const StarRatingSlider: React.FC<StarRatingSliderProps> = ({
         onKeyDown={onKeyDown}
         style={{
           display: 'inline-flex',
-          gap: '6px',
+          gap: '2px',
           padding: '6px 4px',
           touchAction: 'none',
           cursor: 'pointer',
           outline: 'none',
+          maxWidth: '100%',
         }}
       >
         {Array.from({ length: STARS }, (_, i) => {
-          const frac = Math.max(0, Math.min(1, (value - i * 2) / 2));
+          const frac = Math.max(0, Math.min(1, value - i));
           return (
             <div key={i} style={{ position: 'relative', width: `${size}px`, height: `${size}px` }}>
               <Star style={{ fontSize: `${size}px`, color: muted, display: 'block' }} />
