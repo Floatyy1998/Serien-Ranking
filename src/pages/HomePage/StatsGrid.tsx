@@ -172,7 +172,7 @@ export const StatsGrid = () => {
                     fontSize: '1.1rem',
                     fontWeight: 800,
                     fontFamily: 'var(--font-display)',
-                    background: `linear-gradient(135deg, ${currentTheme.primary || colors.primary}, ${currentTheme.accent || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
+                    backgroundImage: `linear-gradient(135deg, ${currentTheme.primary || colors.primary}, ${currentTheme.accent || colors.primary}, ${currentTheme.status?.success || colors.status.success})`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                   }}

@@ -243,7 +243,7 @@ export const FriendProfilePage = memo(() => {
             <h1 className="fp-hero-name">
               <span
                 style={{
-                  background: `linear-gradient(90deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+                  backgroundImage: `linear-gradient(90deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
                   color: 'transparent',

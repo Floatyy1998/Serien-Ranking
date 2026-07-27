@@ -158,7 +158,7 @@ export const RecommendSheetHero: React.FC<RecommendSheetHeroProps> = ({ media })
               fontWeight: 900,
               lineHeight: 1.1,
               fontFamily: 'var(--font-display)',
-              background: `linear-gradient(135deg, #fff 0%, #fff 50%, ${currentTheme.primary}cc 100%)`,
+              backgroundImage: `linear-gradient(135deg, #fff 0%, #fff 50%, ${currentTheme.primary}cc 100%)`,
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',

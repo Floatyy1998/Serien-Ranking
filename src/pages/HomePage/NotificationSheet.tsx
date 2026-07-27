@@ -154,7 +154,7 @@ export const NotificationSheet = React.memo(function NotificationSheet({
                   fontSize: '20px',
                   fontWeight: 800,
                   fontFamily: 'var(--font-display)',
-                  background: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
+                  backgroundImage: `linear-gradient(135deg, ${currentTheme.text.primary}, ${currentTheme.primary})`,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}

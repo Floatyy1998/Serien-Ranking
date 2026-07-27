@@ -29,8 +29,8 @@ export const GradientText: React.FC<GradientTextProps> = ({
   const currentTheme = themeContext?.currentTheme ?? null;
 
   const fromColor = from || currentTheme?.primary || '#ef6f8a';
-  const toColor = to || currentTheme?.accent || '#8b5cf6';
-  const midColor = currentTheme?.accent || '#8b5cf6';
+  const toColor = to || currentTheme?.accent || '#f2a648';
+  const midColor = currentTheme?.accent || '#f2a648';
 
   // Build CSS class list for animated variants
   const classNames: string[] = [];
@@ -47,7 +47,12 @@ export const GradientText: React.FC<GradientTextProps> = ({
     <Tag
       className={classNames.length > 0 ? classNames.join(' ') : undefined}
       style={{
-        background: gradientBg,
+        // backgroundImage statt der Kurzschreibweise `background`: Letztere
+        // setzt beim Aktualisieren alle Unter-Eigenschaften zurueck, also auch
+        // background-clip — React schreibt das unveraenderte clip aber nicht
+        // neu, und der Verlauf fuellt dann die Box statt der Schrift
+        // (sichtbar beim Theme-Wechsel, bis man neu laedt).
+        backgroundImage: gradientBg,
         backgroundSize: shimmer ? '300% 100%' : animatedGradient ? '200% auto' : undefined,
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',

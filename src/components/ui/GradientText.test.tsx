@@ -32,4 +32,19 @@ describe('GradientText', () => {
     render(<GradientText animatedGradient>Anim</GradientText>);
     expect(screen.getByText('Anim')).toHaveClass('gradient-text-animated');
   });
+
+  it('stanzt den Verlauf in die Schrift', () => {
+    render(<GradientText>Stanz</GradientText>);
+    const el = screen.getByText('Stanz');
+    expect(el.style.backgroundClip || el.style.webkitBackgroundClip).toBe('text');
+    expect(el.style.backgroundImage).toContain('linear-gradient');
+  });
+
+  it('setzt den Verlauf NICHT per Kurzschreibweise', () => {
+    // `background:` wuerde background-clip beim Aktualisieren mitloeschen —
+    // React schreibt das unveraenderte clip nicht neu, und der Verlauf fuellt
+    // dann die ganze Box statt der Buchstaben (Theme-Wechsel-Bug).
+    render(<GradientText>Kurz</GradientText>);
+    expect(screen.getByText('Kurz').getAttribute('style')).not.toMatch(/(^|;)\s*background:/);
+  });
 });
