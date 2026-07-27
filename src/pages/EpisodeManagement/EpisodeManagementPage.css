@@ -19,7 +19,7 @@
   border-radius: 50%;
   background: radial-gradient(
     ellipse,
-    var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%,
+    var(--color-primary-alpha-15, rgba(239, 111, 138, 0.15)) 0%,
     transparent 70%
   );
   filter: blur(40px);
@@ -37,7 +37,7 @@
   border-radius: 50%;
   background: radial-gradient(
     ellipse,
-    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 12%, transparent) 0%,
+    color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 12%, transparent) 0%,
     transparent 70%
   );
   filter: blur(40px);
@@ -72,7 +72,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -246,7 +246,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -266,11 +266,11 @@
   background: linear-gradient(
     90deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   border-radius: 4px;
   transition: width 0.5s ease;
-  box-shadow: 0 0 10px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
+  box-shadow: 0 0 10px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
   position: relative;
   overflow: hidden;
 }
@@ -316,7 +316,7 @@
 
 .mark-all-button:hover {
   background: var(--glass-medium);
-  border-color: var(--color-primary-alpha-30, rgba(102, 126, 234, 0.3));
+  border-color: var(--color-primary-alpha-30, rgba(239, 111, 138, 0.3));
 }
 
 .mark-all-button:active {
@@ -343,7 +343,7 @@
 
 .catch-up-button:hover {
   background: var(--glass-light);
-  border-color: var(--color-primary-alpha-30, rgba(102, 126, 234, 0.3));
+  border-color: var(--color-primary-alpha-30, rgba(239, 111, 138, 0.3));
   color: var(--color-text-primary);
 }
 
@@ -414,11 +414,11 @@
 .episode-item.watched {
   background: linear-gradient(
     135deg,
-    var(--color-primary-alpha-10, rgba(102, 126, 234, 0.1)) 0%,
+    var(--color-primary-alpha-10, rgba(239, 111, 138, 0.1)) 0%,
     transparent 100%
   );
-  border-color: var(--color-primary-alpha-20, rgba(102, 126, 234, 0.2));
-  box-shadow: 0 0 12px var(--color-primary-alpha-10, rgba(102, 126, 234, 0.1));
+  border-color: var(--color-primary-alpha-20, rgba(239, 111, 138, 0.2));
+  box-shadow: 0 0 12px var(--color-primary-alpha-10, rgba(239, 111, 138, 0.1));
 }
 
 .episode-item:active {
@@ -431,7 +431,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   border-radius: var(--radius-md);
   display: flex;
@@ -441,7 +441,7 @@
   font-size: 15px;
   flex-shrink: 0;
   color: white;
-  box-shadow: 0 4px 12px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
+  box-shadow: 0 4px 12px var(--color-primary-alpha-40, rgba(239, 111, 138, 0.4));
 }
 
 .episode-details {
@@ -543,8 +543,8 @@
 }
 
 .status-unwatched:hover {
-  border-color: var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
-  background: var(--color-primary-alpha-10, rgba(102, 126, 234, 0.1));
+  border-color: var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
+  background: var(--color-primary-alpha-10, rgba(239, 111, 138, 0.1));
 }
 
 /* Bottom Action Bar */
@@ -640,7 +640,7 @@
   height: 100%;
   background: radial-gradient(
     ellipse,
-    var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%,
+    var(--color-primary-alpha-15, rgba(239, 111, 138, 0.15)) 0%,
     transparent 60%
   );
   pointer-events: none;
@@ -662,7 +662,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

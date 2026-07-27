@@ -111,7 +111,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary, #ef6f8a),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

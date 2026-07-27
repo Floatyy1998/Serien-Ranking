@@ -1,6 +1,6 @@
 export const USER_COLOR = 'var(--theme-primary, #667eea)';
 export const USER_GRADIENT =
-  'linear-gradient(135deg, var(--theme-primary, #667eea), var(--theme-secondary-gradient, #8b5cf6))';
+  'linear-gradient(135deg, var(--theme-primary, #667eea), var(--theme-secondary-gradient, #f2a648))';
 export const FRIEND_COLOR = '#f093fb'; // Pink für Friend
 export const FRIEND_GRADIENT = 'linear-gradient(135deg, #f093fb, #f5576c)';
 

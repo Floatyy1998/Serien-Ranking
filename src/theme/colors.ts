@@ -2,8 +2,8 @@
 export const colors = {
   // Primäre Farben
   primary: 'var(--theme-primary, #ef6f8a)',
-  primaryHover: 'var(--theme-primary-hover, #008a6e)',
-  primaryDark: 'var(--theme-primary-hover, #009a1a)',
+  primaryHover: 'var(--theme-primary-hover, #f28ba2)',
+  primaryDark: 'var(--theme-primary-hover, #d95c76)',
 
   // Hintergrundfarben (Cinematic Dark)
   background: {
@@ -40,7 +40,7 @@ export const colors = {
     body: 'var(--color-text-secondary, #ffffff)',
     secondary: 'var(--color-text-secondary, #ffffff)',
     muted: 'var(--color-text-muted, #cccccc)',
-    accent: 'var(--color-text-accent, #008a6e)',
+    accent: 'var(--color-text-accent, #f2a648)',
     placeholder: 'rgba(255, 255, 255, 0.5)',
   },
 
@@ -91,7 +91,7 @@ export const colors = {
   // Button-Farben (simplified for solid colors)
   button: {
     primary: 'var(--theme-primary, #ef6f8a)',
-    primaryHover: 'var(--theme-accent, #008a6e)',
+    primaryHover: 'var(--theme-accent, #f2a648)',
     secondary: 'var(--theme-surface, #0f0f0f)',
     secondaryHover: 'var(--theme-surface, #1a1a1a)',
     error: '#ff4444',

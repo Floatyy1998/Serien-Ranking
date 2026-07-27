@@ -19,7 +19,7 @@
   border-radius: 50%;
   background: radial-gradient(
     ellipse,
-    var(--color-primary-alpha-15, rgba(102, 126, 234, 0.15)) 0%,
+    var(--color-primary-alpha-15, rgba(239, 111, 138, 0.15)) 0%,
     transparent 70%
   );
   filter: blur(40px);
@@ -81,7 +81,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -96,13 +96,13 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   color: white;
   border-radius: var(--radius-md);
   font-size: 15px;
   font-weight: 700;
-  box-shadow: 0 4px 15px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
+  box-shadow: 0 4px 15px var(--color-primary-alpha-40, rgba(239, 111, 138, 0.4));
 }
 
 /* Tab Navigation */
@@ -178,7 +178,7 @@
   height: 100%;
   background: radial-gradient(
     ellipse,
-    var(--color-primary-alpha-20, rgba(102, 126, 234, 0.2)) 0%,
+    var(--color-primary-alpha-20, rgba(239, 111, 138, 0.2)) 0%,
     transparent 60%
   );
   pointer-events: none;
@@ -194,13 +194,13 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   border-radius: 50%;
   color: white;
   position: relative;
   box-shadow:
-    0 8px 30px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5)),
+    0 8px 30px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5)),
     0 0 60px color-mix(in srgb, var(--color-primary, #ef6f8a) 20%, transparent);
 }
 
@@ -210,7 +210,7 @@
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px solid var(--color-primary-alpha-30, rgba(102, 126, 234, 0.3));
+  border: 2px solid var(--color-primary-alpha-30, rgba(239, 111, 138, 0.3));
   animation: rate-pulse-ring 2s ease-in-out infinite;
 }
 
@@ -311,10 +311,10 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   cursor: pointer;
-  box-shadow: 0 4px 15px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
+  box-shadow: 0 4px 15px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
   border: 3px solid white;
   transition: transform 0.3s var(--ease-default);
 }
@@ -332,10 +332,10 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   cursor: pointer;
-  box-shadow: 0 4px 15px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
+  box-shadow: 0 4px 15px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
   border: 3px solid white;
 }
 
@@ -404,11 +404,11 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 15px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
+  box-shadow: 0 4px 15px var(--color-primary-alpha-40, rgba(239, 111, 138, 0.4));
   transform: scale(1.05);
 }
 
@@ -467,7 +467,7 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -521,15 +521,15 @@
   background: linear-gradient(
     135deg,
     var(--color-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   color: white;
-  box-shadow: 0 4px 20px var(--color-primary-alpha-40, rgba(102, 126, 234, 0.4));
+  box-shadow: 0 4px 20px var(--color-primary-alpha-40, rgba(239, 111, 138, 0.4));
 }
 
 .rate-action-btn.save:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 25px var(--color-primary-alpha-50, rgba(102, 126, 234, 0.5));
+  box-shadow: 0 6px 25px var(--color-primary-alpha-50, rgba(239, 111, 138, 0.5));
 }
 
 .rate-action-btn:disabled {

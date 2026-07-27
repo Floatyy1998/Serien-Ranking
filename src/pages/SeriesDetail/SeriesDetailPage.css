@@ -210,12 +210,12 @@
 .hero-section__progress-fill {
   background: linear-gradient(
     90deg,
-    var(--color-primary, #00d4aa),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--color-primary, #ef6f8a),
+    var(--theme-secondary-gradient, #f2a648)
   );
   height: 100%;
   transition: width 0.5s var(--ease-default);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #00d4aa) 50%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary, #ef6f8a) 50%, transparent);
   position: relative;
   overflow: hidden;
 }

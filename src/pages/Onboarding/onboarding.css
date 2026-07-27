@@ -9,7 +9,7 @@
   --ob-stage: var(--color-background-default, #000000);
   --ob-stage-2: var(--color-background-surface, #0f0f0f);
   --ob-paper: var(--theme-primary, #ef6f8a);
-  --ob-paper-2: var(--theme-accent, #008a6e);
+  --ob-paper-2: var(--theme-accent, #f2a648);
   --ob-ink: #000000;
   --ob-text: var(--color-text-primary, #ffffff);
   --ob-text-mute: var(--color-text-muted, rgba(255, 255, 255, 0.55));

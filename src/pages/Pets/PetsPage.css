@@ -872,8 +872,8 @@
 }
 
 .pet-action-btn--revive {
-  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #008a6e));
-  box-shadow: 0 8px 24px var(--theme-primary-40, rgba(102, 126, 234, 0.35));
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  box-shadow: 0 8px 24px var(--theme-primary-40, rgba(239, 111, 138, 0.35));
 }
 
 /* Customization (Apple-style segmented control + filter chips) */
