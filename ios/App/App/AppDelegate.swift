@@ -56,6 +56,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         NotificationCenter.default.post(name: .capacitorDidFailToRegisterForRemoteNotifications, object: error)
     }
 
+    /// Stiller "dismiss"-Push (content-available): auf einem anderen Geraet
+    /// gelesen — die zugestellte Notification desselben Deep-Links kommt hier
+    /// vom Sperrbildschirm runter. Setzt UIBackgroundModes=remote-notification
+    /// voraus, sonst weckt iOS die App nicht.
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        guard userInfo["kind"] as? String == "dismiss",
+              let link = userInfo["url"] as? String else {
+            completionHandler(.noData)
+            return
+        }
+        let center = UNUserNotificationCenter.current()
+        center.getDeliveredNotifications { delivered in
+            let ids = delivered
+                .filter { ($0.request.content.userInfo["url"] as? String) == link }
+                .map { $0.request.identifier }
+            if !ids.isEmpty {
+                center.removeDeliveredNotifications(withIdentifiers: ids)
+            }
+            completionHandler(ids.isEmpty ? .noData : .newData)
+        }
+    }
+
     func applicationWillResignActive(_ application: UIApplication) {
         // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
         // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
