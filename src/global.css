@@ -774,6 +774,15 @@ button:active:not(:disabled),
   transform: scale(0.96);
 }
 
+/* Verlaufsschrift ausnehmen: ein transform hebt die Glyphen auf eine eigene
+   Ebene, wodurch die background-clip-Stanzung bricht (Chromium). Da die Schrift
+   selbst transparent ist, verschwände der Text für die Dauer des Drückens. */
+.gradient-text:active:not(:disabled),
+.gradient-text [role='button']:active:not(:disabled),
+.gradient-text [role='tab']:active {
+  transform: none;
+}
+
 /* Cinematic card lift - höherer Kontrast */
 .card-cinematic {
   transition:
@@ -1009,6 +1018,15 @@ button:active:not(:disabled),
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Verlaufsschrift: der Verlauf wird in die Glyphen gestanzt, die Schrift selbst
+   ist transparent. Eine Textauswahl (z. B. langes Drücken auf dem Handy) würde
+   sie dadurch unsichtbar machen — beim Markieren also wieder deckend füllen. */
+.gradient-text::selection,
+.gradient-text *::selection {
+  -webkit-text-fill-color: var(--theme-text-secondary, #f1e8ee);
+  color: var(--theme-text-secondary, #f1e8ee);
 }
 
 /* Seiten-Kopfzeile */

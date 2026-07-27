@@ -33,7 +33,7 @@ export const GradientText: React.FC<GradientTextProps> = ({
   const midColor = currentTheme?.accent || '#f2a648';
 
   // Build CSS class list for animated variants
-  const classNames: string[] = [];
+  const classNames: string[] = ['gradient-text'];
   if (animatedGradient) classNames.push('gradient-text-animated');
   if (shimmer) classNames.push('gradient-shimmer');
 
@@ -45,7 +45,7 @@ export const GradientText: React.FC<GradientTextProps> = ({
 
   return (
     <Tag
-      className={classNames.length > 0 ? classNames.join(' ') : undefined}
+      className={classNames.join(' ')}
       style={{
         // backgroundImage statt der Kurzschreibweise `background`: Letztere
         // setzt beim Aktualisieren alle Unter-Eigenschaften zurueck, also auch
