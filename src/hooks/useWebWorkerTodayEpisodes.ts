@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
 import { getBackdropSize, upgradeBackdropUrl } from '../utils/imageUrl';
+import { useDayKey } from './useDayKey';
 import { useWebWorker } from './useWebWorker';
 
 /** Episode die heute ausgestrahlt wird oder ausgestrahlt wurde und noch nicht gesehen wurde */
@@ -37,6 +38,7 @@ const createEpisodesWorker = () =>
 
 export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
   const { seriesList } = useSeriesList();
+  const dayKey = useDayKey();
 
   // depsKey muss sich ändern wenn Episoden als watched markiert werden
   const watchedCount = useMemo(() => {
@@ -53,7 +55,9 @@ export const useWebWorkerTodayEpisodes = (): TodayEpisode[] => {
     return count;
   }, [seriesList]);
 
-  const depsKey = `${seriesList.length}-${watchedCount}`;
+  // Der Tagesschlüssel muss mit rein, sonst bleibt „Heute neu" über Mitternacht
+  // auf den Folgen von gestern stehen.
+  const depsKey = `${seriesList.length}-${watchedCount}-${dayKey}`;
 
   const workerInput = useMemo<EpisodesWorkerInput>(() => ({ seriesList }), [seriesList]);
 

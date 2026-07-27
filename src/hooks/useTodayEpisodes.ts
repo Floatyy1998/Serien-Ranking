@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSeriesList } from '../contexts/SeriesListContext';
 import type { Series } from '../types/Series';
 import { getEpisodeAirDate } from '../utils/episodeDate';
 import { getBackdropSize, getImageUrl } from '../utils/imageUrl';
+import { useDayKey } from './useDayKey';
 
 interface TodayEpisode {
   seriesId: number;
@@ -20,48 +21,9 @@ interface TodayEpisode {
   provider: Series['provider'];
 }
 
-function getTodayKey() {
-  return new Date().toDateString();
-}
-
 export const useTodayEpisodes = () => {
   const { seriesList } = useSeriesList();
-  const [todayKey, setTodayKey] = useState(getTodayKey);
-
-  // Check for date change every minute — but pause when the tab is hidden
-  // so background tabs don't burn CPU/wakeups. When the tab becomes visible
-  // again we do one immediate check (in case midnight passed while hidden).
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval> | null = null;
-    const check = () => {
-      const now = getTodayKey();
-      setTodayKey((prev) => (prev !== now ? now : prev));
-    };
-    const start = () => {
-      if (interval) return;
-      interval = setInterval(check, 60_000);
-    };
-    const stop = () => {
-      if (interval) {
-        clearInterval(interval);
-        interval = null;
-      }
-    };
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        check();
-        start();
-      } else {
-        stop();
-      }
-    };
-    if (document.visibilityState === 'visible') start();
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      stop();
-    };
-  }, []);
+  const todayKey = useDayKey();
 
   const todayEpisodes = useMemo(() => {
     void todayKey;

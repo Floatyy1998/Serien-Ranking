@@ -88,7 +88,13 @@ describe('useWebWorkerTodayEpisodes', () => {
     });
     listState.seriesList = [series];
     renderHook(() => useWebWorkerTodayEpisodes());
-    // Format `${seriesList.length}-${watchedCount}`
-    expect(capture.lastOptions?.depsKey).toBe('1-1');
+    // Format `${seriesList.length}-${watchedCount}-${dayKey}`
+    expect(capture.lastOptions?.depsKey).toBe(`1-1-${new Date().toDateString()}`);
+  });
+
+  it('depsKey enthält den Tagesschlüssel (rollt über Mitternacht)', () => {
+    listState.seriesList = [makeSeries({})];
+    renderHook(() => useWebWorkerTodayEpisodes());
+    expect(capture.lastOptions?.depsKey).toContain(new Date().toDateString());
   });
 });

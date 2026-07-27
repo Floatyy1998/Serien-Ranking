@@ -4,6 +4,7 @@ import { DEFAULT_EPISODE_RUNTIME_MINUTES } from '../lib/episode/seriesMetrics';
 import type { Series } from '../types/Series';
 import { getEpisodeAirDate, getEpisodeAirDateStr } from '../utils/episodeDate';
 import { getImageUrl } from '../utils/imageUrl';
+import { useDayKey } from './useDayKey';
 
 function prioritizeProviders(providers: WeeklyEpisodeProvider[]): WeeklyEpisodeProvider[] {
   if (providers.length <= 1) return providers;
@@ -87,7 +88,12 @@ export const useWeeklyEpisodes = (
   totalEpisodes: number;
   watchedCount: number;
 } => {
+  // Die Wochengrenzen hängen an `new Date()` — ohne den Tagesschlüssel bliebe
+  // das Raster über Mitternacht auf der alten Woche stehen.
+  const dayKey = useDayKey();
+
   return useMemo(() => {
+    void dayKey;
     const { monday, sunday } = getWeekBounds(weekOffset);
     const schedule: WeeklySchedule = new Map();
     let totalEpisodes = 0;
@@ -272,5 +278,5 @@ export const useWeeklyEpisodes = (
     }
 
     return { schedule, monday, sunday, totalEpisodes, watchedCount };
-  }, [seriesList, weekOffset, watchlistOnly]);
+  }, [seriesList, weekOffset, watchlistOnly, dayKey]);
 };
