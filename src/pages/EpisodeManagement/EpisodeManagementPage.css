@@ -50,7 +50,7 @@
   position: sticky;
   top: 0;
   z-index: var(--z-dropdown);
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 75%, transparent);
   -webkit-backdrop-filter: var(--blur-lg);
   backdrop-filter: var(--blur-lg);
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
@@ -115,7 +115,7 @@
 .season-tabs {
   display: flex;
   align-items: center;
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 75%, transparent);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   padding: 14px 12px;
@@ -553,7 +553,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.85));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 85%, transparent);
   -webkit-backdrop-filter: var(--glass-filter-lg);
   backdrop-filter: var(--glass-filter-lg);
   padding: 16px;
@@ -605,7 +605,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 75%, transparent);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   display: flex;
@@ -769,7 +769,7 @@
 .em-season-tabs-wrapper {
   display: flex;
   align-items: center;
-  background: var(--color-background-default-alpha-90, rgba(0, 0, 0, 0.75));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 75%, transparent);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
   padding: 14px 12px;

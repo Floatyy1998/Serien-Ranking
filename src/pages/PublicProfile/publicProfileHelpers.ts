@@ -84,7 +84,7 @@ export function useResolvedTheme(): PublicTheme {
     return {
       primary: 'var(--theme-primary, #667eea)',
       background: {
-        default: 'var(--theme-bg-default, #0a0a0f)',
+        default: 'var(--theme-background, #2b1a2e)',
         surface: 'rgba(255, 255, 255, 0.04)',
       },
       text: {

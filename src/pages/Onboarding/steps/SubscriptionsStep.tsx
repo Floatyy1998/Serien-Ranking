@@ -291,7 +291,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
             padding: '20px 0 24px 0',
             position: 'sticky',
             bottom: 0,
-            background: 'linear-gradient(to top, var(--ob-canvas, #0a0a0a) 60%, transparent)',
+            background: 'linear-gradient(to top, var(--ob-stage, #2b1a2e) 60%, transparent)',
             marginTop: 'auto',
           }}
         >
@@ -317,7 +317,7 @@ export const SubscriptionsStep: React.FC<Props> = ({
             className="ob-mono"
             style={{
               background: 'var(--ob-paper)',
-              color: 'var(--ob-canvas, #0a0a0a)',
+              color: 'var(--ob-stage, #2b1a2e)',
               border: 'none',
               padding: '14px 28px',
               borderRadius: 999,

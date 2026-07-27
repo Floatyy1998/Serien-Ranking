@@ -51,7 +51,7 @@
   align-items: center;
   gap: 12px;
   padding: calc(16px + env(safe-area-inset-top)) 20px 16px;
-  background: var(--color-background-default-alpha-90, rgba(10, 14, 26, 0.9));
+  background: color-mix(in srgb, var(--color-background-default, #2b1a2e) 90%, transparent);
   -webkit-backdrop-filter: var(--blur-md);
   backdrop-filter: var(--blur-md);
   width: 100%;
