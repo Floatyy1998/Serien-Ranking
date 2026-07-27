@@ -13,6 +13,9 @@ ext {
     androidxJunitVersion = '1.3.0'
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '14.0.1'
+    // Eine Quelle für Plugin und App-Modul (TvRankMessagingService braucht die
+    // Klasse zur Compile-Zeit, sonst zieht nur das Plugin sie transitiv).
+    firebaseMessagingVersion = '25.0.1'
     // FirebaseAuthentication-Plugin: Google-Provider (Credential Manager) einbinden
     rgcfaIncludeGoogle = true
 }
