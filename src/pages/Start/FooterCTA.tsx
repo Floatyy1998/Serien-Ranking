@@ -5,17 +5,17 @@ import { t } from '../../services/i18n';
 
 /**
  * Marketing-Markenpalette der Start-Seite (Pre-Auth Landing).
- * BEWUSSTE AUSNAHME vom Theme-System: fixe Violett/Pink-Marke statt
- * currentTheme/var(--theme-primary). Die Landing wird ausgeloggt gerendert –
- * ein Angleichen an das Default-Theme (Grün/Schwarz) würde das Marketing-Design
- * verändern. Werte daher bewusst hart & hier dokumentiert.
+ * BEWUSSTE AUSNAHME vom Theme-System: fixe Bernstein/Gold-Marke statt
+ * currentTheme/var(--theme-primary). Die Landing wird ausgeloggt gerendert, wo nur
+ * das Default-Theme (Charcoal/Bernstein) greifen würde. Warm gehalten, passend zum
+ * Default. Werte daher bewusst hart & hier dokumentiert.
  */
 const BRAND = {
-  purple: '#a855f7',
-  purpleDark: '#9333ea',
-  pink: '#ec4899',
-  pinkDark: '#db2777',
-  purpleRGB: '168, 85, 247',
+  gold: '#ef6f8a',
+  goldDark: '#c8901f',
+  warm: '#e07a3a',
+  warmDark: '#c8631f',
+  goldRGB: '224, 168, 58',
 } as const;
 
 export const FooterCTA = () => (
@@ -39,16 +39,16 @@ export const FooterCTA = () => (
         sx={{
           px: 5,
           py: 1.75,
-          background: `linear-gradient(135deg, ${BRAND.purple} 0%, ${BRAND.pink} 100%)`,
+          background: `linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.warm} 100%)`,
           color: 'white',
           fontWeight: 600,
           fontSize: '1.1rem',
           borderRadius: 3,
           textTransform: 'none',
-          boxShadow: `0 4px 16px rgba(${BRAND.purpleRGB}, 0.3)`,
+          boxShadow: `0 4px 16px rgba(${BRAND.goldRGB}, 0.3)`,
           '&:hover': {
-            background: `linear-gradient(135deg, ${BRAND.purpleDark} 0%, ${BRAND.pinkDark} 100%)`,
-            boxShadow: `0 6px 20px rgba(${BRAND.purpleRGB}, 0.4)`,
+            background: `linear-gradient(135deg, ${BRAND.goldDark} 0%, ${BRAND.warmDark} 100%)`,
+            boxShadow: `0 6px 20px rgba(${BRAND.goldRGB}, 0.4)`,
           },
         }}
       >

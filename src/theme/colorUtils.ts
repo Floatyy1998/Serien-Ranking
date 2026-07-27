@@ -57,7 +57,7 @@ export function getContrastRatio(color1: string, color2: string): number {
  * Fläche — das ist die WCAG-optimale Entscheidung.
  *
  * Für helle Flächen liefert Schwarz den besseren Kontrast: z. B. beim
- * Default-Grün #00d123 (L ≈ 0.46) ist blackContrast ≈ 10 ≫ whiteContrast ≈ 2,
+ * Default-Rosé #ef6f8a (L ≈ 0.32) ist blackContrast ≈ 7,3 ≫ whiteContrast ≈ 2,9,
  * also korrekt SCHWARZ statt Weiß. Der Umschlagpunkt Schwarz↔Weiß liegt bei
  * L ≈ 0.18; alles darüber (also insbesondere L > 0.35–0.4) bekommt dunklen Text.
  */
@@ -288,7 +288,7 @@ export function normalizeThemeColors(config: {
   textColor?: string;
 }): typeof config {
   let { primaryColor, backgroundColor, surfaceColor, accentColor } = config;
-  if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#00d123';
+  if (!primaryColor || !/^#?[0-9a-fA-F]{6}$/.test(primaryColor)) primaryColor = '#ef6f8a';
   if (!backgroundColor || !/^#?[0-9a-fA-F]{6}$/.test(backgroundColor)) backgroundColor = '#000000';
 
   // 1. Glass-Schutz: heller Hintergrund kollabiert die weiß-alpha
@@ -402,7 +402,11 @@ function hslToHex(h: number, s: number, l: number): string {
 export function generateComplementaryColor(hex: string): string {
   try {
     const { h, s, l } = hexToHsl(hex);
-    const newH = (h + 45) % 360;
+    // Analoge Zweitfarbe für Verläufe. Standard +45° (z. B. Grün→Türkis). Bei
+    // warmen Tönen (Gelb/Gold/Amber, h 20–75) würde +45° ins Lime/Grün kippen —
+    // dort stattdessen −25° Richtung Orange, damit der Verlauf warm bleibt.
+    const warm = h >= 20 && h <= 75;
+    const newH = ((warm ? h - 25 : h + 45) + 360) % 360;
     const newS = Math.min(80, Math.max(65, s));
     const newL = Math.min(65, Math.max(55, l));
     return hslToHex(newH, newS, newL);

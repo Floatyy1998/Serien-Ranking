@@ -433,7 +433,7 @@
 }
 
 .episode-cell:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -471,7 +471,7 @@
 }
 
 .episode-list-item:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 

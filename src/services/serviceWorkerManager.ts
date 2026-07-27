@@ -360,7 +360,7 @@ class ServiceWorkerManager {
         font-weight: 700;
         cursor: pointer;
         color: #000;
-        background: var(--theme-primary, #00d123);
+        background: var(--theme-primary, #ef6f8a);
       }
       #sw-update-banner .sw-close {
         border: none;

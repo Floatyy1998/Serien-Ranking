@@ -15,11 +15,11 @@ describe('theme/colors', () => {
 
   it('primäre Farben nutzen CSS-Custom-Properties mit Fallback', () => {
     expect(colors.primary).toContain('var(--theme-primary');
-    expect(colors.primary).toContain('#00d123');
+    expect(colors.primary).toContain('#ef6f8a');
   });
 
-  it('Default-Theme ist Grün/Schwarz', () => {
-    expect(colors.primary).toContain('#00d123');
+  it('Default-Theme ist Rosé/Schwarz', () => {
+    expect(colors.primary).toContain('#ef6f8a');
     expect(colors.background.default).toContain('#000000');
   });
 

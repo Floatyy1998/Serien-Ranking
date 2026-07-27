@@ -56,12 +56,12 @@ const fadeOut = keyframes`
 
 const glowPulse = keyframes`
   0%, 100% {
-    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent),
-                0 0 40px color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 10%, transparent);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--theme-primary, #ef6f8a) 30%, transparent),
+                0 0 40px color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 10%, transparent);
   }
   50% {
-    box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent),
-                0 0 60px color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 20%, transparent);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--theme-primary, #ef6f8a) 50%, transparent),
+                0 0 60px color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 20%, transparent);
   }
 `;
 
@@ -125,11 +125,11 @@ export const SplashContainer = styled(Box, {
   align-items: center;
   background: linear-gradient(
     135deg,
-    var(--theme-background, #000000) 0%,
-    var(--theme-surface, #0f0f0f) 25%,
-    color-mix(in srgb, var(--theme-background, #000000) 50%, var(--theme-surface, #0f0f0f)) 50%,
-    var(--theme-surface, #0f0f0f) 75%,
-    var(--theme-background, #000000) 100%
+    var(--theme-background, #2b1a2e) 0%,
+    var(--theme-surface, #3a2640) 25%,
+    color-mix(in srgb, var(--theme-background, #2b1a2e) 50%, var(--theme-surface, #3a2640)) 50%,
+    var(--theme-surface, #3a2640) 75%,
+    var(--theme-background, #2b1a2e) 100%
   );
   animation: ${(props) => (props.isHiding ? fadeOut : fadeIn)}
     ${(props) => (props.isHiding ? '0.5s' : '0.8s')} ease-out forwards;
@@ -146,22 +146,22 @@ export const BackgroundMesh = styled(Box)`
   background:
     radial-gradient(
       circle at 20% 50%,
-      color-mix(in srgb, var(--theme-primary, #00d123) 6%, transparent) 0%,
+      color-mix(in srgb, var(--theme-primary, #ef6f8a) 6%, transparent) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 80% 50%,
-      color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 6%, transparent) 0%,
+      color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 6%, transparent) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 50% 20%,
-      color-mix(in srgb, var(--theme-primary, #00d123) 4%, transparent) 0%,
+      color-mix(in srgb, var(--theme-primary, #ef6f8a) 4%, transparent) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 50% 80%,
-      color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 4%, transparent) 0%,
+      color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 4%, transparent) 0%,
       transparent 50%
     );
   pointer-events: none;
@@ -175,14 +175,14 @@ export const Particle = styled(Box, {
   height: 2px;
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
-    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 80%, transparent)
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 80%, transparent),
+    color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 80%, transparent)
   );
   left: ${(props) => props.left};
   border-radius: 50%;
   animation: ${particleFloat} 15s linear infinite;
   animation-delay: ${(props) => props.delay}s;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #ef6f8a) 50%, transparent);
 `;
 
 export const LogoContainer = styled(Box)`
@@ -206,8 +206,8 @@ export const LogoGlow = styled(Box)`
   height: 100%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent) 0%,
-    color-mix(in srgb, var(--theme-secondary-gradient, #8b5cf6) 10%, transparent) 40%,
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 30%, transparent) 0%,
+    color-mix(in srgb, var(--theme-secondary-gradient, #f2a648) 10%, transparent) 40%,
     transparent 70%
   );
   filter: blur(24px);
@@ -224,7 +224,7 @@ export const LogoSVG = styled('svg')`
     ${breathe} 3s ease-in-out infinite;
   animation-delay: 0s, 1.2s;
   filter: drop-shadow(
-    0 10px 40px color-mix(in srgb, var(--theme-primary, #00d123) 40%, transparent)
+    0 10px 40px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent)
   );
 
   path {
@@ -234,17 +234,17 @@ export const LogoSVG = styled('svg')`
   /* Logo-Verlauf ans Theme koppeln: CSS stop-color überschreibt die gebakten
      Presentation-Attributes der SVG-Stops (Verlauf wie --gradient-cinematic). */
   #goldGradient stop:nth-of-type(1) {
-    stop-color: var(--theme-primary, #00d123);
+    stop-color: var(--theme-primary, #ef6f8a);
   }
   #goldGradient stop:nth-of-type(2) {
     stop-color: color-mix(
       in srgb,
-      var(--theme-primary, #00d123) 60%,
-      var(--theme-secondary-gradient, #8b5cf6)
+      var(--theme-primary, #ef6f8a) 60%,
+      var(--theme-secondary-gradient, #f2a648)
     );
   }
   #goldGradient stop:nth-of-type(3) {
-    stop-color: var(--theme-secondary-gradient, #8b5cf6);
+    stop-color: var(--theme-secondary-gradient, #f2a648);
   }
 `;
 
@@ -255,13 +255,13 @@ export const Title = styled('h1')`
   margin: 0 0 15px 0;
   background: linear-gradient(
     135deg,
-    var(--theme-primary, #00d123) 0%,
-    color-mix(in srgb, var(--theme-primary, #00d123) 60%, var(--theme-secondary-gradient, #8b5cf6))
+    var(--theme-primary, #ef6f8a) 0%,
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 60%, var(--theme-secondary-gradient, #f2a648))
       25%,
-    var(--theme-secondary-gradient, #8b5cf6) 50%,
-    color-mix(in srgb, var(--theme-primary, #00d123) 60%, var(--theme-secondary-gradient, #8b5cf6))
+    var(--theme-secondary-gradient, #f2a648) 50%,
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 60%, var(--theme-secondary-gradient, #f2a648))
       75%,
-    var(--theme-primary, #00d123) 100%
+    var(--theme-primary, #ef6f8a) 100%
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -299,7 +299,7 @@ export const Subtitle = styled('p')`
     background: linear-gradient(
       90deg,
       transparent,
-      color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
+      color-mix(in srgb, var(--theme-primary, #ef6f8a) 80%, transparent),
       transparent
     );
   }
@@ -318,7 +318,7 @@ export const ProgressWrapper = styled(Box)`
   border-radius: var(--radius-xl, 20px);
   -webkit-backdrop-filter: var(--blur-sm);
   backdrop-filter: var(--blur-sm);
-  border: 1px solid color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-primary, #ef6f8a) 15%, transparent);
   animation: ${fadeIn} 1s ease-out 0.8s backwards;
 
   @media (max-width: 768px) {
@@ -345,14 +345,14 @@ export const ProgressBar = styled(Box, {
   width: 100%;
   background: linear-gradient(
     90deg,
-    var(--theme-primary, #00d123) 0%,
-    var(--theme-secondary-gradient, #8b5cf6) 50%,
-    var(--theme-primary, #00d123) 100%
+    var(--theme-primary, #ef6f8a) 0%,
+    var(--theme-secondary-gradient, #f2a648) 50%,
+    var(--theme-primary, #ef6f8a) 100%
   );
   transform: scaleX(${(props) => props.progress});
   transform-origin: left;
   transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-  box-shadow: 0 0 25px color-mix(in srgb, var(--theme-primary, #00d123) 60%, transparent);
+  box-shadow: 0 0 25px color-mix(in srgb, var(--theme-primary, #ef6f8a) 60%, transparent);
 
   &::after {
     content: '';
@@ -386,7 +386,7 @@ export const LoadingPercentage = styled('p')`
   font-size: 0.85rem;
   background: var(
     --gradient-primary,
-    linear-gradient(135deg, #00d123, var(--theme-secondary-gradient, #8b5cf6))
+    linear-gradient(135deg, #ef6f8a, var(--theme-secondary-gradient, #f2a648))
   );
   background-clip: text;
   -webkit-background-clip: text;
@@ -409,7 +409,7 @@ export const CornerAccent = styled(Box, {
     position: absolute;
     background: linear-gradient(
       135deg,
-      color-mix(in srgb, var(--theme-primary, #00d123) 80%, transparent),
+      color-mix(in srgb, var(--theme-primary, #ef6f8a) 80%, transparent),
       transparent
     );
     opacity: 0.3;

@@ -19,13 +19,13 @@ const HIGHLIGHTS: HighlightItem[] = [
     icon: Speed,
     title: 'Blitzschnell',
     desc: 'Optimierte Performance für ein flüssiges Erlebnis',
-    color: '#a855f7',
+    color: '#ef6f8a',
   },
   {
     icon: CloudSync,
     title: 'Cloud-Sync',
     desc: 'Deine Daten auf allen Geräten synchronisiert',
-    color: '#ec4899',
+    color: '#e07a3a',
   },
   {
     icon: Notifications,
@@ -37,7 +37,7 @@ const HIGHLIGHTS: HighlightItem[] = [
     icon: Analytics,
     title: 'Deep Analytics',
     desc: 'Umfassende Einblicke in deine Seh- und Lesegewohnheiten',
-    color: '#c084fc',
+    color: '#ecc06a',
   },
 ];
 

@@ -26,7 +26,7 @@ export const NowPlayingIndicator = memo<NowPlayingIndicatorProps>(
   ({ color, size = 'sm', position = 'top-left', label }) => {
     const resolvedLabel = label ?? t('Aktuell am Schauen');
     const prefersReducedMotion = useReducedMotion();
-    const tint = color ?? 'var(--theme-primary, #00d123)';
+    const tint = color ?? 'var(--theme-primary, #ef6f8a)';
     const dim = size === 'sm' ? 22 : 28;
     const barWidth = size === 'sm' ? 3 : 4;
     const gap = size === 'sm' ? 2 : 3;

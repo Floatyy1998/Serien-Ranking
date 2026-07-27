@@ -32,7 +32,7 @@ const ChunkFailedPage: ComponentType = () =>
       'h2',
       {
         style: {
-          color: 'var(--theme-primary, #00d123)',
+          color: 'var(--theme-primary, #ef6f8a)',
           fontFamily: 'var(--font-display, inherit)',
           margin: 0,
         },
@@ -66,7 +66,7 @@ const ChunkFailedPage: ComponentType = () =>
           fontSize: '15px',
           cursor: 'pointer',
           color: '#000',
-          background: 'var(--theme-primary, #00d123)',
+          background: 'var(--theme-primary, #ef6f8a)',
         },
       },
       t('Jetzt aktualisieren')

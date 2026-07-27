@@ -3,12 +3,12 @@ import { motion } from 'framer-motion';
 
 /**
  * Default-Akzent der Feature-Karten (Pre-Auth Landing).
- * BEWUSSTE Marketing-Ausnahme vom Theme-System (fixe Violett-Marke statt
+ * BEWUSSTE Marketing-Ausnahme vom Theme-System (fixe Bernstein/Gold-Marke statt
  * currentTheme/var(--theme-primary)); die Landing rendert ausgeloggt, wo nur das
- * Default-Theme Grün/Schwarz greifen würde. Einzelne Karten überschreiben `color`
- * mit der Marketing-Palette (siehe FeaturesGrid).
+ * Default-Theme (Charcoal/Bernstein) greifen würde. Einzelne Karten überschreiben
+ * `color` mit der warmen Marketing-Palette (siehe FeaturesGrid).
  */
-const BRAND_PURPLE = '#a855f7';
+const BRAND_ACCENT = '#ef6f8a';
 
 export interface FeatureCardProps {
   icon: React.ReactNode;
@@ -23,7 +23,7 @@ export const FeatureCard = ({
   title,
   description,
   delay,
-  color = BRAND_PURPLE,
+  color = BRAND_ACCENT,
 }: FeatureCardProps) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}

@@ -13,14 +13,14 @@ const FEATURES = [
     description:
       'Verfolge jede Episode, markiere gesehene Folgen und verpasse nie wieder eine neue Staffel.',
     delay: 0.1,
-    color: '#a855f7',
+    color: '#ef6f8a',
   },
   {
     icon: <Movie sx={{ fontSize: 24 }} />,
     title: 'Film-Bibliothek',
     description: 'Organisiere deine Filmsammlung, bewerte Filme und entdecke neue Highlights.',
     delay: 0.15,
-    color: '#ec4899',
+    color: '#e07a3a',
   },
   {
     icon: <Star sx={{ fontSize: 24 }} />,
@@ -35,14 +35,14 @@ const FEATURES = [
     title: 'Badges & Erfolge',
     description: 'Sammle Badges für deine Aktivitäten und zeige deine Achievements.',
     delay: 0.25,
-    color: '#c084fc',
+    color: '#ecc06a',
   },
   {
     icon: <People sx={{ fontSize: 24 }} />,
     title: 'Freunde-System',
     description: 'Teile deine Listen mit Freunden und entdecke, was andere schauen.',
     delay: 0.3,
-    color: '#f472b6',
+    color: '#e8905a',
   },
   {
     icon: <AutoStories sx={{ fontSize: 24 }} />,
@@ -50,7 +50,7 @@ const FEATURES = [
     description:
       'Tracke Manga, Manhwa und Manhua. Kapitelfortschritt, Bewertungen und Release-Daten.',
     delay: 0.35,
-    color: '#38bdf8',
+    color: '#d9903a',
   },
   {
     icon: <TrendingUp sx={{ fontSize: 24 }} />,

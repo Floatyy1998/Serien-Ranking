@@ -387,9 +387,9 @@ export const SwipeableEpisodeRow = memo<SwipeableEpisodeRowProps>(
                     staticBackground ||
                     (!isMobile
                       ? backdrop
-                        ? 'linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.86) 30%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.12) 78%, rgba(0,0,0,0.5) 100%)'
-                        : 'linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.72) 35%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.68) 100%)'
-                      : 'linear-gradient(105deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.72) 40%, rgba(0,0,0,0.88) 70%, rgba(0,0,0,0.92) 100%)'),
+                        ? 'linear-gradient(90deg, color-mix(in srgb, var(--theme-background) 94%, transparent) 0%, color-mix(in srgb, var(--theme-background) 86%, transparent) 30%, color-mix(in srgb, var(--theme-background) 45%, transparent) 55%, color-mix(in srgb, var(--theme-background) 12%, transparent) 78%, color-mix(in srgb, var(--theme-background) 50%, transparent) 100%)'
+                        : 'linear-gradient(90deg, color-mix(in srgb, var(--theme-background) 55%, transparent) 0%, color-mix(in srgb, var(--theme-background) 72%, transparent) 35%, color-mix(in srgb, var(--theme-background) 55%, transparent) 65%, color-mix(in srgb, var(--theme-background) 68%, transparent) 100%)'
+                      : 'linear-gradient(105deg, color-mix(in srgb, var(--theme-background) 30%, transparent) 0%, color-mix(in srgb, var(--theme-background) 72%, transparent) 40%, color-mix(in srgb, var(--theme-background) 88%, transparent) 70%, color-mix(in srgb, var(--theme-background) 94%, transparent) 100%)'),
                 }}
               />
               <div

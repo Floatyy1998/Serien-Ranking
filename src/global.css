@@ -1,14 +1,14 @@
 :root {
-  /* Theme-Variablen für dynamische Anpassung */
-  --theme-primary: #00d123;
-  --theme-primary-hover: #1aeb3d;
-  --theme-accent: #008a6e;
-  --theme-background: #000000;
-  --theme-surface: #0f0f0f;
-  --theme-surface-elevated: #1a1a1a;
-  --theme-text-primary: #00d123;
-  --theme-text-secondary: #ffffff;
-  --theme-secondary-gradient: #8b5cf6;
+  /* Theme-Variablen für dynamische Anpassung (Default: Coral/Amber auf Plum, „catcatcat") */
+  --theme-primary: #ef6f8a;
+  --theme-primary-hover: #f28ba2;
+  --theme-accent: #f2a648;
+  --theme-background: #2b1a2e;
+  --theme-surface: #3a2640;
+  --theme-surface-elevated: #4a3350;
+  --theme-text-primary: #ef6f8a;
+  --theme-text-secondary: #f1e8ee;
+  --theme-secondary-gradient: #f2a648;
 
   /* Alpha-Skala der Theme-Farben */
   --theme-primary-05: color-mix(in srgb, var(--theme-primary) 5%, transparent);
@@ -125,7 +125,7 @@
     0 0 20px var(--theme-primary-60), 0 0 60px var(--theme-primary-30),
     0 0 100px var(--theme-primary-15);
   --glow-soft: 0 0 24px var(--theme-primary-25);
-  /* Pre-Init-Fallback (grün, damit der Pre-Hydration-Flash zur Marke passt) — ThemeContext überschreibt zur Laufzeit */
+  /* Pre-Init-Fallback (warm, damit der Pre-Hydration-Flash zur Marke passt) — ThemeContext überschreibt zur Laufzeit */
   --glow-accent: 0 0 20px var(--theme-primary-40), 0 0 40px var(--theme-primary-20);
   --glow-cinematic:
     0 0 30px var(--theme-primary-25), 0 0 80px var(--theme-primary-10),
@@ -151,7 +151,7 @@
   --gradient-primary: linear-gradient(
     135deg,
     var(--theme-primary),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
   --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
   --gradient-cool: linear-gradient(135deg, var(--theme-primary), var(--theme-accent));
@@ -159,7 +159,7 @@
     135deg,
     var(--theme-primary),
     color-mix(in srgb, var(--theme-primary) 60%, var(--theme-secondary-gradient)),
-    var(--theme-secondary-gradient, #8b5cf6)
+    var(--theme-secondary-gradient, #f2a648)
   );
 
   /* Text-Glow */
@@ -415,7 +415,7 @@ svg rect {
 
 /* Global focus-visible outline for all interactive elements */
 *:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123) !important;
+  outline: 2px solid var(--theme-primary, #ef6f8a) !important;
   outline-offset: 2px !important;
 }
 
@@ -444,7 +444,7 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123) !important;
+  outline: 2px solid var(--theme-primary, #ef6f8a) !important;
   outline-offset: 2px !important;
   box-shadow: var(--focus-ring) !important;
 }
@@ -503,7 +503,7 @@ textarea[style*='outline']:focus-visible {
 /* Chat-Composer hat eine eigene dezente Fokus-Anzeige (.ch-input:focus) */
 .ch-input:focus-visible {
   outline: none !important;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme-primary, #ef6f8a) 15%, transparent) !important;
 }
 
 /* Skip navigation link */
@@ -514,7 +514,7 @@ textarea[style*='outline']:focus-visible {
   transform: translateX(-50%);
   z-index: 10000;
   padding: 12px 24px;
-  background: var(--theme-primary, #00d123);
+  background: var(--theme-primary, #ef6f8a);
   color: #000;
   font-weight: 700;
   font-size: 16px;
@@ -698,7 +698,7 @@ textarea[style*='outline']:focus-visible {
   background: linear-gradient(
     270deg,
     var(--theme-primary),
-    var(--theme-secondary-gradient, #8b5cf6),
+    var(--theme-secondary-gradient, #f2a648),
     var(--theme-primary)
   );
   background-size: 200% auto;
@@ -845,7 +845,7 @@ button:active:not(:disabled),
   background: linear-gradient(
     var(--border-angle, 0deg),
     var(--theme-primary),
-    var(--theme-secondary-gradient, #8b5cf6),
+    var(--theme-secondary-gradient, #f2a648),
     var(--theme-primary)
   );
   -webkit-mask:
@@ -1008,6 +1008,36 @@ button:active:not(:disabled),
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Seiten-Kopfzeile */
+.page-header__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.page-header__main {
+  flex: 1;
+  min-width: 0;
+}
+.page-header__actions {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Titel, Untertitel und Aktionen passen auf schmalen Geräten nicht nebeneinander —
+   dort bekommt der Textblock eine eigene Zeile unter den Buttons. */
+@media (max-width: 560px) {
+  .page-header__row--stacked {
+    flex-wrap: wrap;
+  }
+  .page-header__row--stacked .page-header__actions {
+    margin-left: auto;
+  }
+  .page-header__row--stacked .page-header__main {
+    order: 3;
+    flex-basis: 100%;
   }
 }
 

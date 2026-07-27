@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                   if (cloudTheme) {
                     const validHex = (c: string | undefined, fb: string) =>
                       c && /^#?[0-9a-fA-F]{6}$/.test(c) ? c : fb;
-                    const primary = validHex(cloudTheme.primaryColor, '#00d123');
+                    const primary = validHex(cloudTheme.primaryColor, '#ef6f8a');
                     const accent = validHex(cloudTheme.accentColor, '#008a6e');
                     const bg = validHex(cloudTheme.backgroundColor, '#000000');
                     const surface = validHex(cloudTheme.surfaceColor, '#0f0f0f');

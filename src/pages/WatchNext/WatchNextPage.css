@@ -207,7 +207,7 @@
   height: 80%;
   background: radial-gradient(
     ellipse,
-    color-mix(in srgb, var(--color-primary, #00d123) 8%, transparent) 0%,
+    color-mix(in srgb, var(--color-primary, #ef6f8a) 8%, transparent) 0%,
     transparent 60%
   );
   pointer-events: none;

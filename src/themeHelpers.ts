@@ -4,7 +4,7 @@ import { dbGet, paths } from './services/db/ref';
 const VALID_HEX = /^#?[0-9a-fA-F]{6}$/;
 
 export const adjustBrightness = (color: string, percent: number) => {
-  if (!color || !VALID_HEX.test(color)) return '#00d123';
+  if (!color || !VALID_HEX.test(color)) return '#ef6f8a';
   const num = parseInt(color.replace('#', ''), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
@@ -65,10 +65,10 @@ export const loadSavedTheme = async (userId?: string) => {
   if (theme) {
     const safe = (c: string | undefined, fallback: string) =>
       c && VALID_HEX.test(c) ? c : fallback;
-    const primary = safe(theme.primaryColor, '#00d123');
-    const accent = safe(theme.accentColor, '#008a6e');
-    const bg = safe(theme.backgroundColor, '#000000');
-    const surface = safe(theme.surfaceColor, '#0f0f0f');
+    const primary = safe(theme.primaryColor, '#ef6f8a');
+    const accent = safe(theme.accentColor, '#f2a648');
+    const bg = safe(theme.backgroundColor, '#2b1a2e');
+    const surface = safe(theme.surfaceColor, '#3a2640');
 
     root.style.setProperty('--theme-primary', primary);
     const primaryHover = adjustBrightness(primary, 10);
@@ -77,23 +77,23 @@ export const loadSavedTheme = async (userId?: string) => {
     root.style.setProperty('--theme-background', bg);
     root.style.setProperty('--theme-surface', surface);
     root.style.setProperty('--theme-text-primary', primary);
-    root.style.setProperty('--theme-text-secondary', '#ffffff');
+    root.style.setProperty('--theme-text-secondary', '#f1e8ee');
 
     // Mobile-first app - no background images needed
 
     // Update theme-color Meta-Tag für PWA Status Bar
     updateThemeColorMeta(bg);
   } else {
-    // Stelle sicher, dass Default-Werte gesetzt sind
-    root.style.setProperty('--theme-primary', '#00d123');
-    root.style.setProperty('--theme-primary-hover', adjustBrightness('#00d123', 10));
-    root.style.setProperty('--theme-accent', '#008a6e');
-    root.style.setProperty('--theme-background', '#000000');
-    root.style.setProperty('--theme-surface', '#0f0f0f');
-    root.style.setProperty('--theme-text-primary', '#00d123');
-    root.style.setProperty('--theme-text-secondary', '#ffffff');
+    // Stelle sicher, dass Default-Werte gesetzt sind (Coral/Amber auf Plum)
+    root.style.setProperty('--theme-primary', '#ef6f8a');
+    root.style.setProperty('--theme-primary-hover', adjustBrightness('#ef6f8a', 10));
+    root.style.setProperty('--theme-accent', '#f2a648');
+    root.style.setProperty('--theme-background', '#2b1a2e');
+    root.style.setProperty('--theme-surface', '#3a2640');
+    root.style.setProperty('--theme-text-primary', '#ef6f8a');
+    root.style.setProperty('--theme-text-secondary', '#f1e8ee');
 
     // Update theme-color Meta-Tag für PWA Status Bar
-    updateThemeColorMeta('#000000');
+    updateThemeColorMeta('#2b1a2e');
   }
 };

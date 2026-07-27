@@ -8,7 +8,7 @@
 .ob-root {
   --ob-stage: var(--color-background-default, #000000);
   --ob-stage-2: var(--color-background-surface, #0f0f0f);
-  --ob-paper: var(--theme-primary, #00d123);
+  --ob-paper: var(--theme-primary, #ef6f8a);
   --ob-paper-2: var(--theme-accent, #008a6e);
   --ob-ink: #000000;
   --ob-text: var(--color-text-primary, #ffffff);

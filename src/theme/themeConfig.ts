@@ -18,7 +18,7 @@ const createDynamicTheme = () => {
   const computedStyle = getComputedStyle(root);
 
   // Fallback-Werte falls CSS-Variablen noch nicht gesetzt sind
-  const primaryColor = computedStyle.getPropertyValue('--theme-primary').trim() || '#00d123';
+  const primaryColor = computedStyle.getPropertyValue('--theme-primary').trim() || '#ef6f8a';
   const backgroundColor = computedStyle.getPropertyValue('--theme-background').trim() || '#000000';
   const textSecondary =
     computedStyle.getPropertyValue('--theme-text-secondary').trim() || '#ffffff';

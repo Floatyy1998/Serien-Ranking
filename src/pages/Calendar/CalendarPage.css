@@ -37,7 +37,7 @@
 }
 
 .cal-arrow-btn:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .cal-week-chip:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -94,7 +94,7 @@
 }
 
 .cal-filter-chip:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -160,7 +160,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-primary, #00d123), transparent);
+  background: linear-gradient(90deg, transparent, var(--color-primary, #ef6f8a), transparent);
   opacity: 0.5;
 }
 
@@ -301,7 +301,7 @@
 .cal-ep:focus-visible,
 .cal-ep-group-header:focus-visible,
 .cal-ep-sub:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: -2px;
 }
 
@@ -418,7 +418,7 @@
 }
 
 .cal-ep-provider-link:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -470,7 +470,7 @@
 }
 
 .cal-ep-mark:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
@@ -577,10 +577,10 @@
   min-height: 52px;
   padding: 10px 14px;
   border-radius: var(--radius-lg);
-  border: 1px solid color-mix(in srgb, var(--theme-primary, #00d123) 25%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-primary, #ef6f8a) 25%, transparent);
   background: linear-gradient(
     135deg,
-    color-mix(in srgb, var(--theme-primary, #00d123) 12%, transparent),
+    color-mix(in srgb, var(--theme-primary, #ef6f8a) 12%, transparent),
     var(--glass-light)
   );
   -webkit-backdrop-filter: var(--blur-md);
@@ -597,12 +597,12 @@
 }
 
 .cal-entry-btn:focus-visible {
-  outline: 2px solid var(--theme-primary, #00d123);
+  outline: 2px solid var(--theme-primary, #ef6f8a);
   outline-offset: 2px;
 }
 
 .cal-entry-btn__icon {
-  color: var(--theme-primary, #00d123);
+  color: var(--theme-primary, #ef6f8a);
   flex-shrink: 0;
 }
 
@@ -688,8 +688,8 @@
 
   .cal-day.is-today {
     background: rgba(255, 255, 255, 0.05);
-    border-color: var(--theme-primary, #00d123);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #00d123) 15%, transparent);
+    border-color: var(--theme-primary, #ef6f8a);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--theme-primary, #ef6f8a) 15%, transparent);
   }
 
   .cal-day.is-empty {
@@ -929,7 +929,7 @@
   }
 
   .cal-ep-mark-overlay:focus-visible {
-    outline: 2px solid var(--theme-primary, #00d123);
+    outline: 2px solid var(--theme-primary, #ef6f8a);
     outline-offset: 2px;
   }
 

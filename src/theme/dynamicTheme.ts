@@ -33,10 +33,10 @@ export function generateDynamicTheme(config: UserThemeConfig) {
   // Sanitize: ungültige/leere Farbwerte durch Defaults ersetzen
   const safeConfig: UserThemeConfig = {
     ...config,
-    primaryColor: safeHex(config.primaryColor, '#00d123'),
-    backgroundColor: safeHex(config.backgroundColor, '#000000'),
-    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#0f0f0f') : undefined,
-    accentColor: config.accentColor ? safeHex(config.accentColor, '#008a6e') : undefined,
+    primaryColor: safeHex(config.primaryColor, '#ef6f8a'),
+    backgroundColor: safeHex(config.backgroundColor, '#2b1a2e'),
+    surfaceColor: config.surfaceColor ? safeHex(config.surfaceColor, '#3a2640') : undefined,
+    accentColor: config.accentColor ? safeHex(config.accentColor, '#f2a648') : undefined,
     textColor: config.textColor ? safeHex(config.textColor, '#ffffff') : undefined,
   };
 
@@ -166,14 +166,16 @@ export function generateDynamicTheme(config: UserThemeConfig) {
 }
 
 // Standard-Theme als Fallback.
-// ABSICHTLICH Grün auf Schwarz (Owner-Entscheidung) — NICHT an die Cyan/Navy-
-// Fallbacks aus global.css/:root "angleichen"; die gelten nur als CSS-Fallback.
+// Owner-Entscheidung (26.07.2026): Default nach dem Theme der Nutzerin „catcatcat"
+// nachgebaut — Coral-Primary + Amber-Accent auf dunklem Plum-Hintergrund (aus
+// Screenshot rekonstruiert, da ihr Theme nur lokal, nicht in der DB liegt).
+// NICHT an die alten Grün/Cyan-Fallbacks "angleichen".
 export const defaultThemeConfig: UserThemeConfig = {
-  primaryColor: '#00d123',
-  backgroundColor: '#000000',
-  surfaceColor: '#000000',
-  accentColor: '#008a6e',
-  textColor: '#e0e0e0',
+  primaryColor: '#ef6f8a',
+  backgroundColor: '#2b1a2e',
+  surfaceColor: '#3a2640',
+  accentColor: '#f2a648',
+  textColor: '#f1e8ee',
   backgroundImage: undefined,
   backgroundImageOpacity: 0.5,
   backgroundImageBlur: 0,

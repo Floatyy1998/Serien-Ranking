@@ -15,10 +15,10 @@ afterEach(() => {
 });
 
 describe('adjustBrightness', () => {
-  it('ungültige/leere Eingaben → Default-Grün', () => {
-    expect(adjustBrightness('', 10)).toBe('#00d123');
-    expect(adjustBrightness('nichthex', 10)).toBe('#00d123');
-    expect(adjustBrightness('#12345', 10)).toBe('#00d123'); // 5 Stellen
+  it('ungültige/leere Eingaben → Default-Rosé', () => {
+    expect(adjustBrightness('', 10)).toBe('#ef6f8a');
+    expect(adjustBrightness('nichthex', 10)).toBe('#ef6f8a');
+    expect(adjustBrightness('#12345', 10)).toBe('#ef6f8a'); // 5 Stellen
   });
 
   it('Betrag 0 lässt die Farbe unverändert', () => {
@@ -73,10 +73,10 @@ describe('loadSavedTheme', () => {
 
     await loadSavedTheme();
 
-    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#00d123');
-    expect(setProperty).toHaveBeenCalledWith('--theme-background', '#000000');
-    expect(setProperty).toHaveBeenCalledWith('--theme-surface', '#0f0f0f');
-    expect(meta.content).toBe('#000000');
+    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#ef6f8a');
+    expect(setProperty).toHaveBeenCalledWith('--theme-background', '#2b1a2e');
+    expect(setProperty).toHaveBeenCalledWith('--theme-surface', '#3a2640');
+    expect(meta.content).toBe('#2b1a2e');
   });
 
   it('mit gültigem lokalem Theme → Custom-Farben angewendet', async () => {
@@ -107,7 +107,7 @@ describe('loadSavedTheme', () => {
 
     await loadSavedTheme();
 
-    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#00d123');
+    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#ef6f8a');
   });
 
   it('ungültige Theme-Farben werden durch Defaults ersetzt', async () => {
@@ -119,7 +119,7 @@ describe('loadSavedTheme', () => {
 
     await loadSavedTheme();
 
-    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#00d123'); // ungültig → Default
+    expect(setProperty).toHaveBeenCalledWith('--theme-primary', '#ef6f8a'); // ungültig → Default
     expect(setProperty).toHaveBeenCalledWith('--theme-background', '#abcabc'); // gültig → übernommen
   });
 });

@@ -37,19 +37,19 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent);
+  background-color: color-mix(in srgb, var(--theme-primary, #ef6f8a) 30%, transparent);
   border-radius: 4px;
   border: transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: color-mix(in srgb, var(--theme-primary, #00d123) 50%, transparent);
+  background-color: color-mix(in srgb, var(--theme-primary, #ef6f8a) 50%, transparent);
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--theme-primary, #00d123) 30%, transparent) transparent;
+  scrollbar-color: color-mix(in srgb, var(--theme-primary, #ef6f8a) 30%, transparent) transparent;
 }
 
 /* iOS-specific overscroll prevention */

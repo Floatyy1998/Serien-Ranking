@@ -9,13 +9,12 @@ import { t } from '../../services/i18n';
 
 /**
  * Marketing-Markenpalette der Start-Seite (Pre-Auth Landing).
- * BEWUSSTE AUSNAHME vom Theme-System: fixe Violett-Marke statt
- * currentTheme/var(--theme-primary). Die Landing wird ausgeloggt gerendert –
- * dort greift nur das Default-Theme (Grün/Schwarz). Ein Angleichen an das Theme
- * würde das Marketing-Design verändern, daher bewusst hart & hier zentral
- * dokumentiert (nicht "auf Theme-Tokens korrigieren").
+ * BEWUSSTE AUSNAHME vom Theme-System: fixe Bernstein/Gold-Marke statt
+ * currentTheme/var(--theme-primary). Die Landing wird ausgeloggt gerendert, wo nur
+ * das Default-Theme (Charcoal/Bernstein) greift. Warm gehalten, passend zum
+ * Default; daher bewusst hart & hier zentral dokumentiert.
  */
-const BRAND = { purple: '#a855f7', purpleDark: '#9333ea', purpleRGB: '168, 85, 247' } as const;
+const BRAND = { gold: '#ef6f8a', goldDark: '#c8901f', goldRGB: '224, 168, 58' } as const;
 
 export const HeroSection = () => (
   <motion.div
@@ -62,16 +61,16 @@ export const HeroSection = () => (
             sx={{
               px: 4,
               py: 1.5,
-              background: BRAND.purple,
+              background: BRAND.gold,
               color: 'white',
               fontWeight: 600,
               fontSize: '1rem',
               borderRadius: 3,
               textTransform: 'none',
-              boxShadow: `0 4px 16px rgba(${BRAND.purpleRGB}, 0.3)`,
+              boxShadow: `0 4px 16px rgba(${BRAND.goldRGB}, 0.3)`,
               '&:hover': {
-                background: BRAND.purpleDark,
-                boxShadow: `0 6px 20px rgba(${BRAND.purpleRGB}, 0.4)`,
+                background: BRAND.goldDark,
+                boxShadow: `0 6px 20px rgba(${BRAND.goldRGB}, 0.4)`,
               },
             }}
           >
@@ -93,8 +92,8 @@ export const HeroSection = () => (
               borderRadius: 3,
               textTransform: 'none',
               '&:hover': {
-                borderColor: `rgba(${BRAND.purpleRGB}, 0.5)`,
-                background: `rgba(${BRAND.purpleRGB}, 0.08)`,
+                borderColor: `rgba(${BRAND.goldRGB}, 0.5)`,
+                background: `rgba(${BRAND.goldRGB}, 0.08)`,
               },
             }}
           >
@@ -122,9 +121,9 @@ export const HeroSection = () => (
               textTransform: 'none',
               background: 'rgba(255, 255, 255, 0.03)',
               '&:hover': {
-                borderColor: `rgba(${BRAND.purpleRGB}, 0.4)`,
+                borderColor: `rgba(${BRAND.goldRGB}, 0.4)`,
                 color: 'rgba(255, 255, 255, 0.7)',
-                background: `rgba(${BRAND.purpleRGB}, 0.08)`,
+                background: `rgba(${BRAND.goldRGB}, 0.08)`,
               },
             }}
           >

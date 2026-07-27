@@ -21,7 +21,7 @@ const MAX_RETRIES = 2;
 let placeholderCache: { key: string; url: string } | null = null;
 function themedPlaceholder(): string {
   const root = getComputedStyle(document.documentElement);
-  const primary = root.getPropertyValue('--theme-primary').trim() || '#00d123';
+  const primary = root.getPropertyValue('--theme-primary').trim() || '#ef6f8a';
   const secondary =
     root.getPropertyValue('--theme-secondary-gradient').trim() ||
     root.getPropertyValue('--theme-accent').trim() ||

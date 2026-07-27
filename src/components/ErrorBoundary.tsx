@@ -188,7 +188,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 padding: '13px 16px',
                 borderRadius: 'var(--radius-md, 12px)',
                 border: 'none',
-                background: 'var(--theme-primary, #00d123)',
+                background: 'var(--theme-primary, #ef6f8a)',
                 color: 'var(--theme-background, #000)',
                 fontSize: '13px',
                 fontWeight: 700,
@@ -226,7 +226,7 @@ export class ErrorBoundary extends Component<Props, State> {
               marginTop: '18px',
               fontSize: '13px',
               fontWeight: 600,
-              color: 'var(--theme-primary, #00d123)',
+              color: 'var(--theme-primary, #ef6f8a)',
               textDecoration: 'none',
             }}
           >

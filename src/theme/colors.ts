@@ -1,7 +1,7 @@
 // Zentrale Farbkonstanten für das gesamte Projekt
 export const colors = {
   // Primäre Farben
-  primary: 'var(--theme-primary, #00d123)',
+  primary: 'var(--theme-primary, #ef6f8a)',
   primaryHover: 'var(--theme-primary-hover, #008a6e)',
   primaryDark: 'var(--theme-primary-hover, #009a1a)',
 
@@ -36,7 +36,7 @@ export const colors = {
    * - accent:  Sekundär-Akzent für besondere Hervorhebungen.
    */
   text: {
-    primary: 'var(--color-text-primary, #00d123)',
+    primary: 'var(--color-text-primary, #ef6f8a)',
     body: 'var(--color-text-secondary, #ffffff)',
     secondary: 'var(--color-text-secondary, #ffffff)',
     muted: 'var(--color-text-muted, #cccccc)',
@@ -52,25 +52,25 @@ export const colors = {
     warning: '#FFC107',
     success: '#4caf50',
     info: {
-      main: 'var(--theme-primary, #00d123)',
+      main: 'var(--theme-primary, #ef6f8a)',
       gradient:
-        'linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #00d123) 10%, transparent) 0%, color-mix(in srgb, var(--theme-primary, #00d123) 5%, transparent) 100%)',
+        'linear-gradient(135deg, color-mix(in srgb, var(--theme-primary, #ef6f8a) 10%, transparent) 0%, color-mix(in srgb, var(--theme-primary, #ef6f8a) 5%, transparent) 100%)',
     },
   },
 
   // Border und Linien
   border: {
     default: '#2a2a3a',
-    primary: 'var(--theme-primary, #00d123)',
-    light: 'color-mix(in srgb, var(--theme-primary, #00d123) 8%, transparent)',
-    lighter: 'color-mix(in srgb, var(--theme-primary, #00d123) 5%, transparent)',
+    primary: 'var(--theme-primary, #ef6f8a)',
+    light: 'color-mix(in srgb, var(--theme-primary, #ef6f8a) 8%, transparent)',
+    lighter: 'color-mix(in srgb, var(--theme-primary, #ef6f8a) 5%, transparent)',
     subtle: 'rgba(255, 255, 255, 0.08)',
   },
 
   // Transparente Overlays
   overlay: {
-    light: 'color-mix(in srgb, var(--theme-primary, #00d123) 2%, transparent)',
-    medium: 'color-mix(in srgb, var(--theme-primary, #00d123) 8%, transparent)',
+    light: 'color-mix(in srgb, var(--theme-primary, #ef6f8a) 2%, transparent)',
+    medium: 'color-mix(in srgb, var(--theme-primary, #ef6f8a) 8%, transparent)',
     dark: 'rgba(0, 0, 0, 0.2)',
     white: 'rgba(255, 255, 255, 0.2)',
     black: 'rgba(0, 0, 0, 0.2)',
@@ -81,7 +81,7 @@ export const colors = {
     card: '0 4px 20px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -2px rgba(0, 0, 0, 0.35)',
     dialog: '0 20px 60px -15px rgba(0, 0, 0, 0.7), 0 8px 24px -8px rgba(0, 0, 0, 0.5)',
     hover: '0 8px 40px -8px rgba(0, 0, 0, 0.6), 0 4px 16px -4px rgba(0, 0, 0, 0.4)',
-    focus: '0 0 0 3px color-mix(in srgb, var(--theme-primary, #00d123) 20%, transparent)',
+    focus: '0 0 0 3px color-mix(in srgb, var(--theme-primary, #ef6f8a) 20%, transparent)',
     button: '0 2px 8px -2px rgba(0, 0, 0, 0.35), 0 1px 3px -1px rgba(0, 0, 0, 0.25)',
     buttonHover: '0 4px 20px -4px rgba(0, 0, 0, 0.5), 0 2px 8px -2px rgba(0, 0, 0, 0.35)',
     error: '0 4px 20px -4px rgba(255, 68, 68, 0.35)',
@@ -90,7 +90,7 @@ export const colors = {
 
   // Button-Farben (simplified for solid colors)
   button: {
-    primary: 'var(--theme-primary, #00d123)',
+    primary: 'var(--theme-primary, #ef6f8a)',
     primaryHover: 'var(--theme-accent, #008a6e)',
     secondary: 'var(--theme-surface, #0f0f0f)',
     secondaryHover: 'var(--theme-surface, #1a1a1a)',

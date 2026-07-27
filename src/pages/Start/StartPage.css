@@ -157,7 +157,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow:
     0 60px 140px rgba(0, 0, 0, 0.65),
-    0 0 120px rgba(168, 85, 247, 0.18),
+    0 0 120px rgba(224, 168, 58, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
@@ -167,7 +167,7 @@
   position: absolute;
   inset: auto 8% -60px 8%;
   height: 80px;
-  background: radial-gradient(ellipse, rgba(168, 85, 247, 0.35), transparent 70%);
+  background: radial-gradient(ellipse, rgba(224, 168, 58, 0.35), transparent 70%);
   filter: blur(28px);
   pointer-events: none;
 }
@@ -183,8 +183,8 @@
   width: 26px;
   height: 26px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  box-shadow: 0 0 14px rgba(168, 85, 247, 0.5);
+  background: linear-gradient(135deg, #ef6f8a, #e07a3a);
+  box-shadow: 0 0 14px rgba(224, 168, 58, 0.5);
   flex-shrink: 0;
 }
 
@@ -205,7 +205,7 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #38bdf8, #a855f7);
+  background: linear-gradient(135deg, #d9903a, #ef6f8a);
   flex-shrink: 0;
 }
 
@@ -311,8 +311,8 @@
   display: block;
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, #a855f7, #ec4899);
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.6);
+  background: linear-gradient(90deg, #ef6f8a, #e07a3a);
+  box-shadow: 0 0 8px rgba(224, 168, 58, 0.6);
 }
 
 .sm-posters {
