@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import type { PanInfo } from 'framer-motion';
 import { AnimatePresence, motion, useDragControls } from 'framer-motion';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
@@ -35,6 +36,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const shouldReduceMotion = useReducedMotion();
 
   useFocusTrap(sheetRef, isOpen, onClose);
+  useAndroidBack(isOpen, onClose);
 
   const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.y > dragThreshold || (info.offset.y > 0 && info.velocity.y > 500)) {

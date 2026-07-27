@@ -134,13 +134,43 @@ const initAppShortcuts = (cap: CapacitorGlobal): void => {
   });
 };
 
+/**
+ * Offene Overlays (Sheets, Dialoge) sind React-State, keine Route — der
+ * Hardware-Back würde sonst die Seite verlassen oder die App minimieren.
+ * Wer offen ist, meldet sich hier an; der zuletzt geöffnete kommt zuerst dran.
+ * Rückgabe true = verarbeitet, dann bleibt die Navigation aus.
+ */
+type BackInterceptor = () => boolean;
+const backInterceptors: BackInterceptor[] = [];
+
+export const registerBackInterceptor = (fn: BackInterceptor): (() => void) => {
+  backInterceptors.push(fn);
+  return () => {
+    const i = backInterceptors.indexOf(fn);
+    if (i >= 0) backInterceptors.splice(i, 1);
+  };
+};
+
+const runBackInterceptors = (): boolean => {
+  for (let i = backInterceptors.length - 1; i >= 0; i--) {
+    try {
+      if (backInterceptors[i]()) return true;
+    } catch {
+      /* ein defektes Overlay darf den Zurück-Knopf nicht blockieren */
+    }
+  }
+  return false;
+};
+
 const initNativeShell = (): void => {
   const cap = getCapacitor();
   if (!cap) return;
 
-  // Android-Hardware-Back: History zurück; auf der Startseite App minimieren.
+  // Android-Hardware-Back: erst offene Overlays schließen, dann History
+  // zurück; auf der Startseite App minimieren.
   const app = cap.Plugins?.App;
   app?.addListener?.('backButton', ({ canGoBack }) => {
+    if (runBackInterceptors()) return;
     if (canGoBack && window.location.pathname !== '/') {
       window.history.back();
     } else {

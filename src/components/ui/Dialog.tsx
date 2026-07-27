@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { memo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAndroidBack } from '../../hooks/useAndroidBack';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { scaleIn, tapScale } from '../../lib/motion';
 import { getOptimalTextColor } from '../../theme/colorUtils';
@@ -35,6 +36,7 @@ export const Dialog = memo(
     const dialogRef = useRef<HTMLDivElement>(null);
 
     useFocusTrap(dialogRef, open, onClose);
+    useAndroidBack(open, onClose);
 
     const getTypeColor = () => {
       switch (type) {
