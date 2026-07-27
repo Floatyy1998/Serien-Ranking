@@ -20,6 +20,7 @@ vi.mock('../../components/ui', () => ({
 }));
 vi.mock('../../lib/episode/seriesMetrics', () => ({
   calculateSeriesMetrics: () => ({ progress: 1 }),
+  getLastWatchedProgress: () => ({ season: 1, episode: 1 }),
 }));
 
 import { SeriesDetailDialogs } from './SeriesDetailDialogs';

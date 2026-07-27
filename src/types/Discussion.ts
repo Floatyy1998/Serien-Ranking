@@ -44,6 +44,9 @@ export interface Discussion {
   // Status
   isPinned?: boolean;
   isSpoiler?: boolean;
+  /** "Bezieht sich auf" (1-basiert) — Leser hinter diesem Stand sehen den Beitrag verdeckt. */
+  refSeason?: number;
+  refEpisode?: number;
   // Übersetzung
   lang?: string; // ISO-639-1, nach erster Übersetzung hinterlegt
   translations?: CommentTranslations;
@@ -58,6 +61,8 @@ export interface CreateDiscussionInput {
   title: string;
   content: string;
   isSpoiler?: boolean;
+  refSeason?: number;
+  refEpisode?: number;
 }
 
 export interface DiscussionFeedMetadata {
@@ -94,4 +99,6 @@ export interface DiscussionThreadProps {
   title?: React.ReactNode;
   isWatched?: boolean; // For spoiler protection on episodes
   feedMetadata?: DiscussionFeedMetadata;
+  /** Letzter gesehener Stand des Betrachters (1-basiert) — für "bezieht sich auf"-Gating. */
+  viewerProgress?: { season: number; episode: number } | null;
 }

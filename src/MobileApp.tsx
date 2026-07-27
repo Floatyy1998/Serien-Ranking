@@ -190,6 +190,8 @@ export const MobileApp = () => {
       import('./services/pushNotifications').then((m) => m.initNativePush(user.uid));
       import('./services/languageSync').then((m) => m.syncAppLanguageToProfile(user.uid));
       import('./services/timezoneSync').then((m) => m.syncTimezoneToProfile(user.uid));
+      import('./services/spoilerReveals').then((m) => m.syncSpoilerReveals(user.uid));
+      import('./services/spoilerMode').then((m) => m.syncSpoilerLevel(user.uid));
     }
   }, [user?.uid]);
 

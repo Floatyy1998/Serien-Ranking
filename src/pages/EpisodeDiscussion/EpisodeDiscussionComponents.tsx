@@ -12,12 +12,14 @@ import {
 } from '@mui/icons-material';
 import { Tooltip } from '@mui/material';
 import { motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { BackButton, Skeleton } from '../../components/ui';
 import { FillerChip } from '../../components/ui/FillerChip';
 import type { useTheme } from '../../contexts/ThemeContext';
+import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
+import { useSpoilerLevel } from '../../services/spoilerMode';
 import { tapScale } from '../../lib/motion';
 
 type Theme = ReturnType<typeof useTheme>['currentTheme'];
@@ -149,181 +151,222 @@ export const HeroSection = memo(
     fillerInfo,
     getStillUrl,
     navigate,
-  }: HeroSectionProps) => (
-    <div className="ed-hero">
-      {/* Hero Image */}
-      {stillPath ? (
-        <img src={getStillUrl(stillPath, 'original')} alt={episodeName} className="ed-hero-img" />
-      ) : backdropPath ? (
-        <img
-          src={getStillUrl(backdropPath, 'original')}
-          alt={seriesTitle}
-          className="ed-hero-img ed-hero-img--backdrop"
-        />
-      ) : (
-        <div
-          className="ed-hero-placeholder"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
-          }}
-        />
-      )}
+  }: HeroSectionProps) => {
+    const spoilerLevel = useSpoilerLevel();
+    const [spoilerRevealed, setSpoilerRevealed] = useState(false);
+    const mask = episodeSpoilerMask(spoilerLevel, isWatched);
+    const blurActive = mask.blurImage && !spoilerRevealed;
+    const hideText = mask.hideText && !spoilerRevealed;
+    const displayName = hideText ? t('Folge {n}', { n: episodeNumber ?? '?' }) : episodeName;
 
-      {/* Gradient Overlay */}
-      <div
-        className="ed-hero-gradient"
-        style={{
-          background: `linear-gradient(to bottom,
+    return (
+      <div className="ed-hero">
+        {/* Hero Image — Blur direkt auf dem img, das absolute Layout bleibt unberührt */}
+        {stillPath ? (
+          <img
+            src={getStillUrl(stillPath, 'original')}
+            alt={displayName}
+            className="ed-hero-img"
+            style={blurActive ? { filter: 'blur(24px)', transform: 'scale(1.06)' } : undefined}
+          />
+        ) : backdropPath ? (
+          <img
+            src={getStillUrl(backdropPath, 'original')}
+            alt={seriesTitle}
+            className="ed-hero-img ed-hero-img--backdrop"
+          />
+        ) : (
+          <div
+            className="ed-hero-placeholder"
+            style={{
+              background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.accent} 100%)`,
+            }}
+          />
+        )}
+
+        {/* Gradient Overlay */}
+        <div
+          className="ed-hero-gradient"
+          style={{
+            background: `linear-gradient(to bottom,
             rgba(0,0,0,0.4) 0%,
             transparent 25%,
             transparent 45%,
             ${currentTheme.background.default}dd 85%,
             ${currentTheme.background.default} 100%)`,
-        }}
-      />
-
-      {/* Top Navigation */}
-      <div className="ed-hero-topbar">
-        <BackButton
-          style={{
-            backdropFilter: 'var(--blur-lg)',
-            WebkitBackdropFilter: 'var(--blur-lg)',
-            background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
-            border: '1px solid var(--glass-border-light)',
           }}
         />
-        <motion.button
-          whileTap={tapScale}
-          onClick={() => navigate(`/series/${seriesId}`)}
-          className="ed-hero-series-btn"
-        >
-          <Tv className="ed-hero-series-btn-icon" />
-          {seriesTitle}
-        </motion.button>
-      </div>
 
-      {/* Episode Info Overlay */}
-      <div className="ed-hero-info">
-        {/* Season & Episode Badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="ed-badges-row"
-        >
-          <span
-            className="ed-season-badge"
+        {/* Top Navigation */}
+        <div className="ed-hero-topbar">
+          <BackButton
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
-              boxShadow: `0 4px 12px ${currentTheme.primary}50`,
+              backdropFilter: 'var(--blur-lg)',
+              WebkitBackdropFilter: 'var(--blur-lg)',
+              background: 'linear-gradient(135deg, rgba(0,0,0,0.5), rgba(20,20,40,0.5))',
+              border: '1px solid var(--glass-border-light)',
             }}
+          />
+          <motion.button
+            whileTap={tapScale}
+            onClick={() => navigate(`/series/${seriesId}`)}
+            className="ed-hero-series-btn"
           >
-            S{seasonNumber} E{episodeNumber}
-          </span>
+            <Tv className="ed-hero-series-btn-icon" />
+            {seriesTitle}
+          </motion.button>
+        </div>
 
-          {episodeRating !== undefined && episodeRating > 0 && (
-            <span className="ed-rating-badge">
-              <Star className="ed-rating-icon" />
-              {episodeRating.toFixed(1)}
-            </span>
-          )}
-
-          {isWatched && (
+        {/* Episode Info Overlay */}
+        <div className="ed-hero-info">
+          {/* Season & Episode Badges */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="ed-badges-row"
+          >
             <span
-              className="ed-watched-badge"
+              className="ed-season-badge"
               style={{
-                background: `linear-gradient(135deg, ${currentTheme.status.success}30, ${currentTheme.status.success}15)`,
-                color: currentTheme.status.success,
+                background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+                boxShadow: `0 4px 12px ${currentTheme.primary}50`,
               }}
             >
-              <Check className="ed-watched-badge-icon" />
-              {t('Gesehen')}
+              S{seasonNumber} E{episodeNumber}
             </span>
-          )}
 
-          {fillerInfo && (
-            <FillerChip
-              filler={fillerInfo.filler}
-              recap={fillerInfo.recap}
-              variant="label"
-              size="md"
-            />
-          )}
-        </motion.div>
+            {episodeRating !== undefined && episodeRating > 0 && (
+              <span className="ed-rating-badge">
+                <Star className="ed-rating-icon" />
+                {episodeRating.toFixed(1)}
+              </span>
+            )}
 
-        {/* Episode Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="ed-episode-title"
-          style={{ color: currentTheme.text.primary }}
-        >
-          {episodeName}
-        </motion.h1>
+            {isWatched && (
+              <span
+                className="ed-watched-badge"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.status.success}30, ${currentTheme.status.success}15)`,
+                  color: currentTheme.status.success,
+                }}
+              >
+                <Check className="ed-watched-badge-icon" />
+                {t('Gesehen')}
+              </span>
+            )}
 
-        {/* Meta Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="ed-meta-row"
-          style={{ color: currentTheme.text.secondary }}
-        >
-          {episodeAirDate && formattedAirDate && (
-            <Tooltip title={t('Erstausstrahlung')} arrow>
-              <span className="ed-meta-item">
-                <DateRange className="ed-meta-icon" style={{ color: currentTheme.primary }} />
-                {formattedAirDate}
-              </span>
-            </Tooltip>
-          )}
-          {isWatched && formattedFirstWatchedAt && (
-            <Tooltip title={t('Erstmals gesehen')} arrow>
-              <span className="ed-meta-item">
-                <Visibility
-                  className="ed-meta-icon"
-                  style={{ color: currentTheme.status.success }}
-                />
-                {formattedFirstWatchedAt}
-                {watchCount > 1 && (
-                  <span
-                    style={{
-                      marginLeft: 6,
-                      padding: '1px 6px',
-                      borderRadius: 6,
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      background: `${currentTheme.accent}26`,
-                      color: currentTheme.accent,
-                    }}
-                  >
-                    ×{watchCount}
-                  </span>
-                )}
-              </span>
-            </Tooltip>
-          )}
-          {isWatched && formattedLastWatchedAt && (
-            <Tooltip title={t('Zuletzt gesehen')} arrow>
-              <span className="ed-meta-item">
-                <Replay className="ed-meta-icon" style={{ color: currentTheme.accent }} />
-                {formattedLastWatchedAt}
-              </span>
-            </Tooltip>
-          )}
-          {episodeRuntime && (
-            <Tooltip title={t('Episodenlänge')} arrow>
-              <span className="ed-meta-item">
-                <PlayCircle className="ed-meta-icon" style={{ color: currentTheme.accent }} />
-                {t('{n} Min.', { n: episodeRuntime })}
-              </span>
-            </Tooltip>
-          )}
-        </motion.div>
+            {fillerInfo && (
+              <FillerChip
+                filler={fillerInfo.filler}
+                recap={fillerInfo.recap}
+                variant="label"
+                size="md"
+              />
+            )}
+          </motion.div>
+
+          {/* Episode Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="ed-episode-title"
+            style={{ color: currentTheme.text.primary }}
+          >
+            {displayName}
+          </motion.h1>
+
+          {/* Meta Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="ed-meta-row"
+            style={{ color: currentTheme.text.secondary }}
+          >
+            {episodeAirDate && formattedAirDate && (
+              <Tooltip title={t('Erstausstrahlung')} arrow>
+                <span className="ed-meta-item">
+                  <DateRange className="ed-meta-icon" style={{ color: currentTheme.primary }} />
+                  {formattedAirDate}
+                </span>
+              </Tooltip>
+            )}
+            {isWatched && formattedFirstWatchedAt && (
+              <Tooltip title={t('Erstmals gesehen')} arrow>
+                <span className="ed-meta-item">
+                  <Visibility
+                    className="ed-meta-icon"
+                    style={{ color: currentTheme.status.success }}
+                  />
+                  {formattedFirstWatchedAt}
+                  {watchCount > 1 && (
+                    <span
+                      style={{
+                        marginLeft: 6,
+                        padding: '1px 6px',
+                        borderRadius: 6,
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        background: `${currentTheme.accent}26`,
+                        color: currentTheme.accent,
+                      }}
+                    >
+                      ×{watchCount}
+                    </span>
+                  )}
+                </span>
+              </Tooltip>
+            )}
+            {isWatched && formattedLastWatchedAt && (
+              <Tooltip title={t('Zuletzt gesehen')} arrow>
+                <span className="ed-meta-item">
+                  <Replay className="ed-meta-icon" style={{ color: currentTheme.accent }} />
+                  {formattedLastWatchedAt}
+                </span>
+              </Tooltip>
+            )}
+            {episodeRuntime && (
+              <Tooltip title={t('Episodenlänge')} arrow>
+                <span className="ed-meta-item">
+                  <PlayCircle className="ed-meta-icon" style={{ color: currentTheme.accent }} />
+                  {t('{n} Min.', { n: episodeRuntime })}
+                </span>
+              </Tooltip>
+            )}
+          </motion.div>
+        </div>
+
+        {blurActive && (
+          <button
+            onClick={() => setSpoilerRevealed(true)}
+            style={{
+              position: 'absolute',
+              top: '30%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 16px',
+              borderRadius: 999,
+              border: '1px solid rgba(255,255,255,0.25)',
+              background: 'rgba(0,0,0,0.45)',
+              color: '#fff',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              zIndex: 2,
+            }}
+          >
+            <VisibilityOff style={{ fontSize: 18 }} />
+            {t('Spoiler-Schutz — tippen zum Anzeigen')}
+          </button>
+        )}
       </div>
-    </div>
-  )
+    );
+  }
 );
 HeroSection.displayName = 'HeroSection';
 

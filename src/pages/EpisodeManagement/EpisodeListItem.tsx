@@ -6,7 +6,9 @@ import type { CSSProperties, KeyboardEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getUnifiedEpisodeDate } from '../../lib/date/episodeDate.utils';
+import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
+import { useSpoilerLevel } from '../../services/spoilerMode';
 import type { Series } from '../../types/Series';
 import { tapScaleSmall } from '../../lib/motion';
 
@@ -36,6 +38,11 @@ export const EpisodeListItem = memo(
   }: EpisodeListItemProps) => {
     const navigate = useNavigate();
     const { currentTheme } = useTheme();
+    const spoilerLevel = useSpoilerLevel();
+    const displayName =
+      episodeSpoilerMask(spoilerLevel, !!episode.watched).hideText && episode.name
+        ? t('Folge {n}', { n: index + 1 })
+        : episode.name;
 
     const handleToggleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -53,7 +60,7 @@ export const EpisodeListItem = memo(
           tabIndex={0}
           aria-label={t('Folge {n}: {name}, {status}', {
             n: index + 1,
-            name: episode.name,
+            name: displayName,
             status: episode.watched ? t('gesehen') : t('nicht gesehen'),
           })}
           whileTap={tapScaleSmall}
@@ -63,7 +70,7 @@ export const EpisodeListItem = memo(
           <div className="episode-number">{index + 1}</div>
 
           <div className="episode-details">
-            <h3>{episode.name}</h3>
+            <h3>{displayName}</h3>
             <div className="episode-meta">
               <span className="meta-item">
                 <DateRange fontSize="small" />

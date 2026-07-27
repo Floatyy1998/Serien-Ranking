@@ -51,5 +51,13 @@ const dict: Record<string, string> = {
   'Du wurdest dauerhaft ausgeschlossen. Grund: {reason}':
     'You have been banned permanently. Reason: {reason}',
   'Verstoß gegen die Community-Regeln': 'Violation of the community rules',
+
+  // "Bezieht sich auf"-Gating
+  'Bezieht sich auf Folge': 'Refers to an episode',
+  Staffel: 'Season',
+  Folge: 'Episode',
+  'Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}':
+    'Refers to S{s}E{e} — you are at S{vs}E{ve}',
+  'Bezieht sich auf S{s}E{e}': 'Refers to S{s}E{e}',
 };
 export default dict;

@@ -10,6 +10,7 @@ import { DiscussionItem } from './DiscussionItem';
 import { NewDiscussionForm } from './NewDiscussionForm';
 import type { DiscussionThreadProps } from './types';
 import { ADMIN_UID } from '../../config/admin';
+import { isSpoilerRevealed, markSpoilerRevealed } from '../../services/spoilerReveals';
 import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
@@ -21,6 +22,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   title,
   isWatched,
   feedMetadata,
+  viewerProgress,
 }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
@@ -37,7 +39,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
   const [spoilerRevealed, setSpoilerRevealed] = useState(() => {
     if (spoilerKey) {
-      return localStorage.getItem(spoilerKey) === 'true';
+      return isSpoilerRevealed(spoilerKey);
     }
     return true;
   });
@@ -45,7 +47,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const handleRevealSpoiler = () => {
     setSpoilerRevealed(true);
     if (spoilerKey) {
-      localStorage.setItem(spoilerKey, 'true');
+      markSpoilerRevealed(user?.uid, spoilerKey);
     }
   };
 
@@ -84,6 +86,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     title: string;
     content: string;
     isSpoiler: boolean;
+    refSeason?: number;
+    refEpisode?: number;
   }) => {
     const id = await createDiscussion(data);
     return !!id;
@@ -333,6 +337,8 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           <NewDiscussionForm
             onSubmit={handleCreateDiscussion}
             onCancel={() => setShowNewForm(false)}
+            enableEpisodeRef={itemType === 'series'}
+            defaultRef={viewerProgress || undefined}
           />
         )}
       </AnimatePresence>
@@ -375,6 +381,7 @@ export const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               canDelete={user?.uid === ADMIN_UID}
               currentUserId={user?.uid}
               feedMetadata={feedMetadata}
+              viewerProgress={viewerProgress}
             />
           ))}
         </div>

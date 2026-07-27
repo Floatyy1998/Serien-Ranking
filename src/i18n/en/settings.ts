@@ -232,6 +232,14 @@ const settings: Record<string, string> = {
   Kalender: 'Calendar',
   Aktivität: 'Activity',
   Abos: 'Subscriptions',
+
+  // Spoiler-Schutz ('Aus' ist oben schon übersetzt)
+  'Spoiler-Schutz': 'Spoiler shield',
+  Bilder: 'Images',
+  Streng: 'Strict',
+  'Alles sichtbar': 'Everything visible',
+  'Bilder ungesehener Folgen blurren': 'Blur images of unwatched episodes',
+  'Auch Titel und Beschreibungen verstecken': 'Also hide titles and descriptions',
 };
 
 export default settings;

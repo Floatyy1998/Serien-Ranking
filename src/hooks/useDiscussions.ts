@@ -131,6 +131,8 @@ export const useDiscussions = (options: UseDiscussionsOptions): UseDiscussionsRe
           likes: [],
           replyCount: 0,
           isSpoiler: input.isSpoiler || false,
+          ...(input.refSeason !== undefined && { refSeason: input.refSeason }),
+          ...(input.refEpisode !== undefined && { refEpisode: input.refEpisode }),
         };
 
         const ref = dbRef(path);

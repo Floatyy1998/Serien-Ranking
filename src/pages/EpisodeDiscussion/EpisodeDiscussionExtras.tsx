@@ -1,8 +1,10 @@
-import { Movie, NavigateBefore, NavigateNext } from '@mui/icons-material';
+import { Movie, NavigateBefore, NavigateNext, VisibilityOff } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { DiscussionThread } from '../../components/Discussion';
+import { episodeSpoilerMask } from '../../lib/spoiler/spoilerMask';
 import { t } from '../../services/i18n';
+import { useSpoilerLevel } from '../../services/spoilerMode';
 import type { useTheme } from '../../contexts/ThemeContext';
 import type { EpisodeNavigationInfo } from './useEpisodeDiscussion';
 
@@ -102,44 +104,75 @@ EpisodeNavigation.displayName = 'EpisodeNavigation';
 interface OverviewSectionProps {
   currentTheme: Theme;
   episodeOverview: string;
+  isWatched?: boolean;
 }
 
-export const OverviewSection = memo(({ currentTheme, episodeOverview }: OverviewSectionProps) => (
-  <AnimatePresence>
-    {episodeOverview && (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="ed-overview"
-        style={{
-          background: currentTheme.background.card,
-          border: `1px solid ${currentTheme.border.default}`,
-        }}
-      >
-        <div
-          className="ed-overview-decoration"
-          style={{
-            background: `radial-gradient(circle, ${currentTheme.primary}10 0%, transparent 70%)`,
-          }}
-        />
-        <h3 className="ed-overview-header" style={{ color: currentTheme.text.primary }}>
-          <div
-            className="ed-overview-icon-wrap"
+export const OverviewSection = memo(
+  ({ currentTheme, episodeOverview, isWatched }: OverviewSectionProps) => {
+    const spoilerLevel = useSpoilerLevel();
+    const [revealed, setRevealed] = useState(false);
+    // isWatched === undefined gilt als gesehen (kein Fehl-Blur bei fehlender Info)
+    const hidden = episodeSpoilerMask(spoilerLevel, isWatched !== false).hideText && !revealed;
+
+    return (
+      <AnimatePresence>
+        {episodeOverview && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="ed-overview"
             style={{
-              background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
+              background: currentTheme.background.card,
+              border: `1px solid ${currentTheme.border.default}`,
             }}
           >
-            <Movie className="ed-overview-icon" style={{ color: currentTheme.primary }} />
-          </div>
-          {t('Handlung')}
-        </h3>
-        <p className="ed-overview-text" style={{ color: currentTheme.text.secondary }}>
-          {episodeOverview}
-        </p>
-      </motion.div>
-    )}
-  </AnimatePresence>
-));
+            <div
+              className="ed-overview-decoration"
+              style={{
+                background: `radial-gradient(circle, ${currentTheme.primary}10 0%, transparent 70%)`,
+              }}
+            />
+            <h3 className="ed-overview-header" style={{ color: currentTheme.text.primary }}>
+              <div
+                className="ed-overview-icon-wrap"
+                style={{
+                  background: `linear-gradient(135deg, ${currentTheme.primary}20, ${currentTheme.accent}20)`,
+                }}
+              >
+                <Movie className="ed-overview-icon" style={{ color: currentTheme.primary }} />
+              </div>
+              {t('Handlung')}
+            </h3>
+            {hidden ? (
+              <button
+                onClick={() => setRevealed(true)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: `1px solid ${currentTheme.border.default}`,
+                  background: 'transparent',
+                  color: currentTheme.text.secondary,
+                  fontSize: 13,
+                  cursor: 'pointer',
+                }}
+              >
+                <VisibilityOff style={{ fontSize: 18 }} />
+                {t('Spoiler-Schutz — tippen zum Anzeigen')}
+              </button>
+            ) : (
+              <p className="ed-overview-text" style={{ color: currentTheme.text.secondary }}>
+                {episodeOverview}
+              </p>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  }
+);
 OverviewSection.displayName = 'OverviewSection';
 
 interface CrewSectionProps {

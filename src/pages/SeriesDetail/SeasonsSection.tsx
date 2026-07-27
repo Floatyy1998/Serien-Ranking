@@ -14,6 +14,7 @@ import {
 } from '../../lib/validation/rewatch.utils';
 import { fillerLookupKey, type FillerEpisode } from '../../services/animeFillerService';
 import { useEpisodeRatings } from '../../hooks/useCommunityRatings';
+import { useSpoilerLevel } from '../../services/spoilerMode';
 import type { DynamicTheme } from '../../theme/dynamicTheme';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 import type { Series } from '../../types/Series';
@@ -93,6 +94,8 @@ export function SeasonsSection({
   const [episodeView, setEpisodeView] = useState<'list' | 'grid'>('list');
   // Anonyme Community-Episoden-Durchschnitte (ab 5 Bewertungen), lazy pro Serie.
   const communityEpisodeRatings = useEpisodeRatings(series.id);
+  const spoilerLevel = useSpoilerLevel();
+  const maskTitles = spoilerLevel === 2;
   const safeSeasonIndex = Math.min(
     Math.max(selectedSeasonIndex, 0),
     Math.max(series.seasons.length - 1, 0)
@@ -368,7 +371,7 @@ export function SeasonsSection({
                     key={episode.id}
                     role="button"
                     tabIndex={0}
-                    aria-label={`${t('Episode {n}', { n: episodeIndex + 1 })}${episode.name ? `: ${episode.name}` : ''} — ${
+                    aria-label={`${t('Episode {n}', { n: episodeIndex + 1 })}${episode.name && !(maskTitles && !episode.watched) ? `: ${episode.name}` : ''} — ${
                       episode.watched ? t('gesehen, Optionen anzeigen') : t('Details öffnen')
                     }`}
                     onClick={activateRow}
@@ -455,7 +458,9 @@ export function SeasonsSection({
                       <div className="episode-list-title">
                         {t('Episode {n}', { n: episodeIndex + 1 })}
                       </div>
-                      {episode.name && <div className="episode-list-subtitle">{episode.name}</div>}
+                      {episode.name && !(maskTitles && !episode.watched) && (
+                        <div className="episode-list-subtitle">{episode.name}</div>
+                      )}
                     </div>
 
                     {/* Date meta — right-aligned on desktop, hidden on mobile (shown

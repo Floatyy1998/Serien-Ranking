@@ -1,6 +1,7 @@
-import { ChevronRight, FormatSize, Palette, ViewQuilt } from '@mui/icons-material';
+import { ChevronRight, FormatSize, Palette, ViewQuilt, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { memo, useState } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { tapScaleSmall } from '../../lib/motion';
 import { t } from '../../services/i18n';
@@ -10,6 +11,7 @@ import {
   setDisplayScale,
   type DisplayScale,
 } from '../../services/displayScale';
+import { setSpoilerLevel, useSpoilerLevel, type SpoilerLevel } from '../../services/spoilerMode';
 import { getOptimalTextColor } from '../../theme/colorUtils';
 
 const SIZE_OPTIONS: { scale: DisplayScale; label: string; a: number }[] = [
@@ -88,6 +90,75 @@ const DisplaySizeControl = memo(() => {
 
 DisplaySizeControl.displayName = 'DisplaySizeControl';
 
+const SPOILER_OPTIONS: { level: SpoilerLevel; label: string; hint: string }[] = [
+  { level: 0, label: t('Aus'), hint: t('Alles sichtbar') },
+  { level: 1, label: t('Bilder'), hint: t('Bilder ungesehener Folgen blurren') },
+  { level: 2, label: t('Streng'), hint: t('Auch Titel und Beschreibungen verstecken') },
+];
+
+const SpoilerControl = memo(() => {
+  const { currentTheme } = useTheme();
+  const { user } = useAuth() || {};
+  const level = useSpoilerLevel();
+  const onPrimary = getOptimalTextColor(currentTheme.primary);
+  const current = SPOILER_OPTIONS.find((o) => o.level === level);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.22 }}
+      className="settings-nav-btn settings-size-card"
+      style={{ color: currentTheme.text.primary }}
+    >
+      <div className="settings-size-head">
+        <div
+          className="settings-nav-btn-icon"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.accent})`,
+          }}
+        >
+          <VisibilityOff style={{ fontSize: '24px', color: currentTheme.text.secondary }} />
+        </div>
+        <div className="settings-nav-btn-text">
+          <h2 className="settings-nav-btn-title">{t('Spoiler-Schutz')}</h2>
+          <p className="settings-nav-btn-subtitle" style={{ color: currentTheme.text.muted }}>
+            {current?.hint || t('Bilder ungesehener Folgen blurren')}
+          </p>
+        </div>
+      </div>
+      <div className="settings-size-seg">
+        {SPOILER_OPTIONS.map((o) => {
+          const active = level === o.level;
+          return (
+            <button
+              key={o.level}
+              type="button"
+              onClick={() => setSpoilerLevel(user?.uid, o.level)}
+              aria-label={o.label}
+              aria-pressed={active}
+              className={active ? 'is-active' : ''}
+              style={
+                active
+                  ? {
+                      background: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                      color: onPrimary,
+                      borderColor: 'transparent',
+                    }
+                  : { color: currentTheme.text.muted }
+              }
+            >
+              <span className="sz-lbl">{o.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+});
+
+SpoilerControl.displayName = 'SpoilerControl';
+
 interface AppearanceSectionProps {
   onNavigateTheme: () => void;
   onNavigateLayout: () => void;
@@ -155,6 +226,9 @@ export const AppearanceSection = memo(
 
         {/* Anzeigegröße — skaliert die ganze UI proportional (Zoom) */}
         <DisplaySizeControl />
+
+        {/* Spoiler-Schutz für ungesehene Folgen */}
+        <SpoilerControl />
       </>
     );
   }

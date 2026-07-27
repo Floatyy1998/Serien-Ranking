@@ -9,14 +9,26 @@ import { t } from '../../services/i18n';
 import { tapScale } from '../../lib/motion';
 
 const NewDiscussionFormInner: React.FC<{
-  onSubmit: (data: { title: string; content: string; isSpoiler: boolean }) => Promise<boolean>;
+  onSubmit: (data: {
+    title: string;
+    content: string;
+    isSpoiler: boolean;
+    refSeason?: number;
+    refEpisode?: number;
+  }) => Promise<boolean>;
   onCancel: () => void;
-}> = ({ onSubmit, onCancel }) => {
+  /** Serien-Threads: "Bezieht sich auf Folge"-Angabe anbieten. */
+  enableEpisodeRef?: boolean;
+  defaultRef?: { season: number; episode: number };
+}> = ({ onSubmit, onCancel, enableEpisodeRef = false, defaultRef }) => {
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isSpoiler, setIsSpoiler] = useState(false);
+  const [refActive, setRefActive] = useState(false);
+  const [refSeason, setRefSeason] = useState(defaultRef?.season || 1);
+  const [refEpisode, setRefEpisode] = useState(defaultRef?.episode || 1);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
@@ -58,11 +70,19 @@ const NewDiscussionFormInner: React.FC<{
     setSubmitting(true);
     // Combine text and images when submitting
     const fullContent = [content.trim(), ...previewImages].filter(Boolean).join('\n');
-    const success = await onSubmit({ title: title.trim(), content: fullContent, isSpoiler });
+    const success = await onSubmit({
+      title: title.trim(),
+      content: fullContent,
+      isSpoiler,
+      ...(enableEpisodeRef && refActive && refSeason > 0
+        ? { refSeason, refEpisode: Math.max(1, refEpisode) }
+        : {}),
+    });
     if (success) {
       setTitle('');
       setContent('');
       setIsSpoiler(false);
+      setRefActive(false);
       setPreviewImages([]);
       onCancel();
     }
@@ -259,6 +279,75 @@ const NewDiscussionFormInner: React.FC<{
             <Warning style={{ fontSize: '18px' }} />
             Spoiler
           </label>
+
+          {/* "Bezieht sich auf Folge" — nur in Serien-Threads */}
+          {enableEpisodeRef && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  border: `1px solid ${refActive ? currentTheme.primary + '60' : currentTheme.border.default}`,
+                  background: refActive ? `${currentTheme.primary}15` : 'transparent',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: refActive ? currentTheme.primary : currentTheme.text.secondary,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={refActive}
+                  onChange={(e) => setRefActive(e.target.checked)}
+                  style={{ display: 'none' }}
+                />
+                {t('Bezieht sich auf Folge')}
+              </label>
+              {refActive && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ fontSize: '13px', color: currentTheme.text.secondary }}>S</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={refSeason}
+                    onChange={(e) => setRefSeason(Math.max(1, Number(e.target.value) || 1))}
+                    aria-label={t('Staffel')}
+                    style={{
+                      width: 52,
+                      padding: '8px 6px',
+                      borderRadius: '8px',
+                      border: `1px solid ${currentTheme.border.default}`,
+                      background: 'transparent',
+                      color: currentTheme.text.primary,
+                      fontSize: '14px',
+                      textAlign: 'center',
+                    }}
+                  />
+                  <span style={{ fontSize: '13px', color: currentTheme.text.secondary }}>E</span>
+                  <input
+                    type="number"
+                    min={1}
+                    value={refEpisode}
+                    onChange={(e) => setRefEpisode(Math.max(1, Number(e.target.value) || 1))}
+                    aria-label={t('Folge')}
+                    style={{
+                      width: 52,
+                      padding: '8px 6px',
+                      borderRadius: '8px',
+                      border: `1px solid ${currentTheme.border.default}`,
+                      background: 'transparent',
+                      color: currentTheme.text.primary,
+                      fontSize: '14px',
+                      textAlign: 'center',
+                    }}
+                  />
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>

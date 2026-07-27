@@ -29,10 +29,12 @@ export interface ChatMessage {
   imageUrl?: string;
   imageWidth?: number;
   imageHeight?: number;
+  /** Als Spoiler markiert — Empfänger sieht den Text erst nach Tap. */
+  isSpoiler?: boolean;
 }
 
 export type OutgoingMessage =
-  | { kind: 'text'; text: string }
+  | { kind: 'text'; text: string; spoiler?: boolean }
   | { kind: 'sticker'; stickerId: string };
 
 export interface ChatSummary {
@@ -94,8 +96,9 @@ export async function sendMessage(
   if (message.kind === 'text') {
     const trimmed = message.text.trim().slice(0, MAX_MESSAGE_LENGTH);
     if (!trimmed) return;
-    payload = { t: trimmed };
-    preview = trimmed.slice(0, 300);
+    payload = message.spoiler ? { t: trimmed, sp: true } : { t: trimmed };
+    // Spoiler dürfen weder über die Chat-Liste noch über den Push leaken
+    preview = message.spoiler ? 'Spoiler' : trimmed.slice(0, 300);
   } else {
     payload = { st: message.stickerId.slice(0, 64) };
     preview = 'Sticker';
@@ -201,7 +204,16 @@ export function subscribeMessages(
   const handler = query.on('value', (snap) => {
     const val = (snap.val() || {}) as Record<
       string,
-      { s: string; t?: string; st?: string; img?: string; w?: number; h?: number; ts: number }
+      {
+        s: string;
+        t?: string;
+        st?: string;
+        img?: string;
+        w?: number;
+        h?: number;
+        sp?: boolean;
+        ts: number;
+      }
     >;
     const list = Object.entries(val)
       .map(([id, m]) => ({
@@ -213,6 +225,7 @@ export function subscribeMessages(
         imageUrl: m.img,
         imageWidth: m.w,
         imageHeight: m.h,
+        isSpoiler: m.sp === true,
       }))
       .sort((a, b) => a.timestamp - b.timestamp);
     cb(list);

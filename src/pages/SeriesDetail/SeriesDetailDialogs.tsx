@@ -1,6 +1,6 @@
 import { Dialog, Snackbar } from '../../components/ui';
 import { DiscussionThread } from '../../components/Discussion';
-import { calculateSeriesMetrics } from '../../lib/episode/seriesMetrics';
+import { calculateSeriesMetrics, getLastWatchedProgress } from '../../lib/episode/seriesMetrics';
 import { EpisodeActionSheet } from './EpisodeActionSheet';
 import { t } from '../../services/i18n';
 
@@ -75,6 +75,7 @@ export const SeriesDetailDialogs: React.FC<SeriesDetailDialogsProps> = ({
           itemType="series"
           // Spoiler-Wall nur, wenn die Serie noch gar nicht begonnen wurde.
           isWatched={calculateSeriesMetrics(series).progress > 0}
+          viewerProgress={getLastWatchedProgress(series) || { season: 0, episode: 0 }}
           feedMetadata={{
             itemTitle: series.title || series.name || 'Unbekannte Serie',
             posterPath:

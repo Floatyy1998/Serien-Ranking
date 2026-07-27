@@ -1,5 +1,6 @@
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import ImageOutlined from '@mui/icons-material/ImageOutlined';
+import VisibilityOffOutlined from '@mui/icons-material/VisibilityOffOutlined';
 import InsertEmoticonOutlined from '@mui/icons-material/InsertEmoticonOutlined';
 import MoreVert from '@mui/icons-material/MoreVert';
 import Send from '@mui/icons-material/Send';
@@ -79,6 +80,8 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
   const [otherTyping, setOtherTyping] = useState(false);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  const [spoilerMode, setSpoilerMode] = useState(false);
+  const [revealedSpoilers, setRevealedSpoilers] = useState<Set<string>>(new Set());
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirm, setConfirm] = useState<'report' | 'delete' | null>(null);
   const [chatReady, setChatReady] = useState(false);
@@ -220,8 +223,9 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     if (!text) return;
     setSending(true);
     try {
-      await sendMessage(myUid, friendId, { kind: 'text', text }, myName);
+      await sendMessage(myUid, friendId, { kind: 'text', text, spoiler: spoilerMode }, myName);
       setDraft('');
+      setSpoilerMode(false);
       if (inputRef.current) inputRef.current.style.height = 'auto';
       void setTyping(myUid, chatPairId(myUid, friendId), false);
       inputRef.current?.focus();
@@ -230,7 +234,7 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
     } finally {
       setSending(false);
     }
-  }, [myUid, friendId, draft, myName, sending]);
+  }, [myUid, friendId, draft, myName, sending, spoilerMode]);
 
   // WhatsApp-Flow: erst Vorschau mit optionaler Bildunterschrift, dann senden.
   const openImagePreview = useCallback((file: File) => {
@@ -588,6 +592,22 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
                       </>
                     ) : m.stickerId && isValidStickerId(m.stickerId) ? (
                       <StickerCanvas stickerId={m.stickerId} size={150} />
+                    ) : m.isSpoiler && !own && !revealedSpoilers.has(m.id) ? (
+                      <button
+                        className="ch-spoiler-cover"
+                        onClick={() => setRevealedSpoilers((prev) => new Set(prev).add(m.id))}
+                      >
+                        <VisibilityOffOutlined style={{ fontSize: 16 }} />
+                        {t('Spoiler — tippen zum Lesen')}
+                      </button>
+                    ) : m.isSpoiler ? (
+                      <>
+                        <span className="ch-spoiler-own">
+                          <VisibilityOffOutlined style={{ fontSize: 12 }} />
+                          {t('Als Spoiler gesendet')}
+                        </span>
+                        {m.text}
+                      </>
                     ) : (
                       m.text
                     )}
@@ -676,13 +696,26 @@ export const ChatThreadPane = ({ friendId, showBack }: { friendId: string; showB
           >
             <ImageOutlined className={uploadingImage ? 'ch-upload-pulse' : undefined} />
           </button>
+          <button
+            className="ch-icon-btn"
+            onClick={() => setSpoilerMode((v) => !v)}
+            aria-label={t('Als Spoiler senden')}
+            aria-pressed={spoilerMode}
+            style={{ color: spoilerMode ? currentTheme.primary : currentTheme.text.muted }}
+          >
+            <VisibilityOffOutlined />
+          </button>
           <textarea
             ref={inputRef}
             className="ch-input"
             value={draft}
             maxLength={MAX_MESSAGE_LENGTH}
             rows={1}
-            placeholder={t('Nachricht an {name} …', { name: partner.name })}
+            placeholder={
+              spoilerMode
+                ? t('Spoiler an {name} — wird verdeckt zugestellt', { name: partner.name })
+                : t('Nachricht an {name} …', { name: partner.name })
+            }
             onChange={(e) => handleDraftChange(e.target.value)}
             onPaste={(e) => {
               const files = e.clipboardData?.files;

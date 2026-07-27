@@ -7,9 +7,15 @@ import { tapScaleSmall } from '../../lib/motion';
 interface SpoilerRevealProps {
   onReveal: () => void;
   compact?: boolean;
+  /** Eigener Text statt "Spoiler anzeigen" (z. B. "Bezieht sich auf S5E3"). */
+  label?: string;
 }
 
-export const SpoilerReveal: React.FC<SpoilerRevealProps> = ({ onReveal, compact = false }) => {
+export const SpoilerReveal: React.FC<SpoilerRevealProps> = ({
+  onReveal,
+  compact = false,
+  label,
+}) => {
   const { currentTheme } = useTheme();
   const warningColor = currentTheme.status.warning;
 
@@ -37,7 +43,7 @@ export const SpoilerReveal: React.FC<SpoilerRevealProps> = ({ onReveal, compact 
       }}
     >
       <Warning style={{ fontSize: compact ? '16px' : '20px' }} />
-      Spoiler anzeigen
+      {label || 'Spoiler anzeigen'}
     </motion.button>
   );
 };

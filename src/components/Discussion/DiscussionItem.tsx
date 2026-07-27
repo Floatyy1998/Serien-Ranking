@@ -28,6 +28,8 @@ const DiscussionItemInner: React.FC<{
   canDelete?: boolean;
   currentUserId?: string;
   feedMetadata?: DiscussionFeedMetadata;
+  /** Letzter gesehener Stand des Lesers (1-basiert) für das "bezieht sich auf"-Gating. */
+  viewerProgress?: { season: number; episode: number } | null;
 }> = ({
   discussion,
   discussionPath,
@@ -38,6 +40,7 @@ const DiscussionItemInner: React.FC<{
   canDelete,
   currentUserId,
   feedMetadata,
+  viewerProgress,
 }) => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
@@ -52,13 +55,24 @@ const DiscussionItemInner: React.FC<{
   const [showSpoilerConfirm, setShowSpoilerConfirm] = useState(false);
   const { text, images } = extractImageUrls(discussion.content);
 
+  // "Bezieht sich auf"-Gating: verdeckt, wenn der Beitrag hinter dem Stand
+  // des Lesers liegt. Der Autor sieht seinen Beitrag immer.
+  const behindReference =
+    !isOwner &&
+    !!discussion.refSeason &&
+    !!viewerProgress &&
+    (discussion.refSeason > viewerProgress.season ||
+      (discussion.refSeason === viewerProgress.season &&
+        (discussion.refEpisode || 0) > viewerProgress.episode));
+  const contentHidden = (discussion.isSpoiler || behindReference) && !showSpoiler;
+
   const translation = useCommentTranslation({
     nodePath: `${discussionPath}/${discussion.id}`,
     content: text,
     title: discussion.title,
     lang: discussion.lang,
     translations: discussion.translations,
-    enabled: !isEditing && !(discussion.isSpoiler && !showSpoiler),
+    enabled: !isEditing && !contentHidden,
   });
   const displayTitle =
     translation.showTranslation && translation.translated?.title
@@ -164,6 +178,20 @@ const DiscussionItemInner: React.FC<{
                 {t('SPOILER')}
               </span>
             )}
+            {!!discussion.refSeason && (
+              <span
+                style={{
+                  padding: '2px 6px',
+                  background: `${currentTheme.primary}20`,
+                  color: currentTheme.primary,
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                }}
+              >
+                S{discussion.refSeason}E{discussion.refEpisode || 1}
+              </span>
+            )}
             {discussion.isPinned && (
               <span
                 style={{
@@ -246,8 +274,25 @@ const DiscussionItemInner: React.FC<{
 
       {/* Content */}
       {!isEditing &&
-        (discussion.isSpoiler && !showSpoiler ? (
-          <SpoilerReveal onReveal={() => setShowSpoiler(true)} />
+        (contentHidden ? (
+          <SpoilerReveal
+            onReveal={() => setShowSpoiler(true)}
+            label={
+              !discussion.isSpoiler && behindReference && viewerProgress
+                ? viewerProgress.season > 0
+                  ? t('Bezieht sich auf S{s}E{e} — du bist bei S{vs}E{ve}', {
+                      s: discussion.refSeason as number,
+                      e: discussion.refEpisode || 1,
+                      vs: viewerProgress.season,
+                      ve: viewerProgress.episode,
+                    })
+                  : t('Bezieht sich auf S{s}E{e}', {
+                      s: discussion.refSeason as number,
+                      e: discussion.refEpisode || 1,
+                    })
+                : undefined
+            }
+          />
         ) : (
           <>
             {text && (

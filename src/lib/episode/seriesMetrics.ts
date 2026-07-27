@@ -80,6 +80,27 @@ export const calculateSeriesMetrics = (series: Series): SeriesMetrics => {
 };
 
 /**
+ * Letzter gesehener Stand (1-basiert) — null, wenn noch nichts gesehen wurde.
+ * Nimmt die in der Staffelreihenfolge letzte gesehene Folge.
+ */
+export const getLastWatchedProgress = (
+  series: Series
+): { season: number; episode: number } | null => {
+  let season = 0;
+  let episode = 0;
+  for (const s of normalizeSeasons(series.seasons)) {
+    const eps = normalizeEpisodes(s.episodes);
+    for (let i = 0; i < eps.length; i++) {
+      if (isEpisodeWatched(eps[i])) {
+        season = s.seasonNumber + 1;
+        episode = eps[i].episode_number || i + 1;
+      }
+    }
+  }
+  return season > 0 ? { season, episode } : null;
+};
+
+/**
  * Returns the most recent watch timestamp across all episodes.
  * Checks both `lastWatchedAt` and `firstWatchedAt`.
  */

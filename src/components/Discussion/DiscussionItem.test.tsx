@@ -134,4 +134,42 @@ describe('DiscussionItem', () => {
     fireEvent.click(screen.getByText('Spoiler anzeigen'));
     expect(screen.getByText('I loved it')).toBeInTheDocument();
   });
+
+  it('verdeckt Beiträge mit Bezug hinter dem Leser-Fortschritt', () => {
+    render(
+      <DiscussionItem
+        {...baseProps}
+        discussion={{ ...discussion, refSeason: 5, refEpisode: 3 }}
+        viewerProgress={{ season: 2, episode: 1 }}
+      />
+    );
+    expect(screen.queryByText('I loved it')).not.toBeInTheDocument();
+    const reveal = screen.getByText('Bezieht sich auf S5E3 — du bist bei S2E1');
+    fireEvent.click(reveal);
+    expect(screen.getByText('I loved it')).toBeInTheDocument();
+  });
+
+  it('zeigt Beiträge mit Bezug vor dem Leser-Fortschritt normal an', () => {
+    render(
+      <DiscussionItem
+        {...baseProps}
+        discussion={{ ...discussion, refSeason: 2, refEpisode: 1 }}
+        viewerProgress={{ season: 2, episode: 1 }}
+      />
+    );
+    expect(screen.getByText('I loved it')).toBeInTheDocument();
+    expect(screen.getByText('S2E1')).toBeInTheDocument();
+  });
+
+  it('der Autor sieht seinen Beitrag trotz Bezug immer', () => {
+    render(
+      <DiscussionItem
+        {...baseProps}
+        isOwner
+        discussion={{ ...discussion, refSeason: 9, refEpisode: 9 }}
+        viewerProgress={{ season: 1, episode: 1 }}
+      />
+    );
+    expect(screen.getByText('I loved it')).toBeInTheDocument();
+  });
 });

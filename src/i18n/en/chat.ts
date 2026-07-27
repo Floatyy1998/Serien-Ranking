@@ -84,6 +84,12 @@ const dict: Record<string, string> = {
   Pflaume: 'Plum',
   Glut: 'Ember',
   Schiefer: 'Slate',
+
+  // Spoiler im Chat
+  'Als Spoiler senden': 'Send as spoiler',
+  'Spoiler — tippen zum Lesen': 'Spoiler — tap to read',
+  'Als Spoiler gesendet': 'Sent as spoiler',
+  'Spoiler an {name} — wird verdeckt zugestellt': 'Spoiler to {name} — delivered covered',
 };
 
 export default dict;

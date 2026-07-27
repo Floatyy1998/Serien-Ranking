@@ -21,6 +21,7 @@ vi.mock('@mui/icons-material', () => ({
   Palette: () => null,
   ViewQuilt: () => null,
   FormatSize: () => null,
+  VisibilityOff: () => null,
 }));
 
 vi.mock('../../contexts/ThemeContext', () => {
