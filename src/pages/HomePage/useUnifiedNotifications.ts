@@ -71,6 +71,15 @@ export interface Announcement {
 
 export const ANNOUNCEMENTS: Announcement[] = [
   {
+    id: 'announcement_default-theme-2026-07',
+    title: 'Neu: Ein neues Standard-Design',
+    message:
+      'TV-Rank trägt jetzt Rosé und Amber auf dunklem Plum. Wer bereits ein eigenes Theme eingestellt hat, behält es unverändert. Und falls dir das neue Design nicht zusagt: Farben, Hintergrund und Akzente stellst du frei in den Einstellungen ein — tippe hier, um direkt dorthin zu kommen.',
+    // Timestamp bewusst nach dem Deploy (Zeit-Wasserlinie der Read-Logik)
+    timestamp: new Date('2026-07-27T12:00:00+02:00').getTime(),
+    navigateTo: '/theme',
+  },
+  {
     id: 'announcement_friends-chat-2026-07',
     title: 'Neu: Private Chats mit deinen Freunden',
     message:

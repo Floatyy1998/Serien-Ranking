@@ -65,6 +65,11 @@ const dict: Record<string, string> = {
   'Mach den Chat zu deinem': 'Make the Chat Your Own',
   'Gestalte deine Bubbles mit eigenem Farbverlauf und Eckenform — mit Live-Vorschau. Dazu wählst du pro Chat einen Hintergrund: ruhige Verläufe für alle, und die Pet-Szenen, die du im Pet-System schon freigeschaltet hast. Beides siehst nur du.':
     'Style your bubbles with a custom gradient and corner shape — with live preview. Plus pick a background per chat: calm gradients for everyone, and the pet scenes you have already unlocked in the pet system. Both are visible only to you.',
+  // Announcement (neues Standard-Design, Juli 2026)
+  'Neu: Ein neues Standard-Design': 'New: A New Default Look',
+  'TV-Rank trägt jetzt Rosé und Amber auf dunklem Plum. Wer bereits ein eigenes Theme eingestellt hat, behält es unverändert. Und falls dir das neue Design nicht zusagt: Farben, Hintergrund und Akzente stellst du frei in den Einstellungen ein — tippe hier, um direkt dorthin zu kommen.':
+    'TV-Rank now wears rosé and amber on deep plum. If you have already set your own theme, it stays exactly as it was. And if the new look is not for you: colors, background and accents are yours to change in the settings — tap here to go straight there.',
+
   'Neu: Private Chats mit deinen Freunden': 'New: Private Chats with Your Friends',
   'Ab sofort kannst du direkt in TV-Rank mit deinen Freunden chatten — mit Emojis, Herz-Reaktionen per Doppeltipp und exklusiven Stickern deiner Pets. Gestalte Bubbles und Chat-Hintergründe selbst, freigeschaltete Pet-Szenen inklusive. Und alles bleibt privat: Mitlesen kann nur, wem du schreibst. Alle Details in den Patch Notes.':
     'You can now chat with your friends right inside TV-Rank — with emojis, double-tap heart reactions and exclusive stickers of your pets. Style your bubbles and chat backgrounds yourself, unlocked pet scenes included. And everything stays private: only the person you write to can read along. All details in the patch notes.',
