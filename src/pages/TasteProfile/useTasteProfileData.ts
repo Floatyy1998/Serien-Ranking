@@ -5,6 +5,7 @@ import { useSeriesList } from '../../contexts/SeriesListContext';
 import { useMovieList } from '../../contexts/MovieListContext';
 import { calculateOverallRating } from '../../lib/rating/rating';
 import { backendFetch } from '../../services/backendApi';
+import { fetchBlockedRecommendations } from '../../services/recFeedbackService';
 import { getTmdbApiKey, tmdbFetch } from '../../services/tmdbClient';
 import { calculateWatchJourney } from '../../services/watchJourneyService';
 import { getWatchStreak } from '../../services/watchActivityService';
@@ -533,8 +534,12 @@ export const useTasteProfileData = () => {
 
         const enrichedRecs = await enrichRecsWithTMDB(filteredRecs);
 
+        // "Nicht mein Ding"-Blockliste (Heute-Abend-Picker) auch hier respektieren
+        const blocked = await fetchBlockedRecommendations(user.uid);
+        const unblockedRecs = enrichedRecs.filter((rec) => !rec.tmdbId || !blocked.has(rec.tmdbId));
+
         const profileResult: TasteProfileResult = {
-          recommendations: enrichedRecs,
+          recommendations: unblockedRecs,
           generatedAt: new Date().toISOString(),
         };
         setResult(profileResult);

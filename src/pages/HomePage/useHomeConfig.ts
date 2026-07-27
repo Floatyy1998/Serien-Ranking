@@ -17,6 +17,7 @@ export const DEFAULT_SECTION_ORDER = [
   'stats',
 ];
 export const DEFAULT_FOR_YOU_ORDER = [
+  'tonight',
   'watch-streak',
   'daily-spin',
   'milestone-box',

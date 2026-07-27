@@ -30,6 +30,7 @@ import { PosterNavSheet } from './PosterNavSheet';
 import { StatsGrid } from './StatsGrid';
 import { TasteMatchCard } from './TasteMatchCard';
 import { TasteProfileCard } from './TasteProfileCard';
+import { TonightCard } from './TonightCard';
 import { WatchJourneyCard } from './WatchJourneyCard';
 import { WatchStreakCard } from './WatchStreakCard';
 import { DailySpinCard } from './DailySpinCard';
@@ -244,6 +245,7 @@ export const HomePage: React.FC = () => {
 
       case 'for-you': {
         const comps: Record<string, React.ReactNode> = {
+          tonight: <TonightCard key="tonight" />,
           'watch-streak': <WatchStreakCard key="watch-streak" />,
           'daily-spin': <DailySpinCard key="daily-spin" />,
           'milestone-box': <MilestoneBoxCard key="milestone-box" />,

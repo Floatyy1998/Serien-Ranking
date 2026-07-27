@@ -26,6 +26,7 @@ export const DEFAULT_SECTION_ORDER = [
 ];
 
 export const DEFAULT_FOR_YOU_ORDER = [
+  'tonight',
   'watch-streak',
   'taste-profile',
   'taste-match',
@@ -56,6 +57,7 @@ export const SECTION_LABELS: Record<string, string> = {
 };
 
 export const FOR_YOU_LABELS: Record<string, string> = {
+  tonight: t('Heute Abend'),
   'watch-streak': t('Watch Streak'),
   'taste-profile': t('KI-Empfehlungen'),
   'taste-match': t('Taste Match'),

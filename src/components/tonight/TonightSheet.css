@@ -1,0 +1,175 @@
+.tn-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  margin-bottom: 7px;
+}
+
+/* Segmented Control: eine Leiste, keine losen Pills */
+.tn-seg {
+  display: flex;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 10%, transparent);
+}
+
+.tn-seg button {
+  flex: 1;
+  padding: 8px 4px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tn-seg button.is-active {
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent);
+}
+
+/* Stimmung: umbrechende Chips — nichts wird abgeschnitten */
+.tn-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tn-chips button {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 12%, transparent);
+}
+
+.tn-chips button.is-active {
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  border-color: transparent;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--theme-primary, #ef6f8a) 40%, transparent);
+}
+
+/* Der Vorschlag als Kino-Karte: geblurrtes Poster als Bühne */
+.tn-hero {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  /* Deckende Basis, damit der Blur auf jedem Wallpaper lesbar bleibt */
+  background: #201322;
+}
+
+.tn-hero__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-filter: blur(26px) saturate(1.3);
+  filter: blur(26px) saturate(1.3);
+  transform: scale(1.4);
+  opacity: 0.55;
+}
+
+.tn-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(18, 10, 20, 0.35) 0%, rgba(18, 10, 20, 0.82) 100%);
+}
+
+.tn-hero__content {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+}
+
+.tn-hero__poster {
+  width: 104px;
+  flex-shrink: 0;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.5);
+}
+
+.tn-hero__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.tn-hero__title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.tn-hero__sub {
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.tn-hero__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tn-hero__tags span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.tn-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.tn-actions .tn-go {
+  flex: 1;
+  padding: 14px 0;
+  border-radius: 14px;
+  border: none;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--theme-primary, #ef6f8a), var(--theme-accent, #f2a648));
+  box-shadow: 0 4px 18px color-mix(in srgb, var(--theme-primary, #ef6f8a) 35%, transparent);
+}
+
+.tn-actions .tn-icon {
+  width: 50px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 7%, transparent);
+  border: 1px solid color-mix(in srgb, var(--theme-text-secondary, #f1e8ee) 14%, transparent);
+}
+
+.tn-actions button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
