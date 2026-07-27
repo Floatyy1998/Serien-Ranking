@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../services/backendApi';
@@ -28,6 +29,7 @@ export const useDiscoverActions = (
   setRecommendations: React.Dispatch<React.SetStateAction<DiscoverItem[]>>
 ): UseDiscoverActionsResult => {
   const { user } = useAuth() || {};
+  const { refetchAfterAdd } = useSeriesList();
 
   const [addingItem, setAddingItem] = useState<string | null>(null);
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string }>({
@@ -103,6 +105,7 @@ export const useDiscoverActions = (
           });
 
           if (item.type === 'series') {
+            void refetchAfterAdd(item.id);
             trackSeriesAdded(String(item.id), addedTitle || '', 'discover');
           } else {
             trackMovieAdded(String(item.id), addedTitle || '', 'discover');
@@ -130,7 +133,7 @@ export const useDiscoverActions = (
         setAddingItem(null);
       }
     },
-    [user, markInList]
+    [user, markInList, refetchAfterAdd]
   );
 
   return {

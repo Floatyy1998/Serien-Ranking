@@ -23,10 +23,15 @@ const ctx = vi.hoisted(() => ({
   movieList: [] as Movie[],
   user: { uid: 'u1' } as { uid: string } | null,
   isDesktop: true,
+  refetchAfterAdd: vi.fn(async () => {}),
 }));
 vi.mock('../../contexts/AuthContext', () => ({ useAuth: () => ({ user: ctx.user }) }));
 vi.mock('../../contexts/SeriesListContext', () => ({
-  useSeriesList: () => ({ allSeriesList: ctx.seriesList, seriesList: ctx.seriesList }),
+  useSeriesList: () => ({
+    allSeriesList: ctx.seriesList,
+    seriesList: ctx.seriesList,
+    refetchAfterAdd: ctx.refetchAfterAdd,
+  }),
 }));
 vi.mock('../../contexts/MovieListContext', () => ({
   useMovieList: () => ({ movieList: ctx.movieList }),
@@ -224,6 +229,7 @@ describe('useSearchPage', () => {
       });
     });
     expect(backendFetch).toHaveBeenCalledWith('/add', expect.objectContaining({ method: 'POST' }));
+    expect(ctx.refetchAfterAdd).toHaveBeenCalledWith(100);
     expect(logSeriesAdded).toHaveBeenCalled();
     expect(result.current.snackbar.open).toBe(true);
     expect(result.current.pendingAddIds.has('series-100')).toBe(false);

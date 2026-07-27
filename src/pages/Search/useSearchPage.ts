@@ -87,7 +87,7 @@ export const useSearchPage = (
   const navigate = useNavigate();
   const [urlParams, setUrlParams] = useSearchParams();
   const { user } = useAuth() || {};
-  const { allSeriesList: seriesList } = useSeriesList();
+  const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
   const { movieList } = useMovieList();
 
   const isReturning = window.history.state?.usr?.returning === true;
@@ -425,6 +425,7 @@ export const useSearchPage = (
 
           const posterPath = item.poster_path;
           if (item.type === 'series') {
+            void refetchAfterAdd(item.id);
             await logSeriesAdded(
               user.uid,
               item.name || item.title || 'Unbekannte Serie',
@@ -451,7 +452,7 @@ export const useSearchPage = (
         });
       }
     },
-    [user]
+    [user, refetchAfterAdd]
   );
 
   const removeRecentSearch = useCallback(

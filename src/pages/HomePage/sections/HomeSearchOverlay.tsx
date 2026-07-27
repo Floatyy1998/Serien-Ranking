@@ -59,7 +59,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
   const [filter, setFilter] = useState<Filter>('all');
   const onPrimary = getOptimalTextColor(currentTheme.primary);
   const { user } = useAuth() || {};
-  const { allSeriesList: seriesList } = useSeriesList();
+  const { allSeriesList: seriesList, refetchAfterAdd } = useSeriesList();
   const { movieList } = useMovieList();
   const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set());
   const [pendingKey, setPendingKey] = useState<string | null>(null);
@@ -95,6 +95,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
           setAddedKeys((prev) => new Set(prev).add(key));
           setSnack({ open: true, message: t('„{title}" hinzugefügt', { title: item.title }) });
           if (item.type === 'series') {
+            void refetchAfterAdd(item.id);
             trackSeriesAdded(String(item.id), item.title, 'search');
             await logSeriesAdded(user.uid, item.title, item.id, item.poster_path);
           } else {
@@ -109,7 +110,7 @@ export const HomeSearchOverlay = memo(({ open, onClose }: HomeSearchOverlayProps
         setPendingKey(null);
       }
     },
-    [user]
+    [user, refetchAfterAdd]
   );
 
   useEffect(() => {

@@ -103,7 +103,7 @@ export const SerienKalenderPage: React.FC = () => {
   const { currentTheme } = useTheme();
   const navigate = useNavigate();
   const { user } = useAuth() || {};
-  const { seriesList } = useSeriesList();
+  const { seriesList, refetchAfterAdd } = useSeriesList();
 
   // „Jetzt" + Basis-Quartal einmalig einfrieren (stabile Datums-/Tab-Berechnung).
   const [now] = useState(() => Date.now());
@@ -299,6 +299,7 @@ export const SerienKalenderPage: React.FC = () => {
         body: JSON.stringify({ user: import.meta.env.VITE_USER, id: entry.tmdbId, uuid: user.uid }),
       });
       if (!response.ok) throw new Error(`add failed: ${response.status}`);
+      void refetchAfterAdd(entry.tmdbId);
       hapticSuccess();
       showToast(t('„{title}" hinzugefügt', { title: entry.title }), 2500, 'success');
       trackSeriesAdded(String(entry.tmdbId), entry.title, 'serien-kalender');

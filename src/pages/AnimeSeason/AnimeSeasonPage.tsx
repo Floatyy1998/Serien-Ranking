@@ -63,6 +63,7 @@ import {
   TabSwitcher,
 } from '../../components/ui';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSeriesList } from '../../contexts/SeriesListContext';
 import { trackMovieAdded, trackSeriesAdded } from '../../services/firebase/analytics';
 import { logMovieAdded, logSeriesAdded } from '../../features/badges/minimalActivityLogger';
 import { backendFetch } from '../../services/backendApi';
@@ -142,6 +143,7 @@ export const AnimeSeasonPage: React.FC = () => {
   const navigate = useNavigate();
   const { currentTheme } = useTheme();
   const { user } = useAuth() || {};
+  const { refetchAfterAdd } = useSeriesList();
   const { matchAnime } = useAnimeListMatch();
   const reducedMotion = useReducedMotion();
   // „Jetzt" einmalig einfrieren (react-hooks/purity: kein Date.now() im Render).
@@ -826,6 +828,7 @@ export const AnimeSeasonPage: React.FC = () => {
         body: JSON.stringify({ user: import.meta.env.VITE_USER, id: info.tmdbId, uuid: user.uid }),
       });
       if (!response.ok) throw new Error(`add failed: ${response.status}`);
+      if (!isMovie) void refetchAfterAdd(info.tmdbId);
 
       const title = entry.anime.title.english || entry.anime.title.romaji || t('Unbekannter Titel');
       hapticSuccess();
