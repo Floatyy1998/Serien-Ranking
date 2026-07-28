@@ -26,13 +26,14 @@
                 <data android:scheme="@string/custom_url_scheme" />
             </intent-filter>
             <!-- App Links: tv-rank.de-Links öffnen direkt die App (Verifikation
-                 über https://tv-rank.de/.well-known/assetlinks.json) -->
+                 über https://tv-rank.de/.well-known/assetlinks.json).
+                 Kein www-Host: www leitet per 301 auf die Apex-Domain um, und
+                 Googles Verifikation verlangt die Datei ohne Weiterleitung. -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="tv-rank.de" />
-                <data android:scheme="https" android:host="www.tv-rank.de" />
             </intent-filter>
         </activity>
 
