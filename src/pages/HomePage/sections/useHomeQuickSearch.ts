@@ -15,6 +15,7 @@ export interface QuickResult {
   poster_path?: string;
   year: string;
   vote_average?: number;
+  popularity?: number;
 }
 
 interface TmdbListResponse {
@@ -180,12 +181,15 @@ export function useHomeQuickSearch(active = true): UseHomeQuickSearchResult {
             title: (type === 'series' ? r.name || r.title : r.title || r.name) || '',
             poster_path: r.poster_path || undefined,
             vote_average: r.vote_average,
+            popularity: r.popularity,
             year: (r.first_air_date || r.release_date || '').slice(0, 4),
           }));
 
+        // Nach Popularität wie die SearchPage — vote_average begräbt neue Titel
+        // ohne Stimmen unter dem 18er-Cut.
         const merged = [...map(tv.results, 'series'), ...map(mv.results, 'movie')]
           .filter((r) => r.title)
-          .sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))
+          .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
           .slice(0, 18);
         setResults(merged);
       } catch {
