@@ -124,7 +124,9 @@ export function SeasonsSection({
     totalEpisodes > 0 ? Math.round((watchedEpisodes / totalEpisodes) * 100) : 0;
 
   return (
-    <div style={{ padding: '0 20px 20px' }}>
+    // Kein eigenes Seiten-Padding — das liefert der Wrapper in SeriesDetailPage
+    // (sonst doppelte Einrückung + 40px-Lücke vor den Empfehlungen).
+    <div>
       {/* Section Header */}
       <div
         style={{
