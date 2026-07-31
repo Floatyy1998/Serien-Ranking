@@ -30,6 +30,9 @@ export const StatCard = memo(
       })}
       sx={{
         p: 2,
+        // Füllt die Grid-Zelle — sonst enden Kacheln ohne subValue früher
+        // und die Reihe hat ungleiche Höhen.
+        height: '100%',
         background: 'linear-gradient(135deg, var(--glass-light) 0%, var(--glass-subtle) 100%)',
         border: '1px solid var(--glass-border-subtle)',
         borderRadius: 3,
