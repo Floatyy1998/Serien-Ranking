@@ -53,6 +53,14 @@ export function useLeaderboardData() {
   // Eigener Live-Wert für den Alle-Tab: der globale Snapshot (leaderboardTop)
   // wird nur alle ~15 Min neu geschrieben, der eigene Stats-Knoten aber sofort.
   const [selfStats, setSelfStats] = useState<LeaderboardStats | null>(null);
+  // Eigenes Profil aus der RTDB — Firebase-Auth displayName/photoURL sind in
+  // dieser App meist leer (Profil lebt unter users/$uid), der Auth-Fallback
+  // zeigte "Unbekannt" ohne Bild.
+  const [selfProfile, setSelfProfile] = useState<{
+    displayName: string;
+    photoURL?: string;
+    username?: string;
+  } | null>(null);
   const [trophies, setTrophies] = useState<MonthlyTrophy[]>([]);
   const [loading, setLoading] = useState(true);
   const [celebration, setCelebration] = useState<CelebrationData | null>(null);
@@ -102,8 +110,12 @@ export function useLeaderboardData() {
       // Eigenen Live-Stand separat laden, um ihn über den (bis ~15 Min alten)
       // Snapshot zu legen — so ist der eigene Wert im Alle-Tab identisch zum
       // Freunde-Tab.
-      const self = await fetchLeaderboardData(user.uid, []);
+      const [self, profileMap] = await Promise.all([
+        fetchLeaderboardData(user.uid, []),
+        fetchLeaderboardProfiles([user.uid]),
+      ]);
       setSelfStats(self[user.uid] ?? null);
+      setSelfProfile(profileMap[user.uid] ?? null);
     }
     const entries = await fetchGlobalLeaderboard();
     setGlobalEntries(entries);
@@ -225,9 +237,9 @@ export function useLeaderboardData() {
         } else if (liveValue > 0) {
           entries.push({
             uid: user.uid,
-            displayName: user.displayName || t('Unbekannt'),
-            photoURL: user.photoURL || undefined,
-            username: undefined,
+            displayName: selfProfile?.displayName || user.displayName || t('Unbekannt'),
+            photoURL: selfProfile?.photoURL || user.photoURL || undefined,
+            username: selfProfile?.username,
             value: liveValue,
             rank: 0,
             isCurrentUser: true,
@@ -258,7 +270,7 @@ export function useLeaderboardData() {
       e.rank = i + 1;
     });
     return entries;
-  }, [statsData, profiles, activeCategory, user, mode, globalEntries, selfStats]);
+  }, [statsData, profiles, activeCategory, user, mode, globalEntries, selfStats, selfProfile]);
 
   const handleSetMode = useCallback((newMode: 'friends' | 'global') => {
     setMode(newMode);
