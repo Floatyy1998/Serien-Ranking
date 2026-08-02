@@ -532,9 +532,13 @@
 .ratings-card--ring::after {
   content: '';
   position: absolute;
-  inset: -2px;
-  border-radius: calc(var(--radius-lg) + 2px);
+  /* Innen auf der Poster-Kante zeichnen, nicht außen (inset: -2px):
+     content-visibility auf .ratings-grid-item clippt an der Item-Box und
+     ließ vom Außenring nur die Eck-Bögen übrig ("grüne Ecken"). */
+  inset: 0;
+  border-radius: var(--radius-lg);
   padding: 2px;
+  z-index: 2;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
