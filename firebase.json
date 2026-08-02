@@ -5,6 +5,9 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "functions": {
+    "source": "functions"
+  },
   "hosting": {
     "public": "dist",
     "ignore": ["firebase.json", "**/node_modules/**"],
@@ -46,9 +49,23 @@
         "headers": [
           { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
         ]
+      },
+      {
+        "source": "/@(series|movie)/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=3600" }
+        ]
       }
     ],
     "rewrites": [
+      {
+        "source": "/series/**",
+        "function": "ogRender"
+      },
+      {
+        "source": "/movie/**",
+        "function": "ogRender"
+      },
       {
         "source": "**",
         "destination": "/index.html"
