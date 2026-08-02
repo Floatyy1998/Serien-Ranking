@@ -5,6 +5,7 @@ import { useDeviceType } from '../../hooks/useDeviceType';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { RecommendationMediaType } from '../../types/Recommendation';
 import { shareLink } from '../../services/share/shareLink';
+import { getImageUrl } from '../../utils/imageUrl';
 import { BottomSheet } from '../ui';
 import { FriendPicker } from './FriendPicker';
 import { RecommendMessageInput } from './RecommendMessageInput';
@@ -51,11 +52,38 @@ export const RecommendSheet: React.FC<RecommendSheetProps> = ({ isOpen, onClose,
   // Externes Teilen (System-Share-Sheet). Geteilt wird der tv-rank.de-Link —
   // Universal/App Links öffnen auf Mobilgeräten direkt die App-Detailseite.
   const handleExternalShare = async () => {
-    const result = await shareLink({
-      url: `https://tv-rank.de/${media.type === 'movie' ? 'movie' : 'series'}/${media.id}`,
-      title: media.title,
-      text: t('Schau dir "{title}" auf TV-RANK an', { title: media.title }),
-    });
+    const url = `https://tv-rank.de/${media.type === 'movie' ? 'movie' : 'series'}/${media.id}`;
+    const text = t('Schau dir "{title}" auf TV-RANK an', { title: media.title });
+
+    // Wo das Share-Sheet Dateien kann (Web Share Level 2): Poster als Bild
+    // anhängen — Messenger verschicken es dann als Foto mit Text+Link als
+    // Bildunterschrift. Best-effort; ohne Bild geht es unten normal weiter.
+    if (
+      media.posterPath &&
+      typeof navigator !== 'undefined' &&
+      typeof navigator.canShare === 'function'
+    ) {
+      try {
+        const posterUrl = getImageUrl(media.posterPath, 'w500', '');
+        const res = posterUrl ? await fetch(posterUrl) : null;
+        if (res?.ok) {
+          const blob = await res.blob();
+          const file = new File([blob], 'poster.jpg', { type: blob.type || 'image/jpeg' });
+          if (navigator.canShare({ files: [file] })) {
+            // Link zusätzlich in den Text — einige Ziele ignorieren das
+            // url-Feld, sobald Dateien dabei sind.
+            await navigator.share({ files: [file], title: media.title, text: `${text}\n${url}` });
+            handleClose();
+            return;
+          }
+        }
+      } catch (err) {
+        if ((err as DOMException)?.name === 'AbortError') return; // User hat abgebrochen
+        // Poster-Fetch/Share fehlgeschlagen → ohne Bild weiter
+      }
+    }
+
+    const result = await shareLink({ url, title: media.title, text });
     if (result === 'shared') {
       handleClose();
     } else if (result === 'copied') {
