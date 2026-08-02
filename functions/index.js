@@ -106,9 +106,17 @@ function injectOg(html, mediaType, tmdbId, detail) {
       250
     )
   );
-  const image = detail.poster_path
-    ? `https://image.tmdb.org/t/p/w780${detail.poster_path}`
-    : `${SITE_ORIGIN}/logo180.png`;
+  // Backdrop (Querformat) statt Poster: Hochformat wirkt in den großen
+  // Vorschau-Karten wuchtig und wird beschnitten — 16:9 ist die klassische
+  // Medienkarte. Poster nur als Fallback, wenn kein Backdrop existiert.
+  const image = detail.backdrop_path
+    ? `https://image.tmdb.org/t/p/w1280${detail.backdrop_path}`
+    : detail.poster_path
+      ? `https://image.tmdb.org/t/p/w780${detail.poster_path}`
+      : `${SITE_ORIGIN}/logo180.png`;
+  const imageDims = detail.backdrop_path
+    ? ['<meta property="og:image:width" content="1280" />', '<meta property="og:image:height" content="720" />']
+    : [];
   const pageUrl = `${SITE_ORIGIN}/${mediaType === 'movie' ? 'movie' : 'series'}/${tmdbId}`;
   const ogType = mediaType === 'movie' ? 'video.movie' : 'video.tv_show';
   const ogTitle = escapeHtml(rawTitle);
@@ -121,6 +129,7 @@ function injectOg(html, mediaType, tmdbId, detail) {
     `<meta property="og:title" content="${ogTitle}" />`,
     `<meta property="og:description" content="${description}" />`,
     `<meta property="og:image" content="${image}" />`,
+    ...imageDims,
     `<meta property="og:url" content="${pageUrl}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
     `<meta name="twitter:title" content="${ogTitle}" />`,
