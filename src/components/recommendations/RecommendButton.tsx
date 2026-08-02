@@ -30,12 +30,12 @@ export const RecommendButton: React.FC<RecommendButtonProps> = ({
 
   return (
     <>
-      <Tooltip title={t('An Freund empfehlen')} arrow>
+      <Tooltip title={t('Teilen & Empfehlen')} arrow>
         <motion.button
           whileTap={tapScale}
           onClick={() => setOpen(true)}
           className={className}
-          aria-label={t('An Freund empfehlen')}
+          aria-label={t('Teilen & Empfehlen')}
           // Bewusst NEUTRAL wie die anderen Sekundär-Buttons — Farbe ist in
           // der Toolbar Zustands-Signal (aktiv/destruktiv), kein Dauer-Akzent.
           style={{ ...style }}

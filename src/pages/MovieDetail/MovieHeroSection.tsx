@@ -397,16 +397,17 @@ export const MovieHeroSection = memo(
                 </div>
               ) : null}
 
-              {/* Actions: Bewerten + Empfehlen (nur fuer eigene Filme) */}
-              {!isReadOnlyTmdbMovie && (
-                <div
-                  className="md-hero__actions"
-                  style={{
-                    justifyContent: isMobile ? 'center' : 'flex-start',
-                    padding: isMobile ? '16px 20px 0' : undefined,
-                    marginTop: isMobile ? 0 : 16,
-                  }}
-                >
+              {/* Actions: Gesehen/Bewerten/Löschen nur für eigene Filme —
+                  Empfehlen + Teilen immer (brauchen den Film nicht in der Liste). */}
+              <div
+                className="md-hero__actions"
+                style={{
+                  justifyContent: isMobile ? 'center' : 'flex-start',
+                  padding: isMobile ? '16px 20px 0' : undefined,
+                  marginTop: isMobile ? 0 : 16,
+                }}
+              >
+                {!isReadOnlyTmdbMovie && (
                   <motion.button
                     type="button"
                     whileTap={tapScale}
@@ -434,7 +435,9 @@ export const MovieHeroSection = memo(
                     <Check aria-hidden style={{ fontSize: isMobile ? '16px' : '18px' }} />
                     {isWatched ? t('Gesehen') : t('Als gesehen')}
                   </motion.button>
+                )}
 
+                {!isReadOnlyTmdbMovie && (
                   <motion.button
                     type="button"
                     whileTap={tapScale}
@@ -459,26 +462,28 @@ export const MovieHeroSection = memo(
                     />
                     {t('Bewerten')}
                   </motion.button>
+                )}
 
-                  <RecommendButton
-                    className="action-btn"
-                    iconSize={isMobile ? 18 : 20}
-                    style={{
-                      padding: isMobile ? '10px' : '12px',
-                      border: `1px solid ${currentTheme.primary}33`,
-                      borderRadius: isMobile ? '10px' : '12px',
-                      fontSize: isMobile ? '13px' : '16px',
-                      background: `${currentTheme.primary}10`,
-                    }}
-                    media={{
-                      id: movie.id,
-                      type: 'movie',
-                      title: movie.title,
-                      posterPath,
-                      backdropPath: tmdbBackdrop || movie.backdrop || undefined,
-                    }}
-                  />
+                <RecommendButton
+                  className="action-btn"
+                  iconSize={isMobile ? 18 : 20}
+                  style={{
+                    padding: isMobile ? '10px' : '12px',
+                    border: `1px solid ${currentTheme.primary}33`,
+                    borderRadius: isMobile ? '10px' : '12px',
+                    fontSize: isMobile ? '13px' : '16px',
+                    background: `${currentTheme.primary}10`,
+                  }}
+                  media={{
+                    id: movie.id,
+                    type: 'movie',
+                    title: movie.title,
+                    posterPath,
+                    backdropPath: tmdbBackdrop || movie.backdrop || undefined,
+                  }}
+                />
 
+                {!isReadOnlyTmdbMovie && (
                   <Tooltip title={t('Film löschen')} arrow>
                     <motion.button
                       whileTap={tapScale}
@@ -500,8 +505,8 @@ export const MovieHeroSection = memo(
                       />
                     </motion.button>
                   </Tooltip>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Desktop: Signal-Zone unten rechts — Freunde, Ratings, Provider,

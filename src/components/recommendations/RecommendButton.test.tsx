@@ -21,15 +21,15 @@ afterEach(() => {
 });
 
 describe('RecommendButton', () => {
-  it('rendert den Empfehlen-Button', () => {
+  it('rendert den Teilen/Empfehlen-Button', () => {
     render(<RecommendButton media={media} />);
-    expect(screen.getByRole('button', { name: 'An Freund empfehlen' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Teilen & Empfehlen' })).toBeInTheDocument();
   });
 
   it('öffnet das Sheet beim Klick', () => {
     render(<RecommendButton media={media} />);
     expect(screen.queryByTestId('recommend-sheet')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'An Freund empfehlen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Teilen & Empfehlen' }));
     expect(screen.getByTestId('recommend-sheet')).toBeInTheDocument();
   });
 });

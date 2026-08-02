@@ -2,7 +2,7 @@ import { CssBaseline } from '@mui/material';
 import { MotionConfig } from 'framer-motion';
 import { Suspense, useEffect, useState } from 'react';
 import { LoadingSpinner } from './components/ui/LoadingSpinner';
-import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes, useLocation } from 'react-router-dom';
 import { EmailVerificationBanner } from './components/auth/EmailVerificationBanner';
 import { AppProviders } from './AppProviders';
 import { useGlobalImageRetry } from './hooks/useGlobalImageRetry';
@@ -68,6 +68,11 @@ const PublicProfilePage = lazyWithRetry(() =>
     default: m.PublicProfilePage,
   }))
 );
+const GuestMediaPage = lazyWithRetry(() =>
+  import('./pages/GuestMedia/GuestMediaPage').then((m) => ({
+    default: m.GuestMediaPage,
+  }))
+);
 const PrivacyPage = lazyWithRetry(() =>
   import('./pages/Privacy').then((m) => ({
     default: m.PrivacyPage,
@@ -83,6 +88,20 @@ const ImpressumPage = lazyWithRetry(() =>
     default: m.ImpressumPage,
   }))
 );
+
+// Ausgeloggt: geteilte Detail-Links (/series/:id, /movie/:id) zeigen die
+// öffentliche Gast-Seite mit Register-CTA statt der Login-Wand (Option B:
+// nur Share-Ziele sind public, der Rest führt zur StartPage).
+const GuestRouteSwitch = () => {
+  const { pathname } = useLocation();
+  const match = pathname.match(/^\/(series|movie)\/(\d+)/);
+  if (match) {
+    return (
+      <GuestMediaPage mediaType={match[1] === 'movie' ? 'movie' : 'tv'} tmdbId={Number(match[2])} />
+    );
+  }
+  return <StartPage />;
+};
 
 // Loading component — themed Spinner statt rohem "Loading..."-Text
 const PageLoader = () => (
@@ -211,7 +230,7 @@ function AppContent() {
                             </EmailVerificationBanner>
                           );
                         } else if (auth?.authStateResolved) {
-                          return <StartPage />;
+                          return <GuestRouteSwitch />;
                         } else {
                           // Während Auth noch lädt, zeige nichts (Splash Screen ist noch aktiv)
                           return null;

@@ -2,47 +2,12 @@ import { Close } from '@mui/icons-material';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
+import { detectAppInstallTarget } from '../lib/appInstallTarget';
 import { tapScaleTight } from '../lib/motion';
 import { t } from '../services/i18n';
 
-// Numerische App-Store-ID ("Apple ID" der App aus App Store Connect →
-// App-Informationen). Solange leer, wird das Banner auf iOS NICHT gezeigt
-// (kein kaputter Link); Android funktioniert sofort über das Paket.
-const APPSTORE_APP_ID = '6791198226';
-const ANDROID_URL = 'https://play.google.com/store/apps/details?id=de.tvrank.app';
-const IOS_URL = APPSTORE_APP_ID ? `https://apps.apple.com/app/id${APPSTORE_APP_ID}` : '';
-
 const DISMISS_KEY = 'appInstallBannerDismissedAt';
 const COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
-
-type MobileOS = 'ios' | 'android' | null;
-
-function detectTarget(): { os: MobileOS; url: string } {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-    return { os: null, url: '' };
-  }
-  const ua = navigator.userAgent || '';
-
-  // Läuft bereits nativ (Capacitor) / als Desktop-Shell (Electron) / als
-  // installierte PWA (Homescreen) → kein Install-Hinweis nötig.
-  const isNative = !!(
-    window as { Capacitor?: { isNativePlatform?: () => boolean } }
-  ).Capacitor?.isNativePlatform?.();
-  const isElectron = /electron/i.test(ua);
-  const isStandalone =
-    window.matchMedia?.('(display-mode: standalone)')?.matches ||
-    (navigator as { standalone?: boolean }).standalone === true;
-  if (isNative || isElectron || isStandalone) return { os: null, url: '' };
-
-  const isIOS =
-    /iphone|ipad|ipod/i.test(ua) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPadOS meldet sich als Mac
-  const isAndroid = /android/i.test(ua);
-
-  if (isAndroid) return { os: 'android', url: ANDROID_URL };
-  if (isIOS && IOS_URL) return { os: 'ios', url: IOS_URL };
-  return { os: null, url: '' };
-}
 
 /**
  * Zeigt Nutzern im mobilen Browser (ohne installierte App) einen Hinweis
@@ -52,7 +17,7 @@ function detectTarget(): { os: MobileOS; url: string } {
  */
 export const AppInstallBanner = () => {
   const { currentTheme } = useTheme();
-  const [target] = useState(detectTarget);
+  const [target] = useState(detectAppInstallTarget);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {

@@ -1,5 +1,16 @@
 /** Englische Übersetzungen: Gast-Onboarding („Wähl 3 → Sichern") + Pet-Schlüpf-Schritt. */
 const dict: Record<string, string> = {
+  // GuestMediaPage — öffentliche Detailseite für geteilte Links
+  'Titel nicht gefunden.': 'Title not found.',
+  'Zur Startseite': 'Back to home',
+  Staffeln: 'seasons',
+  'Tracke {title} mit TV-RANK': 'Track {title} with TV-RANK',
+  'Folgen abhaken, bewerten, mit Freunden vergleichen — kostenlos.':
+    'Check off episodes, rate, compare with friends — for free.',
+  'Jetzt tracken — kostenlos': 'Track now — free',
+  'Im App Store laden': 'Get it on the App Store',
+  'Bei Google Play laden': 'Get it on Google Play',
+
   // GuestOnboardingPage — Kopf & Intro
   'erst wählen, dann sichern': 'pick first, then save',
   Anmelden: 'Sign in',

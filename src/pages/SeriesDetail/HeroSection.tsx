@@ -235,7 +235,25 @@ export const HeroSection = memo<HeroSectionProps>(
       [autoProviders, providerOverride]
     );
 
-    const actionButtons = !isReadOnlyTmdbSeries && (
+    const recommendButton = (
+      <RecommendButton
+        className="hero-actions__btn"
+        iconSize={iconSize}
+        media={{
+          id: seriesId,
+          type: 'series',
+          title: series.title,
+          posterPath,
+          backdropPath: tmdbBackdrop || series.backdrop || undefined,
+        }}
+      />
+    );
+
+    // Read-only (nicht in der Liste): Teilen/Empfehlen bleibt verfügbar —
+    // braucht den Titel nicht in der Sammlung.
+    const actionButtons = isReadOnlyTmdbSeries ? (
+      <div className="hero-actions">{recommendButton}</div>
+    ) : (
       <div className="hero-actions">
         <motion.button
           whileTap={tapScale}
@@ -294,17 +312,7 @@ export const HeroSection = memo<HeroSectionProps>(
           </motion.button>
         </Tooltip>
 
-        <RecommendButton
-          className="hero-actions__btn"
-          iconSize={iconSize}
-          media={{
-            id: seriesId,
-            type: 'series',
-            title: series.title,
-            posterPath,
-            backdropPath: tmdbBackdrop || series.backdrop || undefined,
-          }}
-        />
+        {recommendButton}
 
         <Tooltip title={series.hidden ? t('Einblenden') : t('Ausblenden')} arrow>
           <motion.button

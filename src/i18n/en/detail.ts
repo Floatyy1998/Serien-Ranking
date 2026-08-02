@@ -3,6 +3,10 @@
 const dict: Record<string, string> = {
   // Gemeinsam
   Zurück: 'Back',
+  'Teilen & Empfehlen': 'Share & recommend',
+  'Extern teilen': 'Share externally',
+  'Link kopiert!': 'Link copied!',
+  'Schau dir "{title}" auf TV-RANK an': 'Check out "{title}" on TV-RANK',
   'Lade...': 'Loading...',
   Besetzung: 'Cast',
   Bewerten: 'Rate',
